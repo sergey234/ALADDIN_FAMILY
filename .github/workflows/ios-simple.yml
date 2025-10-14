@@ -18,9 +18,32 @@ jobs:
       with:
         xcode-version: '15.0'
         
+    - name: Verify project structure
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "=== ПРОВЕРЯЕМ СТРУКТУРУ ПРОЕКТА ==="
+        ls -la
+        echo ""
+        echo "=== ПРОВЕРЯЕМ XCODE ПРОЕКТ ==="
+        ls -la ALADDIN.xcodeproj/
+        echo ""
+        echo "=== ПРОВЕРЯЕМ СХЕМУ ==="
+        ls -la ALADDIN.xcodeproj/xcshareddata/xcschemes/
+        echo ""
+        echo "=== ПРОВЕРЯЕМ SWIFT ФАЙЛЫ ==="
+        find . -name "*.swift" | wc -l
+        echo ""
+        echo "=== ПРОВЕРЯЕМ ASSETS ==="
+        ls -la ALADDIN/Assets.xcassets/AppIcon.appiconset/
+        
+    - name: List available simulators
+      run: |
+        xcrun simctl list devices available
+        
     - name: Build iOS app
       run: |
         cd mobile_apps/ALADDIN_iOS
+        echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ==="
         xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 15' build
         
     - name: Upload build artifacts
