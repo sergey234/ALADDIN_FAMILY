@@ -720,9 +720,13 @@ struct AchievementRequestModal: View {
 
 // MARK: - Preview
 
-#Preview {
-    ChildRewardsScreen()
+#if DEBUG
+struct ChildRewardsScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        ChildRewardsScreen()
+    }
 }
+#endif
 
 
 

@@ -149,9 +149,13 @@ struct FamilyTournamentView: View {
     }
 }
 
-#Preview {
-    FamilyTournamentView()
+#if DEBUG
+struct FamilyTournamentView_Previews: PreviewProvider {
+    static var previews: some View {
+        FamilyTournamentView()
+    }
 }
+#endif
 
 
 

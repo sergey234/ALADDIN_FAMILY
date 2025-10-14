@@ -113,9 +113,13 @@ struct RewardsQuickModal: View {
     }
 }
 
-#Preview {
-    RewardsQuickModal(unicornBalance: .constant(245))
+#if DEBUG
+struct RewardsQuickModal_Previews: PreviewProvider {
+    static var previews: some View {
+        RewardsQuickModal(unicornBalance: .constant(245))
+    }
 }
+#endif
 
 
 

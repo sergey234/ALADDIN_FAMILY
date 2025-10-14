@@ -251,9 +251,13 @@ struct WheelOfFortuneView: View {
 
 // MARK: - Preview
 
-#Preview {
-    WheelOfFortuneView()
+#if DEBUG
+struct WheelOfFortuneView_Previews: PreviewProvider {
+    static var previews: some View {
+        WheelOfFortuneView()
+    }
 }
+#endif
 
 
 

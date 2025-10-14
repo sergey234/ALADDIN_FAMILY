@@ -105,9 +105,13 @@ struct UnicornUniverseView: View {
     }
 }
 
-#Preview {
-    UnicornUniverseView()
+#if DEBUG
+struct UnicornUniverseView_Previews: PreviewProvider {
+    static var previews: some View {
+        UnicornUniverseView()
+    }
 }
+#endif
 
 
 

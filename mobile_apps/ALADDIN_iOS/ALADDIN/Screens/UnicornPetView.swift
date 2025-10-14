@@ -140,9 +140,13 @@ struct UnicornPetView: View {
     }
 }
 
-#Preview {
-    UnicornPetView()
+#if DEBUG
+struct UnicornPetView_Previews: PreviewProvider {
+    static var previews: some View {
+        UnicornPetView()
+    }
 }
+#endif
 
 
 

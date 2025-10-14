@@ -339,13 +339,17 @@ struct RewardsModalView: View {
 
 // MARK: - Preview
 
-#Preview {
-    RewardsModalView(
-        unicornBalance: .constant(245),
-        weeklyRewarded: .constant(128),
-        weeklyPunished: .constant(45)
-    )
+#if DEBUG
+struct RewardsModalView_Previews: PreviewProvider {
+    static var previews: some View {
+        RewardsModalView(
+            unicornBalance: .constant(245),
+            weeklyRewarded: .constant(128),
+            weeklyPunished: .constant(45)
+        )
+    }
 }
+#endif
 
 
 

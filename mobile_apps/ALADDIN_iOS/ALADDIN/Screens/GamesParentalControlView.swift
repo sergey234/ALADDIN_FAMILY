@@ -455,9 +455,13 @@ struct GamesParentalControlView: View {
 
 // MARK: - Preview
 
-#Preview {
-    GamesParentalControlView()
+#if DEBUG
+struct GamesParentalControlView_Previews: PreviewProvider {
+    static var previews: some View {
+        GamesParentalControlView()
+    }
 }
+#endif
 
 
 
