@@ -9,6 +9,7 @@ ALADDIN Security System - Access Control
 """
 
 import hashlib
+import os
 import threading
 import time
 from datetime import datetime, timedelta

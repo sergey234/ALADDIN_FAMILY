@@ -21,6 +21,9 @@ from security.bots.incognito_protection_bot import (
     ThreatLevel,
 )
 
+# Настройка логирования
+logger = logging.getLogger(__name__)
+
 
 class ProtectionMode(Enum):
     """Режимы защиты"""

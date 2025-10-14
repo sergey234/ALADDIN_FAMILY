@@ -3,6 +3,57 @@
 Продолжение улучшенного AutoScalingEngine - основная часть класса
 """
 
+import asyncio
+import threading
+import time
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
+from core.base import ComponentStatus, LogLevel, SecurityBase
+
+
+# Временные классы для совместимости
+class ScalingRule:
+    def __init__(self, name: str, service_id: str, metric_name: str, 
+                 threshold: float, action: str, cooldown: int = 300):
+        self.name = name
+        self.service_id = service_id
+        self.metric_name = metric_name
+        self.threshold = threshold
+        self.action = action
+        self.cooldown = cooldown
+        self.last_triggered = None
+
+class MetricData:
+    def __init__(self, name: str, value: float, unit: str, timestamp: datetime):
+        self.name = name
+        self.value = value
+        self.unit = unit
+        self.timestamp = timestamp
+
+class ScalingDecision:
+    def __init__(self, service_id: str, action: str, reason: str, timestamp: datetime):
+        self.service_id = service_id
+        self.action = action
+        self.reason = reason
+        self.timestamp = timestamp
+
+class ScalingMetrics:
+    def __init__(self):
+        self.total_decisions = 0
+        self.successful_scales = 0
+        self.failed_scales = 0
+
+class PerformanceMetrics:
+    def __init__(self):
+        self.cpu_usage = 0.0
+        self.memory_usage = 0.0
+        self.response_time = 0.0
+
+class ScalingError(Exception):
+    pass
+
+
 class AutoScalingEngine(SecurityBase):
     """
     Улучшенный движок автоматического масштабирования для ALADDIN Security System.
