@@ -1,31 +1,56 @@
-# Backup папки
-backup*/
-backups/
-*.backup
+# iOS Build artifacts
+mobile_apps/ALADDIN_iOS/build/
+mobile_apps/ALADDIN_iOS/DerivedData/
+mobile_apps/ALADDIN_iOS/*.xcworkspace/xcuserdata/
+mobile_apps/ALADDIN_iOS/*.xcodeproj/xcuserdata/
+mobile_apps/ALADDIN_iOS/*.xcodeproj/project.xcworkspace/xcuserdata/
 
-# Временные файлы
-*.tmp
-*.temp
+# Large backup files
+backups/
+backup_*/
+*.backup
+*.bak
+
+# Large log files
+logs/
+*.log
+
+# Large data files
+data/
+*.db
+*.sqlite
+
+# Formatting work (temporary)
+formatting_work/
+
+# App Store screenshots (large)
+app_store_screenshots/
+
+# Reports (can be regenerated)
+reports/
+*.report
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# Node modules
+node_modules/
+
+# OS files
 .DS_Store
 Thumbs.db
 
-# IDE файлы
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Логи
-*.log
-logs/
-
-# Xcode файлы
-*.xcuserstate
-*.xcworkspace
-DerivedData/
-
-# НЕ ИГНОРИРУЕМ:
-# Backend секреты остаются в git!
-# .env файлы остаются!
-# SSL ключи остаются!
-
+# Temporary files
+*.tmp
+*.temp
