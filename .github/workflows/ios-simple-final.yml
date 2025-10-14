@@ -27,7 +27,7 @@ jobs:
         echo "Deployment target: iOS 11.0+ (поддержка iPhone 8+)"
         
         # Простая компиляция без указания конкретного симулятора
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "generic/platform=iOS Simulator" build
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=generic" build
         
         echo "=== ПРОВЕРЯЕМ BUILD ПАПКУ ==="
         ls -la build/ || echo "build папка не найдена"
