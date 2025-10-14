@@ -1,0 +1,52 @@
+name: iOS Solution 6 - Check SDKs
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/trigger_solution6.txt' ]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Check available SDKs and devices
+      run: |
+        echo "=== ПРОВЕРЯЕМ ДОСТУПНЫЕ SDK ==="
+        xcodebuild -showsdks
+        
+        echo ""
+        echo "=== ПРОВЕРЯЕМ ДОСТУПНЫЕ УСТРОЙСТВА ==="
+        xcrun simctl list devices available
+        
+        echo ""
+        echo "=== ПРОВЕРЯЕМ RUNTIMES ==="
+        xcrun simctl list runtimes
+        
+    - name: Build with available SDK
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "=== КОМПИЛИРУЕМ С ДОСТУПНЫМ SDK ==="
+        
+        # Получаем доступный iOS SDK
+        AVAILABLE_SDK=$(xcodebuild -showsdks | grep iOS | head -1 | awk '{print $2}')
+        echo "Используем SDK: $AVAILABLE_SDK"
+        
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -sdk $AVAILABLE_SDK build
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-build-solution6
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7

@@ -1,0 +1,59 @@
+name: iOS Solution 13 - Import Platform
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/trigger_solution13.txt' ]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Download and import iOS platform
+      run: |
+        echo "=== СКАЧИВАЕМ И ИМПОРТИРУЕМ iOS ПЛАТФОРМУ ==="
+        
+        echo "1. Проверяем текущие SDK"
+        xcodebuild -showsdks
+        
+        echo "2. Пробуем скачать iOS платформу"
+        xcodebuild -downloadPlatform iOS || echo "Скачивание не удалось"
+        
+        echo "3. Проверяем SDK после скачивания"
+        xcodebuild -showsdks
+        
+        echo "4. Пробуем установить конкретные версии"
+        xcodebuild -downloadPlatform iOS -version 17.0 || echo "iOS 17.0 недоступна"
+        xcodebuild -downloadPlatform iOS -version 16.0 || echo "iOS 16.0 недоступна"
+        xcodebuild -downloadPlatform iOS -version 15.0 || echo "iOS 15.0 недоступна"
+        
+    - name: Build with imported platform
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "=== КОМПИЛИРУЕМ С ИМПОРТИРОВАННОЙ ПЛАТФОРМОЙ ==="
+        
+        # Пробуем разные варианты
+        echo "1. Только scheme"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build || echo "Scheme не сработал"
+        
+        echo ""
+        echo "2. С platform=iOS"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS" build || echo "platform=iOS не сработал"
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-build-solution13
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7

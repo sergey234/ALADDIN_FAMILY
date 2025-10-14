@@ -1,0 +1,98 @@
+name: iOS Solution 14 - Last Chance
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/trigger_solution14.txt' ]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 35
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Complete setup and diagnostics
+      run: |
+        echo "=== ПОЛНАЯ ДИАГНОСТИКА И НАСТРОЙКА ==="
+        
+        echo "1. Проверяем Xcode версию"
+        xcodebuild -version
+        
+        echo "2. Проверяем текущий Xcode"
+        xcode-select -p
+        
+        echo "3. Переключаем Xcode"
+        sudo xcode-select --switch /Applications/Xcode_16.app/Contents/Developer
+        
+        echo "4. Принимаем лицензию"
+        sudo xcodebuild -license accept
+        
+        echo "5. Запускаем first launch"
+        sudo xcodebuild -runFirstLaunch
+        
+        echo "6. Проверяем SDK"
+        xcodebuild -showsdks
+        
+        echo "7. Проверяем симуляторы"
+        xcrun simctl list devices available
+        
+        echo "8. Проверяем runtimes"
+        xcrun simctl list runtimes
+        
+        echo "9. Сбрасываем все симуляторы"
+        xcrun simctl shutdown all
+        xcrun simctl delete all
+        
+        echo "10. Создаем новый симулятор"
+        DEVICE_TYPE=$(xcrun simctl list devicetypes | grep iPhone | head -1 | awk -F'[()]' '{print $2}')
+        RUNTIME=$(xcrun simctl list runtimes | grep iOS | head -1 | awk -F'[()]' '{print $2}')
+        NEW_SIM=$(xcrun simctl create "Final Test iPhone" "$DEVICE_TYPE" "$RUNTIME")
+        xcrun simctl boot "$NEW_SIM"
+        echo "simulator_id=$NEW_SIM" >> $GITHUB_ENV
+        
+        echo "11. Пробуем скачать платформы"
+        xcodebuild -downloadPlatform iOS || echo "Скачивание не удалось"
+        
+    - name: Final build attempts
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "=== ФИНАЛЬНЫЕ ПОПЫТКИ КОМПИЛЯЦИИ ==="
+        
+        echo "1. Только scheme"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build || echo "Scheme не сработал"
+        
+        echo ""
+        echo "2. С target"
+        xcodebuild -project ALADDIN.xcodeproj -target ALADDIN build || echo "Target не сработал"
+        
+        echo ""
+        echo "3. С configuration"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -configuration Debug build || echo "Configuration не сработал"
+        
+        echo ""
+        echo "4. С созданным симулятором"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,id=$SIMULATOR_ID" build || echo "Симулятор не сработал"
+        
+        echo ""
+        echo "5. С platform=iOS"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS" build || echo "platform=iOS не сработал"
+        
+        echo ""
+        echo "6. С platform=iOS Simulator"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator" build || echo "platform=iOS Simulator не сработал"
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-build-solution14
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7
