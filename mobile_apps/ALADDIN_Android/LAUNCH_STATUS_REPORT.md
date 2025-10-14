@@ -107,3 +107,4 @@ dyld: Symbol not found: __ZTVNSt3__115basic_stringbufIcNS_11char_traitsIcEENS_9a
 *Статус: Готов к запуску* ✅  
 *APK: Готов* ✅  
 *Конфигурация: Исправлена* ✅
+

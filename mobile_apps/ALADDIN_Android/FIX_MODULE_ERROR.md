@@ -76,3 +76,4 @@ adb shell am start -n family.aladdin.android/.MainActivity
 ---
 *Инструкция создана: 13 октября 2024*  
 *Статус: Готово к исправлению* ✅
+

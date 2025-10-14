@@ -218,3 +218,4 @@ Settings → Developer Options → Animation Scale → OFF
 
 
 
+

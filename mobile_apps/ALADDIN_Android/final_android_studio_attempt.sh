@@ -121,3 +121,4 @@ echo "📦 ГОТОВЫЙ APK:"
 echo "Файл: /Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build/outputs/apk/debug/app-debug.apk"
 echo "Размер: 38MB"
 echo "Можно установить на любое Android устройство!"
+

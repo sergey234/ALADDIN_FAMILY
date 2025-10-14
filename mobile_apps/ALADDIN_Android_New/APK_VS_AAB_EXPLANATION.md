@@ -181,3 +181,4 @@ ALADDIN_Android_New: 83 Kotlin файла
 - ✅ **Готов к Google Play:** да!
 
 **Можете смело загружать AAB в Google Play Console!** 🎯
+

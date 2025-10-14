@@ -443,7 +443,11 @@ struct ParentalControlScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    ParentalControlScreen()
+#if DEBUG
+struct ParentalControlScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        ParentalControlScreen()
+    }
 }
+#endif
 

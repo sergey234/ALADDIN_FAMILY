@@ -31,3 +31,4 @@ echo "4. Выберите 'ALADDIN Debug'"
 echo "5. Убедитесь что Module: ALADDIN_Android_New.app"
 echo ""
 echo "🎯 Теперь Android Studio должен работать!"
+

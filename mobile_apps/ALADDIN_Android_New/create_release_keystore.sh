@@ -94,3 +94,4 @@ echo "1. Откройте Android Studio"
 echo "2. Build → Generate Signed Bundle/APK"
 echo "3. Выберите созданный keystore"
 echo "4. Создайте AAB файл для Google Play"
+

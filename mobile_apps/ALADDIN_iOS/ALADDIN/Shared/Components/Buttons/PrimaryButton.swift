@@ -81,31 +81,35 @@ struct PrimaryButton: View {
 
 // MARK: - Preview
 
-#Preview {
-    VStack(spacing: Spacing.m) {
-        // Обычная кнопка
-        PrimaryButton("Продолжить") {
-            print("Нажато!")
+#if DEBUG
+struct PrimaryButton_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: Spacing.m) {
+            // Обычная кнопка
+            PrimaryButton("Продолжить") {
+                print("Нажато!")
+            }
+            
+            // Кнопка с иконкой
+            PrimaryButton("Подключить VPN", icon: "shield.fill") {
+                print("VPN включается...")
+            }
+            
+            // Кнопка в состоянии загрузки
+            PrimaryButton("Загрузка...", isLoading: true) {
+                // Не выполнится во время загрузки
+            }
+            
+            // Отключённая кнопка
+            PrimaryButton("Недоступно", isDisabled: true) {
+                // Не выполнится
+            }
         }
-        
-        // Кнопка с иконкой
-        PrimaryButton("Подключить VPN", icon: "shield.fill") {
-            print("VPN включается...")
-        }
-        
-        // Кнопка в состоянии загрузки
-        PrimaryButton("Загрузка...", isLoading: true) {
-            // Не выполнится во время загрузки
-        }
-        
-        // Отключённая кнопка
-        PrimaryButton("Недоступно", isDisabled: true) {
-            // Не выполнится
-        }
+        .padding()
+        .background(Color.backgroundDark)
     }
-    .padding()
-    .background(Color.backgroundDark)
 }
+#endif
 
 
 

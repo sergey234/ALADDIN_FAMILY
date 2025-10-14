@@ -193,9 +193,13 @@ struct SupportScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    NotificationsScreen()
+#if DEBUG
+struct SupportScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        SupportScreen()
+    }
 }
+#endif
 
 
 

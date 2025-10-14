@@ -180,3 +180,4 @@ echo ""
 echo "🚀 После открытия проекта в Android Studio:"
 echo "   Run → Edit Configurations → ALADDIN Debug"
 echo "   Убедитесь что Module: ALADDIN_Android_New.app"
+

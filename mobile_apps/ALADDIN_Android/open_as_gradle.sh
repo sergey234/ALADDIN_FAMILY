@@ -21,3 +21,4 @@ echo "   2. Если появится диалог 'Import Gradle Project' - н�
 echo "   3. 'Project Structure' должен стать активным"
 echo "   4. Перейдите в Run → Edit Configurations"
 echo "   5. В поле Module должно появиться: ALADDIN.app"
+

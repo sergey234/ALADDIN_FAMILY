@@ -133,42 +133,46 @@ struct ALADDINNavigationBar: View {
 
 // MARK: - Preview
 
-#Preview {
-    VStack(spacing: 0) {
-        // Главный экран
-        ALADDINNavigationBar(
-            title: "ALADDIN",
-            subtitle: "AI Защита Семьи",
-            rightButtons: [
-                .init(icon: "bell", action: { print("Уведомления") }),
-                .init(icon: "gear", action: { print("Настройки") })
-            ]
-        )
-        
-        Spacer().frame(height: 20)
-        
-        // Экран семьи
-        ALADDINNavigationBar(
-            title: "СЕМЬЯ",
-            subtitle: "4 члена под защитой",
-            leftButton: .init(icon: "chevron.left", action: { print("Назад") }),
-            rightButtons: [
-                .init(icon: "plus", action: { print("Добавить") })
-            ]
-        )
-        
-        Spacer().frame(height: 20)
-        
-        // Экран настроек
-        ALADDINNavigationBar(
-            title: "НАСТРОЙКИ",
-            leftButton: .init(icon: "chevron.left", action: { print("Назад") })
-        )
-        
-        Spacer()
+#if DEBUG
+struct ALADDINNavigationBar_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: 0) {
+            // Главный экран
+            ALADDINNavigationBar(
+                title: "ALADDIN",
+                subtitle: "AI Защита Семьи",
+                rightButtons: [
+                    .init(icon: "bell", action: { print("Уведомления") }),
+                    .init(icon: "gear", action: { print("Настройки") })
+                ]
+            )
+            
+            Spacer().frame(height: 20)
+            
+            // Экран семьи
+            ALADDINNavigationBar(
+                title: "СЕМЬЯ",
+                subtitle: "4 члена под защитой",
+                leftButton: .init(icon: "chevron.left", action: { print("Назад") }),
+                rightButtons: [
+                    .init(icon: "plus", action: { print("Добавить") })
+                ]
+            )
+            
+            Spacer().frame(height: 20)
+            
+            // Экран настроек
+            ALADDINNavigationBar(
+                title: "НАСТРОЙКИ",
+                leftButton: .init(icon: "chevron.left", action: { print("Назад") })
+            )
+            
+            Spacer()
+        }
+        .background(LinearGradient.backgroundGradient)
     }
-    .background(LinearGradient.backgroundGradient)
 }
+#endif
 
 
 

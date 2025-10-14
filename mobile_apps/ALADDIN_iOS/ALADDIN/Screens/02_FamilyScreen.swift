@@ -317,7 +317,11 @@ struct FamilyScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    FamilyScreen()
+#if DEBUG
+struct FamilyScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        FamilyScreen()
+    }
 }
+#endif
 

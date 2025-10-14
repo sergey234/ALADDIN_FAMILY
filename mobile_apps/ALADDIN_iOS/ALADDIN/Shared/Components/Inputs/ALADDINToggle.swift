@@ -116,42 +116,46 @@ struct ALADDINToggle: View {
 
 // MARK: - Preview
 
-#Preview {
-    VStack(spacing: Spacing.m) {
-        // Включено
-        ALADDINToggle(
-            "VPN Защита",
-            subtitle: "Шифрование трафика",
-            icon: "🛡️",
-            isOn: .constant(true)
-        )
-        
-        // Выключено
-        ALADDINToggle(
-            "Блокировка рекламы",
-            subtitle: "Блокирует назойливую рекламу",
-            icon: "🚫",
-            isOn: .constant(false)
-        )
-        
-        // Без иконки
-        ALADDINToggle(
-            "Уведомления",
-            isOn: .constant(true)
-        )
-        
-        // Отключено
-        ALADDINToggle(
-            "Премиум функция",
-            subtitle: "Доступно в Premium",
-            icon: "⭐",
-            isOn: .constant(false),
-            isDisabled: true
-        )
+#if DEBUG
+struct ALADDINToggle_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: Spacing.m) {
+            // Включено
+            ALADDINToggle(
+                "VPN Защита",
+                subtitle: "Шифрование трафика",
+                icon: "🛡️",
+                isOn: .constant(true)
+            )
+            
+            // Выключено
+            ALADDINToggle(
+                "Блокировка рекламы",
+                subtitle: "Блокирует назойливую рекламу",
+                icon: "🚫",
+                isOn: .constant(false)
+            )
+            
+            // Без иконки
+            ALADDINToggle(
+                "Уведомления",
+                isOn: .constant(true)
+            )
+            
+            // Отключено
+            ALADDINToggle(
+                "Премиум функция",
+                subtitle: "Доступно в Premium",
+                icon: "⭐",
+                isOn: .constant(false),
+                isDisabled: true
+            )
+        }
+        .padding()
+        .background(LinearGradient.backgroundGradient)
     }
-    .padding()
-    .background(LinearGradient.backgroundGradient)
 }
+#endif
 
 
 

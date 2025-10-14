@@ -189,3 +189,4 @@ keytool -genkey -v -keystore aladdin-release-key.keystore -alias aladdin -keyalg
 4. ✅ Загрузить в Google Play (1 час)
 
 **Готовы начать?** 🚀
+

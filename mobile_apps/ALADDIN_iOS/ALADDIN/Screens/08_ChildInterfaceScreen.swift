@@ -249,7 +249,11 @@ struct ChildInterfaceScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    ChildInterfaceScreen()
+#if DEBUG
+struct ChildInterfaceScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        ChildInterfaceScreen()
+    }
 }
+#endif
 

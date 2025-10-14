@@ -317,9 +317,13 @@ struct MainScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    MainScreen()
+#if DEBUG
+struct MainScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        MainScreen()
+    }
 }
+#endif
 
 
 

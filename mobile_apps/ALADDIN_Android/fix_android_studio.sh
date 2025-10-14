@@ -145,3 +145,4 @@ echo "   3. В поле Module должно появиться: ALADDIN.app"
 echo "   4. В поле Deploy выберите: Default APK"
 echo "   5. Нажмите Apply и OK"
 echo "   6. Запустите приложение!"
+

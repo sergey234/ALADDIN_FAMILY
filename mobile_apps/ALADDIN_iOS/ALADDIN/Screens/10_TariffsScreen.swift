@@ -295,7 +295,11 @@ struct TariffsScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    TariffsScreen()
+#if DEBUG
+struct TariffsScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        TariffsScreen()
+    }
 }
+#endif
 

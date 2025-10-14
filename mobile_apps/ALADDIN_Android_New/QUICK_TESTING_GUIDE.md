@@ -151,3 +151,4 @@ open web_demo.html
 - ✅ **Google Play Console** - публикация
 
 **Начинайте работать!** 🚀
+

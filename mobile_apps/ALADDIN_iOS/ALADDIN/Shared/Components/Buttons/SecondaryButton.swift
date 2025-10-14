@@ -66,26 +66,30 @@ struct SecondaryButton: View {
 
 // MARK: - Preview
 
-#Preview {
-    VStack(spacing: Spacing.m) {
-        // Обычная кнопка
-        SecondaryButton("Отменить") {
-            print("Отменено")
+#if DEBUG
+struct SecondaryButton_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: Spacing.m) {
+            // Обычная кнопка
+            SecondaryButton("Отменить") {
+                print("Отменено")
+            }
+            
+            // Кнопка с иконкой
+            SecondaryButton("Настройки", icon: "gear") {
+                print("Открыть настройки")
+            }
+            
+            // Отключённая кнопка
+            SecondaryButton("Недоступно", isDisabled: true) {
+                // Не выполнится
+            }
         }
-        
-        // Кнопка с иконкой
-        SecondaryButton("Настройки", icon: "gear") {
-            print("Открыть настройки")
-        }
-        
-        // Отключённая кнопка
-        SecondaryButton("Недоступно", isDisabled: true) {
-            // Не выполнится
-        }
+        .padding()
+        .background(Color.backgroundDark)
     }
-    .padding()
-    .background(Color.backgroundDark)
 }
+#endif
 
 
 

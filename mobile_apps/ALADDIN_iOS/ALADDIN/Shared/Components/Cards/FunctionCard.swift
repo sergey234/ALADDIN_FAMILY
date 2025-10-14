@@ -115,43 +115,47 @@ struct FunctionCard: View {
 
 // MARK: - Preview
 
-#Preview {
-    VStack(spacing: Spacing.m) {
-        // Активная карточка
-        FunctionCard(
-            icon: "👨‍👩‍👧‍👦",
-            title: "СЕМЬЯ",
-            subtitle: "4 члена • Всё под защитой",
-            status: .active
-        ) {
-            print("Открыть семью")
+#if DEBUG
+struct FunctionCard_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: Spacing.m) {
+            // Активная карточка
+            FunctionCard(
+                icon: "👨‍👩‍👧‍👦",
+                title: "СЕМЬЯ",
+                subtitle: "4 члена • Всё под защитой",
+                status: .active
+            ) {
+                print("Открыть семью")
+            }
+            
+            // Предупреждение
+            FunctionCard(
+                icon: "📊",
+                title: "АНАЛИТИКА",
+                subtitle: "47 угроз заблокировано",
+                status: .warning
+            ) {
+                print("Открыть аналитику")
+            }
+            
+            // Нейтральная
+            FunctionCard(
+                icon: "🤖",
+                title: "AI ПОМОЩНИК",
+                subtitle: "Всегда готов помочь",
+                status: .neutral
+            ) {
+                print("Открыть AI")
+            }
         }
-        
-        // Предупреждение
-        FunctionCard(
-            icon: "📊",
-            title: "АНАЛИТИКА",
-            subtitle: "47 угроз заблокировано",
-            status: .warning
-        ) {
-            print("Открыть аналитику")
-        }
-        
-        // Нейтральная
-        FunctionCard(
-            icon: "🤖",
-            title: "AI ПОМОЩНИК",
-            subtitle: "Всегда готов помочь",
-            status: .neutral
-        ) {
-            print("Открыть AI")
-        }
+        .padding()
+        .background(
+            LinearGradient.backgroundGradient
+        )
     }
-    .padding()
-    .background(
-        LinearGradient.backgroundGradient
-    )
 }
+#endif
 
 
 

@@ -218,3 +218,4 @@ cd /Users/sergejhlystov/ALADDIN_NEW/app_store_screenshots
 
 
 
+

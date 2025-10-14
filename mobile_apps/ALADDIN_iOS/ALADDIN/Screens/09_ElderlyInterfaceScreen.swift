@@ -218,9 +218,13 @@ struct ElderlyInterfaceScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    ChildInterfaceScreen()
+#if DEBUG
+struct ElderlyInterfaceScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        ElderlyInterfaceScreen()
+    }
 }
+#endif
 
 
 

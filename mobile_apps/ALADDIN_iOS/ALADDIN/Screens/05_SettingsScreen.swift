@@ -365,9 +365,13 @@ struct SettingsScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    SettingsScreen()
+#if DEBUG
+struct SettingsScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        SettingsScreen()
+    }
 }
+#endif
 
 
 

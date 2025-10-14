@@ -25,3 +25,4 @@ if [ $? -eq 0 ]; then
 else
     echo "❌ Ошибка установки"
 fi
+

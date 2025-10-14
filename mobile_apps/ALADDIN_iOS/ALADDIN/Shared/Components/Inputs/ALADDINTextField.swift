@@ -119,43 +119,47 @@ struct ALADDINTextField: View {
 
 // MARK: - Preview
 
-#Preview {
-    VStack(spacing: Spacing.l) {
-        // Обычное поле
-        ALADDINTextField(
-            "Введите имя",
-            text: .constant(""),
-            icon: "person"
-        )
-        
-        // Email
-        ALADDINTextField(
-            "Email",
-            text: .constant("sergey@aladdin.family"),
-            icon: "envelope",
-            keyboardType: .emailAddress
-        )
-        
-        // Пароль
-        ALADDINTextField(
-            "Пароль",
-            text: .constant("12345678"),
-            icon: "lock",
-            isSecure: true
-        )
-        
-        // С ошибкой
-        ALADDINTextField(
-            "Телефон",
-            text: .constant("123"),
-            icon: "phone",
-            keyboardType: .phonePad,
-            errorMessage: "Введите корректный номер телефона"
-        )
+#if DEBUG
+struct ALADDINTextField_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: Spacing.l) {
+            // Обычное поле
+            ALADDINTextField(
+                "Введите имя",
+                text: .constant(""),
+                icon: "person"
+            )
+            
+            // Email
+            ALADDINTextField(
+                "Email",
+                text: .constant("sergey@aladdin.family"),
+                icon: "envelope",
+                keyboardType: .emailAddress
+            )
+            
+            // Пароль
+            ALADDINTextField(
+                "Пароль",
+                text: .constant("12345678"),
+                icon: "lock",
+                isSecure: true
+            )
+            
+            // С ошибкой
+            ALADDINTextField(
+                "Телефон",
+                text: .constant("123"),
+                icon: "phone",
+                keyboardType: .phonePad,
+                errorMessage: "Введите корректный номер телефона"
+            )
+        }
+        .padding()
+        .background(LinearGradient.backgroundGradient)
     }
-    .padding()
-    .background(LinearGradient.backgroundGradient)
 }
+#endif
 
 
 

@@ -164,40 +164,44 @@ struct ALADDINSlider: View {
 
 // MARK: - Preview
 
-#Preview {
-    VStack(spacing: Spacing.m) {
-        // Уровень защиты
-        ALADDINSlider(
-            "Уровень защиты",
-            subtitle: "От низкого до максимального",
-            icon: "🛡️",
-            value: .constant(75),
-            range: 0...100,
-            unit: "%"
-        )
-        
-        // Возраст ребёнка
-        ALADDINSlider(
-            "Возраст ребёнка",
-            icon: "👶",
-            value: .constant(10),
-            range: 3...18,
-            unit: " лет"
-        )
-        
-        // Время экрана
-        ALADDINSlider(
-            "Лимит времени экрана",
-            subtitle: "Дневное ограничение",
-            icon: "⏰",
-            value: .constant(3),
-            range: 1...12,
-            unit: " ч"
-        )
+#if DEBUG
+struct ALADDINSlider_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: Spacing.m) {
+            // Уровень защиты
+            ALADDINSlider(
+                "Уровень защиты",
+                subtitle: "От низкого до максимального",
+                icon: "🛡️",
+                value: .constant(75),
+                range: 0...100,
+                unit: "%"
+            )
+            
+            // Возраст ребёнка
+            ALADDINSlider(
+                "Возраст ребёнка",
+                icon: "👶",
+                value: .constant(10),
+                range: 3...18,
+                unit: " лет"
+            )
+            
+            // Время экрана
+            ALADDINSlider(
+                "Лимит времени экрана",
+                subtitle: "Дневное ограничение",
+                icon: "⏰",
+                value: .constant(3),
+                range: 1...12,
+                unit: " ч"
+            )
+        }
+        .padding()
+        .background(LinearGradient.backgroundGradient)
     }
-    .padding()
-    .background(LinearGradient.backgroundGradient)
 }
+#endif
 
 
 

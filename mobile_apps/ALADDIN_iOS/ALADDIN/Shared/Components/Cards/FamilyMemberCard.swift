@@ -198,46 +198,50 @@ struct FamilyMemberCard: View {
 
 // MARK: - Preview
 
-#Preview {
-    VStack(spacing: Spacing.m) {
-        // Родитель - защищён
-        FamilyMemberCard(
-            name: "Сергей",
-            role: .parent,
-            avatar: "👨",
-            status: .protected,
-            threatsBlocked: 47
-        ) {
-            print("Открыть профиль Сергея")
+#if DEBUG
+struct FamilyMemberCard_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: Spacing.m) {
+            // Родитель - защищён
+            FamilyMemberCard(
+                name: "Сергей",
+                role: .parent,
+                avatar: "👨",
+                status: .protected,
+                threatsBlocked: 47
+            ) {
+                print("Открыть профиль Сергея")
+            }
+            
+            // Ребёнок - предупреждение
+            FamilyMemberCard(
+                name: "Маша",
+                role: .child,
+                avatar: "👧",
+                status: .warning,
+                threatsBlocked: 23,
+                lastActive: "5 мин назад"
+            ) {
+                print("Открыть профиль Маши")
+            }
+            
+            // Пожилой - оффлайн
+            FamilyMemberCard(
+                name: "Бабушка",
+                role: .elderly,
+                avatar: "👵",
+                status: .offline,
+                threatsBlocked: 12,
+                lastActive: "2 часа назад"
+            ) {
+                print("Открыть профиль Бабушки")
+            }
         }
-        
-        // Ребёнок - предупреждение
-        FamilyMemberCard(
-            name: "Маша",
-            role: .child,
-            avatar: "👧",
-            status: .warning,
-            threatsBlocked: 23,
-            lastActive: "5 мин назад"
-        ) {
-            print("Открыть профиль Маши")
-        }
-        
-        // Пожилой - оффлайн
-        FamilyMemberCard(
-            name: "Бабушка",
-            role: .elderly,
-            avatar: "👵",
-            status: .offline,
-            threatsBlocked: 12,
-            lastActive: "2 часа назад"
-        ) {
-            print("Открыть профиль Бабушки")
-        }
+        .padding()
+        .background(LinearGradient.backgroundGradient)
     }
-    .padding()
-    .background(LinearGradient.backgroundGradient)
 }
+#endif
 
 
 

@@ -122,49 +122,53 @@ struct StatusCard: View {
 
 // MARK: - Preview
 
-#Preview {
-    VStack(spacing: Spacing.m) {
-        // Защищено
-        StatusCard(
-            icon: "shield.fill",
-            title: "VPN Статус",
-            value: "Защищено",
-            status: .protected
-        ) {
-            print("Открыть VPN")
+#if DEBUG
+struct StatusCard_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: Spacing.m) {
+            // Защищено
+            StatusCard(
+                icon: "shield.fill",
+                title: "VPN Статус",
+                value: "Защищено",
+                status: .protected
+            ) {
+                print("Открыть VPN")
+            }
+            
+            // Угроза
+            StatusCard(
+                icon: "exclamationmark.triangle.fill",
+                title: "Угрозы",
+                value: "3 обнаружено",
+                status: .threat
+            ) {
+                print("Показать угрозы")
+            }
+            
+            // Предупреждение
+            StatusCard(
+                icon: "eye.fill",
+                title: "Мошенники",
+                value: "1 подозрительный",
+                status: .warning
+            ) {
+                print("Показать мошенников")
+            }
+            
+            // Нейтральная (без действия)
+            StatusCard(
+                icon: "chart.bar.fill",
+                title: "Статистика",
+                value: "47 угроз за неделю",
+                status: .neutral
+            )
         }
-        
-        // Угроза
-        StatusCard(
-            icon: "exclamationmark.triangle.fill",
-            title: "Угрозы",
-            value: "3 обнаружено",
-            status: .threat
-        ) {
-            print("Показать угрозы")
-        }
-        
-        // Предупреждение
-        StatusCard(
-            icon: "eye.fill",
-            title: "Мошенники",
-            value: "1 подозрительный",
-            status: .warning
-        ) {
-            print("Показать мошенников")
-        }
-        
-        // Нейтральная (без действия)
-        StatusCard(
-            icon: "chart.bar.fill",
-            title: "Статистика",
-            value: "47 угроз за неделю",
-            status: .neutral
-        )
+        .padding()
+        .background(Color.backgroundDark)
     }
-    .padding()
-    .background(Color.backgroundDark)
 }
+#endif
 
 
 

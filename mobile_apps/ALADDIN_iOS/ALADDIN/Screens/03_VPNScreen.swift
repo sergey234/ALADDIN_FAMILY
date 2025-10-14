@@ -325,9 +325,13 @@ struct VPNScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    VPNScreen()
+#if DEBUG
+struct VPNScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        VPNScreen()
+    }
 }
+#endif
 
 
 

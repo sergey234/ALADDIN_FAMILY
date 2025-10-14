@@ -403,9 +403,13 @@ struct AnalyticsScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    AnalyticsScreen()
+#if DEBUG
+struct AnalyticsScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        AnalyticsScreen()
+    }
 }
+#endif
 
 
 

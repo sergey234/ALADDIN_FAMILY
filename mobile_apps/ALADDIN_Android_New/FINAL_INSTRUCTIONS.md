@@ -119,3 +119,4 @@ $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd -n "ALADDIN_Test" -
 **Выберите любой способ выше и запустите приложение ALADDIN!**
 
 Рекомендую начать с **Android Studio** - это самый надежный способ.
+

@@ -59,3 +59,4 @@ echo "📋 Дополнительные команды:"
 echo "   adb logcat | grep -i aladdin  # Просмотр логов"
 echo "   adb shell pm list packages | grep aladdin  # Проверка установки"
 echo "   adb uninstall family.aladdin.android  # Удаление приложения"
+

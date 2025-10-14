@@ -222,7 +222,11 @@ struct OnboardingScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    OnboardingScreen()
+#if DEBUG
+struct OnboardingScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        OnboardingScreen()
+    }
 }
+#endif
 

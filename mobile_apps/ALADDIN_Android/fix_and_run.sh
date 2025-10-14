@@ -90,3 +90,4 @@ echo "📋 Если возникли проблемы:"
 echo "1. Прочитайте FIX_MODULE_ERROR.md"
 echo "2. Проверьте APP_READINESS_REPORT.md"
 echo "3. Запустите Android Studio вручную"
+

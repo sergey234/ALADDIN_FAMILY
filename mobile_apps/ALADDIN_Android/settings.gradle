@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 rootProject.name = "ALADDIN"
 include ':app'
 
+

@@ -188,9 +188,13 @@ struct AIAssistantScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    AIAssistantScreen()
+#if DEBUG
+struct AIAssistantScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        AIAssistantScreen()
+    }
 }
+#endif
 
 
 

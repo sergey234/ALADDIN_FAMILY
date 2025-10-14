@@ -21,3 +21,4 @@ ls -la
 echo ""
 echo "📋 Проверяем Gradle wrapper:"
 ./gradlew --version
+

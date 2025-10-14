@@ -1621,3 +1621,4 @@ Infrastructure:      ~500K ₽
 
 
 
+

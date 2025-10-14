@@ -246,9 +246,13 @@ struct ProfileScreen: View {
 
 // MARK: - Preview
 
-#Preview {
-    ProfileScreen()
+#if DEBUG
+struct ProfileScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        ProfileScreen()
+    }
 }
+#endif
 
 
 

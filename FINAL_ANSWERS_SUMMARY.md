@@ -274,3 +274,4 @@ open /Users/sergejhlystov/ALADDIN_NEW/mobile/wireframes/01_main_screen.html
 
 
 
+

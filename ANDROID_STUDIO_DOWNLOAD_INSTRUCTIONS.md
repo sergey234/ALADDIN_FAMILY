@@ -186,3 +186,4 @@ shasum -a 256 ~/Downloads/android-studio-2023.1.1.28-mac.dmg
 **Статус:** Готово к использованию
 
 
+

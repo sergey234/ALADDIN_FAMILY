@@ -92,3 +92,4 @@ grep -r "compileSdk\|targetSdk\|minSdk" app/build.gradle
 ---
 
 ## 🔍 ПРОВЕРИМ ВАШЕ ПРИЛОЖЕНИЕ СЕЙЧАС
+
