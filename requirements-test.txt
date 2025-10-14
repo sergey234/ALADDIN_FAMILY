@@ -13,7 +13,6 @@ aiohttp>=3.8.0
 
 # Статистика и метрики
 psutil>=5.9.0
-statistics
 
 # Веб-фреймворки
 fastapi>=0.104.0
@@ -21,7 +20,6 @@ uvicorn>=0.24.0
 
 # Данные и сериализация
 pydantic>=2.4.0
-dataclasses
 
 # Логирование и мониторинг
 structlog>=23.1.0
@@ -34,16 +32,9 @@ cryptography>=41.0.0
 
 # Профилирование памяти
 memory-profiler>=0.61.0
-tracemalloc  # Встроенный в Python 3.4+
 
 # Анализ объектов
 objgraph>=3.6.0
 
 # Тестирование производительности
 locust>=2.17.0  # Для дополнительных нагрузочных тестов
-
-# Дополнительные утилиты для тестирования
-weakref  # Встроенный в Python
-hashlib  # Встроенный в Python
-threading  # Встроенный в Python
-collections  # Встроенный в Python
