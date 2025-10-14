@@ -25,19 +25,19 @@ jobs:
         xcrun simctl list devices available | grep iPhone || echo "iPhone симуляторы не найдены"
         echo ""
         echo "=== ПОИСК IPHONE SE (3RD GENERATION) ==="
-        xcrun simctl list devices available | grep "iPhone SE (3rd generation)" || echo "iPhone SE (3rd generation) не найден"
+        xcrun simctl list devices available | grep "F43B6F94-C64F-46BA-8469-0A1C69118839" || echo "iPhone SE 3rd generation не найден"
         
     - name: Find iPhone SE simulator
       id: simulator
       run: |
         echo "=== ПОИСК IPHONE SE (3RD GENERATION) СИМУЛЯТОРА ==="
         SIMULATOR=""
-        if xcrun simctl list devices available | grep -q "iPhone SE (3rd generation)"; then
-          SIMULATOR="iPhone SE (3rd generation)"
+        if xcrun simctl list devices available | grep -q "F43B6F94-C64F-46BA-8469-0A1C69118839"; then
+          SIMULATOR="F43B6F94-C64F-46BA-8469-0A1C69118839"
         elif xcrun simctl list devices available | grep -q "iPhone 16"; then
           SIMULATOR="iPhone 16"
         else
-          echo "❌ iPhone SE (3rd generation) симулятор не найден!"
+          echo "❌ iPhone SE 3rd generation симулятор не найден!"
           echo "Доступные iPhone симуляторы:"
           xcrun simctl list devices available | grep iPhone
           exit 1
@@ -62,7 +62,7 @@ jobs:
         find build/ -name "*.app" -type d || echo ".app файлы не найдены"
         echo ""
         echo "=== ПРОВЕРЯЕМ СОВМЕСТИМОСТЬ С IPHONE 8+ ==="
-        echo "✅ Deployment target: iOS 11.0+" && echo "✅ Поддержка iPhone 8+" && echo "✅ iPhone SE (3rd generation) - 4.7\" экран" && echo "✅ A15 Bionic процессор"
+        echo "✅ Deployment target: iOS 11.0+" && echo "✅ Поддержка iPhone 8+" && echo "✅ iPhone SE 3rd generation - 4.7\" экран" && echo "✅ A15 Bionic процессор"
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
