@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -11,177 +11,18 @@
 		A1000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002 /* ContentView.swift */; };
 		A1000005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000004 /* Assets.xcassets */; };
 		A1000008 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000007 /* Preview Assets.xcassets */; };
-		
-		// Screens
-		A1000010 /* 01_MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000009 /* 01_MainScreen.swift */; };
-		A1000012 /* 02_FamilyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000011 /* 02_FamilyScreen.swift */; };
-		A1000014 /* 03_VPNScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000013 /* 03_VPNScreen.swift */; };
-		A1000016 /* 04_AnalyticsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000015 /* 04_AnalyticsScreen.swift */; };
-		A1000018 /* 05_SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000017 /* 05_SettingsScreen.swift */; };
-		A1000020 /* 06_AIAssistantScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000019 /* 06_AIAssistantScreen.swift */; };
-		A1000022 /* 07_ParentalControlScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000021 /* 07_ParentalControlScreen.swift */; };
-		A1000024 /* 08_NotificationsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000023 /* 08_NotificationsScreen.swift */; };
-		A1000026 /* 09_TariffsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000025 /* 09_TariffsScreen.swift */; };
-		A1000028 /* 10_InfoScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000027 /* 10_InfoScreen.swift */; };
-		A1000030 /* 11_ProfileScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000029 /* 11_ProfileScreen.swift */; };
-		A1000032 /* 12_DevicesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000031 /* 12_DevicesScreen.swift */; };
-		A1000034 /* 13_ReferralScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000033 /* 13_ReferralScreen.swift */; };
-		A1000036 /* 14_ParentalControlScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000035 /* 14_ParentalControlScreen.swift */; };
-		A1000038 /* 15_SupportScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000037 /* 15_SupportScreen.swift */; };
-		A1000040 /* 16_DeviceDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000039 /* 16_DeviceDetailScreen.swift */; };
-		A1000042 /* 17_FamilyChatScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000041 /* 17_FamilyChatScreen.swift */; };
-		A1000044 /* 18_PrivacyPolicyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000043 /* 18_PrivacyPolicyScreen.swift */; };
-		A1000046 /* 19_TermsOfServiceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000045 /* 19_TermsOfServiceScreen.swift */; };
-		A1000048 /* 20_DevicesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000047 /* 20_DevicesScreen.swift */; };
-		A1000050 /* 21_ReferralScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000049 /* 21_ReferralScreen.swift */; };
-		A1000052 /* 22_DeviceDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000051 /* 22_DeviceDetailScreen.swift */; };
-		A1000054 /* 23_FamilyChatScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000053 /* 23_FamilyChatScreen.swift */; };
-		A1000056 /* 24_VPNEnergyStatsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000055 /* 24_VPNEnergyStatsScreen.swift */; };
-		A1000058 /* 25_PaymentQRScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000057 /* 25_PaymentQRScreen.swift */; };
-		A1000060 /* ChildRewardsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000059 /* ChildRewardsScreen.swift */; };
-		A1000062 /* FamilyTournamentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000061 /* FamilyTournamentView.swift */; };
-		A1000064 /* GamesParentalControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000063 /* GamesParentalControlView.swift */; };
-		A1000066 /* MainScreenWithRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000065 /* MainScreenWithRegistration.swift */; };
-		A1000068 /* RewardsModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000067 /* RewardsModalView.swift */; };
-		A1000070 /* RewardsQuickModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000069 /* RewardsQuickModal.swift */; };
-		A1000072 /* UnicornPetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000071 /* UnicornPetView.swift */; };
-		A1000074 /* UnicornUniverseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000073 /* UnicornUniverseView.swift */; };
-		A1000076 /* WheelOfFortuneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000075 /* WheelOfFortuneView.swift */; };
-		
-		// ViewModels
-		A1000078 /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000077 /* MainViewModel.swift */; };
-		A1000080 /* FamilyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000079 /* FamilyViewModel.swift */; };
-		A1000082 /* VPNViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000081 /* VPNViewModel.swift */; };
-		A1000084 /* AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000083 /* AnalyticsViewModel.swift */; };
-		A1000086 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000085 /* SettingsViewModel.swift */; };
-		A1000088 /* ParentalControlViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000087 /* ParentalControlViewModel.swift */; };
-		A1000090 /* AIAssistantViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000089 /* AIAssistantViewModel.swift */; };
-		A1000092 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000091 /* ProfileViewModel.swift */; };
-		A1000094 /* NotificationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000093 /* NotificationsViewModel.swift */; };
-		A1000096 /* ChildInterfaceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000095 /* ChildInterfaceViewModel.swift */; };
-		A1000098 /* ElderlyInterfaceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000097 /* ElderlyInterfaceViewModel.swift */; };
-		A1000100 /* TariffsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000099 /* TariffsViewModel.swift */; };
-		A1000102 /* SupportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000101 /* SupportViewModel.swift */; };
-		A1000104 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000103 /* OnboardingViewModel.swift */; };
-		A1000106 /* FamilyRegistrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000105 /* FamilyRegistrationViewModel.swift */; };
-		A1000108 /* PaymentQRViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000107 /* PaymentQRViewModel.swift */; };
-		
-		// Shared Components
-		A1000110 /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000109 /* PrimaryButton.swift */; };
-		A1000112 /* SecondaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000111 /* SecondaryButton.swift */; };
-		A1000114 /* StatusCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000113 /* StatusCard.swift */; };
-		A1000116 /* FamilyMemberCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000115 /* FamilyMemberCard.swift */; };
-		A1000118 /* ALADDINSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000117 /* ALADDINSlider.swift */; };
-		A1000120 /* ALADDINToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000119 /* ALADDINToggle.swift */; };
-		A1000122 /* ALADDINTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000121 /* ALADDINTextField.swift */; };
-		A1000124 /* ALADDINNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000123 /* ALADDINNavigationBar.swift */; };
-		A1000126 /* ConsentModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000125 /* ConsentModal.swift */; };
-		A1000128 /* RecoveryOptionsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000127 /* RecoveryOptionsModal.swift */; };
-		A1000130 /* RegistrationSuccessModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000129 /* RegistrationSuccessModal.swift */; };
-		A1000132 /* QRScannerModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000131 /* QRScannerModal.swift */; };
-		A1000134 /* Accessibility+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000133 /* Accessibility+Extensions.swift */; };
-		
-		// Core Modules
-		A1000136 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000135 /* AppConfig.swift */; };
-		A1000138 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000137 /* APIService.swift */; };
-		A1000140 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000139 /* NetworkManager.swift */; };
-		A1000142 /* NavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000141 /* NavigationManager.swift */; };
-		A1000144 /* AnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000143 /* AnalyticsManager.swift */; };
-		A1000146 /* LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000145 /* LocalizationManager.swift */; };
-		A1000148 /* AccessibilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000147 /* AccessibilityManager.swift */; };
-		A1000150 /* StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000149 /* StoreManager.swift */; };
-		A1000152 /* APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000151 /* APIModels.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A0FFFFFF /* ALADDIN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ALADDIN.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A0FFFFFE /* ALADDIN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ALADDIN.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1000000 /* ALADDINApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINApp.swift; sourceTree = "<group>"; };
 		A1000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		A1000004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A1000007 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		A1000009 /* 01_MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 01_MainScreen.swift; sourceTree = "<group>"; };
-		A1000011 /* 02_FamilyScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 02_FamilyScreen.swift; sourceTree = "<group>"; };
-		A1000013 /* 03_VPNScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 03_VPNScreen.swift; sourceTree = "<group>"; };
-		A1000015 /* 04_AnalyticsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 04_AnalyticsScreen.swift; sourceTree = "<group>"; };
-		A1000017 /* 05_SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 05_SettingsScreen.swift; sourceTree = "<group>"; };
-		A1000019 /* 06_AIAssistantScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 06_AIAssistantScreen.swift; sourceTree = "<group>"; };
-		A1000021 /* 07_ParentalControlScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 07_ParentalControlScreen.swift; sourceTree = "<group>"; };
-		A1000023 /* 08_NotificationsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 08_NotificationsScreen.swift; sourceTree = "<group>"; };
-		A1000025 /* 09_TariffsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 09_TariffsScreen.swift; sourceTree = "<group>"; };
-		A1000027 /* 10_InfoScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 10_InfoScreen.swift; sourceTree = "<group>"; };
-		A1000029 /* 11_ProfileScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 11_ProfileScreen.swift; sourceTree = "<group>"; };
-		A1000031 /* 12_DevicesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 12_DevicesScreen.swift; sourceTree = "<group>"; };
-		A1000033 /* 13_ReferralScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 13_ReferralScreen.swift; sourceTree = "<group>"; };
-		A1000035 /* 14_ParentalControlScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 14_ParentalControlScreen.swift; sourceTree = "<group>"; };
-		A1000037 /* 15_SupportScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 15_SupportScreen.swift; sourceTree = "<group>"; };
-		A1000039 /* 16_DeviceDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 16_DeviceDetailScreen.swift; sourceTree = "<group>"; };
-		A1000041 /* 17_FamilyChatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 17_FamilyChatScreen.swift; sourceTree = "<group>"; };
-		A1000043 /* 18_PrivacyPolicyScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 18_PrivacyPolicyScreen.swift; sourceTree = "<group>"; };
-		A1000045 /* 19_TermsOfServiceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 19_TermsOfServiceScreen.swift; sourceTree = "<group>"; };
-		A1000047 /* 20_DevicesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 20_DevicesScreen.swift; sourceTree = "<group>"; };
-		A1000049 /* 21_ReferralScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 21_ReferralScreen.swift; sourceTree = "<group>"; };
-		A1000051 /* 22_DeviceDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 22_DeviceDetailScreen.swift; sourceTree = "<group>"; };
-		A1000053 /* 23_FamilyChatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 23_FamilyChatScreen.swift; sourceTree = "<group>"; };
-		A1000055 /* 24_VPNEnergyStatsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 24_VPNEnergyStatsScreen.swift; sourceTree = "<group>"; };
-		A1000057 /* 25_PaymentQRScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 25_PaymentQRScreen.swift; sourceTree = "<group>"; };
-		A1000059 /* ChildRewardsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildRewardsScreen.swift; sourceTree = "<group>"; };
-		A1000061 /* FamilyTournamentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyTournamentView.swift; sourceTree = "<group>"; };
-		A1000063 /* GamesParentalControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesParentalControlView.swift; sourceTree = "<group>"; };
-		A1000065 /* MainScreenWithRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainScreenWithRegistration.swift; sourceTree = "<group>"; };
-		A1000067 /* RewardsModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsModalView.swift; sourceTree = "<group>"; };
-		A1000069 /* RewardsQuickModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsQuickModal.swift; sourceTree = "<group>"; };
-		A1000071 /* UnicornPetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnicornPetView.swift; sourceTree = "<group>"; };
-		A1000073 /* UnicornUniverseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnicornUniverseView.swift; sourceTree = "<group>"; };
-		A1000075 /* WheelOfFortuneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WheelOfFortuneView.swift; sourceTree = "<group>"; };
-		
-		// ViewModels
-		A1000077 /* MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewModel.swift; sourceTree = "<group>"; };
-		A1000079 /* FamilyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyViewModel.swift; sourceTree = "<group>"; };
-		A1000081 /* VPNViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VPNViewModel.swift; sourceTree = "<group>"; };
-		A1000083 /* AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsViewModel.swift; sourceTree = "<group>"; };
-		A1000085 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
-		A1000087 /* ParentalControlViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentalControlViewModel.swift; sourceTree = "<group>"; };
-		A1000089 /* AIAssistantViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantViewModel.swift; sourceTree = "<group>"; };
-		A1000091 /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
-		A1000093 /* NotificationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsViewModel.swift; sourceTree = "<group>"; };
-		A1000095 /* ChildInterfaceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildInterfaceViewModel.swift; sourceTree = "<group>"; };
-		A1000097 /* ElderlyInterfaceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ElderlyInterfaceViewModel.swift; sourceTree = "<group>"; };
-		A1000099 /* TariffsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TariffsViewModel.swift; sourceTree = "<group>"; };
-		A1000101 /* SupportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupportViewModel.swift; sourceTree = "<group>"; };
-		A1000103 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
-		A1000105 /* FamilyRegistrationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyRegistrationViewModel.swift; sourceTree = "<group>"; };
-		A1000107 /* PaymentQRViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentQRViewModel.swift; sourceTree = "<group>"; };
-		
-		// Shared Components
-		A1000109 /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
-		A1000111 /* SecondaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecondaryButton.swift; sourceTree = "<group>"; };
-		A1000113 /* StatusCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusCard.swift; sourceTree = "<group>"; };
-		A1000115 /* FamilyMemberCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyMemberCard.swift; sourceTree = "<group>"; };
-		A1000117 /* ALADDINSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINSlider.swift; sourceTree = "<group>"; };
-		A1000119 /* ALADDINToggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINToggle.swift; sourceTree = "<group>"; };
-		A1000121 /* ALADDINTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINTextField.swift; sourceTree = "<group>"; };
-		A1000123 /* ALADDINNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINNavigationBar.swift; sourceTree = "<group>"; };
-		A1000125 /* ConsentModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/Components/Modals/ConsentModal.swift"; sourceTree = "<group>"; };
-		A1000127 /* RecoveryOptionsModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/Components/Modals/RecoveryOptionsModal.swift"; sourceTree = "<group>"; };
-		A1000129 /* RegistrationSuccessModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/Components/Modals/RegistrationSuccessModal.swift"; sourceTree = "<group>"; };
-		A1000131 /* QRScannerModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/Components/Modals/QRScannerModal.swift"; sourceTree = "<group>"; };
-		A1000133 /* Accessibility+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Accessibility+Extensions.swift"; sourceTree = "<group>"; };
-		
-		// Core Modules
-		A1000135 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
-		A1000137 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
-		A1000139 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
-		A1000141 /* NavigationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationManager.swift; sourceTree = "<group>"; };
-		A1000143 /* AnalyticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsManager.swift; sourceTree = "<group>"; };
-		A1000145 /* LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManager.swift; sourceTree = "<group>"; };
-		A1000147 /* AccessibilityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityManager.swift; sourceTree = "<group>"; };
-		A1000149 /* StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreManager.swift; sourceTree = "<group>"; };
-		A1000151 /* APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIModels.swift; sourceTree = "<group>"; };
-		A1000153 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		A0FFFFFE /* Frameworks */ = {
+		A0FFFFFB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -191,11 +32,11 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A0FFFFF8 = {
+		A0FFFFF5 = {
 			isa = PBXGroup;
 			children = (
 				A0FFFFFF /* ALADDIN */,
-				A100000A /* Products */,
+				A0FFFFFE /* ALADDIN.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -205,12 +46,7 @@
 				A1000000 /* ALADDINApp.swift */,
 				A1000002 /* ContentView.swift */,
 				A1000004 /* Assets.xcassets */,
-				A1000153 /* Info.plist */,
 				A1000006 /* Preview Content */,
-				A1000154 /* Screens */,
-				A1000155 /* ViewModels */,
-				A1000156 /* Shared */,
-				A1000157 /* Core */,
 			);
 			path = ALADDIN;
 			sourceTree = "<group>";
@@ -223,114 +59,6 @@
 			path = "Preview Content";
 			sourceTree = "<group>";
 		};
-		A100000A /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				A0FFFFFF /* ALADDIN.app */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		A1000154 /* Screens */ = {
-			isa = PBXGroup;
-			children = (
-				A1000009 /* 01_MainScreen.swift */,
-				A1000011 /* 02_FamilyScreen.swift */,
-				A1000013 /* 03_VPNScreen.swift */,
-				A1000015 /* 04_AnalyticsScreen.swift */,
-				A1000017 /* 05_SettingsScreen.swift */,
-				A1000019 /* 06_AIAssistantScreen.swift */,
-				A1000021 /* 07_ParentalControlScreen.swift */,
-				A1000023 /* 08_NotificationsScreen.swift */,
-				A1000025 /* 09_TariffsScreen.swift */,
-				A1000027 /* 10_InfoScreen.swift */,
-				A1000029 /* 11_ProfileScreen.swift */,
-				A1000031 /* 12_DevicesScreen.swift */,
-				A1000033 /* 13_ReferralScreen.swift */,
-				A1000035 /* 14_ParentalControlScreen.swift */,
-				A1000037 /* 15_SupportScreen.swift */,
-				A1000039 /* 16_DeviceDetailScreen.swift */,
-				A1000041 /* 17_FamilyChatScreen.swift */,
-				A1000043 /* 18_PrivacyPolicyScreen.swift */,
-				A1000045 /* 19_TermsOfServiceScreen.swift */,
-				A1000047 /* 20_DevicesScreen.swift */,
-				A1000049 /* 21_ReferralScreen.swift */,
-				A1000051 /* 22_DeviceDetailScreen.swift */,
-				A1000053 /* 23_FamilyChatScreen.swift */,
-				A1000055 /* 24_VPNEnergyStatsScreen.swift */,
-				A1000057 /* 25_PaymentQRScreen.swift */,
-				A1000059 /* ChildRewardsScreen.swift */,
-				A1000061 /* FamilyTournamentView.swift */,
-				A1000063 /* GamesParentalControlView.swift */,
-				A1000065 /* MainScreenWithRegistration.swift */,
-				A1000067 /* RewardsModalView.swift */,
-				A1000069 /* RewardsQuickModal.swift */,
-				A1000071 /* UnicornPetView.swift */,
-				A1000073 /* UnicornUniverseView.swift */,
-				A1000075 /* WheelOfFortuneView.swift */,
-			);
-			path = Screens;
-			sourceTree = "<group>";
-		};
-		A1000155 /* ViewModels */ = {
-			isa = PBXGroup;
-			children = (
-				A1000077 /* MainViewModel.swift */,
-				A1000079 /* FamilyViewModel.swift */,
-				A1000081 /* VPNViewModel.swift */,
-				A1000083 /* AnalyticsViewModel.swift */,
-				A1000085 /* SettingsViewModel.swift */,
-				A1000087 /* ParentalControlViewModel.swift */,
-				A1000089 /* AIAssistantViewModel.swift */,
-				A1000091 /* ProfileViewModel.swift */,
-				A1000093 /* NotificationsViewModel.swift */,
-				A1000095 /* ChildInterfaceViewModel.swift */,
-				A1000097 /* ElderlyInterfaceViewModel.swift */,
-				A1000099 /* TariffsViewModel.swift */,
-				A1000101 /* SupportViewModel.swift */,
-				A1000103 /* OnboardingViewModel.swift */,
-				A1000105 /* FamilyRegistrationViewModel.swift */,
-				A1000107 /* PaymentQRViewModel.swift */,
-			);
-			path = ViewModels;
-			sourceTree = "<group>";
-		};
-		A1000156 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				A1000109 /* PrimaryButton.swift */,
-				A1000111 /* SecondaryButton.swift */,
-				A1000113 /* StatusCard.swift */,
-				A1000115 /* FamilyMemberCard.swift */,
-				A1000117 /* ALADDINSlider.swift */,
-				A1000119 /* ALADDINToggle.swift */,
-				A1000121 /* ALADDINTextField.swift */,
-				A1000123 /* ALADDINNavigationBar.swift */,
-				A1000125 /* ConsentModal.swift */,
-				A1000127 /* RecoveryOptionsModal.swift */,
-				A1000129 /* RegistrationSuccessModal.swift */,
-				A1000131 /* QRScannerModal.swift */,
-				A1000133 /* Accessibility+Extensions.swift */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		A1000157 /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				A1000135 /* AppConfig.swift */,
-				A1000137 /* APIService.swift */,
-				A1000139 /* NetworkManager.swift */,
-				A1000141 /* NavigationManager.swift */,
-				A1000143 /* AnalyticsManager.swift */,
-				A1000145 /* LocalizationManager.swift */,
-				A1000147 /* AccessibilityManager.swift */,
-				A1000149 /* StoreManager.swift */,
-				A1000151 /* APIModels.swift */,
-			);
-			path = Core;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -339,8 +67,8 @@
 			buildConfigurationList = A100000D /* Build configuration list for PBXNativeTarget "ALADDIN" */;
 			buildPhases = (
 				A0FFFFFA /* Sources */,
-				A0FFFFFE /* Frameworks */,
-				A0FFFFFF /* Resources */,
+				A0FFFFFB /* Frameworks */,
+				A0FFFFFC /* Resources */,
 			);
 			buildRules = (
 			);
@@ -348,34 +76,34 @@
 			);
 			name = ALADDIN;
 			productName = ALADDIN;
-			productReference = A0FFFFFF /* ALADDIN.app */;
+			productReference = A0FFFFFE /* ALADDIN.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		A0FFFFF9 /* Project object */ = {
+		A0FFFFF6 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1500;
-				LastUpgradeCheck = 1500;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					A0FFFFFD = {
-						CreatedOnToolsVersion = 15.0;
+						CreatedOnToolsVersion = 16.0;
 					};
 				};
 			};
-			buildConfigurationList = A0FFFFFC /* Build configuration list for PBXProject "ALADDIN" */;
-			compatibilityVersion = "Xcode 14.0";
+			buildConfigurationList = A0FFFFF9 /* Build configuration list for PBXProject "ALADDIN" */;
+			compatibilityVersion = "Xcode 16.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = A0FFFFF8;
-			productRefGroup = A100000A /* Products */;
+			mainGroup = A0FFFFF5;
+			productRefGroup = A0FFFFFE /* ALADDIN.app */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -385,7 +113,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		A0FFFFFF /* Resources */ = {
+		A0FFFFFC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -403,78 +131,6 @@
 			files = (
 				A1000003 /* ContentView.swift in Sources */,
 				A1000001 /* ALADDINApp.swift in Sources */,
-				A1000010 /* 01_MainScreen.swift in Sources */,
-				A1000012 /* 02_FamilyScreen.swift in Sources */,
-				A1000014 /* 03_VPNScreen.swift in Sources */,
-				A1000016 /* 04_AnalyticsScreen.swift in Sources */,
-				A1000018 /* 05_SettingsScreen.swift in Sources */,
-				A1000020 /* 06_AIAssistantScreen.swift in Sources */,
-				A1000022 /* 07_ParentalControlScreen.swift in Sources */,
-				A1000024 /* 08_NotificationsScreen.swift in Sources */,
-				A1000026 /* 09_TariffsScreen.swift in Sources */,
-				A1000028 /* 10_InfoScreen.swift in Sources */,
-				A1000030 /* 11_ProfileScreen.swift in Sources */,
-				A1000032 /* 12_DevicesScreen.swift in Sources */,
-				A1000034 /* 13_ReferralScreen.swift in Sources */,
-				A1000036 /* 14_ParentalControlScreen.swift in Sources */,
-				A1000038 /* 15_SupportScreen.swift in Sources */,
-				A1000040 /* 16_DeviceDetailScreen.swift in Sources */,
-				A1000042 /* 17_FamilyChatScreen.swift in Sources */,
-				A1000044 /* 18_PrivacyPolicyScreen.swift in Sources */,
-				A1000046 /* 19_TermsOfServiceScreen.swift in Sources */,
-				A1000048 /* 20_DevicesScreen.swift in Sources */,
-				A1000050 /* 21_ReferralScreen.swift in Sources */,
-				A1000052 /* 22_DeviceDetailScreen.swift in Sources */,
-				A1000054 /* 23_FamilyChatScreen.swift in Sources */,
-				A1000056 /* 24_VPNEnergyStatsScreen.swift in Sources */,
-				A1000058 /* 25_PaymentQRScreen.swift in Sources */,
-				A1000060 /* ChildRewardsScreen.swift in Sources */,
-				A1000062 /* FamilyTournamentView.swift in Sources */,
-				A1000064 /* GamesParentalControlView.swift in Sources */,
-				A1000066 /* MainScreenWithRegistration.swift in Sources */,
-				A1000068 /* RewardsModalView.swift in Sources */,
-				A1000070 /* RewardsQuickModal.swift in Sources */,
-				A1000072 /* UnicornPetView.swift in Sources */,
-				A1000074 /* UnicornUniverseView.swift in Sources */,
-				A1000076 /* WheelOfFortuneView.swift in Sources */,
-				A1000078 /* MainViewModel.swift in Sources */,
-				A1000080 /* FamilyViewModel.swift in Sources */,
-				A1000082 /* VPNViewModel.swift in Sources */,
-				A1000084 /* AnalyticsViewModel.swift in Sources */,
-				A1000086 /* SettingsViewModel.swift in Sources */,
-				A1000088 /* ParentalControlViewModel.swift in Sources */,
-				A1000090 /* AIAssistantViewModel.swift in Sources */,
-				A1000092 /* ProfileViewModel.swift in Sources */,
-				A1000094 /* NotificationsViewModel.swift in Sources */,
-				A1000096 /* ChildInterfaceViewModel.swift in Sources */,
-				A1000098 /* ElderlyInterfaceViewModel.swift in Sources */,
-				A1000100 /* TariffsViewModel.swift in Sources */,
-				A1000102 /* SupportViewModel.swift in Sources */,
-				A1000104 /* OnboardingViewModel.swift in Sources */,
-				A1000106 /* FamilyRegistrationViewModel.swift in Sources */,
-				A1000108 /* PaymentQRViewModel.swift in Sources */,
-				A1000110 /* PrimaryButton.swift in Sources */,
-				A1000112 /* SecondaryButton.swift in Sources */,
-				A1000114 /* StatusCard.swift in Sources */,
-				A1000116 /* FamilyMemberCard.swift in Sources */,
-				A1000118 /* ALADDINSlider.swift in Sources */,
-				A1000120 /* ALADDINToggle.swift in Sources */,
-				A1000122 /* ALADDINTextField.swift in Sources */,
-				A1000124 /* ALADDINNavigationBar.swift in Sources */,
-				A1000126 /* ConsentModal.swift in Sources */,
-				A1000128 /* RecoveryOptionsModal.swift in Sources */,
-				A1000130 /* RegistrationSuccessModal.swift in Sources */,
-				A1000132 /* QRScannerModal.swift in Sources */,
-				A1000134 /* Accessibility+Extensions.swift in Sources */,
-				A1000136 /* AppConfig.swift in Sources */,
-				A1000138 /* APIService.swift in Sources */,
-				A1000140 /* NetworkManager.swift in Sources */,
-				A1000142 /* NavigationManager.swift in Sources */,
-				A1000144 /* AnalyticsManager.swift in Sources */,
-				A1000146 /* LocalizationManager.swift in Sources */,
-				A1000148 /* AccessibilityManager.swift in Sources */,
-				A1000150 /* StoreManager.swift in Sources */,
-				A1000152 /* APIModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -609,9 +265,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ALADDIN/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDIN/Info.plist;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -638,9 +293,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ALADDIN/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDIN/Info.plist;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -661,7 +315,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A0FFFFFC /* Build configuration list for PBXProject "ALADDIN" */ = {
+		A0FFFFF9 /* Build configuration list for PBXProject "ALADDIN" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A100000B /* Debug */,
@@ -681,5 +335,5 @@
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = A0FFFFF9 /* Project object */;
+	rootObject = A0FFFFF6 /* Project object */;
 }
