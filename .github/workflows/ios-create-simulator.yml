@@ -71,10 +71,10 @@ jobs:
         
         if [ "${{ steps.simulator.outputs.simulator }}" = "generic" ]; then
           echo "Используем generic destination"
-          xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "generic/platform=iOS Simulator" build
+          xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator" build
         else
           echo "Используем симулятор: ${{ steps.simulator.outputs.simulator }}"
-          xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=${{ steps.simulator.outputs.simulator }}" build
+          xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator" build
         fi
         
         echo "=== ПРОВЕРЯЕМ BUILD ПАПКУ ==="
