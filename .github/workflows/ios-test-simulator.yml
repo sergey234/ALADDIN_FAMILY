@@ -28,7 +28,7 @@ jobs:
       run: |
         cd mobile_apps/ALADDIN_iOS
         echo "=== КОМПИЛИРУЕМ ПРИЛОЖЕНИЕ ==="
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 15' build
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS Simulator' build
         
         echo "=== ЗАПУСКАЕМ НА СИМУЛЯТОРЕ ==="
         xcrun simctl boot "iPhone 15" || echo "Симулятор уже запущен"
