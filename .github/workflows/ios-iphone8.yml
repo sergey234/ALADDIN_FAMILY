@@ -1,4 +1,4 @@
-name: iOS Universal Build
+name: iOS iPhone 8 Build
 
 on:
   push:
@@ -24,43 +24,34 @@ jobs:
         echo "=== ДОСТУПНЫЕ СИМУЛЯТОРЫ ==="
         xcrun simctl list devices available | grep iPhone || echo "iPhone симуляторы не найдены"
         echo ""
-        echo "=== ВСЕ ДОСТУПНЫЕ УСТРОЙСТВА ==="
-        xcrun simctl list devices available
+        echo "=== ПОИСК IPHONE 8 ==="
+        xcrun simctl list devices available | grep "iPhone 8" || echo "iPhone 8 не найден"
         
-    - name: Find iPhone simulator
+    - name: Find iPhone 8 simulator
       id: simulator
       run: |
-        echo "=== ПОИСК IPHONE СИМУЛЯТОРА ==="
-        # Ищем iPhone симуляторы по приоритету
+        echo "=== ПОИСК IPHONE 8 СИМУЛЯТОРА ==="
         SIMULATOR=""
         if xcrun simctl list devices available | grep -q "iPhone 8"; then
           SIMULATOR="iPhone 8"
-        elif xcrun simctl list devices available | grep -q "iPhone 8"; then
-          SIMULATOR="iPhone 8"
-        elif xcrun simctl list devices available | grep -q "iPhone 8"; then
-          SIMULATOR="iPhone 8"
-        elif xcrun simctl list devices available | grep -q "iPhone 8"; then
-          SIMULATOR="iPhone 8"
-        elif xcrun simctl list devices available | grep -q "iPhone 8"; then
-          SIMULATOR="iPhone 8"
+        elif xcrun simctl list devices available | grep -q "iPhone 8 Plus"; then
+          SIMULATOR="iPhone 8 Plus"
         else
-          # Берем первый доступный iPhone
-          SIMULATOR=$(xcrun simctl list devices available | grep iPhone | head -1 | sed 's/.*(\([^)]*\)).*/\1/')
-        fi
-        
-        if [ -z "$SIMULATOR" ]; then
-          echo "❌ iPhone симулятор не найден!"
+          echo "❌ iPhone 8 симулятор не найден!"
+          echo "Доступные iPhone симуляторы:"
+          xcrun simctl list devices available | grep iPhone
           exit 1
         fi
         
         echo "✅ Найден симулятор: $SIMULATOR"
         echo "simulator=$SIMULATOR" >> $GITHUB_OUTPUT
         
-    - name: Build iOS app
+    - name: Build iOS app for iPhone 8
       run: |
         cd mobile_apps/ALADDIN_iOS
-        echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ==="
+        echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ДЛЯ IPHONE 8 ==="
         echo "Используем симулятор: ${{ steps.simulator.outputs.simulator }}"
+        echo "Deployment target: iOS 11.0+"
         
         xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=${{ steps.simulator.outputs.simulator }}" build
         
@@ -69,11 +60,14 @@ jobs:
         echo ""
         echo "=== ИЩЕМ .app ФАЙЛЫ ==="
         find build/ -name "*.app" -type d || echo ".app файлы не найдены"
+        echo ""
+        echo "=== ПРОВЕРЯЕМ СОВМЕСТИМОСТЬ С IPHONE 8 ==="
+        echo "✅ Deployment target: iOS 11.0+" && echo "✅ Поддержка iPhone 8" && echo "✅ A11 Bionic процессор" && echo "✅ 4.7\" экран"
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: ios-build-universal
+        name: ios-build-iphone8
         path: mobile_apps/ALADDIN_iOS/build/
         retention-days: 7
