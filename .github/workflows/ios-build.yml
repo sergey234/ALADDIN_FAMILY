@@ -20,6 +20,7 @@ jobs:
       uses: maxim-lobanov/setup-xcode@v1
       with:
         xcode-version: '15.0'
+        xcode-select-path: '/Applications/Xcode_15.0.app/Contents/Developer'
         
     - name: Cache Swift packages
       uses: actions/cache@v4
