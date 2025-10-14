@@ -3,7 +3,7 @@ name: iOS Solution 2 - Create Simulator
 on:
   push:
     branches: [ main ]
-    paths: [ 'mobile_apps/ALADDIN_iOS/**' ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/trigger_solution2.txt' ]
 
 jobs:
   build-ios:
@@ -19,66 +19,32 @@ jobs:
       with:
         xcode-version: '16.0.0'
         
-    - name: List available simulators
+    - name: Create and boot simulator
       run: |
-        echo "=== ДОСТУПНЫЕ СИМУЛЯТОРЫ ДО СОЗДАНИЯ ==="
-        xcrun simctl list devices available | grep iPhone || echo "iPhone симуляторы не найдены"
-        echo ""
-        echo "=== ДОСТУПНЫЕ ТИПЫ УСТРОЙСТВ ==="
-        xcrun simctl list devicetypes | grep iPhone | head -5
+        echo "=== СОЗДАЕМ НОВЫЙ СИМУЛЯТОР ==="
         
-    - name: Create iPhone 15 simulator
-      id: create_simulator
-      run: |
-        echo "=== СОЗДАЕМ IPHONE 15 СИМУЛЯТОР ==="
-        # Создаем новый симулятор
-        SIMULATOR_ID=$(xcrun simctl create "iPhone 15 Test" "iPhone 15" "iOS-17-0" || echo "ERROR")
+        # Получаем доступные типы устройств
+        DEVICE_TYPE=$(xcrun simctl list devicetypes | grep iPhone | head -1 | awk -F'[()]' '{print $2}')
+        echo "Тип устройства: $DEVICE_TYPE"
         
-        if [ "$SIMULATOR_ID" = "ERROR" ]; then
-          echo "❌ Не удалось создать симулятор с iOS-17-0"
-          echo "Пробуем iOS-16-0..."
-          SIMULATOR_ID=$(xcrun simctl create "iPhone 15 Test" "iPhone 15" "iOS-16-0" || echo "ERROR")
-        fi
+        # Получаем доступные runtime
+        RUNTIME=$(xcrun simctl list runtimes | grep iOS | head -1 | awk -F'[()]' '{print $2}')
+        echo "Runtime: $RUNTIME"
         
-        if [ "$SIMULATOR_ID" = "ERROR" ]; then
-          echo "❌ Не удалось создать симулятор с iOS-16-0"
-          echo "Пробуем без указания версии..."
-          SIMULATOR_ID=$(xcrun simctl create "iPhone 15 Test" "iPhone 15" || echo "ERROR")
-        fi
+        # Создаем симулятор
+        SIMULATOR_ID=$(xcrun simctl create "iPhone Test" "$DEVICE_TYPE" "$RUNTIME")
+        echo "Создан симулятор: $SIMULATOR_ID"
+        echo "simulator_id=$SIMULATOR_ID" >> $GITHUB_ENV
         
-        if [ "$SIMULATOR_ID" = "ERROR" ]; then
-          echo "❌ Не удалось создать симулятор"
-          echo "Используем generic destination"
-          echo "simulator_id=generic" >> $GITHUB_OUTPUT
-        else
-          echo "✅ Создан симулятор: $SIMULATOR_ID"
-          echo "simulator_id=$SIMULATOR_ID" >> $GITHUB_OUTPUT
-        fi
+        # Запускаем симулятор
+        xcrun simctl boot "$SIMULATOR_ID"
+        echo "Симулятор запущен"
         
-    - name: Boot created simulator
-      if: steps.create_simulator.outputs.simulator_id != 'generic'
-      run: |
-        echo "=== ЗАПУСКАЕМ СОЗДАННЫЙ СИМУЛЯТОР ==="
-        xcrun simctl boot "${{ steps.create_simulator.outputs.simulator_id }}" || echo "Симулятор уже запущен"
-        
-    - name: Build iOS app
+    - name: Build on created simulator
       run: |
         cd mobile_apps/ALADDIN_iOS
-        echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ==="
-        
-        if [ "${{ steps.create_simulator.outputs.simulator_id }}" = "generic" ]; then
-          echo "Используем generic destination"
-          xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS Simulator' build
-        else
-          echo "Используем созданный симулятор: ${{ steps.create_simulator.outputs.simulator_id }}"
-          xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,id=${{ steps.create_simulator.outputs.simulator_id }}" build
-        fi
-        
-        echo "=== ПРОВЕРЯЕМ BUILD ПАПКУ ==="
-        ls -la build/ || echo "build папка не найдена"
-        echo ""
-        echo "=== ИЩЕМ .app ФАЙЛЫ ==="
-        find build/ -name "*.app" -type d || echo ".app файлы не найдены"
+        echo "=== КОМПИЛИРУЕМ НА СОЗДАННОМ СИМУЛЯТОРЕ ==="
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,id=$SIMULATOR_ID" build
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
