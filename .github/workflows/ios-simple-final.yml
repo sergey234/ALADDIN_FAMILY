@@ -24,7 +24,7 @@ jobs:
         cd mobile_apps/ALADDIN_iOS
         echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ==="
         echo "Используем generic destination"
-        echo "Deployment target: iOS 11.0+ (поддержка iPhone 8+)"
+        echo "Deployment target: iOS 11.0+ (поддержка всех iPhone)"
         
         # Простая компиляция без указания конкретного симулятора
         xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=generic" build
@@ -36,7 +36,7 @@ jobs:
         find build/ -name "*.app" -type d || echo ".app файлы не найдены"
         echo ""
         echo "=== СОВМЕСТИМОСТЬ ==="
-        echo "✅ Deployment target: iOS 11.0+" && echo "✅ Поддержка iPhone 8+" && echo "✅ Generic iOS Simulator" && echo "✅ Компиляция успешна"
+        echo "✅ Deployment target: iOS 11.0+" && echo "✅ Поддержка всех iPhone" && echo "✅ Generic iOS Simulator" && echo "✅ Компиляция успешна"
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4

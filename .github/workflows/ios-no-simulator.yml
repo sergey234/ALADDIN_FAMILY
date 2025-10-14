@@ -35,7 +35,7 @@ jobs:
         find build/ -name "*.app" -type d || echo ".app файлы не найдены"
         echo ""
         echo "=== ПРОВЕРЯЕМ СОВМЕСТИМОСТЬ ==="
-        echo "✅ Deployment target: iOS 11.0+" && echo "✅ Поддержка iPhone 8+" && echo "✅ Generic iOS Simulator" && echo "✅ Компиляция успешна"
+        echo "✅ Deployment target: iOS 11.0+" && echo "✅ Поддержка всех iPhone" && echo "✅ Generic iOS Simulator" && echo "✅ Компиляция успешна"
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4

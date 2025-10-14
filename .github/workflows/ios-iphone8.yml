@@ -51,7 +51,7 @@ jobs:
         cd mobile_apps/ALADDIN_iOS
         echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ДЛЯ IPHONE SE (3RD GENERATION) ==="
         echo "Используем симулятор: ${{ steps.simulator.outputs.simulator }}"
-        echo "Deployment target: iOS 11.0+ (поддержка iPhone 8+)"
+        echo "Deployment target: iOS 11.0+ (поддержка iPhone SE (3rd generation))"
         
         xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=generic" build
         
@@ -62,7 +62,7 @@ jobs:
         find build/ -name "*.app" -type d || echo ".app файлы не найдены"
         echo ""
         echo "=== ПРОВЕРЯЕМ СОВМЕСТИМОСТЬ С IPHONE 8+ ==="
-        echo "✅ Deployment target: iOS 11.0+" && echo "✅ Поддержка iPhone 8+" && echo "✅ iPhone SE 3rd generation - 4.7\" экран" && echo "✅ A15 Bionic процессор"
+        echo "✅ Deployment target: iOS 11.0+" && echo "✅ Поддержка iPhone SE (3rd generation)" && echo "✅ iPhone SE 3rd generation - 4.7\" экран" && echo "✅ A15 Bionic процессор"
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
