@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>ALADDIN Family</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>Default Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>AccentColor</string>
+		<key>UIImageName</key>
+		<string>LaunchImage</string>
+	</dict>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>ALADDIN Family needs camera access for security features and face recognition.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ALADDIN Family needs microphone access for voice analysis and security features.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>ALADDIN Family needs location access for family safety and emergency features.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>ALADDIN Family needs location access for family safety and emergency features.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>ALADDIN Family uses Face ID for secure authentication and family member identification.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>ALADDIN Family needs contacts access to help manage family member information securely.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ALADDIN Family needs photo library access for secure family photo management and analysis.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>ALADDIN Family needs photo library access to save family security photos.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>ALADDIN Family uses motion data for security analysis and family safety monitoring.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>ALADDIN Family uses Bluetooth for device security and family member proximity detection.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>ALADDIN Family uses Bluetooth for device security and family member proximity detection.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>ALADDIN Family needs local network access for family device communication and security.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>ALADDIN Family uses tracking for family safety and security monitoring.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>ALADDIN Family needs health data access for family wellness monitoring and safety.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>ALADDIN Family needs health data access for family wellness monitoring and safety.</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>ALADDIN Family needs music access for family entertainment and safety features.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>ALADDIN Family needs reminders access for family safety and security alerts.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>ALADDIN Family needs calendar access for family safety and security scheduling.</string>
+	<key>NSHomeKitUsageDescription</key>
+	<string>ALADDIN Family needs HomeKit access for smart home security and family safety.</string>
+	<key>NSSiriUsageDescription</key>
+	<string>ALADDIN Family uses Siri for voice-activated family safety and security features.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>ALADDIN Family needs notification access for family safety and security alerts.</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>family.aladdin.ios.activity.security</string>
+		<string>family.aladdin.ios.activity.family</string>
+		<string>family.aladdin.ios.activity.emergency</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>background-processing</string>
+		<string>background-fetch</string>
+		<string>remote-notification</string>
+		<string>location</string>
+	</array>
+	<key>UISupportsDocumentBrowser</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleDefault</string>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+	<key>UIRequiresFullScreen</key>
+	<true/>
+	<key>UIUserInterfaceStyle</key>
+	<string>Automatic</string>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UISupportsMultipleWindows</key>
+	<true/>
+	<key>UIApplicationSupportsMultipleScenes</key>
+	<true/>
+	<key>UISceneDelegate</key>
+	<dict>
+		<key>UISceneConfigurationName</key>
+		<string>Default Configuration</string>
+		<key>UISceneDelegateClassName</key>
+		<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
+	</dict>
+</dict>
+</plist>
