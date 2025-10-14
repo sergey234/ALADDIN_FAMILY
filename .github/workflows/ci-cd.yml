@@ -23,7 +23,7 @@ on:
         - sfm
 
 env:
-  PYTHON_VERSION: '3.9'
+  PYTHON_VERSION: '3.10'
   NODE_VERSION: '18'
   DASHBOARD_PORT: 8080
   SFM_PORT: 8011
