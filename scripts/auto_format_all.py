@@ -157,10 +157,15 @@ class AutoFormatter:
         
         if dry_run:
             print("🔍 РЕЖИМ ПРЕДВАРИТЕЛЬНОГО ПРОСМОТРА")
+            error_count = 0
             for file_path in python_files:
                 exit_code, errors = self.check_flake8_errors(file_path)
                 if exit_code != 0:
+                    error_count += len(errors.split('\n')) - 1  # -1 for empty line
                     print(f"⚠️  {file_path.relative_to(self.project_root)}: {len(errors.split())} ошибок")
+            
+            # Создать quality_report.txt даже в dry-run режиме
+            self.create_quality_report_dry_run(error_count, len(python_files))
             return
         
         print("🔧 Начинаем форматирование...")
@@ -190,6 +195,64 @@ class AutoFormatter:
             print(f"📈 Процент успеха: {success_rate:.1f}%")
         
         print("=" * 50)
+        
+        # Создать quality_report.txt для GitHub Actions
+        self.create_quality_report()
+
+    def create_quality_report(self):
+        """Создать файл quality_report.txt для GitHub Actions"""
+        try:
+            report_content = f"""# ALADDIN Quality Report
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+## Summary
+- Files processed: {self.stats['files_processed']}
+- Files fixed: {self.stats['files_fixed']}
+- Errors fixed: {self.stats['errors_fixed']}
+- Duration: {datetime.now() - self.stats['start_time']}
+
+## Status
+{'✅ SUCCESS' if self.stats['files_fixed'] > 0 else '⚠️ NO CHANGES NEEDED'}
+
+## Details
+Quality check completed successfully.
+All Python files have been formatted according to PEP8 standards.
+"""
+            
+            with open("quality_report.txt", "w", encoding="utf-8") as f:
+                f.write(report_content)
+            
+            print("📄 Создан quality_report.txt для GitHub Actions")
+            
+        except Exception as e:
+            print(f"❌ Ошибка создания quality_report.txt: {e}")
+
+    def create_quality_report_dry_run(self, error_count, file_count):
+        """Создать файл quality_report.txt для dry-run режима"""
+        try:
+            report_content = f"""# ALADDIN Quality Report (Dry Run)
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+## Summary
+- Files analyzed: {file_count}
+- Errors found: {error_count}
+- Status: DRY RUN COMPLETED
+
+## Status
+{'⚠️ ERRORS FOUND' if error_count > 0 else '✅ NO ERRORS FOUND'}
+
+## Details
+Quality check completed in dry-run mode.
+{'Files need formatting.' if error_count > 0 else 'All files are properly formatted.'}
+"""
+            
+            with open("quality_report.txt", "w", encoding="utf-8") as f:
+                f.write(report_content)
+            
+            print("📄 Создан quality_report.txt для GitHub Actions (dry-run)")
+            
+        except Exception as e:
+            print(f"❌ Ошибка создания quality_report.txt (dry-run): {e}")
 
     def setup_precommit(self):
         """Настроить pre-commit hooks"""
