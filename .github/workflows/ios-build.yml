@@ -3,10 +3,10 @@ name: iOS Build and Test
 on:
   push:
     branches: [ main, develop ]
-    paths: [ 'mobile/ios/**' ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/**' ]
   pull_request:
     branches: [ main ]
-    paths: [ 'mobile/ios/**' ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/**' ]
 
 jobs:
   build-and-test:
@@ -22,7 +22,7 @@ jobs:
         xcode-version: '15.0'
         
     - name: Cache Swift packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/Library/Developer/Xcode/DerivedData
@@ -33,24 +33,24 @@ jobs:
           
     - name: Install dependencies
       run: |
-        cd mobile/ios
+        cd mobile_apps/ALADDIN_iOS
         if [ -f Podfile ]; then
           pod install
         fi
         
     - name: Build iOS app
       run: |
-        cd mobile/ios
-        xcodebuild -workspace ALADDINMobile.xcworkspace -scheme ALADDINMobile -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' build
+        cd mobile_apps/ALADDIN_iOS
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' build
         
     - name: Run iOS tests
       run: |
-        cd mobile/ios
-        xcodebuild -workspace ALADDINMobile.xcworkspace -scheme ALADDINMobile -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' test
+        cd mobile_apps/ALADDIN_iOS
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' test
         
     - name: Run SwiftLint
       run: |
-        cd mobile/ios
+        cd mobile_apps/ALADDIN_iOS
         if command -v swiftlint &> /dev/null; then
           swiftlint lint --reporter github-actions-logging
         else
@@ -62,15 +62,15 @@ jobs:
       if: always()
       
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: ios-build
-        path: mobile/ios/build/
+        path: mobile_apps/ALADDIN_iOS/build/
         
     - name: Security scan
       run: |
-        cd mobile/ios
+        cd mobile_apps/ALADDIN_iOS
         # Проверка на уязвимости в зависимостях
         if command -v dependency-check &> /dev/null; then
           dependency-check --project ALADDINMobile --scan .
@@ -78,7 +78,7 @@ jobs:
         
     - name: Code quality check
       run: |
-        cd mobile/ios
+        cd mobile_apps/ALADDIN_iOS
         # Проверка качества кода
         echo "Running code quality checks..."
         find . -name "*.swift" -exec wc -l {} + | tail -1
