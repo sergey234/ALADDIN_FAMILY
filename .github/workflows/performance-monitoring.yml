@@ -36,7 +36,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         
@@ -100,7 +100,7 @@ jobs:
                --csv=load-test-results
                
     - name: 📊 Upload load test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: load-test-results
         path: |
@@ -118,7 +118,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         
@@ -161,7 +161,7 @@ jobs:
         pytest tests/test_memory_*.py -v --junitxml=memory-results.xml --html=memory-report.html --self-contained-html
         
     - name: 📊 Upload memory test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: memory-test-results
         path: |
@@ -179,7 +179,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         
@@ -222,7 +222,7 @@ jobs:
         pytest tests/test_response_time_*.py tests/test_dashboard_performance.py -v --junitxml=response-time-results.xml --html=response-time-report.html --self-contained-html
         
     - name: 📊 Upload response time results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: response-time-results
         path: |
@@ -240,7 +240,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         
@@ -309,7 +309,7 @@ jobs:
         pytest tests/test_sfm_*.py -v --junitxml=sfm-performance-results.xml --html=sfm-performance-report.html --self-contained-html
         
     - name: 📊 Upload SFM performance results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: sfm-performance-results
         path: |
@@ -327,7 +327,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ env.PYTHON_VERSION }}
         
@@ -372,7 +372,7 @@ jobs:
         pytest tests/test_cache_*.py -v --junitxml=cache-results.xml --html=cache-report.html --self-contained-html
         
     - name: 📊 Upload cache test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cache-test-results
         path: |
@@ -405,7 +405,7 @@ jobs:
         echo "## ⚡ Overall Status: ✅ OPTIMIZED" >> performance-summary.md
         
     - name: 📤 Upload performance summary
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-summary
         path: performance-summary.md

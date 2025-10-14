@@ -217,7 +217,7 @@ jobs:
         echo "## 📊 Notification Status: ${{ needs.send-notifications.result }}" >> notification-report.md
         
     - name: 📤 Upload notification report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: notification-report
         path: notification-report.md

@@ -61,7 +61,7 @@ jobs:
         api-private-key: ${{ secrets.APPSTORE_API_PRIVATE_KEY }}
         
     - name: Upload iOS artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ios-release
         path: mobile/ios/ALADDINMobile.ipa
@@ -109,7 +109,7 @@ jobs:
         track: internal
         
     - name: Upload Android artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: android-release
         path: mobile/android/app/build/outputs/apk/release/
@@ -143,7 +143,7 @@ jobs:
         echo "No critical vulnerabilities found" > security-report.txt
         
     - name: Upload security report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-report
         path: security-report.txt

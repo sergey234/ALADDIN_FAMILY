@@ -43,7 +43,7 @@ jobs:
         xcode-version: '15.0'
         
     - name: Cache CocoaPods
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: mobile/ios/Pods
         key: ${{ runner.os }}-pods-${{ hashFiles('mobile/ios/Podfile.lock') }}
@@ -74,7 +74,7 @@ jobs:
                         -destination "platform=iOS Simulator,name=iPhone 15,OS=17.0"
                         
     - name: Upload iOS build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ios-build
         path: mobile/ios/ALADDIN\ Security.xcarchive
@@ -99,7 +99,7 @@ jobs:
       uses: android-actions/setup-android@v3
       
     - name: Cache Gradle dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           mobile/android/.gradle
@@ -126,7 +126,7 @@ jobs:
         ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
         
     - name: Upload Android build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: android-build
         path: mobile/android/app/build/outputs/apk/release/
