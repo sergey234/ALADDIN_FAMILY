@@ -297,3 +297,4 @@ struct DeviceDetailScreen_Previews: PreviewProvider {
 
 
 
+
