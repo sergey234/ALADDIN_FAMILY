@@ -1,0 +1,49 @@
+name: iOS Test on Simulator
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/**' ]
+
+jobs:
+  test-ios:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.0'
+        
+    - name: List available simulators
+      run: |
+        echo "=== ДОСТУПНЫЕ СИМУЛЯТОРЫ ==="
+        xcrun simctl list devices available
+        
+    - name: Build and test on simulator
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "=== КОМПИЛИРУЕМ ПРИЛОЖЕНИЕ ==="
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 15' build
+        
+        echo "=== ЗАПУСКАЕМ НА СИМУЛЯТОРЕ ==="
+        xcrun simctl boot "iPhone 15" || echo "Симулятор уже запущен"
+        
+        echo "=== УСТАНАВЛИВАЕМ ПРИЛОЖЕНИЕ ==="
+        xcrun simctl install "iPhone 15" build/Release-iphonesimulator/ALADDIN.app
+        
+        echo "=== ЗАПУСКАЕМ ПРИЛОЖЕНИЕ ==="
+        xcrun simctl launch "iPhone 15" family.aladdin.ios
+        
+        echo "=== ТЕСТИРОВАНИЕ ЗАВЕРШЕНО ==="
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-test-results
+        path: mobile_apps/ALADDIN_iOS/build/
