@@ -26,7 +26,7 @@ jobs:
         echo "Используем generic destination для компиляции"
         
         # Компилируем без указания конкретного симулятора
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator" build
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS" build
         
         echo "=== ПРОВЕРЯЕМ BUILD ПАПКУ ==="
         ls -la build/ || echo "build папка не найдена"

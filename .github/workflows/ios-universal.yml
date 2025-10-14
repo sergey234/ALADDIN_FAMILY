@@ -62,7 +62,7 @@ jobs:
         echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ==="
         echo "Используем симулятор: ${{ steps.simulator.outputs.simulator }}"
         
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator" build
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS" build
         
         echo "=== ПРОВЕРЯЕМ BUILD ПАПКУ ==="
         ls -la build/ || echo "build папка не найдена"
