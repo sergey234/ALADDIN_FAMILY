@@ -1,5 +1,6 @@
 import Foundation
 import StoreKit
+import SwiftUI
 
 /**
  * 💰 Store Manager

@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 /**
  * 💳 Payment QR View Model

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 // import Firebase // Uncomment when Firebase SDK added
 
 /**
