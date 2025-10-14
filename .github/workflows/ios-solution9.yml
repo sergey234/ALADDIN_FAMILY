@@ -1,0 +1,60 @@
+name: iOS Solution 9 - Clear Simulator Cache
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/trigger_solution9.txt' ]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Clear simulator cache and reset
+      run: |
+        echo "=== ОЧИЩАЕМ КЭШ СИМУЛЯТОРА ==="
+        
+        echo "1. Очищаем кэш симулятора"
+        rm -rf ~/Library/Developer/CoreSimulator/Caches || echo "Кэш не найден"
+        
+        echo "2. Останавливаем все симуляторы"
+        xcrun simctl shutdown all || echo "Нет запущенных симуляторов"
+        
+        echo "3. Удаляем все симуляторы"
+        xcrun simctl delete all || echo "Нет симуляторов для удаления"
+        
+        echo "4. Проверяем доступные симуляторы"
+        xcrun simctl list devices available
+        
+        echo "5. Проверяем runtimes"
+        xcrun simctl list runtimes
+        
+    - name: Build after cache clear
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "=== КОМПИЛИРУЕМ ПОСЛЕ ОЧИСТКИ КЭША ==="
+        
+        # Пробуем разные варианты
+        echo "1. Только scheme"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build || echo "Scheme не сработал"
+        
+        echo ""
+        echo "2. С platform=iOS"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS" build || echo "platform=iOS не сработал"
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-build-solution9
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7
