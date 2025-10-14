@@ -1,0 +1,127 @@
+name: iOS Solution 3 - Install iOS SDK
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/**' ]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Check available SDKs before installation
+      run: |
+        echo "=== ПРОВЕРЯЕМ ДОСТУПНЫЕ SDK ДО УСТАНОВКИ ==="
+        xcodebuild -showsdks | grep iOS || echo "iOS SDK не найдены"
+        echo ""
+        echo "=== ПРОВЕРЯЕМ ДОСТУПНЫЕ RUNTIMES ==="
+        xcrun simctl list runtimes | grep iOS || echo "iOS runtimes не найдены"
+        
+    - name: Install iOS SDK
+      run: |
+        echo "=== УСТАНАВЛИВАЕМ iOS SDK ==="
+        echo "Скачиваем iOS платформу..."
+        
+        # Пробуем скачать iOS SDK
+        xcodebuild -downloadPlatform iOS || echo "Не удалось скачать iOS SDK"
+        
+        echo ""
+        echo "=== ПРОВЕРЯЕМ РЕЗУЛЬТАТ УСТАНОВКИ ==="
+        xcodebuild -showsdks | grep iOS || echo "iOS SDK все еще не найдены"
+        
+    - name: Install specific iOS versions
+      run: |
+        echo "=== УСТАНАВЛИВАЕМ КОНКРЕТНЫЕ ВЕРСИИ iOS ==="
+        
+        # Пробуем установить iOS 17.0
+        echo "Пробуем установить iOS 17.0..."
+        xcodebuild -downloadPlatform iOS -version 17.0 || echo "iOS 17.0 недоступна"
+        
+        # Пробуем установить iOS 16.0
+        echo "Пробуем установить iOS 16.0..."
+        xcodebuild -downloadPlatform iOS -version 16.0 || echo "iOS 16.0 недоступна"
+        
+        # Пробуем установить iOS 15.0
+        echo "Пробуем установить iOS 15.0..."
+        xcodebuild -downloadPlatform iOS -version 15.0 || echo "iOS 15.0 недоступна"
+        
+    - name: Check available simulators after SDK installation
+      run: |
+        echo "=== ПРОВЕРЯЕМ СИМУЛЯТОРЫ ПОСЛЕ УСТАНОВКИ SDK ==="
+        xcrun simctl list devices available | grep iPhone || echo "iPhone симуляторы не найдены"
+        echo ""
+        echo "=== ПРОВЕРЯЕМ ВСЕ ДОСТУПНЫЕ УСТРОЙСТВА ==="
+        xcrun simctl list devices available
+        
+    - name: Create simulator if needed
+      run: |
+        echo "=== СОЗДАЕМ СИМУЛЯТОР ЕСЛИ НУЖНО ==="
+        
+        # Проверяем есть ли iPhone симуляторы
+        if xcrun simctl list devices available | grep -q iPhone; then
+          echo "✅ iPhone симуляторы найдены"
+        else
+          echo "❌ iPhone симуляторы не найдены, создаем..."
+          
+          # Получаем доступные типы устройств
+          DEVICE_TYPE=$(xcrun simctl list devicetypes | grep iPhone | head -1 | awk -F'[()]' '{print $2}')
+          echo "Тип устройства: $DEVICE_TYPE"
+          
+          # Получаем доступные runtime
+          RUNTIME=$(xcrun simctl list runtimes | grep iOS | head -1 | awk -F'[()]' '{print $2}')
+          echo "Runtime: $RUNTIME"
+          
+          if [ -n "$DEVICE_TYPE" ] && [ -n "$RUNTIME" ]; then
+            echo "Создаем симулятор..."
+            SIMULATOR_ID=$(xcrun simctl create "iPhone Test" "$DEVICE_TYPE" "$RUNTIME" || echo "ERROR")
+            
+            if [ "$SIMULATOR_ID" != "ERROR" ]; then
+              echo "✅ Создан симулятор: $SIMULATOR_ID"
+              echo "simulator_id=$SIMULATOR_ID" >> $GITHUB_ENV
+            else
+              echo "❌ Не удалось создать симулятор"
+              echo "simulator_id=generic" >> $GITHUB_ENV
+            fi
+          else
+            echo "❌ Не найдены доступные типы устройств или runtime"
+            echo "simulator_id=generic" >> $GITHUB_ENV
+          fi
+        fi
+        
+    - name: Build iOS app with SDK
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ С УСТАНОВЛЕННЫМ SDK ==="
+        
+        # Проверяем есть ли симуляторы
+        if xcrun simctl list devices available | grep -q iPhone; then
+          echo "✅ Используем доступные симуляторы"
+          xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS Simulator' build
+        else
+          echo "❌ Симуляторы недоступны, пробуем platform=iOS"
+          xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS' build
+        fi
+        
+        echo "=== ПРОВЕРЯЕМ BUILD ПАПКУ ==="
+        ls -la build/ || echo "build папка не найдена"
+        echo ""
+        echo "=== ИЩЕМ .app ФАЙЛЫ ==="
+        find build/ -name "*.app" -type d || echo ".app файлы не найдены"
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-build-solution3
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7
