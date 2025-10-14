@@ -11,6 +11,7 @@ ALADDIN Security System - PhishingProtectionAgent
 import datetime
 import re
 import urllib.parse
+import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
