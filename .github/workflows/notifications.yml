@@ -136,13 +136,7 @@ jobs:
         commit_message = '${{ github.event.workflow_run.head_commit.message || \"Manual trigger\" }}'
         run_url = '${{ github.event.workflow_run.html_url || github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
         
-        message = f'''{emoji} *ALADDIN {workflow_name}*
-
-*Status:* {status.upper()}
-*Commit:* `{commit_sha[:8]}`
-*Message:* {commit_message[:100]}{'...' if len(commit_message) > 100 else ''}
-
-[View Details]({run_url})'''
+        message = f"{emoji} *ALADDIN {workflow_name}*\n\n*Status:* {status.upper()}\n*Commit:* `{commit_sha[:8]}`\n*Message:* {commit_message[:100]}{'...' if len(commit_message) > 100 else ''}\n\n[View Details]({run_url})"
         
         try:
             url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
