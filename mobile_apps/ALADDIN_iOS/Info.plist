@@ -19,8 +19,62 @@
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>Для сканирования QR кодов</string>
+	<string>Для сканирования QR кодов и безопасности семьи</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Для защиты семьи</string>
+	<string>Для защиты семьи и мониторинга безопасности</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Для биометрической аутентификации и защиты данных</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Для голосовых команд и AI помощника</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Для загрузки фото профиля семьи</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Для добавления членов семьи в контакты</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Для персонализированной защиты семьи</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>family.aladdin.ios</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>aladdin</string>
+			</array>
+		</dict>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>background-processing</string>
+		<string>background-fetch</string>
+	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>api.aladdin.family</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSExceptionMinimumTLSVersion</key>
+				<string>TLSv1.2</string>
+			</dict>
+		</dict>
+	</dict>
 </dict>
 </plist>

@@ -25,6 +25,7 @@ from security.vpn.vpn_security_system import (
 )
 
 # Добавление пути к проекту
+sys.path.append(
     os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     )
