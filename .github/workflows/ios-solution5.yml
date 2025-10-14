@@ -1,4 +1,4 @@
-name: iOS Solution 5 - First Launch
+name: iOS Solution 5 - Reset Simulators
 
 on:
   push:
@@ -19,19 +19,31 @@ jobs:
       with:
         xcode-version: '16.0.0'
         
-    - name: Run Xcode first launch
+    - name: Reset all simulators
       run: |
-        echo "=== ЗАПУСКАЕМ XCODE FIRST LAUNCH ==="
-        sudo xcodebuild -runFirstLaunch
+        echo "=== СБРАСЫВАЕМ ВСЕ СИМУЛЯТОРЫ ==="
+        xcrun simctl shutdown all
+        echo "Все симуляторы остановлены"
         
-        echo "=== ПРОВЕРЯЕМ SDK ПОСЛЕ FIRST LAUNCH ==="
-        xcodebuild -showsdks | grep iOS || echo "iOS SDK не найдены"
+        echo "=== УДАЛЯЕМ ВСЕ СИМУЛЯТОРЫ ==="
+        xcrun simctl delete all
+        echo "Все симуляторы удалены"
         
-    - name: Build iOS app
+        echo "=== СОЗДАЕМ НОВЫЙ СИМУЛЯТОР ==="
+        DEVICE_TYPE=$(xcrun simctl list devicetypes | grep iPhone | head -1 | awk -F'[()]' '{print $2}')
+        RUNTIME=$(xcrun simctl list runtimes | grep iOS | head -1 | awk -F'[()]' '{print $2}')
+        
+        NEW_SIMULATOR=$(xcrun simctl create "Fresh iPhone" "$DEVICE_TYPE" "$RUNTIME")
+        echo "Создан новый симулятор: $NEW_SIMULATOR"
+        
+        xcrun simctl boot "$NEW_SIMULATOR"
+        echo "Новый симулятор запущен"
+        
+    - name: Build on fresh simulator
       run: |
         cd mobile_apps/ALADDIN_iOS
-        echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ==="
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build
+        echo "=== КОМПИЛИРУЕМ НА СВЕЖЕМ СИМУЛЯТОРЕ ==="
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator" build
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
