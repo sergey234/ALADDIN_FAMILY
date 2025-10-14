@@ -23,7 +23,7 @@ jobs:
       run: |
         cd mobile_apps/ALADDIN_iOS
         echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ==="
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS Simulator,name=generic' build
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS Simulator' build
         
         echo "=== ПРОВЕРЯЕМ BUILD ПАПКУ ==="
         ls -la build/
