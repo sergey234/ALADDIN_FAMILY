@@ -161,10 +161,10 @@
 		A1000119 /* ALADDINToggle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINToggle.swift; sourceTree = "<group>"; };
 		A1000121 /* ALADDINTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINTextField.swift; sourceTree = "<group>"; };
 		A1000123 /* ALADDINNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINNavigationBar.swift; sourceTree = "<group>"; };
-		A1000125 /* ConsentModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsentModal.swift; sourceTree = "<group>"; };
-		A1000127 /* RecoveryOptionsModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryOptionsModal.swift; sourceTree = "<group>"; };
-		A1000129 /* RegistrationSuccessModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegistrationSuccessModal.swift; sourceTree = "<group>"; };
-		A1000131 /* QRScannerModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerModal.swift; sourceTree = "<group>"; };
+		A1000125 /* ConsentModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/Components/Modals/ConsentModal.swift"; sourceTree = "<group>"; };
+		A1000127 /* RecoveryOptionsModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/Components/Modals/RecoveryOptionsModal.swift"; sourceTree = "<group>"; };
+		A1000129 /* RegistrationSuccessModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/Components/Modals/RegistrationSuccessModal.swift"; sourceTree = "<group>"; };
+		A1000131 /* QRScannerModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/Components/Modals/QRScannerModal.swift"; sourceTree = "<group>"; };
 		A1000133 /* Accessibility+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Accessibility+Extensions.swift"; sourceTree = "<group>"; };
 		
 		// Core Modules

@@ -1,135 +1,199 @@
 import SwiftUI
 
 /**
- * 🔐 Recovery Options Modal
- * Модальное окно восстановления доступа
+ * 🔑 Recovery Options Modal
+ * Модальное окно выбора способа восстановления доступа
+ * Окно #6 - показывает 4 способа восстановления
  */
+
 struct RecoveryOptionsModal: View {
     
-    // MARK: - Properties
-    
     @Binding var isPresented: Bool
-    let onEmailRecovery: () -> Void
-    let onPhoneRecovery: () -> Void
-    let onSecurityQuestions: () -> Void
+    
+    @State private var showQRScanner: Bool = false
+    @State private var showManualInput: Bool = false
+    @State private var scannerMode: QRScannerModal.ScanMode = .recoveryQR
+    
+    var onRecoveryComplete: () -> Void
     
     // MARK: - Body
     
     var body: some View {
         ZStack {
-            // Фон
+            // Backdrop blur
             Color.black.opacity(0.5)
                 .ignoresSafeArea()
-                .onTapGesture {
-                    isPresented = false
-                }
+                .blur(radius: 20)
             
-            // Модальное окно
-            VStack(spacing: Spacing.l) {
-                // Заголовок
-                Text("Восстановление доступа")
-                    .font(.h2)
-                    .foregroundColor(.textPrimary)
-                    .multilineTextAlignment(.center)
-                
-                // Опции восстановления
+            // Modal content
+            VStack(spacing: Spacing.xl) {
+                // Header
                 VStack(spacing: Spacing.m) {
-                    recoveryOption(
-                        icon: "envelope.fill",
-                        title: "Email восстановление",
-                        subtitle: "Отправить код на email"
+                    Text("🔑")
+                        .font(.system(size: 40))
+                    
+                    Text("ВОССТАНОВИТЬ ДОСТУП")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.secondaryGold)
+                    
+                    Text("Как вы хотите восстановить?")
+                        .font(.system(size: 14))
+                        .foregroundColor(.textSecondary)
+                }
+                
+                // Recovery options
+                VStack(spacing: Spacing.m) {
+                    // Option 1: Through family member (BEST!)
+                    RecoveryOptionButton(
+                        icon: "👨‍👩‍👧‍👦",
+                        title: "ЧЕРЕЗ ЧЛЕНА СЕМЬИ",
+                        subtitle: "(если у кого-то есть доступ)",
+                        color: .successGreen
                     ) {
-                        onEmailRecovery()
-                        isPresented = false
+                        scannerMode = .recoveryFromFamily
+                        showQRScanner = true
                     }
                     
-                    recoveryOption(
-                        icon: "phone.fill",
-                        title: "SMS восстановление",
-                        subtitle: "Отправить код на телефон"
+                    // Option 2: Scan saved QR #2
+                    RecoveryOptionButton(
+                        icon: "📷",
+                        title: "СКАНИРОВАТЬ QR #2",
+                        subtitle: "(сохранённый код восстановления)",
+                        color: .primaryBlue
                     ) {
-                        onPhoneRecovery()
-                        isPresented = false
+                        scannerMode = .recoveryQR
+                        showQRScanner = true
                     }
                     
-                    recoveryOption(
-                        icon: "questionmark.circle.fill",
-                        title: "Секретные вопросы",
-                        subtitle: "Ответить на вопросы безопасности"
+                    // Option 3: Enter code manually
+                    RecoveryOptionButton(
+                        icon: "🔤",
+                        title: "ВВЕСТИ КОД ВРУЧНУЮ",
+                        subtitle: "(FAM-A1B2-C3D4-E5F6)",
+                        color: .secondaryGold
                     ) {
-                        onSecurityQuestions()
-                        isPresented = false
+                        showManualInput = true
+                    }
+                    
+                    // Option 4: Contact support
+                    RecoveryOptionButton(
+                        icon: "📧",
+                        title: "ОБРАТИТЬСЯ В ПОДДЕРЖКУ",
+                        subtitle: "(если всё потеряно)",
+                        color: .dangerRed
+                    ) {
+                        contactSupport()
                     }
                 }
                 
-                // Кнопка отмены
-                SecondaryButton("Отмена") {
-                    isPresented = false
+                // Back button
+                Button(action: { isPresented = false }) {
+                    Text("НАЗАД")
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
                 }
             }
             .padding(Spacing.xl)
+            .frame(width: 340)
             .background(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .fill(Color.backgroundLight)
+                LinearGradient(
+                    colors: [Color(hex: "#1e3a5f"), Color(hex: "#2e5090")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
             )
-            .padding(Spacing.l)
+            .cornerRadius(24)
+            .shadow(color: .black.opacity(0.5), radius: 30, x: 0, y: 20)
+        }
+        .sheet(isPresented: $showQRScanner) {
+            QRScannerModal(
+                isPresented: $showQRScanner,
+                mode: scannerMode,
+                onCodeScanned: handleCodeScanned
+            )
+        }
+        .sheet(isPresented: $showManualInput) {
+            ManualCodeInputModal(
+                isPresented: $showManualInput,
+                onCodeEntered: handleCodeScanned
+            )
         }
     }
     
-    // MARK: - Recovery Option
+    // MARK: - Actions
     
-    private func recoveryOption(
-        icon: String,
-        title: String,
-        subtitle: String,
-        action: @escaping () -> Void
-    ) -> some View {
+    private func handleCodeScanned(_ code: String) {
+        // TODO: Validate and restore family
+        print("✅ Code scanned: \(code)")
+        isPresented = false
+        onRecoveryComplete()
+    }
+    
+    private func contactSupport() {
+        if let url = URL(string: "mailto:support@aladdin.family?subject=Восстановление доступа к семье") {
+            UIApplication.shared.open(url)
+        }
+    }
+}
+
+// MARK: - Recovery Option Button
+
+struct RecoveryOptionButton: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    let color: Color
+    let action: () -> Void
+    
+    var body: some View {
         Button(action: action) {
             HStack(spacing: Spacing.m) {
-                Image(systemName: icon)
-                    .font(.system(size: 24))
-                    .foregroundColor(.primaryBlue)
-                    .frame(width: 40, height: 40)
-                    .background(
-                        Circle()
-                            .fill(Color.primaryBlue.opacity(0.1))
-                    )
+                // Icon
+                Text(icon)
+                    .font(.system(size: 32))
                 
-                VStack(alignment: .leading, spacing: Spacing.xs) {
+                // Text
+                VStack(alignment: .leading, spacing: 4) {
                     Text(title)
-                        .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.white)
                     
                     Text(subtitle)
-                        .font(.caption)
+                        .font(.system(size: 12))
                         .foregroundColor(.textSecondary)
                 }
                 
                 Spacer()
                 
+                // Arrow
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.textSecondary)
             }
-            .padding(Spacing.m)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(Color.backgroundMedium.opacity(0.3))
+            .frame(height: 72)
+            .padding(.horizontal, Spacing.m)
+            .background(color.opacity(0.15))
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(color, lineWidth: 1)
             )
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(.plain)
     }
 }
 
-#if DEBUG
+// MARK: - Preview
+
 struct RecoveryOptionsModal_Previews: PreviewProvider {
     static var previews: some View {
         RecoveryOptionsModal(
             isPresented: .constant(true),
-            onEmailRecovery: { print("Email восстановление") },
-            onPhoneRecovery: { print("SMS восстановление") },
-            onSecurityQuestions: { print("Секретные вопросы") }
+            onRecoveryComplete: {}
         )
     }
 }
-#endif
+
+
+
+
