@@ -33,16 +33,16 @@ jobs:
         echo "=== ПОИСК IPHONE СИМУЛЯТОРА ==="
         # Ищем iPhone симуляторы по приоритету
         SIMULATOR=""
-        if xcrun simctl list devices available | grep -q "iPhone SE (3rd generation)"; then
-          SIMULATOR="iPhone SE (3rd generation)"
-        elif xcrun simctl list devices available | grep -q "iPhone SE (3rd generation)"; then
-          SIMULATOR="iPhone SE (3rd generation)"
-        elif xcrun simctl list devices available | grep -q "iPhone SE (3rd generation)"; then
-          SIMULATOR="iPhone SE (3rd generation)"
-        elif xcrun simctl list devices available | grep -q "iPhone SE (3rd generation)"; then
-          SIMULATOR="iPhone SE (3rd generation)"
-        elif xcrun simctl list devices available | grep -q "iPhone SE (3rd generation)"; then
-          SIMULATOR="iPhone SE (3rd generation)"
+        if xcrun simctl list devices available | grep -q "iPhone 15"; then
+          SIMULATOR="iPhone 15"
+        elif xcrun simctl list devices available | grep -q "iPhone 14"; then
+          SIMULATOR="iPhone 14"
+        elif xcrun simctl list devices available | grep -q "iPhone 14"; then
+          SIMULATOR="iPhone 14"
+        elif xcrun simctl list devices available | grep -q "iPhone 14"; then
+          SIMULATOR="iPhone 14"
+        elif xcrun simctl list devices available | grep -q "iPhone 14"; then
+          SIMULATOR="iPhone 14"
         else
           # Берем первый доступный iPhone
           SIMULATOR=$(xcrun simctl list devices available | grep iPhone | head -1 | sed 's/.*(\([^)]*\)).*/\1/')

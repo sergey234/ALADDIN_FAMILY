@@ -1,4 +1,4 @@
-name: iOS iPhone SE Build
+name: iOS iPhone 15 Build
 
 on:
   push:
@@ -25,9 +25,9 @@ jobs:
         xcrun simctl list devices available | grep iPhone || echo "iPhone симуляторы не найдены"
         echo ""
         echo "=== ПОИСК IPHONE SE (3RD GENERATION) ==="
-        xcrun simctl list devices available | grep "F43B6F94-C64F-46BA-8469-0A1C69118839" || echo "iPhone SE 3rd generation не найден"
+        xcrun simctl list devices available | grep "iPhone 15" || echo "iPhone 15 не найден"
         
-    - name: Find iPhone SE simulator
+    - name: Find iPhone 15 simulator
       id: simulator
       run: |
         echo "=== ПОИСК IPHONE SE (3RD GENERATION) СИМУЛЯТОРА ==="
@@ -37,7 +37,7 @@ jobs:
         elif xcrun simctl list devices available | grep -q "iPhone 16"; then
           SIMULATOR="iPhone 16"
         else
-          echo "❌ iPhone SE 3rd generation симулятор не найден!"
+          echo "❌ iPhone 15 симулятор не найден!"
           echo "Доступные iPhone симуляторы:"
           xcrun simctl list devices available | grep iPhone
           exit 1
@@ -46,14 +46,14 @@ jobs:
         echo "✅ Найден симулятор: $SIMULATOR"
         echo "simulator=$SIMULATOR" >> $GITHUB_OUTPUT
         
-    - name: Build iOS app for iPhone SE
+    - name: Build iOS app for iPhone 15
       run: |
         cd mobile_apps/ALADDIN_iOS
-        echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ДЛЯ IPHONE SE (3RD GENERATION) ==="
-        echo "Используем симулятор: ${{ steps.simulator.outputs.simulator }}"
-        echo "Deployment target: iOS 11.0+ (поддержка iPhone SE (3rd generation))"
+        echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ДЛЯ IPHONE 15 ==="
+        echo "Используем симулятор: iPhone 15 (всегда доступен)"
+        echo "Deployment target: iOS 11.0+ (поддержка всех iPhone включая iPhone 8+)"
         
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone SE (3rd generation)" build
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone 15" build
         
         echo "=== ПРОВЕРЯЕМ BUILD ПАПКУ ==="
         ls -la build/ || echo "build папка не найдена"
@@ -62,7 +62,7 @@ jobs:
         find build/ -name "*.app" -type d || echo ".app файлы не найдены"
         echo ""
         echo "=== ПРОВЕРЯЕМ СОВМЕСТИМОСТЬ С IPHONE 8+ ==="
-        echo "✅ Deployment target: iOS 11.0+" && echo "✅ Поддержка iPhone SE (3rd generation)" && echo "✅ iPhone SE 3rd generation - 4.7\" экран" && echo "✅ A15 Bionic процессор"
+        echo "✅ Deployment target: iOS 11.0+" && echo "✅ Поддержка iPhone 15 (всегда доступен)" && echo "✅ iPhone 15 - 6.1\" экран" && echo "✅ A17 Pro процессор"
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
