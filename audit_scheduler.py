@@ -19,8 +19,8 @@ import sqlite3
 import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-# from email.mime.multipart import MimeMultipart  # Проблемы с импортом
-# from email.mime.text import MimeText  # Проблемы с импортом
+from email.mime.multipart import MimeMultipart
+from email.mime.text import MimeText
 from typing import Any, Dict, List, Optional
 
 import schedule

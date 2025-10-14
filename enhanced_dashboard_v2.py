@@ -277,7 +277,7 @@ def save_test_result(test_result: TestResult):
     conn.close()
 
 
-
+def save_performance_metric(metric):
     """Сохранение метрики производительности в базу данных"""
     conn = sqlite3.connect("aladdin_dashboard.db")
     cursor = conn.cursor()
@@ -1070,6 +1070,42 @@ async def count_requests(request, call_next):
     dashboard_data["total_requests"] += 1
     response = await call_next(request)
     return response
+
+
+async def collect_system_metrics():
+    """Сбор системных метрик"""
+    try:
+        # CPU метрики
+        cpu_percent = psutil.cpu_percent(interval=1)
+        cpu_count = psutil.cpu_count()
+        
+        # Память
+        memory = psutil.virtual_memory()
+        memory_percent = memory.percent
+        memory_available = memory.available
+        
+        # Диск
+        disk = psutil.disk_usage('/')
+        disk_percent = disk.percent
+        disk_free = disk.free
+        
+        # Сеть
+        network = psutil.net_io_counters()
+        
+        return {
+            "cpu_percent": cpu_percent,
+            "cpu_count": cpu_count,
+            "memory_percent": memory_percent,
+            "memory_available": memory_available,
+            "disk_percent": disk_percent,
+            "disk_free": disk_free,
+            "network_bytes_sent": network.bytes_sent,
+            "network_bytes_recv": network.bytes_recv,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        print(f"Ошибка сбора метрик: {e}")
+        return {}
 
 
 if __name__ == "__main__":
