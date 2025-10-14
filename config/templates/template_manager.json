@@ -1,0 +1,62 @@
+{
+  "template_manager": {
+    "name": "Менеджер шаблонов ALADDIN",
+    "version": "1.0",
+    "description": "Управление и применение шаблонов конфигурации"
+  },
+  "template_operations": {
+    "list_templates": {
+      "description": "Показать все доступные шаблоны",
+      "parameters": [
+        "category",
+        "security_level",
+        "device_type"
+      ]
+    },
+    "apply_template": {
+      "description": "Применить шаблон к системе",
+      "parameters": [
+        "template_id",
+        "backup_existing",
+        "validate_before_apply"
+      ]
+    },
+    "create_template": {
+      "description": "Создать новый шаблон",
+      "parameters": [
+        "template_data",
+        "validate",
+        "save"
+      ]
+    },
+    "modify_template": {
+      "description": "Изменить существующий шаблон",
+      "parameters": [
+        "template_id",
+        "modifications",
+        "backup_original"
+      ]
+    },
+    "delete_template": {
+      "description": "Удалить шаблон",
+      "parameters": [
+        "template_id",
+        "confirm_deletion"
+      ]
+    }
+  },
+  "template_categories": [
+    "family",
+    "business",
+    "security_level",
+    "device_type",
+    "industry",
+    "custom"
+  ],
+  "template_validation": {
+    "schema_validation": true,
+    "security_validation": true,
+    "compatibility_check": true,
+    "backup_creation": true
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "bot_name": "telegram",
+  "timestamp": "2025-09-21T13:57:51.381679",
+  "config": {
+    "test": true
+  },
+  "stats": {
+    "test_count": 0
+  },
+  "running": true
+}

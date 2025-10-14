@@ -1,0 +1,19 @@
+<lint-module
+    format="1"
+    dir="/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app"
+    name=":app"
+    type="APP"
+    maven="ALADDIN:app:"
+    agpVersion="8.2.0"
+    buildFolder="build"
+    bootClassPath="/Users/sergejhlystov/Library/Android/sdk/platforms/android-34/android.jar:/Users/sergejhlystov/Library/Android/sdk/build-tools/34.0.0/core-lambda-stubs.jar"
+    javaSourceLevel="17"
+    compileTarget="android-34"
+    neverShrinking="true">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="release"/>
+</lint-module>

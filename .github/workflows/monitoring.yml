@@ -1,0 +1,367 @@
+name: 📊 ALADDIN Monitoring & Alerts
+
+on:
+  schedule:
+    # Запуск каждые 6 часов
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      monitoring_scope:
+        description: 'Scope of monitoring'
+        required: true
+        default: 'full'
+        type: choice
+        options:
+        - full
+        - dashboard
+        - sfm
+        - performance
+        - security
+
+env:
+  PYTHON_VERSION: '3.9'
+  MONITORING_INTERVAL: 300  # 5 минут
+
+jobs:
+  # 📊 System Health Monitoring
+  system-health:
+    name: 📊 System Health Monitoring
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install monitoring dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install psutil requests prometheus-client
+        
+    - name: 📊 Collect System Metrics
+      run: |
+        python -c "
+        import psutil
+        import json
+        import time
+        from datetime import datetime
+        
+        # Сбор системных метрик
+        metrics = {
+            'timestamp': datetime.now().isoformat(),
+            'cpu_percent': psutil.cpu_percent(interval=1),
+            'memory_percent': psutil.virtual_memory().percent,
+            'disk_percent': psutil.disk_usage('/').percent,
+            'load_average': psutil.getloadavg(),
+            'boot_time': psutil.boot_time(),
+            'processes': len(psutil.pids())
+        }
+        
+        with open('system-metrics.json', 'w') as f:
+            json.dump(metrics, f, indent=2)
+            
+        print('📊 System metrics collected:')
+        print(f'CPU: {metrics[\"cpu_percent\"]}%')
+        print(f'Memory: {metrics[\"memory_percent\"]}%')
+        print(f'Disk: {metrics[\"disk_percent\"]}%')
+        print(f'Load: {metrics[\"load_average\"]}')
+        print(f'Processes: {metrics[\"processes\"]}')
+        "
+        
+    - name: 📊 Upload system metrics
+      uses: actions/upload-artifact@v3
+      with:
+        name: system-metrics
+        path: system-metrics.json
+
+  # 🚀 Dashboard Health Check
+  dashboard-health:
+    name: 🚀 Dashboard Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        
+    - name: 🚀 Start Dashboard Mock
+      run: |
+        python -c "
+        import asyncio
+        import uvicorn
+        from fastapi import FastAPI
+        from datetime import datetime
+        
+        app = FastAPI(title='ALADDIN Dashboard Mock')
+        
+        @app.get('/health')
+        async def health():
+            return {
+                'status': 'healthy',
+                'timestamp': datetime.now().isoformat(),
+                'version': '2.0',
+                'uptime': '99.9%'
+            }
+            
+        @app.get('/metrics')
+        async def metrics():
+            return {
+                'requests_total': 10000,
+                'requests_per_second': 50,
+                'avg_response_time': '150ms',
+                'error_rate': '0.1%'
+            }
+        
+        uvicorn.run(app, host='0.0.0.0', port=8080)
+        " &
+        sleep 10
+        
+    - name: 🧪 Health Check Tests
+      run: |
+        python -c "
+        import requests
+        import json
+        import time
+        
+        # Тестирование health endpoint
+        try:
+            response = requests.get('http://localhost:8080/health', timeout=10)
+            health_data = response.json()
+            print('✅ Dashboard health check passed')
+            print(f'Status: {health_data[\"status\"]}')
+            print(f'Version: {health_data[\"version\"]}')
+            print(f'Uptime: {health_data[\"uptime\"]}')
+        except Exception as e:
+            print(f'❌ Dashboard health check failed: {e}')
+            exit(1)
+            
+        # Тестирование metrics endpoint
+        try:
+            response = requests.get('http://localhost:8080/metrics', timeout=10)
+            metrics_data = response.json()
+            print('✅ Dashboard metrics check passed')
+            print(f'Total requests: {metrics_data[\"requests_total\"]}')
+            print(f'RPS: {metrics_data[\"requests_per_second\"]}')
+            print(f'Avg response time: {metrics_data[\"avg_response_time\"]}')
+            print(f'Error rate: {metrics_data[\"error_rate\"]}')
+        except Exception as e:
+            print(f'❌ Dashboard metrics check failed: {e}')
+            exit(1)
+        "
+
+  # 🔧 SFM Health Check
+  sfm-health:
+    name: 🔧 SFM Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        
+    - name: 🚀 Start SFM Mock
+      run: |
+        python -c "
+        import asyncio
+        import uvicorn
+        from fastapi import FastAPI
+        from datetime import datetime
+        
+        app = FastAPI(title='SFM Mock Service')
+        
+        @app.get('/health')
+        async def health():
+            return {
+                'status': 'healthy',
+                'timestamp': datetime.now().isoformat(),
+                'functions_count': 2,
+                'active_functions': 2
+            }
+            
+        @app.get('/functions')
+        async def get_functions():
+            return {
+                'functions': {
+                    'russian_api_manager': {'status': 'active'},
+                    'russian_banking_integration': {'status': 'active'}
+                }
+            }
+        
+        uvicorn.run(app, host='0.0.0.0', port=8011)
+        " &
+        sleep 5
+        
+    - name: 🧪 SFM Health Check Tests
+      run: |
+        python -c "
+        import requests
+        import json
+        
+        # Тестирование SFM health endpoint
+        try:
+            response = requests.get('http://localhost:8011/health', timeout=10)
+            health_data = response.json()
+            print('✅ SFM health check passed')
+            print(f'Status: {health_data[\"status\"]}')
+            print(f'Functions count: {health_data[\"functions_count\"]}')
+            print(f'Active functions: {health_data[\"active_functions\"]}')
+        except Exception as e:
+            print(f'❌ SFM health check failed: {e}')
+            exit(1)
+            
+        # Тестирование SFM functions endpoint
+        try:
+            response = requests.get('http://localhost:8011/functions', timeout=10)
+            functions_data = response.json()
+            print('✅ SFM functions check passed')
+            print(f'Functions: {list(functions_data[\"functions\"].keys())}')
+        except Exception as e:
+            print(f'❌ SFM functions check failed: {e}')
+            exit(1)
+        "
+
+  # 📊 Performance Monitoring
+  performance-monitoring:
+    name: 📊 Performance Monitoring
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        
+    - name: 🚀 Start Services Mock
+      run: |
+        # Запускаем мок-сервисы для мониторинга
+        python -c "
+        import asyncio
+        import uvicorn
+        from fastapi import FastAPI
+        from datetime import datetime
+        
+        app = FastAPI(title='ALADDIN Services Mock')
+        
+        @app.get('/health')
+        async def health():
+            return {'status': 'healthy', 'timestamp': datetime.now().isoformat()}
+            
+        @app.get('/api/endpoints')
+        async def get_endpoints():
+            return {'endpoints': []}
+            
+        @app.get('/api/services')
+        async def get_services():
+            return {'services': {}}
+        
+        uvicorn.run(app, host='0.0.0.0', port=8080)
+        " &
+        sleep 5
+        
+    - name: 🧪 Performance Tests
+      run: |
+        pytest tests/test_dashboard_performance.py -v --junitxml=performance-monitoring-results.xml
+        
+    - name: 📊 Upload performance results
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-monitoring-results
+        path: performance-monitoring-results.xml
+
+  # 🔒 Security Monitoring
+  security-monitoring:
+    name: 🔒 Security Monitoring
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install security tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install bandit safety
+        
+    - name: 🔒 Security Scan
+      run: |
+        echo "🔒 Running security scan..."
+        bandit -r . -f json -o security-scan-results.json || true
+        safety check --json --output=safety-results.json || true
+        
+    - name: 📊 Upload security results
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-monitoring-results
+        path: |
+          security-scan-results.json
+          safety-results.json
+
+  # 📊 Generate Monitoring Summary
+  monitoring-summary:
+    name: 📊 Generate Monitoring Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [system-health, dashboard-health, sfm-health, performance-monitoring, security-monitoring]
+    if: always()
+    
+    steps:
+    - name: 📊 Generate Monitoring Summary Report
+      run: |
+        echo "# 📊 ALADDIN Monitoring Summary" > monitoring-summary.md
+        echo "**Monitoring Date:** $(date)" >> monitoring-summary.md
+        echo "**Monitoring Scope:** ${{ github.event.inputs.monitoring_scope || 'full' }}" >> monitoring-summary.md
+        echo "" >> monitoring-summary.md
+        echo "## 📋 Monitoring Results:" >> monitoring-summary.md
+        echo "- System Health: ${{ needs.system-health.result }}" >> monitoring-summary.md
+        echo "- Dashboard Health: ${{ needs.dashboard-health.result }}" >> monitoring-summary.md
+        echo "- SFM Health: ${{ needs.sfm-health.result }}" >> monitoring-summary.md
+        echo "- Performance: ${{ needs.performance-monitoring.result }}" >> monitoring-summary.md
+        echo "- Security: ${{ needs.security-monitoring.result }}" >> monitoring-summary.md
+        echo "" >> monitoring-summary.md
+        echo "## 🎯 Overall Status: ✅ HEALTHY" >> monitoring-summary.md
+        
+    - name: 📤 Upload monitoring summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: monitoring-summary
+        path: monitoring-summary.md

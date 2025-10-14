@@ -1,0 +1,58 @@
+{
+  "template_creator": {
+    "name": "Конструктор шаблонов ALADDIN",
+    "version": "1.0",
+    "description": "Инструмент для создания пользовательских шаблонов"
+  },
+  "template_structure": {
+    "basic_info": {
+      "name": "string",
+      "description": "string",
+      "category": "string",
+      "version": "string"
+    },
+    "security_settings": {
+      "vpn_config": "object",
+      "antivirus_config": "object",
+      "monitoring_config": "object",
+      "access_control": "object"
+    },
+    "features": {
+      "enabled_features": "array",
+      "disabled_features": "array",
+      "custom_features": "object"
+    },
+    "compliance": {
+      "standards": "array",
+      "requirements": "object",
+      "audit_settings": "object"
+    }
+  },
+  "template_validation": {
+    "required_fields": [
+      "name",
+      "description",
+      "security_settings"
+    ],
+    "optional_fields": [
+      "features",
+      "compliance",
+      "custom_settings"
+    ],
+    "validation_rules": {
+      "name_length": "min 3, max 50",
+      "description_length": "min 10, max 200",
+      "security_level": "basic|standard|advanced|maximum"
+    }
+  },
+  "template_export": {
+    "formats": [
+      "JSON",
+      "YAML",
+      "XML"
+    ],
+    "compression": true,
+    "encryption": true,
+    "signature": true
+  }
+}

@@ -1,0 +1,7 @@
+Timestamp,Level,Component,Message,Metadata
+2025-09-08T20:16:28.361311,INFO,FamilySecurityManager,Родительский контроль активирован для ребенка,"{""child_id"": ""child_001"", ""age"": 12, ""relevance_score"": 0.0}"
+2025-09-08T20:15:58.361306,CRITICAL,ThreatDetectionAgent,Обнаружена критическая угроза безопасности,"{""threat_type"": ""malware"", ""severity"": ""critical"", ""relevance_score"": 0.0}"
+2025-09-08T20:14:58.361302,INFO,AuthenticationManager,Пользователь успешно авторизован,"{""user_id"": ""user_123"", ""ip"": ""192.168.1.100"", ""relevance_score"": 0.0}"
+2025-09-08T20:13:58.361296,ERROR,DatabaseManager,Ошибка подключения к базе данных,"{""error_code"": ""DB_CONN_001"", ""retry_count"": 3, ""relevance_score"": 0.0}"
+2025-09-08T20:12:58.361289,WARNING,PerformanceOptimizer,Высокая нагрузка на CPU: 85%,"{""cpu_usage"": 85.2, ""threshold"": 80, ""relevance_score"": 0.0}"
+2025-09-08T20:11:58.361259,INFO,SecurityMonitoringManager,Система мониторинга безопасности активна,"{""status"": ""active"", ""uptime"": ""2h 15m"", ""relevance_score"": 0.0}"

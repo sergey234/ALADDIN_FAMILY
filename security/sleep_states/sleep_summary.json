@@ -1,0 +1,28 @@
+{
+  "sleep_mode_activation": {
+    "timestamp": "2025-09-07T19:31:32.566169",
+    "reason": "Интеграция VPN и антивируса в SafeFunctionManager завершена",
+    "status": "Успешно переведены в спящий режим"
+  },
+  "integrated_components": {
+    "vpn_security": {
+      "status": "sleeping",
+      "features": "15 серверов, 2 протокола, 3 уровня безопасности",
+      "integration": "SafeFunctionManager, Mobile API, Web Interface"
+    },
+    "antivirus_security": {
+      "status": "sleeping",
+      "features": "ClamAV, Malware Scanner, 4 сигнатуры, 11 паттернов",
+      "integration": "SafeFunctionManager, Mobile API, Real-time Protection"
+    }
+  },
+  "wake_up_procedures": {
+    "vpn": "Автоматическое пробуждение при запросе подключения",
+    "antivirus": "Автоматическое пробуждение при сканировании",
+    "mobile_app": "Готов к активации через мобильное приложение"
+  },
+  "monitoring": {
+    "status": "Активен",
+    "features": "Отслеживание состояния, логирование, уведомления"
+  }
+}

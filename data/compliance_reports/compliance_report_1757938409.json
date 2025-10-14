@@ -1,0 +1,72 @@
+{
+  "report_id": "compliance_report_1757938409",
+  "generated_at": "2025-09-15T16:13:29.214171",
+  "agent_name": "ComplianceAgent",
+  "summary": {
+    "total_requirements": 0,
+    "compliance_rate": 0.0,
+    "partial_compliance_rate": 0.0,
+    "non_compliance_rate": 0.0,
+    "assessment_completion_rate": 0.0
+  },
+  "standards_compliance": {
+    "iso27001": 0.0,
+    "soc2": 0.0,
+    "pci_dss": 0.0,
+    "gdpr": 0.0,
+    "hipaa": 0.0
+  },
+  "category_compliance": {
+    "access_control": 0.0,
+    "data_protection": 0.0,
+    "network_security": 0.0,
+    "incident_response": 0.0,
+    "business_continuity": 0.0
+  },
+  "requirements": [],
+  "metrics": {
+    "total_requirements": 0,
+    "requirements_by_standard": {},
+    "requirements_by_category": {},
+    "requirements_by_status": {},
+    "compliance_rate": 0.0,
+    "partial_compliance_rate": 0.0,
+    "non_compliance_rate": 0.0,
+    "assessment_completion_rate": 0.0,
+    "iso27001_compliance": 0.0,
+    "soc2_compliance": 0.0,
+    "pci_dss_compliance": 0.0,
+    "gdpr_compliance": 0.0,
+    "hipaa_compliance": 0.0,
+    "access_control_compliance": 0.0,
+    "data_protection_compliance": 0.0,
+    "network_security_compliance": 0.0,
+    "incident_response_compliance": 0.0,
+    "business_continuity_compliance": 0.0,
+    "avg_assessment_time": 0.0,
+    "avg_remediation_time": 0.0,
+    "last_assessment_time": null,
+    "next_assessment_time": null,
+    "evidence_quality_score": 0.0,
+    "control_effectiveness_score": 0.0,
+    "risk_mitigation_score": 0.0,
+    "audit_readiness_score": 0.0,
+    "compliance_trend": 0.0,
+    "improvement_rate": 0.0,
+    "risk_trend": 0.0
+  },
+  "recommendations": [
+    {
+      "type": "compliance_improvement",
+      "priority": "high",
+      "description": "Низкий уровень соответствия, требуется улучшение",
+      "action": "Провести детальный аудит и устранить пробелы"
+    },
+    {
+      "type": "assessment_completion",
+      "priority": "medium",
+      "description": "Не все требования оценены",
+      "action": "Завершить оценку всех требований"
+    }
+  ]
+}

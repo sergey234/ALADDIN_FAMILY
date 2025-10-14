@@ -1,0 +1,87 @@
+{
+  "integration_timestamp": "2025-09-06T13:42:21.825196",
+  "function_id": "function_81",
+  "function_name": "APIGateway",
+  "integration_status": "SUCCESS",
+  "safe_manager_status": "ACTIVE",
+  "function_config": {
+    "function_id": "function_81",
+    "function_name": "APIGateway",
+    "description": "API шлюз системы безопасности с ML аналитикой",
+    "module_path": "security.ai_agents.api_gateway",
+    "class_name": "APIGateway",
+    "quality_score": 80.3,
+    "quality_grade": "A",
+    "status": "sleeping",
+    "priority": "HIGH",
+    "security_level": "HIGH",
+    "performance_impact": "LOW",
+    "resource_usage": "MEDIUM",
+    "wake_up_time": "< 1 секунда",
+    "dependencies": [
+      "fastapi",
+      "uvicorn",
+      "PyJWT",
+      "redis",
+      "sqlalchemy",
+      "scikit-learn",
+      "numpy",
+      "prometheus-client"
+    ],
+    "features": [
+      "JWT аутентификация",
+      "API ключи с хешированием",
+      "Rate limiting",
+      "ML детекция аномалий",
+      "Проксирование запросов",
+      "Prometheus метрики",
+      "CORS защита",
+      "Health checks",
+      "Circuit breaker",
+      "Автоматическое масштабирование"
+    ],
+    "ml_capabilities": [
+      "Isolation Forest для детекции аномалий",
+      "Random Forest для классификации запросов",
+      "K-Means для кластеризации трафика",
+      "PCA для снижения размерности",
+      "StandardScaler для нормализации данных"
+    ],
+    "security_features": [
+      "JWT токен аутентификация",
+      "API ключи с SHA-256 хешированием",
+      "Rate limiting (100 запросов/минуту)",
+      "Blacklist/Whitelist IP адресов",
+      "CORS защита",
+      "Валидация размера запросов",
+      "ML детекция подозрительных запросов",
+      "Prometheus мониторинг безопасности"
+    ],
+    "performance_metrics": {
+      "lines_of_code": 1693,
+      "classes": 17,
+      "functions": 27,
+      "methods": 24,
+      "imports": 44,
+      "documentation_percentage": 80.0,
+      "type_hints_percentage": 96.3,
+      "complexity_score": 37.8,
+      "structure_score": 100.0
+    },
+    "integration_status": "READY",
+    "last_updated": "2025-09-06T13:42:21.824728",
+    "sleep_reason": "Оптимизация ресурсов - функция готова к использованию"
+  },
+  "registered_functions_count": 1,
+  "integration_verification": {
+    "registration_successful": true,
+    "function_found_in_registry": true,
+    "status_retrieval_successful": true
+  },
+  "next_steps": [
+    "1. APIGateway готов к пробуждению по требованию",
+    "2. Функция интегрирована в систему управления",
+    "3. Доступна через SafeFunctionManager API",
+    "4. Мониторинг через централизованную систему"
+  ]
+}

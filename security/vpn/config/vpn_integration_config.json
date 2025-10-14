@@ -1,0 +1,43 @@
+{
+  "integrations": {
+    "webhook": {
+      "enabled": true,
+      "default_timeout": 30,
+      "default_retry_count": 3,
+      "verify_ssl": true
+    },
+    "api": {
+      "enabled": true,
+      "default_timeout": 30,
+      "rate_limit": 100
+    },
+    "email": {
+      "enabled": true,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "use_tls": true
+    },
+    "slack": {
+      "enabled": false,
+      "webhook_url": "",
+      "channel": "#vpn-alerts"
+    },
+    "telegram": {
+      "enabled": false,
+      "bot_token": "",
+      "chat_id": ""
+    }
+  },
+  "security": {
+    "webhook_secret_length": 32,
+    "api_key_length": 64,
+    "signature_algorithm": "sha256",
+    "encrypt_sensitive_data": true
+  },
+  "processing": {
+    "batch_size": 100,
+    "processing_interval": 5,
+    "max_queue_size": 10000,
+    "retry_delay": 60
+  }
+}

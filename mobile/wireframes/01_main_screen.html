@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Wireframes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .logo-image {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .logo-image:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.6);
+        }
+        
+        .header-content {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .main-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #F59E0B;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+            margin-bottom: 2px;
+            letter-spacing: 1px;
+        }
+        
+        .subtitle {
+            font-size: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.1;
+            font-weight: 400;
+            max-width: 220px;
+            word-wrap: break-word;
+        }
+        
+        .profile-btn {
+            position: absolute;
+            right: 0;
+            width: 44px;
+            height: 44px;
+            background: #F59E0B;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0a1128;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 18px;
+        }
+        
+        .profile-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            color: white;
+            font-family: inherit;
+        }
+        
+        .card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .card-icon {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+        
+        .card-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .card-subtitle {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        
+        .ai-assistant {
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px solid #F59E0B;
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        
+        .ai-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 4px;
+        }
+        
+        .ai-message {
+            font-size: 10px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .ai-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 16px;
+            padding: 8px 12px;
+            color: white;
+            width: 100%;
+            font-size: 11px;
+        }
+        
+        .ai-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 6px 2px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 4px 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            min-width: 0;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+        
+        .status-left {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .status-right {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #F59E0B;
+            color: #0a1128;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* VPN Статус */
+        .vpn-status {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 2px solid #F59E0B;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .vpn-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .vpn-icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+
+        .vpn-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #0a1128;
+            flex: 1;
+        }
+        
+        /* Индикатор VPN на карточке */
+        .vpn-status-indicator {
+            filter: drop-shadow(0 0 6px currentColor);
+            animation: pulse-light 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-light {
+            0%, 100% {
+                opacity: 1;
+                filter: drop-shadow(0 0 6px currentColor);
+            }
+            50% {
+                opacity: 0.7;
+                filter: drop-shadow(0 0 12px currentColor);
+            }
+        }
+
+        .vpn-toggle {
+            display: flex;
+            align-items: center;
+        }
+
+        .toggle-switch {
+            width: 35px;
+            height: 18px;
+            background: rgba(10, 17, 40, 0.3);
+            border-radius: 18px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-slider {
+            width: 14px;
+            height: 14px;
+            background: #0a1128;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #0a1128;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(17px);
+            background: #F59E0B;
+        }
+
+        .vpn-info {
+            margin-bottom: 8px;
+        }
+
+        .vpn-server, .vpn-speed, .vpn-protection {
+            font-size: 9px;
+            color: #0a1128;
+            margin-bottom: 3px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .vpn-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .vpn-btn {
+            flex: 1;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .vpn-btn.primary {
+            background: #0a1128;
+            color: #F59E0B;
+        }
+
+        .vpn-btn.primary:hover {
+            background: rgba(10, 17, 40, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .vpn-btn.secondary {
+            background: rgba(10, 17, 40, 0.2);
+            color: #0a1128;
+            border: 2px solid #0a1128;
+        }
+
+        .vpn-btn.secondary:hover {
+            background: rgba(10, 17, 40, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Главный экран</div>
+        <div class="screen">
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="logo">
+                    <img src="images/mystical_eye.png" alt="ALADDIN Logo" class="logo-image">
+                    <div class="header-content">
+                        <div class="main-title">ALADDIN</div>
+                        <div class="subtitle">AI Защита семьи</div>
+                    </div>
+                </div>
+                <button class="profile-btn" onclick="window.location.href='11_profile_screen.html'" aria-label="Открыть профиль">👤</button>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="main-content">
+                <!-- Карточки функций -->
+                <div class="cards-grid" role="navigation" aria-label="Основные функции">
+                    <button class="card" id="vpn-card" onclick="window.location.href='02_protection_screen.html'" aria-label="Открыть VPN и защиту">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <div class="card-icon" style="margin-bottom: 0;">🛡️</div>
+                            <div class="vpn-status-indicator" id="vpn-status-indicator" style="font-size: 24px;">🔴</div>
+                        </div>
+                        <div class="card-title" style="margin-top: 8px;">ALADDIN VPN</div>
+                        <div class="card-subtitle">VPN • Защита</div>
+                    </button>
+                    
+                    <button class="card" onclick="sessionStorage.setItem('previousPage', '01_main_screen.html'); window.location.href='09_tariffs_screen.html'" aria-label="Открыть тарифные планы">
+                        <div class="card-icon">💎</div>
+                        <div class="card-title">Тарифы</div>
+                        <div class="card-subtitle">Выбор плана</div>
+                    </button>
+                    
+                    <button class="card" onclick="window.location.href='04_analytics_screen.html'" aria-label="Открыть аналитику и статистику">
+                        <div class="card-icon">📊</div>
+                        <div class="card-title">Аналитика</div>
+                        <div class="card-subtitle">Статистика</div>
+                    </button>
+                    
+                    <button class="card" onclick="window.location.href='05_settings_screen.html'" aria-label="Открыть настройки приложения">
+                        <div class="card-icon">⚙️</div>
+                        <div class="card-title">Настройки</div>
+                        <div class="card-subtitle">Параметры</div>
+                    </button>
+                </div>
+                
+                <!-- FAMILY Статус -->
+                <div class="vpn-status" role="region" aria-label="Статус семейной защиты">
+                    <div class="vpn-header">
+                        <div class="vpn-icon">👨‍👩‍👧‍👦</div>
+                        <div class="vpn-title">ALADDIN FAMILY</div>
+                        <div class="vpn-toggle">
+                            <div class="toggle-switch active" onclick="toggleFamilyProtection(event)" style="cursor: pointer;">
+                                <div class="toggle-slider"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vpn-info" onclick="sessionStorage.setItem('previousPage', '01_main_screen.html'); window.location.href='03_family_screen.html'" style="cursor: pointer;">
+                        <div class="vpn-server">👤 6 членов семьи • 4 устройства</div>
+                        <div class="vpn-speed">🛡️ Защита 98% • Все возрасты</div>
+                        <div class="vpn-protection"><span style="color: #10B981; font-weight: bold;">🟢</span> VPN 100 Мбит/с • Защищено от 2,847 угроз</div>
+                    </div>
+                    <div class="vpn-actions">
+                        <button class="vpn-btn primary" onclick="sessionStorage.setItem('previousPage', '01_main_screen.html'); window.location.href='03_family_screen.html'">Управление семьей</button>
+                        <button class="vpn-btn secondary" onclick="addFamilyMember()">Добавить члена семьи</button>
+                    </div>
+                </div>
+                
+                <!-- AI Помощник -->
+                <div class="ai-assistant" role="region" aria-label="AI Помощник ALADDIN">
+                    <div class="ai-title">🤖 AI Помощник ALADDIN</div>
+                    <div class="ai-message">"Привет! Я помогу настроить защиту для вашей семьи. Чем могу помочь?"</div>
+                    <input type="text" class="ai-input" placeholder="Задайте вопрос..." aria-label="Поле ввода вопроса для AI помощника">
+                </div>
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация">
+                <button class="nav-item active" onclick="window.location.reload()" aria-label="Главная страница" aria-current="page">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN">
+                    <div class="nav-icon">🛡️</div>
+                    <div class="nav-label">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления">
+                    <div class="nav-icon">🔔</div>
+                    <div class="nav-label">Уведомления</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи">
+                    <div class="nav-icon">📱</div>
+                    <div class="nav-label">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    function addFamilyMember() {
+        // Показываем уведомление о добавлении члена семьи
+        showNotification('Откройте "Управление семьей" для добавления нового члена', 'info');
+        
+        // Открываем экран семьи через 1 секунду
+        setTimeout(() => {
+            window.location.href='03_family_screen.html';
+        }, 1500);
+    }
+
+    function toggleFamilyProtection(event) {
+        event.stopPropagation(); // Предотвращаем переход на Family экран
+        const toggle = event.currentTarget;
+        toggle.classList.toggle('active');
+        
+        const isActive = toggle.classList.contains('active');
+        const message = isActive 
+            ? '✅ Семейная защита ВКЛЮЧЕНА\n\n🛡️ Все члены семьи под защитой\n👤 6 человек защищены\n📱 4 устройства активны' 
+            : '⚠️ Семейная защита ВЫКЛЮЧЕНА\n\n❌ Защита отключена для всей семьи\n⚠️ Рекомендуем включить обратно!';
+        
+        showNotification(message, isActive ? 'success' : 'warning');
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.textContent = message;
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#10B981' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-width: 280px;
+            text-align: center;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+    
+    // Обновляем статус VPN при загрузке страницы
+    window.addEventListener('DOMContentLoaded', () => {
+        updateVPNStatus();
+        
+        // Добавляем обработчик для AI input
+        const aiInput = document.querySelector('.ai-input');
+        if (aiInput) {
+            aiInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const question = aiInput.value.trim();
+                    if (question) {
+                        // Сохраняем вопрос в sessionStorage
+                        sessionStorage.setItem('aiQuestion', question);
+                    }
+                    // Переходим на страницу AI помощника
+                    window.location.href = '08_ai_assistant.html';
+                }
+            });
+            
+            // Также добавим возможность клика на контейнер
+            const aiContainer = document.querySelector('.ai-assistant');
+            if (aiContainer) {
+                aiContainer.style.cursor = 'pointer';
+                aiContainer.addEventListener('click', (e) => {
+                    // Если клик не на input
+                    if (e.target !== aiInput) {
+                        window.location.href = '08_ai_assistant.html';
+                    }
+                });
+            }
+        }
+    });
+    
+    function updateVPNStatus() {
+        const vpnConnected = localStorage.getItem('vpn_connected') === 'true';
+        
+        // Обновляем индикатор и карточку VPN
+        const vpnIndicator = document.getElementById('vpn-status-indicator');
+        const vpnCard = document.getElementById('vpn-card');
+        
+        if (vpnConnected) {
+            // VPN включен - зеленый индикатор
+            if (vpnIndicator) {
+                vpnIndicator.textContent = '🟢';
+                vpnIndicator.style.color = '#10B981';
+            }
+            if (vpnCard) {
+                vpnCard.style.border = '2px solid #10B981';
+            }
+        } else {
+            // VPN выключен - красный индикатор
+            if (vpnIndicator) {
+                vpnIndicator.textContent = '🔴';
+                vpnIndicator.style.color = '#EF4444';
+            }
+            if (vpnCard) {
+                vpnCard.style.border = '2px solid rgba(255, 255, 255, 0.2)';
+            }
+        }
+    }
+</script>
+
+</body>
+</html>

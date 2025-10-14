@@ -1,0 +1,56 @@
+# Dockerfile для ALADDIN Core Dashboard
+FROM python:3.9-slim
+
+# Метаданные
+LABEL maintainer="ALADDIN Security Team"
+LABEL version="2.0"
+LABEL description="ALADDIN Security Dashboard Core Service"
+
+# Установка системных зависимостей
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Создание пользователя для безопасности
+RUN useradd -m -s /bin/bash aladdin
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Копирование requirements
+COPY requirements-test.txt .
+
+# Установка Python зависимостей
+RUN pip install --no-cache-dir -r requirements-test.txt
+
+# Копирование исходного кода
+COPY core/ ./core/
+COPY security/ ./security/
+COPY config/ ./config/
+COPY scripts/ ./scripts/
+COPY tests/ ./tests/
+COPY enhanced_api_docs.py .
+
+# Создание директорий для логов и данных
+RUN mkdir -p /app/logs /app/data /app/reports
+
+# Установка прав доступа
+RUN chown -R aladdin:aladdin /app
+RUN chmod -R 755 /app
+
+# Переключение на пользователя aladdin
+USER aladdin
+
+# Открытие портов
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Команда запуска
+CMD ["python", "enhanced_api_docs.py"]

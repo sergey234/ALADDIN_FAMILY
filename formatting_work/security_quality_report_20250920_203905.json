@@ -1,0 +1,103 @@
+{
+  "file": "security/ai_agents/analyze_all_security_components.py",
+  "timestamp": "2025-09-20T20:39:05.900407",
+  "total_analysis_time_seconds": 0.03955483436584473,
+  "overall_quality_score": 99.4,
+  "analysis_details": {
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "security",
+        "key"
+      ],
+      "message": "Найдено 2 ключевых слов безопасности"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции find_security_components (строка 23)",
+        "Отсутствует тип возвращаемого значения для функции analyze_all_security_components (строка 48)"
+      ],
+      "message": "Найдено 2 отсутствующих type hints"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "json",
+        "os",
+        "security_quality_analyzer",
+        "sys",
+        "datetime"
+      ],
+      "message": "Зависимости: 5"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 2,
+      "num_classes": 0,
+      "message": "Функций: 2, Классов: 0"
+    },
+    "docstrings": {
+      "status": "success",
+      "missing_docstrings": [],
+      "message": "Найдено 0 отсутствующих docstring"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 8963,
+      "lines": 185,
+      "message": "Размер: 8963 байт, Строк: 185"
+    },
+    "imports": {
+      "status": "success",
+      "message": "Импорты корректны"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 2,
+    "security_classes_found": 0,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": true,
+    "docstrings_ok": true,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Добавьте классы системы безопасности.",
+    "Зарегистрируйте функцию в SFM реестре.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

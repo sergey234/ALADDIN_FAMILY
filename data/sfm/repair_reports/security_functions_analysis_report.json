@@ -1,0 +1,41 @@
+{
+  "timestamp": "2025-10-05T10:34:07.002439",
+  "analysis_summary": {
+    "total_functions_in_true_sfm": 1477,
+    "security_functions": 907,
+    "vpn_functions": 142,
+    "security_percentage": 61.408259986459036
+  },
+  "categories_analysis": {
+    "VPN Configuration": 135,
+    "Performance Optimization": 38,
+    "Advanced Monitoring": 78,
+    "Intrusion Prevention": 21,
+    "Malware Protection": 69,
+    "Mobile Security": 44,
+    "Sleep Mode Management": 62,
+    "Compliance Management": 10,
+    "Data Protection": 19,
+    "Network Security": 4,
+    "Other": 427
+  },
+  "quality_metrics": {
+    "functions_with_content": 907,
+    "functions_with_names": 0,
+    "active_functions": 367,
+    "sleep_functions": 7
+  },
+  "recommendations": {
+    "priority_1_categories": [
+      "VPN Configuration (135 функций)",
+      "Performance Optimization (38 функций)",
+      "Advanced Monitoring (78 функций)",
+      "Intrusion Prevention (21 функций)",
+      "Malware Protection (69 функций)",
+      "Mobile Security (44 функций)"
+    ],
+    "total_priority_functions": 385,
+    "strategy": "Расширить SFM Registry (492) лучшими функциями из True SFM",
+    "target_functions": "600-700 функций в едином реестре"
+  }
+}

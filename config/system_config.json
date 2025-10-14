@@ -1,0 +1,29 @@
+{
+  "system": {
+    "name": "ALADDIN Security System",
+    "version": "1.0.0",
+    "install_date": "2025-09-09T01:34:43.930931",
+    "installer": "one_click_installer"
+  },
+  "security": {
+    "level": "high",
+    "auto_update": true,
+    "monitoring": true
+  },
+  "ports": {
+    "main_api": 8000,
+    "vpn": 8001,
+    "antivirus": 8002,
+    "mobile": 8003,
+    "monitoring": 8004,
+    "admin": 8005,
+    "backup": 8006
+  },
+  "features": {
+    "vpn": true,
+    "antivirus": true,
+    "mobile_api": true,
+    "monitoring": true,
+    "backup": true
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "function_id": "function_81",
+  "function_name": "APIGateway",
+  "description": "API шлюз системы безопасности",
+  "status": "sleeping",
+  "quality_score": 80.3,
+  "quality_grade": "A",
+  "wake_up_time": "< 1 секунда",
+  "priority": "HIGH",
+  "dependencies": [
+    "FastAPI",
+    "PyJWT",
+    "Redis",
+    "SQLAlchemy",
+    "scikit-learn",
+    "numpy"
+  ],
+  "features": [
+    "JWT аутентификация",
+    "API ключи",
+    "Rate limiting",
+    "ML детекция аномалий",
+    "Проксирование запросов",
+    "Prometheus метрики",
+    "CORS защита",
+    "Health checks"
+  ],
+  "security_level": "HIGH",
+  "performance_impact": "LOW",
+  "resource_usage": "MEDIUM",
+  "last_updated": "2025-09-06T12:47:00.889917",
+  "sleep_reason": "Оптимизация ресурсов - функция готова к использованию"
+}

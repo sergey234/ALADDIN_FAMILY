@@ -1,0 +1,35 @@
+{
+  "name": "ImprovementCheckBot",
+  "config": {
+    "redis_url": "redis://localhost:6379/0",
+    "database_url": "sqlite:///gaming_security_bot.db",
+    "cheat_detection_enabled": true,
+    "behavior_analysis_enabled": true,
+    "transaction_monitoring": true,
+    "chat_moderation": true,
+    "ddos_protection": true,
+    "anti_bot_protection": true,
+    "ml_enabled": true,
+    "adaptive_learning": true,
+    "real_time_monitoring": true,
+    "auto_ban_enabled": false,
+    "reputation_system": true,
+    "cleanup_interval": 300,
+    "metrics_enabled": true,
+    "logging_enabled": true
+  },
+  "stats": {
+    "total_sessions": 0,
+    "active_sessions": 0,
+    "cheat_detections": 0,
+    "suspicious_actions": 0,
+    "bans_applied": 0,
+    "fraudulent_transactions": 0,
+    "false_positives": 0,
+    "average_session_duration": 0.0,
+    "detection_accuracy": 0.0
+  },
+  "running": false,
+  "active_sessions_count": 0,
+  "player_profiles_count": 0
+}

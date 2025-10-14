@@ -1,0 +1,45 @@
+{
+  "2fa_settings": {
+    "enabled": true,
+    "required_for": {
+      "admin_panel": true,
+      "vpn_connection": false,
+      "config_download": false,
+      "status_check": false,
+      "user_registration": false
+    },
+    "methods": {
+      "sms": {
+        "enabled": true,
+        "provider": "twilio",
+        "cost_per_sms": 0.01
+      },
+      "email": {
+        "enabled": true,
+        "smtp_server": "smtp.gmail.com",
+        "smtp_port": 587,
+        "username": "",
+        "password": "",
+        "from_email": "noreply@aladdin-vpn.com"
+      },
+      "totp_app": {
+        "enabled": true,
+        "issuer": "ALADDIN VPN",
+        "algorithm": "SHA1",
+        "digits": 6,
+        "period": 30
+      },
+      "backup_codes": {
+        "enabled": true,
+        "count": 10,
+        "length": 8
+      }
+    },
+    "security": {
+      "max_attempts": 3,
+      "lockout_duration_minutes": 15,
+      "code_expiry_minutes": 5,
+      "remember_device_days": 30
+    }
+  }
+}

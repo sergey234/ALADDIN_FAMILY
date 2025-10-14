@@ -1,0 +1,9 @@
+{
+  "function_name": "ParentalControlConfig",
+  "function_id": "bot_parentalcontrolconfig",
+  "sleep_time": "2025-09-15T22:02:30.020027",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": false,
+  "minimal_system_sleep": true
+}

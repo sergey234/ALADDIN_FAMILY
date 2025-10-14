@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "strict_mode": true,
+  "auto_block_fake_chats": true,
+  "detection_threshold": 0.7,
+  "analyze_group_chats": true,
+  "analyze_private_chats": true,
+  "check_admin_verification": true,
+  "monitor_message_patterns": true
+}

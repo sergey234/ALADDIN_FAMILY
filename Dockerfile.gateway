@@ -1,0 +1,45 @@
+# Dockerfile для API Gateway
+FROM python:3.9-slim
+
+# Установка системных зависимостей
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Создание пользователя для безопасности
+RUN useradd -m -s /bin/bash aladdin
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Копирование requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копирование исходного кода
+COPY security/microservices/api_gateway.py .
+COPY core/ ./core/
+COPY config/ ./config/
+
+# Создание директорий
+RUN mkdir -p /app/logs
+
+# Установка прав доступа
+RUN chown -R aladdin:aladdin /app
+
+# Переключение на пользователя aladdin
+USER aladdin
+
+# Открытие портов
+EXPOSE 80 443 8003
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8003/health || exit 1
+
+# Запуск API Gateway
+CMD ["python", "api_gateway.py"]

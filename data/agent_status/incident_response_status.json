@@ -1,0 +1,14 @@
+{
+  "status": "SLEEPING", 
+  "agent": "IncidentResponseAgent", 
+  "last_update": "2025-09-04T22:36:07.754631", 
+  "score": "100/100", 
+  "sleep_duration": "INDEFINITE", 
+  "quality": "A+", 
+  "wake_up_conditions": [
+    "Обновление планов реагирования", 
+    "Новые типы инцидентов обнаружены", 
+    "Изменение конфигурации реагирования", 
+    "Критические инциденты в системе"
+  ]
+}

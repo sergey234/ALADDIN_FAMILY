@@ -1,0 +1,25 @@
+{
+  "report_id": "threat_intel_1758376028",
+  "generated_at": "2025-09-20T17:47:08.181088",
+  "agent_name": "TestAgent",
+  "summary": {
+    "total_threats": 1,
+    "threats_by_type": {
+      "malware": 1
+    },
+    "threats_by_severity": {
+      "high": 1
+    },
+    "total_iocs": 1,
+    "data_quality_score": 0.78
+  },
+  "threats": [
+    {
+      "threat_id": "test_001",
+      "title": "Test Threat",
+      "description": "Test Description",
+      "threat_type": "malware",
+      "severity": "high",
+      "iocs": [
+        {
+          "type": 

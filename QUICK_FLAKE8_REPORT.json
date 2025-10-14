@@ -1,0 +1,730 @@
+{
+  "total_files": 62,
+  "clean_files": 18,
+  "files_with_errors": 44,
+  "total_errors": 1286,
+  "error_types": {
+    "W293": 783,
+    "W291": 81,
+    "E129": 2,
+    "E501": 25,
+    "E128": 27,
+    "F401": 219,
+    "F541": 5,
+    "F841": 6,
+    "E402": 41,
+    "E302": 73,
+    "W292": 14,
+    "F811": 2,
+    "E305": 5,
+    "E902": 3
+  },
+  "category_stats": {
+    "core": {
+      "total": 5,
+      "clean": 5,
+      "errors": 0,
+      "total_error_count": 0
+    },
+    "security": {
+      "total": 17,
+      "clean": 6,
+      "errors": 11,
+      "total_error_count": 518
+    },
+    "ai_agent": {
+      "total": 15,
+      "clean": 4,
+      "errors": 11,
+      "total_error_count": 399
+    },
+    "bot": {
+      "total": 15,
+      "clean": 1,
+      "errors": 14,
+      "total_error_count": 198
+    },
+    "microservice": {
+      "total": 10,
+      "clean": 2,
+      "errors": 8,
+      "total_error_count": 171
+    }
+  },
+  "file_details": [
+    {
+      "file_path": "core/base.py",
+      "description": "CORE - Базовая архитектура",
+      "category": "core",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "core/service_base.py",
+      "description": "CORE - Базовый сервис",
+      "category": "core",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "core/database.py",
+      "description": "CORE - База данных",
+      "category": "core",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "core/configuration.py",
+      "description": "CORE - Конфигурация",
+      "category": "core",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "core/logging_module.py",
+      "description": "CORE - Логирование",
+      "category": "core",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/safe_function_manager.py",
+      "description": "SECURITY - Главный менеджер",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 96,
+      "errors": {
+        "W293": 58,
+        "W291": 10,
+        "E129": 2,
+        "E501": 11,
+        "E128": 10,
+        "F401": 1,
+        "F541": 3,
+        "F841": 1
+      }
+    },
+    {
+      "file_path": "security/enhanced_alerting.py",
+      "description": "SECURITY - Расширенные алерты",
+      "category": "security",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/authentication.py",
+      "description": "SECURITY - Аутентификация",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 28,
+      "errors": {
+        "F401": 4,
+        "E402": 1,
+        "E302": 1,
+        "W293": 22
+      }
+    },
+    {
+      "file_path": "security/security_monitoring.py",
+      "description": "SECURITY - Мониторинг",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 28,
+      "errors": {
+        "F401": 4,
+        "E402": 1,
+        "E302": 1,
+        "W293": 22
+      }
+    },
+    {
+      "file_path": "security/incident_response.py",
+      "description": "SECURITY - Реагирование на инциденты",
+      "category": "security",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/threat_detection.py",
+      "description": "SECURITY - Обнаружение угроз",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 27,
+      "errors": {
+        "F401": 1,
+        "E302": 7,
+        "W293": 13,
+        "E501": 1,
+        "W291": 2,
+        "E128": 2,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/malware_protection.py",
+      "description": "SECURITY - Защита от malware",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 44,
+      "errors": {
+        "F401": 6,
+        "W293": 36,
+        "F541": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/intrusion_prevention.py",
+      "description": "SECURITY - Предотвращение вторжений",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 58,
+      "errors": {
+        "F401": 6,
+        "W293": 50,
+        "F541": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/access_control_manager.py",
+      "description": "SECURITY - Контроль доступа",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 1,
+      "errors": {
+        "F401": 1
+      }
+    },
+    {
+      "file_path": "security/data_protection_manager.py",
+      "description": "SECURITY - Защита данных",
+      "category": "security",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/zero_trust_manager.py",
+      "description": "SECURITY - Zero Trust",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 118,
+      "errors": {
+        "F401": 8,
+        "E402": 1,
+        "E302": 9,
+        "W293": 82,
+        "F811": 1,
+        "W291": 7,
+        "E128": 7,
+        "E501": 1,
+        "E305": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/security_audit.py",
+      "description": "SECURITY - Аудит безопасности",
+      "category": "security",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/compliance_manager.py",
+      "description": "SECURITY - Соответствие",
+      "category": "security",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/threat_intelligence.py",
+      "description": "SECURITY - Разведка угроз",
+      "category": "security",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/network_monitoring.py",
+      "description": "SECURITY - Мониторинг сети",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 16,
+      "errors": {
+        "F401": 1,
+        "E302": 6,
+        "E501": 1,
+        "W293": 7,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ransomware_protection.py",
+      "description": "SECURITY - Защита от ransomware",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 101,
+      "errors": {
+        "F401": 4,
+        "E302": 7,
+        "W293": 85,
+        "W291": 1,
+        "E128": 1,
+        "E305": 1,
+        "F811": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/advanced_alerting.py",
+      "description": "SECURITY - Продвинутые алерты",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 1,
+      "errors": {
+        "E902": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/threat_detection_agent.py",
+      "description": "AI_AGENT - Обнаружение угроз",
+      "category": "ai_agent",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/ai_agents/behavioral_analysis_agent.py",
+      "description": "AI_AGENT - Анализ поведения",
+      "category": "ai_agent",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/ai_agents/password_security_agent.py",
+      "description": "AI_AGENT - Безопасность паролей",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 1,
+      "errors": {
+        "F401": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/incident_response_agent.py",
+      "description": "AI_AGENT - Реагирование на инциденты",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 1,
+      "errors": {
+        "F401": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/threat_intelligence_agent.py",
+      "description": "AI_AGENT - Разведка угроз",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 2,
+      "errors": {
+        "F401": 2
+      }
+    },
+    {
+      "file_path": "security/ai_agents/network_security_agent.py",
+      "description": "AI_AGENT - Сетевая безопасность",
+      "category": "ai_agent",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/ai_agents/data_protection_agent.py",
+      "description": "AI_AGENT - Защита данных",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 9,
+      "errors": {
+        "F401": 3,
+        "F841": 2,
+        "W293": 2,
+        "E501": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/compliance_agent.py",
+      "description": "AI_AGENT - Соответствие",
+      "category": "ai_agent",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/ai_agents/voice_analysis_engine.py",
+      "description": "AI_AGENT - Анализ голоса",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 74,
+      "errors": {
+        "F401": 4,
+        "W293": 64,
+        "W291": 3,
+        "F841": 2,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/deepfake_protection_system.py",
+      "description": "AI_AGENT - Защита от deepfake",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 92,
+      "errors": {
+        "F401": 3,
+        "W293": 80,
+        "W291": 8,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/financial_protection_hub.py",
+      "description": "AI_AGENT - Финансовая защита",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 71,
+      "errors": {
+        "F401": 6,
+        "W293": 55,
+        "W291": 9,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/emergency_response_system.py",
+      "description": "AI_AGENT - Экстренное реагирование",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 76,
+      "errors": {
+        "F401": 6,
+        "W293": 55,
+        "E501": 1,
+        "W291": 12,
+        "F841": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/elderly_protection_interface.py",
+      "description": "AI_AGENT - Защита пожилых",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 71,
+      "errors": {
+        "F401": 4,
+        "W293": 49,
+        "E501": 7,
+        "W291": 10,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/phishing_protection.py",
+      "description": "AI_AGENT - Защита от фишинга",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 1,
+      "errors": {
+        "E902": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/malware_detection.py",
+      "description": "AI_AGENT - Обнаружение malware",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 1,
+      "errors": {
+        "E902": 1
+      }
+    },
+    {
+      "file_path": "security/bots/emergency_response_bot.py",
+      "description": "BOT - Экстренное реагирование",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 9,
+      "errors": {
+        "F401": 9
+      }
+    },
+    {
+      "file_path": "security/bots/parental_control_bot.py",
+      "description": "BOT - Родительский контроль",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 10,
+      "errors": {
+        "F401": 10
+      }
+    },
+    {
+      "file_path": "security/bots/notification_bot.py",
+      "description": "BOT - Уведомления",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 8,
+      "errors": {
+        "F401": 8
+      }
+    },
+    {
+      "file_path": "security/bots/whatsapp_security_bot.py",
+      "description": "BOT - WhatsApp безопасность",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 11,
+      "errors": {
+        "F401": 11
+      }
+    },
+    {
+      "file_path": "security/bots/telegram_security_bot.py",
+      "description": "BOT - Telegram безопасность",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 11,
+      "errors": {
+        "F401": 11
+      }
+    },
+    {
+      "file_path": "security/bots/instagram_security_bot.py",
+      "description": "BOT - Instagram безопасность",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 11,
+      "errors": {
+        "F401": 11
+      }
+    },
+    {
+      "file_path": "security/bots/mobile_navigation_bot.py",
+      "description": "BOT - Мобильная навигация",
+      "category": "bot",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/bots/gaming_security_bot.py",
+      "description": "BOT - Безопасность игр",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 11,
+      "errors": {
+        "F401": 11
+      }
+    },
+    {
+      "file_path": "security/bots/analytics_bot.py",
+      "description": "BOT - Аналитика",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 10,
+      "errors": {
+        "F401": 10
+      }
+    },
+    {
+      "file_path": "security/bots/website_navigation_bot.py",
+      "description": "BOT - Навигация по сайтам",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 11,
+      "errors": {
+        "F401": 11
+      }
+    },
+    {
+      "file_path": "security/bots/browser_security_bot.py",
+      "description": "BOT - Безопасность браузера",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 3,
+      "errors": {
+        "F401": 3
+      }
+    },
+    {
+      "file_path": "security/bots/cloud_storage_security_bot.py",
+      "description": "BOT - Облачное хранилище",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 3,
+      "errors": {
+        "F401": 3
+      }
+    },
+    {
+      "file_path": "security/bots/device_security_bot.py",
+      "description": "BOT - Безопасность устройств",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 6,
+      "errors": {
+        "F401": 5,
+        "E501": 1
+      }
+    },
+    {
+      "file_path": "security/bots/incognito_protection_bot.py",
+      "description": "BOT - Защита инкогнито",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 84,
+      "errors": {
+        "F401": 8,
+        "W293": 56,
+        "W291": 19,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/bots/parental_control_bot.py",
+      "description": "BOT - Родительский контроль",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 10,
+      "errors": {
+        "F401": 10
+      }
+    },
+    {
+      "file_path": "security/microservices/api_gateway.py",
+      "description": "MICROSERVICE - API Gateway",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 28,
+      "errors": {
+        "F401": 3,
+        "E402": 7,
+        "E302": 16,
+        "E501": 1,
+        "E305": 1
+      }
+    },
+    {
+      "file_path": "security/microservices/load_balancer.py",
+      "description": "MICROSERVICE - Балансировщик",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 31,
+      "errors": {
+        "F401": 3,
+        "E402": 1,
+        "E302": 25,
+        "W293": 1,
+        "E305": 1
+      }
+    },
+    {
+      "file_path": "security/microservices/rate_limiter.py",
+      "description": "MICROSERVICE - Ограничитель скорости",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 13,
+      "errors": {
+        "F401": 5,
+        "E402": 8
+      }
+    },
+    {
+      "file_path": "security/microservices/circuit_breaker.py",
+      "description": "MICROSERVICE - Предохранитель",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 14,
+      "errors": {
+        "F401": 6,
+        "E402": 8
+      }
+    },
+    {
+      "file_path": "security/microservices/redis_cache_manager.py",
+      "description": "MICROSERVICE - Redis кэш",
+      "category": "microservice",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/microservices/service_mesh_manager.py",
+      "description": "MICROSERVICE - Сервисная сетка",
+      "category": "microservice",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/microservices/user_interface_manager.py",
+      "description": "MICROSERVICE - UI менеджер",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 10,
+      "errors": {
+        "F401": 4,
+        "E402": 6
+      }
+    },
+    {
+      "file_path": "security/microservices/emergency_service_caller.py",
+      "description": "MICROSERVICE - Экстренные сервисы",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 52,
+      "errors": {
+        "F401": 1,
+        "W293": 43,
+        "E128": 7,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/microservices/wake_up_systems.py",
+      "description": "MICROSERVICE - Системы пробуждения",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 6,
+      "errors": {
+        "F401": 1,
+        "E302": 1,
+        "W293": 3,
+        "E305": 1
+      }
+    },
+    {
+      "file_path": "security/microservices/safe_function_manager_integration.py",
+      "description": "MICROSERVICE - SFM интеграция",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 17,
+      "errors": {
+        "F401": 9,
+        "E402": 8
+      }
+    }
+  ]
+}

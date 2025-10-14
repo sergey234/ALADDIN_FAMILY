@@ -1,0 +1,223 @@
+name: 📢 ALADDIN Notifications & Alerts
+
+on:
+  workflow_run:
+    workflows: ["🚀 ALADDIN Dashboard CI/CD Pipeline", "🔒 Security Audit & Compliance", "📊 Performance Monitoring & Optimization"]
+    types: [completed, failed]
+  workflow_call:
+    inputs:
+      notification_type:
+        description: 'Type of notification'
+        required: true
+        type: string
+      status:
+        description: 'Status of the workflow'
+        required: true
+        type: string
+      details:
+        description: 'Additional details'
+        required: false
+        type: string
+
+env:
+  NOTIFICATION_WEBHOOK: ${{ secrets.NOTIFICATION_WEBHOOK }}
+  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+jobs:
+  # 📢 Send Notifications
+  send-notifications:
+    name: 📢 Send Notifications
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📢 Send Slack Notification
+      if: env.SLACK_WEBHOOK != ''
+      run: |
+        python -c "
+        import requests
+        import json
+        import os
+        
+        webhook_url = os.environ.get('SLACK_WEBHOOK')
+        if not webhook_url:
+            print('❌ Slack webhook not configured')
+            exit(0)
+            
+        # Определяем статус и цвет
+        status = '${{ github.event.workflow_run.conclusion || github.event.inputs.status }}'
+        if status == 'success':
+            color = 'good'
+            emoji = '✅'
+        elif status == 'failure':
+            color = 'danger'
+            emoji = '❌'
+        else:
+            color = 'warning'
+            emoji = '⚠️'
+            
+        # Формируем сообщение
+        workflow_name = '${{ github.event.workflow_run.name || github.workflow }}'
+        commit_sha = '${{ github.event.workflow_run.head_sha || github.sha }}'
+        commit_message = '${{ github.event.workflow_run.head_commit.message || \"Manual trigger\" }}'
+        run_url = '${{ github.event.workflow_run.html_url || github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+        
+        message = {
+            'text': f'{emoji} ALADDIN {workflow_name}',
+            'attachments': [
+                {
+                    'color': color,
+                    'fields': [
+                        {
+                            'title': 'Status',
+                            'value': status.upper(),
+                            'short': True
+                        },
+                        {
+                            'title': 'Commit',
+                            'value': f'`{commit_sha[:8]}`',
+                            'short': True
+                        },
+                        {
+                            'title': 'Message',
+                            'value': commit_message[:100] + ('...' if len(commit_message) > 100 else ''),
+                            'short': False
+                        },
+                        {
+                            'title': 'View Details',
+                            'value': f'<{run_url}|Open in GitHub>',
+                            'short': False
+                        }
+                    ]
+                }
+            ]
+        }
+        
+        try:
+            response = requests.post(webhook_url, json=message, timeout=10)
+            response.raise_for_status()
+            print('✅ Slack notification sent successfully')
+        except Exception as e:
+            print(f'❌ Failed to send Slack notification: {e}')
+        "
+        
+    - name: 📢 Send Telegram Notification
+      if: env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != ''
+      run: |
+        python -c "
+        import requests
+        import json
+        import os
+        
+        bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+        chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+        
+        if not bot_token or not chat_id:
+            print('❌ Telegram credentials not configured')
+            exit(0)
+            
+        # Определяем статус и эмодзи
+        status = '${{ github.event.workflow_run.conclusion || github.event.inputs.status }}'
+        if status == 'success':
+            emoji = '✅'
+        elif status == 'failure':
+            emoji = '❌'
+        else:
+            emoji = '⚠️'
+            
+        # Формируем сообщение
+        workflow_name = '${{ github.event.workflow_run.name || github.workflow }}'
+        commit_sha = '${{ github.event.workflow_run.head_sha || github.sha }}'
+        commit_message = '${{ github.event.workflow_run.head_commit.message || \"Manual trigger\" }}'
+        run_url = '${{ github.event.workflow_run.html_url || github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+        
+        message = f'''{emoji} *ALADDIN {workflow_name}*
+
+*Status:* {status.upper()}
+*Commit:* `{commit_sha[:8]}`
+*Message:* {commit_message[:100]}{'...' if len(commit_message) > 100 else ''}
+
+[View Details]({run_url})'''
+        
+        try:
+            url = f'https://api.telegram.org/bot{bot_token}/sendMessage'
+            data = {
+                'chat_id': chat_id,
+                'text': message,
+                'parse_mode': 'Markdown',
+                'disable_web_page_preview': True
+            }
+            response = requests.post(url, json=data, timeout=10)
+            response.raise_for_status()
+            print('✅ Telegram notification sent successfully')
+        except Exception as e:
+            print(f'❌ Failed to send Telegram notification: {e}')
+        "
+        
+    - name: 📢 Send Generic Webhook Notification
+      if: env.NOTIFICATION_WEBHOOK != ''
+      run: |
+        python -c "
+        import requests
+        import json
+        import os
+        
+        webhook_url = os.environ.get('NOTIFICATION_WEBHOOK')
+        if not webhook_url:
+            print('❌ Generic webhook not configured')
+            exit(0)
+            
+        # Формируем данные для webhook
+        data = {
+            'workflow': '${{ github.event.workflow_run.name || github.workflow }}',
+            'status': '${{ github.event.workflow_run.conclusion || github.event.inputs.status }}',
+            'commit_sha': '${{ github.event.workflow_run.head_sha || github.sha }}',
+            'commit_message': '${{ github.event.workflow_run.head_commit.message || \"Manual trigger\" }}',
+            'run_url': '${{ github.event.workflow_run.html_url || github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}',
+            'timestamp': '$(date -u +%Y-%m-%dT%H:%M:%SZ)',
+            'repository': '${{ github.repository }}',
+            'branch': '${{ github.ref_name }}'
+        }
+        
+        try:
+            response = requests.post(webhook_url, json=data, timeout=10)
+            response.raise_for_status()
+            print('✅ Generic webhook notification sent successfully')
+        except Exception as e:
+            print(f'❌ Failed to send generic webhook notification: {e}')
+        "
+
+  # 📊 Generate Notification Report
+  notification-report:
+    name: 📊 Generate Notification Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    needs: [send-notifications]
+    if: always()
+    
+    steps:
+    - name: 📊 Generate Notification Report
+      run: |
+        echo "# 📢 ALADDIN Notification Report" > notification-report.md
+        echo "**Notification Date:** $(date)" >> notification-report.md
+        echo "**Workflow:** ${{ github.event.workflow_run.name || github.workflow }}" >> notification-report.md
+        echo "**Status:** ${{ github.event.workflow_run.conclusion || github.event.inputs.status }}" >> notification-report.md
+        echo "**Commit:** ${{ github.event.workflow_run.head_sha || github.sha }}" >> notification-report.md
+        echo "" >> notification-report.md
+        echo "## 📋 Notification Channels:" >> notification-report.md
+        echo "- Slack: ${{ env.SLACK_WEBHOOK != '' && '✅ Configured' || '❌ Not configured' }}" >> notification-report.md
+        echo "- Telegram: ${{ env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' && '✅ Configured' || '❌ Not configured' }}" >> notification-report.md
+        echo "- Generic Webhook: ${{ env.NOTIFICATION_WEBHOOK != '' && '✅ Configured' || '❌ Not configured' }}" >> notification-report.md
+        echo "" >> notification-report.md
+        echo "## 📊 Notification Status: ${{ needs.send-notifications.result }}" >> notification-report.md
+        
+    - name: 📤 Upload notification report
+      uses: actions/upload-artifact@v3
+      with:
+        name: notification-report
+        path: notification-report.md

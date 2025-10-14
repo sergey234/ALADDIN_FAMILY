@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "integrate_sberbank": true,
+  "integrate_vtb": true,
+  "integrate_alfa_bank": true,
+  "integrate_tinkoff": true,
+  "integrate_gazprombank": true,
+  "auto_block_suspicious": true,
+  "fraud_detection_threshold": 0.7,
+  "real_time_monitoring": true
+}

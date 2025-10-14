@@ -1,0 +1,687 @@
+security/safe_function_manager.py:39:80: E501 line too long (80 > 79 characters)
+    def __init__(self, alert_type: str, message: str, severity: str = "medium"):
+                                                                               ^
+security/safe_function_manager.py:179:80: E501 line too long (82 > 79 characters)
+        self.redis_enabled = config.get("redis_enabled", True) if config else True
+                                                                               ^
+security/safe_function_manager.py:180:80: E501 line too long (118 > 79 characters)
+        self.redis_url = config.get("redis_url", "redis://localhost:6379/0") if config else "redis://localhost:6379/0"
+                                                                               ^
+security/safe_function_manager.py:181:80: E501 line too long (83 > 79 characters)
+        self.cache_ttl = config.get("cache_ttl", 3600) if config else 3600  # 1 час
+                                                                               ^
+security/safe_function_manager.py:185:1: W293 blank line contains whitespace
+        
+^
+security/safe_function_manager.py:189:1: W293 blank line contains whitespace
+        
+^
+security/safe_function_manager.py:192:80: E501 line too long (102 > 79 characters)
+        self.circuit_breaker_enabled = config.get("circuit_breaker_enabled", True) if config else True
+                                                                               ^
+security/safe_function_manager.py:193:1: W293 blank line contains whitespace
+        
+^
+security/safe_function_manager.py:201:80: E501 line too long (97 > 79 characters)
+                self.log_activity(f"Redis недоступен: {e}, используем встроенный кэш", "warning")
+                                                                               ^
+security/safe_function_manager.py:206:80: E501 line too long (98 > 79 characters)
+                self.log_activity("Redis модуль не установлен, используем встроенный кэш", "info")
+                                                                               ^
+security/safe_function_manager.py:243:1: W293 blank line contains whitespace
+        
+^
+security/safe_function_manager.py:312:1: W293 blank line contains whitespace
+    
+^
+security/safe_function_manager.py:313:80: E501 line too long (83 > 79 characters)
+    def get_cached_result(self, function_id: str, args_hash: str) -> Optional[Any]:
+                                                                               ^
+security/safe_function_manager.py:317:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:323:80: E501 line too long (100 > 79 characters)
+                    self.log_activity(f"Результат получен из Redis кэша для {function_id}", "debug")
+                                                                               ^
+security/safe_function_manager.py:328:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:333:80: E501 line too long (88 > 79 characters)
+                    if time.time() - self.cache_timestamps.get(key, 0) < self.cache_ttl:
+                                                                               ^
+security/safe_function_manager.py:335:80: E501 line too long (110 > 79 characters)
+                        self.log_activity(f"Результат получен из встроенного кэша для {function_id}", "debug")
+                                                                               ^
+security/safe_function_manager.py:341:1: W293 blank line contains whitespace
+                
+^
+security/safe_function_manager.py:344:1: W293 blank line contains whitespace
+                
+^
+security/safe_function_manager.py:349:80: E501 line too long (82 > 79 characters)
+    def cache_result(self, function_id: str, args_hash: str, result: Any) -> None:
+                                                                               ^
+security/safe_function_manager.py:353:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:357:80: E501 line too long (87 > 79 characters)
+                serialized_result = json.dumps(result, default=str, ensure_ascii=False)
+                                                                               ^
+security/safe_function_manager.py:359:80: E501 line too long (95 > 79 characters)
+                self.log_activity(f"Результат сохранен в Redis кэш для {function_id}", "debug")
+                                                                               ^
+security/safe_function_manager.py:360:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:365:80: E501 line too long (101 > 79 characters)
+                self.log_activity(f"Результат сохранен во встроенный кэш для {function_id}", "debug")
+                                                                               ^
+security/safe_function_manager.py:366:1: W293 blank line contains whitespace
+                
+^
+security/safe_function_manager.py:380:80: E501 line too long (96 > 79 characters)
+                        self.log_activity(f"Redis кэш очищен для функции {function_id}", "info")
+                                                                               ^
+security/safe_function_manager.py:391:80: E501 line too long (99 > 79 characters)
+                    keys_to_remove = [k for k in self.memory_cache.keys() if k.startswith(pattern)]
+                                                                               ^
+security/safe_function_manager.py:395:80: E501 line too long (97 > 79 characters)
+                    self.log_activity(f"Встроенный кэш очищен для функции {function_id}", "info")
+                                                                               ^
+security/safe_function_manager.py:408:80: E501 line too long (88 > 79 characters)
+        hit_rate = (self.cache_hits / total_requests * 100) if total_requests > 0 else 0
+                                                                               ^
+security/safe_function_manager.py:409:1: W293 blank line contains whitespace
+        
+^
+security/safe_function_manager.py:412:80: E501 line too long (98 > 79 characters)
+            "cache_type": "Redis" if (self.redis_enabled and self.redis_client) else "Встроенный",
+                                                                               ^
+security/safe_function_manager.py:419:80: E501 line too long (88 > 79 characters)
+            "cache_entries": len(self.memory_cache) if not self.redis_enabled else "N/A"
+                                                                               ^
+security/safe_function_manager.py:423:1: W293 blank line contains whitespace
+    
+^
+security/safe_function_manager.py:436:80: E501 line too long (98 > 79 characters)
+            self.circuit_breakers[function_id] = SmartCircuitBreaker(f"sfm_{function_id}", config)
+                                                                               ^
+security/safe_function_manager.py:437:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:439:80: E501 line too long (102 > 79 characters)
+            self.circuit_breakers[function_id].on_state_change = self._on_circuit_breaker_state_change
+                                                                               ^
+security/safe_function_manager.py:440:80: E501 line too long (88 > 79 characters)
+            self.circuit_breakers[function_id].on_alert = self._on_circuit_breaker_alert
+                                                                               ^
+security/safe_function_manager.py:441:1: W293 blank line contains whitespace
+        
+^
+security/safe_function_manager.py:443:1: W293 blank line contains whitespace
+    
+^
+security/safe_function_manager.py:444:80: E501 line too long (80 > 79 characters)
+    def _on_circuit_breaker_state_change(self, name: str, old_state, new_state):
+                                                                               ^
+security/safe_function_manager.py:447:79: W291 trailing whitespace
+            f"Circuit Breaker {name}: {old_state.value} -> {new_state.value}", 
+                                                                              ^
+security/safe_function_manager.py:450:1: W293 blank line contains whitespace
+    
+^
+security/safe_function_manager.py:454:80: E501 line too long (94 > 79 characters)
+            f"Circuit Breaker Alert: {alert_data['circuit_breaker']} - {alert_data['state']}", 
+                                                                               ^
+security/safe_function_manager.py:454:95: W291 trailing whitespace
+            f"Circuit Breaker Alert: {alert_data['circuit_breaker']} - {alert_data['state']}", 
+                                                                                              ^
+security/safe_function_manager.py:457:1: W293 blank line contains whitespace
+        
+^
+security/safe_function_manager.py:464:1: W293 blank line contains whitespace
+    
+^
+security/safe_function_manager.py:469:1: W293 blank line contains whitespace
+        
+^
+security/safe_function_manager.py:474:37: W291 trailing whitespace
+                name: cb.get_stats() 
+                                    ^
+security/safe_function_manager.py:548:80: E501 line too long (82 > 79 characters)
+            # Регистрируем без сохранения в файл (сохранение будет после загрузки)
+                                                                               ^
+security/safe_function_manager.py:558:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:560:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:669:80: E501 line too long (90 > 79 characters)
+                        f"Зарегистрирован обработчик для функции: {name} ({function_id})")
+                                                                               ^
+security/safe_function_manager.py:676:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:677:80: E501 line too long (85 > 79 characters)
+            # Автоматическое сохранение при изменениях (только если не инициализация)
+                                                                               ^
+security/safe_function_manager.py:678:80: E501 line too long (91 > 79 characters)
+            if hasattr(self, '_initialization_complete') and self._initialization_complete:
+                                                                               ^
+security/safe_function_manager.py:680:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:916:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:932:1: W293 blank line contains whitespace
+                
+^
+security/safe_function_manager.py:1173:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:1176:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2010:17: E129 visually indented line with same indent as next logical line
+                current_metrics.get("sleeping_functions", 0) > 10):
+                ^
+security/safe_function_manager.py:2055:80: E501 line too long (99 > 79 characters)
+                    self.log_activity(f"Оптимизация: увеличено время до сна до {new_sleep_hours}ч")
+                                                                               ^
+security/safe_function_manager.py:2060:80: E501 line too long (99 > 79 characters)
+                self._send_monitoring_metric("sfm_optimization_applied", 1, MetricType.PERFORMANCE)
+                                                                               ^
+security/safe_function_manager.py:2061:80: E501 line too long (123 > 79 characters)
+                self._send_monitoring_metric("sfm_sleep_check_interval", self.sleep_check_interval, MetricType.PERFORMANCE)
+                                                                               ^
+security/safe_function_manager.py:2062:80: E501 line too long (121 > 79 characters)
+                self._send_monitoring_metric("sfm_default_sleep_hours", self.default_sleep_hours, MetricType.PERFORMANCE)
+                                                                               ^
+security/safe_function_manager.py:2067:80: E501 line too long (92 > 79 characters)
+            self.log_activity(f"Ошибка оптимизации управления спящим режимом: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2084:80: E501 line too long (85 > 79 characters)
+            if hasattr(self, 'execution_times') and len(self.execution_times) > 1000:
+                                                                               ^
+security/safe_function_manager.py:2085:80: E501 line too long (100 > 79 characters)
+                self.execution_times = self.execution_times[-500:]  # Оставляем только последние 500
+                                                                               ^
+security/safe_function_manager.py:2086:80: E501 line too long (83 > 79 characters)
+                self.log_activity("Оптимизация: очищены старые метрики выполнения")
+                                                                               ^
+security/safe_function_manager.py:2095:80: E501 line too long (105 > 79 characters)
+                    if (current_time - exec_data.get('start_time', current_time)).total_seconds() > 3600:
+                                                                               ^
+security/safe_function_manager.py:2102:80: E501 line too long (102 > 79 characters)
+                    self.log_activity(f"Оптимизация: удалено {len(old_executions)} старых выполнений")
+                                                                               ^
+security/safe_function_manager.py:2107:80: E501 line too long (82 > 79 characters)
+                # При высокой нагрузке CPU - принудительный сон неактивных функций
+                                                                               ^
+security/safe_function_manager.py:2110:70: W291 trailing whitespace
+                    if (function.status == FunctionStatus.ENABLED and 
+                                                                     ^
+security/safe_function_manager.py:2113:5: E129 visually indented line with same indent as next logical line
+                        (datetime.now() - function.last_activity).total_seconds() > 300):  # 5 минут
+    ^
+security/safe_function_manager.py:2113:80: E501 line too long (100 > 79 characters)
+                        (datetime.now() - function.last_activity).total_seconds() > 300):  # 5 минут
+                                                                               ^
+security/safe_function_manager.py:2119:80: E501 line too long (121 > 79 characters)
+                    self.log_activity(f"Оптимизация: принудительно переведено в сон {inactive_count} неактивных функций")
+                                                                               ^
+security/safe_function_manager.py:2125:80: E501 line too long (85 > 79 characters)
+            self.log_activity(f"Ошибка оптимизации выполнения функций: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2151:80: E501 line too long (123 > 79 characters)
+                self._send_monitoring_metric("sfm_optimization_sleep", 1 if sleep_optimized else 0, MetricType.PERFORMANCE)
+                                                                               ^
+security/safe_function_manager.py:2152:80: E501 line too long (131 > 79 characters)
+                self._send_monitoring_metric("sfm_optimization_execution", 1 if execution_optimized else 0, MetricType.PERFORMANCE)
+                                                                               ^
+security/safe_function_manager.py:2153:80: E501 line too long (125 > 79 characters)
+                self._send_monitoring_metric("sfm_optimization_system", 1 if system_optimized else 0, MetricType.PERFORMANCE)
+                                                                               ^
+security/safe_function_manager.py:2156:80: E501 line too long (85 > 79 characters)
+            self.log_activity(f"Ошибка оптимизации производительности: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2176:80: E501 line too long (101 > 79 characters)
+                "recent_metrics": self.performance_metrics[-10:] if self.performance_metrics else [],
+                                                                               ^
+security/safe_function_manager.py:2177:80: E501 line too long (107 > 79 characters)
+                "optimization_results": self.optimization_results[-5:] if self.optimization_results else []
+                                                                               ^
+security/safe_function_manager.py:2181:80: E501 line too long (90 > 79 characters)
+            self.log_activity(f"Ошибка получения метрик производительности: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2184:49: W291 trailing whitespace
+    def configure_performance_optimization(self, 
+                                                ^
+security/safe_function_manager.py:2185:42: E128 continuation line under-indented for visual indent
+                                         optimization_enabled: bool = None,
+                                         ^
+security/safe_function_manager.py:2186:42: E128 continuation line under-indented for visual indent
+                                         optimization_interval: int = None) -> bool:
+                                         ^
+security/safe_function_manager.py:2186:80: E501 line too long (84 > 79 characters)
+                                         optimization_interval: int = None) -> bool:
+                                                                               ^
+security/safe_function_manager.py:2194:80: E501 line too long (99 > 79 characters)
+                    self.optimization_interval = max(60, optimization_interval)  # Минимум 1 минута
+                                                                               ^
+security/safe_function_manager.py:2196:80: E501 line too long (90 > 79 characters)
+                self.log_activity("Конфигурация оптимизации производительности обновлена")
+                                                                               ^
+security/safe_function_manager.py:2200:80: E501 line too long (98 > 79 characters)
+            self.log_activity(f"Ошибка конфигурации оптимизации производительности: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2213:80: E501 line too long (82 > 79 characters)
+                description="Security alert when critical functions are sleeping",
+                                                                               ^
+security/safe_function_manager.py:2268:80: E501 line too long (96 > 79 characters)
+            self.log_activity(f"Ошибка настройки правил мониторинга безопасности: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2271:28: E128 continuation line under-indented for visual indent
+                           severity: str = "MEDIUM", component: str = "SafeFunctionManager",
+                           ^
+security/safe_function_manager.py:2271:80: E501 line too long (92 > 79 characters)
+                           severity: str = "MEDIUM", component: str = "SafeFunctionManager",
+                                                                               ^
+security/safe_function_manager.py:2272:28: E128 continuation line under-indented for visual indent
+                           alert_type: str = "FUNCTION_MANAGEMENT"):
+                           ^
+security/safe_function_manager.py:2303:80: E501 line too long (94 > 79 characters)
+            self.log_activity(f"Ошибка отправки алерта безопасности {alert_id}: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2305:80: E501 line too long (104 > 79 characters)
+    def _monitor_function_security(self, function_id: str, action: str, details: Dict[str, Any] = None):
+                                                                               ^
+security/safe_function_manager.py:2318:80: E501 line too long (80 > 79 characters)
+                    alert_id=f"critical_sleep_{function_id}_{int(time.time())}",
+                                                                               ^
+security/safe_function_manager.py:2320:80: E501 line too long (87 > 79 characters)
+                    message=f"Critical function {function.name} has been put to sleep",
+                                                                               ^
+security/safe_function_manager.py:2332:80: E501 line too long (80 > 79 characters)
+                        title=f"Mass Sleep Transition: {sleep_count} functions",
+                                                                               ^
+security/safe_function_manager.py:2333:80: E501 line too long (92 > 79 characters)
+                        message=f"{sleep_count} functions were put to sleep simultaneously",
+                                                                               ^
+security/safe_function_manager.py:2345:80: E501 line too long (82 > 79 characters)
+                    message=f"Error in function {function.name}: {error_message}",
+                                                                               ^
+security/safe_function_manager.py:2352:80: E501 line too long (101 > 79 characters)
+            self.log_activity(f"Ошибка мониторинга безопасности функции {function_id}: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2362:80: E501 line too long (86 > 79 characters)
+                "critical_functions_sleeping": len([f for f in self.functions.values() 
+                                                                               ^
+security/safe_function_manager.py:2362:87: W291 trailing whitespace
+                "critical_functions_sleeping": len([f for f in self.functions.values() 
+                                                                                      ^
+security/safe_function_manager.py:2363:51: E128 continuation line under-indented for visual indent
+                                                  if f.is_critical and f.status == FunctionStatus.SLEEPING]),
+                                                  ^
+security/safe_function_manager.py:2363:80: E501 line too long (109 > 79 characters)
+                                                  if f.is_critical and f.status == FunctionStatus.SLEEPING]),
+                                                                               ^
+security/safe_function_manager.py:2365:78: W291 trailing whitespace
+                "sleeping_functions": len([f for f in self.functions.values() 
+                                                                             ^
+security/safe_function_manager.py:2366:42: E128 continuation line under-indented for visual indent
+                                         if f.status == FunctionStatus.SLEEPING]),
+                                         ^
+security/safe_function_manager.py:2366:80: E501 line too long (82 > 79 characters)
+                                         if f.status == FunctionStatus.SLEEPING]),
+                                                                               ^
+security/safe_function_manager.py:2367:77: W291 trailing whitespace
+                "enabled_functions": len([f for f in self.functions.values() 
+                                                                            ^
+security/safe_function_manager.py:2368:41: E128 continuation line under-indented for visual indent
+                                        if f.status == FunctionStatus.ENABLED]),
+                                        ^
+security/safe_function_manager.py:2368:80: E501 line too long (80 > 79 characters)
+                                        if f.status == FunctionStatus.ENABLED]),
+                                                                               ^
+security/safe_function_manager.py:2369:80: E501 line too long (93 > 79 characters)
+                "sleep_transitions_per_minute": self.sleep_transitions,  # Упрощенная метрика
+                                                                               ^
+security/safe_function_manager.py:2371:80: E501 line too long (90 > 79 characters)
+                "avg_execution_time": 0,  # Будет обновляться из метрик производительности
+                                                                               ^
+security/safe_function_manager.py:2379:80: E501 line too long (97 > 79 characters)
+            self.log_activity(f"Ошибка обновления данных мониторинга безопасности: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2385:80: E501 line too long (96 > 79 characters)
+                return {"enabled": False, "message": "Security monitoring integration disabled"}
+                                                                               ^
+security/safe_function_manager.py:2395:80: E501 line too long (90 > 79 characters)
+                "recent_alerts": [alert.to_dict() for alert in self.security_alerts[-5:]],
+                                                                               ^
+security/safe_function_manager.py:2396:80: E501 line too long (86 > 79 characters)
+                "critical_functions_sleeping": len([f for f in self.functions.values() 
+                                                                               ^
+security/safe_function_manager.py:2396:87: W291 trailing whitespace
+                "critical_functions_sleeping": len([f for f in self.functions.values() 
+                                                                                      ^
+security/safe_function_manager.py:2397:51: E128 continuation line under-indented for visual indent
+                                                  if f.is_critical and f.status == FunctionStatus.SLEEPING]),
+                                                  ^
+security/safe_function_manager.py:2397:80: E501 line too long (109 > 79 characters)
+                                                  if f.is_critical and f.status == FunctionStatus.SLEEPING]),
+                                                                               ^
+security/safe_function_manager.py:2398:80: E501 line too long (91 > 79 characters)
+                "monitoring_data": self.security_monitoring.monitoring_data.get("sfm", {}),
+                                                                               ^
+security/safe_function_manager.py:2405:80: E501 line too long (97 > 79 characters)
+            self.log_activity(f"Ошибка получения статуса мониторинга безопасности: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2408:44: W291 trailing whitespace
+    def configure_security_monitoring(self, 
+                                           ^
+security/safe_function_manager.py:2409:37: E128 continuation line under-indented for visual indent
+                                    monitoring_integration_enabled: bool = None,
+                                    ^
+security/safe_function_manager.py:2409:80: E501 line too long (80 > 79 characters)
+                                    monitoring_integration_enabled: bool = None,
+                                                                               ^
+security/safe_function_manager.py:2410:37: E128 continuation line under-indented for visual indent
+                                    alert_retention_days: int = None) -> bool:
+                                    ^
+security/safe_function_manager.py:2415:80: E501 line too long (88 > 79 characters)
+                    self.monitoring_integration_enabled = monitoring_integration_enabled
+                                                                               ^
+security/safe_function_manager.py:2418:80: E501 line too long (88 > 79 characters)
+                    self.security_monitoring.alert_retention_days = alert_retention_days
+                                                                               ^
+security/safe_function_manager.py:2424:80: E501 line too long (84 > 79 characters)
+                self.log_activity("Конфигурация мониторинга безопасности обновлена")
+                                                                               ^
+security/safe_function_manager.py:2428:80: E501 line too long (92 > 79 characters)
+            self.log_activity(f"Ошибка конфигурации мониторинга безопасности: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2444:80: E501 line too long (80 > 79 characters)
+                f"Ошибка запуска менеджера безопасных функций {self.name}: {e}",
+                                                                               ^
+security/safe_function_manager.py:2471:80: E501 line too long (82 > 79 characters)
+                f"Ошибка остановки менеджера безопасных функций {self.name}: {e}",
+                                                                               ^
+security/safe_function_manager.py:2494:80: E501 line too long (88 > 79 characters)
+                return False, "Идентификатор функции должен содержать минимум 3 символа"
+                                                                               ^
+security/safe_function_manager.py:2497:80: E501 line too long (86 > 79 characters)
+                return False, "Идентификатор функции не должен превышать 100 символов"
+                                                                               ^
+security/safe_function_manager.py:2502:80: E501 line too long (113 > 79 characters)
+                return False, "Идентификатор функции может содержать только буквы, цифры, дефисы и подчеркивания"
+                                                                               ^
+security/safe_function_manager.py:2505:80: E501 line too long (156 > 79 characters)
+            dangerous_patterns = [';', '--', '/*', '*/', 'xp_', 'sp_', 'exec', 'execute', 'select', 'insert', 'update', 'delete', 'drop', 'create', 'alter']
+                                                                               ^
+security/safe_function_manager.py:2509:80: E501 line too long (107 > 79 characters)
+                    return False, f"Идентификатор функции содержит потенциально опасный паттерн: {pattern}"
+                                                                               ^
+security/safe_function_manager.py:2534:80: E501 line too long (83 > 79 characters)
+                return False, "Название функции должно содержать минимум 3 символа"
+                                                                               ^
+security/safe_function_manager.py:2537:80: E501 line too long (81 > 79 characters)
+                return False, "Название функции не должно превышать 200 символов"
+                                                                               ^
+security/safe_function_manager.py:2540:80: E501 line too long (106 > 79 characters)
+            dangerous_patterns = ['<script', '</script', 'javascript:', 'onload=', 'onerror=', 'onclick=']
+                                                                               ^
+security/safe_function_manager.py:2544:80: E501 line too long (102 > 79 characters)
+                    return False, f"Название функции содержит потенциально опасный паттерн: {pattern}"
+                                                                               ^
+security/safe_function_manager.py:2551:80: E501 line too long (84 > 79 characters)
+    def _validate_function_params(self, params: Dict[str, Any]) -> Tuple[bool, str]:
+                                                                               ^
+security/safe_function_manager.py:2580:80: E501 line too long (93 > 79 characters)
+                dangerous_patterns = [';', '--', '/*', '*/', 'xp_', 'sp_', 'exec', 'execute']
+                                                                               ^
+security/safe_function_manager.py:2584:80: E501 line too long (87 > 79 characters)
+                        return False, f"Ключ параметра содержит опасный паттерн: {key}"
+                                                                               ^
+security/safe_function_manager.py:2589:80: E501 line too long (82 > 79 characters)
+                        return False, f"Значение параметра слишком длинное: {key}"
+                                                                               ^
+security/safe_function_manager.py:2592:80: E501 line too long (102 > 79 characters)
+                    dangerous_patterns = ['<script', '</script', 'javascript:', 'onload=', 'onerror=']
+                                                                               ^
+security/safe_function_manager.py:2596:80: E501 line too long (95 > 79 characters)
+                            return False, f"Значение параметра содержит опасный паттерн: {key}"
+                                                                               ^
+security/safe_function_manager.py:2605:80: E501 line too long (82 > 79 characters)
+                        return False, f"Значение параметра слишком большое: {key}"
+                                                                               ^
+security/safe_function_manager.py:2608:80: E501 line too long (99 > 79 characters)
+                    return False, f"Неподдерживаемый тип параметра: {key} ({type(value).__name__})"
+                                                                               ^
+security/safe_function_manager.py:2646:80: E501 line too long (101 > 79 characters)
+    def _log_security_event(self, event_type: str, function_id: str, details: Dict[str, Any] = None):
+                                                                               ^
+security/safe_function_manager.py:2665:80: E501 line too long (105 > 79 characters)
+            self.log_activity(f"СОБЫТИЕ БЕЗОПАСНОСТИ: {event_type} для функции {function_id}", "warning")
+                                                                               ^
+security/safe_function_manager.py:2668:80: E501 line too long (90 > 79 characters)
+            self._monitor_function_security(function_id, "security_event", security_event)
+                                                                               ^
+security/safe_function_manager.py:2671:80: E501 line too long (87 > 79 characters)
+            self.log_activity(f"Ошибка логирования события безопасности: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2673:80: E501 line too long (95 > 79 characters)
+    def _check_security_threats(self, function_id: str, params: Dict[str, Any] = None) -> bool:
+                                                                               ^
+security/safe_function_manager.py:2692:80: E501 line too long (83 > 79 characters)
+                if hasattr(function, 'last_execution') and function.last_execution:
+                                                                               ^
+security/safe_function_manager.py:2693:80: E501 line too long (96 > 79 characters)
+                    time_since_last = (datetime.now() - function.last_execution).total_seconds()
+                                                                               ^
+security/safe_function_manager.py:2695:80: E501 line too long (82 > 79 characters)
+                        self._log_security_event("RAPID_EXECUTION", function_id, {
+                                                                               ^
+security/safe_function_manager.py:2703:80: E501 line too long (88 > 79 characters)
+                    error_rate = (function.error_count / function.execution_count) * 100
+                                                                               ^
+security/safe_function_manager.py:2705:80: E501 line too long (82 > 79 characters)
+                        self._log_security_event("HIGH_ERROR_RATE", function_id, {
+                                                                               ^
+security/safe_function_manager.py:2718:80: E501 line too long (87 > 79 characters)
+                            'union select', 'drop table', 'delete from', 'insert into',
+                                                                               ^
+security/safe_function_manager.py:2719:80: E501 line too long (83 > 79 characters)
+                            'update set', 'exec(', 'eval(', 'system(', 'shell_exec'
+                                                                               ^
+security/safe_function_manager.py:2725:80: E501 line too long (92 > 79 characters)
+                                self._log_security_event("INJECTION_ATTEMPT", function_id, {
+                                                                               ^
+security/safe_function_manager.py:2727:80: E501 line too long (80 > 79 characters)
+                                    "value": value[:100],  # Первые 100 символов
+                                                                               ^
+security/safe_function_manager.py:2736:80: E501 line too long (82 > 79 characters)
+            self.log_activity(f"Ошибка проверки угроз безопасности: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2750:80: E501 line too long (97 > 79 characters)
+                "critical_functions": len([f for f in self.functions.values() if f.is_critical]),
+                                                                               ^
+security/safe_function_manager.py:2751:80: E501 line too long (127 > 79 characters)
+                "high_security_functions": len([f for f in self.functions.values() if f.security_level == SecurityLevel.HIGH]),
+                                                                               ^
+security/safe_function_manager.py:2752:80: E501 line too long (131 > 79 characters)
+                "medium_security_functions": len([f for f in self.functions.values() if f.security_level == SecurityLevel.MEDIUM]),
+                                                                               ^
+security/safe_function_manager.py:2753:80: E501 line too long (125 > 79 characters)
+                "low_security_functions": len([f for f in self.functions.values() if f.security_level == SecurityLevel.LOW]),
+                                                                               ^
+security/safe_function_manager.py:2754:80: E501 line too long (104 > 79 characters)
+                "functions_with_errors": len([f for f in self.functions.values() if f.error_count > 0]),
+                                                                               ^
+security/safe_function_manager.py:2781:80: E501 line too long (88 > 79 characters)
+                    error_rate = (function.error_count / function.execution_count) * 100
+                                                                               ^
+security/safe_function_manager.py:2817:80: E501 line too long (85 > 79 characters)
+            self.log_activity(f"Ошибка получения статуса безопасности: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2840:80: E501 line too long (80 > 79 characters)
+            error_rate = (function.error_count / function.execution_count) * 100
+                                                                               ^
+security/safe_function_manager.py:2852:13: F401 'json' imported but unused
+            import json
+            ^
+security/safe_function_manager.py:2853:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2857:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2859:80: E501 line too long (86 > 79 characters)
+            self.registry_file = os.path.join(self.data_dir, "function_registry.json")
+                                                                               ^
+security/safe_function_manager.py:2860:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2863:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2865:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2867:80: E501 line too long (84 > 79 characters)
+            self.log_activity(f"Ошибка инициализации персистентности: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2874:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2877:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2879:80: E501 line too long (84 > 79 characters)
+            print(f"🔍 DEBUG: Файл существует: {os.path.exists(self.registry_file)}")
+                                                                               ^
+security/safe_function_manager.py:2880:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2883:23: F541 f-string is missing placeholders
+                print(f"🔍 DEBUG: Начинаем чтение файла...")
+                      ^
+security/safe_function_manager.py:2887:27: F541 f-string is missing placeholders
+                    print(f"🔍 DEBUG: Файл прочитан успешно!")
+                          ^
+security/safe_function_manager.py:2891:1: W293 blank line contains whitespace
+                
+^
+security/safe_function_manager.py:2894:80: E501 line too long (80 > 79 characters)
+                print(f"🔍 DEBUG: functions в data: {data.get('functions', {})}")
+                                                                               ^
+security/safe_function_manager.py:2895:1: W293 blank line contains whitespace
+                    
+^
+security/safe_function_manager.py:2898:80: E501 line too long (91 > 79 characters)
+                print(f"🔍 DEBUG: Найдено {len(data.get('functions', {}))} функций в файле")
+                                                                               ^
+security/safe_function_manager.py:2899:80: E501 line too long (94 > 79 characters)
+                self.log_activity(f"Найдено {len(data.get('functions', {}))} функций в файле")
+                                                                               ^
+security/safe_function_manager.py:2900:1: W293 blank line contains whitespace
+                
+^
+security/safe_function_manager.py:2901:23: F541 f-string is missing placeholders
+                print(f"🔍 DEBUG: Начинаем цикл загрузки функций...")
+                      ^
+security/safe_function_manager.py:2905:1: W293 blank line contains whitespace
+                    
+^
+security/safe_function_manager.py:2906:80: E501 line too long (96 > 79 characters)
+                    # Создаем объект функции из сохраненных данных (перезаписываем существующие)
+                                                                               ^
+security/safe_function_manager.py:2911:80: E501 line too long (80 > 79 characters)
+                        function_type=func_data.get('function_type', 'unknown'),
+                                                                               ^
+security/safe_function_manager.py:2912:80: E501 line too long (95 > 79 characters)
+                        security_level=SecurityLevel(func_data.get('security_level', 'MEDIUM'))
+                                                                               ^
+security/safe_function_manager.py:2914:1: W293 blank line contains whitespace
+                    
+^
+security/safe_function_manager.py:2916:80: E501 line too long (84 > 79 characters)
+                    func.status = FunctionStatus(func_data.get('status', 'enabled'))
+                                                                               ^
+security/safe_function_manager.py:2921:1: W293 blank line contains whitespace
+                    
+^
+security/safe_function_manager.py:2926:1: W293 blank line contains whitespace
+                
+^
+security/safe_function_manager.py:2930:80: E501 line too long (99 > 79 characters)
+                    # Создаем обработчик на основе сохраненных данных (перезаписываем существующие)
+                                                                               ^
+security/safe_function_manager.py:2931:21: F841 local variable 'handler_type' is assigned to but never used
+                    handler_type = handler_data.get('type', 'function')
+                    ^
+security/safe_function_manager.py:2933:1: W293 blank line contains whitespace
+                    
+^
+security/safe_function_manager.py:2941:80: E501 line too long (88 > 79 characters)
+                                'message': f'Обработчик {handler_name} выполнен успешно'
+                                                                               ^
+security/safe_function_manager.py:2944:1: W293 blank line contains whitespace
+                    
+^
+security/safe_function_manager.py:2945:80: E501 line too long (99 > 79 characters)
+                    self.function_handlers[func_id] = create_handler_wrapper(func_id, handler_name)
+                                                                               ^
+security/safe_function_manager.py:2947:1: W293 blank line contains whitespace
+                        
+^
+security/safe_function_manager.py:2948:80: E501 line too long (107 > 79 characters)
+                self.log_activity(f"Загружено {functions_loaded} функций и {handlers_loaded} обработчиков")
+                                                                               ^
+security/safe_function_manager.py:2950:80: E501 line too long (89 > 79 characters)
+                self.log_activity("Файл реестра не найден, начинаем с пустого состояния")
+                                                                               ^
+security/safe_function_manager.py:2951:1: W293 blank line contains whitespace
+                
+^
+security/safe_function_manager.py:2953:80: E501 line too long (83 > 79 characters)
+            self.log_activity(f"Ошибка загрузки сохраненных функций: {e}", "error")
+                                                                               ^
+security/safe_function_manager.py:2959:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2965:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2980:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2985:80: E501 line too long (100 > 79 characters)
+                    'function_name': handler.__name__ if hasattr(handler, '__name__') else 'lambda',
+                                                                               ^
+security/safe_function_manager.py:2986:80: E501 line too long (97 > 79 characters)
+                    'module': handler.__module__ if hasattr(handler, '__module__') else 'unknown'
+                                                                               ^
+security/safe_function_manager.py:2988:1: W293 blank line contains whitespace
+            
+^
+security/safe_function_manager.py:2991:1: W293 blank line contains whitespace
+                
+^
+security/safe_function_manager.py:2992:80: E501 line too long (128 > 79 characters)
+            self.log_activity(f"Функции ({len(self.functions)}) и обработчики ({len(self.function_handlers)}) сохранены в файл")
+                                                                               ^
+security/safe_function_manager.py:2993:1: W293 blank line contains whitespace
+            
+^
+10    E128 continuation line under-indented for visual indent
+2     E129 visually indented line with same indent as next logical line
+145   E501 line too long (80 > 79 characters)
+1     F401 'json' imported but unused
+3     F541 f-string is missing placeholders
+1     F841 local variable 'handler_type' is assigned to but never used
+10    W291 trailing whitespace
+54    W293 blank line contains whitespace
+226

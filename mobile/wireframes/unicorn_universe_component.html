@@ -1,0 +1,678 @@
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- 🎨 ЕДИНОРОГ-ВСЕЛЕННАЯ - КОМПОНЕНТ                                         -->
+<!-- Создано: 12.10.2025                                                       -->
+<!-- Принцип: Красота + Визуализация + Сторителлинг + Персонализация           -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   СТИЛИ ЕДИНОРОГ-ВСЕЛЕННОЙ
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.universe-card {
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #6366F1 100%);
+    border: 2px solid #8B5CF6;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.universe-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 2%),
+        radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.08) 0%, transparent 2%),
+        radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.06) 0%, transparent 2%);
+    animation: stars-twinkle 5s infinite;
+}
+
+@keyframes stars-twinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.universe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.universe-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* САД ЕДИНОРОГОВ */
+.garden {
+    background: linear-gradient(180deg, rgba(59, 130, 246, 0.2) 0%, rgba(34, 197, 94, 0.3) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 15px;
+    min-height: 200px;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 15px;
+}
+
+.garden-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.garden-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    justify-items: center;
+}
+
+.garden-unicorn {
+    font-size: 28px;
+    animation: float 3s ease-in-out infinite;
+}
+
+.garden-unicorn:nth-child(2n) {
+    animation-delay: 0.5s;
+}
+
+.garden-unicorn:nth-child(3n) {
+    animation-delay: 1s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+.garden-decoration {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    font-size: 32px;
+}
+
+.decoration {
+    animation: pulse 2s infinite;
+}
+
+.decoration.locked {
+    opacity: 0.3;
+    filter: grayscale(100%);
+}
+
+/* КОЛЛЕКЦИЯ */
+.collection-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 15px;
+}
+
+.collection-item {
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.collection-item:hover:not(.locked) {
+    background: rgba(0, 0, 0, 0.3);
+    transform: scale(1.05);
+}
+
+.collection-item.unlocked {
+    border-color: #10B981;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.collection-item.locked {
+    opacity: 0.5;
+}
+
+.collection-emoji {
+    font-size: 36px;
+    margin-bottom: 5px;
+}
+
+.collection-emoji.locked {
+    filter: grayscale(100%);
+}
+
+.collection-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 3px;
+}
+
+.collection-requirement {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.collection-requirement.unlocked {
+    color: #10B981;
+}
+
+/* СТОРИТЕЛЛИНГ */
+.story-chapters {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 15px;
+}
+
+.chapter {
+    background: rgba(0, 0, 0, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.chapter:hover:not(.locked) {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.chapter.unlocked {
+    border-color: #FFD700;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.chapter.current {
+    border-color: #3B82F6;
+    background: rgba(59, 130, 246, 0.15);
+}
+
+.chapter.locked {
+    opacity: 0.5;
+}
+
+.chapter-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.chapter-icon {
+    font-size: 24px;
+}
+
+.chapter-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+}
+
+.chapter-status {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.chapter-status.unlocked {
+    background: rgba(16, 185, 129, 0.3);
+    color: #10B981;
+}
+
+.chapter-status.current {
+    background: rgba(59, 130, 246, 0.3);
+    color: #3B82F6;
+}
+
+.chapter-status.locked {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.chapter-desc {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-left: 34px;
+}
+
+.chapter-requirement {
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-left: 34px;
+    margin-top: 3px;
+}
+
+.view-story-btn {
+    width: 100%;
+    padding: 14px;
+    background: white;
+    color: #8B5CF6;
+    border: none;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+.view-story-btn:hover {
+    transform: scale(1.05);
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     HTML СТРУКТУРА ЕДИНОРОГ-ВСЕЛЕННОЙ
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<div class="universe-card">
+    <div class="universe-header">
+        <div class="universe-title">
+            <span style="font-size: 24px;">🌳</span>
+            <span>Сад единорогов</span>
+        </div>
+        <div style="background: rgba(255, 215, 0, 0.3); padding: 6px 12px; border-radius: 12px; font-size: 11px; color: #FFD700; font-weight: 600; border: 1px solid #FFD700;">
+            245 🦄
+        </div>
+    </div>
+    
+    <!-- САД (ВИЗУАЛИЗАЦИЯ БАЛАНСА) -->
+    <div class="garden">
+        <div class="garden-title">🌳 МОЙ САД ЕДИНОРОГОВ 🌳</div>
+        <div class="garden-grid" id="garden-grid">
+            <!-- Генерируется динамически -->
+        </div>
+        <div class="garden-decoration">
+            <div class="decoration locked" id="deco-castle" title="🔒 1000 🦄">🏰</div>
+            <div class="decoration locked" id="deco-rainbow" title="🔒 500 🦄">🌈</div>
+            <div class="decoration" id="deco-stars" title="✅ 100 🦄">⭐</div>
+        </div>
+    </div>
+    
+    <!-- КОЛЛЕКЦИЯ (10 ВИДОВ ЕДИНОРОГОВ) -->
+    <div style="font-size: 14px; font-weight: 600; color: white; margin-bottom: 10px; position: relative; z-index: 1;">
+        🦄 Коллекция единорогов (3/10)
+    </div>
+    
+    <div class="collection-grid">
+        <!-- 1. Базовый -->
+        <div class="collection-item unlocked">
+            <div class="collection-emoji">🦄</div>
+            <div class="collection-name">Базовый</div>
+            <div class="collection-requirement unlocked">✅ С начала</div>
+        </div>
+        
+        <!-- 2. Звёздный -->
+        <div class="collection-item unlocked">
+            <div class="collection-emoji">✨</div>
+            <div class="collection-name">Звёздный</div>
+            <div class="collection-requirement unlocked">✅ 100 🦄</div>
+        </div>
+        
+        <!-- 3. Радужный -->
+        <div class="collection-item unlocked">
+            <div class="collection-emoji">🌈</div>
+            <div class="collection-name">Радужный</div>
+            <div class="collection-requirement unlocked">✅ 300 🦄</div>
+        </div>
+        
+        <!-- 4. Алмазный -->
+        <div class="collection-item locked">
+            <div class="collection-emoji locked">💎</div>
+            <div class="collection-name">Алмазный</div>
+            <div class="collection-requirement">🔒 500 🦄</div>
+        </div>
+        
+        <!-- 5. Огненный -->
+        <div class="collection-item locked">
+            <div class="collection-emoji locked">🔥</div>
+            <div class="collection-name">Огненный</div>
+            <div class="collection-requirement">🔒 0 наказаний месяц</div>
+        </div>
+        
+        <!-- 6. Ледяной -->
+        <div class="collection-item locked">
+            <div class="collection-emoji locked">❄️</div>
+            <div class="collection-name">Ледяной</div>
+            <div class="collection-requirement">🔒 Зима</div>
+        </div>
+        
+        <!-- 7. Лунный -->
+        <div class="collection-item locked">
+            <div class="collection-emoji locked">🌙</div>
+            <div class="collection-name">Лунный</div>
+            <div class="collection-requirement">🔒 Ночной спин</div>
+        </div>
+        
+        <!-- 8. Королевский -->
+        <div class="collection-item locked">
+            <div class="collection-emoji locked">👑</div>
+            <div class="collection-name">Королевский</div>
+            <div class="collection-requirement">🔒 1000 🦄</div>
+        </div>
+        
+        <!-- 9. Весенний -->
+        <div class="collection-item locked">
+            <div class="collection-emoji locked">🌸</div>
+            <div class="collection-name">Весенний</div>
+            <div class="collection-requirement">🔒 Весна</div>
+        </div>
+        
+        <!-- 10. Молниеносный (секретный) -->
+        <div class="collection-item locked">
+            <div class="collection-emoji locked">⚡</div>
+            <div class="collection-name">Молниеносный</div>
+            <div class="collection-requirement">🔒 ???</div>
+        </div>
+    </div>
+    
+    <!-- СТОРИТЕЛЛИНГ (5 ГЛАВ) -->
+    <div style="font-size: 14px; font-weight: 600; color: white; margin: 20px 0 10px 0; position: relative; z-index: 1;">
+        📖 История моего единорога
+    </div>
+    
+    <div class="story-chapters">
+        <!-- Глава 1 -->
+        <div class="chapter unlocked" onclick="readChapter(1)">
+            <div class="chapter-header">
+                <div class="chapter-icon">📚</div>
+                <div class="chapter-title">Глава 1: Рождение единорога</div>
+                <div class="chapter-status unlocked">✅</div>
+            </div>
+            <div class="chapter-desc">
+                "Давным-давно родился твой первый единорог..."
+            </div>
+            <div class="chapter-requirement">0-100 🦄</div>
+        </div>
+        
+        <!-- Глава 2 -->
+        <div class="chapter unlocked" onclick="readChapter(2)">
+            <div class="chapter-header">
+                <div class="chapter-icon">🌲</div>
+                <div class="chapter-title">Глава 2: Волшебный лес</div>
+                <div class="chapter-status unlocked">✅</div>
+            </div>
+            <div class="chapter-desc">
+                "Единорог подрос и готов исследовать волшебный лес..."
+            </div>
+            <div class="chapter-requirement">100-300 🦄</div>
+        </div>
+        
+        <!-- Глава 3 -->
+        <div class="chapter current" onclick="readChapter(3)">
+            <div class="chapter-header">
+                <div class="chapter-icon">🏰</div>
+                <div class="chapter-title">Глава 3: Замок мечты</div>
+                <div class="chapter-status current">▶️ Текущая</div>
+            </div>
+            <div class="chapter-desc">
+                "В глубине леса появился таинственный замок..."
+            </div>
+            <div class="chapter-requirement">300-500 🦄 (осталось 255 🦄)</div>
+        </div>
+        
+        <!-- Глава 4 -->
+        <div class="chapter locked">
+            <div class="chapter-header">
+                <div class="chapter-icon" style="filter: grayscale(100%);">👑</div>
+                <div class="chapter-title">Глава 4: Королевство света</div>
+                <div class="chapter-status locked">🔒</div>
+            </div>
+            <div class="chapter-desc">
+                Ты станешь защитником королевства света!
+            </div>
+            <div class="chapter-requirement">🔒 500-1000 🦄</div>
+        </div>
+        
+        <!-- Глава 5 -->
+        <div class="chapter locked">
+            <div class="chapter-header">
+                <div class="chapter-icon" style="filter: grayscale(100%);">⚡</div>
+                <div class="chapter-title">Глава 5: Легенда вечности</div>
+                <div class="chapter-status locked">🔒</div>
+            </div>
+            <div class="chapter-desc">
+                Твоё имя навсегда войдёт в историю!
+            </div>
+            <div class="chapter-requirement">🔒 1000+ 🦄</div>
+        </div>
+    </div>
+    
+    <button class="view-story-btn" onclick="openFullStory()">
+        📖 Читать историю →
+    </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     JAVASCRIPT ЛОГИКА ЕДИНОРОГ-ВСЕЛЕННОЙ
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// КОНФИГУРАЦИЯ
+// ═══════════════════════════════════════════════════════════════════════════
+
+const UNIVERSE_CONFIG = {
+    unicornsPerIcon: 10,  // 10 🦄 = 1 единорог в саду
+    maxUnicornsInGarden: 100,  // Максимум 100 единорогов (1000 🦄)
+    
+    collection: [
+        { id: 1, emoji: '🦄', name: 'Базовый',        requirement: 0,      type: 'balance' },
+        { id: 2, emoji: '✨', name: 'Звёздный',       requirement: 100,    type: 'balance' },
+        { id: 3, emoji: '🌈', name: 'Радужный',       requirement: 300,    type: 'balance' },
+        { id: 4, emoji: '💎', name: 'Алмазный',       requirement: 500,    type: 'balance' },
+        { id: 5, emoji: '🔥', name: 'Огненный',       requirement: 0,      type: 'no_punishments_month' },
+        { id: 6, emoji: '❄️', name: 'Ледяной',        requirement: 0,      type: 'season_winter' },
+        { id: 7, emoji: '🌙', name: 'Лунный',         requirement: 0,      type: 'night_spin' },
+        { id: 8, emoji: '👑', name: 'Королевский',    requirement: 1000,   type: 'balance' },
+        { id: 9, emoji: '🌸', name: 'Весенний',       requirement: 0,      type: 'season_spring' },
+        { id: 10, emoji: '⚡', name: 'Молниеносный',  requirement: 0,      type: 'secret' }
+    ],
+    
+    chapters: [
+        { 
+            id: 1, 
+            icon: '📚', 
+            title: 'Рождение единорога', 
+            minBalance: 0, 
+            maxBalance: 100,
+            story: 'Давным-давно, в далёкой галактике, где звёзды танцуют и мерцают, родился твой первый единорог. Он был маленьким, но очень храбрым...'
+        },
+        { 
+            id: 2, 
+            icon: '🌲', 
+            title: 'Волшебный лес', 
+            minBalance: 100, 
+            maxBalance: 300,
+            story: 'Единорог подрос и отправился исследовать волшебный лес. В лесу он встретил других единорогов, научился магии и нашёл первых друзей...'
+        },
+        { 
+            id: 3, 
+            icon: '🏰', 
+            title: 'Замок мечты', 
+            minBalance: 300, 
+            maxBalance: 500,
+            story: 'В глубине леса появился таинственный замок из кристаллов. Единорог должен доказать свою смелость и мудрость, чтобы войти туда...'
+        },
+        { 
+            id: 4, 
+            icon: '👑', 
+            title: 'Королевство света', 
+            minBalance: 500, 
+            maxBalance: 1000,
+            story: 'Ты стал защитником королевства света! Твой единорог получил королевскую корону и волшебную силу. Теперь ты охраняешь мир от тьмы...'
+        },
+        { 
+            id: 5, 
+            icon: '⚡', 
+            title: 'Легенда вечности', 
+            minBalance: 1000, 
+            maxBalance: 999999,
+            story: 'Твоё имя навсегда вошло в историю! Легенды о твоём единороге будут рассказывать тысячи лет. Ты достиг вершины мастерства!'
+        }
+    ]
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// СОСТОЯНИЕ
+// ═══════════════════════════════════════════════════════════════════════════
+
+let universeState = {
+    balance: 245,
+    unlockedCollection: [1, 2, 3],  // ID разблокированных единорогов
+    currentChapter: 3,
+    completedChapters: [1, 2]
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОТРИСОВКА САДА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderGarden(balance) {
+    const grid = document.getElementById('garden-grid');
+    grid.innerHTML = '';
+    
+    const unicornsCount = Math.floor(balance / UNIVERSE_CONFIG.unicornsPerIcon);
+    const maxCount = Math.min(unicornsCount, UNIVERSE_CONFIG.maxUnicornsInGarden);
+    
+    for (let i = 0; i < maxCount; i++) {
+        const unicorn = document.createElement('div');
+        unicorn.className = 'garden-unicorn';
+        unicorn.textContent = '🦄';
+        unicorn.style.animationDelay = (i * 0.1) + 's';
+        grid.appendChild(unicorn);
+    }
+    
+    // Обновляем декорации
+    updateDecorations(balance);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОБНОВЛЕНИЕ ДЕКОРАЦИЙ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateDecorations(balance) {
+    const castle = document.getElementById('deco-castle');
+    const rainbow = document.getElementById('deco-rainbow');
+    const stars = document.getElementById('deco-stars');
+    
+    if (balance >= 1000) {
+        castle.classList.remove('locked');
+    }
+    
+    if (balance >= 500) {
+        rainbow.classList.remove('locked');
+    }
+    
+    if (balance >= 100) {
+        stars.classList.remove('locked');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ЧТЕНИЕ ГЛАВЫ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function readChapter(chapterId) {
+    const chapter = UNIVERSE_CONFIG.chapters.find(c => c.id === chapterId);
+    
+    if (!chapter) return;
+    
+    // Проверка доступности
+    if (universeState.balance < chapter.minBalance) {
+        alert(`🔒 Глава заблокирована! Нужно ${chapter.minBalance} 🦄`);
+        return;
+    }
+    
+    // Показываем модальное окно с историей
+    const modal = document.createElement('div');
+    modal.className = 'prize-modal';
+    modal.innerHTML = `
+        <div class="prize-modal-content" style="background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); max-width: 350px;">
+            <div style="font-size: 60px; margin-bottom: 10px;">${chapter.icon}</div>
+            <div class="prize-title">${chapter.title}</div>
+            <div style="margin: 20px 0; font-size: 13px; line-height: 1.6; color: rgba(255, 255, 255, 0.95); text-align: left;">
+                ${chapter.story}
+            </div>
+            <div style="background: rgba(255, 215, 0, 0.2); padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 11px; color: #FFD700;">
+                ${chapter.minBalance}-${chapter.maxBalance} 🦄
+            </div>
+            <button class="prize-close-btn" onclick="this.parentElement.parentElement.remove()">
+                Продолжить приключение! 🚀
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОТКРЫТЬ ПОЛНУЮ ИСТОРИЮ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function openFullStory() {
+    alert(`
+📖 ИСТОРИЯ МОЕГО ЕДИНОРОГА
+
+ЗАВЕРШЕНО:
+✅ Глава 1: Рождение единорога (0-100 🦄)
+✅ Глава 2: Волшебный лес (100-300 🦄)
+
+ТЕКУЩАЯ:
+▶️ Глава 3: Замок мечты (300-500 🦄)
+   Прогресс: 245/500 (49%)
+
+ВПЕРЕДИ:
+🔒 Глава 4: Королевство света (500-1000 🦄)
+🔒 Глава 5: Легенда вечности (1000+ 🦄)
+
+Продолжай зарабатывать единороги, чтобы открыть новые главы! 🚀
+    `);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ИНИЦИАЛИЗАЦИЯ
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Отрисовываем сад при загрузке
+renderGarden(universeState.balance);
+
+// TODO: Загрузить состояние из API
+// fetch('/api/garden/status?child_id=123')
+//   .then(res => res.json())
+//   .then(data => {
+//     universeState = data;
+//     renderGarden(data.balance);
+//   });
+</script>
+
+
+

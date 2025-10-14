@@ -1,0 +1,948 @@
+{
+  "total_files": 60,
+  "clean_files": 7,
+  "files_with_errors": 53,
+  "total_errors": 2766,
+  "error_types": {
+    "E501": 1535,
+    "W293": 783,
+    "W291": 81,
+    "E129": 2,
+    "E128": 27,
+    "F401": 200,
+    "F541": 5,
+    "F841": 6,
+    "E402": 33,
+    "E302": 73,
+    "W292": 14,
+    "F811": 2,
+    "E305": 5
+  },
+  "category_stats": {
+    "core": {
+      "total": 5,
+      "clean": 5,
+      "errors": 0,
+      "total_error_count": 0
+    },
+    "security_sfm": {
+      "total": 1,
+      "clean": 0,
+      "errors": 1,
+      "total_error_count": 235
+    },
+    "security": {
+      "total": 18,
+      "clean": 1,
+      "errors": 17,
+      "total_error_count": 806
+    },
+    "ai_agent": {
+      "total": 13,
+      "clean": 0,
+      "errors": 13,
+      "total_error_count": 922
+    },
+    "bot": {
+      "total": 14,
+      "clean": 1,
+      "errors": 13,
+      "total_error_count": 527
+    },
+    "microservice": {
+      "total": 9,
+      "clean": 0,
+      "errors": 9,
+      "total_error_count": 276
+    }
+  },
+  "file_details": [
+    {
+      "file_path": "core/base.py",
+      "category": "core",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "core/service_base.py",
+      "category": "core",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "core/database.py",
+      "category": "core",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "core/configuration.py",
+      "category": "core",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "core/logging_module.py",
+      "category": "core",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/safe_function_manager.py",
+      "category": "security_sfm",
+      "is_clean": false,
+      "total_errors": 235,
+      "errors": {
+        "E501": 150,
+        "W293": 58,
+        "W291": 10,
+        "E129": 2,
+        "E128": 10,
+        "F401": 1,
+        "F541": 3,
+        "F841": 1
+      }
+    },
+    {
+      "file_path": "security/enhanced_alerting.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 3,
+      "errors": {
+        "E501": 3
+      }
+    },
+    {
+      "file_path": "security/authentication.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 30,
+      "errors": {
+        "F401": 4,
+        "E402": 1,
+        "E302": 1,
+        "W293": 22,
+        "E501": 2
+      }
+    },
+    {
+      "file_path": "security/security_monitoring.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 30,
+      "errors": {
+        "F401": 4,
+        "E402": 1,
+        "E302": 1,
+        "W293": 22,
+        "E501": 2
+      }
+    },
+    {
+      "file_path": "security/incident_response.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 49,
+      "errors": {
+        "E501": 49
+      }
+    },
+    {
+      "file_path": "security/threat_detection.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 49,
+      "errors": {
+        "F401": 1,
+        "E302": 7,
+        "E501": 23,
+        "W293": 13,
+        "W291": 2,
+        "E128": 2,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/malware_protection.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 47,
+      "errors": {
+        "F401": 6,
+        "W293": 36,
+        "E501": 3,
+        "F541": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/intrusion_prevention.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 66,
+      "errors": {
+        "F401": 6,
+        "W293": 50,
+        "E501": 8,
+        "F541": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/access_control_manager.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 9,
+      "errors": {
+        "F401": 1,
+        "E501": 8
+      }
+    },
+    {
+      "file_path": "security/data_protection_manager.py",
+      "category": "security",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/zero_trust_manager.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 145,
+      "errors": {
+        "F401": 8,
+        "E402": 1,
+        "E302": 9,
+        "W293": 82,
+        "E501": 28,
+        "F811": 1,
+        "W291": 7,
+        "E128": 7,
+        "E305": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/security_audit.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 44,
+      "errors": {
+        "E501": 44
+      }
+    },
+    {
+      "file_path": "security/compliance_manager.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 70,
+      "errors": {
+        "E501": 70
+      }
+    },
+    {
+      "file_path": "security/threat_intelligence.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 43,
+      "errors": {
+        "E501": 43
+      }
+    },
+    {
+      "file_path": "security/network_monitoring.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 37,
+      "errors": {
+        "F401": 1,
+        "E302": 6,
+        "E501": 22,
+        "W293": 7,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ransomware_protection.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 127,
+      "errors": {
+        "F401": 4,
+        "E302": 7,
+        "W293": 85,
+        "E501": 26,
+        "W291": 1,
+        "E128": 1,
+        "E305": 1,
+        "F811": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/security_core.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 6,
+      "errors": {
+        "E501": 6
+      }
+    },
+    {
+      "file_path": "security/minimal_security_integration.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 5,
+      "errors": {
+        "E501": 5
+      }
+    },
+    {
+      "file_path": "security/security_analytics.py",
+      "category": "security",
+      "is_clean": false,
+      "total_errors": 46,
+      "errors": {
+        "E501": 46
+      }
+    },
+    {
+      "file_path": "security/ai_agents/threat_detection_agent.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 59,
+      "errors": {
+        "E501": 59
+      }
+    },
+    {
+      "file_path": "security/ai_agents/behavioral_analysis_agent.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 47,
+      "errors": {
+        "E501": 47
+      }
+    },
+    {
+      "file_path": "security/ai_agents/password_security_agent.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 53,
+      "errors": {
+        "F401": 1,
+        "E501": 52
+      }
+    },
+    {
+      "file_path": "security/ai_agents/incident_response_agent.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 95,
+      "errors": {
+        "F401": 1,
+        "E501": 94
+      }
+    },
+    {
+      "file_path": "security/ai_agents/threat_intelligence_agent.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 56,
+      "errors": {
+        "F401": 2,
+        "E501": 54
+      }
+    },
+    {
+      "file_path": "security/ai_agents/network_security_agent.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 57,
+      "errors": {
+        "E501": 57
+      }
+    },
+    {
+      "file_path": "security/ai_agents/data_protection_agent.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 45,
+      "errors": {
+        "F401": 3,
+        "E501": 37,
+        "F841": 2,
+        "W293": 2,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/compliance_agent.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 6,
+      "errors": {
+        "E501": 6
+      }
+    },
+    {
+      "file_path": "security/ai_agents/voice_analysis_engine.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 99,
+      "errors": {
+        "F401": 4,
+        "W293": 64,
+        "E501": 25,
+        "W291": 3,
+        "F841": 2,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/deepfake_protection_system.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 117,
+      "errors": {
+        "F401": 3,
+        "W293": 80,
+        "E501": 25,
+        "W291": 8,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/financial_protection_hub.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 95,
+      "errors": {
+        "F401": 6,
+        "W293": 55,
+        "E501": 24,
+        "W291": 9,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/emergency_response_system.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 101,
+      "errors": {
+        "F401": 6,
+        "W293": 55,
+        "E501": 26,
+        "W291": 12,
+        "F841": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/ai_agents/elderly_protection_interface.py",
+      "category": "ai_agent",
+      "is_clean": false,
+      "total_errors": 92,
+      "errors": {
+        "F401": 4,
+        "W293": 49,
+        "E501": 28,
+        "W291": 10,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/bots/emergency_response_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 53,
+      "errors": {
+        "F401": 9,
+        "E501": 44
+      }
+    },
+    {
+      "file_path": "security/bots/parental_control_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 51,
+      "errors": {
+        "F401": 10,
+        "E501": 41
+      }
+    },
+    {
+      "file_path": "security/bots/notification_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 66,
+      "errors": {
+        "F401": 8,
+        "E501": 58
+      }
+    },
+    {
+      "file_path": "security/bots/whatsapp_security_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 26,
+      "errors": {
+        "F401": 11,
+        "E501": 15
+      }
+    },
+    {
+      "file_path": "security/bots/telegram_security_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 28,
+      "errors": {
+        "F401": 11,
+        "E501": 17
+      }
+    },
+    {
+      "file_path": "security/bots/instagram_security_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 26,
+      "errors": {
+        "F401": 11,
+        "E501": 15
+      }
+    },
+    {
+      "file_path": "security/bots/mobile_navigation_bot.py",
+      "category": "bot",
+      "is_clean": true,
+      "total_errors": 0,
+      "errors": {}
+    },
+    {
+      "file_path": "security/bots/gaming_security_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 52,
+      "errors": {
+        "F401": 11,
+        "E501": 41
+      }
+    },
+    {
+      "file_path": "security/bots/analytics_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 25,
+      "errors": {
+        "F401": 10,
+        "E501": 15
+      }
+    },
+    {
+      "file_path": "security/bots/website_navigation_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 32,
+      "errors": {
+        "E501": 21,
+        "F401": 11
+      }
+    },
+    {
+      "file_path": "security/bots/browser_security_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 13,
+      "errors": {
+        "F401": 3,
+        "E501": 10
+      }
+    },
+    {
+      "file_path": "security/bots/cloud_storage_security_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 29,
+      "errors": {
+        "F401": 3,
+        "E501": 26
+      }
+    },
+    {
+      "file_path": "security/bots/device_security_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 18,
+      "errors": {
+        "F401": 5,
+        "E501": 13
+      }
+    },
+    {
+      "file_path": "security/bots/incognito_protection_bot.py",
+      "category": "bot",
+      "is_clean": false,
+      "total_errors": 108,
+      "errors": {
+        "F401": 8,
+        "W293": 56,
+        "E501": 24,
+        "W291": 19,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/microservices/api_gateway.py",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 48,
+      "errors": {
+        "E501": 21,
+        "F401": 3,
+        "E402": 7,
+        "E302": 16,
+        "E305": 1
+      }
+    },
+    {
+      "file_path": "security/microservices/load_balancer.py",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 45,
+      "errors": {
+        "E501": 14,
+        "F401": 3,
+        "E402": 1,
+        "E302": 25,
+        "W293": 1,
+        "E305": 1
+      }
+    },
+    {
+      "file_path": "security/microservices/rate_limiter.py",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 14,
+      "errors": {
+        "F401": 5,
+        "E402": 8,
+        "E501": 1
+      }
+    },
+    {
+      "file_path": "security/microservices/circuit_breaker.py",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 14,
+      "errors": {
+        "F401": 6,
+        "E402": 8
+      }
+    },
+    {
+      "file_path": "security/microservices/redis_cache_manager.py",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 17,
+      "errors": {
+        "E501": 17
+      }
+    },
+    {
+      "file_path": "security/microservices/service_mesh_manager.py",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 57,
+      "errors": {
+        "E501": 57
+      }
+    },
+    {
+      "file_path": "security/microservices/user_interface_manager.py",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 11,
+      "errors": {
+        "F401": 4,
+        "E402": 6,
+        "E501": 1
+      }
+    },
+    {
+      "file_path": "security/microservices/emergency_service_caller.py",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 64,
+      "errors": {
+        "F401": 1,
+        "E501": 12,
+        "W293": 43,
+        "E128": 7,
+        "W292": 1
+      }
+    },
+    {
+      "file_path": "security/microservices/wake_up_systems.py",
+      "category": "microservice",
+      "is_clean": false,
+      "total_errors": 6,
+      "errors": {
+        "F401": 1,
+        "E302": 1,
+        "W293": 3,
+        "E305": 1
+      }
+    }
+  ],
+  "critical_files": [
+    {
+      "file": "security/safe_function_manager.py",
+      "category": "security_sfm",
+      "errors": 235,
+      "error_types": {
+        "E501": 150,
+        "W293": 58,
+        "W291": 10,
+        "E129": 2,
+        "E128": 10,
+        "F401": 1,
+        "F541": 3,
+        "F841": 1
+      }
+    },
+    {
+      "file": "security/intrusion_prevention.py",
+      "category": "security",
+      "errors": 66,
+      "error_types": {
+        "F401": 6,
+        "W293": 50,
+        "E501": 8,
+        "F541": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file": "security/zero_trust_manager.py",
+      "category": "security",
+      "errors": 145,
+      "error_types": {
+        "F401": 8,
+        "E402": 1,
+        "E302": 9,
+        "W293": 82,
+        "E501": 28,
+        "F811": 1,
+        "W291": 7,
+        "E128": 7,
+        "E305": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file": "security/compliance_manager.py",
+      "category": "security",
+      "errors": 70,
+      "error_types": {
+        "E501": 70
+      }
+    },
+    {
+      "file": "security/ransomware_protection.py",
+      "category": "security",
+      "errors": 127,
+      "error_types": {
+        "F401": 4,
+        "E302": 7,
+        "W293": 85,
+        "E501": 26,
+        "W291": 1,
+        "E128": 1,
+        "E305": 1,
+        "F811": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file": "security/ai_agents/threat_detection_agent.py",
+      "category": "ai_agent",
+      "errors": 59,
+      "error_types": {
+        "E501": 59
+      }
+    },
+    {
+      "file": "security/ai_agents/password_security_agent.py",
+      "category": "ai_agent",
+      "errors": 53,
+      "error_types": {
+        "F401": 1,
+        "E501": 52
+      }
+    },
+    {
+      "file": "security/ai_agents/incident_response_agent.py",
+      "category": "ai_agent",
+      "errors": 95,
+      "error_types": {
+        "F401": 1,
+        "E501": 94
+      }
+    },
+    {
+      "file": "security/ai_agents/threat_intelligence_agent.py",
+      "category": "ai_agent",
+      "errors": 56,
+      "error_types": {
+        "F401": 2,
+        "E501": 54
+      }
+    },
+    {
+      "file": "security/ai_agents/network_security_agent.py",
+      "category": "ai_agent",
+      "errors": 57,
+      "error_types": {
+        "E501": 57
+      }
+    },
+    {
+      "file": "security/ai_agents/voice_analysis_engine.py",
+      "category": "ai_agent",
+      "errors": 99,
+      "error_types": {
+        "F401": 4,
+        "W293": 64,
+        "E501": 25,
+        "W291": 3,
+        "F841": 2,
+        "W292": 1
+      }
+    },
+    {
+      "file": "security/ai_agents/deepfake_protection_system.py",
+      "category": "ai_agent",
+      "errors": 117,
+      "error_types": {
+        "F401": 3,
+        "W293": 80,
+        "E501": 25,
+        "W291": 8,
+        "W292": 1
+      }
+    },
+    {
+      "file": "security/ai_agents/financial_protection_hub.py",
+      "category": "ai_agent",
+      "errors": 95,
+      "error_types": {
+        "F401": 6,
+        "W293": 55,
+        "E501": 24,
+        "W291": 9,
+        "W292": 1
+      }
+    },
+    {
+      "file": "security/ai_agents/emergency_response_system.py",
+      "category": "ai_agent",
+      "errors": 101,
+      "error_types": {
+        "F401": 6,
+        "W293": 55,
+        "E501": 26,
+        "W291": 12,
+        "F841": 1,
+        "W292": 1
+      }
+    },
+    {
+      "file": "security/ai_agents/elderly_protection_interface.py",
+      "category": "ai_agent",
+      "errors": 92,
+      "error_types": {
+        "F401": 4,
+        "W293": 49,
+        "E501": 28,
+        "W291": 10,
+        "W292": 1
+      }
+    },
+    {
+      "file": "security/bots/emergency_response_bot.py",
+      "category": "bot",
+      "errors": 53,
+      "error_types": {
+        "F401": 9,
+        "E501": 44
+      }
+    },
+    {
+      "file": "security/bots/parental_control_bot.py",
+      "category": "bot",
+      "errors": 51,
+      "error_types": {
+        "F401": 10,
+        "E501": 41
+      }
+    },
+    {
+      "file": "security/bots/notification_bot.py",
+      "category": "bot",
+      "errors": 66,
+      "error_types": {
+        "F401": 8,
+        "E501": 58
+      }
+    },
+    {
+      "file": "security/bots/gaming_security_bot.py",
+      "category": "bot",
+      "errors": 52,
+      "error_types": {
+        "F401": 11,
+        "E501": 41
+      }
+    },
+    {
+      "file": "security/bots/incognito_protection_bot.py",
+      "category": "bot",
+      "errors": 108,
+      "error_types": {
+        "F401": 8,
+        "W293": 56,
+        "E501": 24,
+        "W291": 19,
+        "W292": 1
+      }
+    },
+    {
+      "file": "security/microservices/service_mesh_manager.py",
+      "category": "microservice",
+      "errors": 57,
+      "error_types": {
+        "E501": 57
+      }
+    },
+    {
+      "file": "security/microservices/emergency_service_caller.py",
+      "category": "microservice",
+      "errors": 64,
+      "error_types": {
+        "F401": 1,
+        "E501": 12,
+        "W293": 43,
+        "E128": 7,
+        "W292": 1
+      }
+    }
+  ],
+  "analysis_time": "2025-09-15T23:46:11.016860"
+}

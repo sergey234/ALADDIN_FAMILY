@@ -1,0 +1,57 @@
+{
+  "name": "FullTestSystem",
+  "rules": {
+    "cpu_rule": {
+      "rule_id": "cpu_rule",
+      "name": "CPU Test",
+      "metric_name": "cpu_usage",
+      "condition": ">",
+      "threshold": 80.0,
+      "severity": "warning",
+      "cooldown": 300,
+      "min_occurrences": 1,
+      "max_alerts_per_hour": 10,
+      "adaptive_threshold": true
+    },
+    "memory_rule": {
+      "rule_id": "memory_rule",
+      "name": "Memory Test",
+      "metric_name": "memory_usage",
+      "condition": ">",
+      "threshold": 85.0,
+      "severity": "error",
+      "cooldown": 300,
+      "min_occurrences": 1,
+      "max_alerts_per_hour": 10,
+      "adaptive_threshold": true
+    },
+    "disk_rule": {
+      "rule_id": "disk_rule",
+      "name": "Disk Test",
+      "metric_name": "disk_usage",
+      "condition": ">",
+      "threshold": 90.0,
+      "severity": "critical",
+      "cooldown": 300,
+      "min_occurrences": 1,
+      "max_alerts_per_hour": 10,
+      "adaptive_threshold": true
+    }
+  },
+  "alerts": [],
+  "metrics": {
+    "cpu_usage": [
+      75.0,
+      85.0
+    ],
+    "memory_usage": [
+      70.0,
+      90.0
+    ],
+    "disk_usage": [
+      85.0,
+      95.0
+    ]
+  },
+  "export_timestamp": "2025-09-24T02:05:33.788215"
+}

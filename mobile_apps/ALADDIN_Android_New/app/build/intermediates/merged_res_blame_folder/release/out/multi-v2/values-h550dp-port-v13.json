@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "family.aladdin.android.app-mergeReleaseResources-70:/values-h550dp-port-v13/values-h550dp-port-v13.xml",
+            "map": [
+                {
+                    "source": "/Users/sergejhlystov/.gradle/caches/transforms-3/d5f8fd508ac66034b051c37577170cd6/transformed/material-1.10.0/res/values-h550dp-port-v13/values-h550dp-port-v13.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "76",
+                        "endOffsets": "127"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,110 @@
+{
+  "notification_bot.py": {
+    "status": "found",
+    "versions_count": 28,
+    "best_version": {
+      "source": "active",
+      "path": "./security/ai_agents/notification_bot.py",
+      "lines_of_code": 2576,
+      "file_size_kb": 99.37890625,
+      "status": "active",
+      "last_updated": "2025-09-19 10:02:37"
+    }
+  },
+  "threat_intelligence_agent.py": {
+    "status": "found",
+    "versions_count": 21,
+    "best_version": {
+      "source": "active",
+      "path": "./security/ai_agents/threat_intelligence_agent.py",
+      "lines_of_code": 2571,
+      "file_size_kb": 93.861328125,
+      "status": "active",
+      "last_updated": "2025-09-24 22:44:21"
+    }
+  },
+  "anti_fraud_master_ai.py": {
+    "status": "found",
+    "versions_count": 17,
+    "best_version": {
+      "source": "active",
+      "path": "./security/ai_agents/anti_fraud_master_ai.py",
+      "lines_of_code": 2397,
+      "file_size_kb": 92.8671875,
+      "status": "active",
+      "last_updated": "2025-09-25 20:40:09"
+    }
+  },
+  "network_monitoring.py": {
+    "status": "found",
+    "versions_count": 22,
+    "best_version": {
+      "source": "active",
+      "path": "./security/active/network_monitoring.py",
+      "lines_of_code": 1969,
+      "file_size_kb": 76.216796875,
+      "status": "active",
+      "last_updated": "2025-09-25 20:54:12"
+    }
+  },
+  "circuit_breaker.py": {
+    "status": "found",
+    "versions_count": 37,
+    "best_version": {
+      "source": "active",
+      "path": "./security/microservices/circuit_breaker.py",
+      "lines_of_code": 1600,
+      "file_size_kb": 58.4853515625,
+      "status": "active",
+      "last_updated": "2025-09-19 10:02:38"
+    }
+  },
+  "super_ai_support_assistant.py": {
+    "status": "found",
+    "versions_count": 14,
+    "best_version": {
+      "source": "active",
+      "path": "./security/ai/super_ai_support_assistant.py",
+      "lines_of_code": 1522,
+      "file_size_kb": 61.0810546875,
+      "status": "active",
+      "last_updated": "2025-09-17 15:06:21"
+    }
+  },
+  "super_ai_support_assistant_improved.py": {
+    "status": "found",
+    "versions_count": 2,
+    "best_version": {
+      "source": "active",
+      "path": "./security/ai/super_ai_support_assistant_improved.py",
+      "lines_of_code": 1477,
+      "file_size_kb": 59.935546875,
+      "status": "active",
+      "last_updated": "2025-09-17 14:01:52"
+    }
+  },
+  "emergency_security_utils.py": {
+    "status": "found",
+    "versions_count": 18,
+    "best_version": {
+      "source": "active",
+      "path": "./security/ai_agents/emergency_security_utils_enhanced.py",
+      "lines_of_code": 1276,
+      "file_size_kb": 42.5498046875,
+      "status": "active",
+      "last_updated": "2025-09-27 13:39:44"
+    }
+  },
+  "natural_language_processor.py": {
+    "status": "found",
+    "versions_count": 6,
+    "best_version": {
+      "source": "active",
+      "path": "./security/ai_agents/natural_language_processor.py",
+      "lines_of_code": 1144,
+      "file_size_kb": 41.2216796875,
+      "status": "active",
+      "last_updated": "2025-09-16 17:57:57"
+    }
+  }
+}

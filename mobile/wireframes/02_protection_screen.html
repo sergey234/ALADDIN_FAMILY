@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Wireframes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        
+        .settings-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+        
+        .vpn-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .vpn-status {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .vpn-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .vpn-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 25px;
+        }
+        
+        .connect-btn {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+        
+        .connect-btn.disconnected {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        }
+        
+        .server-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .server-item {
+            text-align: center;
+            flex: 1;
+            padding: 8px 3px;
+            min-width: 0;
+        }
+        
+        .server-label {
+            font-size: 10px;
+            opacity: 0.8;
+            margin-bottom: 3px;
+            font-weight: 500;
+        }
+        
+        .server-value {
+            font-size: 13px;
+            font-weight: bold;
+            color: #F59E0B;
+            word-break: break-word;
+        }
+        
+        .antivirus-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .antivirus-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .antivirus-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        
+        .antivirus-status {
+            background: #10B981;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .antivirus-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+        }
+        
+        .stat-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .scan-btn {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .scan-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 6px 2px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 4px 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            min-width: 0;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+        
+        .status-left {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .status-right {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #F59E0B;
+            color: #0a1128;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Экран защиты</div>
+        <div class="screen">
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="back-btn" onclick="window.location.href='01_main_screen.html'" style="cursor: pointer;">←</div>
+                <div class="title">🛡️ ALADDIN VPN</div>
+                <div class="settings-btn" onclick="showVPNSettings()" style="cursor: pointer;">⚙️</div>
+            </div>
+            
+            <!-- Badge статуса защиты -->
+            <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10B981; border-radius: 15px; padding: 12px 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; cursor: pointer;" onclick="showSecurityDetails()">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 24px;">🛡️</span>
+                    <div>
+                        <div style="font-size: 13px; font-weight: 600; color: #10B981;">Система защищена</div>
+                        <div style="font-size: 11px; opacity: 0.8;">47 угроз заблокировано за неделю</div>
+                    </div>
+                </div>
+                <div style="font-size: 20px; font-weight: bold; color: #10B981;">✓</div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="main-content" role="main">
+                <!-- VPN секция -->
+                <div class="vpn-section" role="region" aria-label="VPN защита">
+                    <div class="vpn-status">🔴</div>
+                    <div class="vpn-title">VPN Отключен</div>
+                    <div class="vpn-subtitle">Ваше соединение не защищено</div>
+                    <button class="connect-btn disconnected" onclick="toggleVPN()" aria-label="Подключить VPN" role="button">Подключиться</button>
+                    
+                    <div class="server-info">
+                        <div class="server-item">
+                            <div class="server-label">🌍 Сервер</div>
+                            <div class="server-value">Авто</div>
+                        </div>
+                        <div class="server-item">
+                            <div class="server-label">📊 Трафик</div>
+                            <div class="server-value">0 MB</div>
+                        </div>
+                        <div class="server-item">
+                            <div class="server-label">⏱️ Время</div>
+                            <div class="server-value">00:00:00</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Индикатор энергосбережения -->
+                    <div id="energy-indicator" style="margin-top: 15px; padding: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid #F59E0B; border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20px;">⚡</span>
+                            <div>
+                                <div style="font-size: 12px; font-weight: 600; color: #F59E0B;" id="energy-mode-display">Полный режим</div>
+                                <div style="font-size: 10px; opacity: 0.8;">Батарея: <span id="battery-display">67%</span> • Экономия: <span id="saved-display">~35%</span></div>
+                            </div>
+                        </div>
+                        <button onclick="window.location.href='18_vpn_energy_stats.html';" style="background: none; border: 1px solid #F59E0B; border-radius: 8px; color: #F59E0B; padding: 6px 12px; font-size: 11px; cursor: pointer; white-space: nowrap;">
+                            Подробнее
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Антивирус секция -->
+                <div class="antivirus-section" role="region" aria-label="Антивирус защита">
+                    <div class="antivirus-header">
+                        <div class="antivirus-title">🛡️ Антивирус</div>
+                        <div class="antivirus-status">Активен</div>
+                    </div>
+                    
+                    <div class="antivirus-stats">
+                        <div class="stat-item">
+                            <div class="stat-icon">🔍</div>
+                            <div class="stat-value">1,247</div>
+                            <div class="stat-label">Файлов проверено</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-value">0</div>
+                            <div class="stat-label">Угроз найдено</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">🔄</div>
+                            <div class="stat-value">2ч назад</div>
+                            <div class="stat-label">Последняя проверка</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon">⚡</div>
+                            <div class="stat-value">100%</div>
+                            <div class="stat-label">Защита</div>
+                        </div>
+                    </div>
+                    
+                    <button class="scan-btn" onclick="startAntivirus()">Запустить проверку</button>
+                </div>
+                
+                <!-- Защита от обхода блокировок (КОМПАКТНАЯ ВЕРСИЯ) -->
+                <div class="bypass-protection-section" role="region" aria-label="Защита от обхода блокировок">
+                    <div class="bypass-header" style="text-align: center; margin-bottom: 15px;">
+                        <div class="bypass-title" style="font-size: 18px; font-weight: bold; color: #F59E0B;">🚨 Защита от обхода</div>
+                    </div>
+                    
+                    <div class="bypass-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <div class="bypass-stat" style="text-align: center; padding-left: 10px;">
+                            <div class="stat-number" style="font-size: 20px; font-weight: bold; color: #10B981;">0</div>
+                            <div class="stat-text" style="font-size: 11px; color: rgba(255,255,255,0.7);">Попыток<br>сегодня</div>
+                        </div>
+                        <div class="bypass-stat" style="text-align: center;">
+                            <div class="stat-number" style="font-size: 20px; font-weight: bold; color: #F59E0B;">47</div>
+                            <div class="stat-text" style="font-size: 11px; color: rgba(255,255,255,0.7);">Всего<br>за неделю</div>
+                        </div>
+                        <div class="bypass-stat" style="text-align: center;">
+                            <div class="stat-number" style="font-size: 20px; font-weight: bold; color: #10B981;">100%</div>
+                            <div class="stat-text" style="font-size: 11px; color: rgba(255,255,255,0.7);">Заблоки-<br>ровано</div>
+                        </div>
+                    </div>
+                    
+                    <!-- ACCORDION для детекций -->
+                    <div class="bypass-accordion" style="margin-bottom: 15px;">
+                        <!-- VPN -->
+                        <div class="accordion-item" style="background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; overflow: hidden;">
+                            <div class="accordion-header" onclick="toggleAccordion(this)" style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 22px;">🌐</span>
+                                    <span style="font-size: 14px; font-weight: 600;">Детекция VPN</span>
+                                </div>
+                                <span class="accordion-icon" style="font-size: 16px;">▶️</span>
+                            </div>
+                            <div class="accordion-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s;">
+                                <div style="padding: 12px 15px; font-size: 12px; line-height: 1.6;">
+                                    <div style="margin-bottom: 10px;">14+ провайдеров: NordVPN, ExpressVPN, Surfshark и др.</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>Статус защиты:</span>
+                                        <div class="control-switch-small" id="vpn-switch" onclick="event.stopPropagation(); toggleBypassControl('vpn')" role="switch" aria-checked="true" aria-label="Переключатель детекции VPN" style="width: 40px; height: 22px; cursor: pointer;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Инкогнито -->
+                        <div class="accordion-item" style="background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; overflow: hidden;">
+                            <div class="accordion-header" onclick="toggleAccordion(this)" style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 22px;">🕶️</span>
+                                    <span style="font-size: 14px; font-weight: 600;">Детекция Инкогнито</span>
+                                </div>
+                                <span class="accordion-icon" style="font-size: 16px;">▶️</span>
+                            </div>
+                            <div class="accordion-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s;">
+                                <div style="padding: 12px 15px; font-size: 12px; line-height: 1.6;">
+                                    <div style="margin-bottom: 10px;">6 браузеров: Chrome, Firefox, Safari, Edge, Opera, Brave</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>Статус защиты:</span>
+                                        <div class="control-switch-small" id="incognito-switch" onclick="event.stopPropagation(); toggleBypassControl('incognito')" role="switch" aria-checked="true" aria-label="Детекция Инкогнито" style="width: 40px; height: 22px; cursor: pointer;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tor -->
+                        <div class="accordion-item" style="background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; overflow: hidden;">
+                            <div class="accordion-header" onclick="toggleAccordion(this)" style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 22px;">🧅</span>
+                                    <span style="font-size: 14px; font-weight: 600;">Детекция Tor</span>
+                                </div>
+                                <span class="accordion-icon" style="font-size: 16px;">▶️</span>
+                            </div>
+                            <div class="accordion-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s;">
+                                <div style="padding: 12px 15px; font-size: 12px; line-height: 1.6;">
+                                    <div style="margin-bottom: 10px;">Блокировка .onion сайтов и Tor Browser</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>Статус защиты:</span>
+                                        <div class="control-switch-small" id="tor-switch" onclick="event.stopPropagation(); toggleBypassControl('tor')" role="switch" aria-checked="true" aria-label="Детекция Tor" style="width: 40px; height: 22px; cursor: pointer;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Proxy -->
+                        <div class="accordion-item" style="background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; overflow: hidden;">
+                            <div class="accordion-header" onclick="toggleAccordion(this)" style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 22px;">🔀</span>
+                                    <span style="font-size: 14px; font-weight: 600;">Детекция Proxy</span>
+                                </div>
+                                <span class="accordion-icon" style="font-size: 16px;">▶️</span>
+                            </div>
+                            <div class="accordion-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s;">
+                                <div style="padding: 12px 15px; font-size: 12px; line-height: 1.6;">
+                                    <div style="margin-bottom: 10px;">HTTP, HTTPS, SOCKS прокси серверы</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>Статус защиты:</span>
+                                        <div class="control-switch-small" id="proxy-switch" onclick="event.stopPropagation(); toggleBypassControl('proxy')" role="switch" aria-checked="true" aria-label="Детекция Proxy" style="width: 40px; height: 22px; cursor: pointer;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Скриншоты -->
+                        <div class="accordion-item" style="background: rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 8px; overflow: hidden;">
+                            <div class="accordion-header" onclick="toggleAccordion(this)" style="padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span style="font-size: 22px;">📸</span>
+                                    <span style="font-size: 14px; font-weight: 600;">Скриншоты</span>
+                                </div>
+                                <span class="accordion-icon" style="font-size: 16px;">▶️</span>
+                            </div>
+                            <div class="accordion-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s;">
+                                <div style="padding: 12px 15px; font-size: 12px; line-height: 1.6;">
+                                    <div style="margin-bottom: 10px;">Автоматические скриншоты при попытке обхода</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span>Статус защиты:</span>
+                                        <div class="control-switch-small off" id="screenshots-switch" onclick="event.stopPropagation(); toggleBypassControl('screenshots')" role="switch" aria-checked="false" aria-label="Автоматические скриншоты" style="width: 40px; height: 22px; cursor: pointer;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bypass-actions" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <button class="bypass-btn secondary" onclick="viewBypassHistory()" style="padding: 10px; font-size: 12px; border-radius: 12px;">📊 История</button>
+                        <button class="bypass-btn primary" onclick="emergencyLockAll()" style="padding: 10px; font-size: 12px; border-radius: 12px;">🔒 Блокировка</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Главная</div>
+                </button>
+                <button class="nav-item active" aria-current="page" aria-label="Защита и VPN">
+                    <div class="nav-icon">🛡️</div>
+                    <div class="nav-label">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления">
+                    <div class="nav-icon">🔔</div>
+                    <div class="nav-label">Уведомления</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи">
+                    <div class="nav-icon">📱</div>
+                    <div class="nav-label">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    let vpnConnected = false;
+    
+    function toggleAccordion(header) {
+        const content = header.nextElementSibling;
+        const icon = header.querySelector('.accordion-icon');
+        const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+        
+        // Закрыть все другие accordion
+        document.querySelectorAll('.accordion-content').forEach(acc => {
+            if (acc !== content) {
+                acc.style.maxHeight = '0';
+                const prevIcon = acc.previousElementSibling.querySelector('.accordion-icon');
+                if (prevIcon) prevIcon.textContent = '▶️';
+            }
+        });
+        
+        // Переключить текущий
+        if (isOpen) {
+            content.style.maxHeight = '0';
+            icon.textContent = '▶️';
+        } else {
+            content.style.maxHeight = '200px';
+            icon.textContent = '🔽';
+        }
+    }
+    let antivirusRunning = false;
+
+    function toggleVPN() {
+        const vpnStatus = document.querySelector('.vpn-status');
+        const vpnTitle = document.querySelector('.vpn-title');
+        const vpnSubtitle = document.querySelector('.vpn-subtitle');
+        const connectBtn = document.querySelector('.connect-btn');
+        const serverValue = document.querySelector('.server-value');
+        
+        if (!vpnConnected) {
+            // Подключаем VPN
+            vpnStatus.textContent = '🟢';
+            vpnTitle.textContent = 'VPN Подключен';
+            vpnSubtitle.textContent = 'Ваше соединение защищено';
+            connectBtn.textContent = 'Отключиться';
+            connectBtn.classList.remove('disconnected');
+            connectBtn.classList.add('connected');
+            serverValue.textContent = 'Москва';
+            
+            // Показываем уведомление
+            showNotification('VPN подключен! Ваше соединение защищено.', 'success');
+            
+            // Сохраняем статус
+            localStorage.setItem('vpn_connected', 'true');
+        } else {
+            // Отключаем VPN
+            vpnStatus.textContent = '🔴';
+            vpnTitle.textContent = 'VPN Отключен';
+            vpnSubtitle.textContent = 'Ваше соединение не защищено';
+            connectBtn.textContent = 'Подключиться';
+            connectBtn.classList.remove('connected');
+            connectBtn.classList.add('disconnected');
+            serverValue.textContent = 'Авто';
+            
+            // Показываем уведомление
+            showNotification('VPN отключен!', 'warning');
+            
+            // Сохраняем статус
+            localStorage.setItem('vpn_connected', 'false');
+        }
+        
+        vpnConnected = !vpnConnected;
+    }
+
+    function viewBypassHistory() {
+        const historyData = `📊 ИСТОРИЯ ПОПЫТОК ОБХОДА\n\n📅 За неделю: 47 попыток\n\n🔴 Сегодня:\n• 0 попыток ✅\n\n📊 Типы попыток за неделю:\n• VPN: 18 попыток\n• Инкогнито: 15 попыток\n• Tor: 8 попыток\n• Proxy: 6 попыток\n\n✅ ВСЕ ЗАБЛОКИРОВАНЫ!\n\n📸 Скриншотов сохранено: 34\n📁 Логов записано: 47`;
+        showNotification(historyData, 'info');
+    }
+    
+    function emergencyLockAll() {
+        const confirmLock = confirm('🔒 ЭКСТРЕННАЯ БЛОКИРОВКА\n\nЗаблокировать ВСЕ устройства семьи?\n\n⚠️ Это действие нельзя отменить дистанционно!');
+        if (confirmLock) {
+            showNotification('🔒 ЭКСТРЕННАЯ БЛОКИРОВКА АКТИВИРОВАНА!\n\n📱 Все устройства заблокированы!\n🛡️ Доступ запрещён!\n\n✅ Для разблокировки обратитесь к администратору семьи.', 'warning');
+        }
+    }
+    
+    function toggleBypassControl(type) {
+        const switchEl = document.getElementById(type + '-switch');
+        if (switchEl) {
+            switchEl.classList.toggle('off');
+            const isOn = !switchEl.classList.contains('off');
+            const names = {
+                'vpn': 'Детекция VPN',
+                'incognito': 'Детекция Инкогнито',
+                'tor': 'Детекция Tor',
+                'proxy': 'Детекция Proxy',
+                'screenshots': 'Скриншоты при обходе'
+            };
+            showNotification(`${names[type]}: ${isOn ? 'Включена ✅' : 'Отключена ⭕'}`, isOn ? 'success' : 'warning');
+        }
+    }
+    
+    function startAntivirus() {
+        const scanBtn = document.querySelector('.scan-btn');
+        const scanStatus = document.querySelector('.scan-status');
+        
+        if (!antivirusRunning) {
+            // Запускаем проверку
+            scanBtn.textContent = 'Проверка...';
+            scanBtn.disabled = true;
+            scanStatus.textContent = '🔍 Сканирование...';
+            
+            // Показываем уведомление
+            showNotification('Запущена проверка антивируса...', 'info');
+            
+            // Симулируем проверку
+            setTimeout(() => {
+                scanBtn.textContent = 'Запустить проверку';
+                scanBtn.disabled = false;
+                scanStatus.textContent = '✅ Проверка завершена';
+                antivirusRunning = false;
+                showNotification('Проверка завершена! Угроз не найдено.', 'success');
+            }, 3000);
+            
+            antivirusRunning = true;
+        }
+    }
+
+    function showVPNSettings() {
+        // Показываем настройки VPN
+        const settings = [
+            '🌍 Серверы: Выбор из 50+ стран',
+            '🔒 Протоколы: WireGuard, OpenVPN, IKEv2',
+            '⚡ Автоподключение: Включено',
+            '🛡️ Kill Switch: Активен',
+            '📊 Статистика: Просмотр истории'
+        ].join('\n');
+        
+        showNotification(settings, 'info');
+    }
+    
+    function showSecurityDetails() {
+        const details = [
+            '🛡️ СТАТУС ЗАЩИТЫ',
+            '',
+            '✅ Система: Защищена',
+            '✅ VPN: Готов к подключению',
+            '✅ Антивирус: Активен',
+            '✅ Firewall: Включен',
+            '',
+            '📊 ЗА НЕДЕЛЮ:',
+            '🚫 Фишинг: 18 заблокировано',
+            '🚫 Вредоносные ссылки: 15',
+            '🚫 Опасный контент: 14',
+            '',
+            '🗓️ ПОСЛЕДНЕЕ СКАНИРОВАНИЕ:',
+            '⏰ 2 часа назад',
+            '🔍 Угроз не обнаружено'
+        ].join('\n');
+        showNotification(details, 'success');
+    }
+
+    function showNotification(message, type) {
+        // Создаем уведомление
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = message.replace(/\n/g, '<br>');
+        
+        // Добавляем стили
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#10B981' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-width: 280px;
+            text-align: left;
+            line-height: 1.6;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Удаляем через 4 секунды
+        setTimeout(() => {
+            notification.remove();
+        }, 4000);
+    }
+    
+    // Инициализация VPN статуса при загрузке страницы
+    function initVPNStatus() {
+        const savedStatus = localStorage.getItem('vpn_connected');
+        
+        if (savedStatus === 'true') {
+            // VPN подключен - обновляем UI без уведомлений
+            vpnConnected = true;
+            
+            const vpnStatus = document.querySelector('.vpn-status');
+            const vpnTitle = document.querySelector('.vpn-title');
+            const vpnSubtitle = document.querySelector('.vpn-subtitle');
+            const connectBtn = document.querySelector('.connect-btn');
+            const serverValue = document.querySelector('.server-value');
+            
+            if (vpnStatus) vpnStatus.textContent = '🟢';
+            if (vpnTitle) vpnTitle.textContent = 'VPN Подключен';
+            if (vpnSubtitle) vpnSubtitle.textContent = 'Ваше соединение защищено';
+            if (connectBtn) {
+                connectBtn.textContent = 'Отключиться';
+                connectBtn.classList.remove('disconnected');
+                connectBtn.classList.add('connected');
+            }
+            if (serverValue) serverValue.textContent = 'Нидерланды 🇳🇱';
+        } else {
+            // VPN отключен - устанавливаем false
+            vpnConnected = false;
+            localStorage.setItem('vpn_connected', 'false');
+        }
+    }
+    
+    // Загружаем статус при открытии страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        initVPNStatus();
+    });
+</script>
+
+</body>
+</html>

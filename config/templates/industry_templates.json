@@ -1,0 +1,86 @@
+{
+  "healthcare": {
+    "name": "Здравоохранение",
+    "description": "Соответствие HIPAA и защита медицинских данных",
+    "compliance": [
+      "HIPAA",
+      "GDPR",
+      "152-ФЗ"
+    ],
+    "features": {
+      "medical_data_protection": true,
+      "patient_privacy": true,
+      "audit_logging": true,
+      "encryption_at_rest": true
+    },
+    "security_requirements": {
+      "data_encryption": "AES-256",
+      "access_control": "strict",
+      "audit_trail": "comprehensive",
+      "backup_encryption": true
+    }
+  },
+  "finance": {
+    "name": "Финансы",
+    "description": "Защита финансовых данных и соответствие PCI DSS",
+    "compliance": [
+      "PCI DSS",
+      "SOX",
+      "GDPR"
+    ],
+    "features": {
+      "financial_data_protection": true,
+      "transaction_monitoring": true,
+      "fraud_detection": true,
+      "regulatory_reporting": true
+    },
+    "security_requirements": {
+      "data_encryption": "AES-256",
+      "access_control": "multi_factor",
+      "audit_trail": "detailed",
+      "real_time_monitoring": true
+    }
+  },
+  "education": {
+    "name": "Образование",
+    "description": "Защита образовательных данных и соответствие FERPA",
+    "compliance": [
+      "FERPA",
+      "COPPA",
+      "GDPR"
+    ],
+    "features": {
+      "student_data_protection": true,
+      "parental_controls": true,
+      "content_filtering": true,
+      "educational_monitoring": true
+    },
+    "security_requirements": {
+      "data_encryption": "AES-256",
+      "access_control": "role_based",
+      "audit_trail": "educational",
+      "child_protection": true
+    }
+  },
+  "government": {
+    "name": "Государственный сектор",
+    "description": "Защита государственных данных и соответствие требованиям",
+    "compliance": [
+      "FISMA",
+      "NIST",
+      "152-ФЗ"
+    ],
+    "features": {
+      "classified_data_protection": true,
+      "national_security": true,
+      "compliance_monitoring": true,
+      "threat_intelligence": true
+    },
+    "security_requirements": {
+      "data_encryption": "AES-256",
+      "access_control": "clearance_based",
+      "audit_trail": "comprehensive",
+      "threat_monitoring": true
+    }
+  }
+}

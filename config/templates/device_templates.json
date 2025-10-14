@@ -1,0 +1,79 @@
+{
+  "mobile_devices": {
+    "name": "Мобильные устройства",
+    "description": "Оптимизация для смартфонов и планшетов",
+    "devices": [
+      "iPhone",
+      "Android",
+      "iPad",
+      "Android Tablet"
+    ],
+    "features": {
+      "touch_optimized": true,
+      "battery_efficient": true,
+      "offline_mode": true,
+      "push_notifications": true
+    },
+    "vpn_settings": {
+      "mobile_optimized": true,
+      "battery_saving": true,
+      "auto_reconnect": true
+    },
+    "antivirus_settings": {
+      "lightweight_scanning": true,
+      "background_protection": true,
+      "app_scanning": true
+    }
+  },
+  "desktop_computers": {
+    "name": "Настольные компьютеры",
+    "description": "Полнофункциональная защита для ПК",
+    "devices": [
+      "Windows PC",
+      "Mac",
+      "Linux PC"
+    ],
+    "features": {
+      "full_protection": true,
+      "advanced_monitoring": true,
+      "custom_configuration": true,
+      "enterprise_features": true
+    },
+    "vpn_settings": {
+      "full_featured": true,
+      "advanced_routing": true,
+      "custom_protocols": true
+    },
+    "antivirus_settings": {
+      "comprehensive_scanning": true,
+      "real_time_protection": true,
+      "advanced_threat_detection": true
+    }
+  },
+  "smart_home": {
+    "name": "Умный дом",
+    "description": "Защита для IoT устройств",
+    "devices": [
+      "Smart TV",
+      "Smart Speaker",
+      "Security Camera",
+      "Smart Lock"
+    ],
+    "features": {
+      "iot_protection": true,
+      "network_segmentation": true,
+      "device_management": true,
+      "privacy_protection": true
+    },
+    "vpn_settings": {
+      "iot_vpn": true,
+      "network_wide": true,
+      "device_specific": true
+    },
+    "antivirus_settings": {
+      "iot_scanning": true,
+      "firmware_protection": true,
+      "network_monitoring": true
+    }
+  }
+}

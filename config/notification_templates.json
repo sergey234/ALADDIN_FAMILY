@@ -1,0 +1,102 @@
+{
+  "security_templates": {
+    "threat_detected": {
+      "title": "🚨 Обнаружена угроза!",
+      "body": "Система обнаружила подозрительную активность. Нажмите для просмотра деталей.",
+      "action": "view_threat_details",
+      "category": "security_alerts"
+    },
+    "vpn_compromised": {
+      "title": "🔓 VPN соединение нарушено",
+      "body": "Ваше VPN соединение было прервано. Нажмите для переподключения.",
+      "action": "reconnect_vpn",
+      "category": "security_alerts"
+    },
+    "unauthorized_access": {
+      "title": "👤 Несанкционированный доступ",
+      "body": "Обнаружена попытка несанкционированного доступа к системе.",
+      "action": "view_access_log",
+      "category": "security_alerts"
+    }
+  },
+  "vpn_templates": {
+    "connected": {
+      "title": "🔒 VPN подключен",
+      "body": "Ваше соединение защищено. Сервер: {server_name}",
+      "action": "view_vpn_status",
+      "category": "vpn_status"
+    },
+    "disconnected": {
+      "title": "🔓 VPN отключен",
+      "body": "Ваше соединение больше не защищено.",
+      "action": "reconnect_vpn",
+      "category": "vpn_status"
+    },
+    "server_changed": {
+      "title": "🔄 Сервер VPN изменен",
+      "body": "Подключение к новому серверу: {server_name}",
+      "action": "view_vpn_status",
+      "category": "vpn_status"
+    }
+  },
+  "antivirus_templates": {
+    "scan_started": {
+      "title": "🔍 Сканирование начато",
+      "body": "Антивирус начал сканирование {scan_type}",
+      "action": "view_scan_progress",
+      "category": "antivirus_scan"
+    },
+    "scan_completed": {
+      "title": "✅ Сканирование завершено",
+      "body": "Сканирование завершено. Найдено угроз: {threats_found}",
+      "action": "view_scan_results",
+      "category": "antivirus_scan"
+    },
+    "threat_quarantined": {
+      "title": "🛡️ Угроза изолирована",
+      "body": "Подозрительный файл {filename} перемещен в карантин",
+      "action": "view_quarantine",
+      "category": "antivirus_scan"
+    }
+  },
+  "family_templates": {
+    "child_online": {
+      "title": "👶 {child_name} онлайн",
+      "body": "Ваш ребенок {child_name} подключился к интернету",
+      "action": "view_child_activity",
+      "category": "family_activity"
+    },
+    "inappropriate_content": {
+      "title": "⚠️ Неподходящий контент",
+      "body": "Ребенок {child_name} пытался получить доступ к неподходящему контенту",
+      "action": "view_content_block",
+      "category": "family_activity"
+    },
+    "time_limit_reached": {
+      "title": "⏰ Время истекло",
+      "body": "У {child_name} истекло время использования устройства",
+      "action": "view_time_limits",
+      "category": "family_activity"
+    }
+  },
+  "system_templates": {
+    "update_available": {
+      "title": "🔄 Доступно обновление",
+      "body": "Доступна новая версия ALADDIN. Нажмите для обновления.",
+      "action": "start_update",
+      "category": "system_updates"
+    },
+    "update_completed": {
+      "title": "✅ Обновление завершено",
+      "body": "ALADDIN успешно обновлен до версии {version}",
+      "action": "view_changelog",
+      "category": "system_updates"
+    },
+    "backup_completed": {
+      "title": "💾 Резервная копия создана",
+      "body": "Резервная копия системы успешно создана",
+      "action": "view_backup_status",
+      "category": "system_updates"
+    }
+  }
+}

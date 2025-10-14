@@ -1,0 +1,9 @@
+{
+  "function_name": "TestFunction",
+  "function_id": "test_function_123",
+  "sleep_time": "2025-09-15T22:02:29.924111",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": false,
+  "minimal_system_sleep": true
+}

@@ -1,0 +1,319 @@
+#!/usr/bin/env python3
+"""
+ALADDIN VPN - Sleep Mode Checker
+Проверка VPN систем в спящем режиме
+
+Автор: ALADDIN Security Team
+Версия: 1.0.0
+Дата: 01.10.2025
+"""
+
+import json
+import os
+import time
+from datetime import datetime
+from typing import Any, Dict
+
+
+def check_sleep_mode_status() -> Dict[str, Any]:
+    """Проверка статуса VPN в спящем режиме"""
+
+    print("🔍 ALADDIN VPN - Sleep Mode Status Check")
+    print("=" * 50)
+
+    status = {
+        "timestamp": datetime.now().isoformat(),
+        "sleep_mode": True,
+        "checks": {},
+    }
+
+    # 1. Проверка портов
+    print("\n🌐 Checking VPN Ports...")
+    ports_status = check_vpn_ports()
+    status["checks"]["ports"] = ports_status
+    print(
+        f"  Port 5000: {'❌ Closed' if not ports_status['5000'] else '✅ Open'}"
+    )
+    print(
+        f"  Port 5002: {'❌ Closed' if not ports_status['5002'] else '✅ Open'}"
+    )
+
+    # 2. Проверка конфигурационных файлов
+    print("\n📁 Checking Configuration Files...")
+    config_status = check_config_files()
+    status["checks"]["config"] = config_status
+    print(
+        f"  DDoS Config: {'✅ OK' if config_status['ddos_config'] else '❌ Missing'}"
+    )
+    print(
+        f"  Rate Limiting: {'✅ OK' if config_status['rate_limiting'] else '❌ Missing'}"
+    )
+    print(
+        f"  IDS Config: {'✅ OK' if config_status['ids_config'] else '❌ Missing'}"
+    )
+    print(
+        f"  Audit Config: {'✅ OK' if config_status['audit_config'] else '❌ Missing'}"
+    )
+    print(
+        f"  2FA Config: {'✅ OK' if config_status['2fa_config'] else '❌ Missing'}"
+    )
+
+    # 3. Проверка логов
+    print("\n📝 Checking Log Files...")
+    logs_status = check_log_files()
+    status["checks"]["logs"] = logs_status
+    print(
+        f"  Audit Log: {'✅ OK' if logs_status['audit_log'] else '❌ Missing'}"
+    )
+    print(
+        f"  Security Log: {'✅ OK' if logs_status['security_log'] else '❌ Missing'}"
+    )
+    print(
+        f"  Error Log: {'✅ OK' if logs_status['error_log'] else '❌ Missing'}"
+    )
+
+    # 4. Проверка систем безопасности
+    print("\n🛡️ Checking Security Systems...")
+    security_status = check_security_systems()
+    status["checks"]["security"] = security_status
+    print(
+        f"  DDoS Protection: {'✅ Ready' if security_status['ddos_ready'] else '❌ Not Ready'}"
+    )
+    print(
+        f"  Rate Limiting: {'✅ Ready' if security_status['rate_limiting_ready'] else '❌ Not Ready'}"
+    )
+    print(
+        f"  IDS: {'✅ Ready' if security_status['ids_ready'] else '❌ Not Ready'}"
+    )
+    print(
+        f"  Audit Logger: {'✅ Ready' if security_status['audit_ready'] else '❌ Not Ready'}"
+    )
+    print(
+        f"  2FA: {'✅ Ready' if security_status['2fa_ready'] else '❌ Not Ready'}"
+    )
+
+    # 5. Проверка использования памяти
+    print("\n💾 Checking Memory Usage...")
+    memory_status = check_memory_usage()
+    status["checks"]["memory"] = memory_status
+    print(f"  Total Memory: {memory_status['total_mb']:.1f} MB")
+    print(
+        f"  Used Memory: {memory_status['used_mb']:.1f} MB ({memory_status['used_percent']:.1f}%)"
+    )
+    print(f"  Available: {memory_status['available_mb']:.1f} MB")
+    print(
+        f"  Status: {'✅ Good' if memory_status['status'] == 'good' else '⚠️ High' if memory_status['status'] == 'high' else '❌ Critical'}"
+    )
+
+    # 6. Общая оценка
+    print("\n📊 Overall Assessment...")
+    overall_score = calculate_overall_score(status["checks"])
+    status["overall_score"] = overall_score
+
+    if overall_score >= 0.8:
+        print("  🟢 EXCELLENT - All systems ready for production")
+    elif overall_score >= 0.6:
+        print("  🟡 GOOD - Minor issues, ready for testing")
+    elif overall_score >= 0.4:
+        print("  🟠 FAIR - Some issues need attention")
+    else:
+        print("  🔴 POOR - Major issues, needs fixing")
+
+    print(f"\n📈 Overall Score: {overall_score:.1f}/1.0")
+
+    return status
+
+
+def check_vpn_ports() -> Dict[str, bool]:
+    """Проверка VPN портов"""
+    import socket
+
+    ports = {}
+    for port in [5000, 5002, 5001]:
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            result = sock.connect_ex(("localhost", port))
+            ports[str(port)] = result == 0
+            sock.close()
+        except:
+            ports[str(port)] = False
+
+    return ports
+
+
+def check_config_files() -> Dict[str, bool]:
+    """Проверка конфигурационных файлов"""
+    config_files = {
+        "ddos_config": "config/ddos_config.json",
+        "rate_limiting": "config/rate_limiting.json",
+        "ids_config": "config/ids_config.json",
+        "audit_config": "config/audit_config.json",
+        "2fa_config": "config/2fa_config.json",
+        "sleep_mode": "config/sleep_mode_config.json",
+    }
+
+    status = {}
+    for name, filepath in config_files.items():
+        status[name] = os.path.exists(filepath)
+
+    return status
+
+
+def check_log_files() -> Dict[str, bool]:
+    """Проверка файлов логов"""
+    log_files = {
+        "audit_log": "audit_logging/audit.log",
+        "security_log": "audit_logging/security.log",
+        "error_log": "audit_logging/error.log",
+        "sleep_mode_log": "logs/sleep_mode.log",
+    }
+
+    status = {}
+    for name, filepath in log_files.items():
+        status[name] = os.path.exists(filepath)
+
+    return status
+
+
+def check_security_systems() -> Dict[str, bool]:
+    """Проверка готовности систем безопасности"""
+    try:
+        # Проверяем импорт модулей
+        from audit_logging.audit_logger import SecurityAuditLogger
+        from auth.two_factor_auth import TwoFactorAuth
+        from protection.ddos_protection import DDoSProtectionSystem
+        from protection.intrusion_detection import IntrusionDetectionSystem
+        from protection.rate_limiter import AdvancedRateLimiter
+
+        # Проверяем инициализацию
+        ddos = DDoSProtectionSystem()
+        rate_limiter = AdvancedRateLimiter()
+        ids = IntrusionDetectionSystem()
+        audit_logger = SecurityAuditLogger()
+        two_fa = TwoFactorAuth()
+
+        return {
+            "ddos_ready": True,
+            "rate_limiting_ready": True,
+            "ids_ready": True,
+            "audit_ready": True,
+            "2fa_ready": True,
+        }
+    except Exception as e:
+        print(f"  ⚠️ Security systems check failed: {e}")
+        return {
+            "ddos_ready": False,
+            "rate_limiting_ready": False,
+            "ids_ready": False,
+            "audit_ready": False,
+            "2fa_ready": False,
+        }
+
+
+def check_memory_usage() -> Dict[str, Any]:
+    """Проверка использования памяти"""
+    try:
+        import psutil
+
+        memory = psutil.virtual_memory()
+        total_mb = memory.total / 1024 / 1024
+        used_mb = memory.used / 1024 / 1024
+        available_mb = memory.available / 1024 / 1024
+        used_percent = memory.percent
+
+        if used_percent < 70:
+            status = "good"
+        elif used_percent < 90:
+            status = "high"
+        else:
+            status = "critical"
+
+        return {
+            "total_mb": total_mb,
+            "used_mb": used_mb,
+            "available_mb": available_mb,
+            "used_percent": used_percent,
+            "status": status,
+        }
+    except ImportError:
+        return {
+            "total_mb": 0,
+            "used_mb": 0,
+            "available_mb": 0,
+            "used_percent": 0,
+            "status": "unknown",
+        }
+
+
+def calculate_overall_score(checks: Dict[str, Any]) -> float:
+    """Расчет общего балла"""
+    scores = []
+
+    # Порты (чем меньше открыто, тем лучше в спящем режиме)
+    ports = checks.get("ports", {})
+    port_score = 1.0 if not any(ports.values()) else 0.5
+    scores.append(port_score * 0.2)
+
+    # Конфигурационные файлы
+    config = checks.get("config", {})
+    config_score = sum(config.values()) / len(config) if config else 0
+    scores.append(config_score * 0.2)
+
+    # Логи
+    logs = checks.get("logs", {})
+    logs_score = sum(logs.values()) / len(logs) if logs else 0
+    scores.append(logs_score * 0.1)
+
+    # Системы безопасности
+    security = checks.get("security", {})
+    security_score = sum(security.values()) / len(security) if security else 0
+    scores.append(security_score * 0.3)
+
+    # Память
+    memory = checks.get("memory", {})
+    memory_status = memory.get("status", "unknown")
+    if memory_status == "good":
+        memory_score = 1.0
+    elif memory_status == "high":
+        memory_score = 0.7
+    elif memory_status == "critical":
+        memory_score = 0.3
+    else:
+        memory_score = 0.5
+    scores.append(memory_score * 0.2)
+
+    return sum(scores)
+
+
+def save_status_report(status: Dict[str, Any]) -> None:
+    """Сохранение отчета о статусе"""
+    try:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"vpn_sleep_mode_status_{timestamp}.json"
+
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(status, f, indent=2, ensure_ascii=False)
+
+        print(f"\n💾 Status report saved: {filename}")
+
+    except Exception as e:
+        print(f"❌ Error saving status report: {e}")
+
+
+def main():
+    """Главная функция"""
+    print("🚀 Starting VPN Sleep Mode Check...")
+
+    try:
+        status = check_sleep_mode_status()
+        save_status_report(status)
+
+        print("\n✅ VPN Sleep Mode Check completed!")
+
+    except Exception as e:
+        print(f"\n❌ Error during check: {e}")
+
+
+if __name__ == "__main__":
+    main()

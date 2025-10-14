@@ -1,0 +1,9 @@
+{
+  "function_name": "ThreatDetection",
+  "function_id": "security_threatdetection",
+  "sleep_time": "2025-09-15T22:02:29.870935",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": true,
+  "minimal_system_sleep": true
+}

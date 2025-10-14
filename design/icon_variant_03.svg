@@ -1,0 +1,124 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Night Sky Background -->
+    <linearGradient id="night-sky" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1E293B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#334155;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Electric Blue -->
+    <linearGradient id="electric" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Golden Glow -->
+    <radialGradient id="gold-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0.2" />
+    </radialGradient>
+    
+    <!-- Strong Glow -->
+    <filter id="strong-glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="25" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="226" fill="url(#night-sky)"/>
+  
+  <!-- Central Mystical Orb -->
+  <g transform="translate(512, 400)">
+    <!-- Outer Glow Ring -->
+    <circle cx="0" cy="0" r="160" fill="none" stroke="url(#gold-glow)" stroke-width="8" opacity="0.4" filter="url(#strong-glow)"/>
+    
+    <!-- Electric Eye Core -->
+    <circle cx="0" cy="0" r="120" fill="url(#electric)" filter="url(#strong-glow)"/>
+    
+    <!-- Inner Eye -->
+    <circle cx="0" cy="0" r="80" fill="#1D4ED8"/>
+    
+    <!-- Pupil -->
+    <circle cx="0" cy="0" r="40" fill="#0F172A"/>
+    
+    <!-- Crown Star in Pupil -->
+    <g transform="translate(-12, -12)">
+      <path d="M 12 0 L 15 9 L 24 9 L 17 15 L 20 24 L 12 18 L 4 24 L 7 15 L 0 9 L 9 9 Z" 
+            fill="#FCD34D" opacity="0.9"/>
+    </g>
+    
+    <!-- Electric Rings -->
+    <circle cx="0" cy="0" r="140" fill="none" stroke="#60A5FA" stroke-width="2" opacity="0.6"/>
+    <circle cx="0" cy="0" r="100" fill="none" stroke="#60A5FA" stroke-width="2" opacity="0.4"/>
+  </g>
+  
+  <!-- Golden Particles (Bokeh Effect) -->
+  <g opacity="0.8">
+    <circle cx="150" cy="150" r="6" fill="url(#gold-glow)"/>
+    <circle cx="850" cy="120" r="8" fill="url(#gold-glow)"/>
+    <circle cx="200" cy="800" r="5" fill="url(#gold-glow)"/>
+    <circle cx="750" cy="850" r="7" fill="url(#gold-glow)"/>
+    <circle cx="350" cy="200" r="4" fill="url(#gold-glow)"/>
+    <circle cx="650" cy="750" r="6" fill="url(#gold-glow)"/>
+    <circle cx="100" cy="500" r="5" fill="url(#gold-glow)"/>
+    <circle cx="900" cy="600" r="8" fill="url(#gold-glow)"/>
+    <circle cx="450" cy="100" r="4" fill="url(#gold-glow)"/>
+    <circle cx="580" cy="900" r="6" fill="url(#gold-glow)"/>
+    <circle cx="250" cy="400" r="5" fill="url(#gold-glow)"/>
+    <circle cx="780" cy="300" r="7" fill="url(#gold-glow)"/>
+  </g>
+  
+  <!-- Mystical Symbols (Corner Elements) -->
+  <g transform="translate(180, 180)">
+    <circle cx="0" cy="0" r="15" fill="none" stroke="#FCD34D" stroke-width="3"/>
+    <path d="M -10 -10 L 10 10 M 10 -10 L -10 10" stroke="#FCD34D" stroke-width="2"/>
+  </g>
+  
+  <g transform="translate(844, 180)">
+    <circle cx="0" cy="0" r="15" fill="none" stroke="#FCD34D" stroke-width="3"/>
+    <circle cx="0" cy="0" r="8" fill="none" stroke="#FCD34D" stroke-width="2"/>
+    <circle cx="0" cy="0" r="4" fill="#FCD34D" opacity="0.8"/>
+  </g>
+  
+  <g transform="translate(180, 844)">
+    <circle cx="0" cy="0" r="15" fill="none" stroke="#FCD34D" stroke-width="3"/>
+    <path d="M -12 -8 Q 0 8 12 -8" stroke="#FCD34D" stroke-width="2" fill="none"/>
+  </g>
+  
+  <g transform="translate(844, 844)">
+    <circle cx="0" cy="0" r="15" fill="none" stroke="#FCD34D" stroke-width="3"/>
+    <path d="M -12 8 Q 0 -8 12 8" stroke="#FCD34D" stroke-width="2" fill="none"/>
+  </g>
+  
+  <!-- ALADDIN Text (Integrated) -->
+  <g transform="translate(512, 650)">
+    <text x="0" y="0" 
+          font-family="Arial, sans-serif" 
+          font-size="52" 
+          font-weight="900" 
+          fill="#FCD34D" 
+          text-anchor="middle"
+          letter-spacing="5"
+          filter="url(#strong-glow)">ALADDIN</text>
+  </g>
+  
+  <!-- Subtitle -->
+  <g transform="translate(512, 700)">
+    <text x="0" y="0" 
+          font-family="Arial, sans-serif" 
+          font-size="24" 
+          font-weight="600" 
+          fill="#FFFFFF" 
+          text-anchor="middle"
+          letter-spacing="2"
+          opacity="0.8">AI ЗАЩИТА</text>
+  </g>
+</svg>
+
+

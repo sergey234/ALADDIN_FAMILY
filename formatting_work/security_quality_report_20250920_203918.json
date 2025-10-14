@@ -1,0 +1,102 @@
+{
+  "file": "security/ai_agents/emergency_utils.py",
+  "timestamp": "2025-09-20T20:39:18.831804",
+  "total_analysis_time_seconds": 0.026259899139404297,
+  "overall_quality_score": 80.0,
+  "analysis_details": {
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: attempted relative import with no known parent package",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "security"
+      ],
+      "message": "Найдено 1 ключевых слов безопасности"
+    },
+    "docstrings": {
+      "status": "success",
+      "missing_docstrings": [],
+      "message": "Найдено 0 отсутствующих docstring"
+    },
+    "type_hints": {
+      "status": "success",
+      "missing_type_hints": [],
+      "message": "Найдено 0 отсутствующих type hints"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 3038,
+      "lines": 84,
+      "message": "Размер: 3038 байт, Строк: 84"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 0,
+      "num_classes": 0,
+      "message": "Функций: 0, Классов: 0"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "emergency_security_utils",
+        "microservices",
+        "emergency_location_utils",
+        "emergency_id_generator",
+        "emergency_validators",
+        "emergency_time_utils"
+      ],
+      "message": "Зависимости: 6"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 1,
+    "security_classes_found": 0,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": true,
+    "type_hints_ok": true
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Зарегистрируйте функцию в SFM реестре."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

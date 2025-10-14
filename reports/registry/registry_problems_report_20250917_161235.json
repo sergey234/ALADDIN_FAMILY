@@ -1,0 +1,69 @@
+{
+  "report_metadata": {
+    "generated_at": "2025-09-17T16:12:35.173005",
+    "report_type": "comprehensive_registry_analysis",
+    "analysis_period": "all_time"
+  },
+  "system_health": {
+    "health_score": 85,
+    "total_problems": 3,
+    "status": "good"
+  },
+  "protection_analysis": {
+    "total_entries": 31,
+    "registry_updates": 0,
+    "functions_deleted": 0,
+    "functions_added": 0,
+    "backups_created": 0,
+    "protection_violations": 0,
+    "recent_activities": []
+  },
+  "validation_analysis": {
+    "total_validations": 3,
+    "successful_validations": 0,
+    "failed_validations": 3,
+    "total_errors": 6,
+    "common_errors": {
+      "⚠️ У функции 'super_ai_support_assistant' неверный статус 'perfect_production_ready'": 3,
+      "⚠️ У функции 'recovery_service' неверный статус 'production_ready'": 3
+    },
+    "validation_trends": [
+      {
+        "timestamp": "2025-09-17T16:12:35.127453",
+        "errors_count": 2,
+        "functions_count": 29
+      },
+      {
+        "timestamp": "2025-09-17T16:12:35.154340",
+        "errors_count": 2,
+        "functions_count": 29
+      },
+      {
+        "timestamp": "2025-09-17T16:12:35.165914",
+        "errors_count": 2,
+        "functions_count": 29
+      }
+    ]
+  },
+  "monitoring_analysis": {
+    "total_events": 0,
+    "file_changes": 0,
+    "function_count_changes": 0,
+    "size_changes": 0,
+    "monitoring_uptime": 0,
+    "recent_events": []
+  },
+  "alert_analysis": {
+    "total_alerts": 0,
+    "critical_alerts": 0,
+    "warning_alerts": 0,
+    "info_alerts": 0,
+    "alert_types": {},
+    "alert_timeline": []
+  },
+  "recommendations": [
+    "🔧 Рекомендация: Много неудачных валидаций. Проверьте формат данных в реестре.",
+    "🔍 Частая ошибка: '⚠️ У функции 'super_ai_support_assistant' неверный статус 'perfect_production_ready'' встречается 3 раз. Исправьте формат данных."
+  ],
+  "summary": "Система реестра функций работает с оценкой 85/100. Всего обновлений реестра: 0 Валидаций выполнено: 3 Предупреждений получено: 0"
+}

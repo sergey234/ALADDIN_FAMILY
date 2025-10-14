@@ -1,0 +1,49 @@
+{
+  "report_id": "incident_response_1758289969",
+  "generated_at": "2025-09-19T17:52:49.423489",
+  "agent_name": "TestAgent",
+  "summary": {
+    "total_incidents": 0,
+    "incidents_by_type": {},
+    "incidents_by_severity": {},
+    "incidents_by_status": {},
+    "avg_response_time": 0.0,
+    "avg_resolution_time": 0.0,
+    "sla_compliance": 0.0
+  },
+  "incidents": [],
+  "metrics": {
+    "total_incidents": 0,
+    "incidents_by_type": {},
+    "incidents_by_severity": {},
+    "incidents_by_status": {},
+    "avg_response_time": 0.0,
+    "avg_resolution_time": 0.0,
+    "avg_escalation_time": 0.0,
+    "sla_compliance": 0.0,
+    "auto_resolved_incidents": 0,
+    "manually_resolved_incidents": 0,
+    "escalated_incidents": 0,
+    "false_positives": 0,
+    "total_actions_taken": 0,
+    "successful_actions": 0,
+    "failed_actions": 0,
+    "actions_by_type": {},
+    "incident_accuracy": 0.0,
+    "response_effectiveness": 0.0,
+    "customer_satisfaction": 0.0,
+    "team_performance": 0.0,
+    "last_incident_time": null,
+    "last_response_time": null,
+    "peak_incident_hour": null,
+    "incident_trend": 0.0
+  },
+  "recommendations": [
+    {
+      "type": "sla_compliance",
+      "priority": "high",
+      "description": "Низкое соблюдение SLA, требуется улучшение процессов",
+      "action": "Пересмотреть SLA и улучшить автоматизацию"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-09-06T01:12:54.168446",
+  "action": "functions_sleep_mode",
+  "total_functions": 3,
+  "functions": {
+    "function_73": {
+      "name": "FamilyCommunicationHub",
+      "description": "Семейный коммуникационный центр",
+      "file": "security/ai_agents/family_communication_hub.py",
+      "status": "sleeping",
+      "quality": "79.7% (C)",
+      "last_used": null,
+      "sleep_time": "2025-09-06T01:12:54.168265",
+      "wake_up_time": "< 1 second",
+      "priority": "high"
+    },
+    "function_74": {
+      "name": "EmergencyResponseInterface",
+      "description": "Интерфейс экстренного реагирования",
+      "file": "security/ai_agents/emergency_response_interface.py",
+      "status": "sleeping",
+      "quality": "83.3% (B)",
+      "last_used": null,
+      "sleep_time": "2025-09-06T01:12:54.168307",
+      "wake_up_time": "< 0.5 seconds",
+      "priority": "critical"
+    },
+    "function_75": {
+      "name": "NotificationBot",
+      "description": "Бот уведомлений",
+      "file": "security/ai_agents/notification_bot.py",
+      "status": "sleeping",
+      "quality": "83.4% (B)",
+      "last_used": null,
+      "sleep_time": "2025-09-06T01:12:54.168319",
+      "wake_up_time": "< 1 second",
+      "priority": "high"
+    }
+  },
+  "summary": {
+    "sleeping_functions": 3,
+    "active_functions": 0,
+    "average_quality": "82.1% (B)",
+    "status": "ALL_FUNCTIONS_SLEEPING"
+  }
+}

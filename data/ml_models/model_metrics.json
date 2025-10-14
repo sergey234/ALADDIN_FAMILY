@@ -1,0 +1,13 @@
+{
+  "region_analyzer": {
+    "model_name": "Regional Risk Analyzer",
+    "algorithm": "Linear Regression",
+    "mse": 0.03350307062436036,
+    "r2_score": 0.9737402451017424,
+    "coefficients": [
+      0.13561924257932764,
+      6.38638689866939
+    ],
+    "training_samples": 6
+  }
+}

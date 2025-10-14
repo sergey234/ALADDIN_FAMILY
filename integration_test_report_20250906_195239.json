@@ -1,0 +1,192 @@
+{
+  "summary": {
+    "total_tests": 11,
+    "successful_tests": 9,
+    "failed_tests": 2,
+    "success_rate": 81.81818181818183,
+    "duration_seconds": 0,
+    "timestamp": "2025-09-06T19:52:39.863101"
+  },
+  "test_results": {
+    "emergency_bot": {
+      "success": true,
+      "incident_created": true,
+      "status_retrieved": true,
+      "incident_resolved": false,
+      "message": "EmergencyResponseBot работает корректно"
+    },
+    "parental_bot": {
+      "success": true,
+      "child_profile_created": true,
+      "content_analyzed": true,
+      "status_retrieved": true,
+      "message": "ParentalControlBot работает корректно"
+    },
+    "navigation_bot": {
+      "success": true,
+      "session_started": true,
+      "navigation_executed": false,
+      "recommendations_received": false,
+      "session_ended": true,
+      "message": "MobileNavigationBot работает корректно"
+    },
+    "gaming_bot": {
+      "success": true,
+      "session_started": true,
+      "action_analyzed": true,
+      "transaction_analyzed": true,
+      "session_ended": true,
+      "message": "GamingSecurityBot работает корректно"
+    },
+    "notification_bot": {
+      "success": true,
+      "notification_sent": true,
+      "status_retrieved": true,
+      "analytics_received": true,
+      "message": "NotificationBot работает корректно"
+    },
+    "bot_interactions": {
+      "success": true,
+      "emergency_to_notification": true,
+      "message": "Взаимодействие между ботами работает корректно"
+    },
+    "safe_function_manager": {
+      "success": true,
+      "integration_verified": true,
+      "message": "Интеграция с SafeFunctionManager работает корректно"
+    },
+    "sleep_mode": {
+      "success": true,
+      "bot_results": {
+        "emergency": {
+          "success": true,
+          "status": "sleeping"
+        },
+        "parental": {
+          "success": true,
+          "status": "sleeping"
+        },
+        "navigation": {
+          "success": true,
+          "status": "sleeping"
+        },
+        "gaming": {
+          "success": true,
+          "status": "sleeping"
+        },
+        "notification": {
+          "success": true,
+          "status": "sleeping"
+        }
+      },
+      "message": "Перевод в спящий режим выполнен"
+    },
+    "wake_up": {
+      "success": false,
+      "bot_results": {
+        "emergency": {
+          "success": false,
+          "status": "failed"
+        },
+        "parental": {
+          "success": false,
+          "status": "failed"
+        },
+        "navigation": {
+          "success": false,
+          "status": "failed"
+        },
+        "gaming": {
+          "success": false,
+          "status": "failed"
+        },
+        "notification": {
+          "success": false,
+          "status": "failed"
+        }
+      },
+      "message": "Пробуждение из спящего режима выполнено"
+    },
+    "performance": {
+      "success": true,
+      "results": {
+        "emergency": {
+          "response_time_ms": 11.512994766235352,
+          "status": "fast"
+        },
+        "parental": {
+          "response_time_ms": 4.9152374267578125,
+          "status": "fast"
+        },
+        "navigation": {
+          "response_time_ms": 13.435125350952148,
+          "status": "fast"
+        },
+        "gaming": {
+          "response_time_ms": 14.78123664855957,
+          "status": "fast"
+        },
+        "notification": {
+          "response_time_ms": 9.920835494995117,
+          "status": "fast"
+        }
+      },
+      "message": "Тестирование производительности завершено"
+    },
+    "security": {
+      "success": false,
+      "results": {
+        "emergency": {
+          "success": false,
+          "checks": {
+            "has_config": true,
+            "has_stats": true,
+            "is_running": false,
+            "has_name": true
+          }
+        },
+        "parental": {
+          "success": false,
+          "checks": {
+            "has_config": true,
+            "has_stats": true,
+            "is_running": false,
+            "has_name": true
+          }
+        },
+        "navigation": {
+          "success": false,
+          "checks": {
+            "has_config": true,
+            "has_stats": true,
+            "is_running": false,
+            "has_name": true
+          }
+        },
+        "gaming": {
+          "success": false,
+          "checks": {
+            "has_config": true,
+            "has_stats": true,
+            "is_running": false,
+            "has_name": true
+          }
+        },
+        "notification": {
+          "success": false,
+          "checks": {
+            "has_config": true,
+            "has_stats": true,
+            "is_running": false,
+            "has_name": true
+          }
+        }
+      },
+      "message": "Тестирование безопасности завершено"
+    }
+  },
+  "recommendations": [
+    "Исправить ошибки в wake_up: Неизвестная ошибка",
+    "Исправить ошибки в security: Неизвестная ошибка"
+  ]
+}

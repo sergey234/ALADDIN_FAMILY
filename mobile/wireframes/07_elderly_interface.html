@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Wireframes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #2D5016 0%, #4A7C59 50%, #6B8E23 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .back-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            border: 3px solid #90EE90;
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #90EE90;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            white-space: nowrap;
+        }
+        
+        .help-btn {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #90EE90 0%, #32CD32 100%);
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #0a1128;
+            font-weight: bold;
+            font-size: 24px;
+            border: 3px solid #90EE90;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            overflow-y: auto;
+        }
+        
+        .welcome-section {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 30px;
+            text-align: center;
+            border: 4px solid #90EE90;
+        }
+        
+        .welcome-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #90EE90;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .welcome-subtitle {
+            font-size: 20px;
+            opacity: 0.9;
+            margin-bottom: 25px;
+        }
+        
+        .status-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .status-text {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+        }
+        
+        .status-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            background: #32CD32;
+        }
+        
+        .quick-actions {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 30px;
+            border: 4px solid #32CD32;
+        }
+        
+        .actions-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #32CD32;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            justify-items: center;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        
+        .action-card {
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-2px);
+            border-color: #90EE90;
+            box-shadow: 0 5px 10px rgba(144, 238, 144, 0.3);
+        }
+        
+        .action-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .action-name {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        
+        .action-desc {
+            font-size: 10px;
+            opacity: 0.8;
+            line-height: 1.2;
+        }
+        
+        .emergency-section {
+            background: rgba(255, 0, 0, 0.2);
+            border: 4px solid #FF6B6B;
+            border-radius: 30px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .emergency-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FF6B6B;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .emergency-btn {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF4757 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            border: 3px solid #FF6B6B;
+        }
+        
+        .emergency-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .family-section {
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 30px;
+            border: 4px solid #87CEEB;
+        }
+        
+        .family-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #87CEEB;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .family-members {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .family-member {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .member-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #87CEEB 0%, #4682B4 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        
+        .member-info {
+            flex: 1;
+        }
+        
+        .member-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .member-status {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        
+        .call-btn {
+            width: 44px;
+            height: 44px;
+            background: #32CD32;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 6px 2px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 4px 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            min-width: 0;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .status-left {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .status-right {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #90EE90;
+            color: #0a1128;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 50px rgba(239, 68, 68, 0.9);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Интерфейс для людей 60+</div>
+        <div class="screen">
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="back-btn" onclick="goBackSmart()" style="cursor: pointer;">←</div>
+                <div class="title">🛡️ ALADDIN 60+</div>
+                <div class="help-btn" onclick="showHelp()" style="cursor: pointer;">❓</div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="main-content" role="main">
+                <!-- Приветствие -->
+                <div class="welcome-section">
+                    <div class="welcome-title">Здравствуйте, Мария Ивановна! 👋</div>
+                    <div class="welcome-subtitle">Ваша семья под надежной защитой</div>
+                    
+                    <div class="status-card">
+                        <div class="status-text">Статус защиты:</div>
+                        <div class="status-indicator">
+                            <div class="status-dot"></div>
+                            <span>Активна и работает</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Быстрые действия -->
+                <div class="quick-actions" role="region" aria-label="Быстрые действия">
+                    <div class="actions-title" style="font-size: 18px; white-space: nowrap;">🛡️ Быстрые действия</div>
+                    <div class="actions-grid" style="gap: 10px; display: grid; grid-template-columns: 1fr 1fr; padding-right: 20px;">
+                        <div class="action-card" onclick="blockSites()" style="cursor: pointer; padding: 15px; border-radius: 15px;">
+                            <div class="action-icon" style="font-size: 28px; margin-bottom: 6px;">🔒</div>
+                            <div class="action-name" style="font-size: 14px; margin-bottom: 4px; font-weight: bold;">Блокировка</div>
+                            <div class="action-desc" style="font-size: 11px; line-height: 1.2;">Опасных сайтов</div>
+                        </div>
+                        <div class="action-card" onclick="callFamily()" style="cursor: pointer; padding: 15px; border-radius: 15px;">
+                            <div class="action-icon" style="font-size: 28px; margin-bottom: 6px;">📞</div>
+                            <div class="action-name" style="font-size: 14px; margin-bottom: 4px; font-weight: bold;">Позвонить</div>
+                            <div class="action-desc" style="font-size: 11px; line-height: 1.2;">Детям и внукам</div>
+                        </div>
+                        <div class="action-card" onclick="checkSecurity()" style="cursor: pointer; padding: 15px; border-radius: 15px;">
+                            <div class="action-icon" style="font-size: 28px; margin-bottom: 6px;">📱</div>
+                            <div class="action-name" style="font-size: 14px; margin-bottom: 4px; font-weight: bold;">Проверка</div>
+                            <div class="action-desc" style="font-size: 11px; line-height: 1.2;">Безопасности</div>
+                        </div>
+                        <div class="action-card" onclick="showHelp()" style="cursor: pointer; padding: 15px; border-radius: 15px;">
+                            <div class="action-icon" style="font-size: 28px; margin-bottom: 6px;">❓</div>
+                            <div class="action-name" style="font-size: 14px; margin-bottom: 4px; font-weight: bold;">Помощь</div>
+                            <div class="action-desc" style="font-size: 11px; line-height: 1.2;">Инструкции</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Защита от мошенников -->
+                <div class="scam-protection-section">
+                    <div class="section-title" style="font-size: 18px; font-weight: bold; color: #F59E0B; margin-bottom: 15px;">🛡️ Защита от мошенников</div>
+                    <div class="scam-actions-grid" style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                        <div class="action-card" onclick="checkPhishing()" style="cursor: pointer; padding: 15px; border-radius: 15px; background: rgba(239, 68, 68, 0.1); border: 2px solid #EF4444;">
+                            <div class="action-icon" style="font-size: 32px; margin-bottom: 8px;">🔍</div>
+                            <div class="action-name" style="font-size: 18px; margin-bottom: 6px; font-weight: bold;">Проверить сайт</div>
+                            <div class="action-desc" style="font-size: 14px; line-height: 1.3; color: rgba(255,255,255,0.8);">Безопасен ли этот сайт?</div>
+                        </div>
+                        <div class="action-card" onclick="showScamProtection()" style="cursor: pointer; padding: 15px; border-radius: 15px; background: rgba(16, 185, 129, 0.1); border: 2px solid #10B981;">
+                            <div class="action-icon" style="font-size: 32px; margin-bottom: 8px;">🛡️</div>
+                            <div class="action-name" style="font-size: 18px; margin-bottom: 6px; font-weight: bold;">Защита от обмана</div>
+                            <div class="action-desc" style="font-size: 14px; line-height: 1.3; color: rgba(255,255,255,0.8);">✅ Включена и защищает</div>
+                        </div>
+                        <div class="action-card" onclick="showDangerousContacts()" style="cursor: pointer; padding: 15px; border-radius: 15px; background: rgba(245, 158, 11, 0.1); border: 2px solid #F59E0B;">
+                            <div class="action-icon" style="font-size: 32px; margin-bottom: 8px;">📞</div>
+                            <div class="action-name" style="font-size: 18px; margin-bottom: 6px; font-weight: bold;">Опасные контакты</div>
+                            <div class="action-desc" style="font-size: 14px; line-height: 1.3; color: rgba(255,255,255,0.8);">0 заблокировано ✅</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Здоровье и напоминания -->
+                <div class="health-section">
+                    <div class="section-title" style="font-size: 18px; font-weight: bold; color: #F59E0B; margin-bottom: 15px; margin-top: 20px;">💊 Здоровье и напоминания</div>
+                    <div class="health-grid" style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                        <div class="action-card" onclick="showMedicineReminder()" style="cursor: pointer; padding: 15px; border-radius: 15px; background: rgba(59, 130, 246, 0.1); border: 2px solid #3B82F6;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div class="action-icon" style="font-size: 32px; margin-bottom: 8px;">💊</div>
+                                    <div class="action-name" style="font-size: 18px; margin-bottom: 6px; font-weight: bold;">Лекарства</div>
+                                    <div class="action-desc" style="font-size: 14px; line-height: 1.3; color: rgba(255,255,255,0.8);">Следующий приём: 18:00 (Аспирин)</div>
+                                </div>
+                                <button style="background: #10B981; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer;" onclick="event.stopPropagation(); takeMedicine()">Принял</button>
+                            </div>
+                        </div>
+                        <div class="action-card" onclick="showDoctorVisits()" style="cursor: pointer; padding: 15px; border-radius: 15px; background: rgba(139, 92, 246, 0.1); border: 2px solid #8B5CF6;">
+                            <div class="action-icon" style="font-size: 32px; margin-bottom: 8px;">🏥</div>
+                            <div class="action-name" style="font-size: 18px; margin-bottom: 6px; font-weight: bold;">Визиты к врачу</div>
+                            <div class="action-desc" style="font-size: 14px; line-height: 1.3; color: rgba(255,255,255,0.8);">Следующий: 12.10 (Терапевт)</div>
+                        </div>
+                        <div class="action-card" onclick="recordBloodPressure()" style="cursor: pointer; padding: 15px; border-radius: 15px; background: rgba(236, 72, 153, 0.1); border: 2px solid #EC4899;">
+                            <div class="action-icon" style="font-size: 32px; margin-bottom: 8px;">🩺</div>
+                            <div class="action-name" style="font-size: 18px; margin-bottom: 6px; font-weight: bold;">Измерение давления</div>
+                            <div class="action-desc" style="font-size: 14px; line-height: 1.3; color: rgba(255,255,255,0.8);">Последнее: 120/80 (08.10)</div>
+                        </div>
+                        <div class="action-card" onclick="openHealthJournal()" style="cursor: pointer; padding: 15px; border-radius: 15px; background: rgba(245, 158, 11, 0.1); border: 2px solid #F59E0B;">
+                            <div class="action-icon" style="font-size: 32px; margin-bottom: 8px;">📋</div>
+                            <div class="action-name" style="font-size: 18px; margin-bottom: 6px; font-weight: bold;">Журнал здоровья</div>
+                            <div class="action-desc" style="font-size: 14px; line-height: 1.3; color: rgba(255,255,255,0.8);">24 записи</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Экстренная помощь (УЛУЧШЕНО!) -->
+                <div class="emergency-section" style="margin-top: 25px;">
+                    <div class="emergency-title" style="font-size: 22px; margin-bottom: 15px;">🆘 ЭКСТРЕННАЯ ПОМОЩЬ</div>
+                    <button class="emergency-btn" onclick="emergencyCall()" style="cursor: pointer; padding: 25px; font-size: 24px; font-weight: bold; animation: pulse 2s infinite; box-shadow: 0 0 30px rgba(239, 68, 68, 0.6);">🆘 ПОЗВОНИТЬ ДЕТЯМ</button>
+                </div>
+                
+                <!-- Семья -->
+                <div class="family-section">
+                    <div class="family-title">👨‍👩‍👧‍👦 Моя семья</div>
+                    <div class="family-members">
+                        <div class="family-member">
+                            <div class="member-avatar">👨</div>
+                            <div class="member-info">
+                                <div class="member-name">Александр (сын)</div>
+                                <div class="member-status">🟢 Онлайн</div>
+                            </div>
+                            <div class="call-btn" onclick="callMember('Александр (сын)')" style="cursor: pointer;">📞</div>
+                        </div>
+                        
+                        <div class="family-member">
+                            <div class="member-avatar">👩</div>
+                            <div class="member-info">
+                                <div class="member-name">Елена (невестка)</div>
+                                <div class="member-status">🟢 Онлайн</div>
+                            </div>
+                            <div class="call-btn" onclick="callMember('Елена (невестка)')" style="cursor: pointer;">📞</div>
+                        </div>
+                        
+                        <div class="family-member">
+                            <div class="member-avatar">👦</div>
+                            <div class="member-info">
+                                <div class="member-name">Алексей (внук)</div>
+                                <div class="member-status">🟡 В школе</div>
+                            </div>
+                            <div class="call-btn" onclick="callMember('Алексей (внук)')" style="cursor: pointer;">📞</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN">
+                    <div class="nav-icon">🛡️</div>
+                    <div class="nav-label">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления">
+                    <div class="nav-icon">🔔</div>
+                    <div class="nav-label">Уведомления</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи">
+                    <div class="nav-icon">📱</div>
+                    <div class="nav-label">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    function blockSites() {
+        showNotification('🔒 Блокировка опасных сайтов\n\nВключена автоматическая блокировка мошеннических и опасных сайтов', 'success');
+    }
+
+    function callFamily() {
+        showNotification('📞 Выберите, кому позвонить:\n\n👨 Сын\n👩 Дочь\n👦 Внук\n👧 Внучка', 'info');
+    }
+
+    function checkSecurity() {
+        showNotification('📱 Проверка безопасности телефона...\n\n✅ Все в порядке!\n🛡️ Защита активна\n🔒 Угроз не найдено', 'success');
+    }
+
+    function showHelp() {
+        showNotification(
+            '❓ ПОМОЩЬ ALADDIN 60+\n\n' +
+            '📚 Простые инструкции\n' +
+            '🎤 Голосовое управление\n' +
+            '📞 Техподдержка (бесплатно)\n' +
+            '👨‍👩‍👧‍👦 Связь с семьей\n' +
+            '🆘 Экстренная помощь\n\n' +
+            '💡 Нажмите на любую кнопку\n' +
+            'для получения помощи',
+            'info'
+        );
+    }
+
+    function emergencyCall() {
+        showNotification('🚨 ЭКСТРЕННЫЙ ВЫЗОВ\n\n📞 Звоним всем членам семьи...\n\n👨 Сын\n👩 Дочь', 'warning');
+    }
+
+    function callMember(name) {
+        showNotification(`📞 Звоним: ${name}\n\n🔊 Набираем номер...`, 'info');
+    }
+    
+    // НОВЫЕ ФУНКЦИИ: Защита от мошенников
+    function checkPhishing() {
+        const url = prompt('🔍 Проверка сайта на мошенничество\n\nВведите адрес сайта:');
+        if (url) {
+            setTimeout(() => {
+                showNotification(`🔍 ПРОВЕРКА САЙТА\n\n✅ Сайт безопасен!\n\n${url}\n\n🛡️ Угроз не обнаружено\n📊 Репутация: Хорошая`, 'success');
+            }, 1000);
+        }
+    }
+    
+    function showScamProtection() {
+        showNotification(`🛡️ ЗАЩИТА ОТ ОБМАНА\n\n✅ Защита включена и работает!\n\n📊 Статистика за месяц:\n• Заблокировано мошенников: 0\n• Подозрительных звонков: 0\n• Фишинг-сайтов: 0\n\n🔒 Вы под защитой!`, 'success');
+    }
+    
+    function showDangerousContacts() {
+        showNotification(`📞 ОПАСНЫЕ КОНТАКТЫ\n\n✅ Отличные новости!\n\nОпасных контактов не обнаружено.\n\n🛡️ Все ваши контакты безопасны!`, 'success');
+    }
+    
+    // НОВЫЕ ФУНКЦИИ: Здоровье
+    function showMedicineReminder() {
+        showNotification(`💊 НАПОМИНАНИЕ О ЛЕКАРСТВАХ\n\n⏰ Сегодня в 18:00:\nАспирин 100мг\n\n📋 Расписание на завтра:\n09:00 - Витамин D\n18:00 - Аспирин\n\n💡 Совет: Принимать после еды`, 'info');
+    }
+    
+    function takeMedicine() {
+        showNotification(`✅ ОТЛИЧНО!\n\nАспирин отмечен как принятый.\n\n⏰ Следующий приём: Завтра в 18:00\n\n💊 Не забудьте!`, 'success');
+    }
+    
+    function showDoctorVisits() {
+        showNotification(`🏥 ВИЗИТЫ К ВРАЧУ\n\n📅 Следующий визит:\n12 октября, 10:00\nТерапевт (плановый осмотр)\n\n📍 Адрес:\nПоликлиника №5\nул. Ленина, 42\n\n💡 Не забудьте:\n• Паспорт\n• Полис ОМС\n• Результаты анализов`, 'info');
+    }
+    
+    function recordBloodPressure() {
+        const systolic = prompt('🩺 Измерение давления\n\nВерхнее (систолическое):');
+        if (systolic) {
+            const diastolic = prompt('Нижнее (диастолическое):');
+            if (diastolic) {
+                showNotification(`✅ ДАВЛЕНИЕ ЗАПИСАНО!\n\n📊 ${systolic}/${diastolic}\n\n${parseInt(systolic) > 140 || parseInt(diastolic) > 90 ? '⚠️ ВНИМАНИЕ!\nДавление повышено!\nРекомендуем связаться с врачом!' : '✅ Давление в норме!\nОтличный результат!'}\n\n📋 Записано в журнал`, parseInt(systolic) > 140 ? 'warning' : 'success');
+            }
+        }
+    }
+    
+    function openHealthJournal() {
+        showNotification(`📋 ЖУРНАЛ ЗДОРОВЬЯ\n\n📊 Всего записей: 24\n\n📅 Последние измерения:\n\n08.10 • Давление: 120/80 ✅\n07.10 • Давление: 118/78 ✅\n06.10 • Давление: 125/82 ✅\n05.10 • Вес: 72кг ✅\n04.10 • Давление: 122/80 ✅\n\n💡 Тенденция: Стабильное`, 'info');
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.innerHTML = message.replace(/\n/g, '<br>');
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#10B981' : type === 'warning' ? '#FF6B6B' : '#3B82F6'};
+            color: white;
+            padding: 20px 25px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            max-width: 320px;
+            text-align: left;
+            line-height: 2;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 4000);
+    }
+    
+    // Умная навигация назад
+    function goBackSmart() {
+        const previousPage = sessionStorage.getItem('previousPage');
+        console.log('🔍 Previous page:', previousPage);
+        
+        if (previousPage && previousPage !== '07_elderly_interface.html') {
+            console.log('✅ Возврат на:', previousPage);
+            window.location.href = previousPage;
+        } else {
+            console.log('✅ Возврат на главную (default)');
+            window.location.href = '01_main_screen.html';
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+  "architecture_score": 8, 
+  "agent_name": "IncidentResponseAgent", 
+  "code_statistics": {
+    "comment_lines": 266, 
+    "code_density": 0, 
+    "total_lines": 1023, 
+    "code_lines": 757
+  }, 
+  "test_max": 5, 
+  "functionality_score": 14, 
+  "test_score": 5, 
+  "total_score": 80, 
+  "quality_grade": "B", 
+  "security_score": 7, 
+  "missing_points": 20, 
+  "components": {
+    "Типы инцидентов": 2, 
+    "Планы реагирования": 14, 
+    "Действия реагирования": 1, 
+    "Классы": 8, 
+    "Уровни серьезности": 7, 
+    "Конфигурация": 263, 
+    "AI модели": 5, 
+    "Обработка ошибок": 25, 
+    "Документация": 82, 
+    "Перечисления": 0, 
+    "Логирование": 50, 
+    "Методы": 38, 
+    "Статусы инцидентов": 4
+  }, 
+  "test_timestamp": "2025-09-04T22:28:40.719097", 
+  "max_score": 100, 
+  "security_max": 8, 
+  "architecture_max": 8, 
+  "functionality_max": 14
+}

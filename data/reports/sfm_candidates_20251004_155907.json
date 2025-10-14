@@ -1,0 +1,490 @@
+[
+  {
+    "function_id": "external_integrations",
+    "name": "External Integrations",
+    "file_path": "./external_integrations.py",
+    "category": "ROOT",
+    "size_bytes": 34489,
+    "last_modified": "2025-10-02T00:27:22.678166"
+  },
+  {
+    "function_id": "fix_sfm_manual",
+    "name": "Fix Sfm Manual",
+    "file_path": "./fix_sfm_manual.py",
+    "category": "ROOT",
+    "size_bytes": 6113,
+    "last_modified": "2025-09-20T08:50:22.490946"
+  },
+  {
+    "function_id": "threat_intelligence_system",
+    "name": "Threat Intelligence System",
+    "file_path": "./threat_intelligence_system.py",
+    "category": "ROOT",
+    "size_bytes": 25239,
+    "last_modified": "2025-10-02T00:27:23.271943"
+  },
+  {
+    "function_id": "dashboard_server_optimized",
+    "name": "Dashboard Server Optimized",
+    "file_path": "./dashboard_server_optimized.py",
+    "category": "ROOT",
+    "size_bytes": 4835,
+    "last_modified": "2025-10-04T14:00:16.350142"
+  },
+  {
+    "function_id": "audit_scheduler",
+    "name": "Audit Scheduler",
+    "file_path": "./audit_scheduler.py",
+    "category": "ROOT",
+    "size_bytes": 17224,
+    "last_modified": "2025-10-02T00:27:25.649054"
+  },
+  {
+    "function_id": "monitoring_api_server",
+    "name": "Monitoring Api Server",
+    "file_path": "./monitoring_api_server.py",
+    "category": "ROOT",
+    "size_bytes": 10684,
+    "last_modified": "2025-09-11T03:04:49.271649"
+  },
+  {
+    "function_id": "fix_invalid_sfm_functions",
+    "name": "Fix Invalid Sfm Functions",
+    "file_path": "./fix_invalid_sfm_functions.py",
+    "category": "ROOT",
+    "size_bytes": 4214,
+    "last_modified": "2025-10-02T17:41:24.369987"
+  },
+  {
+    "function_id": "register_vpn_functions_in_json",
+    "name": "Register Vpn Functions In Json",
+    "file_path": "./register_vpn_functions_in_json.py",
+    "category": "ROOT",
+    "size_bytes": 10382,
+    "last_modified": "2025-10-02T17:36:51.400952"
+  },
+  {
+    "function_id": "update_logging",
+    "name": "Update Logging",
+    "file_path": "./update_logging.py",
+    "category": "ROOT",
+    "size_bytes": 1438,
+    "last_modified": "2025-09-17T01:14:53.238457"
+  },
+  {
+    "function_id": "demo_auto_learning",
+    "name": "Demo Auto Learning",
+    "file_path": "./demo_auto_learning.py",
+    "category": "ROOT",
+    "size_bytes": 9094,
+    "last_modified": "2025-09-21T13:10:58.287254"
+  },
+  {
+    "function_id": "performance_analyzer",
+    "name": "Performance Analyzer",
+    "file_path": "./performance_analyzer.py",
+    "category": "ROOT",
+    "size_bytes": 10541,
+    "last_modified": "2025-09-11T03:04:49.282464"
+  },
+  {
+    "function_id": "fix_vpn_flake8",
+    "name": "Fix Vpn Flake8",
+    "file_path": "./fix_vpn_flake8.py",
+    "category": "ROOT",
+    "size_bytes": 2955,
+    "last_modified": "2025-10-01T02:46:39.668190"
+  },
+  {
+    "function_id": "russian_apis_server",
+    "name": "Russian Apis Server",
+    "file_path": "./russian_apis_server.py",
+    "category": "ROOT",
+    "size_bytes": 12779,
+    "last_modified": "2025-09-13T10:40:32.213311"
+  },
+  {
+    "function_id": "simple_architecture_visualizer",
+    "name": "Simple Architecture Visualizer",
+    "file_path": "./simple_architecture_visualizer.py",
+    "category": "ROOT",
+    "size_bytes": 24349,
+    "last_modified": "2025-09-26T16:41:12.524518"
+  },
+  {
+    "function_id": "expert_integration_report",
+    "name": "Expert Integration Report",
+    "file_path": "./expert_integration_report.py",
+    "category": "ROOT",
+    "size_bytes": 13246,
+    "last_modified": "2025-09-11T03:04:49.198551"
+  },
+  {
+    "function_id": "real_world_demo",
+    "name": "Real World Demo",
+    "file_path": "./real_world_demo.py",
+    "category": "ROOT",
+    "size_bytes": 17279,
+    "last_modified": "2025-09-21T13:23:43.096988"
+  },
+  {
+    "function_id": "external_integrations_dashboard",
+    "name": "External Integrations Dashboard",
+    "file_path": "./external_integrations_dashboard.py",
+    "category": "ROOT",
+    "size_bytes": 16464,
+    "last_modified": "2025-10-02T00:27:27.272297"
+  },
+  {
+    "function_id": "advanced_threat_intelligence",
+    "name": "Advanced Threat Intelligence",
+    "file_path": "./advanced_threat_intelligence.py",
+    "category": "ROOT",
+    "size_bytes": 24902,
+    "last_modified": "2025-10-02T00:27:21.164276"
+  },
+  {
+    "function_id": "enhanced_security_integration",
+    "name": "Enhanced Security Integration",
+    "file_path": "./enhanced_security_integration.py",
+    "category": "ROOT",
+    "size_bytes": 16323,
+    "last_modified": "2025-10-02T00:27:22.115765"
+  },
+  {
+    "function_id": "simple_export_api",
+    "name": "Simple Export Api",
+    "file_path": "./simple_export_api.py",
+    "category": "ROOT",
+    "size_bytes": 8104,
+    "last_modified": "2025-09-11T03:04:49.853497"
+  },
+  {
+    "function_id": "automated_audit_system",
+    "name": "Automated Audit System",
+    "file_path": "./automated_audit_system.py",
+    "category": "ROOT",
+    "size_bytes": 34436,
+    "last_modified": "2025-10-02T00:27:24.634516"
+  },
+  {
+    "function_id": "fix_all_invalid_functions_one_by_one",
+    "name": "Fix All Invalid Functions One By One",
+    "file_path": "./fix_all_invalid_functions_one_by_one.py",
+    "category": "ROOT",
+    "size_bytes": 6294,
+    "last_modified": "2025-10-02T17:50:54.707132"
+  },
+  {
+    "function_id": "fix_flake8_errors",
+    "name": "Fix Flake8 Errors",
+    "file_path": "./fix_flake8_errors.py",
+    "category": "ROOT",
+    "size_bytes": 2128,
+    "last_modified": "2025-09-21T13:04:42.147828"
+  },
+  {
+    "function_id": "enhanced_elasticsearch_simulator",
+    "name": "Enhanced Elasticsearch Simulator",
+    "file_path": "./enhanced_elasticsearch_simulator.py",
+    "category": "ROOT",
+    "size_bytes": 13226,
+    "last_modified": "2025-09-11T03:04:49.197886"
+  },
+  {
+    "function_id": "audit_dashboard_integration",
+    "name": "Audit Dashboard Integration",
+    "file_path": "./audit_dashboard_integration.py",
+    "category": "ROOT",
+    "size_bytes": 20346,
+    "last_modified": "2025-10-02T00:27:26.666000"
+  },
+  {
+    "function_id": "advanced_behavioral_analytics",
+    "name": "Advanced Behavioral Analytics",
+    "file_path": "./advanced_behavioral_analytics.py",
+    "category": "ROOT",
+    "size_bytes": 36923,
+    "last_modified": "2025-10-02T00:27:21.704480"
+  },
+  {
+    "function_id": "export_manager",
+    "name": "Export Manager",
+    "file_path": "./export_manager.py",
+    "category": "ROOT",
+    "size_bytes": 16434,
+    "last_modified": "2025-09-11T03:04:49.202377"
+  },
+  {
+    "function_id": "system_report",
+    "name": "System Report",
+    "file_path": "./system_report.py",
+    "category": "ROOT",
+    "size_bytes": 3979,
+    "last_modified": "2025-09-11T03:04:49.861422"
+  },
+  {
+    "function_id": "start_enhanced_services",
+    "name": "Start Enhanced Services",
+    "file_path": "./start_enhanced_services.py",
+    "category": "ROOT",
+    "size_bytes": 8975,
+    "last_modified": "2025-09-26T16:41:13.036752"
+  },
+  {
+    "function_id": "sfm_stats_universal",
+    "name": "Sfm Stats Universal",
+    "file_path": "./sfm_stats_universal.py",
+    "category": "ROOT",
+    "size_bytes": 6122,
+    "last_modified": "2025-09-19T18:30:00.037975"
+  },
+  {
+    "function_id": "compliance_monitor",
+    "name": "Compliance Monitor",
+    "file_path": "./compliance_monitor.py",
+    "category": "ROOT",
+    "size_bytes": 26660,
+    "last_modified": "2025-10-02T00:27:26.164053"
+  },
+  {
+    "function_id": "flake8_analysis_script",
+    "name": "Flake8 Analysis Script",
+    "file_path": "./flake8_analysis_script.py",
+    "category": "ROOT",
+    "size_bytes": 10731,
+    "last_modified": "2025-10-02T00:26:49.558605"
+  },
+  {
+    "function_id": "fix_logging_calls",
+    "name": "Fix Logging Calls",
+    "file_path": "./fix_logging_calls.py",
+    "category": "ROOT",
+    "size_bytes": 1316,
+    "last_modified": "2025-09-11T03:04:49.213306"
+  },
+  {
+    "function_id": "check_all_vpn_flake8",
+    "name": "Check All Vpn Flake8",
+    "file_path": "./check_all_vpn_flake8.py",
+    "category": "ROOT",
+    "size_bytes": 4721,
+    "last_modified": "2025-10-02T18:02:09.837986"
+  },
+  {
+    "function_id": "export_api",
+    "name": "Export Api",
+    "file_path": "./export_api.py",
+    "category": "ROOT",
+    "size_bytes": 11381,
+    "last_modified": "2025-09-11T03:04:49.200144"
+  },
+  {
+    "function_id": "alerts_api",
+    "name": "Alerts Api",
+    "file_path": "./alerts_api.py",
+    "category": "ROOT",
+    "size_bytes": 9033,
+    "last_modified": "2025-09-11T03:04:48.956169"
+  },
+  {
+    "function_id": "enhanced_architecture_visualizer",
+    "name": "Enhanced Architecture Visualizer",
+    "file_path": "./enhanced_architecture_visualizer.py",
+    "category": "ROOT",
+    "size_bytes": 52579,
+    "last_modified": "2025-09-26T16:41:16.148165"
+  },
+  {
+    "function_id": "enhanced_dashboard_v2",
+    "name": "Enhanced Dashboard V2",
+    "file_path": "./enhanced_dashboard_v2.py",
+    "category": "ROOT",
+    "size_bytes": 35799,
+    "last_modified": "2025-10-02T00:27:25.215940"
+  },
+  {
+    "function_id": "register_our_formatted_files",
+    "name": "Register Our Formatted Files",
+    "file_path": "./register_our_formatted_files.py",
+    "category": "ROOT",
+    "size_bytes": 7568,
+    "last_modified": "2025-09-28T16:28:02.254398"
+  },
+  {
+    "function_id": "system_status_check",
+    "name": "System Status Check",
+    "file_path": "./system_status_check.py",
+    "category": "ROOT",
+    "size_bytes": 8489,
+    "last_modified": "2025-09-21T13:29:11.150248"
+  },
+  {
+    "function_id": "enhanced_russian_threats_integration_plan",
+    "name": "Enhanced Russian Threats Integration Plan",
+    "file_path": "./enhanced_russian_threats_integration_plan.py",
+    "category": "ROOT",
+    "size_bytes": 23132,
+    "last_modified": "2025-10-04T00:43:27.580337"
+  },
+  {
+    "function_id": "fix_sfm_structure",
+    "name": "Fix Sfm Structure",
+    "file_path": "./fix_sfm_structure.py",
+    "category": "ROOT",
+    "size_bytes": 4657,
+    "last_modified": "2025-09-20T08:50:21.636753"
+  },
+  {
+    "function_id": "wake_up_systems",
+    "name": "Wake Up Systems",
+    "file_path": "./wake_up_systems.py",
+    "category": "ROOT",
+    "size_bytes": 1290,
+    "last_modified": "2025-09-28T14:08:01.101301"
+  },
+  {
+    "function_id": "existing_modules_expansion_plan",
+    "name": "Existing Modules Expansion Plan",
+    "file_path": "./EXISTING_MODULES_EXPANSION_PLAN.py",
+    "category": "ROOT",
+    "size_bytes": 25108,
+    "last_modified": "2025-10-04T00:43:32.710568"
+  },
+  {
+    "function_id": "manage_password_agents",
+    "name": "Manage Password Agents",
+    "file_path": "./manage_password_agents.py",
+    "category": "ROOT",
+    "size_bytes": 7440,
+    "last_modified": "2025-09-21T10:30:03.090596"
+  },
+  {
+    "function_id": "final_system_report",
+    "name": "Final System Report",
+    "file_path": "./final_system_report.py",
+    "category": "ROOT",
+    "size_bytes": 6463,
+    "last_modified": "2025-09-11T03:04:49.212014"
+  },
+  {
+    "function_id": "analyze_system",
+    "name": "Analyze System",
+    "file_path": "./analyze_system.py",
+    "category": "ROOT",
+    "size_bytes": 4240,
+    "last_modified": "2025-09-11T03:04:48.967031"
+  },
+  {
+    "function_id": "performance_optimizer",
+    "name": "Performance Optimizer",
+    "file_path": "./performance_optimizer.py",
+    "category": "ROOT",
+    "size_bytes": 17840,
+    "last_modified": "2025-10-04T13:50:52.027239"
+  },
+  {
+    "function_id": "register_sfm_components",
+    "name": "Register Sfm Components",
+    "file_path": "./register_sfm_components.py",
+    "category": "ROOT",
+    "size_bytes": 21726,
+    "last_modified": "2025-10-02T00:26:47.585961"
+  },
+  {
+    "function_id": "analyze_all_files",
+    "name": "Analyze All Files",
+    "file_path": "./analyze_all_files.py",
+    "category": "ROOT",
+    "size_bytes": 5109,
+    "last_modified": "2025-09-19T10:02:34.644050"
+  },
+  {
+    "function_id": "enhanced_russian_threats_advanced_plan",
+    "name": "Enhanced Russian Threats Advanced Plan",
+    "file_path": "./enhanced_russian_threats_advanced_plan.py",
+    "category": "ROOT",
+    "size_bytes": 26078,
+    "last_modified": "2025-10-04T00:43:27.918491"
+  },
+  {
+    "function_id": "demo_ml_models",
+    "name": "Demo Ml Models",
+    "file_path": "./demo_ml_models.py",
+    "category": "ROOT",
+    "size_bytes": 11071,
+    "last_modified": "2025-09-21T12:38:40.040917"
+  },
+  {
+    "function_id": "serve_monitoring_dashboard",
+    "name": "Serve Monitoring Dashboard",
+    "file_path": "./serve_monitoring_dashboard.py",
+    "category": "ROOT",
+    "size_bytes": 2374,
+    "last_modified": "2025-09-11T03:04:49.852820"
+  },
+  {
+    "function_id": "dashboard_server",
+    "name": "Dashboard Server",
+    "file_path": "./dashboard_server.py",
+    "category": "ROOT",
+    "size_bytes": 23771,
+    "last_modified": "2025-09-11T03:04:49.044721"
+  },
+  {
+    "function_id": "advanced_ml_analytics",
+    "name": "Advanced Ml Analytics",
+    "file_path": "./advanced_ml_analytics.py",
+    "category": "ROOT",
+    "size_bytes": 21113,
+    "last_modified": "2025-09-26T16:41:14.752265"
+  },
+  {
+    "function_id": "demo_active_system",
+    "name": "Demo Active System",
+    "file_path": "./demo_active_system.py",
+    "category": "ROOT",
+    "size_bytes": 7138,
+    "last_modified": "2025-09-21T13:33:52.466293"
+  },
+  {
+    "function_id": "elasticsearch_api",
+    "name": "Elasticsearch Api",
+    "file_path": "./elasticsearch_api.py",
+    "category": "ROOT",
+    "size_bytes": 9842,
+    "last_modified": "2025-09-11T03:04:49.196421"
+  },
+  {
+    "function_id": "start_new_services",
+    "name": "Start New Services",
+    "file_path": "./start_new_services.py",
+    "category": "ROOT",
+    "size_bytes": 11823,
+    "last_modified": "2025-09-26T16:41:11.476060"
+  },
+  {
+    "function_id": "add_vpn_functions_to_sfm",
+    "name": "Add Vpn Functions To Sfm",
+    "file_path": "./add_vpn_functions_to_sfm.py",
+    "category": "ROOT",
+    "size_bytes": 11634,
+    "last_modified": "2025-10-02T17:36:51.400712"
+  },
+  {
+    "function_id": "elasticsearch_simulator",
+    "name": "Elasticsearch Simulator",
+    "file_path": "./elasticsearch_simulator.py",
+    "category": "ROOT",
+    "size_bytes": 17380,
+    "last_modified": "2025-09-11T03:04:49.197053"
+  },
+  {
+    "function_id": "external_apis_server",
+    "name": "External Apis Server",
+    "file_path": "./external_apis_server.py",
+    "category": "ROOT",
+    "size_bytes": 11640,
+    "last_modified": "2025-09-19T16:14:45.171792"
+  }
+]

@@ -1,0 +1,49 @@
+{
+  "data_retention_days": 365,
+  "cache_ttl_minutes": 30,
+  "report_formats": [
+    "json",
+    "csv",
+    "html"
+  ],
+  "chart_types": [
+    "line",
+    "bar",
+    "pie",
+    "heatmap"
+  ],
+  "export_paths": {
+    "reports": "reports/",
+    "charts": "reports/charts/",
+    "exports": "reports/exports/"
+  },
+  "metrics": {
+    "user_metrics": [
+      "user_registrations",
+      "user_logins",
+      "user_sessions",
+      "user_data_usage",
+      "user_connection_time"
+    ],
+    "server_metrics": [
+      "server_load",
+      "server_connections",
+      "server_response_time",
+      "server_uptime",
+      "server_errors"
+    ],
+    "business_metrics": [
+      "revenue",
+      "subscription_payment",
+      "refund",
+      "churn_rate",
+      "customer_lifetime_value",
+      "conversion_rate"
+    ]
+  },
+  "alerts": {
+    "anomaly_detection": true,
+    "threshold_alerts": true,
+    "trend_alerts": true
+  }
+}

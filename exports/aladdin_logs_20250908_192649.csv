@@ -1,0 +1,4 @@
+log_id,timestamp,level,component,message,metadata
+test_001,2025-09-08T19:21:49.453735,INFO,TestComponent,Тестовое сообщение для экспорта,"{""test"": true, ""value"": 123, ""category"": ""test""}"
+test_002,2025-09-08T19:23:49.453766,WARNING,AnotherComponent,Предупреждение о тестировании,"{""warning_type"": ""test"", ""severity"": ""medium"", ""user_id"": ""user_123""}"
+test_003,2025-09-08T19:25:49.453772,ERROR,ErrorComponent,Ошибка при тестировании экспорта,"{""error_code"": ""EXP_001"", ""retry_count"": 3, ""timestamp"": ""2025-09-08""}"

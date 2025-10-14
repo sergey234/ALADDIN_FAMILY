@@ -1,0 +1,36 @@
+{
+  "test_summary": {
+    "total_tests": 3,
+    "successful_tests": 0,
+    "partial_tests": 3,
+    "failed_tests": 0,
+    "overall_success_rate": 50.0,
+    "start_time": "2025-09-17T08:36:13.192611",
+    "end_time": "2025-09-17T08:36:13.195957",
+    "duration": 0.003346
+  },
+  "test_results": {
+    "bot_creation": {
+      "status": "partial",
+      "created": 0,
+      "total": 6
+    },
+    "functionality": {
+      "status": "partial",
+      "passed": 0,
+      "total": 12,
+      "success_rate": 0.0
+    },
+    "code_quality": {
+      "status": "partial",
+      "passed": 0,
+      "total": 6,
+      "success_rate": 0.0
+    }
+  },
+  "recommendations": [
+    "Исправить ошибки создания ботов",
+    "Улучшить функциональность ботов",
+    "Исправить ошибки качества кода"
+  ]
+}

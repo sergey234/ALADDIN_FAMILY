@@ -1,0 +1,11 @@
+{
+  "bot_name": "max_messenger",
+  "timestamp": "2025-09-06T20:44:37.822817",
+  "config": {
+    "test": true
+  },
+  "stats": {
+    "test_count": 0
+  },
+  "running": false
+}

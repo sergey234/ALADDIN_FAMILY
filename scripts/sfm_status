@@ -1,0 +1,7 @@
+#!/bin/bash
+# SFM Status - Быстрая проверка статуса SFM
+# Использование: ./sfm_status или source sfm_status
+
+echo "🔍 Проверка статуса SFM..."
+cd /Users/sergejhlystov/ALADDIN_NEW
+python3 scripts/sfm_quick_stats.py

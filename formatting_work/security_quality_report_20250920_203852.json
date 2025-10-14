@@ -1,0 +1,125 @@
+{
+  "file": "security/microservices/safe_function_manager_integration.py",
+  "timestamp": "2025-09-20T20:38:52.967565",
+  "total_analysis_time_seconds": 0.10044217109680176,
+  "overall_quality_score": 87.8,
+  "analysis_details": {
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "security",
+        "session",
+        "circuit_breaker",
+        "monitoring",
+        "response",
+        "log"
+      ],
+      "message": "Найдено 6 ключевых слов безопасности"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: cannot import name 'CircuitBreaker' from 'circuit_breaker' (/Users/sergejhlystov/ALADDIN_NEW/security/circuit_breaker.py)",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "security_classes": {
+      "status": "success",
+      "found_classes": [
+        "SafeFunctionManager"
+      ],
+      "message": "Найдено 1 классов системы безопасности"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для test_operation (строка 460)",
+        "Отсутствует docstring для test_operation (строка 630)"
+      ],
+      "message": "Найдено 2 отсутствующих docstring"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "logging",
+        "user_interface_manager",
+        "rate_limiter",
+        "time",
+        "json",
+        "core",
+        "threading",
+        "typing",
+        "os",
+        "circuit_breaker",
+        "sys",
+        "asyncio",
+        "datetime"
+      ],
+      "message": "Зависимости: 13"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции main (строка 693)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 77)",
+        "Отсутствует тип возвращаемого значения для функции test_operation (строка 460)",
+        "Отсутствует тип возвращаемого значения для функции test_operation (строка 630)"
+      ],
+      "message": "Найдено 4 отсутствующих type hints"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 30122,
+      "lines": 759,
+      "message": "Размер: 30122 байт, Строк: 759"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 14,
+      "num_classes": 1,
+      "message": "Функций: 14, Классов: 1"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 6,
+    "security_classes_found": 1,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Зарегистрируйте функцию в SFM реестре.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "timestamp": "2025-09-11T15:42:15.478739",
+  "total_tests": 9,
+  "passed_tests": 6,
+  "success_rate": 66.66666666666666,
+  "execution_time": 0.19425606727600098,
+  "test_results": [
+    {
+      "test_name": "Создание SFM",
+      "success": true,
+      "message": "SFM создан с улучшениями",
+      "timestamp": "2025-09-11T15:42:15.476453"
+    },
+    {
+      "test_name": "Конфигурация",
+      "success": false,
+      "message": "redis_enabled не найден",
+      "timestamp": "2025-09-11T15:42:15.476484"
+    },
+    {
+      "test_name": "Redis",
+      "success": true,
+      "message": "Redis недоступен (нормально для тестов)",
+      "timestamp": "2025-09-11T15:42:15.476496"
+    },
+    {
+      "test_name": "Circuit Breaker",
+      "success": false,
+      "message": "Circuit Breaker не найден",
+      "timestamp": "2025-09-11T15:42:15.476505"
+    },
+    {
+      "test_name": "Функции",
+      "success": true,
+      "message": "Найдено 10 функций: 8 активных, 2 отключенных",
+      "timestamp": "2025-09-11T15:42:15.476532"
+    },
+    {
+      "test_name": "Мониторинг",
+      "success": false,
+      "message": "Метод monitor_performance не найден",
+      "timestamp": "2025-09-11T15:42:15.476543"
+    },
+    {
+      "test_name": "Производительность",
+      "success": true,
+      "message": "Выполнено 8 функций за 0.00 секунд",
+      "timestamp": "2025-09-11T15:42:15.477350"
+    },
+    {
+      "test_name": "Персистентность",
+      "success": true,
+      "message": "Функции сохранены",
+      "timestamp": "2025-09-11T15:42:15.478189"
+    },
+    {
+      "test_name": "Отказоустойчивость (Redis)",
+      "success": true,
+      "message": "Работа без Redis",
+      "timestamp": "2025-09-11T15:42:15.478438"
+    },
+    {
+      "test_name": "Отказоустойчивость (CB)",
+      "success": true,
+      "message": "Работа без Circuit Breaker",
+      "timestamp": "2025-09-11T15:42:15.478660"
+    }
+  ]
+}

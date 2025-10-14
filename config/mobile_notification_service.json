@@ -1,0 +1,66 @@
+{
+  "service_config": {
+    "name": "Мобильный сервис уведомлений ALADDIN",
+    "version": "1.0",
+    "port": 8007,
+    "endpoints": {
+      "send_notification": "/api/notifications/send",
+      "get_notifications": "/api/notifications/get",
+      "mark_read": "/api/notifications/mark_read",
+      "delete_notification": "/api/notifications/delete"
+    }
+  },
+  "push_providers": {
+    "firebase": {
+      "enabled": true,
+      "api_key": "YOUR_FIREBASE_API_KEY",
+      "project_id": "aladdin-security",
+      "server_key": "YOUR_FIREBASE_SERVER_KEY"
+    },
+    "apns": {
+      "enabled": true,
+      "certificate_path": "certs/apns_cert.pem",
+      "key_path": "certs/apns_key.pem",
+      "bundle_id": "com.aladdin.security"
+    },
+    "fcm": {
+      "enabled": true,
+      "server_key": "YOUR_FCM_SERVER_KEY",
+      "sender_id": "YOUR_FCM_SENDER_ID"
+    }
+  },
+  "notification_delivery": {
+    "retry_policy": {
+      "max_retries": 3,
+      "retry_delay": 30,
+      "exponential_backoff": true
+    },
+    "delivery_confirmation": {
+      "enabled": true,
+      "timeout": 30,
+      "track_delivery_status": true
+    },
+    "fallback_delivery": {
+      "email_fallback": true,
+      "sms_fallback": false,
+      "in_app_fallback": true
+    }
+  },
+  "user_management": {
+    "device_registration": {
+      "enabled": true,
+      "auto_register": true,
+      "device_verification": true
+    },
+    "subscription_management": {
+      "enabled": true,
+      "auto_subscribe": true,
+      "unsubscribe_allowed": true
+    },
+    "preference_management": {
+      "enabled": true,
+      "per_category_preferences": true,
+      "quiet_hours": true
+    }
+  }
+}

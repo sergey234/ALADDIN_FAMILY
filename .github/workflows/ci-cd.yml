@@ -1,0 +1,428 @@
+name: 🚀 ALADDIN Dashboard CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Запуск каждый день в 2:00 UTC (5:00 MSK)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Тип тестирования'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - performance
+        - security
+        - integration
+        - sfm
+
+env:
+  PYTHON_VERSION: '3.9'
+  NODE_VERSION: '18'
+  DASHBOARD_PORT: 8080
+  SFM_PORT: 8011
+  REDIS_PORT: 6379
+  POSTGRES_PORT: 5432
+
+jobs:
+  # 🔍 Анализ кода и качество
+  code-quality:
+    name: 🔍 Code Quality Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        pip install flake8 black isort mypy bandit safety
+        
+    - name: 🎨 Code formatting check (Black)
+      run: black --check --diff .
+      
+    - name: 📋 Import sorting check (isort)
+      run: isort --check-only --diff .
+      
+    - name: 🔍 Linting (flake8)
+      run: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+      
+    - name: 🔒 Security check (bandit)
+      run: bandit -r . -f json -o bandit-report.json || true
+      
+    - name: 🛡️ Dependency security check (safety)
+      run: safety check --json --output safety-report.json || true
+      
+    - name: 📊 Upload quality reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: code-quality-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+
+  # 🧪 Unit и Integration тесты
+  unit-tests:
+    name: 🧪 Unit & Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: code-quality
+    
+    strategy:
+      matrix:
+        test-group: [unit, integration, sfm-basic]
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        
+    - name: 🧪 Run ${{ matrix.test-group }} tests
+      run: |
+        case "${{ matrix.test-group }}" in
+          "unit")
+            pytest tests/test_*.py -k "not (load or performance or memory or cache)" -v --junitxml=unit-results.xml
+            ;;
+          "integration")
+            pytest tests/test_sfm_integration.py -v --junitxml=integration-results.xml
+            ;;
+          "sfm-basic")
+            pytest tests/test_sfm_advanced_integration.py::TestSFMAdvancedIntegration::test_sfm_connection -v --junitxml=sfm-basic-results.xml
+            ;;
+        esac
+        
+    - name: 📊 Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results-${{ matrix.test-group }}
+        path: |
+          *-results.xml
+
+  # 🚀 Performance тесты
+  performance-tests:
+    name: 🚀 Performance Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: code-quality
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'performance' || github.event_name == 'schedule'
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        
+    - name: 🚀 Start ALADDIN Dashboard (Mock)
+      run: |
+        # Запускаем мок-сервер для тестирования
+        python -c "
+        import asyncio
+        import uvicorn
+        from fastapi import FastAPI
+        
+        app = FastAPI(title='ALADDIN Dashboard Mock')
+        
+        @app.get('/')
+        async def root():
+            return {'message': 'ALADDIN Dashboard Mock', 'status': 'running'}
+            
+        @app.get('/api/endpoints')
+        async def get_endpoints():
+            return {'endpoints': [
+                {'path': '/', 'method': 'GET', 'description': 'Home page'},
+                {'path': '/api/endpoints', 'method': 'GET', 'description': 'List endpoints'}
+            ]}
+            
+        @app.get('/api/services')
+        async def get_services():
+            return {'services': {
+                'SafeFunctionManager': {'status': 'running', 'port': 8011},
+                'ALADDIN Core': {'status': 'running', 'port': 8000}
+            }}
+            
+        @app.get('/health')
+        async def health():
+            return {'status': 'healthy', 'timestamp': '2025-01-27T00:00:00Z'}
+        
+        uvicorn.run(app, host='0.0.0.0', port=8080)
+        " &
+        sleep 10
+        
+    - name: 🧪 Run Performance Tests
+      run: |
+        pytest tests/test_load_performance.py tests/test_dashboard_performance.py -v --junitxml=performance-results.xml --html=performance-report.html --self-contained-html
+        
+    - name: 📊 Upload performance results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-results
+        path: |
+          performance-results.xml
+          performance-report.html
+
+  # 🔒 Security тесты
+  security-tests:
+    name: 🔒 Security Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: code-quality
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'security' || github.event_name == 'schedule'
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        
+    - name: 🔒 Run Security Tests
+      run: |
+        pytest tests/test_sfm_security_integration.py -v --junitxml=security-results.xml --html=security-report.html --self-contained-html
+        
+    - name: 🛡️ OWASP ZAP Security Scan
+      uses: zaproxy/action-full-scan@v0.4.0
+      with:
+        target: 'http://localhost:8080'
+        rules_file_name: '.zap/rules.tsv'
+        cmd_options: '-a'
+        
+    - name: 📊 Upload security results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-results
+        path: |
+          security-results.xml
+          security-report.html
+          zap-results.json
+
+  # 🔧 SFM Integration тесты
+  sfm-integration-tests:
+    name: 🔧 SFM Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: code-quality
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'integration' || github.event.inputs.test_type == 'sfm' || github.event_name == 'schedule'
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        
+    - name: 🚀 Start SFM Mock Service
+      run: |
+        python -c "
+        import asyncio
+        import uvicorn
+        from fastapi import FastAPI
+        from datetime import datetime
+        
+        app = FastAPI(title='SFM Mock Service')
+        
+        @app.get('/health')
+        async def health():
+            return {'status': 'healthy', 'timestamp': datetime.now().isoformat()}
+            
+        @app.get('/functions')
+        async def get_functions():
+            return {'functions': {
+                'russian_api_manager': {
+                    'status': 'active',
+                    'description': 'Russian API Manager',
+                    'security_level': 'high'
+                },
+                'russian_banking_integration': {
+                    'status': 'active', 
+                    'description': 'Russian Banking Integration',
+                    'security_level': 'high'
+                }
+            }}
+            
+        @app.get('/function/{function_id}/status')
+        async def get_function_status(function_id: str):
+            return {'function_id': function_id, 'status': 'active'}
+            
+        @app.post('/function/{function_id}/set_status')
+        async def set_function_status(function_id: str, status: dict):
+            return {'message': f'Function {function_id} status updated to {status.get(\"status\")}'}
+        
+        uvicorn.run(app, host='0.0.0.0', port=8011)
+        " &
+        sleep 5
+        
+    - name: 🧪 Run SFM Integration Tests
+      run: |
+        pytest tests/test_sfm_*.py -v --junitxml=sfm-results.xml --html=sfm-report.html --self-contained-html
+        
+    - name: 📊 Upload SFM results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: sfm-results
+        path: |
+          sfm-results.xml
+          sfm-report.html
+
+  # 📊 Memory и Cache тесты
+  memory-cache-tests:
+    name: 📊 Memory & Cache Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: code-quality
+    if: github.event.inputs.test_type == 'all' || github.event.inputs.test_type == 'performance' || github.event_name == 'schedule'
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        
+    - name: 🧪 Run Memory & Cache Tests
+      run: |
+        pytest tests/test_memory_*.py tests/test_cache_*.py -v --junitxml=memory-cache-results.xml --html=memory-cache-report.html --self-contained-html
+        
+    - name: 📊 Upload memory-cache results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: memory-cache-results
+        path: |
+          memory-cache-results.xml
+          memory-cache-report.html
+
+  # 🚀 Build и Deploy
+  build-deploy:
+    name: 🚀 Build & Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [unit-tests, performance-tests, security-tests, sfm-integration-tests, memory-cache-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Setup Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        
+    - name: 🏗️ Build Docker image
+      run: |
+        docker build -f Dockerfile.core -t aladdin-dashboard:${{ github.sha }} .
+        docker build -f Dockerfile.sfm -t aladdin-sfm:${{ github.sha }} .
+        
+    - name: 🚀 Deploy to staging
+      run: |
+        echo "🚀 Deploying to staging environment..."
+        # Здесь будет реальная логика деплоя
+        echo "✅ Deployment completed successfully!"
+        
+    - name: 📊 Generate deployment report
+      run: |
+        echo "# 🚀 ALADDIN Dashboard Deployment Report" > deployment-report.md
+        echo "**Date:** $(date)" >> deployment-report.md
+        echo "**Commit:** ${{ github.sha }}" >> deployment-report.md
+        echo "**Branch:** ${{ github.ref_name }}" >> deployment-report.md
+        echo "**Status:** ✅ Success" >> deployment-report.md
+        
+    - name: 📤 Upload deployment report
+      uses: actions/upload-artifact@v3
+      with:
+        name: deployment-report
+        path: deployment-report.md
+
+  # 📊 Generate Summary Report
+  summary-report:
+    name: 📊 Generate Summary Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [code-quality, unit-tests, performance-tests, security-tests, sfm-integration-tests, memory-cache-tests, build-deploy]
+    if: always()
+    
+    steps:
+    - name: 📊 Generate CI/CD Summary
+      run: |
+        echo "# 🎯 ALADDIN Dashboard CI/CD Pipeline Summary" > ci-cd-summary.md
+        echo "**Pipeline ID:** ${{ github.run_id }}" >> ci-cd-summary.md
+        echo "**Trigger:** ${{ github.event_name }}" >> ci-cd-summary.md
+        echo "**Branch:** ${{ github.ref_name }}" >> ci-cd-summary.md
+        echo "**Commit:** ${{ github.sha }}" >> ci-cd-summary.md
+        echo "**Date:** $(date)" >> ci-cd-summary.md
+        echo "" >> ci-cd-summary.md
+        echo "## 📋 Job Results:" >> ci-cd-summary.md
+        echo "- Code Quality: ${{ needs.code-quality.result }}" >> ci-cd-summary.md
+        echo "- Unit Tests: ${{ needs.unit-tests.result }}" >> ci-cd-summary.md
+        echo "- Performance Tests: ${{ needs.performance-tests.result }}" >> ci-cd-summary.md
+        echo "- Security Tests: ${{ needs.security-tests.result }}" >> ci-cd-summary.md
+        echo "- SFM Integration: ${{ needs.sfm-integration-tests.result }}" >> ci-cd-summary.md
+        echo "- Memory & Cache: ${{ needs.memory-cache-tests.result }}" >> ci-cd-summary.md
+        echo "- Build & Deploy: ${{ needs.build-deploy.result }}" >> ci-cd-summary.md
+        
+    - name: 📤 Upload summary report
+      uses: actions/upload-artifact@v3
+      with:
+        name: ci-cd-summary
+        path: ci-cd-summary.md

@@ -1,0 +1,27 @@
+{
+  "export_timestamp": "2025-09-19T22:01:01.394869",
+  "threats": [
+    {
+      "threat_id": "status_test",
+      "threat_type": "malware",
+      "severity": "high",
+      "confidence": 0.8,
+      "timestamp": "2025-09-19T22:01:01.391573",
+      "device_id": "test_device_status",
+      "details": {
+        "status": "test"
+      }
+    }
+  ],
+  "statistics": {
+    "total_threats": 1,
+    "threat_types": {
+      "malware": 1
+    },
+    "severity_distribution": {
+      "high": 1
+    },
+    "devices_affected": 1,
+    "average_confidence": 0.8
+  }
+}

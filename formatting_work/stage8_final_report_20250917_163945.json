@@ -1,0 +1,381 @@
+{
+  "timestamp": "2025-09-17T16:39:45.767235",
+  "file_path": "security/reactive/recovery_service.py",
+  "class_method_tests": {
+    "classes_tested": 1,
+    "methods_tested": 44,
+    "successful_tests": 44,
+    "failed_tests": 1,
+    "test_details": [
+      {
+        "method": "_assess_family_impact",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_calculate_average_recovery_time",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_calculate_recovery_duration",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_create_family_recovery_tasks",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_create_recovery_report",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_create_recovery_task",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_evaluate_recovery_rule",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_execute_recovery_task",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_generate_plan_id",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_generate_recovery_recommendations",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_generate_recovery_tasks",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_generate_report_id",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_generate_task_id",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_get_family_impact_summary",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_get_recent_recoveries",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_handle_threat",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_initialize_recovery_rules",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_initialize_security_rules",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_recover_data",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_recover_family_profile",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_recover_network",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_recover_security_settings",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_recover_system",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_recover_user_account",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_setup_backup_locations",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_setup_family_protection",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "_setup_logger",
+        "status": "skipped",
+        "reason": "private_method"
+      },
+      {
+        "method": "add_security_event",
+        "status": "success",
+        "result_type": "requires_arguments"
+      },
+      {
+        "method": "add_security_rule",
+        "status": "success",
+        "result_type": "requires_arguments"
+      },
+      {
+        "method": "clear_security_events",
+        "status": "success",
+        "result_type": "unknown"
+      },
+      {
+        "method": "create_recovery_plan",
+        "status": "success",
+        "result_type": "requires_arguments"
+      },
+      {
+        "method": "detect_threat",
+        "status": "success",
+        "result_type": "requires_arguments"
+      },
+      {
+        "method": "execute_recovery_plan",
+        "status": "success",
+        "result_type": "requires_arguments"
+      },
+      {
+        "method": "get_family_recovery_status",
+        "status": "success",
+        "result_type": "unknown"
+      },
+      {
+        "method": "get_recovery_summary",
+        "status": "success",
+        "result_type": "unknown"
+      },
+      {
+        "method": "get_security_events",
+        "status": "success",
+        "result_type": "unknown"
+      },
+      {
+        "method": "get_security_report",
+        "status": "success",
+        "result_type": "unknown"
+      },
+      {
+        "method": "get_status",
+        "status": "success",
+        "result_type": "dict"
+      },
+      {
+        "method": "initialize",
+        "status": "success",
+        "result_type": "unknown"
+      },
+      {
+        "method": "log_activity",
+        "status": "success",
+        "result_type": "requires_arguments"
+      },
+      {
+        "method": "set_security_level",
+        "status": "success",
+        "result_type": "requires_arguments"
+      },
+      {
+        "method": "start",
+        "status": "success",
+        "result_type": "unknown"
+      },
+      {
+        "method": "stop",
+        "status": "success",
+        "result_type": "unknown"
+      },
+      {
+        "method": "update_metrics",
+        "status": "success",
+        "result_type": "requires_arguments"
+      }
+    ]
+  },
+  "integration_tests": {
+    "components_tested": 1,
+    "integration_successful": 0,
+    "integration_failed": 1,
+    "integration_details": []
+  },
+  "state_report": {
+    "file_info": {
+      "path": "security/reactive/recovery_service.py",
+      "size_bytes": 42536,
+      "total_lines": 1092,
+      "total_chars": 38480
+    },
+    "classes": {
+      "total": 8,
+      "with_docstrings": 8,
+      "list": [
+        {
+          "name": "RecoveryType",
+          "line": 16,
+          "methods_count": 0,
+          "has_docstring": true
+        },
+        {
+          "name": "RecoveryStatus",
+          "line": 27,
+          "methods_count": 0,
+          "has_docstring": true
+        },
+        {
+          "name": "RecoveryPriority",
+          "line": 37,
+          "methods_count": 0,
+          "has_docstring": true
+        },
+        {
+          "name": "RecoveryMethod",
+          "line": 46,
+          "methods_count": 0,
+          "has_docstring": true
+        },
+        {
+          "name": "RecoveryTask",
+          "line": 58,
+          "methods_count": 0,
+          "has_docstring": true
+        },
+        {
+          "name": "RecoveryPlan",
+          "line": 80,
+          "methods_count": 0,
+          "has_docstring": true
+        },
+        {
+          "name": "RecoveryReport",
+          "line": 94,
+          "methods_count": 0,
+          "has_docstring": true
+        },
+        {
+          "name": "RecoveryService",
+          "line": 110,
+          "methods_count": 30,
+          "has_docstring": true
+        }
+      ]
+    },
+    "methods": {
+      "total": 30,
+      "async_methods": 0,
+      "with_docstrings": 29,
+      "by_class": {
+        "RecoveryService": [
+          "__init__",
+          "_initialize_recovery_rules",
+          "_setup_family_protection",
+          "_setup_backup_locations",
+          "create_recovery_plan",
+          "_generate_recovery_tasks",
+          "_evaluate_recovery_rule",
+          "_create_recovery_task",
+          "_create_family_recovery_tasks",
+          "execute_recovery_plan",
+          "_execute_recovery_task",
+          "_recover_data",
+          "_recover_system",
+          "_recover_network",
+          "_recover_user_account",
+          "_recover_family_profile",
+          "_recover_security_settings",
+          "_assess_family_impact",
+          "_calculate_recovery_duration",
+          "_create_recovery_report",
+          "_generate_recovery_recommendations",
+          "get_recovery_summary",
+          "_calculate_average_recovery_time",
+          "_get_family_impact_summary",
+          "_get_recent_recoveries",
+          "get_family_recovery_status",
+          "get_status",
+          "_generate_plan_id",
+          "_generate_task_id",
+          "_generate_report_id"
+        ]
+      }
+    },
+    "functions": {
+      "total": 0,
+      "async_functions": 0,
+      "with_docstrings": 0,
+      "list": []
+    },
+    "code_quality": {
+      "flake8_errors": 0,
+      "quality_grade": "A+"
+    }
+  },
+  "critical_check": {
+    "improvements_check": {
+      "has_str_method": false,
+      "has_repr_method": false,
+      "has_len_method": false,
+      "has_enter_method": false,
+      "has_exit_method": false,
+      "has_validate_method": false,
+      "has_statistics_method": false,
+      "has_cleanup_method": false,
+      "has_recovery_plans_attr": true,
+      "has_recovery_reports_attr": true
+    },
+    "missing_improvements": [
+      "has_str_method",
+      "has_repr_method",
+      "has_len_method",
+      "has_enter_method",
+      "has_exit_method",
+      "has_validate_method",
+      "has_statistics_method",
+      "has_cleanup_method"
+    ],
+    "syntax_ok": true,
+    "import_ok": true,
+    "functionality_ok": true,
+    "final_backup": "formatting_work/recovery_service_final_20250917_163945.py"
+  },
+  "errors": [
+    "Ошибка интеграции: No module named 'security.core'"
+  ],
+  "warnings": []
+}

@@ -1,0 +1,336 @@
+{
+  "moved_at": "2025-09-28T18:54:37.226589",
+  "total_files": 47,
+  "reason": "Удаление дублирующих файлов из активной системы",
+  "files": [
+    {
+      "original_path": "security/security_analytics.py",
+      "moved_to": "security/formatting_work/duplicates/security_analytics.py",
+      "size_bytes": 96826,
+      "lines": 2588,
+      "modified_time": "2025-09-22T17:53:24.785411"
+    },
+    {
+      "original_path": "security/security_monitoring_backup.py",
+      "moved_to": "security/formatting_work/duplicates/security_monitoring_backup.py",
+      "size_bytes": 34704,
+      "lines": 837,
+      "modified_time": "2025-09-11T03:04:49.844368"
+    },
+    {
+      "original_path": "security/security_monitoring.py",
+      "moved_to": "security/formatting_work/duplicates/security_monitoring.py",
+      "size_bytes": 6029,
+      "lines": 166,
+      "modified_time": "2025-09-22T14:11:56.790205"
+    },
+    {
+      "original_path": "security/incident_response.py",
+      "moved_to": "security/formatting_work/duplicates/incident_response.py",
+      "size_bytes": 94213,
+      "lines": 2435,
+      "modified_time": "2025-09-24T11:15:39.799015"
+    },
+    {
+      "original_path": "security/ai_agents/circuit_breaker_main.py",
+      "moved_to": "security/formatting_work/duplicates/circuit_breaker_main.py",
+      "size_bytes": 19055,
+      "lines": 512,
+      "modified_time": "2025-09-22T14:11:40.388617"
+    },
+    {
+      "original_path": "security/microservices/circuit_breaker.py",
+      "moved_to": "security/formatting_work/duplicates/circuit_breaker.py",
+      "size_bytes": 59889,
+      "lines": 1600,
+      "modified_time": "2025-09-19T10:02:38.989741"
+    },
+    {
+      "original_path": "security/microservices/circuit_breaker_extra.py",
+      "moved_to": "security/formatting_work/duplicates/circuit_breaker_extra.py",
+      "size_bytes": 8580,
+      "lines": 227,
+      "modified_time": "2025-09-28T14:21:16.426965"
+    },
+    {
+      "original_path": "security/malware_protection_old_backup_20250928_125507.py",
+      "moved_to": "security/formatting_work/duplicates/malware_protection_old_backup_20250928_125507.py",
+      "size_bytes": 14781,
+      "lines": 391,
+      "modified_time": "2025-09-28T12:55:07.763792"
+    },
+    {
+      "original_path": "security/intrusion_prevention.py",
+      "moved_to": "security/formatting_work/duplicates/intrusion_prevention.py",
+      "size_bytes": 27396,
+      "lines": 687,
+      "modified_time": "2025-09-24T17:35:26.950850"
+    },
+    {
+      "original_path": "security/device_security.py",
+      "moved_to": "security/formatting_work/duplicates/device_security.py",
+      "size_bytes": 93624,
+      "lines": 2220,
+      "modified_time": "2025-09-27T15:31:52.742687"
+    },
+    {
+      "original_path": "security/network_monitoring.py",
+      "moved_to": "security/formatting_work/duplicates/network_monitoring.py",
+      "size_bytes": 78046,
+      "lines": 1969,
+      "modified_time": "2025-09-27T20:31:37.157869"
+    },
+    {
+      "original_path": "security/microservices/put_to_sleep.py",
+      "moved_to": "security/formatting_work/duplicates/put_to_sleep.py",
+      "size_bytes": 6943,
+      "lines": 159,
+      "modified_time": "2025-09-28T16:08:10.713161"
+    },
+    {
+      "original_path": "security/managers/user_interface_manager_main.py",
+      "moved_to": "security/formatting_work/duplicates/user_interface_manager_main.py",
+      "size_bytes": 12909,
+      "lines": 332,
+      "modified_time": "2025-09-21T15:59:34.775820"
+    },
+    {
+      "original_path": "security/bots/parental_control_bot_v2.py",
+      "moved_to": "security/formatting_work/duplicates/parental_control_bot_v2.py",
+      "size_bytes": 7737,
+      "lines": 218,
+      "modified_time": "2025-09-27T17:07:50.014261"
+    },
+    {
+      "original_path": "security/ai_agents/notification_bot_main.py",
+      "moved_to": "security/formatting_work/duplicates/notification_bot_main.py",
+      "size_bytes": 16927,
+      "lines": 428,
+      "modified_time": "2025-09-14T22:59:22.795511"
+    },
+    {
+      "original_path": "security/bots/notification_bot_extra.py",
+      "moved_to": "security/formatting_work/duplicates/notification_bot_extra.py",
+      "size_bytes": 7020,
+      "lines": 198,
+      "modified_time": "2025-09-28T13:40:28.576988"
+    },
+    {
+      "original_path": "security/privacy/universal_privacy_manager_new.py",
+      "moved_to": "security/formatting_work/duplicates/universal_privacy_manager_new.py",
+      "size_bytes": 21917,
+      "lines": 606,
+      "modified_time": "2025-09-13T08:49:46.037628"
+    },
+    {
+      "original_path": "security/ai_agents/elderly_interface_manager_backup.py",
+      "moved_to": "security/formatting_work/duplicates/elderly_interface_manager_backup.py",
+      "size_bytes": 26437,
+      "lines": 715,
+      "modified_time": "2025-09-27T16:51:08.419870"
+    },
+    {
+      "original_path": "security/family/family_profile_manager.py",
+      "moved_to": "security/formatting_work/duplicates/family_profile_manager.py",
+      "size_bytes": 17406,
+      "lines": 399,
+      "modified_time": "2025-09-27T00:27:21.210113"
+    },
+    {
+      "original_path": "security/family/child_protection_new.py",
+      "moved_to": "security/formatting_work/duplicates/child_protection_new.py",
+      "size_bytes": 24312,
+      "lines": 656,
+      "modified_time": "2025-09-28T10:12:38.576821"
+    },
+    {
+      "original_path": "security/preliminary/trust_scoring.py",
+      "moved_to": "security/formatting_work/duplicates/trust_scoring.py",
+      "size_bytes": 16138,
+      "lines": 459,
+      "modified_time": "2025-09-12T15:41:49.629605"
+    },
+    {
+      "original_path": "security/preliminary/behavioral_analysis.py",
+      "moved_to": "security/formatting_work/duplicates/behavioral_analysis.py",
+      "size_bytes": 24761,
+      "lines": 663,
+      "modified_time": "2025-09-28T02:44:26.564242"
+    },
+    {
+      "original_path": "security/ai_agents/mobile_security_agent_backup_20250921_103531.py",
+      "moved_to": "security/formatting_work/duplicates/mobile_security_agent_backup_20250921_103531.py",
+      "size_bytes": 91729,
+      "lines": 2361,
+      "modified_time": "2025-09-21T10:35:31.828288"
+    },
+    {
+      "original_path": "security/ai_agents/mobile_security_agent_extra.py",
+      "moved_to": "security/formatting_work/duplicates/mobile_security_agent_extra.py",
+      "size_bytes": 26557,
+      "lines": 712,
+      "modified_time": "2025-09-21T10:30:00.184359"
+    },
+    {
+      "original_path": "security/ai_agents/mobile_security_agent_main.py",
+      "moved_to": "security/formatting_work/duplicates/mobile_security_agent_main.py",
+      "size_bytes": 26979,
+      "lines": 695,
+      "modified_time": "2025-09-20T08:50:29.870016"
+    },
+    {
+      "original_path": "security/ai_agents/phishing_protection_agent_backup_20250921_104040.py",
+      "moved_to": "security/formatting_work/duplicates/phishing_protection_agent_backup_20250921_104040.py",
+      "size_bytes": 27353,
+      "lines": 699,
+      "modified_time": "2025-09-21T10:40:40.150763"
+    },
+    {
+      "original_path": "security/ai_agents/family_communication_hub_backup_20250921_103829.py",
+      "moved_to": "security/formatting_work/duplicates/family_communication_hub_backup_20250921_103829.py",
+      "size_bytes": 13608,
+      "lines": 413,
+      "modified_time": "2025-09-21T10:38:29.081517"
+    },
+    {
+      "original_path": "security/ai_agents/family_communication_hub_a_plus.py",
+      "moved_to": "security/formatting_work/duplicates/family_communication_hub_a_plus.py",
+      "size_bytes": 14103,
+      "lines": 361,
+      "modified_time": "2025-09-26T16:41:34.083953"
+    },
+    {
+      "original_path": "security/ai_agents/behavioral_analytics_engine_extra.py",
+      "moved_to": "security/formatting_work/duplicates/behavioral_analytics_engine_extra.py",
+      "size_bytes": 17875,
+      "lines": 454,
+      "modified_time": "2025-09-15T16:36:56.801094"
+    },
+    {
+      "original_path": "security/ai_agents/behavioral_analytics_engine_main.py",
+      "moved_to": "security/formatting_work/duplicates/behavioral_analytics_engine_main.py",
+      "size_bytes": 13798,
+      "lines": 371,
+      "modified_time": "2025-09-15T11:16:18.997728"
+    },
+    {
+      "original_path": "security/ai_agents/financial_protection_hub_backup_20250921_104412.py",
+      "moved_to": "security/formatting_work/duplicates/financial_protection_hub_backup_20250921_104412.py",
+      "size_bytes": 32443,
+      "lines": 862,
+      "modified_time": "2025-09-21T10:44:12.846712"
+    },
+    {
+      "original_path": "security/ai_agents/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 2776,
+      "lines": 132,
+      "modified_time": "2025-09-11T03:04:49.805178"
+    },
+    {
+      "original_path": "security/bots/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 93,
+      "lines": 3,
+      "modified_time": "2025-09-11T02:29:26.104495"
+    },
+    {
+      "original_path": "security/managers/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 185,
+      "lines": 7,
+      "modified_time": "2025-09-19T16:14:46.530739"
+    },
+    {
+      "original_path": "security/microservices/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 750,
+      "lines": 15,
+      "modified_time": "2025-09-13T14:06:35.584067"
+    },
+    {
+      "original_path": "security/family/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 555,
+      "lines": 31,
+      "modified_time": "2025-09-26T17:13:57.774811"
+    },
+    {
+      "original_path": "security/privacy/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 1153,
+      "lines": 38,
+      "modified_time": "2025-09-13T14:06:41.746213"
+    },
+    {
+      "original_path": "security/compliance/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 679,
+      "lines": 21,
+      "modified_time": "2025-09-11T03:04:49.656525"
+    },
+    {
+      "original_path": "security/active/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 248,
+      "lines": 11,
+      "modified_time": "2025-09-22T20:48:50.808759"
+    },
+    {
+      "original_path": "security/reactive/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 725,
+      "lines": 13,
+      "modified_time": "2025-09-11T03:04:49.524907"
+    },
+    {
+      "original_path": "security/ai/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 554,
+      "lines": 30,
+      "modified_time": "2025-09-11T03:04:49.675769"
+    },
+    {
+      "original_path": "security/core/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 94,
+      "lines": 3,
+      "modified_time": "2025-09-17T16:49:44.639467"
+    },
+    {
+      "original_path": "security/ci_cd/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 607,
+      "lines": 35,
+      "modified_time": "2025-09-11T03:04:49.507701"
+    },
+    {
+      "original_path": "security/vpn/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 510,
+      "lines": 20,
+      "modified_time": "2025-09-11T03:04:49.518508"
+    },
+    {
+      "original_path": "security/scaling/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 617,
+      "lines": 31,
+      "modified_time": "2025-09-11T03:04:49.669635"
+    },
+    {
+      "original_path": "security/orchestration/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 611,
+      "lines": 31,
+      "modified_time": "2025-09-11T03:04:49.699106"
+    },
+    {
+      "original_path": "security/preliminary/__init__.py",
+      "moved_to": "security/formatting_work/duplicates/__init__.py",
+      "size_bytes": 686,
+      "lines": 22,
+      "modified_time": "2025-09-13T14:06:16.385263"
+    }
+  ]
+}

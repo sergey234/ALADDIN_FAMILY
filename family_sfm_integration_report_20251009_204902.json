@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-10-09T20:49:02.307439",
+  "duration_seconds": 0.001933,
+  "total_components": 5,
+  "successful_registrations": 0,
+  "failed_registrations": 5,
+  "success_rate_percent": 0.0,
+  "results": {
+    "family_registration": false,
+    "family_notifications": false,
+    "incognito_protection_bot": false,
+    "family_testing": false,
+    "compliance": false
+  },
+  "sfm_integration": {
+    "status": "completed",
+    "family_system_ready": false,
+    "compliance_152_fz": true,
+    "security_level": "HIGH",
+    "auto_enable": true
+  }
+}

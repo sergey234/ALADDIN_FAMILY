@@ -1,0 +1,63 @@
+{
+  "sleep_report_info": {
+    "created_at": "2025-09-06T08:36:56.356127",
+    "report_type": "MANAGERS_SLEEP_MODE_REPORT",
+    "version": "1.0"
+  },
+  "summary": {
+    "total_managers": 5,
+    "sleeping_managers": 5,
+    "high_priority": 3,
+    "critical_priority": 1,
+    "total_features": 20
+  },
+  "managers_status": {
+    "function_76_monitor_manager": {
+      "name": "MonitorManager",
+      "status": "sleeping",
+      "priority": "HIGH",
+      "wake_up_time": "< 1 секунда",
+      "features_count": 4
+    },
+    "function_77_alert_manager": {
+      "name": "AlertManager",
+      "status": "sleeping",
+      "priority": "CRITICAL",
+      "wake_up_time": "< 0.5 секунды",
+      "features_count": 4
+    },
+    "function_78_report_manager": {
+      "name": "ReportManager",
+      "status": "sleeping",
+      "priority": "MEDIUM",
+      "wake_up_time": "< 2 секунды",
+      "features_count": 4
+    },
+    "function_79_analytics_manager": {
+      "name": "AnalyticsManager",
+      "status": "sleeping",
+      "priority": "HIGH",
+      "wake_up_time": "< 1.5 секунды",
+      "features_count": 4
+    },
+    "function_80_dashboard_manager": {
+      "name": "DashboardManager",
+      "status": "sleeping",
+      "priority": "HIGH",
+      "wake_up_time": "< 1 секунда",
+      "features_count": 4
+    }
+  },
+  "resource_optimization": {
+    "estimated_memory_savings": "60-80%",
+    "cpu_usage_reduction": "70-90%",
+    "background_processing": true,
+    "monitoring_active": true
+  },
+  "next_steps": [
+    "Менеджеры готовы к активации по требованию",
+    "Мониторинг продолжается в фоновом режиме",
+    "Критические события могут разбудить менеджеры автоматически",
+    "Все функции доступны через SafeFunctionManager"
+  ]
+}

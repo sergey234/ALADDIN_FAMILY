@@ -1,0 +1,48 @@
+{
+  "etapa6": {
+    "6.1": {
+      "classes_found": {},
+      "base_classes": {},
+      "inheritance_hierarchy": {},
+      "total_classes": 0
+    },
+    "6.2": {},
+    "6.3": {},
+    "6.4": {},
+    "6.5": {
+      "standard": [],
+      "third_party": [],
+      "local": [],
+      "unused": [],
+      "circular": []
+    },
+    "6.6": {},
+    "6.7": {},
+    "6.8": {
+      "classes_with_docstring": 0,
+      "classes_without_docstring": 0,
+      "methods_with_docstring": 0,
+      "methods_without_docstring": 0,
+      "functions_with_docstring": 0,
+      "functions_without_docstring": 0,
+      "missing_docstrings": []
+    },
+    "6.9": {
+      "methods_with_try_except": 0,
+      "methods_without_try_except": 0,
+      "logging_usage": 0,
+      "error_return_handling": 0
+    },
+    "6.10": {
+      "syntax_valid": true,
+      "imports_valid": true,
+      "classes_instantiable": true,
+      "methods_callable": true,
+      "integration_ok": true,
+      "errors": []
+    },
+    "6.11": {
+      "file_exists": true,
+      "file_readable": true,
+      "file_size": 421783,
+      "last_modified": 

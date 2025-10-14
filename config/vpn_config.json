@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "protocol": "OpenVPN",
+  "encryption": "AES-256-GCM",
+  "port": 8001,
+  "auto_connect": true,
+  "kill_switch": true,
+  "dns_protection": true
+}

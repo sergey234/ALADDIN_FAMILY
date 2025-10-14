@@ -1,0 +1,59 @@
+{
+  "timestamp": "2025-09-06T17:38:48.383782",
+  "total_tests": 10,
+  "passed_tests": 9,
+  "failed_tests": 1,
+  "success_rate": 90.0,
+  "test_results": [
+    {
+      "test_name": "Инициализация",
+      "passed": true,
+      "message": "Успешно"
+    },
+    {
+      "test_name": "Управление сервисами",
+      "passed": true,
+      "message": "Успешно"
+    },
+    {
+      "test_name": "Выбор алгоритмов",
+      "passed": true,
+      "message": "Успешно"
+    },
+    {
+      "test_name": "Балансировка нагрузки",
+      "passed": true,
+      "message": "Успешно"
+    },
+    {
+      "test_name": "Проверки здоровья",
+      "passed": true,
+      "message": "Успешно"
+    },
+    {
+      "test_name": "Сбор метрик",
+      "passed": false,
+      "message": "Отсутствует total_requests"
+    },
+    {
+      "test_name": "ML оптимизация",
+      "passed": true,
+      "message": "Успешно"
+    },
+    {
+      "test_name": "Адаптивная балансировка",
+      "passed": true,
+      "message": "Успешно"
+    },
+    {
+      "test_name": "Обработка ошибок",
+      "passed": true,
+      "message": "Успешно"
+    },
+    {
+      "test_name": "Производительность",
+      "passed": true,
+      "message": "133 RPS"
+    }
+  ]
+}

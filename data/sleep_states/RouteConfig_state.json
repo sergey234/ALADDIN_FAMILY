@@ -1,0 +1,9 @@
+{
+  "function_name": "RouteConfig",
+  "function_id": "security_routeconfig",
+  "sleep_time": "2025-09-15T22:02:29.956279",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": true,
+  "minimal_system_sleep": true
+}

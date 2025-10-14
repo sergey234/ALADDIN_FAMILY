@@ -1,0 +1,1132 @@
+{
+  "etapa6": {
+    "6.1": {
+      "classes_found": {
+        "FamilyRole": {
+          "line": 14,
+          "bases": [
+            "Enum"
+          ],
+          "methods": [],
+          "attributes": [
+            "CHILD",
+            "TEEN",
+            "PARENT",
+            "ELDERLY"
+          ],
+          "docstring": "Роли в семье"
+        },
+        "AgeGroup": {
+          "line": 23,
+          "bases": [
+            "Enum"
+          ],
+          "methods": [],
+          "attributes": [
+            "TODDLER",
+            "CHILD",
+            "TEEN",
+            "ADULT",
+            "SENIOR"
+          ],
+          "docstring": "Возрастные группы"
+        },
+        "FamilyMember": {
+          "line": 34,
+          "bases": [],
+          "methods": [],
+          "attributes": [],
+          "docstring": "Профиль члена семьи"
+        },
+        "FamilyProfile": {
+          "line": 52,
+          "bases": [],
+          "methods": [],
+          "attributes": [],
+          "docstring": "Профиль семьи"
+        },
+        "FamilyProfileManager": {
+          "line": 63,
+          "bases": [
+            "SecurityBase"
+          ],
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 66,
+              "is_async": false,
+              "args": [
+                "self",
+                "config"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "create_family",
+              "line": 73,
+              "is_async": false,
+              "args": [
+                "self",
+                "family_id",
+                "family_name"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "add_family_member",
+              "line": 92,
+              "is_async": false,
+              "args": [
+                "self",
+                "family_id",
+                "member_id",
+                "name",
+                "age",
+                "role"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_determine_role_by_age",
+              "line": 140,
+              "is_async": false,
+              "args": [
+                "self",
+                "age"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_determine_age_group",
+              "line": 168,
+              "is_async": false,
+              "args": [
+                "self",
+                "age"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_family_member",
+              "line": 198,
+              "is_async": false,
+              "args": [
+                "self",
+                "family_id",
+                "member_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_family_summary",
+              "line": 210,
+              "is_async": false,
+              "args": [
+                "self",
+                "family_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_status",
+              "line": 232,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "__str__",
+              "line": 253,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "__repr__",
+              "line": 257,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "__len__",
+              "line": 266,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "__contains__",
+              "line": 270,
+              "is_async": false,
+              "args": [
+                "self",
+                "family_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "__iter__",
+              "line": 274,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "__getitem__",
+              "line": 278,
+              "is_async": false,
+              "args": [
+                "self",
+                "family_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "__setitem__",
+              "line": 284,
+              "is_async": false,
+              "args": [
+                "self",
+                "family_id",
+                "family"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "__delitem__",
+              "line": 290,
+              "is_async": false,
+              "args": [
+                "self",
+                "family_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "keys",
+              "line": 296,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "values",
+              "line": 300,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "items",
+              "line": 304,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "clear",
+              "line": 308,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get",
+              "line": 313,
+              "is_async": false,
+              "args": [
+                "self",
+                "family_id",
+                "default"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "pop",
+              "line": 317,
+              "is_async": false,
+              "args": [
+                "self",
+                "family_id",
+                "default"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "update",
+              "line": 321,
+              "is_async": false,
+              "args": [
+                "self",
+                "other"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "copy",
+              "line": 328,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "to_dict",
+              "line": 334,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "from_dict",
+              "line": 367,
+              "is_async": false,
+              "args": [
+                "cls",
+                "data"
+              ],
+              "decorators": [
+                "classmethod"
+              ]
+            },
+            {
+              "name": "validate_family",
+              "line": 400,
+              "is_async": false,
+              "args": [
+                "self",
+                "family_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_statistics",
+              "line": 422,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "export_to_json",
+              "line": 451,
+              "is_async": false,
+              "args": [
+                "self",
+                "filepath"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "import_from_json",
+              "line": 463,
+              "is_async": false,
+              "args": [
+                "self",
+                "filepath"
+              ],
+              "decorators": []
+            }
+          ],
+          "attributes": [],
+          "docstring": "Менеджер семейных профилей"
+        }
+      },
+      "base_classes": {
+        "FamilyRole": [
+          "Enum"
+        ],
+        "AgeGroup": [
+          "Enum"
+        ],
+        "FamilyMember": [],
+        "FamilyProfile": [],
+        "FamilyProfileManager": [
+          "SecurityBase"
+        ]
+      },
+      "inheritance_hierarchy": {
+        "FamilyRole": {
+          "bases": [
+            "Enum"
+          ],
+          "children": []
+        },
+        "AgeGroup": {
+          "bases": [
+            "Enum"
+          ],
+          "children": []
+        },
+        "FamilyMember": {
+          "bases": [],
+          "children": []
+        },
+        "FamilyProfile": {
+          "bases": [],
+          "children": []
+        },
+        "FamilyProfileManager": {
+          "bases": [
+            "SecurityBase"
+          ],
+          "children": []
+        }
+      },
+      "total_classes": 5
+    },
+    "6.2": {
+      "FamilyRole": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "AgeGroup": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "FamilyMember": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "FamilyProfile": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "FamilyProfileManager": {
+        "public_methods": [
+          {
+            "name": "create_family",
+            "line": 73,
+            "is_async": false,
+            "args": [
+              "self",
+              "family_id",
+              "family_name"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "add_family_member",
+            "line": 92,
+            "is_async": false,
+            "args": [
+              "self",
+              "family_id",
+              "member_id",
+              "name",
+              "age",
+              "role"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_family_member",
+            "line": 198,
+            "is_async": false,
+            "args": [
+              "self",
+              "family_id",
+              "member_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_family_summary",
+            "line": 210,
+            "is_async": false,
+            "args": [
+              "self",
+              "family_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_status",
+            "line": 232,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "keys",
+            "line": 296,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "values",
+            "line": 300,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "items",
+            "line": 304,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "clear",
+            "line": 308,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get",
+            "line": 313,
+            "is_async": false,
+            "args": [
+              "self",
+              "family_id",
+              "default"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "pop",
+            "line": 317,
+            "is_async": false,
+            "args": [
+              "self",
+              "family_id",
+              "default"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "update",
+            "line": 321,
+            "is_async": false,
+            "args": [
+              "self",
+              "other"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "copy",
+            "line": 328,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "to_dict",
+            "line": 334,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "from_dict",
+            "line": 367,
+            "is_async": false,
+            "args": [
+              "cls",
+              "data"
+            ],
+            "decorators": [
+              "classmethod"
+            ]
+          },
+          {
+            "name": "validate_family",
+            "line": 400,
+            "is_async": false,
+            "args": [
+              "self",
+              "family_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_statistics",
+            "line": 422,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "export_to_json",
+            "line": 451,
+            "is_async": false,
+            "args": [
+              "self",
+              "filepath"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "import_from_json",
+            "line": 463,
+            "is_async": false,
+            "args": [
+              "self",
+              "filepath"
+            ],
+            "decorators": []
+          }
+        ],
+        "private_methods": [],
+        "protected_methods": [
+          {
+            "name": "_determine_role_by_age",
+            "line": 140,
+            "is_async": false,
+            "args": [
+              "self",
+              "age"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_determine_age_group",
+            "line": 168,
+            "is_async": false,
+            "args": [
+              "self",
+              "age"
+            ],
+            "decorators": []
+          }
+        ],
+        "static_methods": [],
+        "class_methods": [
+          {
+            "name": "from_dict",
+            "line": 367,
+            "is_async": false,
+            "args": [
+              "cls",
+              "data"
+            ],
+            "decorators": [
+              "classmethod"
+            ]
+          }
+        ],
+        "property_methods": [],
+        "async_methods": []
+      }
+    },
+    "6.3": {
+      "FamilyRole": {
+        "instantiation_test": true,
+        "method_tests": {},
+        "errors": []
+      },
+      "AgeGroup": {
+        "instantiation_test": true,
+        "method_tests": {},
+        "errors": []
+      },
+      "FamilyMember": {
+        "instantiation_test": true,
+        "method_tests": {},
+        "errors": []
+      },
+      "FamilyProfile": {
+        "instantiation_test": true,
+        "method_tests": {},
+        "errors": []
+      },
+      "FamilyProfileManager": {
+        "instantiation_test": true,
+        "method_tests": {
+          "__init__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "create_family": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "add_family_member": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_determine_role_by_age": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_determine_age_group": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_family_member": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_family_summary": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_status": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "__str__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "__repr__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "__len__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "__contains__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "__iter__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "__getitem__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "__setitem__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "__delitem__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "keys": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "values": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "items": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "clear": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "pop": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "update": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "copy": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "to_dict": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "from_dict": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "validate_family": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_statistics": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "export_to_json": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "import_from_json": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      }
+    },
+    "6.4": {},
+    "6.5": {
+      "standard": [
+        "logging",
+        "dataclasses",
+        "datetime",
+        "enum",
+        "typing",
+        "json",
+        "json"
+      ],
+      "third_party": [
+        "core.base"
+      ],
+      "local": [],
+      "unused": [
+        "core.base",
+        "typing",
+        "enum",
+        "dataclasses"
+      ],
+      "circular": []
+    },
+    "6.6": {
+      "FamilyRole": {
+        "class_attributes": [
+          "CHILD",
+          "TEEN",
+          "PARENT",
+          "ELDERLY"
+        ],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "AgeGroup": {
+        "class_attributes": [
+          "TODDLER",
+          "CHILD",
+          "TEEN",
+          "ADULT",
+          "SENIOR"
+        ],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "FamilyMember": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "FamilyProfile": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "FamilyProfileManager": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      }
+    },
+    "6.7": {
+      "FamilyRole": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "AgeGroup": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "FamilyMember": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "FamilyProfile": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "FamilyProfileManager": {
+        "present": [
+          "init",
+          "str",
+          "repr",
+          "iter"
+        ],
+        "missing": [
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": []
+      }
+    },
+    "6.8": {
+      "classes_with_docstring": 5,
+      "classes_without_docstring": 0,
+      "methods_with_docstring": 29,
+      "methods_without_docstring": 1,
+      "functions_with_docstring": 0,
+      "functions_without_docstring": 0,
+      "missing_docstrings": [
+        "Метод FamilyProfileManager.__init__"
+      ]
+    },
+    "6.9": {
+      "methods_with_try_except": 11,
+      "methods_without_try_except": 19,
+      "logging_usage": 0,
+      "error_return_handling": 0
+    },
+    "6.10": {
+      "syntax_valid": true,
+      "imports_valid": true,
+      "classes_instantiable": true,
+      "methods_callable": true,
+      "integration_ok": true,
+      "errors": []
+    },
+    "6.11": {
+      "file_exists": true,
+      "file_readable": true,
+      "file_size": 18547,
+      "last_modified": "2025-09-26T13:37:05.309140",
+      "backup_available": false
+    }
+  },
+  "etapa7": {
+    "7.1": {
+      "added_methods": [
+        "FamilyRole.__init__",
+        "FamilyRole.__str__",
+        "FamilyRole.__repr__",
+        "AgeGroup.__init__",
+        "AgeGroup.__str__",
+        "AgeGroup.__repr__",
+        "FamilyMember.__init__",
+        "FamilyMember.__str__",
+        "FamilyMember.__repr__",
+        "FamilyProfile.__init__",
+        "FamilyProfile.__str__",
+        "FamilyProfile.__repr__"
+      ],
+      "count": 12
+    },
+    "7.2": {
+      "fixed_signatures": [],
+      "count": 0
+    },
+    "7.3": {
+      "added_attributes": [],
+      "count": 0
+    },
+    "7.4": {
+      "syntax_tests": 1,
+      "functionality_tests": 0,
+      "import_tests": 0,
+      "enhanced_version_created": true
+    }
+  },
+  "etapa8": {
+    "8.1": {
+      "classes_tested": 5,
+      "methods_tested": 0,
+      "functions_tested": 0,
+      "errors_found": 0,
+      "success_rate": 100.0
+    },
+    "8.2": {
+      "class_interactions": 0,
+      "data_flow_ok": true,
+      "shared_resources_ok": true,
+      "execution_flow_ok": true
+    },
+    "8.3": {
+      "timestamp": "2025-09-26T13:38:52.753729",
+      "file_analyzed": "security/family/family_profile_manager.py",
+      "total_classes": 5,
+      "total_functions": 0,
+      "total_methods": 30,
+      "errors_found": 0,
+      "warnings_found": 0,
+      "fixes_applied": 0,
+      "quality_score": 100.0
+    },
+    "8.4": {
+      "original_file_valid": true,
+      "improvements_needed": false,
+      "improvements_applied": false,
+      "backup_created": true,
+      "documentation_updated": false
+    }
+  }
+}

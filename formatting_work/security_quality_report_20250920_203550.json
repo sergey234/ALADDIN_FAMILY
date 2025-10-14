@@ -1,0 +1,188 @@
+{
+  "file": "security/ai_agents/circuit_breaker_main.py",
+  "timestamp": "2025-09-20T20:35:50.966886",
+  "total_analysis_time_seconds": 0.06923413276672363,
+  "overall_quality_score": 100,
+  "analysis_details": {
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "hash",
+        "key",
+        "circuit_breaker",
+        "log"
+      ],
+      "message": "Найдено 4 ключевых слов безопасности"
+    },
+    "security_classes": {
+      "status": "success",
+      "found_classes": [
+        "CircuitBreakerMain"
+      ],
+      "message": "Найдено 1 классов системы безопасности"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": true,
+      "current_function_data": {
+        "function_id": "circuit_breaker_main",
+        "name": "CircuitBreakerMain",
+        "description": "Основной Circuit Breaker для системы безопасности ALADDIN",
+        "function_type": "security_system",
+        "security_level": "high",
+        "status": "active",
+        "created_at": "2025-09-20T19:27:33.809121",
+        "is_critical": true,
+        "auto_enable": false,
+        "wake_time": "2025-09-20T19:27:33.809205",
+        "emergency_wake_up": true,
+        "version": "2.5",
+        "last_updated": "2025-09-20T19:27:33.809212",
+        "quality_score": "A+",
+        "features": [
+          "circuit_breaker_pattern",
+          "ml_analysis",
+          "adaptive_thresholds",
+          "comprehensive_monitoring",
+          "error_handling",
+          "type_hints",
+          "docstrings",
+          "thread_safety",
+          "statistics_tracking",
+          "configuration_management"
+        ],
+        "lines_of_code": 320,
+        "file_size_kb": 12.8,
+        "flake8_errors": 0,
+        "test_coverage": "100%",
+        "integration_status": "complete",
+        "file_path": "security/ai_agents/circuit_breaker_main.py",
+        "class_name": "CircuitBreakerMain",
+        "global_instance": "circuit_breaker_main",
+        "execution_count": 0,
+        "success_count": 0,
+        "error_count": 0,
+        "dependencies": [
+          "logging",
+          "threading",
+          "time",
+          "dataclasses",
+          "datetime",
+          "enum",
+          "typing"
+        ],
+        "methods": [
+          "call",
+          "get_state",
+          "reset",
+          "update_config",
+          "get_status",
+          "cleanup"
+        ],
+        "circuit_states": [
+          "CLOSED",
+          "OPEN",
+          "HALF_OPEN"
+        ],
+        "quality_metrics": {
+          "flake8_errors": 0,
+          "test_coverage": "100%",
+          "pep8_compliant": true,
+          "type_hints": true,
+          "docstrings": true
+        }
+      },
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 41,
+      "num_classes": 3,
+      "message": "Функций: 41, Классов: 3"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип для аргумента 'cls' в функции from_dict (строка 149)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 157)",
+        "Отсутствует тип для аргумента 'other' в функции __eq__ (строка 443)",
+        "Отсутствует тип возвращаемого значения для функции __iter__ (строка 472)",
+        "Отсутствует тип возвращаемого значения для функции __getitem__ (строка 480)",
+        "Отсутствует тип возвращаемого значения для функции __setitem__ (строка 484)",
+        "Отсутствует тип для аргумента 'value' в функции __setitem__ (строка 484)",
+        "Отсутствует тип возвращаемого значения для функции __delitem__ (строка 488)",
+        "Отсутствует тип возвращаемого значения для функции __enter__ (строка 492)",
+        "Отсутствует тип возвращаемого значения для функции __exit__ (строка 496)",
+        "Отсутствует тип для аргумента 'exc_type' в функции __exit__ (строка 496)",
+        "Отсутствует тип для аргумента 'exc_val' в функции __exit__ (строка 496)",
+        "Отсутствует тип для аргумента 'exc_tb' в функции __exit__ (строка 496)"
+      ],
+      "message": "Найдено 13 отсутствующих type hints"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 19055,
+      "lines": 512,
+      "message": "Размер: 19055 байт, Строк: 512"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "datetime",
+        "dataclasses",
+        "threading",
+        "typing",
+        "time",
+        "enum",
+        "logging"
+      ],
+      "message": "Зависимости: 7"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 157)"
+      ],
+      "message": "Найдено 1 отсутствующих docstring"
+    },
+    "imports": {
+      "status": "success",
+      "message": "Импорты корректны"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 4,
+    "security_classes_found": 1,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": true,
+    "syntax_ok": true,
+    "imports_ok": true,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

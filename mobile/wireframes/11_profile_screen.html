@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN - Профиль</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            border: none;
+            color: white;
+        }
+        
+        .back-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .edit-btn {
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .edit-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+        
+        .profile-header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .avatar {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            margin: 0 auto 15px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .profile-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .profile-role {
+            font-size: 14px;
+            color: #F59E0B;
+            margin-bottom: 3px;
+        }
+        
+        .profile-id {
+            font-size: 12px;
+            opacity: 0.6;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .setting-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .setting-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .setting-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .setting-icon {
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .setting-info {
+            flex: 1;
+        }
+        
+        .setting-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .setting-subtitle {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+        
+        .setting-arrow {
+            font-size: 16px;
+            opacity: 0.5;
+        }
+        
+        .badge {
+            background: #F59E0B;
+            color: #0a1128;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 10px;
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 6px 2px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 4px 1px;
+            gap: 2px;
+            flex: 1;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            min-width: 0;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-item:hover {
+            transform: scale(1.1);
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Профиль пользователя</div>
+        <div class="screen">
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="back-btn" onclick="window.location.href='01_main_screen.html'" style="cursor: pointer;">←</div>
+                <div class="title">👤 Профиль</div>
+                <div class="edit-btn" onclick="editProfile()" style="cursor: pointer;">✏️</div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="main-content" role="main">
+                <!-- Шапка профиля -->
+                <div class="profile-header">
+                    <div class="avatar" onclick="changeAvatar()" style="cursor: pointer;">А</div>
+                    <div class="profile-name">Александр</div>
+                    <div class="profile-role">👑 Администратор семьи</div>
+                    <div class="profile-id" onclick="copyID()" style="cursor: pointer;">ID: aladdin_family_abc123</div>
+                </div>
+                
+                <!-- Статистика -->
+                <div class="stats-grid" role="region" aria-label="Статистика пользователя">
+                    <div class="stat-card" onclick="window.location.href='12_devices_screen.html'" style="cursor: pointer;">
+                        <div class="stat-value">4</div>
+                        <div class="stat-label">Устройства</div>
+                    </div>
+                    <div class="stat-card" onclick="sessionStorage.setItem('previousPage', '11_profile_screen.html'); window.location.href='03_family_screen.html'" style="cursor: pointer;">
+                        <div class="stat-value">6</div>
+                        <div class="stat-label">Члены семьи</div>
+                    </div>
+                    <div class="stat-card" onclick="window.location.href='02_protection_screen.html'" style="cursor: pointer;">
+                        <div class="stat-value">98%</div>
+                        <div class="stat-label">Защита</div>
+                    </div>
+                </div>
+                
+                <!-- Активность и Награды -->
+                <div class="section" role="region" aria-label="Активность и награды">
+                    <div class="section-title">🏆 Активность и Награды</div>
+                    
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #F59E0B; border-radius: 15px; padding: 15px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="font-size: 14px; font-weight: 600;">🔥 Активность</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #F59E0B;">7 дней</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; opacity: 0.8;">
+                            <span>Ежедневная защита</span>
+                            <span>✅ Streak активен</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; border-radius: 12px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px; margin-bottom: 5px;">🏅</div>
+                            <div style="font-size: 11px; font-weight: 600;">Защитник</div>
+                            <div style="font-size: 9px; opacity: 0.7;">Уровень 5</div>
+                        </div>
+                        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #F59E0B; border-radius: 12px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px; margin-bottom: 5px;">⭐</div>
+                            <div style="font-size: 11px; font-weight: 600;">VIP статус</div>
+                            <div style="font-size: 9px; opacity: 0.7;">Premium</div>
+                        </div>
+                        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; border-radius: 12px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px; margin-bottom: 5px;">🎯</div>
+                            <div style="font-size: 11px; font-weight: 600;">Эксперт</div>
+                            <div style="font-size: 9px; opacity: 0.7;">100% защита</div>
+                        </div>
+                        <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid #A855F7; border-radius: 12px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px; margin-bottom: 5px;">👨‍👩‍👧‍👦</div>
+                            <div style="font-size: 11px; font-weight: 600;">Семьянин</div>
+                            <div style="font-size: 9px; opacity: 0.7;">6 устройств</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Персональные настройки -->
+                <div class="section">
+                    <div class="section-title">Персональные настройки</div>
+                    
+                    <div class="setting-card" onclick="changeTheme()" style="cursor: pointer;">
+                        <div class="setting-content">
+                            <div class="setting-icon">🎨</div>
+                            <div class="setting-info">
+                                <div class="setting-title">Тема интерфейса</div>
+                                <div class="setting-subtitle" id="theme-text">Темная (по умолчанию)</div>
+                            </div>
+                            <div class="setting-arrow">→</div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card" onclick="window.location.href='08_notifications_screen.html'" style="cursor: pointer;">
+                        <div class="setting-content">
+                            <div class="setting-icon">🔔</div>
+                            <div class="setting-info">
+                                <div class="setting-title">Уведомления</div>
+                                <div class="setting-subtitle">Все включены</div>
+                            </div>
+                            <div class="badge">3 новых</div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card" onclick="changeLanguage()" style="cursor: pointer;">
+                        <div class="setting-content">
+                            <div class="setting-icon">🌐</div>
+                            <div class="setting-info">
+                                <div class="setting-title">Язык</div>
+                                <div class="setting-subtitle" id="language-text">Русский</div>
+                            </div>
+                            <div class="setting-arrow">→</div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card" onclick="toggleBiometry()" style="cursor: pointer;">
+                        <div class="setting-content">
+                            <div class="setting-icon">🔐</div>
+                            <div class="setting-info">
+                                <div class="setting-title">Биометрия</div>
+                                <div class="setting-subtitle" id="biometry-text">Face ID включен</div>
+                            </div>
+                            <div class="setting-arrow">→</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Семейный профиль -->
+                <div class="section">
+                    <div class="section-title">Семейный профиль</div>
+                    
+                    <div class="setting-card" onclick="sessionStorage.setItem('previousPage', '11_profile_screen.html'); window.location.href='03_family_screen.html'" style="cursor: pointer;">
+                        <div class="setting-content">
+                            <div class="setting-icon">👨‍👩‍👧‍👦</div>
+                            <div class="setting-info">
+                                <div class="setting-title">Управление семьей</div>
+                                <div class="setting-subtitle">6 членов семьи</div>
+                            </div>
+                            <div class="setting-arrow">→</div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card" onclick="showPermissions()" style="cursor: pointer;">
+                        <div class="setting-content">
+                            <div class="setting-icon">🎯</div>
+                            <div class="setting-info">
+                                <div class="setting-title">Мои права</div>
+                                <div class="setting-subtitle">Полный доступ</div>
+                            </div>
+                            <div class="setting-arrow">→</div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card" onclick="sessionStorage.setItem('previousPage', '11_profile_screen.html'); window.location.href='04_analytics_screen.html'" style="cursor: pointer;">
+                        <div class="setting-content">
+                            <div class="setting-icon">📊</div>
+                            <div class="setting-info">
+                                <div class="setting-title">Моя активность</div>
+                                <div class="setting-subtitle">Просмотр истории</div>
+                            </div>
+                            <div class="setting-arrow">→</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Подписка -->
+                <div class="section">
+                    <div class="section-title">Подписка и тариф</div>
+                    
+                    <div class="setting-card" onclick="sessionStorage.setItem('previousPage', '11_profile_screen.html'); window.location.href='09_tariffs_screen.html'" style="cursor: pointer;">
+                        <div class="setting-content">
+                            <div class="setting-icon">💎</div>
+                            <div class="setting-info">
+                                <div class="setting-title">Тарифный план</div>
+                                <div class="setting-subtitle">FAMILY (490₽/мес)</div>
+                            </div>
+                            <div class="badge">Активен</div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card" onclick="showRenewalDate()" style="cursor: pointer;">
+                        <div class="setting-content">
+                            <div class="setting-icon">⏰</div>
+                            <div class="setting-info">
+                                <div class="setting-title">Дата продления</div>
+                                <div class="setting-subtitle">25 октября 2025</div>
+                            </div>
+                            <div class="setting-arrow">→</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Безопасность -->
+                <div class="section">
+                    <div class="section-title">Безопасность</div>
+                    
+                    <div class="setting-card" onclick="togglePrivacy()" style="cursor: pointer;">
+                        <div class="setting-content">
+                            <div class="setting-icon">🔒</div>
+                            <div class="setting-info">
+                                <div class="setting-title">Приватность</div>
+                                <div class="setting-subtitle" id="privacy-text">Анонимный режим</div>
+                            </div>
+                            <div class="setting-arrow">→</div>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-card" onclick="sessionStorage.setItem('previousPage', '11_profile_screen.html'); window.location.href='19_privacy_policy.html'" style="cursor: pointer;">
+                        <div class="setting-content">
+                            <div class="setting-icon">📜</div>
+                            <div class="setting-info">
+                                <div class="setting-title">Политика конфиденциальности</div>
+                                <div class="setting-subtitle">ALADDIN & VPN</div>
+                            </div>
+                            <div class="setting-arrow">→</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация" style="position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); padding: 6px 2px;">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🏠</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🛡️</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🔔</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Уведомления</div>
+                </button>
+                <button class="nav-item active" aria-current="page" aria-label="Профиль пользователя" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">👤</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">📱</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    let currentTheme = 'dark';
+    let currentLanguage = 'russian';
+    let biometryEnabled = true;
+    let privacyMode = 'anonymous';
+
+    function changeTheme() {
+        const themes = [
+            { name: 'dark', text: 'Темная (по умолчанию)' },
+            { name: 'light', text: 'Светлая' },
+            { name: 'auto', text: 'Автоматическая' }
+        ];
+        
+        let currentIndex = themes.findIndex(t => t.name === currentTheme);
+        currentIndex = (currentIndex + 1) % themes.length;
+        currentTheme = themes[currentIndex].name;
+        
+        document.getElementById('theme-text').textContent = themes[currentIndex].text;
+        showNotification(`Тема изменена: ${themes[currentIndex].text}`, 'success');
+    }
+
+    function changeLanguage() {
+        const languages = [
+            { name: 'russian', text: 'Русский' },
+            { name: 'english', text: 'English' },
+            { name: 'spanish', text: 'Español' }
+        ];
+        
+        let currentIndex = languages.findIndex(l => l.name === currentLanguage);
+        currentIndex = (currentIndex + 1) % languages.length;
+        currentLanguage = languages[currentIndex].name;
+        
+        document.getElementById('language-text').textContent = languages[currentIndex].text;
+        showNotification(`Язык изменен: ${languages[currentIndex].text}`, 'success');
+    }
+
+    function toggleBiometry() {
+        biometryEnabled = !biometryEnabled;
+        const text = biometryEnabled ? 'Face ID включен' : 'Face ID отключен';
+        document.getElementById('biometry-text').textContent = text;
+        showNotification(text, biometryEnabled ? 'success' : 'warning');
+    }
+
+    function togglePrivacy() {
+        const modes = [
+            { name: 'anonymous', text: 'Анонимный режим' },
+            { name: 'standard', text: 'Стандартный режим' },
+            { name: 'maximum', text: 'Максимальная защита' }
+        ];
+        
+        let currentIndex = modes.findIndex(m => m.name === privacyMode);
+        currentIndex = (currentIndex + 1) % modes.length;
+        privacyMode = modes[currentIndex].name;
+        
+        document.getElementById('privacy-text').textContent = modes[currentIndex].text;
+        showNotification(`Приватность: ${modes[currentIndex].text}`, 'success');
+    }
+
+    function showPermissions() {
+        showNotification('Ваши права: Полный доступ ко всем функциям', 'info');
+    }
+
+    function showRenewalDate() {
+        showNotification('Следующее списание: 25 октября 2025', 'info');
+    }
+
+    function editProfile() {
+        showNotification('✏️ Редактирование профиля\n\n• Изменить имя\n• Изменить фото\n• Изменить роль\n• Обновить контакты', 'info');
+    }
+
+    function changeAvatar() {
+        showNotification('📸 Смена аватара\n\n• Сделать фото\n• Выбрать из галереи\n• Выбрать эмодзи', 'info');
+    }
+
+    function copyID() {
+        const id = 'aladdin_family_abc123';
+        showNotification('📋 ID скопирован!\n\naladdin_family_abc123', 'success');
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.textContent = message;
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#10B981' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-width: 280px;
+            text-align: center;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>

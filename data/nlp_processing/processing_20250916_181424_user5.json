@@ -1,0 +1,27 @@
+{
+  "original_text": "СРОЧНО! Помоги!",
+  "processed_text": "срочно! помоги!",
+  "intent": {
+    "type": "query",
+    "confidence": 0.7,
+    "entities": [],
+    "context": {
+      "type": "urgent"
+    }
+  },
+  "entities": [
+    {
+      "type": "keyword",
+      "value": "срочно",
+      "start_pos": 0,
+      "end_pos": 6,
+      "confidence": 0.8
+    }
+  ],
+  "sentiment": "urgent",
+  "confidence": 1.0,
+  "language": "ru",
+  "timestamp": "2025-09-16T18:14:24.828620",
+  "user_id": "user5",
+  "session_id": "session5"
+}

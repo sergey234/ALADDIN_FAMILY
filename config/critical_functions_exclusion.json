@@ -1,0 +1,85 @@
+{
+  "critical_functions_exclusion": {
+    "description": "Критические функции, исключенные из спящего режима",
+    "version": "1.0.0",
+    "last_updated": "2025-09-15T20:35:00Z",
+    "exclusion_rules": {
+      "always_active": {
+        "description": "Функции, которые должны быть всегда активны",
+        "functions": [
+          "safe_function_manager",
+          "sleep_mode_manager", 
+          "all_bots_sleep_manager",
+          "safe_sleep_mode_optimizer",
+          "enhanced_alerting",
+          "threat_detection",
+          "incident_response",
+          "authentication_manager",
+          "access_control_manager",
+          "compliance_manager",
+          "data_protection_manager",
+          "zero_trust_manager",
+          "security_audit",
+          "threat_intelligence",
+          "malware_protection",
+          "intrusion_prevention",
+          "network_monitoring",
+          "ransomware_protection"
+        ]
+      },
+      "ml_components": {
+        "description": "ML компоненты с защитой весов",
+        "functions": [
+          "behavioral_analysis_agent",
+          "threat_detection_agent", 
+          "password_security_agent",
+          "incident_response_agent",
+          "network_security_agent",
+          "compliance_agent",
+          "mobile_security_agent",
+          "emergency_ml_analyzer",
+          "analytics_manager",
+          "rate_limiter",
+          "circuit_breaker",
+          "user_interface_manager",
+          "mobile_navigation_bot",
+          "notification_bot"
+        ]
+      },
+      "high_security_level": {
+        "description": "Функции с высоким уровнем безопасности",
+        "security_levels": ["critical", "high"],
+        "exclude_from_sleep": true
+      },
+      "system_core": {
+        "description": "Ядро системы",
+        "functions": [
+          "configuration",
+          "database",
+          "logging_module",
+          "security_base",
+          "service_base",
+          "code_quality_manager"
+        ]
+      }
+    },
+    "sleep_mode_candidates": {
+      "description": "Функции-кандидаты для спящего режима",
+      "criteria": {
+        "security_level": ["medium", "low"],
+        "has_ml_models": false,
+        "is_critical": false,
+        "dependencies": "minimal"
+      },
+      "max_sleep_functions": 51,
+      "pilot_project_size": 20
+    },
+    "monitoring": {
+      "description": "Мониторинг спящего режима",
+      "alert_on_sleep": true,
+      "alert_on_wake": true,
+      "health_checks": true,
+      "performance_monitoring": true
+    }
+  }
+}

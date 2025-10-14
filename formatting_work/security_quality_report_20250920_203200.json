@@ -1,0 +1,105 @@
+{
+  "file": "security/ai_agents/emergency_contact_manager.py",
+  "timestamp": "2025-09-20T20:32:00.779095",
+  "total_analysis_time_seconds": 0.0767049789428711,
+  "overall_quality_score": 79.2,
+  "analysis_details": {
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "sfm_functions": {
+      "status": "info",
+      "found_functions": [],
+      "message": "Найдено 0 функций SFM"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "key",
+        "log"
+      ],
+      "message": "Найдено 2 ключевых слов безопасности"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 23)"
+      ],
+      "message": "Найдено 1 отсутствующих docstring"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 33046,
+      "lines": 894,
+      "message": "Размер: 33046 байт, Строк: 894"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 23)"
+      ],
+      "message": "Найдено 1 отсутствующих type hints"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 34,
+      "num_classes": 1,
+      "message": "Функций: 34, Классов: 1"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "emergency_models",
+        "asyncio",
+        "functools",
+        "emergency_validators",
+        "datetime",
+        "emergency_id_generator",
+        "typing",
+        "json",
+        "logging"
+      ],
+      "message": "Зависимости: 9"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: attempted relative import with no known parent package",
+      "security_level": "critical",
+      "severity": "high"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 2,
+    "security_classes_found": 0,
+    "sfm_functions_found": 0,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Добавьте функции SFM.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

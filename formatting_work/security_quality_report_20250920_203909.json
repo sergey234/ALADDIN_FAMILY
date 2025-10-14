@@ -1,0 +1,132 @@
+{
+  "file": "security/ai_agents/notification_bot.py",
+  "timestamp": "2025-09-20T20:39:09.788688",
+  "total_analysis_time_seconds": 0.35669684410095215,
+  "overall_quality_score": 87.8,
+  "analysis_details": {
+    "security_classes": {
+      "status": "success",
+      "found_classes": [
+        "NotificationBot"
+      ],
+      "message": "Найдено 1 классов системы безопасности"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "security",
+        "hash",
+        "key",
+        "threat",
+        "alert",
+        "response",
+        "log",
+        "analysis"
+      ],
+      "message": "Найдено 8 ключевых слов безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 101764,
+      "lines": 2576,
+      "message": "Размер: 101764 байт, Строк: 2576"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'core.base'",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 188)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 729)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 1095)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 1948)"
+      ],
+      "message": "Найдено 4 отсутствующих type hints"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 1095)",
+        "Отсутствует docstring для __init__ (строка 1948)"
+      ],
+      "message": "Найдено 2 отсутствующих docstring"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "logging",
+        "queue",
+        "re",
+        "dataclasses",
+        "enum",
+        "numpy",
+        "collections",
+        "hashlib",
+        "time",
+        "json",
+        "requests",
+        "math",
+        "core",
+        "threading",
+        "typing",
+        "sklearn",
+        "asyncio",
+        "datetime"
+      ],
+      "message": "Зависимости: 18"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 67,
+      "num_classes": 14,
+      "message": "Функций: 67, Классов: 14"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 8,
+    "security_classes_found": 1,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Зарегистрируйте функцию в SFM реестре.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

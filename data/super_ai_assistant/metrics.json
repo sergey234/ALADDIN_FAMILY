@@ -1,0 +1,19 @@
+{
+  "total_requests": 6,
+  "resolved_requests": 6,
+  "avg_resolution_time": 0.000188,
+  "satisfaction_score": 5.0,
+  "automation_rate": 0.16666666666666666,
+  "escalation_rate": 0.0,
+  "language_distribution": {},
+  "category_distribution": {
+    "cybersecurity": 1,
+    "family_support": 1,
+    "medical_support": 1,
+    "education": 1,
+    "finance": 1,
+    "household": 1
+  },
+  "emotional_analysis_count": 9,
+  "learning_improvements": 1
+}

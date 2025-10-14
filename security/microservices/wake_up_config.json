@@ -1,0 +1,20 @@
+{
+  "rate_limiter": {
+    "enabled": true,
+    "sleep_mode": false,
+    "status": "ACTIVE",
+    "wake_up_time": 1757184028.816104
+  },
+  "circuit_breaker": {
+    "enabled": true,
+    "sleep_mode": false,
+    "status": "ACTIVE",
+    "wake_up_time": 1757184028.816105
+  },
+  "user_interface_manager": {
+    "enabled": true,
+    "sleep_mode": false,
+    "status": "ACTIVE",
+    "wake_up_time": 1757184028.816105
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "test_user_001": {
+    "user_id": "test_user_001",
+    "name": "Тестовый Пользователь",
+    "age": 30,
+    "preferences": {
+      "language": "ru",
+      "notifications": true
+    },
+    "emotional_state": "neutral",
+    "language": "ru",
+    "learning_style": "visual",
+    "risk_tolerance": "medium",
+    "family_members": [],
+    "medical_conditions": [],
+    "interests": [],
+    "created_at": "2025-09-08T17:39:33.910457",
+    "last_activity": "2025-09-08T17:39:33.913259"
+  }
+}

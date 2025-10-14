@@ -1,0 +1,760 @@
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- 🏆 СЕМЕЙНЫЙ ТУРНИР - КОМПОНЕНТ                                            -->
+<!-- Создано: 12.10.2025                                                       -->
+<!-- Принцип: Качество + Красота + Функциональность + Конкуренция + Объединение -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   СТИЛИ СЕМЕЙНОГО ТУРНИРА
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.tournament-card {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 50%, #F59E0B 100%);
+    border: 2px solid #F59E0B;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.tournament-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s infinite;
+}
+
+.tournament-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.tournament-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tournament-timer {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    color: white;
+    font-weight: 600;
+    animation: pulse-orange 2s infinite;
+}
+
+@keyframes pulse-orange {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+    50% { box-shadow: 0 0 20px 10px rgba(245, 158, 11, 0); }
+}
+
+.tournament-type {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: white;
+    font-weight: 600;
+    margin-bottom: 15px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.leaderboard {
+    position: relative;
+    z-index: 1;
+}
+
+.leaderboard-item {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.leaderboard-item:hover {
+    background: rgba(0, 0, 0, 0.3);
+    transform: translateX(5px);
+}
+
+.leaderboard-item.top-1 {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 223, 0, 0.2) 100%);
+    border: 2px solid #FFD700;
+}
+
+.leaderboard-item.top-2 {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.3) 0%, rgba(192, 192, 192, 0.2) 100%);
+    border: 2px solid #C0C0C0;
+}
+
+.leaderboard-item.top-3 {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.3) 0%, rgba(205, 127, 50, 0.2) 100%);
+    border: 2px solid #CD7F32;
+}
+
+.rank {
+    font-size: 24px;
+    min-width: 40px;
+    text-align: center;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7928CA, #FF0080);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    border: 2px solid white;
+}
+
+.member-info {
+    flex: 1;
+}
+
+.member-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 2px;
+}
+
+.member-score {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.prize {
+    background: rgba(16, 185, 129, 0.3);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #10B981;
+    font-weight: 600;
+    border: 1px solid #10B981;
+}
+
+.family-quest-card {
+    background: linear-gradient(135deg, #10B981 0%, #047857 100%);
+    border: 2px solid #10B981;
+    border-radius: 15px;
+    padding: 15px;
+    margin-top: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.quest-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.quest-icon {
+    font-size: 32px;
+}
+
+.quest-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+}
+
+.quest-desc {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 10px;
+}
+
+.quest-progress {
+    margin-bottom: 10px;
+}
+
+.progress-bar-container {
+    background: rgba(0, 0, 0, 0.3);
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    color: #1e3a5f;
+}
+
+.quest-reward {
+    background: rgba(255, 215, 0, 0.2);
+    padding: 8px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #FFD700;
+    font-weight: 600;
+}
+
+.tournament-types {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.type-badge {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 11px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.type-icon {
+    font-size: 18px;
+}
+
+.view-details-btn {
+    width: 100%;
+    padding: 14px;
+    background: white;
+    color: #D97706;
+    border: none;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.view-details-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     HTML СТРУКТУРА СЕМЕЙНОГО ТУРНИРА
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<div class="tournament-card">
+    <div class="tournament-header">
+        <div class="tournament-title">
+            <span style="font-size: 24px;">🏆</span>
+            <span>Турнир недели</span>
+        </div>
+        <div class="tournament-timer" id="tournament-timer">
+            ⏰ 2д 5ч 30м
+        </div>
+    </div>
+    
+    <div class="tournament-type" id="tournament-type">
+        📚 "Неделя отличников" - больше всех пятёрок!
+    </div>
+    
+    <!-- Рейтинг-таблица -->
+    <div class="leaderboard">
+        <!-- 1 место -->
+        <div class="leaderboard-item top-1">
+            <div class="rank">🥇</div>
+            <div class="avatar">👧</div>
+            <div class="member-info">
+                <div class="member-name">Маша</div>
+                <div class="member-score">3 пятёрки • 156 🦄</div>
+            </div>
+            <div class="prize">+50 🦄</div>
+        </div>
+        
+        <!-- 2 место -->
+        <div class="leaderboard-item top-2">
+            <div class="rank">🥈</div>
+            <div class="avatar">👦</div>
+            <div class="member-info">
+                <div class="member-name">Алексей</div>
+                <div class="member-score">2 пятёрки • 128 🦄</div>
+            </div>
+            <div class="prize">+30 🦄</div>
+        </div>
+        
+        <!-- 3 место -->
+        <div class="leaderboard-item top-3">
+            <div class="rank">🥉</div>
+            <div class="avatar">👶</div>
+            <div class="member-info">
+                <div class="member-name">Ваня</div>
+                <div class="member-score">1 пятёрка • 87 🦄</div>
+            </div>
+            <div class="prize">+20 🦄</div>
+        </div>
+        
+        <!-- 4 место -->
+        <div class="leaderboard-item">
+            <div class="rank" style="font-size: 16px;">4</div>
+            <div class="avatar">👴</div>
+            <div class="member-info">
+                <div class="member-name">Дедушка</div>
+                <div class="member-score">0 пятёрок • 45 🦄</div>
+            </div>
+            <div class="prize" style="opacity: 0.5;">—</div>
+        </div>
+    </div>
+    
+    <!-- Семейный квест (кооператив) -->
+    <div class="family-quest-card">
+        <div class="quest-header">
+            <div class="quest-icon">👨‍👩‍👧‍👦</div>
+            <div>
+                <div class="quest-title">СЕМЕЙНЫЙ КВЕСТ</div>
+                <div class="quest-desc">"Неделя без двоек" - вся семья на 4 и 5!</div>
+            </div>
+        </div>
+        
+        <div class="quest-progress">
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: 71%;">71% (5/7 дней)</div>
+            </div>
+        </div>
+        
+        <div class="quest-reward">
+            🎁 Награда: +100 🦄 КАЖДОМУ! (+25 🦄 за день)
+        </div>
+    </div>
+    
+    <!-- 5 типов турниров -->
+    <div class="tournament-types">
+        <div style="font-size: 12px; color: rgba(255, 255, 255, 0.9); font-weight: 600; margin-bottom: 5px;">
+            📅 Типы турниров (меняются еженедельно):
+        </div>
+        
+        <div class="type-badge">
+            <div class="type-icon">📚</div>
+            <div style="flex: 1;">
+                <div style="font-weight: 600;">#1: Неделя отличников</div>
+                <div style="font-size: 10px; opacity: 0.8;">Больше всех пятёрок</div>
+            </div>
+        </div>
+        
+        <div class="type-badge">
+            <div class="type-icon">🧹</div>
+            <div style="flex: 1;">
+                <div style="font-weight: 600;">#2: Помощники дома</div>
+                <div style="font-size: 10px; opacity: 0.8;">Домашние дела</div>
+            </div>
+        </div>
+        
+        <div class="type-badge">
+            <div class="type-icon">😊</div>
+            <div style="flex: 1;">
+                <div style="font-weight: 600;">#3: Без конфликтов</div>
+                <div style="font-size: 10px; opacity: 0.8;">Хорошее поведение</div>
+            </div>
+        </div>
+        
+        <div class="type-badge">
+            <div class="type-icon">📖</div>
+            <div style="flex: 1;">
+                <div style="font-weight: 600;">#4: Книжный червь</div>
+                <div style="font-size: 10px; opacity: 0.8;">Кто больше прочитает</div>
+            </div>
+        </div>
+        
+        <div class="type-badge">
+            <div class="type-icon">🎯</div>
+            <div style="flex: 1;">
+                <div style="font-weight: 600;">#5: Универсальный</div>
+                <div style="font-size: 10px; opacity: 0.8;">Просто больше всего 🦄</div>
+            </div>
+        </div>
+    </div>
+    
+    <button class="view-details-btn" onclick="openTournamentDetails()">
+        Подробнее о турнире →
+    </button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     JAVASCRIPT ЛОГИКА СЕМЕЙНОГО ТУРНИРА
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// КОНФИГУРАЦИЯ ТУРНИРОВ
+// ═══════════════════════════════════════════════════════════════════════════
+
+const TOURNAMENT_TYPES = [
+    {
+        id: 'grades',
+        icon: '📚',
+        name: 'Неделя отличников',
+        description: 'Больше всех пятёрок',
+        metric: 'пятёрки',
+        familyQuest: {
+            name: 'Неделя без двоек',
+            description: 'Вся семья на 4 и 5',
+            reward: 100
+        }
+    },
+    {
+        id: 'chores',
+        icon: '🧹',
+        name: 'Помощники дома',
+        description: 'Домашние дела',
+        metric: 'дела',
+        familyQuest: {
+            name: 'Идеальная чистота',
+            description: 'Каждый убирает каждый день',
+            reward: 100
+        }
+    },
+    {
+        id: 'behavior',
+        icon: '😊',
+        name: 'Без конфликтов',
+        description: 'Хорошее поведение',
+        metric: 'дни без ссор',
+        familyQuest: {
+            name: 'Неделя гармонии',
+            description: 'Вся семья без конфликтов',
+            reward: 150
+        }
+    },
+    {
+        id: 'reading',
+        icon: '📖',
+        name: 'Книжный червь',
+        description: 'Кто больше прочитает',
+        metric: 'книги',
+        familyQuest: {
+            name: 'Семейная библиотека',
+            description: '10 книг на всю семью',
+            reward: 120
+        }
+    },
+    {
+        id: 'universal',
+        icon: '🎯',
+        name: 'Универсальный',
+        description: 'Просто больше всего 🦄',
+        metric: 'единороги',
+        familyQuest: {
+            name: 'Семейный рекорд',
+            description: '1000 🦄 на всю семью',
+            reward: 200
+        }
+    }
+];
+
+// Призы за места
+const PRIZES = {
+    1: 50,  // 🥇
+    2: 30,  // 🥈
+    3: 20   // 🥉
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// СОСТОЯНИЕ ТУРНИРА
+// ═══════════════════════════════════════════════════════════════════════════
+
+let tournamentState = {
+    currentType: 'grades',  // Текущий тип турнира
+    startDate: new Date('2025-10-07'),  // Начало турнира
+    endDate: new Date('2025-10-13T21:00:00'),  // Конец турнира (воскресенье 21:00)
+    participants: [
+        { id: 'masha', name: 'Маша', avatar: '👧', score: 3, unicorns: 156 },
+        { id: 'alexey', name: 'Алексей', avatar: '👦', score: 2, unicorns: 128 },
+        { id: 'vanya', name: 'Ваня', avatar: '👶', score: 1, unicorns: 87 },
+        { id: 'grandpa', name: 'Дедушка', avatar: '👴', score: 0, unicorns: 45 }
+    ],
+    familyQuest: {
+        progress: 5,  // 5 из 7 дней
+        target: 7,
+        reward: 100
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОБНОВЛЕНИЕ ТАЙМЕРА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateTournamentTimer() {
+    const now = new Date();
+    const diff = tournamentState.endDate - now;
+    
+    if (diff <= 0) {
+        document.getElementById('tournament-timer').textContent = '⏰ Завершён!';
+        // TODO: Показать результаты и начать новый турнир
+        return;
+    }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    document.getElementById('tournament-timer').textContent = 
+        `⏰ ${days}д ${hours}ч ${minutes}м`;
+    
+    // Обновляем каждую минуту
+    setTimeout(updateTournamentTimer, 60000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ПОЛУЧЕНИЕ ИНФОРМАЦИИ О ТЕКУЩЕМ ТУРНИРЕ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function getCurrentTournament() {
+    return TOURNAMENT_TYPES.find(t => t.id === tournamentState.currentType);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОБНОВЛЕНИЕ РЕЙТИНГА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateLeaderboard() {
+    // Сортируем участников по очкам
+    tournamentState.participants.sort((a, b) => b.score - a.score);
+    
+    // TODO: Обновить DOM
+    console.log('Leaderboard updated:', tournamentState.participants);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОБНОВЛЕНИЕ ПРОГРЕССА СЕМЕЙНОГО КВЕСТА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateFamilyQuestProgress(progress) {
+    tournamentState.familyQuest.progress = progress;
+    
+    const percentage = (progress / tournamentState.familyQuest.target) * 100;
+    const progressBar = document.querySelector('.progress-bar');
+    
+    if (progressBar) {
+        progressBar.style.width = percentage + '%';
+        progressBar.textContent = `${Math.round(percentage)}% (${progress}/${tournamentState.familyQuest.target} дней)`;
+    }
+    
+    // Проверка завершения квеста
+    if (progress >= tournamentState.familyQuest.target) {
+        showQuestCompletedModal();
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: МОДАЛЬНОЕ ОКНО ЗАВЕРШЕНИЯ КВЕСТА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showQuestCompletedModal() {
+    const modal = document.createElement('div');
+    modal.className = 'prize-modal';
+    modal.innerHTML = `
+        <div class="prize-modal-content" style="background: linear-gradient(135deg, #10B981 0%, #047857 100%);">
+            <div class="prize-icon">👨‍👩‍👧‍👦</div>
+            <div class="prize-title">КВЕСТ ЗАВЕРШЁН!</div>
+            <div class="prize-amount">+${tournamentState.familyQuest.reward} 🦄</div>
+            <div class="prize-message">
+                Каждый член семьи получает награду!<br>
+                Отличная командная работа! 🎉
+            </div>
+            <button class="prize-close-btn" onclick="this.parentElement.parentElement.remove()">
+                Супер! 🎊
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Конфетти
+    if (typeof createConfetti === 'function') {
+        createConfetti();
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ЗАВЕРШЕНИЕ ТУРНИРА (АВТОМАТИЧЕСКОЕ)
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function completeTournament() {
+    console.log('🏆 Турнир завершён!');
+    
+    // Выдаём призы
+    tournamentState.participants.forEach((participant, index) => {
+        const rank = index + 1;
+        const prize = PRIZES[rank] || 0;
+        
+        if (prize > 0) {
+            console.log(`${participant.name} получает +${prize} 🦄 за ${rank} место!`);
+            // TODO: Backend call - /api/tournament/award-prize
+        }
+    });
+    
+    // Показываем итоги
+    showTournamentResults();
+    
+    // Запускаем новый турнир (следующего типа)
+    startNewTournament();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ПОКАЗАТЬ ИТОГИ ТУРНИРА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showTournamentResults() {
+    const modal = document.createElement('div');
+    modal.className = 'prize-modal';
+    
+    const top3 = tournamentState.participants.slice(0, 3);
+    
+    modal.innerHTML = `
+        <div class="prize-modal-content" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); max-width: 350px;">
+            <div style="font-size: 60px; margin-bottom: 10px;">🏆</div>
+            <div class="prize-title">Турнир завершён!</div>
+            <div style="margin: 20px 0;">
+                <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 10px;">
+                    Победители:
+                </div>
+                ${top3.map((p, i) => `
+                    <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px;">
+                        <div style="font-size: 24px;">${i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</div>
+                        <div style="font-size: 20px;">${p.avatar}</div>
+                        <div style="flex: 1; text-align: left;">
+                            <div style="font-weight: 600; color: white;">${p.name}</div>
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.8);">${p.score} очков</div>
+                        </div>
+                        <div style="background: rgba(16,185,129,0.3); padding: 4px 8px; border-radius: 8px; font-size: 12px; color: #10B981; font-weight: 600;">
+                            +${PRIZES[i + 1]} 🦄
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div style="background: rgba(255,215,0,0.2); padding: 10px; border-radius: 10px; margin-bottom: 15px; font-size: 12px; color: white;">
+                🎉 Новый турнир начнётся завтра!
+            </div>
+            <button class="prize-close-btn" onclick="this.parentElement.parentElement.remove()">
+                Понятно! 🎊
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ЗАПУСК НОВОГО ТУРНИРА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function startNewTournament() {
+    // Выбираем следующий тип турнира (циклично)
+    const currentIndex = TOURNAMENT_TYPES.findIndex(t => t.id === tournamentState.currentType);
+    const nextIndex = (currentIndex + 1) % TOURNAMENT_TYPES.length;
+    
+    tournamentState.currentType = TOURNAMENT_TYPES[nextIndex].id;
+    tournamentState.startDate = new Date();
+    tournamentState.endDate = new Date();
+    tournamentState.endDate.setDate(tournamentState.endDate.getDate() + 7);
+    tournamentState.endDate.setHours(21, 0, 0, 0);  // Воскресенье 21:00
+    
+    // Сбрасываем очки
+    tournamentState.participants.forEach(p => p.score = 0);
+    
+    // Сбрасываем квест
+    tournamentState.familyQuest.progress = 0;
+    
+    // Обновляем UI
+    const tournament = getCurrentTournament();
+    document.getElementById('tournament-type').textContent = 
+        `${tournament.icon} "${tournament.name}" - ${tournament.description}`;
+    
+    updateLeaderboard();
+    updateFamilyQuestProgress(0);
+    updateTournamentTimer();
+    
+    console.log('🆕 Новый турнир начался:', tournament.name);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОТКРЫТЬ ПОДРОБНОСТИ ТУРНИРА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function openTournamentDetails() {
+    const tournament = getCurrentTournament();
+    
+    alert(`
+🏆 ТУРНИР: ${tournament.name}
+
+📊 Метрика: ${tournament.metric}
+⏰ До конца: ${document.getElementById('tournament-timer').textContent}
+
+🏅 ПРИЗЫ:
+🥇 1 место: +50 🦄
+🥈 2 место: +30 🦄
+🥉 3 место: +20 🦄
+
+👨‍👩‍👧‍👦 СЕМЕЙНЫЙ КВЕСТ:
+${tournament.familyQuest.name}
+${tournament.familyQuest.description}
+Награда: +${tournament.familyQuest.reward} 🦄 каждому!
+
+Удачи! 💪
+    `);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Запускаем таймер
+updateTournamentTimer();
+
+// TODO: Загрузить данные турнира из API
+// fetch('/api/tournament/current?family_id=FAM_123')
+//   .then(res => res.json())
+//   .then(data => {
+//     tournamentState = data;
+//     updateLeaderboard();
+//     updateFamilyQuestProgress(data.familyQuest.progress);
+//   });
+
+// TODO: Автозавершение турнира (cron job на backend)
+// Каждое воскресенье в 21:00 вызывается completeTournament()
+</script>
+
+
+

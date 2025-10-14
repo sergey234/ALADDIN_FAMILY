@@ -1,0 +1,18 @@
+{
+  "bot_name": "browser_security",
+  "bot_class": "BrowserSecurityBot",
+  "function": "function_97",
+  "phase": "10.1",
+  "description": "бот безопасности браузера",
+  "timestamp": "2025-09-06T21:32:25.283251",
+  "config": {
+    "test": true,
+    "bot_type": "browser_security",
+    "phase": "10.1"
+  },
+  "stats": {
+    "test_count": 0
+  },
+  "running": false,
+  "sleep_reason": "Comprehensive sleep integration"
+}

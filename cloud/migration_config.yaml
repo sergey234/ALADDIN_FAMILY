@@ -1,0 +1,296 @@
+# Конфигурация миграции в облако для ALADDIN Security System
+
+# AWS конфигурация
+aws:
+  region: "us-east-1"
+  environment: "production"
+  instance_type: "t3.medium"
+  key_pair: "aladdin-key-pair"
+  vpc_cidr: "10.0.0.0/16"
+  public_subnet_cidr: "10.0.1.0/24"
+  private_subnet_cidr: "10.0.2.0/24"
+  
+  # RDS конфигурация
+  rds:
+    instance_class: "db.t3.micro"
+    engine: "postgres"
+    engine_version: "13.7"
+    allocated_storage: 20
+    storage_type: "gp2"
+    backup_retention_period: 7
+    multi_az: false
+    
+  # S3 конфигурация
+  s3:
+    bucket_name: "aladdin-security-logs"
+    region: "us-east-1"
+    storage_class: "STANDARD"
+    lifecycle_rules:
+      - id: "delete_old_logs"
+        status: "Enabled"
+        expiration_days: 90
+      - id: "transition_to_ia"
+        status: "Enabled"
+        transition_days: 30
+        storage_class: "STANDARD_IA"
+        
+  # ECR конфигурация
+  ecr:
+    repositories:
+      - "aladdin/safe-function-manager"
+      - "aladdin/api-gateway"
+      - "aladdin/security-monitoring"
+      - "aladdin/ai-agents"
+      - "aladdin/bots"
+      
+  # IAM роли
+  iam:
+    roles:
+      - name: "ALADDIN-EC2-Role"
+        policies:
+          - "AmazonEC2FullAccess"
+          - "AmazonS3FullAccess"
+          - "AmazonRDSFullAccess"
+      - name: "ALADDIN-Lambda-Role"
+        policies:
+          - "AWSLambdaFullAccess"
+          - "AmazonS3FullAccess"
+
+# GCP конфигурация
+gcp:
+  project_id: "aladdin-security-system"
+  region: "us-central1"
+  zone: "us-central1-a"
+  machine_type: "e2-medium"
+  disk_size: 50
+  disk_type: "pd-standard"
+  
+  # Cloud SQL конфигурация
+  cloud_sql:
+    instance_id: "aladdin-database"
+    database_version: "POSTGRES_13"
+    tier: "db-f1-micro"
+    disk_size: 20
+    disk_type: "PD_SSD"
+    backup_enabled: true
+    backup_start_time: "03:00"
+    
+  # Cloud Storage конфигурация
+  cloud_storage:
+    bucket_name: "aladdin-security-logs"
+    location: "US"
+    storage_class: "STANDARD"
+    lifecycle_rules:
+      - action:
+          type: "Delete"
+        condition:
+          age: 90
+      - action:
+          type: "SetStorageClass"
+          storage_class: "NEARLINE"
+        condition:
+          age: 30
+          
+  # Container Registry конфигурация
+  gcr:
+    repositories:
+      - "aladdin/safe-function-manager"
+      - "aladdin/api-gateway"
+      - "aladdin/security-monitoring"
+      - "aladdin/ai-agents"
+      - "aladdin/bots"
+
+# Общие настройки
+common:
+  # База данных
+  database:
+    name: "aladdin_security"
+    username: "aladdin_admin"
+    password: "YourSecurePassword123!"
+    port: 5432
+    ssl_mode: "require"
+    
+  # Мониторинг
+  monitoring:
+    prometheus:
+      port: 9090
+      retention: "30d"
+      scrape_interval: "15s"
+    grafana:
+      port: 3000
+      admin_user: "admin"
+      admin_password: "YourGrafanaPassword123!"
+      
+  # Логирование
+  logging:
+    level: "INFO"
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    handlers:
+      - type: "file"
+        filename: "/var/log/aladdin/security.log"
+        max_size: "100MB"
+        backup_count: 5
+      - type: "console"
+        level: "INFO"
+        
+  # Безопасность
+  security:
+    # SSL/TLS
+    ssl:
+      enabled: true
+      certificate_path: "/etc/ssl/certs/aladdin.crt"
+      private_key_path: "/etc/ssl/private/aladdin.key"
+      
+    # Firewall
+    firewall:
+      allowed_ports:
+        - 22    # SSH
+        - 80    # HTTP
+        - 443   # HTTPS
+        - 8000  # ALADDIN API
+        - 9090  # Prometheus
+        - 3000  # Grafana
+      allowed_sources:
+        - "0.0.0.0/0"  # В продакшене ограничить
+        
+    # Аутентификация
+    authentication:
+      method: "jwt"
+      secret_key: "YourJWTSecretKey123!"
+      expiration_hours: 24
+      
+    # Авторизация
+    authorization:
+      enabled: true
+      default_role: "user"
+      roles:
+        - name: "admin"
+          permissions: ["read", "write", "delete", "manage"]
+        - name: "user"
+          permissions: ["read"]
+        - name: "api"
+          permissions: ["read", "write"]
+          
+  # Резервное копирование
+  backup:
+    enabled: true
+    schedule: "0 3 * * *"  # Каждый день в 3:00
+    retention_days: 30
+    compression: true
+    encryption: true
+    
+  # Уведомления
+  notifications:
+    enabled: true
+    channels:
+      - type: "email"
+        recipients: ["admin@aladdin-security.com"]
+        events: ["deployment", "error", "security_alert"]
+      - type: "slack"
+        webhook_url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+        channel: "#aladdin-security"
+        events: ["deployment", "error"]
+
+# Настройки развертывания
+deployment:
+  # Стратегия развертывания
+  strategy: "blue_green"  # blue_green, rolling, canary
+  
+  # Blue-Green развертывание
+  blue_green:
+    traffic_percentage: 100
+    health_check_timeout: 300
+    rollback_on_failure: true
+    
+  # Rolling развертывание
+  rolling:
+    max_unavailable: 1
+    max_surge: 1
+    
+  # Canary развертывание
+  canary:
+    initial_traffic_percentage: 10
+    increment_percentage: 10
+    increment_interval: 300
+    success_threshold: 95
+    
+  # Health checks
+  health_checks:
+    enabled: true
+    interval: 30
+    timeout: 10
+    retries: 3
+    path: "/health"
+    
+  # Rollback
+  rollback:
+    enabled: true
+    automatic: true
+    trigger_conditions:
+      - error_rate_threshold: 5
+      - response_time_threshold: 5000
+      - health_check_failures: 3
+
+# Настройки масштабирования
+scaling:
+  # Горизонтальное масштабирование
+  horizontal:
+    enabled: true
+    min_replicas: 2
+    max_replicas: 10
+    target_cpu_utilization: 70
+    target_memory_utilization: 80
+    
+  # Вертикальное масштабирование
+  vertical:
+    enabled: false
+    min_cpu: "100m"
+    max_cpu: "2"
+    min_memory: "128Mi"
+    max_memory: "4Gi"
+    
+  # Автоматическое масштабирование
+  autoscaling:
+    enabled: true
+    scale_up_threshold: 80
+    scale_down_threshold: 30
+    scale_up_cooldown: 300
+    scale_down_cooldown: 600
+
+# Настройки мониторинга
+monitoring:
+  # Метрики
+  metrics:
+    enabled: true
+    collection_interval: 15
+    retention_period: "30d"
+    
+  # Алерты
+  alerts:
+    enabled: true
+    channels:
+      - type: "email"
+        recipients: ["admin@aladdin-security.com"]
+      - type: "slack"
+        webhook_url: "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+        
+    rules:
+      - name: "high_cpu_usage"
+        condition: "cpu_usage > 80"
+        duration: "5m"
+        severity: "warning"
+        
+      - name: "high_memory_usage"
+        condition: "memory_usage > 90"
+        duration: "3m"
+        severity: "critical"
+        
+      - name: "service_down"
+        condition: "service_health == 0"
+        duration: "1m"
+        severity: "critical"
+        
+      - name: "high_error_rate"
+        condition: "error_rate > 5"
+        duration: "2m"
+        severity: "warning"

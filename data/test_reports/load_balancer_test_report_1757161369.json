@@ -1,0 +1,59 @@
+{
+  "timestamp": "2025-09-06T16:22:49.087602",
+  "total_tests": 10,
+  "passed_tests": 3,
+  "failed_tests": 7,
+  "success_rate": 30.0,
+  "test_results": [
+    {
+      "test_name": "Инициализация",
+      "passed": true,
+      "message": "Успешно"
+    },
+    {
+      "test_name": "Управление сервисами",
+      "passed": false,
+      "message": "'LoadBalancer' object has no attribute 'add_service'"
+    },
+    {
+      "test_name": "Выбор алгоритмов",
+      "passed": true,
+      "message": "Успешно"
+    },
+    {
+      "test_name": "Балансировка нагрузки",
+      "passed": false,
+      "message": "'LoadBalancer' object has no attribute 'add_service'"
+    },
+    {
+      "test_name": "Проверки здоровья",
+      "passed": false,
+      "message": "'LoadBalancer' object has no attribute 'add_service'"
+    },
+    {
+      "test_name": "Сбор метрик",
+      "passed": false,
+      "message": "maximum recursion depth exceeded"
+    },
+    {
+      "test_name": "ML оптимизация",
+      "passed": true,
+      "message": "Успешно"
+    },
+    {
+      "test_name": "Адаптивная балансировка",
+      "passed": false,
+      "message": "object dict can't be used in 'await' expression"
+    },
+    {
+      "test_name": "Обработка ошибок",
+      "passed": false,
+      "message": "500: 404: Группа сервисов 'nonexistent_service' не найдена"
+    },
+    {
+      "test_name": "Производительность",
+      "passed": false,
+      "message": "'LoadBalancer' object has no attribute 'add_service'"
+    }
+  ]
+}

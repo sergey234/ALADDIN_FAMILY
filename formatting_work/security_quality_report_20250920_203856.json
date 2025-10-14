@@ -1,0 +1,128 @@
+{
+  "file": "security/bots/analytics_bot.py",
+  "timestamp": "2025-09-20T20:38:56.970570",
+  "total_analysis_time_seconds": 0.0881648063659668,
+  "overall_quality_score": 84.4,
+  "analysis_details": {
+    "docstrings": {
+      "status": "success",
+      "missing_docstrings": [],
+      "message": "Найдено 0 отсутствующих docstring"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'core.base'",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "security",
+        "hash",
+        "key",
+        "session",
+        "threat",
+        "monitoring",
+        "alert",
+        "response",
+        "log"
+      ],
+      "message": "Найдено 9 ключевых слов безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 36576,
+      "lines": 950,
+      "message": "Размер: 36576 байт, Строк: 950"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции test_analytics_bot (строка 890)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 238)"
+      ],
+      "message": "Найдено 2 отсутствующих type hints"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "json",
+        "sys",
+        "asyncio",
+        "logging",
+        "dataclasses",
+        "hashlib",
+        "time",
+        "core",
+        "typing",
+        "redis",
+        "datetime",
+        "sqlalchemy",
+        "collections",
+        "os",
+        "sklearn",
+        "enum",
+        "numpy",
+        "threading",
+        "pydantic",
+        "prometheus_client"
+      ],
+      "message": "Зависимости: 20"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 28,
+      "num_classes": 10,
+      "message": "Функций: 28, Классов: 10"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 9,
+    "security_classes_found": 0,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": true,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Зарегистрируйте функцию в SFM реестре.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

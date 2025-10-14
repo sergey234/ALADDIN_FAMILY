@@ -1,0 +1,117 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Stormy Sky Background -->
+    <linearGradient id="storm-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a1128;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e3a5f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2e5090;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Golden Eye Gradient -->
+    <radialGradient id="golden-eye" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Sirius Star Gradient -->
+    <radialGradient id="sirius-pupil" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E40AF;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Cosmic Star Gradient -->
+    <radialGradient id="cosmic-star" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:1" />
+      <stop offset="25%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#EF4444;stop-opacity:1" />
+      <stop offset="75%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Intense Fibonacci Glow -->
+    <filter id="intense-glow" x="-150%" y="-150%" width="400%" height="400%">
+      <feGaussianBlur stdDeviation="35" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="226" fill="url(#storm-bg)"/>
+  
+  <!-- ALADDIN Text (Fibonacci Position: y=144px) -->
+  <text x="512" y="144" 
+        font-family="Arial, sans-serif" 
+        font-size="55" 
+        font-weight="900" 
+        fill="#FCD34D" 
+        text-anchor="middle"
+        letter-spacing="8"
+        filter="url(#intense-glow)">ALADDIN</text>
+  
+  <!-- Central Golden Eye (Fibonacci Proportions) -->
+  <g transform="translate(512, 450)">
+    <!-- Outer Eye Ring (Fibonacci Circle: r=233px) -->
+    <circle cx="0" cy="0" r="233" fill="none" stroke="#FCD34D" stroke-width="12" opacity="0.7" filter="url(#intense-glow)"/>
+    
+    <!-- Middle Eye Ring (Fibonacci Circle: r=144px) -->
+    <circle cx="0" cy="0" r="144" fill="none" stroke="#FCD34D" stroke-width="8" opacity="0.9" filter="url(#intense-glow)"/>
+    
+    <!-- Inner Eye (Fibonacci Circle: r=89px) -->
+    <circle cx="0" cy="0" r="89" fill="url(#golden-eye)" filter="url(#intense-glow)"/>
+    
+    <!-- Pupil (Sirius Star - Fibonacci Circle: r=55px) -->
+    <circle cx="0" cy="0" r="55" fill="url(#sirius-pupil)" filter="url(#intense-glow)"/>
+    
+    <!-- Iris Pattern (Fibonacci Spiral Lines) -->
+    <g opacity="0.6" stroke="#FCD34D" stroke-width="2" fill="none">
+      <path d="M 0 0 Q 34 -21 0 -42 Q -34 -63 0 -84 Q 34 -105 0 -126 Q -34 -147 0 -168"/>
+      <path d="M 0 0 Q -34 -21 0 -42 Q 34 -63 0 -84 Q -34 -105 0 -126 Q 34 -147 0 -168"/>
+      <path d="M 0 0 Q 34 21 0 42 Q -34 63 0 84 Q 34 105 0 126 Q -34 147 0 168"/>
+      <path d="M 0 0 Q -34 21 0 42 Q 34 63 0 84 Q -34 105 0 126 Q 34 147 0 168"/>
+    </g>
+    
+    <!-- Eye Highlight (Cosmic Star) -->
+    <g transform="translate(-15, -15)">
+      <path d="M 15 0 L 18 12 L 30 12 L 21 20 L 24 32 L 15 24 L 6 32 L 9 20 L 0 12 L 12 12 Z" 
+            fill="url(#cosmic-star)" 
+            opacity="0.9"
+            filter="url(#intense-glow)"/>
+    </g>
+    
+    <!-- Eyelashes (Fibonacci Lengths) -->
+    <g stroke="#FCD34D" stroke-width="4" fill="none" opacity="0.9" stroke-linecap="round">
+      <!-- Top Lashes -->
+      <path d="M -144 -72 Q -150 -90 -156 -108" stroke-width="6"/>
+      <path d="M -89 -72 Q -95 -90 -101 -108" stroke-width="5"/>
+      <path d="M -55 -72 Q -60 -90 -65 -108" stroke-width="4"/>
+      <path d="M -21 -72 Q -25 -90 -29 -108" stroke-width="3"/>
+      <path d="M 0 -72 Q 0 -90 0 -108" stroke-width="4"/>
+      <path d="M 21 -72 Q 25 -90 29 -108" stroke-width="3"/>
+      <path d="M 55 -72 Q 60 -90 65 -108" stroke-width="4"/>
+      <path d="M 89 -72 Q 95 -90 101 -108" stroke-width="5"/>
+      <path d="M 144 -72 Q 150 -90 156 -108" stroke-width="6"/>
+      
+      <!-- Bottom Lashes -->
+      <path d="M -144 72 Q -150 90 -156 108" stroke-width="6"/>
+      <path d="M -89 72 Q -95 90 -101 108" stroke-width="5"/>
+      <path d="M -55 72 Q -60 90 -65 108" stroke-width="4"/>
+      <path d="M -21 72 Q -25 90 -29 108" stroke-width="3"/>
+      <path d="M 0 72 Q 0 90 0 108" stroke-width="4"/>
+      <path d="M 21 72 Q 25 90 29 108" stroke-width="3"/>
+      <path d="M 55 72 Q 60 90 65 108" stroke-width="4"/>
+      <path d="M 89 72 Q 95 90 101 108" stroke-width="5"/>
+      <path d="M 144 72 Q 150 90 156 108" stroke-width="6"/>
+    </g>
+    
+    <!-- Eyelid (Fibonacci Arc) -->
+    <path d="M -233 -100 Q 0 -150 233 -100" stroke="#FCD34D" stroke-width="10" fill="none" opacity="0.8"/>
+  </g>
+</svg>
+
+

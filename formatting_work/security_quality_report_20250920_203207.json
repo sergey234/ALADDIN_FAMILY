@@ -1,0 +1,113 @@
+{
+  "file": "security/ai_agents/financial_protection_hub.py",
+  "timestamp": "2025-09-20T20:32:07.770271",
+  "total_analysis_time_seconds": 0.0644538402557373,
+  "overall_quality_score": 77.8,
+  "analysis_details": {
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "security",
+        "key",
+        "alert",
+        "log",
+        "analysis"
+      ],
+      "message": "Найдено 5 ключевых слов безопасности"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'core.base'",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 130)",
+        "Отсутствует тип возвращаемого значения для функции _block_transaction (строка 554)",
+        "Отсутствует тип возвращаемого значения для функции _notify_family_about_transaction (строка 567)",
+        "Отсутствует тип возвращаемого значения для функции test_financial_protection_hub (строка 835)"
+      ],
+      "message": "Найдено 4 отсутствующих type hints"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 32443,
+      "lines": 862,
+      "message": "Размер: 32443 байт, Строк: 862"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 130)",
+        "Отсутствует docstring для test_financial_protection_hub (строка 835)"
+      ],
+      "message": "Найдено 2 отсутствующих docstring"
+    },
+    "sfm_functions": {
+      "status": "info",
+      "found_functions": [],
+      "message": "Найдено 0 функций SFM"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "asyncio",
+        "datetime",
+        "core",
+        "enum",
+        "io",
+        "typing",
+        "dataclasses",
+        "json",
+        "logging",
+        "csv"
+      ],
+      "message": "Зависимости: 10"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 30,
+      "num_classes": 7,
+      "message": "Функций: 30, Классов: 7"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 5,
+    "security_classes_found": 0,
+    "sfm_functions_found": 0,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Добавьте функции SFM.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

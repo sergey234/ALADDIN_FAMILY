@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background gradient -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="@color/aladdin_background"
+                android:endColor="@color/aladdin_surface"
+                android:angle="135" />
+        </shape>
+    </item>
+    
+    <!-- ALADDIN Logo placeholder -->
+    <item
+        android:width="120dp"
+        android:height="120dp"
+        android:gravity="center">
+        <shape android:shape="oval">
+            <solid android:color="@color/aladdin_primary" />
+            <stroke
+                android:width="3dp"
+                android:color="@color/aladdin_accent" />
+        </shape>
+    </item>
+</layer-list>

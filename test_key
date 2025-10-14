@@ -1,0 +1,9 @@
+{
+  "api_base_url": "https://api.antifrod.ru/v1",
+  "api_key": "",
+  "verification_threshold": 0.7,
+  "max_requests_per_minute": 1000,
+  "timeout": 30,
+  "retry_attempts": 3,
+  "enabled": false
+}

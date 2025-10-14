@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Simple AI Security Icon -->
+    <path
+        android:fillColor="#FF6B35"
+        android:pathData="M54,25 L65,35 L65,55 L54,75 L43,55 L43,35 Z" />
+    
+    <!-- Lock icon -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M50,50 L50,45 C50,43 51,42 53,42 C55,42 56,43 56,45 L56,50 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M52,50 L52,55 C52,57 53,58 55,58 C57,58 58,57 58,55 L58,50 Z" />
+</vector>

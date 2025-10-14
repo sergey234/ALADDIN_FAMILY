@@ -1,0 +1,129 @@
+{
+  "file": "security/preliminary/zero_trust_service.py",
+  "timestamp": "2025-09-20T20:39:02.975503",
+  "total_analysis_time_seconds": 0.08712077140808105,
+  "overall_quality_score": 88.3,
+  "analysis_details": {
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "encrypt",
+        "security",
+        "key",
+        "session",
+        "audit",
+        "log"
+      ],
+      "message": "Найдено 6 ключевых слов безопасности"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'core.base'",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 119)",
+        "Отсутствует тип для аргумента 'cls' в функции create_default_policy (строка 969)",
+        "Отсутствует тип для аргумента 'cls' в функции get_supported_device_types (строка 997)",
+        "Отсутствует тип для аргумента 'cls' в функции get_trust_levels (строка 1006)"
+      ],
+      "message": "Найдено 4 отсутствующих type hints"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 119)"
+      ],
+      "message": "Найдено 1 отсутствующих docstring"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 41841,
+      "lines": 1068,
+      "message": "Размер: 41841 байт, Строк: 1068"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": true,
+      "current_function_data": {
+        "function_id": "zero_trust_service",
+        "name": "ZeroTrustService",
+        "description": "Упрощенная Zero Trust архитектура для семей",
+        "function_type": "preliminary",
+        "security_level": "high",
+        "status": "active",
+        "created_at": "2025-09-17T19:57:00.000000",
+        "is_critical": true,
+        "auto_enable": false,
+        "wake_time": "2025-09-18T00:08:04.473178",
+        "emergency_wake_up": true
+      },
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 34,
+      "num_classes": 8,
+      "message": "Функций: 34, Классов: 8"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "logging",
+        "fnmatch",
+        "enum",
+        "dataclasses",
+        "time",
+        "core",
+        "typing",
+        "datetime"
+      ],
+      "message": "Зависимости: 8"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 6,
+    "security_classes_found": 0,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": true,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

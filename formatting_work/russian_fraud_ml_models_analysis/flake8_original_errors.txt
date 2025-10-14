@@ -1,0 +1,6 @@
+security/ai_agents/russian_fraud_ml_models.py:25:1: E302 expected 2 blank lines, found 1
+security/ai_agents/russian_fraud_ml_models.py:397:121: E501 line too long (122 > 120 characters)
+security/ai_agents/russian_fraud_ml_models.py:483:1: E302 expected 2 blank lines, found 1
+security/ai_agents/russian_fraud_ml_models.py:495:1: W293 blank line contains whitespace
+security/ai_agents/russian_fraud_ml_models.py:498:1: W293 blank line contains whitespace
+security/ai_agents/russian_fraud_ml_models.py:534:1: E305 expected 2 blank lines after class or function definition, found 1

@@ -1,0 +1,114 @@
+{
+  "file": "security/compliance_manager.py",
+  "timestamp": "2025-09-20T20:31:39.979254",
+  "total_analysis_time_seconds": 0.08347511291503906,
+  "overall_quality_score": 81.1,
+  "analysis_details": {
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "sfm_functions": {
+      "status": "info",
+      "found_functions": [],
+      "message": "Найдено 0 функций SFM"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "security",
+        "hash",
+        "alert",
+        "incident",
+        "compliance",
+        "log"
+      ],
+      "message": "Найдено 6 ключевых слов безопасности"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 39682,
+      "lines": 1058,
+      "message": "Размер: 39682 байт, Строк: 1058"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "datetime",
+        "core",
+        "time",
+        "enum",
+        "typing"
+      ],
+      "message": "Зависимости: 5"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 42,
+      "num_classes": 4,
+      "message": "Функций: 42, Классов: 4"
+    },
+    "docstrings": {
+      "status": "success",
+      "missing_docstrings": [],
+      "message": "Найдено 0 отсутствующих docstring"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 45)",
+        "Отсутствует тип возвращаемого значения для функции update_status (строка 96)",
+        "Отсутствует тип возвращаемого значения для функции add_control (строка 108)",
+        "Отсутствует тип возвращаемого значения для функции add_evidence (строка 127)",
+        "Отсутствует тип для аргумента 'other' в функции __eq__ (строка 183)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 201)",
+        "Отсутствует тип возвращаемого значения для функции _load_compliance_frameworks (строка 286)",
+        "Отсутствует тип возвращаемого значения для функции _create_basic_requirements (строка 342)",
+        "Отсутствует тип возвращаемого значения для функции _setup_auto_assessment (строка 408)",
+        "Отсутствует тип возвращаемого значения для функции _setup_reporting (строка 413)",
+        "Отсутствует тип возвращаемого значения для функции _update_compliance_statistics (строка 560)",
+        "Отсутствует тип возвращаемого значения для функции _save_assessment_history (строка 584)",
+        "Отсутствует тип для аргумента 'other' в функции __eq__ (строка 1046)"
+      ],
+      "message": "Найдено 13 отсутствующих type hints"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'core.base'",
+      "security_level": "critical",
+      "severity": "high"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 6,
+    "security_classes_found": 0,
+    "sfm_functions_found": 0,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": true,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Добавьте функции SFM.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

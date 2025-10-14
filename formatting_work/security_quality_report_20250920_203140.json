@@ -1,0 +1,116 @@
+{
+  "file": "security/malware_protection.py",
+  "timestamp": "2025-09-20T20:31:40.834366",
+  "total_analysis_time_seconds": 0.03712296485900879,
+  "overall_quality_score": 83.3,
+  "analysis_details": {
+    "sfm_functions": {
+      "status": "info",
+      "found_functions": [],
+      "message": "Найдено 0 функций SFM"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'yara'",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "encrypt",
+        "decrypt",
+        "hash",
+        "key",
+        "threat",
+        "malware",
+        "virus",
+        "log"
+      ],
+      "message": "Найдено 8 ключевых слов безопасности"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 74)",
+        "Отсутствует тип возвращаемого значения для функции _load_default_signatures (строка 90)",
+        "Отсутствует тип возвращаемого значения для функции _load_yara_rules (строка 128)",
+        "Отсутствует тип возвращаемого значения для функции add_signature (строка 157)"
+      ],
+      "message": "Найдено 4 отсутствующих type hints"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "subprocess",
+        "pathlib",
+        "hashlib",
+        "time",
+        "yara",
+        "os",
+        "enum",
+        "typing",
+        "dataclasses",
+        "json",
+        "requests"
+      ],
+      "message": "Зависимости: 11"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 74)"
+      ],
+      "message": "Найдено 1 отсутствующих docstring"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 14781,
+      "lines": 391,
+      "message": "Размер: 14781 байт, Строк: 391"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 12,
+      "num_classes": 5,
+      "message": "Функций: 12, Классов: 5"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 8,
+    "security_classes_found": 0,
+    "sfm_functions_found": 0,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Добавьте функции SFM.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

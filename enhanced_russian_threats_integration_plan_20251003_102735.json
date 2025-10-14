@@ -1,0 +1,164 @@
+{
+  "metadata": {
+    "created_at": "2025-10-03T10:27:35.740622",
+    "version": "2.0",
+    "description": "План интеграции новых российских угроз в ALADDIN"
+  },
+  "new_threats": {
+    "fake_work_chats": {
+      "name": "Поддельные рабочие чаты в Telegram",
+      "description": "Мошенники создают фейковые рабочие чаты школ, ЖК, детсадов, рабочих коллективов",
+      "target": "Работники, родители, жители ЖК",
+      "damage": "Кража данных Госуслуг, перевод денег на 'безопасные счета'",
+      "frequency": "Массово",
+      "complexity": "Средняя",
+      "current_protection": 85,
+      "current_coverage": 90
+    },
+    "deepfake_attacks": {
+      "name": "Deepfake атаки",
+      "description": "Использование нейросетей для создания поддельных видео/аудио",
+      "target": "Банковские клиенты, родители, работодатели",
+      "damage": "Финансовые потери, кража данных, мошенничество",
+      "frequency": "Растущая",
+      "complexity": "Высокая",
+      "current_protection": 95,
+      "current_coverage": 95
+    },
+    "crypto_fraud": {
+      "name": "Криптовалютные мошенничества",
+      "description": "Обман через криптовалютные инвестиции, поддельные 'инвесторы'",
+      "target": "Инвесторы, криптоэнтузиасты",
+      "damage": "Потеря криптовалют, личных данных",
+      "frequency": "Высокая",
+      "complexity": "Средняя",
+      "current_protection": 80,
+      "current_coverage": 85
+    },
+    "fake_radar_integration": {
+      "name": "Интеграция с FakeRadar",
+      "description": "Подключение к системе детекции deepfake в реальном времени",
+      "target": "Все пользователи видеозвонков",
+      "damage": "Предотвращение deepfake атак",
+      "frequency": "Постоянно",
+      "complexity": "Высокая",
+      "current_protection": 0,
+      "current_coverage": 0
+    }
+  },
+  "integration_plan": {
+    "critical_improvements": {
+      "antifrod_integration": {
+        "name": "Интеграция с системой 'Антифрод'",
+        "description": "Подключение к системе верификации 400-600 млн вызовов в сутки",
+        "impact": "Снижение телефонного мошенничества на 70%",
+        "timeline": "1-2 месяца",
+        "components": [
+          "Voice Analysis Engine расширение",
+          "Real-time call verification",
+          "Integration with РКН databases"
+        ],
+        "expected_improvement": 15
+      },
+      "gosuslugi_integration": {
+        "name": "Интеграция с Госуслугами",
+        "description": "Верификация пользователей через Госуслуги",
+        "impact": "Защита от кражи данных Госуслуг",
+        "timeline": "2-3 месяца",
+        "components": [
+          "Госуслуги API integration",
+          "Identity verification system",
+          "Secure data exchange protocol"
+        ],
+        "expected_improvement": 12
+      },
+      "bank_integration": {
+        "name": "Интеграция с российскими банками",
+        "description": "Прямая интеграция с банковскими API",
+        "impact": "Блокировка мошеннических операций в реальном времени",
+        "timeline": "3-4 месяца",
+        "components": [
+          "Banking API connectors",
+          "Real-time transaction monitoring",
+          "Fraud detection algorithms"
+        ],
+        "expected_improvement": 18
+      }
+    },
+    "short_term_improvements": {
+      "telegram_enhancement": {
+        "name": "Усиление защиты Telegram",
+        "description": "Защита от поддельных чатов и групповых конференций",
+        "impact": "Повышение эффективности защиты мессенджеров до 95%",
+        "timeline": "1-2 месяца",
+        "components": [
+          "Telegram Security Bot v2.0",
+          "Group chat verification",
+          "Conference call monitoring",
+          "Fake admin detection"
+        ],
+        "expected_improvement": 10
+      },
+      "deepfake_detection": {
+        "name": "Улучшение deepfake детекции",
+        "description": "Поддержка новых форматов и аудио deepfake",
+        "impact": "Повышение эффективности до 98%",
+        "timeline": "2-3 месяца",
+        "components": [
+          "Enhanced Voice Analysis Engine",
+          "Video deepfake detection",
+          "Real-time verification",
+          "FakeRadar integration"
+        ],
+        "expected_improvement": 8
+      },
+      "crypto_protection": {
+        "name": "Модуль защиты от крипто-мошенничества",
+        "description": "Специализированная защита криптовалютных операций",
+        "impact": "Повышение эффективности защиты криптовалют до 95%",
+        "timeline": "2-3 месяца",
+        "components": [
+          "Crypto transaction monitoring",
+          "Investment scam detection",
+          "Wallet verification system",
+          "Exchange integration"
+        ],
+        "expected_improvement": 15
+      }
+    },
+    "fakeradar_integration": {
+      "name": "Интеграция с FakeRadar",
+      "description": "Подключение к системе детекции deepfake FakeRadar",
+      "impact": "100% защита от deepfake в видеозвонках",
+      "timeline": "1 месяц",
+      "components": [
+        "FakeRadar API integration",
+        "Real-time video analysis",
+        "Voice deepfake detection",
+        "Call protection system"
+      ],
+      "expected_improvement": 25
+    }
+  },
+  "improvements": {
+    "current_effectiveness": 88.8,
+    "current_coverage": 92.5,
+    "after_critical": {
+      "effectiveness": 133.8,
+      "coverage": 98.0
+    },
+    "after_short_term": {
+      "effectiveness": 166.8,
+      "coverage": 101.0
+    },
+    "after_fakeradar": {
+      "effectiveness": 191.8,
+      "coverage": 103.0
+    },
+    "final_projection": {
+      "effectiveness": 100.0,
+      "coverage": 100.0
+    }
+  },
+  "implementation_script": "\n# 🚀 СКРИПТ РЕАЛИЗАЦИИ ПЛАНА ИНТЕГРАЦИИ\n# =====================================\n\n# 1. КРИТИЧЕСКИЕ УЛУЧШЕНИЯ (НЕМЕДЛЕННО)\necho \"🔴 Запуск критических улучшений...\"\n\n# Интеграция с Антифрод\npython3 scripts/integrate_antifrod_system.py\n\n# Интеграция с Госуслугами  \npython3 scripts/integrate_gosuslugi_api.py\n\n# Интеграция с банками\npython3 scripts/integrate_banking_apis.py\n\n# 2. КРАТКОСРОЧНЫЕ УЛУЧШЕНИЯ\necho \"⚡ Запуск краткосрочных улучшений...\"\n\n# Усиление Telegram защиты\npython3 scripts/enhance_telegram_security.py\n\n# Улучшение deepfake детекции\npython3 scripts/enhance_deepfake_detection.py\n\n# Криптовалютная защита\npython3 scripts/create_crypto_protection.py\n\n# 3. ИНТЕГРАЦИЯ FAKERADAR\necho \"🎯 Интеграция FakeRadar...\"\n\n# Подключение FakeRadar\npython3 scripts/integrate_fakeradar.py\n\n# Тестирование интеграции\npython3 scripts/test_fakeradar_integration.py\n\necho \"✅ План интеграции выполнен!\"\n"
+}

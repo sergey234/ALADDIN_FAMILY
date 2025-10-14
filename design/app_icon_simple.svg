@@ -1,0 +1,109 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a1128;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e3a5f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2e5090;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="shield-gradient" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="glow-gradient" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0" />
+    </linearGradient>
+    
+    <!-- Shield Glow Shadow -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="226" fill="url(#bg-gradient)"/>
+  
+  <!-- Shield Glow Effect -->
+  <path d="M 512 180 L 732 260 L 732 500 C 732 690, 640 840, 512 940 C 384 840, 292 690, 292 500 L 292 260 Z" 
+        fill="url(#glow-gradient)" 
+        opacity="0.3"
+        filter="url(#glow)"/>
+  
+  <!-- Main Shield -->
+  <path d="M 512 220 L 710 290 L 710 500 C 710 675, 625 815, 512 905 C 399 815, 314 675, 314 500 L 314 290 Z" 
+        fill="url(#shield-gradient)"
+        stroke="#FFFFFF"
+        stroke-width="6"
+        filter="url(#glow)"/>
+  
+  <!-- Shield Inner Glow -->
+  <path d="M 512 250 L 680 310 L 680 500 C 680 655, 605 785, 512 865 C 419 785, 344 655, 344 500 L 344 310 Z" 
+        fill="none"
+        stroke="#FCD34D"
+        stroke-width="3"
+        opacity="0.5"/>
+  
+  <!-- Large "A" Letter (for ALADDIN) - Centered -->
+  <g transform="translate(512, 550)">
+    <!-- "A" Outline -->
+    <path d="M -90 100 L 0 -120 L 90 100" 
+          stroke="#FFFFFF" 
+          stroke-width="45" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"
+          filter="url(#glow)"/>
+    
+    <!-- "A" Crossbar -->
+    <line x1="-50" y1="10" x2="50" y2="10" 
+          stroke="#FFFFFF" 
+          stroke-width="45" 
+          stroke-linecap="round"/>
+    
+    <!-- Inner "A" highlight -->
+    <path d="M -90 100 L 0 -120 L 90 100" 
+          stroke="#FCD34D" 
+          stroke-width="8" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"
+          opacity="0.4"/>
+  </g>
+  
+  <!-- VPN Lock Symbol (top right corner) -->
+  <g transform="translate(720, 340)">
+    <rect x="-22" y="8" width="44" height="38" rx="6" 
+          fill="#10B981" 
+          opacity="0.95"/>
+    <path d="M -16 8 L -16 -8 C -16 -18, -9 -22, 0 -22 C 9 -22, 16 -18, 16 -8 L 16 8" 
+          stroke="#10B981" 
+          stroke-width="6" 
+          fill="none"
+          opacity="0.95"/>
+    <!-- Keyhole -->
+    <circle cx="0" cy="22" r="5" fill="#0a1128"/>
+    <rect x="-2.5" y="22" width="5" height="12" rx="2" fill="#0a1128"/>
+  </g>
+  
+  <!-- Family Shield Symbol (top left corner) -->
+  <g transform="translate(304, 340)">
+    <!-- 3 people silhouettes -->
+    <circle cx="-18" cy="-12" r="8" fill="#3B82F6" opacity="0.95"/>
+    <path d="M -18 -3 L -18 16 M -26 8 L -10 8" stroke="#3B82F6" stroke-width="5" opacity="0.95" stroke-linecap="round"/>
+    
+    <circle cx="0" cy="-15" r="10" fill="#3B82F6" opacity="0.95"/>
+    <path d="M 0 -4 L 0 20 M -10 10 L 10 10" stroke="#3B82F6" stroke-width="5" opacity="0.95" stroke-linecap="round"/>
+    
+    <circle cx="18" cy="-12" r="8" fill="#3B82F6" opacity="0.95"/>
+    <path d="M 18 -3 L 18 16 M 10 8 L 26 8" stroke="#3B82F6" stroke-width="5" opacity="0.95" stroke-linecap="round"/>
+  </g>
+</svg>
+
+

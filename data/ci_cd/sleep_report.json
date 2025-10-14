@@ -1,0 +1,53 @@
+{
+  "status": "sleeping", 
+  "features": [
+    "Создание и управление CI/CD пайплайнами", 
+    "Поддержка множественных окружений (dev, staging, prod)", 
+    "Автоматическое выполнение этапов сборки, тестирования, развертывания", 
+    "Мониторинг статуса пайплайнов в реальном времени", 
+    "История выполнения и метрики производительности", 
+    "Уведомления о завершении пайплайнов", 
+    "Автоматическая очистка старых данных", 
+    "Поддержка параллельного выполнения этапов", 
+    "Система повторов при ошибках", 
+    "Интеграция с системой безопасности ALADDIN"
+  ], 
+  "metrics": {
+    "average_duration": 0, 
+    "successful_pipelines": 0, 
+    "failed_pipelines": 0, 
+    "total_pipelines": 0, 
+    "success_rate": 0.0
+  }, 
+  "configuration": {
+    "notifications": true, 
+    "max_retries": 3, 
+    "auto_deploy": false, 
+    "security_scan": true, 
+    "test_timeout": 900, 
+    "deploy_timeout": 1200, 
+    "build_timeout": 1800, 
+    "code_quality_check": true, 
+    "parallel_jobs": 4
+  }, 
+  "quality": "A+", 
+  "function_id": "function_49", 
+  "sleep_mode": {
+    "monitoring": "Пассивный мониторинг статуса", 
+    "reason": "Оптимизация ресурсов во время разработки", 
+    "wake_up_condition": "При необходимости автоматизации развертывания", 
+    "enabled": true, 
+    "resources": "Минимальное потребление ресурсов"
+  }, 
+  "integration": "SafeFunctionManager", 
+  "capabilities": [
+    "PipelineStatus: PENDING, RUNNING, SUCCESS, FAILED, CANCELLED, SKIPPED", 
+    "Environment: DEVELOPMENT, STAGING, PRODUCTION, TESTING", 
+    "PipelineStage: BUILD, TEST, SECURITY_SCAN, DEPLOY, MONITOR, CLEANUP", 
+    "BuildStatus: PENDING, BUILDING, SUCCESS, FAILED, CANCELLED", 
+    "TestStatus: PENDING, RUNNING, PASSED, FAILED, SKIPPED", 
+    "DeploymentStatus: PENDING, DEPLOYING, SUCCESS, FAILED, ROLLBACK"
+  ], 
+  "sleep_time": "2025-09-04T14:08:43.483411", 
+  "function_name": "CIPipelineManager"
+}

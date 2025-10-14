@@ -1,0 +1,65 @@
+{
+  "test_results": {
+    "total_tests": 9,
+    "passed_tests": 7,
+    "failed_tests": 2,
+    "test_details": [
+      {
+        "test_name": "Создание Lazy Wrapper",
+        "status": "✅ ПРОЙДЕН",
+        "duration": 0.00020503997802734375,
+        "timestamp": "2025-10-05T23:32:28.573085"
+      },
+      {
+        "test_name": "Загрузка Lazy Wrapper",
+        "status": "❌ ПРОВАЛЕН",
+        "duration": 0.0003287792205810547,
+        "timestamp": "2025-10-05T23:32:28.573455"
+      },
+      {
+        "test_name": "Выгрузка Lazy Wrapper",
+        "status": "✅ ПРОЙДЕН",
+        "duration": 7.867813110351562e-06,
+        "timestamp": "2025-10-05T23:32:28.573482"
+      },
+      {
+        "test_name": "Статистика Lazy Manager",
+        "status": "✅ ПРОЙДЕН",
+        "duration": 1.0967254638671875e-05,
+        "timestamp": "2025-10-05T23:32:28.573515"
+      },
+      {
+        "test_name": "Инициализация системы",
+        "status": "✅ ПРОЙДЕН",
+        "duration": 0.002524852752685547,
+        "timestamp": "2025-10-05T23:32:28.576054"
+      },
+      {
+        "test_name": "Статистика системы",
+        "status": "✅ ПРОЙДЕН",
+        "duration": 2.193450927734375e-05,
+        "timestamp": "2025-10-05T23:32:28.576102"
+      },
+      {
+        "test_name": "Информация о Wrapper",
+        "status": "✅ ПРОЙДЕН",
+        "duration": 5.0067901611328125e-06,
+        "timestamp": "2025-10-05T23:32:28.576119"
+      },
+      {
+        "test_name": "Обработка ошибок",
+        "status": "✅ ПРОЙДЕН",
+        "duration": 0.00031113624572753906,
+        "timestamp": "2025-10-05T23:32:28.576441"
+      },
+      {
+        "test_name": "Производительность",
+        "status": "❌ ПРОВАЛЕН",
+        "duration": 0.0016908645629882812,
+        "timestamp": "2025-10-05T23:32:28.578159"
+      }
+    ]
+  },
+  "integration_success": true,
+  "timestamp": "2025-10-05T23:32:28.584049"
+}

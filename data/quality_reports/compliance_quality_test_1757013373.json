@@ -1,0 +1,36 @@
+{
+  "architecture_score": 8, 
+  "agent_name": "ComplianceAgent", 
+  "code_statistics": {
+    "comment_lines": 278, 
+    "code_density": 0, 
+    "total_lines": 1114, 
+    "code_lines": 836
+  }, 
+  "test_max": 5, 
+  "functionality_score": 17, 
+  "test_score": 5, 
+  "total_score": 100, 
+  "quality_grade": "A+", 
+  "security_score": 8, 
+  "missing_points": 0, 
+  "components": {
+    "Обработка ошибок": 21, 
+    "Конфигурация": 281, 
+    "Классы": 7, 
+    "Требования соответствия": 4, 
+    "Категории соответствия": 19, 
+    "AI модели": 5, 
+    "Стандарты соответствия": 15, 
+    "Документация": 72, 
+    "Перечисления": 0, 
+    "Логирование": 49, 
+    "Методы": 34, 
+    "Уровни соответствия": 8
+  }, 
+  "test_timestamp": "2025-09-04T23:16:13.802914", 
+  "max_score": 100, 
+  "security_max": 8, 
+  "architecture_max": 8, 
+  "functionality_max": 17
+}

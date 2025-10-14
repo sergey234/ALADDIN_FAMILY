@@ -1,0 +1,4 @@
+{
+  "api_rate_limit": 100,
+  "max_message_length": 4096
+}

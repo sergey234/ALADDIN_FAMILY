@@ -1,0 +1,844 @@
+{
+  "web_services": {
+    "enhanced_api_docs": {
+      "service_id": "enhanced_api_docs",
+      "name": "Enhanced API Docs",
+      "description": "Интерактивная документация и тестирование API системы безопасности ALADDIN",
+      "service_type": "web_interface",
+      "port": 8080,
+      "status": "dormant",
+      "version": "3.0",
+      "features": [
+        "real_time_api_testing",
+        "autocomplete_suggestions",
+        "batch_testing",
+        "ml_analytics",
+        "export_data",
+        "jwt_authentication",
+        "caching_optimization",
+        "search_filtering"
+      ],
+      "endpoints": [
+        "/api/endpoints",
+        "/api/services",
+        "/api/test",
+        "/api/autocomplete",
+        "/api/batch-test",
+        "/api/analytics",
+        "/api/ml/health-analysis",
+        "/api/ml/predictions",
+        "/api/export/{format}"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn",
+        "httpx",
+        "psutil",
+        "sqlite3"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A+",
+      "lines_of_code": 2500,
+      "file_size_kb": 50.7,
+      "integration_status": "complete"
+    },
+    "enhanced_architecture_visualizer": {
+      "service_id": "enhanced_architecture_visualizer",
+      "name": "Enhanced Architecture Visualizer",
+      "description": "Real-time мониторинг архитектуры системы безопасности с 3D визуализацией",
+      "service_type": "web_interface",
+      "port": 8081,
+      "status": "dormant",
+      "version": "3.0",
+      "features": [
+        "3d_visualization",
+        "real_time_monitoring",
+        "websocket_updates",
+        "theme_switching",
+        "advanced_filtering",
+        "history_tracking",
+        "ml_predictions",
+        "port_monitoring"
+      ],
+      "endpoints": [
+        "/api/architecture",
+        "/api/services",
+        "/api/metrics",
+        "/api/alerts",
+        "/api/filter",
+        "/api/history",
+        "/api/export/3d",
+        "/ws"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn",
+        "psutil",
+        "d3.js",
+        "three.js"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A+",
+      "lines_of_code": 3000,
+      "file_size_kb": 51.8,
+      "integration_status": "complete"
+    },
+    "dashboard_server_optimized": {
+      "service_id": "dashboard_server_optimized",
+      "name": "Optimized Dashboard Server",
+      "description": "Оптимизированный сервер дашборда для ALADDIN с кэшированием и пулингом соединений",
+      "service_type": "web_interface",
+      "port": 5000,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "caching_optimization",
+        "database_pooling",
+        "thread_pool_executor",
+        "compression_support",
+        "real_time_metrics",
+        "performance_monitoring"
+      ],
+      "endpoints": [
+        "/api/metrics",
+        "/api/health",
+        "/api/performance",
+        "/api/logs",
+        "/api/export"
+      ],
+      "dependencies": [
+        "flask",
+        "flask_cors",
+        "psutil",
+        "sqlite3",
+        "gzip"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 141,
+      "file_size_kb": 4.2,
+      "integration_status": "complete"
+    },
+    "monitoring_api_server": {
+      "service_id": "monitoring_api_server",
+      "name": "Monitoring API Server",
+      "description": "API сервер для расширенного мониторинга системы безопасности ALADDIN",
+      "service_type": "web_interface",
+      "port": 5006,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "advanced_monitoring",
+        "metric_collection",
+        "alert_management",
+        "health_checks",
+        "real_time_status",
+        "performance_tracking"
+      ],
+      "endpoints": [
+        "/api/monitoring/health",
+        "/api/monitoring/metrics",
+        "/api/monitoring/alerts",
+        "/api/monitoring/rules",
+        "/api/monitoring/status"
+      ],
+      "dependencies": [
+        "flask",
+        "flask_cors",
+        "advanced_monitoring_manager",
+        "logging_module"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 265,
+      "file_size_kb": 7.8,
+      "integration_status": "complete"
+    },
+    "russian_apis_server": {
+      "service_id": "russian_apis_server",
+      "name": "Russian APIs Server",
+      "description": "REST API сервер для российских API (Яндекс Карты, ГЛОНАСС и другие сервисы)",
+      "service_type": "web_interface",
+      "port": 5005,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "yandex_maps_integration",
+        "glonass_support",
+        "geocoding_service",
+        "routing_service",
+        "russian_api_manager",
+        "async_support"
+      ],
+      "endpoints": [
+        "/api/russian/health",
+        "/api/russian/geocode",
+        "/api/russian/routing",
+        "/api/russian/maps",
+        "/api/russian/glonass"
+      ],
+      "dependencies": [
+        "flask",
+        "flask_cors",
+        "russian_api_manager",
+        "asyncio"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 351,
+      "file_size_kb": 10.2,
+      "integration_status": "complete"
+    },
+    "simple_architecture_visualizer": {
+      "service_id": "simple_architecture_visualizer",
+      "name": "Simple Architecture Visualizer",
+      "description": "Простая версия визуализатора архитектуры системы безопасности",
+      "service_type": "web_interface",
+      "port": 5007,
+      "status": "available",
+      "version": "1.0",
+      "features": [
+        "basic_visualization",
+        "d3_integration",
+        "real_time_updates",
+        "simple_interface"
+      ],
+      "endpoints": [
+        "/api/architecture",
+        "/api/services",
+        "/api/metrics"
+      ],
+      "dependencies": [
+        "flask",
+        "d3.js"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "B+",
+      "lines_of_code": 699,
+      "file_size_kb": 24.0,
+      "integration_status": "complete"
+    },
+    "api_gateway": {
+      "service_id": "api_gateway",
+      "name": "API Gateway",
+      "description": "Шлюз API для маршрутизации запросов в системе безопасности ALADDIN",
+      "service_type": "microservice",
+      "port": 8006,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "request_routing",
+        "load_balancing",
+        "rate_limiting",
+        "authentication",
+        "circuit_breaker",
+        "monitoring"
+      ],
+      "endpoints": [
+        "/api/gateway/health",
+        "/api/gateway/routes",
+        "/api/gateway/metrics",
+        "/api/gateway/config"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn",
+        "httpx"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 500,
+      "file_size_kb": 15.0,
+      "integration_status": "complete"
+    },
+    "user_interface_manager": {
+      "service_id": "user_interface_manager",
+      "name": "User Interface Manager",
+      "description": "Менеджер пользовательского интерфейса для системы безопасности ALADDIN",
+      "service_type": "microservice",
+      "port": 8007,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "ui_management",
+        "user_sessions",
+        "interface_optimization",
+        "responsive_design",
+        "accessibility"
+      ],
+      "endpoints": [
+        "/api/ui/health",
+        "/api/ui/sessions",
+        "/api/ui/config",
+        "/api/ui/themes"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 400,
+      "file_size_kb": 12.0,
+      "integration_status": "complete"
+    },
+    "load_balancer": {
+      "service_id": "load_balancer",
+      "name": "Load Balancer",
+      "description": "Балансировщик нагрузки для распределения запросов между сервисами",
+      "service_type": "microservice",
+      "port": 8008,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "load_balancing",
+        "health_checks",
+        "failover",
+        "traffic_distribution",
+        "performance_monitoring"
+      ],
+      "endpoints": [
+        "/api/loadbalancer/health",
+        "/api/loadbalancer/status",
+        "/api/loadbalancer/config",
+        "/api/loadbalancer/metrics"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 350,
+      "file_size_kb": 10.5,
+      "integration_status": "complete"
+    },
+    "rate_limiter": {
+      "service_id": "rate_limiter",
+      "name": "Rate Limiter",
+      "description": "Сервис ограничения скорости запросов для защиты от злоупотреблений",
+      "service_type": "microservice",
+      "port": 8009,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "rate_limiting",
+        "throttling",
+        "quota_management",
+        "abuse_protection",
+        "monitoring"
+      ],
+      "endpoints": [
+        "/api/ratelimiter/health",
+        "/api/ratelimiter/status",
+        "/api/ratelimiter/config",
+        "/api/ratelimiter/metrics"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 300,
+      "file_size_kb": 9.0,
+      "integration_status": "complete"
+    },
+    "circuit_breaker": {
+      "service_id": "circuit_breaker",
+      "name": "Circuit Breaker",
+      "description": "Сервис автоматического отключения неисправных сервисов",
+      "service_type": "microservice",
+      "port": 8010,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "circuit_breaking",
+        "fault_tolerance",
+        "automatic_recovery",
+        "monitoring",
+        "health_checks"
+      ],
+      "endpoints": [
+        "/api/circuitbreaker/health",
+        "/api/circuitbreaker/status",
+        "/api/circuitbreaker/config",
+        "/api/circuitbreaker/metrics"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 280,
+      "file_size_kb": 8.4,
+      "integration_status": "complete"
+    },
+    "vpn_web_interface": {
+      "service_id": "vpn_web_interface",
+      "name": "VPN Web Interface",
+      "description": "Веб-интерфейс для управления VPN подключениями",
+      "service_type": "web_interface",
+      "port": 8011,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "vpn_management",
+        "connection_monitoring",
+        "security_settings",
+        "user_interface",
+        "status_tracking"
+      ],
+      "endpoints": [
+        "/api/vpn/health",
+        "/api/vpn/status",
+        "/api/vpn/connect",
+        "/api/vpn/disconnect",
+        "/api/vpn/config"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 250,
+      "file_size_kb": 7.5,
+      "integration_status": "complete"
+    },
+    "mobile_api": {
+      "service_id": "mobile_api",
+      "name": "Mobile API",
+      "description": "API для мобильных приложений системы безопасности ALADDIN",
+      "service_type": "web_interface",
+      "port": 8012,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "mobile_integration",
+        "push_notifications",
+        "location_services",
+        "mobile_security",
+        "cross_platform"
+      ],
+      "endpoints": [
+        "/api/mobile/health",
+        "/api/mobile/notifications",
+        "/api/mobile/location",
+        "/api/mobile/security",
+        "/api/mobile/config"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 200,
+      "file_size_kb": 6.0,
+      "integration_status": "complete"
+    },
+    "simple_api_docs": {
+      "service_id": "simple_api_docs",
+      "name": "Simple API Docs",
+      "description": "Простая версия документации API системы безопасности ALADDIN",
+      "service_type": "web_interface",
+      "port": 5008,
+      "status": "available",
+      "version": "1.0",
+      "features": [
+        "basic_documentation",
+        "api_testing",
+        "simple_interface",
+        "endpoint_listing"
+      ],
+      "endpoints": [
+        "/api/docs",
+        "/api/endpoints",
+        "/api/test"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "B+",
+      "lines_of_code": 322,
+      "file_size_kb": 12.0,
+      "integration_status": "complete"
+    },
+    "export_api": {
+      "service_id": "export_api",
+      "name": "Export API",
+      "description": "API для экспорта данных системы безопасности в различных форматах",
+      "service_type": "web_interface",
+      "port": 5009,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "data_export",
+        "multiple_formats",
+        "batch_processing",
+        "compression",
+        "security"
+      ],
+      "endpoints": [
+        "/api/export/health",
+        "/api/export/data",
+        "/api/export/formats",
+        "/api/export/batch"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 180,
+      "file_size_kb": 5.4,
+      "integration_status": "complete"
+    },
+    "alerts_api": {
+      "service_id": "alerts_api",
+      "name": "Alerts API",
+      "description": "API для управления уведомлениями и предупреждениями системы безопасности",
+      "service_type": "web_interface",
+      "port": 5010,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "alert_management",
+        "notification_system",
+        "priority_handling",
+        "real_time_updates",
+        "escalation"
+      ],
+      "endpoints": [
+        "/api/alerts/health",
+        "/api/alerts/list",
+        "/api/alerts/create",
+        "/api/alerts/update",
+        "/api/alerts/delete"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 220,
+      "file_size_kb": 6.6,
+      "integration_status": "complete"
+    },
+    "elasticsearch_api": {
+      "service_id": "elasticsearch_api",
+      "name": "Elasticsearch API",
+      "description": "API для интеграции с Elasticsearch для поиска и анализа данных",
+      "service_type": "web_interface",
+      "port": 5011,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "elasticsearch_integration",
+        "search_functionality",
+        "data_indexing",
+        "analytics",
+        "monitoring"
+      ],
+      "endpoints": [
+        "/api/elasticsearch/health",
+        "/api/elasticsearch/search",
+        "/api/elasticsearch/index",
+        "/api/elasticsearch/analytics"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn",
+        "elasticsearch"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 300,
+      "file_size_kb": 9.0,
+      "integration_status": "complete"
+    },
+    "external_apis_server": {
+      "service_id": "external_apis_server",
+      "name": "External APIs Server",
+      "description": "Сервер для интеграции с внешними API и сервисами",
+      "service_type": "web_interface",
+      "port": 5012,
+      "status": "available",
+      "version": "2.0",
+      "features": [
+        "external_integration",
+        "api_proxy",
+        "data_transformation",
+        "security_validation",
+        "monitoring"
+      ],
+      "endpoints": [
+        "/api/external/health",
+        "/api/external/proxy",
+        "/api/external/transform",
+        "/api/external/validate"
+      ],
+      "dependencies": [
+        "fastapi",
+        "uvicorn"
+      ],
+      "created_at": "2025-01-06T00:47:00.000000",
+      "last_updated": "2025-01-06T00:47:00.000000",
+      "quality_score": "A",
+      "lines_of_code": 280,
+      "file_size_kb": 8.4,
+      "integration_status": "complete"
+    },
+    "vpn_core_service": {
+      "service_id": "vpn_core_service",
+      "name": "VPN Core Service",
+      "description": "Основной сервис VPN системы с поддержкой всех протоколов",
+      "service_type": "core",
+      "port": 8001,
+      "status": "active",
+      "version": "1.0",
+      "features": [
+        "multi_protocol_support",
+        "encryption",
+        "connection_management",
+        "user_authentication"
+      ],
+      "dependencies": [],
+      "endpoints": [
+        "/api/v1/vpn/connect",
+        "/api/v1/vpn/disconnect",
+        "/api/v1/vpn/status"
+      ],
+      "created_at": "2025-10-02T17:33:38.190494",
+      "last_updated": "2025-10-02T17:33:38.190520"
+    },
+    "vpn_security_service": {
+      "service_id": "vpn_security_service",
+      "name": "VPN Security Service",
+      "description": "Сервис безопасности VPN с защитой от DDoS и обнаружением вторжений",
+      "service_type": "security",
+      "port": 8002,
+      "status": "active",
+      "version": "1.0",
+      "features": [
+        "ddos_protection",
+        "intrusion_detection",
+        "rate_limiting",
+        "two_factor_auth"
+      ],
+      "dependencies": [
+        "vpn_core_service"
+      ],
+      "endpoints": [
+        "/api/v1/security/ddos",
+        "/api/v1/security/ids",
+        "/api/v1/security/2fa"
+      ],
+      "created_at": "2025-10-02T17:33:38.190526",
+      "last_updated": "2025-10-02T17:33:38.190529"
+    },
+    "vpn_protocols_service": {
+      "service_id": "vpn_protocols_service",
+      "name": "VPN Protocols Service",
+      "description": "Сервис протоколов VPN (Shadowsocks, V2Ray, обфускация)",
+      "service_type": "protocol",
+      "port": 8003,
+      "status": "active",
+      "version": "1.0",
+      "features": [
+        "shadowsocks_client",
+        "v2ray_client",
+        "traffic_obfuscation",
+        "protocol_switching"
+      ],
+      "dependencies": [
+        "vpn_core_service"
+      ],
+      "endpoints": [
+        "/api/v1/protocols/shadowsocks",
+        "/api/v1/protocols/v2ray",
+        "/api/v1/protocols/obfuscation"
+      ],
+      "created_at": "2025-10-02T17:33:38.190532",
+      "last_updated": "2025-10-02T17:33:38.190534"
+    },
+    "vpn_monitoring_service": {
+      "service_id": "vpn_monitoring_service",
+      "name": "VPN Monitoring Service",
+      "description": "Сервис мониторинга VPN с метриками и аналитикой",
+      "service_type": "monitoring",
+      "port": 8004,
+      "status": "active",
+      "version": "1.0",
+      "features": [
+        "performance_metrics",
+        "business_analytics",
+        "real_time_monitoring",
+        "alerting"
+      ],
+      "dependencies": [
+        "vpn_core_service"
+      ],
+      "endpoints": [
+        "/api/v1/monitoring/metrics",
+        "/api/v1/monitoring/analytics",
+        "/api/v1/monitoring/alerts"
+      ],
+      "created_at": "2025-10-02T17:33:38.190538",
+      "last_updated": "2025-10-02T17:33:38.190540"
+    },
+    "vpn_features_service": {
+      "service_id": "vpn_features_service",
+      "name": "VPN Features Service",
+      "description": "Сервис дополнительных функций VPN (Split Tunneling, Multi-Hop)",
+      "service_type": "feature",
+      "port": 8005,
+      "status": "active",
+      "version": "1.0",
+      "features": [
+        "split_tunneling",
+        "multi_hop",
+        "auto_reconnect",
+        "performance_optimization"
+      ],
+      "dependencies": [
+        "vpn_core_service"
+      ],
+      "endpoints": [
+        "/api/v1/features/split_tunnel",
+        "/api/v1/features/multi_hop",
+        "/api/v1/features/auto_reconnect"
+      ],
+      "created_at": "2025-10-02T17:33:38.190543",
+      "last_updated": "2025-10-02T17:33:38.190546"
+    },
+    "vpn_compliance_service": {
+      "service_id": "vpn_compliance_service",
+      "name": "VPN Compliance Service",
+      "description": "Сервис соответствия требованиям 152-ФЗ и локализации данных",
+      "service_type": "compliance",
+      "port": 8006,
+      "status": "active",
+      "version": "1.0",
+      "features": [
+        "russia_compliance",
+        "data_localization",
+        "no_logs_policy",
+        "audit_trail"
+      ],
+      "dependencies": [
+        "vpn_core_service"
+      ],
+      "endpoints": [
+        "/api/v1/compliance/152fz",
+        "/api/v1/compliance/localization",
+        "/api/v1/compliance/audit"
+      ],
+      "created_at": "2025-10-02T17:33:38.190549",
+      "last_updated": "2025-10-02T17:33:38.190551"
+    },
+    "vpn_api_service": {
+      "service_id": "vpn_api_service",
+      "name": "VPN API Service",
+      "description": "API сервис VPN с поддержкой GraphQL и WebSocket",
+      "service_type": "api",
+      "port": 8007,
+      "status": "active",
+      "version": "1.0",
+      "features": [
+        "graphql_api",
+        "websocket_api",
+        "rest_api",
+        "api_documentation"
+      ],
+      "dependencies": [
+        "vpn_core_service"
+      ],
+      "endpoints": [
+        "/api/v1/graphql",
+        "/api/v1/websocket",
+        "/api/v1/docs"
+      ],
+      "created_at": "2025-10-02T17:33:38.190558",
+      "last_updated": "2025-10-02T17:33:38.190561"
+    },
+    "vpn_integration_service": {
+      "service_id": "vpn_integration_service",
+      "name": "VPN Integration Service",
+      "description": "Сервис интеграции с внешними сервисами и платформами",
+      "service_type": "integration",
+      "port": 8008,
+      "status": "active",
+      "version": "1.0",
+      "features": [
+        "external_services",
+        "webhook_support",
+        "third_party_apis",
+        "data_synchronization"
+      ],
+      "dependencies": [
+        "vpn_core_service"
+      ],
+      "endpoints": [
+        "/api/v1/integrations/external",
+        "/api/v1/integrations/webhooks",
+        "/api/v1/integrations/sync"
+      ],
+      "created_at": "2025-10-02T17:33:38.190567",
+      "last_updated": "2025-10-02T17:33:38.190569"
+    }
+  },
+  "registry_info": {
+    "version": "2.0",
+    "description": "Полный реестр веб-сервисов ALADDIN Security System",
+    "total_services": 18,
+    "categories": {
+      "web_interface": 10,
+      "microservice": 7
+    },
+    "ports_used": [
+      5000,
+      5005,
+      5006,
+      5007,
+      5008,
+      5009,
+      5010,
+      5011,
+      5012,
+      8006,
+      8007,
+      8008,
+      8009,
+      8010,
+      8011,
+      8012,
+      8080,
+      8081
+    ],
+    "last_updated": "2025-01-06T00:47:00.000000"
+  }
+}

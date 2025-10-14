@@ -1,0 +1,8 @@
+{
+  "enabled": true,
+  "port": 8003,
+  "push_notifications": true,
+  "offline_mode": true,
+  "touch_optimized": true,
+  "auto_sync": true
+}

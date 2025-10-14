@@ -1,0 +1,112 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Deep Blue Background -->
+    <linearGradient id="deep-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E3A8A;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Mystical Face Gradient -->
+    <radialGradient id="face-gradient" cx="50%" cy="30%" r="80%">
+      <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:0.9" />
+      <stop offset="70%" style="stop-color:#1E40AF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E3A8A;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Golden Sparkle -->
+    <radialGradient id="sparkle" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0.3" />
+    </radialGradient>
+    
+    <!-- Glow Filter -->
+    <filter id="face-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="15" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="226" fill="url(#deep-bg)"/>
+  
+  <!-- Mystical Face Silhouette -->
+  <g transform="translate(512, 400)">
+    <!-- Face Shape -->
+    <ellipse cx="0" cy="0" rx="140" ry="180" fill="url(#face-gradient)" filter="url(#face-glow)"/>
+    
+    <!-- Eye Area -->
+    <ellipse cx="0" cy="-40" rx="100" ry="60" fill="#1E40AF" opacity="0.8"/>
+    
+    <!-- Mystical Eye -->
+    <ellipse cx="0" cy="-40" rx="60" ry="35" fill="#3B82F6"/>
+    <ellipse cx="0" cy="-40" rx="40" ry="25" fill="#1D4ED8"/>
+    <circle cx="0" cy="-40" r="20" fill="#0F172A"/>
+    
+    <!-- Eye Star Highlight -->
+    <g transform="translate(-15, -55)">
+      <path d="M 15 5 L 18 11 L 24 11 L 19 15 L 21 21 L 15 17 L 9 21 L 11 15 L 6 11 L 12 11 Z" 
+            fill="#FCD34D" opacity="0.9"/>
+    </g>
+    
+    <!-- Forehead Marking (Bindi) -->
+    <ellipse cx="0" cy="-120" rx="8" ry="12" fill="#F59E0B" opacity="0.8"/>
+    
+    <!-- Golden Eyelid -->
+    <path d="M -60 -55 Q 0 -75 60 -55" stroke="#FCD34D" stroke-width="4" fill="none" opacity="0.8"/>
+  </g>
+  
+  <!-- Golden Sparkles -->
+  <g opacity="0.7">
+    <circle cx="300" cy="200" r="4" fill="url(#sparkle)"/>
+    <circle cx="750" cy="180" r="3" fill="url(#sparkle)"/>
+    <circle cx="150" cy="600" r="5" fill="url(#sparkle)"/>
+    <circle cx="900" cy="700" r="4" fill="url(#sparkle)"/>
+    <circle cx="350" cy="750" r="3" fill="url(#sparkle)"/>
+    <circle cx="680" cy="650" r="4" fill="url(#sparkle)"/>
+    <circle cx="200" cy="400" r="2" fill="url(#sparkle)"/>
+    <circle cx="820" cy="450" r="3" fill="url(#sparkle)"/>
+    <circle cx="450" cy="150" r="4" fill="url(#sparkle)"/>
+    <circle cx="580" cy="800" r="3" fill="url(#sparkle)"/>
+  </g>
+  
+  <!-- ALADDIN "A" Overlay -->
+  <g transform="translate(512, 520)">
+    <path d="M -50 60 L 0 -40 L 50 60" 
+          stroke="#FCD34D" 
+          stroke-width="16" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"
+          opacity="0.9"
+          filter="url(#face-glow)"/>
+    <line x1="-25" y1="10" x2="25" y2="10" 
+          stroke="#FCD34D" 
+          stroke-width="16" 
+          stroke-linecap="round"
+          opacity="0.9"/>
+  </g>
+  
+  <!-- Mystical Hand (Bottom Right) -->
+  <g transform="translate(750, 750)">
+    <ellipse cx="0" cy="0" rx="35" ry="50" fill="#1E40AF" opacity="0.6" transform="rotate(-30)"/>
+    <ellipse cx="10" cy="10" rx="8" ry="15" fill="#1E40AF" opacity="0.6" transform="rotate(-30)"/>
+    <ellipse cx="-15" cy="5" rx="8" ry="15" fill="#1E40AF" opacity="0.6" transform="rotate(-30)"/>
+    <ellipse cx="5" cy="-10" rx="8" ry="15" fill="#1E40AF" opacity="0.6" transform="rotate(-30)"/>
+    <ellipse cx="-25" cy="-5" rx="8" ry="15" fill="#1E40AF" opacity="0.6" transform="rotate(-30)"/>
+  </g>
+  
+  <!-- Bottom Text -->
+  <text x="512" y="850" 
+        font-family="Arial, sans-serif" 
+        font-size="42" 
+        font-weight="900" 
+        fill="#FCD34D" 
+        text-anchor="middle"
+        letter-spacing="3"
+        opacity="0.8">ALADDIN</text>
+</svg>
+
+

@@ -1,0 +1,14 @@
+{
+  "user_id": "lifecycle_user",
+  "age": 72,
+  "age_category": "71-80",
+  "interface_complexity": "moderate",
+  "accessibility_level": "enhanced",
+  "preferences": {
+    "theme": "dark",
+    "voice_enabled": true,
+    "font_preference": "large"
+  },
+  "created_at": 1758051920.646234,
+  "updated_at": 1758051920.646234
+}

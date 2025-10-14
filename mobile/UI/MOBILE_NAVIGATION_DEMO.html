@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile Navigation System Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #F59E0B;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+        }
+
+        .header p {
+            color: #ffffff;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .demo-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-section h2 {
+            color: #F59E0B;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+        }
+
+        .mobile-navigation {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            z-index: 1000;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .mobile-navigation.hidden {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+
+        .mobile-navigation-visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .navigation-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .navigation-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            min-width: 60px;
+            position: relative;
+        }
+
+        .navigation-item:hover {
+            background: rgba(245, 158, 11, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .navigation-item.active {
+            background: rgba(245, 158, 11, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .navigation-item.active .nav-icon {
+            color: #F59E0B;
+            transform: scale(1.1);
+        }
+
+        .navigation-item.active .nav-title {
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-title {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .nav-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #F59E0B;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .desktop-navigation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .desktop-navigation.visible {
+            display: block;
+        }
+
+        .desktop-navigation-items {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .desktop-navigation-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .desktop-navigation-item:hover {
+            background: rgba(245, 158, 11, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .desktop-navigation-item.active {
+            background: rgba(245, 158, 11, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .desktop-navigation-item.active .desktop-nav-icon {
+            color: #F59E0B;
+        }
+
+        .desktop-navigation-item.active .desktop-nav-title {
+            color: #F59E0B;
+            font-weight: 600;
+        }
+
+        .desktop-nav-icon {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-right: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .desktop-nav-title {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .desktop-nav-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #F59E0B;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 16px;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .content-area {
+            padding: 20px;
+            margin-bottom: 100px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .content-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .content-section h3 {
+            color: #F59E0B;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+
+        .content-section p {
+            color: #ffffff;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .demo-controls {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .demo-controls h3 {
+            color: #F59E0B;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            color: #ffffff;
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .control-group button {
+            background: rgba(245, 158, 11, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 8px;
+            color: #F59E0B;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .control-group button:hover {
+            background: rgba(245, 158, 11, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .control-group button:active {
+            transform: translateY(0);
+        }
+
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .floating-element {
+            position: absolute;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-element:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-element:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .floating-element:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+        }
+
+        .mobile-preview {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-preview {
+                display: block;
+            }
+            
+            .desktop-preview {
+                display: none;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .code-example {
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .code-example pre {
+            color: #F59E0B;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .navigation-transition {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements">
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🧭 ALADDIN Mobile Navigation System</h1>
+            <p>Адаптивная система навигации для мобильных и десктопных устройств</p>
+        </div>
+
+        <div class="demo-controls">
+            <h3>🎛️ Управление навигацией</h3>
+            <div class="control-group">
+                <label>Режим навигации:</label>
+                <button onclick="toggleNavigationMode()">Переключить режим</button>
+                <button onclick="addBadge()">Добавить badge</button>
+                <button onclick="removeBadge()">Убрать badge</button>
+            </div>
+            <div class="control-group">
+                <label>Анимация перехода: <span id="animationValue">300ms</span></label>
+                <input type="range" id="animationSpeed" min="100" max="1000" value="300">
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📱 Мобильная навигация</h2>
+            <p style="color: #ffffff; margin-bottom: 20px; opacity: 0.9;">
+                Нижняя панель навигации с иконками и подписями. Адаптируется под размер экрана.
+            </p>
+        </div>
+
+        <div class="demo-section">
+            <h2>🖥️ Десктопная навигация</h2>
+            <p style="color: #ffffff; margin-bottom: 20px; opacity: 0.9;">
+                Горизонтальная панель навигации для больших экранов. Показывается автоматически.
+            </p>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎨 Особенности дизайна</h2>
+            <p style="color: #ffffff; margin-bottom: 20px; opacity: 0.9;">
+                • Glassmorphism эффекты с размытием<br>
+                • Плавные анимации переходов<br>
+                • Haptic feedback при касании<br>
+                • Адаптивная типографика<br>
+                • Storm Sky цветовая схема
+            </p>
+        </div>
+
+        <div class="code-example">
+            <h3>💻 Пример кода (Swift)</h3>
+            <pre>
+// Создание навигации
+let navigationItems = NavigationFactory.createALADDINNavigation()
+let navigationController = MobileNavigationController(
+    navigationItems: navigationItems,
+    contentViewController: contentVC
+)
+
+// Настройка делегата
+navigationController.delegate = self
+
+// Обновление badge
+navigationController.updateBadge(for: "security", badge: "3")
+
+// Переключение выбранного элемента
+navigationController.setSelectedIndex(2, animated: true)
+            </pre>
+        </div>
+
+        <div class="code-example">
+            <h3>💻 Пример кода (Kotlin)</h3>
+            <pre>
+// Создание навигации
+val navigationItems = NavigationFactory.createALADDINNavigation()
+val navigationController = MobileNavigationController(context, fragmentManager)
+navigationController.setup(containerView, navigationItems, contentFragment)
+
+// Настройка делегата
+navigationController.setDelegate(this)
+
+// Обновление badge
+navigationController.updateBadge("security", "3")
+
+// Переключение выбранного элемента
+navigationController.setSelectedIndex(2, true)
+            </pre>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-navigation navigation-transition" id="mobileNavigation">
+        <div class="navigation-items">
+            <div class="navigation-item active" data-section="home">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-title">Главная</div>
+            </div>
+            <div class="navigation-item" data-section="security">
+                <div class="nav-icon">🛡️</div>
+                <div class="nav-title">Защита</div>
+                <div class="nav-badge" id="securityBadge" style="display: none;">3</div>
+            </div>
+            <div class="navigation-item" data-section="family">
+                <div class="nav-icon">👨‍👩‍👧‍👦</div>
+                <div class="nav-title">Семья</div>
+            </div>
+            <div class="navigation-item" data-section="analytics">
+                <div class="nav-icon">📊</div>
+                <div class="nav-title">Аналитика</div>
+            </div>
+            <div class="navigation-item" data-section="settings">
+                <div class="nav-icon">⚙️</div>
+                <div class="nav-title">Настройки</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Navigation -->
+    <div class="desktop-navigation navigation-transition" id="desktopNavigation">
+        <div class="desktop-navigation-items">
+            <div class="desktop-navigation-item active" data-section="home">
+                <div class="desktop-nav-icon">🏠</div>
+                <div class="desktop-nav-title">Главная</div>
+            </div>
+            <div class="desktop-navigation-item" data-section="security">
+                <div class="desktop-nav-icon">🛡️</div>
+                <div class="desktop-nav-title">Защита</div>
+                <div class="desktop-nav-badge" id="desktopSecurityBadge" style="display: none;">3</div>
+            </div>
+            <div class="desktop-navigation-item" data-section="family">
+                <div class="desktop-nav-icon">👨‍👩‍👧‍👦</div>
+                <div class="desktop-nav-title">Семья</div>
+            </div>
+            <div class="desktop-navigation-item" data-section="analytics">
+                <div class="desktop-nav-icon">📊</div>
+                <div class="desktop-nav-title">Аналитика</div>
+            </div>
+            <div class="desktop-navigation-item" data-section="settings">
+                <div class="desktop-nav-icon">⚙️</div>
+                <div class="desktop-nav-title">Настройки</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        <div class="content-section active" id="homeContent">
+            <h3>🏠 Главная</h3>
+            <p>Добро пожаловать в ALADDIN Security! Здесь вы можете управлять всеми аспектами безопасности вашей семьи.</p>
+            <p>• Мониторинг угроз в реальном времени<br>
+            • Управление семейными профилями<br>
+            • Настройка VPN соединения<br>
+            • Просмотр аналитики безопасности</p>
+        </div>
+
+        <div class="content-section" id="securityContent">
+            <h3>🛡️ Защита</h3>
+            <p>Комплексная система защиты от киберугроз и мошенничества.</p>
+            <p>• Антивирусная защита<br>
+            • Блокировка вредоносных сайтов<br>
+            • Защита от фишинга<br>
+            • Мониторинг подозрительной активности</p>
+        </div>
+
+        <div class="content-section" id="familyContent">
+            <h3>👨‍👩‍👧‍👦 Семья</h3>
+            <p>Управление профилями всех членов семьи с индивидуальными настройками безопасности.</p>
+            <p>• Детские профили с родительским контролем<br>
+            • Профили для пожилых людей<br>
+            • Общие семейные настройки<br>
+            • Мониторинг активности детей</p>
+        </div>
+
+        <div class="content-section" id="analyticsContent">
+            <h3>📊 Аналитика</h3>
+            <p>Подробная статистика и отчеты о безопасности вашей семьи.</p>
+            <p>• Статистика угроз<br>
+            • Отчеты по активности<br>
+            • Тренды безопасности<br>
+            • Рекомендации по улучшению</p>
+        </div>
+
+        <div class="content-section" id="settingsContent">
+            <h3>⚙️ Настройки</h3>
+            <p>Персонализация и настройка всех аспектов системы безопасности.</p>
+            <p>• Общие настройки<br>
+            • Уведомления<br>
+            • Цветовые схемы<br>
+            • Языковые настройки</p>
+        </div>
+    </div>
+
+    <script>
+        let isMobileMode = true;
+        let currentSection = 'home';
+
+        // Navigation functionality
+        function setupNavigation() {
+            // Mobile navigation
+            document.querySelectorAll('.navigation-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    selectNavigationItem(section, 'mobile');
+                });
+            });
+
+            // Desktop navigation
+            document.querySelectorAll('.desktop-navigation-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const section = this.dataset.section;
+                    selectNavigationItem(section, 'desktop');
+                });
+            });
+
+            // Update layout based on screen size
+            updateLayoutForCurrentSize();
+        }
+
+        function selectNavigationItem(section, type) {
+            // Update mobile navigation
+            if (type === 'mobile' || type === 'both') {
+                document.querySelectorAll('.navigation-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${section}"].navigation-item`).classList.add('active');
+            }
+
+            // Update desktop navigation
+            if (type === 'desktop' || type === 'both') {
+                document.querySelectorAll('.desktop-navigation-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${section}"].desktop-navigation-item`).classList.add('active');
+            }
+
+            // Update content
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`${section}Content`).classList.add('active');
+
+            currentSection = section;
+
+            // Haptic feedback simulation
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
+
+        function updateLayoutForCurrentSize() {
+            const isCompact = window.innerWidth < 768;
+            
+            if (isCompact) {
+                document.getElementById('mobileNavigation').classList.remove('hidden');
+                document.getElementById('desktopNavigation').classList.remove('visible');
+            } else {
+                document.getElementById('mobileNavigation').classList.add('hidden');
+                document.getElementById('desktopNavigation').classList.add('visible');
+            }
+        }
+
+        function toggleNavigationMode() {
+            isMobileMode = !isMobileMode;
+            updateLayoutForCurrentSize();
+        }
+
+        function addBadge() {
+            document.getElementById('securityBadge').style.display = 'block';
+            document.getElementById('desktopSecurityBadge').style.display = 'block';
+        }
+
+        function removeBadge() {
+            document.getElementById('securityBadge').style.display = 'none';
+            document.getElementById('desktopSecurityBadge').style.display = 'none';
+        }
+
+        // Animation speed control
+        document.getElementById('animationSpeed').addEventListener('input', function() {
+            const speed = this.value + 'ms';
+            document.getElementById('animationValue').textContent = speed;
+            
+            // Update CSS custom property
+            document.documentElement.style.setProperty('--animation-duration', speed);
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', updateLayoutForCurrentSize);
+
+        // Initialize
+        setupNavigation();
+
+        // AOS (Animate On Scroll) effect
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        document.querySelectorAll('.demo-section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(20px)';
+            section.style.transition = 'all 0.6s ease';
+            observer.observe(section);
+        });
+
+        // Typewriter effect for header
+        const title = document.querySelector('.header h1');
+        const text = title.textContent;
+        title.textContent = '';
+        
+        let i = 0;
+        const typeWriter = () => {
+            if (i < text.length) {
+                title.textContent += text.charAt(i);
+                i++;
+                setTimeout(typeWriter, 100);
+            }
+        };
+        
+        setTimeout(typeWriter, 500);
+    </script>
+</body>
+</html>
+

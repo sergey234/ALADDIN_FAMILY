@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-09-15T20:43:24.447870",
+  "backup_directory": "../ALADDIN_COMPLETE_SECURITY_BACKUP_20250915_203400",
+  "critical_files_present": 7,
+  "critical_files_total": 8,
+  "directories_present": 8,
+  "directories_total": 8,
+  "total_files": 1572,
+  "total_size_bytes": 208359097,
+  "file_types": {
+    ".py": 489,
+    ".json": 818,
+    ".md": 111,
+    ".log": 142,
+    ".db": 2,
+    ".txt": 0
+  },
+  "integrity_score": 95.0,
+  "max_score": 100,
+  "status": "EXCELLENT",
+  "verification_passed": true
+}

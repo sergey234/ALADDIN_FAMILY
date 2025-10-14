@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-10-05 12:51:16",
+  "original": {
+    "load_time": 14.095561027526855,
+    "memory_used": 99.76953125,
+    "functions_count": 906,
+    "success": true
+  },
+  "optimized": {
+    "load_time": 0.0014367103576660156,
+    "memory_used": 0.0078125,
+    "functions_count": 0,
+    "success": true
+  },
+  "lazy_wrappers": {
+    "tested_count": 0,
+    "total_count": 5,
+    "average_load_time": 0.0
+  }
+}

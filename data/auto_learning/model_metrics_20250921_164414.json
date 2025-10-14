@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-09-21T16:44:14.485703",
+  "total_models": 1,
+  "models": {
+    "region_analyzer": {
+      "model_name": "Regional Risk Analyzer",
+      "algorithm": "Linear Regression",
+      "mse": 0.03350307062436036,
+      "r2_score": 0.9737402451017424,
+      "coefficients": [
+        0.13561924257932764,
+        6.38638689866939
+      ],
+      "training_samples": 6
+    }
+  },
+  "data_summary": {
+    "total_records": 112,
+    "fraud_types": 7,
+    "regions": 6
+  },
+  "recommendations": [
+    "Увеличить объем обучающих данных для повышения точности",
+    "Добавить временные признаки для учета сезонности",
+    "Интегрировать с реальными данными банков",
+    "Реализовать онлайн-обучение моделей"
+  ]
+}

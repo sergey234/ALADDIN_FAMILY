@@ -1,0 +1,14 @@
+{
+  "status": "SLEEPING", 
+  "agent": "MobileSecurityAgent", 
+  "last_update": "2025-09-04T19:38:49.346647", 
+  "sleep_duration": "INDEFINITE", 
+  "wake_up_conditions": [
+    "Обновление баз данных угроз", 
+    "Новые типы угроз обнаружены", 
+    "Изменение конфигурации безопасности", 
+    "Критические уязвимости в системе"
+  ], 
+  "quality": "A+", 
+  "accuracy": "100%"
+}

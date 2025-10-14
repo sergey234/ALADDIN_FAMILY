@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Logo Placeholder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .logo-container {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logo-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .logo-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .logo-image::before {
+            content: "👁️";
+            filter: hue-rotate(200deg) brightness(1.2);
+        }
+        
+        .logo-image::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(245, 158, 11, 0.3) 0%, transparent 50%);
+            border-radius: 50%;
+        }
+        
+        .logo-text {
+            font-size: 32px;
+            font-weight: bold;
+            color: #F59E0B;
+            text-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
+        }
+        
+        .description {
+            max-width: 400px;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+        
+        .features {
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .feature {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feature-icon {
+            color: #F59E0B;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <h1>🎨 ALADDIN Logo Preview</h1>
+        
+        <div class="logo-preview">
+            <div class="logo-image"></div>
+            <div class="logo-text">ALADDIN</div>
+        </div>
+        
+        <div class="description">
+            <p><strong>Мистический логотип ALADDIN</strong></p>
+            <p>Этот логотип будет использовать ваше изображение с синим лицом, золотистыми блестками и светящимся глазом.</p>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">✨</span>
+                <span>Золотистое свечение вокруг изображения</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🔵</span>
+                <span>Синий цвет дополняет темную тему</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">👁️</span>
+                <span>Мистический глаз символизирует AI-наблюдение</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🎯</span>
+                <span>Круглая форма для мобильного интерфейса</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">⚡</span>
+                <span>Hover эффект с увеличением</span>
+            </div>
+        </div>
+        
+        <div style="margin-top: 30px; padding: 15px; background: rgba(245, 158, 11, 0.1); border-radius: 10px; border: 1px solid rgba(245, 158, 11, 0.3);">
+            <p><strong>📝 Инструкция:</strong></p>
+            <p>1. Сохраните ваше изображение как <code>mystical_eye.png</code></p>
+            <p>2. Поместите в папку <code>mobile/images/</code></p>
+            <p>3. Логотип автоматически появится в приложении!</p>
+        </div>
+    </div>
+</body>
+</html>
+

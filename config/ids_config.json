@@ -1,0 +1,61 @@
+{
+  "enabled": true,
+  "rules": {
+    "scanning_detection": true,
+    "brute_force_detection": true,
+    "injection_detection": true,
+    "behavioral_analysis": true,
+    "honeypot_enabled": true
+  },
+  "thresholds": {
+    "max_requests_per_minute": 100,
+    "max_failed_logins": 5,
+    "max_scan_attempts": 10,
+    "suspicious_pattern_threshold": 3
+  },
+  "actions": {
+    "auto_block": true,
+    "alert_on_high_severity": true,
+    "quarantine_suspicious": true,
+    "log_all_events": true
+  },
+  "honeypot": {
+    "enabled": true,
+    "endpoints": [
+      "/admin/backup",
+      "/admin/export",
+      "/.env",
+      "/config/database",
+      "/logs/access.log",
+      "/api/v1/users",
+      "/api/v1/passwords",
+      "/phpmyadmin",
+      "/wp-admin",
+      "/administrator"
+    ],
+    "response_delay": 0.5,
+    "fake_data": {
+      "users": [
+        "admin",
+        "root",
+        "administrator"
+      ],
+      "passwords": [
+        "admin",
+        "password",
+        "123456"
+      ],
+      "files": [
+        "backup.sql",
+        "config.ini",
+        "users.db"
+      ]
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "alert_email": "",
+    "alert_webhook": "",
+    "retention_days": 30
+  }
+}

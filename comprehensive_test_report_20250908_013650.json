@@ -1,0 +1,98 @@
+{
+  "timestamp": "2025-09-08T01:36:50.017310",
+  "duration": 35.04584813117981,
+  "total_tests": 15,
+  "passed_tests": 11,
+  "results": [
+    {
+      "test": "Импорт основных компонентов",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-08T01:36:15.199948"
+    },
+    {
+      "test": "Создание экземпляров",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-08T01:36:15.201855"
+    },
+    {
+      "test": "Инициализация компонентов",
+      "success": false,
+      "details": "CQM: initialized, Config: initializing, DB: initializing, Security: initializing",
+      "timestamp": "2025-09-08T01:36:15.208132"
+    },
+    {
+      "test": "Создание компонентов безопасности",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-08T01:36:15.217598"
+    },
+    {
+      "test": "Аутентификация",
+      "success": false,
+      "details": "Статус: initializing",
+      "timestamp": "2025-09-08T01:36:15.217637"
+    },
+    {
+      "test": "Контроль доступа",
+      "success": false,
+      "details": "Статус: initializing",
+      "timestamp": "2025-09-08T01:36:15.220089"
+    },
+    {
+      "test": "Проверка качества файла",
+      "success": true,
+      "details": "Оценка: 171.4/100",
+      "timestamp": "2025-09-08T01:36:32.200475"
+    },
+    {
+      "test": "PEP8 соответствие",
+      "success": true,
+      "details": "E501 ошибок: 0",
+      "timestamp": "2025-09-08T01:36:35.501476"
+    },
+    {
+      "test": "Создание таблиц БД",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-08T01:36:35.509931"
+    },
+    {
+      "test": "Добавление события безопасности",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-08T01:36:35.516763"
+    },
+    {
+      "test": "Получение событий безопасности",
+      "success": true,
+      "details": "Событий: 2",
+      "timestamp": "2025-09-08T01:36:35.518134"
+    },
+    {
+      "test": "Получение статистики БД",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-08T01:36:35.521256"
+    },
+    {
+      "test": "Правила безопасности",
+      "success": false,
+      "details": "unhashable type: 'dict'",
+      "timestamp": "2025-09-08T01:36:35.523082"
+    },
+    {
+      "test": "Производительность проверки качества",
+      "success": true,
+      "details": "Время: 14.49с",
+      "timestamp": "2025-09-08T01:36:50.016918"
+    },
+    {
+      "test": "Производительность импорта",
+      "success": true,
+      "details": "Время: 0.00с",
+      "timestamp": "2025-09-08T01:36:50.016978"
+    }
+  ]
+}

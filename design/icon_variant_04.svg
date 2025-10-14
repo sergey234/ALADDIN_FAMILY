@@ -1,0 +1,143 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Deep Mystical Background -->
+    <radialGradient id="mystical-bg" cx="50%" cy="30%" r="100%">
+      <stop offset="0%" style="stop-color:#1E3A8A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1E40AF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0F172A;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Face Blue -->
+    <linearGradient id="face-blue" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Golden Sparkle -->
+    <radialGradient id="sparkle-gold" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#F59E0B;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:0.3" />
+    </radialGradient>
+    
+    <!-- Glow Filter -->
+    <filter id="mystic-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="226" fill="url(#mystical-bg)"/>
+  
+  <!-- Mystical Face Profile -->
+  <g transform="translate(512, 450)">
+    <!-- Face Outline -->
+    <path d="M -100 50 Q -120 -80 -80 -150 Q -40 -200 0 -200 Q 40 -200 80 -150 Q 120 -80 100 50 Q 80 120 40 150 Q 0 160 -40 150 Q -80 120 -100 50 Z" 
+          fill="url(#face-blue)" 
+          filter="url(#mystic-glow)"/>
+    
+    <!-- Eye Area -->
+    <ellipse cx="-20" cy="-80" rx="45" ry="30" fill="#1D4ED8" opacity="0.9"/>
+    
+    <!-- Mystical Eye -->
+    <ellipse cx="-20" cy="-80" rx="30" ry="20" fill="#3B82F6"/>
+    <ellipse cx="-20" cy="-80" rx="20" ry="12" fill="#1E40AF"/>
+    <circle cx="-20" cy="-80" r="10" fill="#0F172A"/>
+    
+    <!-- Eye Star -->
+    <g transform="translate(-28, -88)">
+      <path d="M 8 0 L 10 6 L 16 6 L 11 10 L 13 16 L 8 12 L 3 16 L 5 10 L 0 6 L 6 6 Z" 
+            fill="#FCD34D" opacity="0.9"/>
+    </g>
+    
+    <!-- Golden Eyelid -->
+    <path d="M -50 -90 Q -20 -110 10 -90" stroke="#FCD34D" stroke-width="3" fill="none" opacity="0.8"/>
+    
+    <!-- Forehead Marking -->
+    <ellipse cx="-10" cy="-140" rx="6" ry="10" fill="#F59E0B" opacity="0.8"/>
+    
+    <!-- Mystical Hand (Bottom) -->
+    <g transform="translate(60, 80)">
+      <ellipse cx="0" cy="0" rx="25" ry="35" fill="url(#face-blue)" opacity="0.7" transform="rotate(-20)"/>
+      <ellipse cx="8" cy="8" rx="6" ry="12" fill="url(#face-blue)" opacity="0.7" transform="rotate(-20)"/>
+      <ellipse cx="-10" cy="4" rx="6" ry="12" fill="url(#face-blue)" opacity="0.7" transform="rotate(-20)"/>
+      <ellipse cx="4" cy="-8" rx="6" ry="12" fill="url(#face-blue)" opacity="0.7" transform="rotate(-20)"/>
+      <ellipse cx="-18" cy="-4" rx="6" ry="12" fill="url(#face-blue)" opacity="0.7" transform="rotate(-20)"/>
+    </g>
+  </g>
+  
+  <!-- Golden Sparkles (Bokeh) -->
+  <g opacity="0.7">
+    <circle cx="250" cy="200" r="5" fill="url(#sparkle-gold)"/>
+    <circle cx="750" cy="150" r="6" fill="url(#sparkle-gold)"/>
+    <circle cx="180" cy="750" r="4" fill="url(#sparkle-gold)"/>
+    <circle cx="820" cy="800" r="7" fill="url(#sparkle-gold)"/>
+    <circle cx="400" cy="250" r="5" fill="url(#sparkle-gold)"/>
+    <circle cx="600" cy="700" r="6" fill="url(#sparkle-gold)"/>
+    <circle cx="120" cy="450" r="3" fill="url(#sparkle-gold)"/>
+    <circle cx="900" cy="500" r="5" fill="url(#sparkle-gold)"/>
+    <circle cx="350" cy="120" r="4" fill="url(#sparkle-gold)"/>
+    <circle cx="680" cy="850" r="6" fill="url(#sparkle-gold)"/>
+    <circle cx="280" cy="350" r="4" fill="url(#sparkle-gold)"/>
+    <circle cx="720" cy="300" r="5" fill="url(#sparkle-gold)"/>
+  </g>
+  
+  <!-- ALADDIN "A" (Large, Central) -->
+  <g transform="translate(512, 600)">
+    <path d="M -60 80 L 0 -40 L 60 80" 
+          stroke="#FCD34D" 
+          stroke-width="20" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"
+          opacity="0.9"
+          filter="url(#mystic-glow)"/>
+    <line x1="-30" y1="20" x2="30" y2="20" 
+          stroke="#FCD34D" 
+          stroke-width="20" 
+          stroke-linecap="round"
+          opacity="0.9"/>
+  </g>
+  
+  <!-- Mystical Symbols (Corners) -->
+  <g transform="translate(160, 160)">
+    <circle cx="0" cy="0" r="12" fill="none" stroke="#FCD34D" stroke-width="3" opacity="0.8"/>
+    <path d="M -8 -8 L 8 8 M 8 -8 L -8 8" stroke="#FCD34D" stroke-width="2" opacity="0.8"/>
+    <circle cx="0" cy="0" r="4" fill="#FCD34D" opacity="0.6"/>
+  </g>
+  
+  <g transform="translate(864, 160)">
+    <circle cx="0" cy="0" r="12" fill="none" stroke="#FCD34D" stroke-width="3" opacity="0.8"/>
+    <path d="M -10 -5 Q 0 5 10 -5" stroke="#FCD34D" stroke-width="2" fill="none" opacity="0.8"/>
+    <circle cx="0" cy="-5" r="3" fill="#FCD34D" opacity="0.6"/>
+  </g>
+  
+  <g transform="translate(160, 864)">
+    <circle cx="0" cy="0" r="12" fill="none" stroke="#FCD34D" stroke-width="3" opacity="0.8"/>
+    <path d="M -10 5 Q 0 -5 10 5" stroke="#FCD34D" stroke-width="2" fill="none" opacity="0.8"/>
+    <circle cx="0" cy="5" r="3" fill="#FCD34D" opacity="0.6"/>
+  </g>
+  
+  <g transform="translate(864, 864)">
+    <circle cx="0" cy="0" r="12" fill="none" stroke="#FCD34D" stroke-width="3" opacity="0.8"/>
+    <path d="M -8 0 L 8 0 M 0 -8 L 0 8" stroke="#FCD34D" stroke-width="2" opacity="0.8"/>
+    <circle cx="0" cy="0" r="4" fill="#FCD34D" opacity="0.6"/>
+  </g>
+  
+  <!-- Bottom Text -->
+  <text x="512" y="800" 
+        font-family="Arial, sans-serif" 
+        font-size="44" 
+        font-weight="900" 
+        fill="#FCD34D" 
+        text-anchor="middle"
+        letter-spacing="4"
+        opacity="0.8"
+        filter="url(#mystic-glow)">ALADDIN</text>
+</svg>
+
+

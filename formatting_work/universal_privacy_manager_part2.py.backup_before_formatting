@@ -1,0 +1,655 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Universal Privacy Manager Part 2 - Часть 2 универсального менеджера приватности
+"""
+
+import json
+import logging
+import os
+import time
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+
+class ConsentType(Enum):
+    """Типы согласий"""
+
+    ANALYTICS = "analytics"
+    MARKETING = "marketing"
+    FUNCTIONAL = "functional"
+    NECESSARY = "necessary"
+
+
+@dataclass
+class Consent:
+    """Согласие на обработку данных"""
+
+    user_id: str
+    consent_type: str
+    granted: bool
+    granted_at: datetime
+    expires_at: Optional[datetime] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "user_id": self.user_id,
+            "consent_type": self.consent_type,
+            "granted": self.granted,
+            "granted_at": self.granted_at.isoformat(),
+            "expires_at": (
+                self.expires_at.isoformat() if self.expires_at else None
+            ),
+        }
+
+
+@dataclass
+class ConsentRecord:
+    """Запись согласия в базе данных"""
+
+    consent_id: str
+    user_id: str
+    purpose: str
+    consent_type: ConsentType
+    legal_basis: str
+    granted: bool
+    granted_at: datetime
+    expires_at: Optional[datetime] = None
+
+
+class DataCategory(Enum):
+    """Категории данных"""
+
+    PERSONAL = "personal"
+    SENSITIVE = "sensitive"
+    ANALYTICS = "analytics"
+    MARKETING = "marketing"
+
+
+class PrivacyAction(Enum):
+    """Действия с приватностью"""
+
+    CONSENT_GRANTED = "consent_granted"
+    CONSENT_REVOKED = "consent_revoked"
+    DATA_ACCESSED = "data_accessed"
+    DATA_DELETED = "data_deleted"
+    DATA_EXPORTED = "data_exported"
+
+
+class PrivacyStandard(Enum):
+    """Стандарты приватности"""
+
+    GDPR = "gdpr"
+    CCPA = "ccpa"
+    PIPEDA = "pipeda"
+    LGPD = "lgpd"
+
+
+@dataclass
+class PrivacyEvent:
+    """Событие приватности"""
+
+    user_id: str
+    action: PrivacyAction
+    timestamp: datetime
+    details: Dict[str, Any]
+
+
+class UniversalPrivacyManagerPart2:
+    """Часть 2 универсального менеджера приватности"""
+
+    def __init__(self):
+        self.logger = logging.getLogger("ALADDIN.UniversalPrivacyManagerPart2")
+        self.consents = {}
+        self.privacy_settings = {}
+        self.data_retention_policies = {}
+        self._init_default_policies()
+
+    def _init_default_policies(self) -> None:
+        """Инициализация политик по умолчанию"""
+        self.data_retention_policies = {
+            "personal_data": 365,  # 1 год
+            "analytics_data": 90,  # 3 месяца
+            "security_logs": 2555,  # 7 лет
+            "cookies": 30,  # 1 месяц
+        }
+
+    def _save_privacy_data(self):
+        """Сохранение данных приватности"""
+        try:
+            # Сохранение согласий
+            consent_file = "data/privacy/consents.json"
+            os.makedirs(os.path.dirname(consent_file), exist_ok=True)
+
+            with open(consent_file, "w", encoding="utf-8") as f:
+                consents_data = [
+                    consent.to_dict() for consent in self.consents.values()
+                ]
+                json.dump(consents_data, f, ensure_ascii=False, indent=2)
+
+            # Сохранение событий приватности
+            events_file = "data/privacy/privacy_events.json"
+            with open(events_file, "w", encoding="utf-8") as f:
+                events_data = [
+                    event.to_dict() for event in self.privacy_events
+                ]
+                json.dump(events_data, f, ensure_ascii=False, indent=2)
+
+            self.logger.info("Данные приватности сохранены")
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка сохранения данных приватности: {}".format(str(e))
+            )
+
+    def create_consent(
+        self,
+        user_id: str,
+        purpose: str,
+        consent_type: ConsentType,
+        legal_basis: str = "",
+        expires: datetime = None,
+    ) -> str:
+        """Создание согласия"""
+        try:
+            consent_id = "consent_{}_{}".format(user_id, int(time.time()))
+
+            consent = ConsentRecord(
+                consent_id=consent_id,
+                user_id=user_id,
+                purpose=purpose,
+                consent_type=consent_type,
+                granted=True,
+                expires=expires,
+            )
+
+            consent.legal_basis = legal_basis
+            consent.withdrawal_method = "email,phone,web"
+
+            self.consents[consent_id] = consent
+            self._update_metrics()
+
+            # Логирование события
+            self._log_privacy_event(
+                user_id=user_id,
+                action=PrivacyAction.COLLECT,
+                data_category=DataCategory.PERSONAL,
+                details={"consent_id": consent_id, "purpose": purpose},
+            )
+
+            self.logger.info(
+                "Создано согласие {} для пользователя {}".format(
+                    consent_id, user_id
+                )
+            )
+            return consent_id
+
+        except Exception as e:
+            self.logger.error("Ошибка создания согласия: {}".format(str(e)))
+            return ""
+
+    def revoke_consent(self, consent_id: str, user_id: str) -> bool:
+        """Отзыв согласия"""
+        try:
+            if consent_id not in self.consents:
+                self.logger.warning(
+                    "Согласие {} не найдено".format(consent_id)
+                )
+                return False
+
+            consent = self.consents[consent_id]
+            if consent.user_id != user_id:
+                self.logger.warning(
+            self._update_metrics()
+
+            # Логирование события
+            self._log_privacy_event(
+                user_id=user_id,
+                action=PrivacyAction.DELETE,
+                data_category=DataCategory.PERSONAL,
+                details={"consent_id": consent_id, "action": "revoked"},
+            )
+
+            self.logger.info(
+                "Согласие {} отозвано пользователем {}".format(
+                    consent_id, user_id
+                )
+            )
+            return True
+
+        except Exception as e:
+            self.logger.error("Ошибка отзыва согласия: {}".format(str(e)))
+            return False
+
+    def check_consent(self, user_id: str, purpose: str) -> bool:
+        """Проверка согласия"""
+        try:
+            for consent in self.consents.values():
+                if (
+                    consent.user_id == user_id
+                    and consent.purpose == purpose
+                    and consent.status == PrivacyStatus.ACTIVE
+                    and consent.granted
+                ):
+                    return True
+
+            return False
+
+        except Exception as e:
+            self.logger.error("Ошибка проверки согласия: {}".format(str(e)))
+            return False
+
+    def request_data_deletion(
+        self, user_id: str, data_categories: List[DataCategory]
+    ) -> str:
+        """Запрос на удаление данных"""
+        try:
+            request_id = "deletion_{}_{}".format(user_id, int(time.time()))
+
+            # Логирование события
+            self._log_privacy_event(
+                user_id=user_id,
+                action=PrivacyAction.DELETE,
+                data_category=DataCategory.PERSONAL,
+                details={
+                    "request_id": request_id,
+                    "categories": [cat.value for cat in data_categories],
+                },
+            )
+
+            self.metrics.deletion_requests += 1
+            self._update_metrics()
+
+            self.logger.info(
+                "Запрос на удаление данных {} для пользователя {}".format(
+                    request_id, user_id
+                )
+            )
+            return request_id
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка запроса на удаление данных: {}".format(str(e))
+            )
+            return ""
+
+    def request_data_portability(
+        self, user_id: str, data_categories: List[DataCategory]
+    ) -> str:
+        """Запрос на портативность данных"""
+        try:
+            request_id = "portability_{}_{}".format(user_id, int(time.time()))
+
+            # Логирование события
+            self._log_privacy_event(
+                user_id=user_id,
+                action=PrivacyAction.PORT,
+                data_category=DataCategory.PERSONAL,
+                details={
+                    "request_id": request_id,
+                    "categories": [cat.value for cat in data_categories],
+                },
+            )
+
+            self.metrics.portability_requests += 1
+            self._update_metrics()
+
+            self.logger.info(
+                "Запрос на портативность данных {} для пользователя {}".format(
+                    request_id, user_id
+                )
+            )
+            return request_id
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка запроса на портативность данных: {}".format(str(e))
+            )
+            return ""
+
+    def _log_privacy_event(
+        self,
+        user_id: str,
+        action: PrivacyAction,
+        data_category: DataCategory,
+        details: dict = None,
+    ):
+        """Логирование события приватности"""
+        try:
+            event_id = "event_{}_{}".format(user_id, int(time.time()))
+
+            event = PrivacyEvent(
+                event_id=event_id,
+                user_id=user_id,
+                action=action,
+                data_category=data_category,
+            )
+
+            if details:
+                event.details = details
+
+            # Проверка соответствия стандартам
+            for standard in self.privacy_standards:
+                compliance = self._check_standard_compliance(event, standard)
+                event.compliance_status[standard.value] = compliance
+
+            self.privacy_events.append(event)
+            self.metrics.privacy_events += 1
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка логирования события приватности: {}".format(str(e))
+            )
+
+    def _check_standard_compliance(
+        self, event: PrivacyEvent, standard: PrivacyStandard
+    ) -> bool:
+        """Проверка соответствия стандарту"""
+        try:
+            if standard == PrivacyStandard.GDPR:
+                return self._check_gdpr_compliance(event)
+            elif standard == PrivacyStandard.CCPA:
+                return self._check_ccpa_compliance(event)
+            elif standard == PrivacyStandard.FZ152:
+                return self._check_fz152_compliance(event)
+            else:
+                return True
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка проверки соответствия стандарту {}: {}".format(
+                    standard.value, str(e)
+                )
+            )
+            return False
+
+    def _check_gdpr_compliance(self, event: PrivacyEvent) -> bool:
+        """Проверка соответствия GDPR"""
+        try:
+            # Проверка наличия согласия для сбора данных
+            if event.action == PrivacyAction.COLLECT:
+                return self.check_consent(event.user_id, "data_collection")
+
+            # Проверка права на удаление
+            if event.action == PrivacyAction.DELETE:
+                return True  # GDPR требует выполнения запросов на удаление
+
+            # Проверка права на портативность
+            if event.action == PrivacyAction.PORT:
+                return (
+                    True  # GDPR требует выполнения запросов на портативность
+                )
+
+            return True
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка проверки соответствия GDPR: {}".format(str(e))
+            )
+            return False
+
+    def _check_ccpa_compliance(self, event: PrivacyEvent) -> bool:
+        """Проверка соответствия CCPA"""
+        try:
+            # CCPA требует уведомления о сборе данных
+            if event.action == PrivacyAction.COLLECT:
+                return True  # Предполагаем, что уведомление было отправлено
+
+            # CCPA требует выполнения запросов на удаление
+            if event.action == PrivacyAction.DELETE:
+                return True
+
+            return True
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка проверки соответствия CCPA: {}".format(str(e))
+            )
+            return False
+
+    def _check_fz152_compliance(self, event: PrivacyEvent) -> bool:
+        """Проверка соответствия 152-ФЗ"""
+        try:
+            # 152-ФЗ требует согласия на обработку персональных данных
+            if event.action in [PrivacyAction.COLLECT, PrivacyAction.PROCESS]:
+                return self.check_consent(
+                    event.user_id, "personal_data_processing"
+                )
+
+            return True
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка проверки соответствия 152-ФЗ: {}".format(str(e))
+            )
+            return False
+
+    def get_privacy_metrics(self) -> dict:
+        """Получение метрик приватности"""
+        try:
+            metrics = self.metrics.to_dict()
+            metrics["compliance_by_standard"] = {}
+
+            for standard in self.privacy_standards:
+                metrics["compliance_by_standard"][standard.value] = (
+                    self._calculate_standard_compliance(standard)
+                )
+
+            return metrics
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка получения метрик приватности: {}".format(str(e))
+            )
+            return {}
+
+    def get_user_consents(self, user_id: str) -> List[dict]:
+        """Получение согласий пользователя"""
+        try:
+            user_consents = []
+            for consent in self.consents.values():
+                if consent.user_id == user_id:
+                    user_consents.append(consent.to_dict())
+
+            return user_consents
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка получения согласий пользователя: {}".format(str(e))
+            )
+            return []
+
+    def get_privacy_events(
+        self, user_id: str = None, limit: int = 100
+    ) -> List[dict]:
+        """Получение событий приватности"""
+        try:
+            events = self.privacy_events
+
+            if user_id:
+                events = [e for e in events if e.user_id == user_id]
+
+            # Сортировка по времени (новые сначала)
+            events.sort(key=lambda x: x.timestamp, reverse=True)
+
+            # Ограничение количества
+            events = events[:limit]
+
+            return [event.to_dict() for event in events]
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка получения событий приватности: {}".format(str(e))
+            )
+            return []
+
+    def anonymize_data(self, data: Any, data_category: DataCategory) -> Any:
+        """Анонимизация данных"""
+        try:
+            if data_category == DataCategory.PERSONAL:
+                # Анонимизация персональных данных
+                if isinstance(data, str):
+                    # Хеширование строк
+                    return hashlib.sha256(data.encode()).hexdigest()[:8]
+                elif isinstance(data, dict):
+                    # Анонимизация словаря
+                    anonymized = {}
+                    for key, value in data.items():
+                        if key.lower() in [
+                            "name",
+                            "email",
+                            "phone",
+                            "address",
+                        ]:
+                            anonymized[key] = hashlib.sha256(
+                                str(value).encode()
+                            ).hexdigest()[:8]
+                        else:
+                            anonymized[key] = value
+                    return anonymized
+
+            elif data_category == DataCategory.LOCATION:
+                # Анонимизация геолокации (округление координат)
+                if isinstance(data, dict) and "lat" in data and "lng" in data:
+                    return {
+                        "lat": round(data["lat"], 1),  # Округление до 1 знака
+                        "lng": round(data["lng"], 1),
+                    }
+
+            elif data_category == DataCategory.BEHAVIORAL:
+                # Анонимизация поведенческих данных
+                if isinstance(data, list):
+                    return [
+                        hashlib.sha256(str(item).encode()).hexdigest()[:8]
+                        for item in data
+                    ]
+
+            return data
+
+        except Exception as e:
+            self.logger.error("Ошибка анонимизации данных: {}".format(str(e)))
+            return data
+
+    def generate_privacy_report(
+        self, user_id: str = None, period_days: int = 30
+    ) -> dict:
+        """Генерация отчета о приватности"""
+        try:
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=period_days)
+
+            # Фильтрация событий по периоду
+            period_events = [
+                e
+                for e in self.privacy_events
+                if start_date <= e.timestamp <= end_date
+            ]
+
+            if user_id:
+                period_events = [
+                    e for e in period_events if e.user_id == user_id
+                ]
+
+            # Статистика по действиям
+            action_stats = {}
+            for event in period_events:
+                action = event.action.value
+                action_stats[action] = action_stats.get(action, 0) + 1
+
+            # Статистика по категориям данных
+            category_stats = {}
+            for event in period_events:
+                category = event.data_category.value
+                category_stats[category] = category_stats.get(category, 0) + 1
+
+            # Статистика соответствия
+            compliance_stats = {}
+            for standard in self.privacy_standards:
+                compliant_events = sum(
+                    1
+                    for e in period_events
+                    if e.compliance_status.get(standard.value, False)
+                )
+                total_events = len(period_events)
+                compliance_stats[standard.value] = (
+                    (compliant_events / total_events * 100)
+                    if total_events > 0
+                    else 0
+                )
+
+            report = {
+                "period": {
+                    "start": start_date.isoformat(),
+                    "end": end_date.isoformat(),
+                    "days": period_days,
+                },
+                "user_id": user_id,
+                "total_events": len(period_events),
+                "action_statistics": action_stats,
+                "category_statistics": category_stats,
+                "compliance_statistics": compliance_stats,
+                "overall_compliance": (
+                    sum(compliance_stats.values()) / len(compliance_stats)
+                    if compliance_stats
+                    else 0
+                ),
+                "generated_at": datetime.now().isoformat(),
+            }
+
+            return report
+
+        except Exception as e:
+            self.logger.error(
+                "Ошибка генерации отчета о приватности: {}".format(str(e))
+            )
+            return {}
+
+
+if __name__ == "__main__":
+    print("🔒 UNIVERSAL PRIVACY MANAGER")
+    print("=" * 50)
+
+    # Создание менеджера
+    manager = UniversalPrivacyManager("TestUniversalPrivacy")
+
+    # Тестирование
+    if manager.initialize():
+        print("✅ UniversalPrivacyManager инициализирован")
+
+        # Создание согласия
+        consent_id = manager.create_consent(
+            user_id="user_001",
+            purpose="data_collection",
+            consent_type=ConsentType.EXPLICIT,
+            legal_basis="consent",
+        )
+        print("✅ Создано согласие: {}".format(consent_id))
+
+        # Проверка согласия
+        has_consent = manager.check_consent("user_001", "data_collection")
+        print("✅ Согласие проверено: {}".format(has_consent))
+
+        # Запрос на удаление данных
+        deletion_id = manager.request_data_deletion(
+            user_id="user_001", data_categories=[DataCategory.PERSONAL]
+        )
+        print("✅ Запрос на удаление: {}".format(deletion_id))
+
+        # Получение метрик
+        metrics = manager.get_privacy_metrics()
+        print("✅ Метрики получены: {}".format(metrics))
+
+        # Остановка
+        manager.stop()
+        print("✅ UniversalPrivacyManager остановлен")
+    else:
+        print("❌ Ошибка инициализации UniversalPrivacyManager")
+            if consent.user_id != user_id:
+                self.logger.warning(
+                    "Пользователь {} не имеет права отозвать согласие {}".format(
+                        user_id, consent_id
+                    )
+                )
+                return False

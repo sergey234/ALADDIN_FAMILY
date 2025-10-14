@@ -1,0 +1,265 @@
+"""
+Интеграция модулей соответствия 152-ФЗ в основную VPN систему
+Обеспечивает автоматическое соблюдение всех требований российского законодательства
+"""
+
+from datetime import datetime
+from typing import Dict, Any, Optional
+from .russia_compliance import RussiaComplianceManager
+from .data_localization import DataLocalizationManager
+from .no_logs_policy import NoLogsPolicyManager, LogLevel, LogType
+
+# Настройка логирования
+import logging as std_logging
+std_logging.basicConfig(level=std_logging.INFO)
+logger = std_logging.getLogger(__name__)
+
+class ComplianceIntegration:
+    """Интеграция всех модулей соответствия 152-ФЗ"""
+    
+    def __init__(self):
+        self.russia_compliance = RussiaComplianceManager()
+        self.data_localization = DataLocalizationManager()
+        self.no_logs_policy = NoLogsPolicyManager()
+        self.is_initialized = False
+        
+    def initialize(self) -> bool:
+        """Инициализация всех модулей соответствия"""
+        try:
+            logger.info("Инициализация модулей соответствия 152-ФЗ")
+            
+            # Проверяем соответствие при инициализации
+            compliance_result = self.russia_compliance.run_full_compliance_check()
+            if not compliance_result["is_compliant"]:
+                logger.error("Система не соответствует требованиям 152-ФЗ")
+                return False
+            
+            # Проверяем локализацию данных
+            localization_result = self.data_localization.check_data_localization()
+            if not localization_result["is_compliant"]:
+                logger.error("Данные не локализованы в России")
+                return False
+            
+            # Проверяем No-Logs политику
+            no_logs_result = self.no_logs_policy.check_no_logs_compliance()
+            if not no_logs_result["is_compliant"]:
+                logger.error("No-Logs политика не соблюдается")
+                return False
+            
+            self.is_initialized = True
+            logger.info("✅ Все модули соответствия 152-ФЗ инициализированы")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Ошибка инициализации модулей соответствия: {e}")
+            return False
+    
+    def log_vpn_connection(self, connection_data: Dict[str, Any]) -> bool:
+        """Логирование VPN подключения с соблюдением No-Logs политики"""
+        try:
+            # Обезличиваем данные подключения
+            anonymized_data = self._anonymize_connection_data(connection_data)
+            
+            # Логируем только системную информацию
+            return self.no_logs_policy.log_system_event(
+                LogLevel.INFO,
+                "VPN подключение установлено",
+                anonymized_data
+            )
+            
+        except Exception as e:
+            logger.error(f"Ошибка логирования VPN подключения: {e}")
+            return False
+    
+    def log_vpn_disconnection(self, disconnection_data: Dict[str, Any]) -> bool:
+        """Логирование отключения VPN с соблюдением No-Logs политики"""
+        try:
+            # Обезличиваем данные отключения
+            anonymized_data = self._anonymize_connection_data(disconnection_data)
+            
+            # Логируем только системную информацию
+            return self.no_logs_policy.log_system_event(
+                LogLevel.INFO,
+                "VPN подключение закрыто",
+                anonymized_data
+            )
+            
+        except Exception as e:
+            logger.error(f"Ошибка логирования отключения VPN: {e}")
+            return False
+    
+    def log_security_event(self, event_type: str, event_data: Dict[str, Any]) -> bool:
+        """Логирование события безопасности"""
+        try:
+            # Обезличиваем данные события
+            anonymized_data = self._anonymize_security_data(event_data)
+            
+            # Логируем событие безопасности
+            return self.no_logs_policy.log_security_event(
+                LogLevel.WARNING,
+                f"Событие безопасности: {event_type}",
+                anonymized_data
+            )
+            
+        except Exception as e:
+            logger.error(f"Ошибка логирования события безопасности: {e}")
+            return False
+    
+    def log_performance_metric(self, metric_name: str, metric_value: float) -> bool:
+        """Логирование метрики производительности"""
+        try:
+            # Логируем метрику производительности
+            return self.no_logs_policy.log_performance_event(
+                LogLevel.INFO,
+                f"Метрика производительности: {metric_name} = {metric_value}",
+                {"metric_name": metric_name, "metric_value": metric_value}
+            )
+            
+        except Exception as e:
+            logger.error(f"Ошибка логирования метрики производительности: {e}")
+            return False
+    
+    def ensure_data_localization(self, data_type: str, data: Any) -> bool:
+        """Обеспечение локализации данных в России"""
+        try:
+            return self.data_localization.ensure_data_localization(data_type, data)
+        except Exception as e:
+            logger.error(f"Ошибка локализации данных: {e}")
+            return False
+    
+    def run_compliance_check(self) -> Dict[str, Any]:
+        """Запуск полной проверки соответствия 152-ФЗ"""
+        try:
+            if not self.is_initialized:
+                logger.error("Модули соответствия не инициализированы")
+                return {"error": "Модули не инициализированы"}
+            
+            # Запускаем все проверки
+            russia_result = self.russia_compliance.run_full_compliance_check()
+            localization_result = self.data_localization.check_data_localization()
+            no_logs_result = self.no_logs_policy.check_no_logs_compliance()
+            
+            # Общий результат
+            overall_compliant = all([
+                russia_result["is_compliant"],
+                localization_result["is_compliant"],
+                no_logs_result["is_compliant"]
+            ])
+            
+            result = {
+                "timestamp": datetime.now().isoformat(),
+                "overall_compliant": overall_compliant,
+                "russia_compliance": russia_result,
+                "data_localization": localization_result,
+                "no_logs_policy": no_logs_result,
+                "compliance_percentage": self._calculate_overall_compliance([
+                    russia_result["compliance_percentage"],
+                    localization_result["compliance_percentage"],
+                    no_logs_result["compliance_percentage"]
+                ])
+            }
+            
+            logger.info(f"Проверка соответствия 152-ФЗ: {'✅ СООТВЕТСТВУЕТ' if overall_compliant else '❌ НЕ СООТВЕТСТВУЕТ'}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Ошибка проверки соответствия: {e}")
+            return {"error": str(e)}
+    
+    def _anonymize_connection_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Обезличивание данных подключения"""
+        anonymized = {}
+        
+        for key, value in data.items():
+            if key in ['user_id', 'ip_address', 'mac_address', 'device_id']:
+                # Обезличиваем персональные данные
+                anonymized[key] = f"ANONYMOUS_{hash(str(value)) % 10000}"
+            elif key == 'timestamp':
+                # Оставляем только дату без времени
+                anonymized[key] = str(value).split(' ')[0]
+            else:
+                # Оставляем как есть
+                anonymized[key] = value
+        
+        return anonymized
+    
+    def _anonymize_security_data(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Обезличивание данных безопасности"""
+        anonymized = {}
+        
+        for key, value in data.items():
+            if key in ['user_id', 'ip_address', 'source_ip', 'target_ip']:
+                # Обезличиваем IP адреса и идентификаторы
+                anonymized[key] = f"ANONYMOUS_{hash(str(value)) % 10000}"
+            else:
+                # Оставляем как есть
+                anonymized[key] = value
+        
+        return anonymized
+    
+    def _calculate_overall_compliance(self, percentages: list) -> float:
+        """Расчет общего процента соответствия"""
+        if not percentages:
+            return 0.0
+        
+        return sum(percentages) / len(percentages)
+    
+    def get_compliance_report(self) -> Dict[str, Any]:
+        """Получение отчета о соответствии"""
+        try:
+            compliance_result = self.run_compliance_check()
+            no_logs_report = self.no_logs_policy.export_compliance_report()
+            
+            report = {
+                "report_timestamp": datetime.now().isoformat(),
+                "compliance": compliance_result,
+                "no_logs_report": no_logs_report,
+                "recommendations": self._get_recommendations(compliance_result)
+            }
+            
+            return report
+            
+        except Exception as e:
+            logger.error(f"Ошибка создания отчета: {e}")
+            return {"error": str(e)}
+    
+    def _get_recommendations(self, compliance_result: Dict[str, Any]) -> list:
+        """Получение рекомендаций по улучшению"""
+        recommendations = []
+        
+        if not compliance_result.get("overall_compliant", False):
+            recommendations.append("Устранить нарушения соответствия 152-ФЗ")
+        
+        if compliance_result.get("russia_compliance", {}).get("compliance_percentage", 0) < 100:
+            recommendations.append("Улучшить соответствие российскому законодательству")
+        
+        if compliance_result.get("data_localization", {}).get("compliance_percentage", 0) < 100:
+            recommendations.append("Обеспечить полную локализацию данных в России")
+        
+        if compliance_result.get("no_logs_policy", {}).get("compliance_percentage", 0) < 100:
+            recommendations.append("Соблюдать No-Logs политику")
+        
+        if not recommendations:
+            recommendations.append("Система полностью соответствует требованиям 152-ФЗ")
+        
+        return recommendations
+
+# Глобальный экземпляр для использования в VPN системе
+compliance_integration = ComplianceIntegration()
+
+# Пример использования
+if __name__ == "__main__":
+    # Инициализируем модули соответствия
+    if compliance_integration.initialize():
+        print("✅ Модули соответствия 152-ФЗ инициализированы")
+        
+        # Запускаем проверку соответствия
+        result = compliance_integration.run_compliance_check()
+        print(f"Соответствие 152-ФЗ: {result['compliance_percentage']:.1f}%")
+        print(f"Статус: {'✅ СООТВЕТСТВУЕТ' if result['overall_compliant'] else '❌ НЕ СООТВЕТСТВУЕТ'}")
+        
+        # Получаем отчет
+        report = compliance_integration.get_compliance_report()
+        print(f"Рекомендации: {report['recommendations']}")
+    else:
+        print("❌ Ошибка инициализации модулей соответствия")

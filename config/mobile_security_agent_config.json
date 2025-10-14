@@ -1,0 +1,42 @@
+{
+  "mobile_security_agent": {
+    "thresholds": {
+      "block_threshold": 0.8,
+      "warn_threshold": 0.6,
+      "monitor_threshold": 0.4,
+      "high_reputation_threshold": 0.8,
+      "low_confidence_threshold": 0.3,
+      "default_confidence": 0.5
+    },
+    "cache": {
+      "enabled": true,
+      "max_size": 1000,
+      "ttl_seconds": 3600
+    },
+    "validation": {
+      "enabled": true,
+      "strict_mode": false
+    },
+    "performance": {
+      "async_enabled": true,
+      "max_concurrent_requests": 100
+    },
+    "logging": {
+      "level": "INFO",
+      "enable_metrics": true
+    },
+    "trusted_apps": [
+      "com.google.android.apps.maps",
+      "com.whatsapp",
+      "com.spotify.music",
+      "com.netflix.mediaclient"
+    ],
+    "threat_patterns": {
+      "malware_indicators": [
+        "unusual_network_activity",
+        "excessive_permissions",
+        "code_not_signed"
+      ]
+    }
+  }
+}

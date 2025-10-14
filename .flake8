@@ -1,0 +1,24 @@
+[flake8]
+max-line-length = 120
+ignore = W503,W504
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    .env,
+    .pytest_cache,
+    .coverage,
+    htmlcov,
+    .tox,
+    dist,
+    build,
+    *.egg-info,
+    *_backup_*.py,
+    *_original_backup_*.py,
+    *_BACKUP.py,
+    security/formatting_work/,
+    test_*.py
+per-file-ignores =
+    # W503/W504 конфликт - операторы в начале строк лучше читаются
+    security/safe_function_manager.py:W503,W504

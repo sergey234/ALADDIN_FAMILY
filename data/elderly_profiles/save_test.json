@@ -1,0 +1,12 @@
+{
+  "user_id": "save_test",
+  "age": 65,
+  "age_category": "60-70",
+  "interface_complexity": "advanced",
+  "accessibility_level": "standard",
+  "preferences": {
+    "theme": "blue"
+  },
+  "created_at": 1758051578.649624,
+  "updated_at": 1758051578.649625
+}

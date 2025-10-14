@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Согласие - Вариант 1 (Финальный)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .consent-box {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2e5090 100%);
+            border-radius: 20px;
+            padding: 25px;
+            max-width: 340px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease-out;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .consent-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .subtitle {
+            font-size: 13px;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+        
+        .content-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #F59E0B;
+        }
+        
+        .list-item {
+            font-size: 12px;
+            line-height: 1.8;
+            padding-left: 5px;
+        }
+        
+        .highlight-box {
+            background: rgba(16, 185, 129, 0.15);
+            border-left: 3px solid #10B981;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .highlight-box strong {
+            color: #10B981;
+            font-size: 12px;
+        }
+        
+        .highlight-box div {
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .btn {
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+        
+        .btn-secondary {
+            flex: 1;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            flex: 1;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+            animation: buttonPulse 2s infinite;
+        }
+        
+        @keyframes buttonPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            50% { box-shadow: 0 0 20px 5px rgba(245, 158, 11, 0.3); }
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.5);
+        }
+        
+        .legal-text {
+            font-size: 10px;
+            opacity: 0.7;
+            text-align: center;
+            line-height: 1.5;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        
+        .legal-link {
+            color: #3B82F6;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="modal-overlay" id="consent-modal">
+        <div class="consent-box">
+            <!-- Заголовок -->
+            <div class="consent-header">
+                <div class="logo">🛡️</div>
+                <div class="title">ALADDIN</div>
+                <div class="subtitle">
+                    Добро пожаловать в систему<br>
+                    семейной безопасности!
+                </div>
+            </div>
+            
+            <!-- Что НЕ собираем -->
+            <div class="content-section">
+                <div class="section-title">❌ Мы НЕ собираем ваши данные:</div>
+                <div class="list-item">
+                    • Имя, email, телефон<br>
+                    • Адрес, паспортные данные<br>
+                    • История посещений<br>
+                    • Личные сообщения
+                </div>
+            </div>
+            
+            <!-- Что используем -->
+            <div class="highlight-box">
+                <strong>✅ Военные технологии защиты:</strong>
+                <div>
+                    🆔 Только персональный ID номер<br>
+                    🔐 AES-256-GCM (банковский сейф А+)<br>
+                    🔒 ChaCha20-Poly1305 (защита ⭐⭐⭐⭐⭐)<br>
+                    🛡️ XChaCha20-Poly1305 (космический уровень)<br>
+                    🇷🇺 Российские серверы (152-ФЗ РФ)<br>
+                    📊 Обезличенная статистика
+                </div>
+            </div>
+            
+            <!-- Гарантии -->
+            <div class="content-section" style="font-size: 11px;">
+                <strong style="color: #10B981;">🛡️ Наши гарантии:</strong><br>
+                ✅ Полная анонимность<br>
+                ✅ Шифрование E2E (сквозное)<br>
+                ✅ Zero-logs VPN (нет логов)<br>
+                ✅ Соответствие 152-ФЗ
+            </div>
+            
+            <!-- Кнопки -->
+            <div class="buttons">
+                <button class="btn btn-secondary" onclick="showFullPolicy()">
+                    Подробнее
+                </button>
+                <button class="btn btn-primary" onclick="acceptConsent()">
+                    Принять ✓
+                </button>
+            </div>
+            
+            <!-- Юридический текст -->
+            <div class="legal-text">
+                Нажимая кнопку "Принять", вы подтверждаете,<br>
+                что ознакомлены и согласны с 
+                <span class="legal-link" onclick="showFullPolicy()">Политикой<br>
+                конфиденциальности</span> системы семейной безопасности<br>
+                ALADDIN и Политикой обработки данных VPN-сервиса<br>
+                в соответствии с требованиями <strong>Федерального<br>
+                закона от 27.07.2006 № 152-ФЗ «О персональных<br>
+                данных» (статья 9)</strong>.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function acceptConsent() {
+            // Сохраняем согласие
+            localStorage.setItem('consent_accepted', 'true');
+            localStorage.setItem('consent_date', new Date().toISOString());
+            localStorage.setItem('consent_version', '2.0');
+            
+            // Анимация успеха
+            const modal = document.getElementById('consent-modal');
+            const box = modal.querySelector('.consent-box');
+            
+            box.style.transform = 'scale(0.95)';
+            box.style.opacity = '0';
+            box.style.transition = 'all 0.3s';
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                showSuccessNotification();
+            }, 300);
+        }
+        
+        function showFullPolicy() {
+            // Переход на полную политику
+            window.location.href = '19_privacy_policy.html';
+        }
+        
+        function showSuccessNotification() {
+            const notification = document.createElement('div');
+            notification.innerHTML = '✅ Добро пожаловать в ALADDIN!<br>Ваша семья под защитой 🛡️';
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+                color: white;
+                padding: 30px 40px;
+                border-radius: 20px;
+                font-size: 16px;
+                font-weight: 600;
+                z-index: 10001;
+                box-shadow: 0 20px 60px rgba(16, 185, 129, 0.4);
+                text-align: center;
+                line-height: 1.8;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.5s';
+                setTimeout(() => {
+                    notification.remove();
+                    // Переход на главную страницу
+                    window.location.href = '01_main_screen.html';
+                }, 500);
+            }, 2000);
+        }
+        
+        // Показываем окно только если не принято
+        window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('consent_accepted') === 'true') {
+                document.getElementById('consent-modal').style.display = 'none';
+                // Для демо - показываем кнопку "Сбросить"
+                showResetButton();
+            }
+        });
+        
+        function showResetButton() {
+            const btn = document.createElement('button');
+            btn.textContent = '🔄 Сбросить согласие (для демо)';
+            btn.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                background: #EF4444;
+                color: white;
+                border: none;
+                border-radius: 10px;
+                cursor: pointer;
+                z-index: 9999;
+            `;
+            btn.onclick = () => {
+                localStorage.removeItem('consent_accepted');
+                location.reload();
+            };
+            document.body.appendChild(btn);
+        }
+    </script>
+</body>
+</html>
+

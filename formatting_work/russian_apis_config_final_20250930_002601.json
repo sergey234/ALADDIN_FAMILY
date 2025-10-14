@@ -1,0 +1,191 @@
+{
+  "yandex_maps": {
+    "api_key": "YOUR_YANDEX_MAPS_API_KEY",
+    "enabled": true,
+    "rate_limit": 50,
+    "daily_limit": 25000,
+    "supports_glonass": true,
+    "supports_gps": true
+  },
+  "2gis": {
+    "api_key": "YOUR_2GIS_API_KEY",
+    "enabled": true,
+    "rate_limit": 20,
+    "daily_limit": 10000,
+    "supports_glonass": false,
+    "supports_gps": true
+  },
+  "vk": {
+    "api_key": "YOUR_VK_API_KEY",
+    "enabled": true,
+    "rate_limit": 3,
+    "daily_limit": 1000,
+    "supports_glonass": false,
+    "supports_gps": false
+  },
+  "russian_banks": {
+    "api_key": "YOUR_BANK_API_KEY",
+    "enabled": true,
+    "rate_limit": 10,
+    "daily_limit": 1000,
+    "supports_glonass": false,
+    "supports_gps": false,
+    "compliance_152_fz": true,
+    "compliance_pci_dss": true,
+    "compliance_iso27001": true
+  },
+  "glonass": {
+    "enabled": true,
+    "rate_limit": 100,
+    "daily_limit": 1000000,
+    "supports_glonass": true,
+    "supports_gps": true,
+    "free_tier": true
+  },
+  "russian_messengers": {
+    "telegram": {
+      "api_key": "YOUR_TELEGRAM_BOT_TOKEN",
+      "enabled": true,
+      "rate_limit": 30,
+      "daily_limit": 10000
+    },
+    "whatsapp": {
+      "api_key": "YOUR_WHATSAPP_API_KEY",
+      "enabled": true,
+      "rate_limit": 20,
+      "daily_limit": 5000
+    },
+    "viber": {
+      "api_key": "YOUR_VIBER_BOT_TOKEN",
+      "enabled": true,
+      "rate_limit": 25,
+      "daily_limit": 5000
+    },
+    "vk": {
+      "api_key": "YOUR_VK_API_KEY",
+      "enabled": true,
+      "rate_limit": 20,
+      "daily_limit": 1000
+    }
+  },
+  "banking": {
+    "sberbank": {
+      "api_key": "YOUR_SBER_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 1000000.0,
+      "rate_limit": 100,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    },
+    "vtb": {
+      "api_key": "YOUR_VTB_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 500000.0,
+      "rate_limit": 80,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    },
+    "tinkoff": {
+      "api_key": "YOUR_TINKOFF_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 300000.0,
+      "rate_limit": 60,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    },
+    "alfa_bank": {
+      "api_key": "YOUR_ALFA_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 200000.0,
+      "rate_limit": 50,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    },
+    "raiffeisen": {
+      "api_key": "YOUR_RAIFFEISEN_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 150000.0,
+      "rate_limit": 40,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    },
+    "gazprombank": {
+      "api_key": "YOUR_GAZPROM_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 100000.0,
+      "rate_limit": 30,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    },
+    "rosselkhozbank": {
+      "api_key": "YOUR_RSHB_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 100000.0,
+      "rate_limit": 30,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    },
+    "vtb24": {
+      "api_key": "YOUR_VTB24_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 100000.0,
+      "rate_limit": 30,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    },
+    "unicredit": {
+      "api_key": "YOUR_UNICREDIT_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 100000.0,
+      "rate_limit": 30,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    },
+    "russian_standard": {
+      "api_key": "YOUR_RSB_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 100000.0,
+      "rate_limit": 30,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    },
+    "mkb": {
+      "api_key": "YOUR_MKB_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 100000.0,
+      "rate_limit": 30,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    },
+    "openbank": {
+      "api_key": "YOUR_OPEN_API_KEY",
+      "enabled": true,
+      "max_daily_limit": 100000.0,
+      "rate_limit": 30,
+      "supports_152_fz": true,
+      "supports_pci_dss": true
+    }
+  },
+  "security": {
+    "encryption_enabled": true,
+    "audit_logging_enabled": true,
+    "rate_limiting_enabled": true,
+    "compliance_152_fz": true,
+    "compliance_pci_dss": true,
+    "compliance_iso27001": true,
+    "max_retries": 3,
+    "timeout": 30,
+    "cache_ttl": 300
+  },
+  "monitoring": {
+    "enable_metrics": true,
+    "enable_alerts": true,
+    "enable_logging": true,
+    "log_level": "INFO",
+    "alert_thresholds": {
+      "error_rate": 0.05,
+      "response_time": 5000,
+      "rate_limit_exceeded": 0.8
+    }
+  }
+}

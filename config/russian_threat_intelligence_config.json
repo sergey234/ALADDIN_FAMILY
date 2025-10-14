@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "monitor_gosuslugi": true,
+  "monitor_russian_banks": true,
+  "monitor_government_sites": true,
+  "monitor_educational_platforms": true,
+  "monitor_healthcare_systems": true,
+  "threat_detection_threshold": 0.7,
+  "auto_block_critical_threats": true
+}

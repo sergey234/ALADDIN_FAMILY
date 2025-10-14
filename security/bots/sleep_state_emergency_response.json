@@ -1,0 +1,13 @@
+{
+  "bot_name": "emergency_response",
+  "timestamp": "2025-09-06T21:00:21.576471",
+  "config": {
+    "test": true,
+    "bot_type": "emergency_response"
+  },
+  "stats": {
+    "test_count": 0
+  },
+  "running": false,
+  "sleep_reason": "Manual sleep command"
+}

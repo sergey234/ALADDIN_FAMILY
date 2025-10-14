@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Разрешения для ALADDIN Security -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    
+    <!-- VPN разрешения -->
+    <uses-permission android:name="android.permission.BIND_VPN_SERVICE" />
+    
+    <!-- Биометрическая аутентификация -->
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.USE_FINGERPRINT" />
+    
+    <!-- Уведомления -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    
+    <!-- Геолокация для семейной безопасности -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
+    <!-- Камера для сканирования QR кодов -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    
+    <!-- Микрофон для голосового управления -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    
+    <!-- Хранение данных -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    
+    <!-- Системные разрешения -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    
+    <!-- Особенности устройства -->
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.fingerprint"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+
+    <application
+        android:name=".ALADDINApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ALADDINMobile"
+        android:usesCleartextTraffic="false"
+        tools:targetApi="31">
+        
+        <!-- Главная активность -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.ALADDINMobile">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        
+        <!-- VPN Service для защиты -->
+        <service
+            android:name=".vpn.ALADDINVpnService"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+        
+        <!-- Служба безопасности -->
+        <service
+            android:name=".security.SecurityService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- Служба мониторинга -->
+        <service
+            android:name=".monitoring.MonitoringService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- AI Assistant Service -->
+        <service
+            android:name=".ai.AIAssistantService"
+            android:enabled="true"
+            android:exported="false" />
+        
+        <!-- WorkManager для фоновых задач -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup" />
+        </provider>
+        
+        <!-- FileProvider для обмена файлами -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        
+        <!-- Настройки безопасности -->
+        <meta-data
+            android:name="com.aladdin.security.encryption_key"
+            android:value="@string/encryption_key" />
+        
+        <meta-data
+            android:name="com.aladdin.security.api_endpoint"
+            android:value="@string/api_endpoint" />
+        
+        <!-- Настройки темы -->
+        <meta-data
+            android:name="com.aladdin.theme.storm_sky"
+            android:value="true" />
+        
+        <!-- Настройки AI -->
+        <meta-data
+            android:name="com.aladdin.ai.endpoint"
+            android:value="@string/ai_endpoint" />
+        
+        <!-- Настройки VPN -->
+        <meta-data
+            android:name="com.aladdin.vpn.server_list"
+            android:resource="@xml/vpn_servers" />
+        
+    </application>
+
+</manifest>
+

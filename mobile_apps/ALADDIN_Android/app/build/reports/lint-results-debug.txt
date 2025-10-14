@@ -1,0 +1,713 @@
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:13: Warning: Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details. [OldTargetApi]
+        targetSdk 34
+        ~~~~~~~~~~~~
+
+   Explanation for issues of type "OldTargetApi":
+   When your application runs on a version of Android that is more recent than
+   your targetSdkVersion specifies that it has been tested with, various
+   compatibility modes kick in. This ensures that your application continues
+   to work, but it may look out of place. For example, if the targetSdkVersion
+   is less than 14, your app may get an option button in the UI.
+
+   To fix this issue, set the targetSdkVersion to the highest available value.
+   Then test your app to make sure everything works correctly. You may want to
+   consult the compatibility notes to see what changes apply to each version
+   you are adding support for:
+   https://developer.android.com/reference/android/os/Build.VERSION_CODES.html
+   as well as follow this guide:
+   https://developer.android.com/distribute/best-practices/develop/target-sdk.
+   html
+
+   https://developer.android.com/distribute/best-practices/develop/target-sdk.html
+
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/localization/LocalizationManager.kt:72: Warning: Found dynamic locale changes, but did not find corresponding Play Core library calls for downloading languages and splitting by language is not disabled in the bundle configuration [AppBundleLocaleChanges]
+        config.setLocale(locale)
+        ~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "AppBundleLocaleChanges":
+   When changing locales at runtime (e.g. to provide an in-app language
+   switcher), the Android App Bundle must be configured to not split by locale
+   or the Play Core library must be used to download additional locales at
+   runtime.
+
+   https://developer.android.com/guide/app-bundle/configure-base#handling_language_changes
+
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:59: Warning: A newer version of androidx.core:core-ktx than 1.12.0 is available: 1.17.0 [GradleDependency]
+    implementation 'androidx.core:core-ktx:1.12.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:60: Warning: A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.6.2 is available: 2.9.4 [GradleDependency]
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:61: Warning: A newer version of androidx.activity:activity-compose than 1.8.0 is available: 1.11.0 [GradleDependency]
+    implementation 'androidx.activity:activity-compose:1.8.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:64: Warning: A newer version of androidx.compose:compose-bom than 2023.10.01 is available: 2025.10.00 [GradleDependency]
+    implementation platform('androidx.compose:compose-bom:2023.10.01')
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:70: Warning: A newer version of androidx.navigation:navigation-compose than 2.7.5 is available: 2.9.5 [GradleDependency]
+    implementation 'androidx.navigation:navigation-compose:2.7.5'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:79: Warning: A newer version of com.google.firebase:firebase-bom than 32.6.0 is available: 34.4.0 [GradleDependency]
+    implementation platform('com.google.firebase:firebase-bom:32.6.0')
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:84: Warning: A newer version of com.android.billingclient:billing-ktx than 6.1.0 is available: 8.0.0 [GradleDependency]
+    implementation 'com.android.billingclient:billing-ktx:6.1.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:87: Warning: A newer version of androidx.camera:camera-camera2 than 1.3.0 is available: 1.5.1 [GradleDependency]
+    implementation 'androidx.camera:camera-camera2:1.3.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:88: Warning: A newer version of androidx.camera:camera-lifecycle than 1.3.0 is available: 1.5.1 [GradleDependency]
+    implementation 'androidx.camera:camera-lifecycle:1.3.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:89: Warning: A newer version of androidx.camera:camera-view than 1.3.0 is available: 1.5.1 [GradleDependency]
+    implementation 'androidx.camera:camera-view:1.3.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:90: Warning: A newer version of com.google.mlkit:barcode-scanning than 17.2.0 is available: 17.3.0 [GradleDependency]
+    implementation 'com.google.mlkit:barcode-scanning:17.2.0'
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:98: Warning: A newer version of androidx.test.ext:junit than 1.1.5 is available: 1.3.0 [GradleDependency]
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:99: Warning: A newer version of androidx.test.espresso:espresso-core than 3.5.1 is available: 3.7.0 [GradleDependency]
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/build.gradle:100: Warning: A newer version of androidx.compose:compose-bom than 2023.10.01 is available: 2025.10.00 [GradleDependency]
+    androidTestImplementation platform('androidx.compose:compose-bom:2023.10.01')
+                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "GradleDependency":
+   This detector looks for usages of libraries where the version you are using
+   is not the current stable release. Using older versions is fine, and there
+   are cases where you deliberately want to stick with an older version.
+   However, you may simply not be aware that a more recent version is
+   available, and that is what this lint check helps find.
+
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/extensions/AccessibilityExtensions.kt:26: Warning: Modifier factory functions should not be marked as @Composable, and should use composed instead [ComposableModifierFactory from androidx.compose.ui]
+fun Modifier.accessibilityButton(
+             ~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "ComposableModifierFactory":
+   Modifier factory functions that need to be aware of the composition should
+   use androidx.compose.ui.composed {} in their implementation instead of
+   being marked as @Composable. This allows Modifiers to be referenced in top
+   level variables and constructed outside of the composition.
+
+   Vendor: Jetpack Compose
+   Identifier: androidx.compose.ui
+   Feedback: https://issuetracker.google.com/issues/new?component=612128
+
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/components/inputs/ALADDINSlider.kt:24: Warning: Modifier parameter should be the first optional parameter [ModifierParameter from androidx.compose.ui]
+    modifier: Modifier = Modifier,
+    ~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/components/cards/FamilyMemberCard.kt:47: Warning: Modifier parameter should be the first optional parameter [ModifierParameter from androidx.compose.ui]
+    modifier: Modifier = Modifier,
+    ~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/components/cards/FunctionCard.kt:38: Warning: Modifier parameter should be the first optional parameter [ModifierParameter from androidx.compose.ui]
+    modifier: Modifier = Modifier,
+    ~~~~~~~~
+
+   Explanation for issues of type "ModifierParameter":
+   The first (or only) Modifier parameter in a Composable function should
+   follow the following rules:
+   - Be named modifier
+   - Have a type of Modifier
+   - Either have no default value, or have a default value of Modifier
+   - If optional, be the first optional parameter in the parameter list
+
+   Vendor: Jetpack Compose
+   Identifier: androidx.compose.ui
+   Feedback: https://issuetracker.google.com/issues/new?component=612128
+
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:47: Warning: Formatting %d followed by words ("members"): This should probably be a plural rather than a string [PluralsCandidate]
+    <string name="family_subtitle">%d members protected</string>
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "PluralsCandidate":
+   This lint check looks for potential errors in internationalization where
+   you have translated a message which involves a quantity and it looks like
+   other parts of the string may need grammatical changes.
+
+   For example, rather than something like this:
+     <string name="try_again">Try again in %d seconds.</string>
+   you should be using a plural:
+      <plurals name="try_again">
+           <item quantity="one">Try again in %d second</item>
+           <item quantity="other">Try again in %d seconds</item>
+       </plurals>
+   This will ensure that in other languages the right set of translations are
+   provided for the different quantity classes.
+
+   (This check depends on some heuristics, so it may not accurately determine
+   whether a string really should be a quantity. You can use tools:ignore to
+   filter out false positives.
+
+   https://developer.android.com/guide/topics/resources/string-resource.html#Plurals
+
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/PrivacyPolicyScreen.kt:40: Warning: Using setJavaScriptEnabled can introduce XSS vulnerabilities into your application, review carefully [SetJavaScriptEnabled]
+                        settings.javaScriptEnabled = true
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/TermsOfServiceScreen.kt:40: Warning: Using setJavaScriptEnabled can introduce XSS vulnerabilities into your application, review carefully [SetJavaScriptEnabled]
+                        settings.javaScriptEnabled = true
+                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "SetJavaScriptEnabled":
+   Your code should not invoke setJavaScriptEnabled if you are not sure that
+   your app really requires JavaScript support.
+
+   https://goo.gle/SetJavaScriptEnabled
+   https://developer.android.com/training/articles/security-tips
+
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/mipmap-anydpi-v26: Warning: This folder configuration (v26) is unnecessary; minSdkVersion is 26. Merge all the resources in this folder into mipmap-anydpi. [ObsoleteSdkInt]
+
+   Explanation for issues of type "ObsoleteSdkInt":
+   This check flags version checks that are not necessary, because the
+   minSdkVersion (or surrounding known API level) is already at least as high
+   as the version checked for.
+
+   Similarly, it also looks for resources in -vNN folders, such as values-v14
+   where the version qualifier is less than or equal to the minSdkVersion,
+   where the contents should be merged into the best folder.
+
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/analytics/AnalyticsManager.kt:19: Warning: Do not place Android context classes in static fields (static reference to AnalyticsManager which has field context pointing to Context); this is a memory leak [StaticFieldLeak]
+        private var instance: AnalyticsManager? = null
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/viewmodels/FamilyRegistrationViewModel.kt:34: Warning: This field leaks a context object [StaticFieldLeak]
+    private val context: android.content.Context
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/viewmodels/TariffsViewModel.kt:32: Warning: This field leaks a context object [StaticFieldLeak]
+    private val context: Context
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "StaticFieldLeak":
+   A static field will leak contexts.
+
+   Non-static inner classes have an implicit reference to their outer class.
+   If that outer class is for example a Fragment or Activity, then this
+   reference means that the long-running handler/loader/task will hold a
+   reference to the activity which prevents it from getting garbage
+   collected.
+
+   Similarly, direct field references to activities and fragments from these
+   longer running instances can cause leaks.
+
+   ViewModel classes should never point to Views or non-application Contexts.
+
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/ChildRewardsScreen.kt:28: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var unicornBalance by remember { mutableStateOf(245) }
+                                     ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/ChildRewardsScreen.kt:29: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var weeklyEarned by remember { mutableStateOf(128) }
+                                   ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/ChildRewardsScreen.kt:30: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var weeklyPunished by remember { mutableStateOf(45) }
+                                     ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/DeviceDetailScreen.kt:49: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var selectedTab by remember { mutableStateOf(0) }
+                                  ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/FamilyScreen.kt:40: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var unicornBalance by remember { mutableStateOf(245) }
+                                     ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt:28: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var wheelFrequency by remember { mutableStateOf(1f) }
+                                     ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt:29: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var prizeSector1 by remember { mutableStateOf(5f) }
+                                   ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt:30: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var prizeSector2 by remember { mutableStateOf(10f) }
+                                   ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt:31: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var prizeSector3 by remember { mutableStateOf(20f) }
+                                   ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt:32: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var prizeSector4 by remember { mutableStateOf(50f) }
+                                   ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt:33: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var prizeSector5 by remember { mutableStateOf(100f) }
+                                   ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt:34: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var prizeSector6 by remember { mutableStateOf(500f) }
+                                   ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/MainScreen.kt:36: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var selectedTab by remember { mutableStateOf(0) }
+                                  ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/ParentalControlScreen.kt:26: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var screenTimeLimit by remember { mutableStateOf(3f) }
+                                      ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/ParentalControlScreen.kt:30: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var unicornBalance by remember { mutableStateOf(245) }
+                                     ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/ParentalControlScreen.kt:31: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var weeklyRewarded by remember { mutableStateOf(128) }
+                                     ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/ParentalControlScreen.kt:32: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var weeklyPunished by remember { mutableStateOf(45) }
+                                     ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/SettingsScreen.kt:29: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var protectionLevel by remember { mutableStateOf(75f) }
+                                      ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/UnicornPetScreen.kt:19: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var love by remember { mutableStateOf(0.75f) }
+                           ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/UnicornPetScreen.kt:20: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var hunger by remember { mutableStateOf(0.6f) }
+                             ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/UnicornPetScreen.kt:21: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var energy by remember { mutableStateOf(0.8f) }
+                             ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/UnicornPetScreen.kt:22: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var mood by remember { mutableStateOf(0.7f) }
+                           ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt:34: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var selectedPeriod by remember { mutableStateOf(0) }
+                                     ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt:37: Information: Prefer mutableDoubleStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    val batteryUsage by remember { mutableStateOf(12.5) } // %
+                                   ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt:40: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    val energyConsumed by remember { mutableStateOf(245) } // mAh
+                                     ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt:41: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    val averageConsumption by remember { mutableStateOf(53) } // mAh/hour
+                                         ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt:27: Information: Prefer mutableFloatStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var rotation by remember { mutableStateOf(0f) }
+                               ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt:29: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var wonPrize by remember { mutableStateOf(0) }
+                               ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt:33: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var timeUntilNextSpin by remember { mutableStateOf(0) }
+                                        ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt:34: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var totalSpins by remember { mutableStateOf(0) }
+                                 ~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/java/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt:35: Information: Prefer mutableIntStateOf instead of mutableStateOf [AutoboxingStateCreation from androidx.compose.runtime]
+    var totalWon by remember { mutableStateOf(0) }
+                               ~~~~~~~~~~~~~~
+
+   Explanation for issues of type "AutoboxingStateCreation":
+   Calling mutableStateOf<T>() when T is either backed by a primitive type on
+   the JVM or is a value class results in a state implementation that requires
+   all state values to be boxed. This usually causes an additional allocation
+   for each state write, and adds some additional work to auto-unbox values
+   when reading the value of the state. Instead, prefer to use a specialized
+   primitive state implementation for Int, Long, Float, and Double when the
+   state does not need to track null values and does not override the default
+   SnapshotMutationPolicy.
+
+   Vendor: Jetpack Compose
+   Identifier: androidx.compose.runtime
+   Feedback: https://issuetracker.google.com/issues/new?component=612128
+
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:4: Warning: The resource R.color.purple_200 appears to be unused [UnusedResources]
+    <color name="purple_200">#FFBB86FC</color>
+           ~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:5: Warning: The resource R.color.purple_500 appears to be unused [UnusedResources]
+    <color name="purple_500">#FF6200EE</color>
+           ~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:6: Warning: The resource R.color.purple_700 appears to be unused [UnusedResources]
+    <color name="purple_700">#FF3700B3</color>
+           ~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:7: Warning: The resource R.color.teal_200 appears to be unused [UnusedResources]
+    <color name="teal_200">#FF03DAC5</color>
+           ~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:8: Warning: The resource R.color.teal_700 appears to be unused [UnusedResources]
+    <color name="teal_700">#FF018786</color>
+           ~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:9: Warning: The resource R.color.black appears to be unused [UnusedResources]
+    <color name="black">#FF000000</color>
+           ~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:10: Warning: The resource R.color.white appears to be unused [UnusedResources]
+    <color name="white">#FFFFFFFF</color>
+           ~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:17: Warning: The resource R.color.aladdin_surface appears to be unused [UnusedResources]
+    <color name="aladdin_surface">#1A1A1A</color>
+           ~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:18: Warning: The resource R.color.aladdin_text_primary appears to be unused [UnusedResources]
+    <color name="aladdin_text_primary">#FFFFFF</color>
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:19: Warning: The resource R.color.aladdin_text_secondary appears to be unused [UnusedResources]
+    <color name="aladdin_text_secondary">#B0B0B0</color>
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:22: Warning: The resource R.color.glass_primary appears to be unused [UnusedResources]
+    <color name="glass_primary">#1A2E5BFF</color>
+           ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:23: Warning: The resource R.color.glass_secondary appears to be unused [UnusedResources]
+    <color name="glass_secondary">#1AFF6B35</color>
+           ~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/colors.xml:24: Warning: The resource R.color.glass_accent appears to be unused [UnusedResources]
+    <color name="glass_accent">#1A00D4FF</color>
+           ~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/drawable/splash_background.xml:2: Warning: The resource R.drawable.splash_background appears to be unused [UnusedResources]
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+^
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:14: Warning: The resource R.string.app_tagline appears to be unused [UnusedResources]
+    <string name="app_tagline">AI Family Protection</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:15: Warning: The resource R.string.common_ok appears to be unused [UnusedResources]
+    <string name="common_ok">OK</string>
+            ~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:16: Warning: The resource R.string.common_cancel appears to be unused [UnusedResources]
+    <string name="common_cancel">Cancel</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:17: Warning: The resource R.string.common_done appears to be unused [UnusedResources]
+    <string name="common_done">Done</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:18: Warning: The resource R.string.common_save appears to be unused [UnusedResources]
+    <string name="common_save">Save</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:19: Warning: The resource R.string.common_delete appears to be unused [UnusedResources]
+    <string name="common_delete">Delete</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:20: Warning: The resource R.string.common_edit appears to be unused [UnusedResources]
+    <string name="common_edit">Edit</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:21: Warning: The resource R.string.common_close appears to be unused [UnusedResources]
+    <string name="common_close">Close</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:22: Warning: The resource R.string.common_back appears to be unused [UnusedResources]
+    <string name="common_back">Back</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:23: Warning: The resource R.string.common_next appears to be unused [UnusedResources]
+    <string name="common_next">Next</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:24: Warning: The resource R.string.common_loading appears to be unused [UnusedResources]
+    <string name="common_loading">Loading...</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:25: Warning: The resource R.string.common_error appears to be unused [UnusedResources]
+    <string name="common_error">Error</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:26: Warning: The resource R.string.common_success appears to be unused [UnusedResources]
+    <string name="common_success">Success</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:27: Warning: The resource R.string.common_warning appears to be unused [UnusedResources]
+    <string name="common_warning">Warning</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:33: Warning: The resource R.string.main_title appears to be unused [UnusedResources]
+    <string name="main_title">ALADDIN</string>
+            ~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:34: Warning: The resource R.string.main_subtitle appears to be unused [UnusedResources]
+    <string name="main_subtitle">AI Family Protection</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:35: Warning: The resource R.string.main_vpn_title appears to be unused [UnusedResources]
+    <string name="main_vpn_title">VPN PROTECTION</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:36: Warning: The resource R.string.main_functions_title appears to be unused [UnusedResources]
+    <string name="main_functions_title">MAIN FUNCTIONS</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:37: Warning: The resource R.string.main_quick_actions appears to be unused [UnusedResources]
+    <string name="main_quick_actions">QUICK ACTIONS</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:38: Warning: The resource R.string.main_emergency appears to be unused [UnusedResources]
+    <string name="main_emergency">Emergency Help</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:39: Warning: The resource R.string.main_parental_control appears to be unused [UnusedResources]
+    <string name="main_parental_control">Parental Control</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:40: Warning: The resource R.string.main_device_security appears to be unused [UnusedResources]
+    <string name="main_device_security">Device Security</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:46: Warning: The resource R.string.family_title appears to be unused [UnusedResources]
+    <string name="family_title">FAMILY</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:47: Warning: The resource R.string.family_subtitle appears to be unused [UnusedResources]
+    <string name="family_subtitle">%d members protected</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:48: Warning: The resource R.string.family_members appears to be unused [UnusedResources]
+    <string name="family_members">FAMILY MEMBERS</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:49: Warning: The resource R.string.family_add_member appears to be unused [UnusedResources]
+    <string name="family_add_member">Add Family Member</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:50: Warning: The resource R.string.family_add_description appears to be unused [UnusedResources]
+    <string name="family_add_description">Invite your loved ones to your secure network</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:51: Warning: The resource R.string.family_stats_threats appears to be unused [UnusedResources]
+    <string name="family_stats_threats">Threats</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:52: Warning: The resource R.string.family_stats_protection appears to be unused [UnusedResources]
+    <string name="family_stats_protection">Protection</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:53: Warning: The resource R.string.family_stats_devices appears to be unused [UnusedResources]
+    <string name="family_stats_devices">Devices</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:54: Warning: The resource R.string.family_role_parent appears to be unused [UnusedResources]
+    <string name="family_role_parent">Parent</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:55: Warning: The resource R.string.family_role_child appears to be unused [UnusedResources]
+    <string name="family_role_child">Child</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:56: Warning: The resource R.string.family_role_teenager appears to be unused [UnusedResources]
+    <string name="family_role_teenager">Teenager</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:57: Warning: The resource R.string.family_role_elderly appears to be unused [UnusedResources]
+    <string name="family_role_elderly">Elderly</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:63: Warning: The resource R.string.vpn_title appears to be unused [UnusedResources]
+    <string name="vpn_title">VPN PROTECTION</string>
+            ~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:64: Warning: The resource R.string.vpn_connected appears to be unused [UnusedResources]
+    <string name="vpn_connected">Connected</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:65: Warning: The resource R.string.vpn_disconnected appears to be unused [UnusedResources]
+    <string name="vpn_disconnected">Disconnected</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:66: Warning: The resource R.string.vpn_protected appears to be unused [UnusedResources]
+    <string name="vpn_protected">PROTECTED</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:67: Warning: The resource R.string.vpn_not_protected appears to be unused [UnusedResources]
+    <string name="vpn_not_protected">NOT PROTECTED</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:68: Warning: The resource R.string.vpn_connection_encrypted appears to be unused [UnusedResources]
+    <string name="vpn_connection_encrypted">Your connection is encrypted</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:69: Warning: The resource R.string.vpn_connection_not_encrypted appears to be unused [UnusedResources]
+    <string name="vpn_connection_not_encrypted">Your connection is not protected</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:70: Warning: The resource R.string.vpn_server appears to be unused [UnusedResources]
+    <string name="vpn_server">SERVER</string>
+            ~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:71: Warning: The resource R.string.vpn_statistics appears to be unused [UnusedResources]
+    <string name="vpn_statistics">STATISTICS</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:72: Warning: The resource R.string.vpn_downloaded appears to be unused [UnusedResources]
+    <string name="vpn_downloaded">Downloaded</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:73: Warning: The resource R.string.vpn_uploaded appears to be unused [UnusedResources]
+    <string name="vpn_uploaded">Uploaded</string>
+            ~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:74: Warning: The resource R.string.vpn_session_time appears to be unused [UnusedResources]
+    <string name="vpn_session_time">Session Time</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:75: Warning: The resource R.string.vpn_threats_blocked appears to be unused [UnusedResources]
+    <string name="vpn_threats_blocked">Blocked</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:76: Warning: The resource R.string.vpn_connect appears to be unused [UnusedResources]
+    <string name="vpn_connect">Connect VPN</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:77: Warning: The resource R.string.vpn_disconnect appears to be unused [UnusedResources]
+    <string name="vpn_disconnect">Disconnect VPN</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:83: Warning: The resource R.string.analytics_title appears to be unused [UnusedResources]
+    <string name="analytics_title">ANALYTICS</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:84: Warning: The resource R.string.analytics_subtitle appears to be unused [UnusedResources]
+    <string name="analytics_subtitle">Protection Statistics</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:85: Warning: The resource R.string.analytics_overall appears to be unused [UnusedResources]
+    <string name="analytics_overall">OVERALL STATISTICS</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:86: Warning: The resource R.string.analytics_threats appears to be unused [UnusedResources]
+    <string name="analytics_threats">Threats</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:87: Warning: The resource R.string.analytics_blocked appears to be unused [UnusedResources]
+    <string name="analytics_blocked">Blocked</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:88: Warning: The resource R.string.analytics_scanned appears to be unused [UnusedResources]
+    <string name="analytics_scanned">Scanned</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:89: Warning: The resource R.string.analytics_protection_level appears to be unused [UnusedResources]
+    <string name="analytics_protection_level">PROTECTION LEVEL</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:90: Warning: The resource R.string.analytics_efficiency appears to be unused [UnusedResources]
+    <string name="analytics_efficiency">Protection Efficiency</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:91: Warning: The resource R.string.analytics_top_threats appears to be unused [UnusedResources]
+    <string name="analytics_top_threats">TOP THREATS</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:92: Warning: The resource R.string.analytics_threat_types appears to be unused [UnusedResources]
+    <string name="analytics_threat_types">THREAT TYPES</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:93: Warning: The resource R.string.analytics_period_day appears to be unused [UnusedResources]
+    <string name="analytics_period_day">Day</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:94: Warning: The resource R.string.analytics_period_week appears to be unused [UnusedResources]
+    <string name="analytics_period_week">Week</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:95: Warning: The resource R.string.analytics_period_month appears to be unused [UnusedResources]
+    <string name="analytics_period_month">Month</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:101: Warning: The resource R.string.ai_title appears to be unused [UnusedResources]
+    <string name="ai_title">AI ASSISTANT</string>
+            ~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:102: Warning: The resource R.string.ai_subtitle appears to be unused [UnusedResources]
+    <string name="ai_subtitle">Always ready to help</string>
+            ~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:103: Warning: The resource R.string.ai_placeholder appears to be unused [UnusedResources]
+    <string name="ai_placeholder">Your message...</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:104: Warning: The resource R.string.ai_welcome appears to be unused [UnusedResources]
+    <string name="ai_welcome">Hello! I\'m your AI assistant. How can I help you?</string>
+            ~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:110: Warning: The resource R.string.parental_title appears to be unused [UnusedResources]
+    <string name="parental_title">PARENTAL CONTROL</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:111: Warning: The resource R.string.parental_subtitle appears to be unused [UnusedResources]
+    <string name="parental_subtitle">Management for %s</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:112: Warning: The resource R.string.parental_select_child appears to be unused [UnusedResources]
+    <string name="parental_select_child">SELECT CHILD</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:113: Warning: The resource R.string.parental_content_filters appears to be unused [UnusedResources]
+    <string name="parental_content_filters">CONTENT FILTERS</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:114: Warning: The resource R.string.parental_screen_time appears to be unused [UnusedResources]
+    <string name="parental_screen_time">SCREEN TIME LIMITS</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:115: Warning: The resource R.string.parental_location appears to be unused [UnusedResources]
+    <string name="parental_location">LOCATION TRACKING</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:121: Warning: The resource R.string.settings_title appears to be unused [UnusedResources]
+    <string name="settings_title">SETTINGS</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:122: Warning: The resource R.string.settings_subtitle appears to be unused [UnusedResources]
+    <string name="settings_subtitle">App Management</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:123: Warning: The resource R.string.settings_profile appears to be unused [UnusedResources]
+    <string name="settings_profile">PROFILE</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:124: Warning: The resource R.string.settings_security appears to be unused [UnusedResources]
+    <string name="settings_security">SECURITY</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:125: Warning: The resource R.string.settings_application appears to be unused [UnusedResources]
+    <string name="settings_application">APPLICATION</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:126: Warning: The resource R.string.settings_notifications appears to be unused [UnusedResources]
+    <string name="settings_notifications">Notifications</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:127: Warning: The resource R.string.settings_dark_mode appears to be unused [UnusedResources]
+    <string name="settings_dark_mode">Dark Mode</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:128: Warning: The resource R.string.settings_logout appears to be unused [UnusedResources]
+    <string name="settings_logout">Log Out</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:134: Warning: The resource R.string.tariffs_title appears to be unused [UnusedResources]
+    <string name="tariffs_title">PLANS</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:135: Warning: The resource R.string.tariffs_subtitle appears to be unused [UnusedResources]
+    <string name="tariffs_subtitle">Choose Your Plan</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:136: Warning: The resource R.string.tariffs_subscribe appears to be unused [UnusedResources]
+    <string name="tariffs_subscribe">Subscribe to %s</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:137: Warning: The resource R.string.tariffs_restore appears to be unused [UnusedResources]
+    <string name="tariffs_restore">Restore Purchases</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:138: Warning: The resource R.string.tariffs_basic appears to be unused [UnusedResources]
+    <string name="tariffs_basic">Basic</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:139: Warning: The resource R.string.tariffs_individual appears to be unused [UnusedResources]
+    <string name="tariffs_individual">Individual</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:140: Warning: The resource R.string.tariffs_family appears to be unused [UnusedResources]
+    <string name="tariffs_family">Family</string>
+            ~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:141: Warning: The resource R.string.tariffs_premium appears to be unused [UnusedResources]
+    <string name="tariffs_premium">Premium</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:147: Warning: The resource R.string.auth_login appears to be unused [UnusedResources]
+    <string name="auth_login">Log In</string>
+            ~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:148: Warning: The resource R.string.auth_register appears to be unused [UnusedResources]
+    <string name="auth_register">Sign Up</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:149: Warning: The resource R.string.auth_forgot_password appears to be unused [UnusedResources]
+    <string name="auth_forgot_password">Forgot Password?</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:150: Warning: The resource R.string.auth_email_placeholder appears to be unused [UnusedResources]
+    <string name="auth_email_placeholder">Email</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:151: Warning: The resource R.string.auth_password_placeholder appears to be unused [UnusedResources]
+    <string name="auth_password_placeholder">Password</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:152: Warning: The resource R.string.auth_no_account appears to be unused [UnusedResources]
+    <string name="auth_no_account">No account?</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:153: Warning: The resource R.string.auth_have_account appears to be unused [UnusedResources]
+    <string name="auth_have_account">Already have an account?</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:159: Warning: The resource R.string.onboarding_title_1 appears to be unused [UnusedResources]
+    <string name="onboarding_title_1">AI FAMILY PROTECTION</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:160: Warning: The resource R.string.onboarding_desc_1 appears to be unused [UnusedResources]
+    <string name="onboarding_desc_1">Comprehensive protection for your entire family from all online threats.</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:161: Warning: The resource R.string.onboarding_title_2 appears to be unused [UnusedResources]
+    <string name="onboarding_title_2">SECURE INTERNET</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:162: Warning: The resource R.string.onboarding_desc_2 appears to be unused [UnusedResources]
+    <string name="onboarding_desc_2">VPN, antivirus, and ad blocking for all your devices.</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:163: Warning: The resource R.string.onboarding_title_3 appears to be unused [UnusedResources]
+    <string name="onboarding_title_3">PARENTAL CONTROL</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:164: Warning: The resource R.string.onboarding_desc_3 appears to be unused [UnusedResources]
+    <string name="onboarding_desc_3">Manage screen time and content for children and teenagers.</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:165: Warning: The resource R.string.onboarding_title_4 appears to be unused [UnusedResources]
+    <string name="onboarding_title_4">SMART ANALYTICS</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:166: Warning: The resource R.string.onboarding_desc_4 appears to be unused [UnusedResources]
+    <string name="onboarding_desc_4">Detailed reports and AI assistant for your security.</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:167: Warning: The resource R.string.onboarding_next appears to be unused [UnusedResources]
+    <string name="onboarding_next">Next</string>
+            ~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:168: Warning: The resource R.string.onboarding_start appears to be unused [UnusedResources]
+    <string name="onboarding_start">Get Started</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:174: Warning: The resource R.string.error_network appears to be unused [UnusedResources]
+    <string name="error_network">Network error. Please check your internet connection.</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:175: Warning: The resource R.string.error_unknown appears to be unused [UnusedResources]
+    <string name="error_unknown">An unknown error occurred.</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:176: Warning: The resource R.string.error_invalid_credentials appears to be unused [UnusedResources]
+    <string name="error_invalid_credentials">Invalid email or password.</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:177: Warning: The resource R.string.success_saved appears to be unused [UnusedResources]
+    <string name="success_saved">Data saved successfully!</string>
+            ~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:178: Warning: The resource R.string.success_purchase appears to be unused [UnusedResources]
+    <string name="success_purchase">Subscription purchased successfully!</string>
+            ~~~~~~~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/styles.xml:18: Warning: The resource R.style.Theme_ALADDIN_Splash appears to be unused [UnusedResources]
+    <style name="Theme.ALADDIN.Splash" parent="Theme.ALADDIN">
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UnusedResources":
+   Unused resources make applications larger and slow down builds.
+
+
+   The unused resource check can ignore tests. If you want to include
+   resources that are only referenced from tests, consider packaging them in a
+   test source set instead.
+
+   You can include test sources in the unused resource check by setting the
+   system property lint.unused-resources.include-tests =true, and to exclude
+   them (usually for performance reasons), use
+   lint.unused-resources.exclude-tests =true.
+   ,
+
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values-ru/strings.xml:24: Warning: Replace "..." with ellipsis character (…, &#8230;) ? [TypographyEllipsis]
+    <string name="common_loading">Загрузка...</string>
+                                  ~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:24: Warning: Replace "..." with ellipsis character (…, &#8230;) ? [TypographyEllipsis]
+    <string name="common_loading">Loading...</string>
+                                  ~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values-ru/strings.xml:103: Warning: Replace "..." with ellipsis character (…, &#8230;) ? [TypographyEllipsis]
+    <string name="ai_placeholder">Ваше сообщение...</string>
+                                  ~~~~~~~~~~~~~~~~~
+/Users/sergejhlystov/ALADDIN_NEW/mobile_apps/ALADDIN_Android/app/src/main/res/values/strings.xml:103: Warning: Replace "..." with ellipsis character (…, &#8230;) ? [TypographyEllipsis]
+    <string name="ai_placeholder">Your message...</string>
+                                  ~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "TypographyEllipsis":
+   You can replace the string "..." with a dedicated ellipsis character,
+   ellipsis character (u2026, &#8230;). This can help make the text more
+   readable.
+
+   https://en.wikipedia.org/wiki/Ellipsis
+
+0 errors, 156 warnings

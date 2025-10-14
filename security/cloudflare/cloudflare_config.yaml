@@ -1,0 +1,598 @@
+# ════════════════════════════════════════════════════════════════
+# CLOUDFLARE CONFIGURATION FOR ALADDIN SECURITY SYSTEM
+# ════════════════════════════════════════════════════════════════
+#
+# Конфигурация Cloudflare для защиты от DDoS атак
+# Применяется к: aladdin.family + API endpoints
+#
+# Автор: ALADDIN Security System
+# Дата: 2025-10-11
+# Версия: 1.0.0
+
+# ════════════════════════════════════════════════════════════════
+# ОСНОВНЫЕ НАСТРОЙКИ
+# ════════════════════════════════════════════════════════════════
+
+zone_settings:
+  # SSL/TLS Security
+  ssl:
+    mode: "full_strict"  # Полная проверка SSL
+    min_tls_version: "1.2"  # Минимум TLS 1.2
+    tls_1_3: "on"  # Поддержка TLS 1.3
+    automatic_https_rewrites: "on"  # Автоматически HTTPS
+    always_use_https: "on"  # Всегда использовать HTTPS
+    opportunistic_encryption: "on"
+    
+  # Security Level
+  security_level: "high"  # Высокий уровень безопасности
+  
+  # Browser Integrity Check
+  browser_check: "on"  # Проверка браузера
+  
+  # Challenge TTL
+  challenge_ttl: 1800  # 30 минут
+  
+  # Privacy Pass
+  privacy_pass: "on"
+  
+  # Email Obfuscation
+  email_obfuscation: "on"
+  
+  # Server Side Excludes
+  server_side_exclude: "on"
+  
+  # Hotlink Protection
+  hotlink_protection: "off"  # Выключено для мобильных приложений
+
+
+# ════════════════════════════════════════════════════════════════
+# WAF (WEB APPLICATION FIREWALL)
+# ════════════════════════════════════════════════════════════════
+
+waf:
+  enabled: true
+  mode: "simulate"  # Сначала simulate, потом block
+  
+  # Managed Rulesets
+  managed_rulesets:
+    - name: "Cloudflare Managed Ruleset"
+      enabled: true
+      action: "block"
+      
+    - name: "Cloudflare OWASP Core Ruleset"
+      enabled: true
+      action: "block"
+      sensitivity: "medium"
+      
+    - name: "Cloudflare Exposed Credentials Check"
+      enabled: true
+      action: "log"
+  
+  # Custom Rules
+  custom_rules:
+    # Rule 1: Block известные боты
+    - name: "Block Bad Bots"
+      expression: '(cf.client.bot) and not (cf.verified_bot_category in {"Search Engine Crawler"})'
+      action: "block"
+      priority: 1
+      
+    # Rule 2: Rate limit на логин
+    - name: "Rate Limit Login"
+      expression: '(http.request.uri.path eq "/api/auth/login")'
+      action: "challenge"
+      rate_limit:
+        requests: 5
+        period: 60  # 5 попыток в минуту
+      priority: 2
+      
+    # Rule 3: Защита API endpoints
+    - name: "Protect API Endpoints"
+      expression: '(http.request.uri.path contains "/api/")'
+      action: "managed_challenge"
+      priority: 3
+      
+    # Rule 4: Block SQL injection attempts
+    - name: "Block SQL Injection"
+      expression: '(http.request.uri.query contains "UNION" or http.request.uri.query contains "SELECT" or http.request.uri.query contains "DROP")'
+      action: "block"
+      priority: 4
+      
+    # Rule 5: Block XSS attempts
+    - name: "Block XSS"
+      expression: '(http.request.uri.query contains "<script" or http.request.uri.query contains "javascript:")'
+      action: "block"
+      priority: 5
+      
+    # Rule 6: Защита семейного API
+    - name: "Protect Family API"
+      expression: '(http.request.uri.path contains "/api/family/")'
+      action: "managed_challenge"
+      priority: 6
+
+
+# ════════════════════════════════════════════════════════════════
+# RATE LIMITING
+# ════════════════════════════════════════════════════════════════
+
+rate_limiting:
+  rules:
+    # API Global Rate Limit
+    - name: "API Global Rate Limit"
+      match:
+        request:
+          url_pattern: "*/api/*"
+      threshold: 300  # 300 запросов
+      period: 60  # за 60 секунд
+      action: "challenge"
+      
+    # Registration Rate Limit
+    - name: "Registration Rate Limit"
+      match:
+        request:
+          url_pattern: "*/api/family/create"
+      threshold: 3  # 3 регистрации
+      period: 3600  # за час
+      action: "block"
+      
+    # Login Rate Limit
+    - name: "Login Rate Limit"
+      match:
+        request:
+          url_pattern: "*/api/auth/*"
+      threshold: 10  # 10 попыток
+      period: 300  # за 5 минут
+      action: "challenge"
+      
+    # QR Payment Rate Limit
+    - name: "QR Payment Rate Limit"
+      match:
+        request:
+          url_pattern: "*/api/payment/*"
+      threshold: 20  # 20 запросов
+      period: 60  # за минуту
+      action: "challenge"
+
+
+# ════════════════════════════════════════════════════════════════
+# BOT MANAGEMENT
+# ════════════════════════════════════════════════════════════════
+
+bot_management:
+  enabled: true
+  
+  # Fight Mode
+  fight_mode: "on"  # Агрессивная защита от ботов
+  
+  # Bot Score Threshold
+  score_threshold: 30  # Блокировать боты с score < 30
+  
+  # Verified Bots
+  verified_bots:
+    - "Googlebot"
+    - "Bingbot"
+    - "Yandex"
+    - "DuckDuckBot"
+  
+  # Exceptions
+  exceptions:
+    # Разрешить мобильные приложения
+    - name: "Allow Mobile Apps"
+      expression: '(http.user_agent contains "ALADDIN-iOS" or http.user_agent contains "ALADDIN-Android")'
+      action: "skip"
+
+
+# ════════════════════════════════════════════════════════════════
+# CACHING
+# ════════════════════════════════════════════════════════════════
+
+caching:
+  # Cache Level
+  cache_level: "aggressive"
+  
+  # Browser Cache TTL
+  browser_cache_ttl: 14400  # 4 часа
+  
+  # Cache Rules
+  cache_rules:
+    # Кэшировать статические файлы
+    - name: "Cache Static Files"
+      match:
+        request:
+          url_pattern: "*.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)"
+      cache_ttl: 86400  # 24 часа
+      
+    # Не кэшировать API
+    - name: "Bypass API Cache"
+      match:
+        request:
+          url_pattern: "*/api/*"
+      cache_ttl: 0  # Не кэшировать
+      
+    # Кэшировать HTML (короткое время)
+    - name: "Cache HTML"
+      match:
+        request:
+          url_pattern: "*.html"
+      cache_ttl: 3600  # 1 час
+
+
+# ════════════════════════════════════════════════════════════════
+# DDOS PROTECTION
+# ════════════════════════════════════════════════════════════════
+
+ddos_protection:
+  # HTTP DDoS Protection
+  http_ddos:
+    enabled: true
+    sensitivity: "high"
+    
+  # Network Layer DDoS
+  network_ddos:
+    enabled: true
+    
+  # Advanced DDoS
+  advanced_ddos:
+    enabled: true
+    sensitivity_level: "default"
+
+
+# ════════════════════════════════════════════════════════════════
+# PAGE RULES
+# ════════════════════════════════════════════════════════════════
+
+page_rules:
+  # API Endpoints - No cache, high security
+  - url: "aladdin.family/api/*"
+    settings:
+      cache_level: "bypass"
+      security_level: "high"
+      browser_check: "on"
+      
+  # Static Assets - Cache everything
+  - url: "aladdin.family/static/*"
+    settings:
+      cache_level: "cache_everything"
+      edge_cache_ttl: 86400  # 24 часа
+      browser_cache_ttl: 86400
+      
+  # Mobile App Assets
+  - url: "aladdin.family/mobile/*"
+    settings:
+      cache_level: "cache_everything"
+      edge_cache_ttl: 43200  # 12 часов
+      
+  # Privacy/Terms/Support
+  - url: "aladdin.family/(privacy|terms|support).html"
+    settings:
+      cache_level: "cache_everything"
+      edge_cache_ttl: 3600  # 1 час
+
+
+# ════════════════════════════════════════════════════════════════
+# FIREWALL RULES (CUSTOM)
+# ════════════════════════════════════════════════════════════════
+
+firewall_rules:
+  # Блокировка по странам (опционально)
+  - name: "Block Suspicious Countries"
+    enabled: false  # Выключено по умолчанию
+    expression: '(ip.geoip.country in {"CN" "KP" "IR"})'
+    action: "challenge"
+    
+  # Разрешить только HTTPS
+  - name: "Force HTTPS"
+    enabled: true
+    expression: '(ssl eq false)'
+    action: "redirect"
+    redirect_url: "https://$host$path"
+    
+  # Блокировка Tor (опционально)
+  - name: "Challenge Tor Traffic"
+    enabled: false
+    expression: '(cf.threat_score gt 10 and ip.geoip.is_in_european_union)'
+    action: "managed_challenge"
+    
+  # Защита от скрейперов
+  - name: "Block Scrapers"
+    enabled: true
+    expression: '(http.user_agent contains "scrapy" or http.user_agent contains "curl" or http.user_agent contains "wget")'
+    action: "block"
+    exceptions:
+      - "Monitoring tools (UptimeRobot, etc)"
+
+
+# ════════════════════════════════════════════════════════════════
+# PERFORMANCE SETTINGS
+# ════════════════════════════════════════════════════════════════
+
+performance:
+  # HTTP/2
+  http2: "on"
+  
+  # HTTP/3 (QUIC)
+  http3: "on"
+  
+  # 0-RTT Connection Resumption
+  zero_rtt: "on"
+  
+  # Brotli Compression
+  brotli: "on"
+  
+  # Minify
+  minify:
+    html: "on"
+    css: "on"
+    js: "on"
+  
+  # Early Hints
+  early_hints: "on"
+  
+  # Rocket Loader
+  rocket_loader: "off"  # Выключено для мобильных приложений
+  
+  # Auto Minify
+  auto_minify:
+    html: true
+    css: true
+    javascript: true
+
+
+# ════════════════════════════════════════════════════════════════
+# NETWORK SETTINGS
+# ════════════════════════════════════════════════════════════════
+
+network:
+  # IPv6
+  ipv6: "on"
+  
+  # WebSockets
+  websockets: "on"  # Для семейного чата
+  
+  # Pseudo IPv4
+  pseudo_ipv4: "add_header"
+  
+  # IP Geolocation
+  ip_geolocation: "on"
+  
+  # Maximum Upload Size
+  max_upload: "100"  # 100 MB
+
+
+# ════════════════════════════════════════════════════════════════
+# ANALYTICS & LOGS
+# ════════════════════════════════════════════════════════════════
+
+analytics:
+  # Web Analytics
+  web_analytics: true
+  
+  # Log Retention
+  log_retention: 30  # 30 дней
+  
+  # Firewall Analytics
+  firewall_analytics: true
+  
+  # Bot Analytics
+  bot_analytics: true
+
+
+# ════════════════════════════════════════════════════════════════
+# CUSTOM HEADERS
+# ════════════════════════════════════════════════════════════════
+
+custom_headers:
+  # Security Headers
+  response_headers:
+    - name: "X-Content-Type-Options"
+      value: "nosniff"
+      
+    - name: "X-Frame-Options"
+      value: "DENY"
+      
+    - name: "X-XSS-Protection"
+      value: "1; mode=block"
+      
+    - name: "Referrer-Policy"
+      value: "strict-origin-when-cross-origin"
+      
+    - name: "Permissions-Policy"
+      value: "geolocation=(), microphone=(), camera=()"
+      
+    - name: "Strict-Transport-Security"
+      value: "max-age=31536000; includeSubDomains; preload"
+      
+    - name: "Content-Security-Policy"
+      value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;"
+
+
+# ════════════════════════════════════════════════════════════════
+# RATE LIMITING (Advanced)
+# ════════════════════════════════════════════════════════════════
+
+advanced_rate_limiting:
+  # По IP адресу
+  by_ip:
+    - path: "/api/family/create"
+      limit: 3  # 3 семьи
+      window: 3600  # за час
+      action: "block"
+      
+    - path: "/api/family/join"
+      limit: 10  # 10 присоединений
+      window: 3600  # за час
+      action: "challenge"
+      
+    - path: "/api/auth/*"
+      limit: 20
+      window: 300  # 5 минут
+      action: "challenge"
+  
+  # По User-Agent
+  by_user_agent:
+    - pattern: "ALADDIN-iOS/*"
+      limit: 1000
+      window: 60
+      action: "allow"
+      
+    - pattern: "ALADDIN-Android/*"
+      limit: 1000
+      window: 60
+      action: "allow"
+
+
+# ════════════════════════════════════════════════════════════════
+# GEO BLOCKING (OPTIONAL)
+# ════════════════════════════════════════════════════════════════
+
+geo_blocking:
+  enabled: false  # По умолчанию выключено
+  
+  # Разрешённые страны
+  allowed_countries:
+    - "RU"  # Россия
+    - "BY"  # Беларусь
+    - "KZ"  # Казахстан
+    - "UA"  # Украина
+    - "US"  # США
+    - "GB"  # Великобритания
+    - "DE"  # Германия
+    - "FR"  # Франция
+    # ... другие страны
+  
+  # Заблокированные страны (высокий риск)
+  blocked_countries:
+    - "KP"  # Северная Корея
+    # Добавить при необходимости
+  
+  # Действие для незарегистрированных стран
+  default_action: "challenge"
+
+
+# ════════════════════════════════════════════════════════════════
+# LOAD BALANCING
+# ════════════════════════════════════════════════════════════════
+
+load_balancing:
+  enabled: true
+  
+  pools:
+    - name: "aladdin-api-pool"
+      origins:
+        - name: "api-1"
+          address: "api1.aladdin.family"
+          weight: 1
+          enabled: true
+          
+        - name: "api-2"
+          address: "api2.aladdin.family"
+          weight: 1
+          enabled: false  # Резервный
+      
+      monitor:
+        type: "https"
+        path: "/health"
+        interval: 60
+        retries: 2
+        timeout: 5
+  
+  # Health Checks
+  health_checks:
+    enabled: true
+    interval: 60  # Каждые 60 секунд
+    timeout: 5
+    unhealthy_threshold: 3
+    healthy_threshold: 2
+
+
+# ════════════════════════════════════════════════════════════════
+# SPECTRUM (для WebSocket)
+# ════════════════════════════════════════════════════════════════
+
+spectrum:
+  enabled: true
+  
+  applications:
+    - name: "Family Chat WebSocket"
+      protocol: "tcp/8080"
+      dns: "ws.aladdin.family"
+      proxy_protocol: "off"
+      tls: "flexible"
+
+
+# ════════════════════════════════════════════════════════════════
+# ARGO TUNNEL (для безопасного подключения к origin)
+# ════════════════════════════════════════════════════════════════
+
+argo_tunnel:
+  enabled: false  # Опционально
+  tunnel_name: "aladdin-tunnel"
+  
+  # Credentials будут в отдельном файле
+  credentials_file: "/etc/cloudflared/credentials.json"
+
+
+# ════════════════════════════════════════════════════════════════
+# WORKERS (для дополнительной логики)
+# ════════════════════════════════════════════════════════════════
+
+workers:
+  # Worker для дополнительной защиты
+  - name: "security-worker"
+    route: "aladdin.family/*"
+    script: "security_worker.js"
+    enabled: true
+    
+  # Worker для аналитики
+  - name: "analytics-worker"
+    route: "aladdin.family/api/*"
+    script: "analytics_worker.js"
+    enabled: true
+
+
+# ════════════════════════════════════════════════════════════════
+# ALERTS
+# ════════════════════════════════════════════════════════════════
+
+alerts:
+  # DDoS alerts
+  - name: "DDoS Attack Detected"
+    type: "dos_attack_l7"
+    enabled: true
+    notification_channels:
+      - email: "security@aladdin.family"
+      - telegram: "@aladdin_security_alerts"
+  
+  # High Error Rate
+  - name: "High 5xx Error Rate"
+    type: "error_rate_exceeded"
+    threshold: 100  # 100 ошибок за 5 минут
+    enabled: true
+    notification_channels:
+      - email: "devops@aladdin.family"
+  
+  # SSL Certificate Expiry
+  - name: "SSL Certificate Expiring"
+    type: "universal_ssl_event_type"
+    enabled: true
+    notification_channels:
+      - email: "admin@aladdin.family"
+
+
+# ════════════════════════════════════════════════════════════════
+# NOTES
+# ════════════════════════════════════════════════════════════════
+
+# Применение конфигурации:
+# 1. Зарегистрироваться на Cloudflare.com
+# 2. Добавить домен aladdin.family
+# 3. Обновить NS записи у регистратора
+# 4. Применить эту конфигурацию через:
+#    - Cloudflare Dashboard
+#    - Terraform (см. cloudflare_terraform.tf)
+#    - API (см. cloudflare_api_setup.py)
+#
+# Стоимость: FREE план (достаточно для старта!)
+# Upgrade до PRO ($20/мес) при 100K+ пользователей
+
+
+

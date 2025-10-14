@@ -1,0 +1,53 @@
+{
+  "timestamp": "2025-09-08T21:47:21.903868",
+  "analysis_time_seconds": 1.16,
+  "system_resources": {
+    "cpu": {
+      "percent": 18.9,
+      "count": 8,
+      "status": "🟢 Низкая"
+    },
+    "memory": {
+      "percent": 67.4,
+      "available_gb": 5.21,
+      "status": "🟡 Средняя"
+    },
+    "disk": {
+      "percent": 4.5,
+      "free_gb": 305.7,
+      "status": "🟢 Низкая"
+    }
+  },
+  "api_performance": {
+    "Dashboard": {
+      "response_time_ms": 23.39,
+      "status_code": 200,
+      "status": "✅ OK",
+      "performance": "🟢 Быстро"
+    },
+    "Search": {
+      "response_time_ms": 4.41,
+      "status_code": 404,
+      "status": "❌ ERROR",
+      "performance": "🟢 Быстро"
+    },
+    "Alerts": {
+      "response_time_ms": 11.53,
+      "status_code": 200,
+      "status": "✅ OK",
+      "performance": "🟢 Быстро"
+    }
+  },
+  "database_performance": {
+    "search_time_ms": 8.78,
+    "results_count": 0,
+    "performance": "🟢 Быстро",
+    "status": "✅ OK"
+  },
+  "processes": {
+    "processes": [],
+    "total_cpu_percent": 0,
+    "total_memory_percent": 0,
+    "process_count": 0
+  }
+}

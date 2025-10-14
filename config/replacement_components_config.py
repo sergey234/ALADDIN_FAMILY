@@ -1,0 +1,34 @@
+# CONFIGURATION TEMPLATE
+# Шаблон конфигурации для заменяющих компонентов
+
+# Telegram Bot API
+TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
+TELEGRAM_CHAT_ID = "YOUR_TELEGRAM_CHAT_ID"
+
+# Discord Bot API  
+DISCORD_BOT_TOKEN = "YOUR_DISCORD_BOT_TOKEN"
+DISCORD_CHANNEL_ID = "YOUR_DISCORD_CHANNEL_ID"
+
+# Twilio SMS API
+TWILIO_ACCOUNT_SID = "YOUR_TWILIO_SID"
+TWILIO_AUTH_TOKEN = "YOUR_TWILIO_TOKEN"
+TWILIO_FROM_NUMBER = "+1234567890"
+
+# Email Configuration
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+EMAIL_USERNAME = "your_email@gmail.com"
+EMAIL_PASSWORD = "your_app_password"
+
+# Push Notifications
+FIREBASE_SERVER_KEY = "YOUR_FIREBASE_SERVER_KEY"
+FCM_PROJECT_ID = "YOUR_FCM_PROJECT_ID"
+
+# Security Settings
+ENCRYPTION_KEY = "YOUR_ENCRYPTION_KEY"
+API_RATE_LIMIT = 100  # requests per minute
+MAX_MESSAGE_LENGTH = 4096
+
+# Logging
+LOG_LEVEL = "INFO"
+LOG_FILE = "logs/family_communication.log"

@@ -1,0 +1,36 @@
+{
+  "architecture_score": 8, 
+  "agent_name": "ThreatIntelligenceAgent", 
+  "code_statistics": {
+    "comment_lines": 234, 
+    "code_density": 0, 
+    "total_lines": 938, 
+    "code_lines": 704
+  }, 
+  "test_max": 5, 
+  "functionality_score": 10, 
+  "test_score": 4, 
+  "total_score": 80, 
+  "quality_grade": "B", 
+  "security_score": 6, 
+  "missing_points": 20, 
+  "components": {
+    "Обработка ошибок": 24, 
+    "Конфигурация": 234, 
+    "Классы": 8, 
+    "Уровни серьезности": 5, 
+    "AI модели": 5, 
+    "Типы угроз": 5, 
+    "IOC типы": 6, 
+    "Источники угроз": 76, 
+    "Документация": 72, 
+    "Перечисления": 0, 
+    "Логирование": 43, 
+    "Методы": 33
+  }, 
+  "test_timestamp": "2025-09-04T21:03:01.816917", 
+  "max_score": 100, 
+  "security_max": 6, 
+  "architecture_max": 8, 
+  "functionality_max": 10
+}

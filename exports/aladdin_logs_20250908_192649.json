@@ -1,0 +1,46 @@
+{
+  "export_info": {
+    "timestamp": "2025-09-08T19:26:49.455082",
+    "total_logs": 3,
+    "export_format": "JSON",
+    "version": "1.0"
+  },
+  "logs": [
+    {
+      "log_id": "test_001",
+      "timestamp": "2025-09-08T19:21:49.453735",
+      "level": "INFO",
+      "component": "TestComponent",
+      "message": "Тестовое сообщение для экспорта",
+      "metadata": {
+        "test": true,
+        "value": 123,
+        "category": "test"
+      }
+    },
+    {
+      "log_id": "test_002",
+      "timestamp": "2025-09-08T19:23:49.453766",
+      "level": "WARNING",
+      "component": "AnotherComponent",
+      "message": "Предупреждение о тестировании",
+      "metadata": {
+        "warning_type": "test",
+        "severity": "medium",
+        "user_id": "user_123"
+      }
+    },
+    {
+      "log_id": "test_003",
+      "timestamp": "2025-09-08T19:25:49.453772",
+      "level": "ERROR",
+      "component": "ErrorComponent",
+      "message": "Ошибка при тестировании экспорта",
+      "metadata": {
+        "error_code": "EXP_001",
+        "retry_count": 3,
+        "timestamp": "2025-09-08"
+      }
+    }
+  ]
+}

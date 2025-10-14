@@ -1,0 +1,154 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Mystical Night Background -->
+    <radialGradient id="mystical-night" cx="50%" cy="40%" r="100%">
+      <stop offset="0%" style="stop-color:#1E3A8A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1E40AF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0F172A;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Electric Eye Gradient -->
+    <radialGradient id="electric-eye" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Golden Particle -->
+    <radialGradient id="gold-particle" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#F59E0B;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:0.3" />
+    </radialGradient>
+    
+    <!-- Mystical Glow -->
+    <filter id="mystical-glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="226" fill="url(#mystical-night)"/>
+  
+  <!-- Central Mystical Eye -->
+  <g transform="translate(512, 380)">
+    <!-- Outer Aura -->
+    <circle cx="0" cy="0" r="180" fill="none" stroke="#FCD34D" stroke-width="6" opacity="0.4" filter="url(#mystical-glow)"/>
+    
+    <!-- Eye Shape -->
+    <ellipse cx="0" cy="0" rx="120" ry="75" fill="url(#electric-eye)" filter="url(#mystical-glow)"/>
+    
+    <!-- Eye Inner -->
+    <ellipse cx="0" cy="0" rx="90" ry="55" fill="#1D4ED8"/>
+    
+    <!-- Pupil -->
+    <ellipse cx="0" cy="0" rx="45" ry="30" fill="#0F172A"/>
+    
+    <!-- Crown Star in Pupil -->
+    <g transform="translate(-15, -15)">
+      <path d="M 15 0 L 18 12 L 30 12 L 21 20 L 24 32 L 15 24 L 6 32 L 9 20 L 0 12 L 12 12 Z" 
+            fill="#FCD34D" opacity="0.9"/>
+    </g>
+    
+    <!-- Eyelid -->
+    <path d="M -120 -45 Q 0 -75 120 -45" stroke="#FCD34D" stroke-width="5" fill="none" opacity="0.8"/>
+    
+    <!-- Electric Rings -->
+    <circle cx="0" cy="0" r="150" fill="none" stroke="#60A5FA" stroke-width="2" opacity="0.6"/>
+    <circle cx="0" cy="0" r="105" fill="none" stroke="#60A5FA" stroke-width="2" opacity="0.4"/>
+  </g>
+  
+  <!-- Mystical Hand (Bottom Right) -->
+  <g transform="translate(720, 720)">
+    <ellipse cx="0" cy="0" rx="30" ry="45" fill="#1E40AF" opacity="0.7" transform="rotate(-25)"/>
+    <ellipse cx="10" cy="10" rx="8" ry="18" fill="#1E40AF" opacity="0.7" transform="rotate(-25)"/>
+    <ellipse cx="-12" cy="6" rx="8" ry="18" fill="#1E40AF" opacity="0.7" transform="rotate(-25)"/>
+    <ellipse cx="6" cy="-10" rx="8" ry="18" fill="#1E40AF" opacity="0.7" transform="rotate(-25)"/>
+    <ellipse cx="-20" cy="-6" rx="8" ry="18" fill="#1E40AF" opacity="0.7" transform="rotate(-25)"/>
+  </g>
+  
+  <!-- Golden Particles (Bokeh) -->
+  <g opacity="0.7">
+    <circle cx="200" cy="200" r="5" fill="url(#gold-particle)"/>
+    <circle cx="800" cy="180" r="7" fill="url(#gold-particle)"/>
+    <circle cx="160" cy="800" r="6" fill="url(#gold-particle)"/>
+    <circle cx="840" cy="820" r="8" fill="url(#gold-particle)"/>
+    <circle cx="350" cy="250" r="4" fill="url(#gold-particle)"/>
+    <circle cx="650" cy="750" r="7" fill="url(#gold-particle)"/>
+    <circle cx="120" cy="450" r="5" fill="url(#gold-particle)"/>
+    <circle cx="900" cy="500" r="6" fill="url(#gold-particle)"/>
+    <circle cx="280" cy="150" r="5" fill="url(#gold-particle)"/>
+    <circle cx="720" cy="850" r="7" fill="url(#gold-particle)"/>
+    <circle cx="400" cy="350" r="6" fill="url(#gold-particle)"/>
+    <circle cx="600" cy="650" r="5" fill="url(#gold-particle)"/>
+    <circle cx="180" cy="600" r="4" fill="url(#gold-particle)"/>
+    <circle cx="820" cy="650" r="7" fill="url(#gold-particle)"/>
+    <circle cx="450" cy="180" r="5" fill="url(#gold-particle)"/>
+    <circle cx="550" cy="820" r="6" fill="url(#gold-particle)"/>
+    <circle cx="250" cy="400" r="5" fill="url(#gold-particle)"/>
+    <circle cx="750" cy="400" r="7" fill="url(#gold-particle)"/>
+  </g>
+  
+  <!-- ALADDIN "A" (Floating) -->
+  <g transform="translate(512, 600)">
+    <path d="M -80 100 L 0 -60 L 80 100" 
+          stroke="#FCD34D" 
+          stroke-width="28" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"
+          opacity="0.9"
+          filter="url(#mystical-glow)"/>
+    <line x1="-40" y1="20" x2="40" y2="20" 
+          stroke="#FCD34D" 
+          stroke-width="28" 
+          stroke-linecap="round"
+          opacity="0.9"/>
+  </g>
+  
+  <!-- Mystical Symbols (Enhanced) -->
+  <g transform="translate(120, 120)">
+    <circle cx="0" cy="0" r="20" fill="none" stroke="#FCD34D" stroke-width="4" opacity="0.8"/>
+    <path d="M -14 -14 L 14 14 M 14 -14 L -14 14" stroke="#FCD34D" stroke-width="3" opacity="0.8"/>
+    <circle cx="0" cy="0" r="7" fill="#FCD34D" opacity="0.6"/>
+    <circle cx="0" cy="0" r="3" fill="#FFFFFF" opacity="0.8"/>
+  </g>
+  
+  <g transform="translate(904, 120)">
+    <circle cx="0" cy="0" r="20" fill="none" stroke="#FCD34D" stroke-width="4" opacity="0.8"/>
+    <circle cx="0" cy="0" r="14" fill="none" stroke="#FCD34D" stroke-width="3" opacity="0.8"/>
+    <circle cx="0" cy="0" r="7" fill="#FCD34D" opacity="0.8"/>
+    <circle cx="0" cy="0" r="3" fill="#FFFFFF" opacity="0.9"/>
+  </g>
+  
+  <g transform="translate(120, 904)">
+    <circle cx="0" cy="0" r="20" fill="none" stroke="#FCD34D" stroke-width="4" opacity="0.8"/>
+    <path d="M -16 -12 Q 0 12 16 -12" stroke="#FCD34D" stroke-width="3" fill="none" opacity="0.8"/>
+    <circle cx="0" cy="-12" r="5" fill="#FCD34D" opacity="0.8"/>
+    <circle cx="0" cy="-12" r="2" fill="#FFFFFF" opacity="0.9"/>
+  </g>
+  
+  <g transform="translate(904, 904)">
+    <circle cx="0" cy="0" r="20" fill="none" stroke="#FCD34D" stroke-width="4" opacity="0.8"/>
+    <path d="M -16 12 Q 0 -12 16 12" stroke="#FCD34D" stroke-width="3" fill="none" opacity="0.8"/>
+    <circle cx="0" cy="12" r="5" fill="#FCD34D" opacity="0.8"/>
+    <circle cx="0" cy="12" r="2" fill="#FFFFFF" opacity="0.9"/>
+  </g>
+  
+  <!-- Bottom Text -->
+  <text x="512" y="780" 
+        font-family="Arial, sans-serif" 
+        font-size="52" 
+        font-weight="900" 
+        fill="#FCD34D" 
+        text-anchor="middle"
+        letter-spacing="6"
+        opacity="0.8"
+        filter="url(#mystical-glow)">ALADDIN</text>
+</svg>
+
+

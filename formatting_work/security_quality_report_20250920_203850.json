@@ -1,0 +1,108 @@
+{
+  "file": "security/sfm_singleton.py",
+  "timestamp": "2025-09-20T20:38:50.844896",
+  "total_analysis_time_seconds": 0.015012979507446289,
+  "overall_quality_score": 78.3,
+  "analysis_details": {
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __new__ (строка 22)"
+      ],
+      "message": "Найдено 1 отсутствующих docstring"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 1759,
+      "lines": 56,
+      "message": "Размер: 1759 байт, Строк: 56"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'security'",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "security"
+      ],
+      "message": "Найдено 1 ключевых слов безопасности"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 5,
+      "num_classes": 1,
+      "message": "Функций: 5, Классов: 1"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "threading",
+        "typing",
+        "security"
+      ],
+      "message": "Зависимости: 3"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции reset_sfm (строка 54)",
+        "Отсутствует тип возвращаемого значения для функции __new__ (строка 22)",
+        "Отсутствует тип для аргумента 'cls' в функции __new__ (строка 22)",
+        "Отсутствует тип возвращаемого значения для функции reset (строка 40)"
+      ],
+      "message": "Найдено 4 отсутствующих type hints"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 1,
+    "security_classes_found": 0,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Зарегистрируйте функцию в SFM реестре.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "auto_connect": true,
+  "preferred_protocol": "wireguard",
+  "max_retries": 3,
+  "timeout": 30,
+  "encryption": "AES-256",
+  "dns_servers": ["8.8.8.8", "1.1.1.1"],
+  "kill_switch": true,
+  "family_mode": true,
+  "obfuscation": {
+    "enabled": true,
+    "method": "stunnel",
+    "port": 443
+  },
+  "security": {
+    "leak_protection": true,
+    "malware_protection": true,
+    "ad_blocking": true,
+    "tracking_protection": true
+  },
+  "family_controls": {
+    "child_safe_mode": true,
+    "time_limits": {
+      "enabled": true,
+      "max_hours_per_day": 8
+    },
+    "content_filtering": {
+      "enabled": true,
+      "block_adult_content": true,
+      "block_violence": true,
+      "block_gambling": true
+    }
+  },
+  "performance": {
+    "auto_server_selection": true,
+    "prefer_fastest": true,
+    "connection_timeout": 10,
+    "reconnect_attempts": 5
+  },
+  "logging": {
+    "enabled": false,
+    "level": "error",
+    "no_logs_policy": true
+  },
+  "compliance": {
+    "russia_152_fz": true,
+    "data_localization": true,
+    "no_personal_data": true,
+    "anonymization": true
+  }
+}

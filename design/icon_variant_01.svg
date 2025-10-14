@@ -1,0 +1,124 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Mystical Blue Gradient -->
+    <linearGradient id="mystical-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1E3A8A;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Electric Blue Eye -->
+    <linearGradient id="electric-eye" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Golden Particles -->
+    <radialGradient id="gold-particle" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0.4" />
+    </radialGradient>
+    
+    <!-- Glow Effect -->
+    <filter id="mystical-glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="226" fill="url(#mystical-bg)"/>
+  
+  <!-- Golden Particles Background -->
+  <g opacity="0.6">
+    <circle cx="200" cy="300" r="3" fill="url(#gold-particle)"/>
+    <circle cx="800" cy="250" r="4" fill="url(#gold-particle)"/>
+    <circle cx="150" cy="700" r="2" fill="url(#gold-particle)"/>
+    <circle cx="900" cy="800" r="5" fill="url(#gold-particle)"/>
+    <circle cx="300" cy="600" r="3" fill="url(#gold-particle)"/>
+    <circle cx="700" cy="400" r="4" fill="url(#gold-particle)"/>
+    <circle cx="100" cy="500" r="2" fill="url(#gold-particle)"/>
+    <circle cx="950" cy="600" r="3" fill="url(#gold-particle)"/>
+  </g>
+  
+  <!-- Mystical Eye (Central Element) -->
+  <g transform="translate(512, 400)">
+    <!-- Eye Outer Glow -->
+    <circle cx="0" cy="0" r="120" fill="none" stroke="#FCD34D" stroke-width="4" opacity="0.3" filter="url(#mystical-glow)"/>
+    
+    <!-- Eye Shape -->
+    <ellipse cx="0" cy="0" rx="80" ry="50" fill="url(#electric-eye)" filter="url(#mystical-glow)"/>
+    
+    <!-- Eye Inner -->
+    <ellipse cx="0" cy="0" rx="60" ry="35" fill="#1D4ED8"/>
+    
+    <!-- Pupil -->
+    <circle cx="0" cy="0" r="25" fill="#0F172A"/>
+    
+    <!-- Star/Pupil Highlight -->
+    <g transform="translate(-8, -8)">
+      <path d="M 8 0 L 10 6 L 16 6 L 11 10 L 13 16 L 8 12 L 3 16 L 5 10 L 0 6 L 6 6 Z" 
+            fill="#FCD34D" opacity="0.8"/>
+    </g>
+    
+    <!-- Eyelid -->
+    <path d="M -80 -30 Q 0 -50 80 -30" stroke="#FCD34D" stroke-width="3" fill="none" opacity="0.7"/>
+  </g>
+  
+  <!-- ALADDIN "A" in Eye -->
+  <g transform="translate(512, 450)">
+    <path d="M -40 50 L 0 -30 L 40 50" 
+          stroke="#FFFFFF" 
+          stroke-width="12" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"
+          opacity="0.9"/>
+    <line x1="-20" y1="10" x2="20" y2="10" 
+          stroke="#FFFFFF" 
+          stroke-width="12" 
+          stroke-linecap="round"
+          opacity="0.9"/>
+  </g>
+  
+  <!-- Mystical Symbols (Corner Decorations) -->
+  <g transform="translate(200, 200)">
+    <!-- Top Left Symbol -->
+    <circle cx="0" cy="0" r="8" fill="#FCD34D" opacity="0.8"/>
+    <path d="M 0 -8 L 0 8 M -8 0 L 8 0" stroke="#FCD34D" stroke-width="2" opacity="0.8"/>
+  </g>
+  
+  <g transform="translate(824, 200)">
+    <!-- Top Right Symbol -->
+    <circle cx="0" cy="0" r="8" fill="#FCD34D" opacity="0.8"/>
+    <path d="M -6 -6 L 6 6 M 6 -6 L -6 6" stroke="#FCD34D" stroke-width="2" opacity="0.8"/>
+  </g>
+  
+  <g transform="translate(200, 824)">
+    <!-- Bottom Left Symbol -->
+    <circle cx="0" cy="0" r="8" fill="#FCD34D" opacity="0.8"/>
+    <path d="M -8 -8 Q 0 8 8 -8" stroke="#FCD34D" stroke-width="2" fill="none" opacity="0.8"/>
+  </g>
+  
+  <g transform="translate(824, 824)">
+    <!-- Bottom Right Symbol -->
+    <circle cx="0" cy="0" r="8" fill="#FCD34D" opacity="0.8"/>
+    <path d="M -8 8 Q 0 -8 8 8" stroke="#FCD34D" stroke-width="2" fill="none" opacity="0.8"/>
+  </g>
+  
+  <!-- Bottom Text -->
+  <text x="512" y="750" 
+        font-family="Arial, sans-serif" 
+        font-size="48" 
+        font-weight="900" 
+        fill="#FCD34D" 
+        text-anchor="middle"
+        letter-spacing="4"
+        opacity="0.9">ALADDIN</text>
+</svg>
+
+

@@ -1,0 +1,28 @@
+{
+  "timestamp": "2025-09-20T09:02:29.864658",
+  "total_functions": 311,
+  "structure_valid": true,
+  "functions_by_type": {
+    "ai_agent": 28,
+    "security": 21,
+    "security_bot": 8,
+    "security_system": 8,
+    "preliminary": 1,
+    "family_component": 5,
+    "validation": 1,
+    "monitoring": 4,
+    "reporting": 1,
+    "management": 1,
+    "service": 7,
+    "unknown": 183,
+    "bot": 20,
+    "manager": 22,
+    "security_manager": 1
+  },
+  "functions_by_status": {
+    "active": 30,
+    "sleeping": 262,
+    "running": 19
+  },
+  "critical_functions": 243
+}

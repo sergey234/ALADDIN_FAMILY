@@ -1,0 +1,9 @@
+{
+  "function_name": "AllBotsSleepManager",
+  "function_id": "all_bots_sleep_manager",
+  "sleep_time": "2025-09-15T22:02:30.058651",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": false,
+  "minimal_system_sleep": true
+}

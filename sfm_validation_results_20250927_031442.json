@@ -1,0 +1,273 @@
+{
+  "etapa6": {
+    "6.1": {
+      "classes_found": {
+        "UserInterfaceManagerExtra": {
+          "line": 14,
+          "bases": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 17,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_save_user_session",
+              "line": 29,
+              "is_async": false,
+              "args": [
+                "self",
+                "record"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_cleanup_worker",
+              "line": 50,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "cleanup",
+              "line": 87,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            }
+          ],
+          "attributes": [],
+          "docstring": "Дополнительные функции для управления пользовательским интерфейсом"
+        }
+      },
+      "base_classes": {
+        "UserInterfaceManagerExtra": []
+      },
+      "inheritance_hierarchy": {
+        "UserInterfaceManagerExtra": {
+          "bases": [],
+          "children": []
+        }
+      },
+      "total_classes": 1
+    },
+    "6.2": {
+      "UserInterfaceManagerExtra": {
+        "public_methods": [
+          {
+            "name": "cleanup",
+            "line": 87,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          }
+        ],
+        "private_methods": [],
+        "protected_methods": [
+          {
+            "name": "_save_user_session",
+            "line": 29,
+            "is_async": false,
+            "args": [
+              "self",
+              "record"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_cleanup_worker",
+            "line": 50,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          }
+        ],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      }
+    },
+    "6.3": {
+      "UserInterfaceManagerExtra": {
+        "instantiation_test": true,
+        "method_tests": {
+          "__init__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_save_user_session": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_cleanup_worker": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "cleanup": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      }
+    },
+    "6.4": {},
+    "6.5": {
+      "standard": [
+        "datetime",
+        "typing",
+        "threading",
+        "logging"
+      ],
+      "third_party": [
+        "numpy",
+        "time"
+      ],
+      "local": [],
+      "unused": [
+        "typing",
+        "time",
+        "numpy"
+      ],
+      "circular": []
+    },
+    "6.6": {
+      "UserInterfaceManagerExtra": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      }
+    },
+    "6.7": {
+      "UserInterfaceManagerExtra": {
+        "present": [
+          "init"
+        ],
+        "missing": [
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__str__",
+          "__repr__"
+        ]
+      }
+    },
+    "6.8": {
+      "classes_with_docstring": 1,
+      "classes_without_docstring": 0,
+      "methods_with_docstring": 3,
+      "methods_without_docstring": 1,
+      "functions_with_docstring": 0,
+      "functions_without_docstring": 0,
+      "missing_docstrings": [
+        "Метод UserInterfaceManagerExtra.__init__"
+      ]
+    },
+    "6.9": {
+      "methods_with_try_except": 3,
+      "methods_without_try_except": 1,
+      "logging_usage": 0,
+      "error_return_handling": 0
+    },
+    "6.10": {
+      "syntax_valid": true,
+      "imports_valid": true,
+      "classes_instantiable": true,
+      "methods_callable": true,
+      "integration_ok": true,
+      "errors": []
+    },
+    "6.11": {
+      "file_exists": true,
+      "file_readable": true,
+      "file_size": 4097,
+      "last_modified": "2025-09-13T17:25:01.779431",
+      "backup_available": false
+    }
+  },
+  "etapa7": {
+    "7.1": {
+      "added_methods": [
+        "UserInterfaceManagerExtra.__str__",
+        "UserInterfaceManagerExtra.__repr__"
+      ],
+      "count": 2
+    },
+    "7.2": {
+      "fixed_signatures": [],
+      "count": 0
+    },
+    "7.3": {
+      "added_attributes": [],
+      "count": 0
+    },
+    "7.4": {
+      "syntax_tests": 1,
+      "functionality_tests": 0,
+      "import_tests": 0,
+      "enhanced_version_created": true
+    }
+  },
+  "etapa8": {
+    "8.1": {
+      "classes_tested": 1,
+      "methods_tested": 0,
+      "functions_tested": 0,
+      "errors_found": 0,
+      "success_rate": 100.0
+    },
+    "8.2": {
+      "class_interactions": 0,
+      "data_flow_ok": true,
+      "shared_resources_ok": true,
+      "execution_flow_ok": true
+    },
+    "8.3": {
+      "timestamp": "2025-09-27T03:14:42.592664",
+      "file_analyzed": "security/microservices/user_interface_manager_extra.py",
+      "total_classes": 1,
+      "total_functions": 0,
+      "total_methods": 4,
+      "errors_found": 0,
+      "warnings_found": 0,
+      "fixes_applied": 0,
+      "quality_score": 100.0
+    },
+    "8.4": {
+      "original_file_valid": true,
+      "improvements_needed": true,
+      "improvements_applied": false,
+      "backup_created": true,
+      "documentation_updated": false
+    }
+  }
+}

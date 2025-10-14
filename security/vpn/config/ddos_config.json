@@ -1,0 +1,97 @@
+{
+  "max_requests_per_minute": 100,
+  "max_requests_per_hour": 1000,
+  "block_duration_minutes": 60,
+  "captcha_threshold": 50,
+  "honeypot_enabled": true,
+  "geo_blocking_enabled": true,
+  "anomaly_detection_enabled": true,
+  "cleanup_interval_seconds": 300,
+  "max_ip_stats": 10000,
+  "attack_detection_threshold": 200,
+  "blacklisted_countries": ["CN", "RU", "KP", "IR"],
+  "whitelisted_ips": [
+    "127.0.0.1",
+    "::1",
+    "192.168.0.0/16",
+    "10.0.0.0/8",
+    "172.16.0.0/12"
+  ],
+  "blacklisted_ips": [],
+  "custom_rules": [
+    {
+      "name": "vpn_connect",
+      "max_requests": 10,
+      "time_window": 60,
+      "action": "rate_limit",
+      "message": "Too many VPN connection attempts"
+    },
+    {
+      "name": "vpn_config",
+      "max_requests": 5,
+      "time_window": 300,
+      "action": "captcha",
+      "message": "Too many configuration requests"
+    },
+    {
+      "name": "vpn_stats",
+      "max_requests": 30,
+      "time_window": 60,
+      "action": "rate_limit",
+      "message": "Too many statistics requests"
+    }
+  ],
+  "honeypot_endpoints": [
+    "/admin/backup",
+    "/admin/export",
+    "/admin/debug",
+    "/api/v1/users",
+    "/api/v1/passwords",
+    "/.env",
+    "/config/database",
+    "/logs/access.log"
+  ],
+  "suspicious_patterns": [
+    "bot",
+    "crawler",
+    "spider",
+    "scraper",
+    "sqlmap",
+    "nmap",
+    "nikto",
+    "dirb",
+    "gobuster",
+    "wfuzz"
+  ],
+  "rate_limit_by_endpoint": {
+    "/": 1000,
+    "/api/": 500,
+    "/admin/": 20,
+    "/login": 5,
+    "/register": 3,
+    "/vpn/": 200,
+    "/status": 100
+  },
+  "geo_blocking": {
+    "enabled": true,
+    "blocked_countries": ["CN", "RU", "KP", "IR", "SY"],
+    "allowed_countries": ["US", "CA", "GB", "DE", "FR", "NL", "SG", "JP", "AU"],
+    "strict_mode": false
+  },
+  "attack_detection": {
+    "enabled": true,
+    "threshold_requests_per_minute": 200,
+    "threshold_unique_endpoints": 10,
+    "threshold_concurrent_ips": 50,
+    "auto_block_duration_minutes": 120,
+    "alert_threshold": 5
+  },
+  "monitoring": {
+    "log_level": "INFO",
+    "log_file": "logs/ddos_protection.log",
+    "metrics_interval_seconds": 60,
+    "alert_email": "security@aladdin-vpn.com",
+    "alert_webhook": "https://hooks.slack.com/services/...",
+    "retention_days": 30
+  }
+}

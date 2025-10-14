@@ -1,0 +1,5 @@
+# НОВЫЕ КОМПОНЕНТЫ COMPLIANCE
+from security.compliance_manager import ComplianceManager
+from security.compliance_audit import ComplianceAuditor
+from security.compliance_reporting import ComplianceReporter
+

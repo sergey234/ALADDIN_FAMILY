@@ -1,0 +1,9 @@
+{
+  "function_name": "RateLimitRecord",
+  "function_id": "security_ratelimitrecord",
+  "sleep_time": "2025-09-15T22:02:29.924660",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": true,
+  "minimal_system_sleep": true
+}

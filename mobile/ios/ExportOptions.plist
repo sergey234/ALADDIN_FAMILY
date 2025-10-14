@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Метод экспорта -->
+    <key>method</key>
+    <string>app-store</string>
+    
+    <!-- Команда разработки -->
+    <key>teamID</key>
+    <string>$(DEVELOPMENT_TEAM)</string>
+    
+    <!-- Подписание -->
+    <key>signingStyle</key>
+    <string>automatic</string>
+    
+    <!-- Удаление битов отладки -->
+    <key>stripSwiftSymbols</key>
+    <true/>
+    
+    <!-- Сжатие бинарника -->
+    <key>thinning</key>
+    <string>&lt;none&gt;</string>
+    
+    <!-- Включение битовых кодов -->
+    <key>uploadBitcode</key>
+    <false/>
+    
+    <!-- Включение символов -->
+    <key>uploadSymbols</key>
+    <true/>
+    
+    <!-- Включение содержимого приложения -->
+    <key>uploadSymbols</key>
+    <true/>
+    
+    <!-- Исключения для App Store -->
+    <key>compileBitcode</key>
+    <false/>
+    
+    <!-- Настройки для ALADDIN Security -->
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.aladdin.mobile</key>
+        <string>ALADDIN Security Distribution</string>
+    </dict>
+    
+    <!-- Настройки подписи -->
+    <key>signingCertificate</key>
+    <string>iPhone Distribution</string>
+    
+    <!-- Настройки экспорта -->
+    <key>destination</key>
+    <string>export</string>
+    
+    <!-- Включение App Store Connect -->
+    <key>manageAppVersionAndBuildNumber</key>
+    <true/>
+    
+    <!-- Настройки для безопасности -->
+    <key>stripSwiftSymbols</key>
+    <true/>
+    
+    <!-- Настройки производительности -->
+    <key>optimizeForSize</key>
+    <true/>
+    
+</dict>
+</plist>
+

@@ -1,0 +1,52 @@
+{
+  "scheduler_config": {
+    "name": "Планировщик уведомлений ALADDIN",
+    "version": "1.0",
+    "timezone": "UTC",
+    "max_retries": 3,
+    "retry_delay": 30
+  },
+  "scheduled_notifications": {
+    "daily_security_report": {
+      "name": "Ежедневный отчет безопасности",
+      "schedule": "0 9 * * *",
+      "template": "daily_security_report",
+      "enabled": true
+    },
+    "weekly_family_summary": {
+      "name": "Еженедельная сводка семьи",
+      "schedule": "0 10 * * 1",
+      "template": "weekly_family_summary",
+      "enabled": true
+    },
+    "monthly_performance_report": {
+      "name": "Ежемесячный отчет производительности",
+      "schedule": "0 10 1 * *",
+      "template": "monthly_performance_report",
+      "enabled": true
+    }
+  },
+  "notification_rules": {
+    "rate_limiting": {
+      "max_notifications_per_hour": 10,
+      "max_notifications_per_day": 50,
+      "cooldown_period": 300
+    },
+    "priority_handling": {
+      "high_priority_immediate": true,
+      "medium_priority_delayed": 60,
+      "low_priority_batched": true
+    },
+    "user_preferences": {
+      "quiet_hours": {
+        "start": "22:00",
+        "end": "08:00",
+        "enabled": true
+      },
+      "weekend_notifications": {
+        "enabled": true,
+        "reduced_frequency": true
+      }
+    }
+  }
+}

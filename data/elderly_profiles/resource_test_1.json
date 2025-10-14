@@ -1,0 +1,12 @@
+{
+  "user_id": "resource_test_1",
+  "age": 70,
+  "age_category": "60-70",
+  "interface_complexity": "advanced",
+  "accessibility_level": "standard",
+  "preferences": {
+    "theme": "theme_1"
+  },
+  "created_at": 1758051865.937967,
+  "updated_at": 1758051865.937967
+}

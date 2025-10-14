@@ -1,0 +1,99 @@
+/* Matrix AI Security System - Color Scheme */
+/* Theme: matrix_ai */
+/* Generated automatically */
+
+:root {
+    /* Primary Colors */
+    --color-primary: #1E3A8A;
+    --color-secondary: #0F172A;
+    --color-accent: #F59E0B;
+    --color-text: #FFFFFF;
+    --color-background: #1E3A8A;
+    
+    /* Status Colors */
+    --color-success: #00FF41;
+    --color-warning: #F59E0B;
+    --color-error: #EF4444;
+    --color-info: #66FF99;
+    
+    /* RGB Values */
+    --color-primary-rgb: 30, 58, 138;
+    --color-secondary-rgb: 15, 23, 42;
+    --color-accent-rgb: 245, 158, 11;
+    --color-text-rgb: 255, 255, 255;
+    --color-background-rgb: 30, 58, 138;
+    --color-success-rgb: 0, 255, 65;
+    --color-warning-rgb: 245, 158, 11;
+    --color-error-rgb: 239, 68, 68;
+    --color-info-rgb: 102, 255, 153;
+    
+    /* Accessible Colors */
+    --text-on-primary: #FFFFFF;
+    --text-on-secondary: #FFFFFF;
+    --text-on-accent: #000000;
+    --text-on-success: #000000;
+    --text-on-warning: #000000;
+    --text-on-error: #FFFFFF;
+    --text-on-info: #000000;
+    
+    /* Shadow Colors */
+    --shadow-light: #1E3A8A20;
+    --shadow-medium: #1E3A8A40;
+    --shadow-dark: #1E3A8A60;
+    --shadow-accent: #F59E0B30;
+    --shadow-success: #00FF4130;
+    --shadow-warning: #F59E0B30;
+    --shadow-error: #EF444430;
+}
+
+/* Gradients */
+
+.primary_gradient {
+    background: linear-gradient(to bottom right, #1E3A8A, #0F172A);
+}
+
+.matrix_gradient {
+    background: linear-gradient(to right, #00FF41, #66FF99);
+}
+
+.accent_gradient {
+    background: linear-gradient(to bottom, #F59E0B, #F59E0B);
+}
+
+.dark_gradient {
+    background: linear-gradient(to bottom, #1E3A8A, #000000);
+}
+
+/* Utility Classes */
+.text-primary { color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.text-accent { color: var(--color-accent); }
+.text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
+.text-error { color: var(--color-error); }
+.text-info { color: var(--color-info); }
+
+.bg-primary { background-color: var(--color-primary); }
+.bg-secondary { background-color: var(--color-secondary); }
+.bg-accent { background-color: var(--color-accent); }
+.bg-success { background-color: var(--color-success); }
+.bg-warning { background-color: var(--color-warning); }
+.bg-error { background-color: var(--color-error); }
+.bg-info { background-color: var(--color-info); }
+
+.border-primary { border-color: var(--color-primary); }
+.border-secondary { border-color: var(--color-secondary); }
+.border-accent { border-color: var(--color-accent); }
+.border-success { border-color: var(--color-success); }
+.border-warning { border-color: var(--color-warning); }
+.border-error { border-color: var(--color-error); }
+.border-info { border-color: var(--color-info); }
+
+/* Shadows */
+.shadow-light { box-shadow: 0 2px 4px var(--shadow-light); }
+.shadow-medium { box-shadow: 0 4px 8px var(--shadow-medium); }
+.shadow-dark { box-shadow: 0 8px 16px var(--shadow-dark); }
+.shadow-accent { box-shadow: 0 4px 8px var(--shadow-accent); }
+.shadow-success { box-shadow: 0 4px 8px var(--shadow-success); }
+.shadow-warning { box-shadow: 0 4px 8px var(--shadow-warning); }
+.shadow-error { box-shadow: 0 4px 8px var(--shadow-error); }

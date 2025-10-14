@@ -1,0 +1,55 @@
+{
+  "audio_deepfake_detection": {
+    "enabled": true,
+    "strict_mode": true,
+    "auto_block_deepfake": true,
+    "supported_formats": [
+      "wav",
+      "mp3",
+      "flac",
+      "m4a",
+      "aac"
+    ],
+    "min_audio_length": 1.0,
+    "max_audio_length": 300.0,
+    "deepfake_threshold": 0.7,
+    "voice_analysis_enabled": true,
+    "spectral_analysis_enabled": true,
+    "temporal_analysis_enabled": true
+  },
+  "detection_features": {
+    "voiceprint_analysis": true,
+    "spectral_analysis": true,
+    "temporal_analysis": true,
+    "prosody_analysis": true,
+    "formant_analysis": true,
+    "audio_quality_analysis": true
+  },
+  "voice_analysis_models": {
+    "voiceprint_analysis": {
+      "enabled": true,
+      "threshold": 0.8
+    },
+    "spectral_analysis": {
+      "enabled": true,
+      "threshold": 0.7
+    },
+    "temporal_analysis": {
+      "enabled": true,
+      "threshold": 0.6
+    },
+    "prosody_analysis": {
+      "enabled": true,
+      "threshold": 0.75
+    },
+    "formant_analysis": {
+      "enabled": true,
+      "threshold": 0.65
+    }
+  },
+  "integration": {
+    "fakeradar_integration": true,
+    "security_monitoring": true,
+    "real_time_alerts": true
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "file": "security/bots/network_security_bot.py",
+  "timestamp": "2025-09-20T20:31:47.984895",
+  "total_analysis_time_seconds": 0.07596206665039062,
+  "overall_quality_score": 80.0,
+  "analysis_details": {
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "security",
+        "hash",
+        "session",
+        "firewall",
+        "intrusion",
+        "threat",
+        "malware",
+        "monitoring",
+        "alert",
+        "response",
+        "log",
+        "analysis"
+      ],
+      "message": "Найдено 12 ключевых слов безопасности"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции main (строка 840)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 131)",
+        "Отсутствует тип возвращаемого значения для функции _init_database (строка 223)",
+        "Отсутствует тип возвращаемого значения для функции _start_monitoring (строка 317)",
+        "Отсутствует тип возвращаемого значения для функции _monitor_connections (строка 333)",
+        "Отсутствует тип возвращаемого значения для функции _analyze_connection (строка 354)",
+        "Отсутствует тип возвращаемого значения для функции _analyze_traffic (строка 389)",
+        "Отсутствует тип возвращаемого значения для функции _detect_attacks (строка 398)",
+        "Отсутствует тип возвращаемого значения для функции _detect_ddos (строка 410)",
+        "Отсутствует тип возвращаемого значения для функции _detect_port_scan (строка 416)",
+        "Отсутствует тип возвращаемого значения для функции _detect_brute_force (строка 422)",
+        "Отсутствует тип возвращаемого значения для функции _create_threat (строка 428)",
+        "Отсутствует тип возвращаемого значения для функции _save_threat (строка 476)",
+        "Отсутствует тип возвращаемого значения для функции _block_ip (строка 509)",
+        "Отсутствует тип возвращаемого значения для функции _save_session (строка 781)"
+      ],
+      "message": "Найдено 15 отсутствующих type hints"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 32940,
+      "lines": 868,
+      "message": "Размер: 32940 байт, Строк: 868"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 131)"
+      ],
+      "message": "Найдено 1 отсутствующих docstring"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 32,
+      "num_classes": 8,
+      "message": "Функций: 32, Классов: 8"
+    },
+    "sfm_functions": {
+      "status": "info",
+      "found_functions": [],
+      "message": "Найдено 0 функций SFM"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "subprocess",
+        "asyncio",
+        "hashlib",
+        "datetime",
+        "sqlite3",
+        "core",
+        "ipaddress",
+        "time",
+        "socket",
+        "threading",
+        "enum",
+        "security",
+        "typing",
+        "dataclasses",
+        "json",
+        "logging",
+        "re"
+      ],
+      "message": "Зависимости: 17"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'security'",
+      "security_level": "critical",
+      "severity": "high"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 12,
+    "security_classes_found": 0,
+    "sfm_functions_found": 0,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Добавьте функции SFM.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

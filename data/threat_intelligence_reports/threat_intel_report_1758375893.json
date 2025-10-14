@@ -1,0 +1,54 @@
+{
+  "report_id": "threat_intel_1758375893",
+  "generated_at": "2025-09-20T17:44:53.430856",
+  "agent_name": "ThreatIntelligenceAgent",
+  "summary": {
+    "total_threats": 0,
+    "threats_by_type": {},
+    "threats_by_severity": {},
+    "total_iocs": 0,
+    "data_quality_score": 0.0
+  },
+  "threats": [],
+  "metrics": {
+    "total_threats_collected": 0,
+    "threats_by_type": {},
+    "threats_by_severity": {},
+    "threats_by_source": {},
+    "total_iocs_collected": 0,
+    "iocs_by_type": {},
+    "unique_iocs": 0,
+    "duplicate_iocs": 0,
+    "active_sources": 0,
+    "reliable_sources": 0,
+    "source_uptime": {},
+    "source_errors": {},
+    "collection_speed": 0.0,
+    "processing_time": 0.0,
+    "api_calls_made": 0,
+    "api_errors": 0,
+    "data_quality_score": 0.0,
+    "threat_accuracy": 0.0,
+    "ioc_accuracy": 0.0,
+    "false_positive_rate": 0.0,
+    "true_positive_rate": 0.0,
+    "last_collection_time": null,
+    "collection_duration": 0.0,
+    "last_update_time": null,
+    "update_frequency": 0.0
+  },
+  "recommendations": [
+    {
+      "type": "data_quality",
+      "priority": "medium",
+      "description": "Низкое качество данных, рекомендуется улучшить источники",
+      "action": "Добавить более надежные источники угроз"
+    },
+    {
+      "type": "performance",
+      "priority": "low",
+      "description": "Низкая скорость сбора данных",
+      "action": "Оптимизировать процессы сбора и обработки"
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "file": "security/bots/sleep_mode_manager.py",
+  "timestamp": "2025-09-20T20:38:55.979756",
+  "total_analysis_time_seconds": 0.0699918270111084,
+  "overall_quality_score": 95.4,
+  "analysis_details": {
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "imports": {
+      "status": "success",
+      "message": "Импорты корректны"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "log"
+      ],
+      "message": "Найдено 1 ключевых слов безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции test_sleep_mode_manager (строка 361)",
+        "Отсутствует тип возвращаемого значения для функции main (строка 420)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 24)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 370)",
+        "Отсутствует тип для аргумента 'name' в функции __init__ (строка 370)",
+        "Отсутствует тип возвращаемого значения для функции start (строка 376)",
+        "Отсутствует тип возвращаемого значения для функции stop (строка 380)"
+      ],
+      "message": "Найдено 7 отсутствующих type hints"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 24)",
+        "Отсутствует docstring для TestBot (строка 369)",
+        "Отсутствует docstring для __init__ (строка 370)",
+        "Отсутствует docstring для start (строка 376)",
+        "Отсутствует docstring для stop (строка 380)"
+      ],
+      "message": "Найдено 5 отсутствующих docstring"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "logging",
+        "pathlib",
+        "time",
+        "json",
+        "typing",
+        "asyncio",
+        "datetime"
+      ],
+      "message": "Зависимости: 7"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 19224,
+      "lines": 434,
+      "message": "Размер: 19224 байт, Строк: 434"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 22,
+      "num_classes": 2,
+      "message": "Функций: 22, Классов: 2"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 1,
+    "security_classes_found": 0,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": true,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Добавьте классы системы безопасности.",
+    "Зарегистрируйте функцию в SFM реестре.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

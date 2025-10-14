@@ -1,0 +1,9 @@
+{
+  "api_base_url": "https://api.fakeradar.io/v1",
+  "api_key": "",
+  "confidence_threshold": 0.8,
+  "max_frames_per_second": 5,
+  "timeout": 30,
+  "retry_attempts": 3,
+  "enabled": false
+}

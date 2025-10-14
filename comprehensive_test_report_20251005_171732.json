@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-10-05T17:17:32.155829",
+  "system_overview": {
+    "total_functions": 906,
+    "active_functions": 889,
+    "activation_rate": 98.12362030905078,
+    "critical_functions": 375
+  },
+  "performance_analysis": {
+    "initialization_time": 2.5587990283966064,
+    "mass_call_performance": 526261.4805520703,
+    "parallel_execution_time": 0.011281013488769531,
+    "resource_efficiency": {
+      "cpu_impact": -0.7999999999999972,
+      "memory_impact": 0.0
+    }
+  },
+  "security_assessment": {
+    "total_security_functions": 247,
+    "threat_response_times": {
+      "malware_detection": 0.010309934616088867,
+      "intrusion_attempt": 0.01009058952331543,
+      "data_breach_simulation": 0.01208806037902832,
+      "ddos_attack_simulation": 0.010210037231445312,
+      "phishing_attempt": 0.010026931762695312
+    },
+    "security_coverage": 27.262693156732894
+  },
+  "recommendations": {
+    "optimization_candidates": 14,
+    "function_distribution": {
+      "security": 203,
+      "ai_ml": 91,
+      "analytics": 18,
+      "integration": 30,
+      "vpn": 27
+    },
+    "performance_tips": [
+      "Мониторинг ресурсоемких функций",
+      "Оптимизация кэширования",
+      "Настройка пула потоков",
+      "Регулярная очистка памяти"
+    ]
+  },
+  "overall_rating": {
+    "rating": "ОТЛИЧНО",
+    "score": "A+",
+    "activation_rate": 98.12362030905078,
+    "security_coverage": 27.262693156732894
+  }
+}

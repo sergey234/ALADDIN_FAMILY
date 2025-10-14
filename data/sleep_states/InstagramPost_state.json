@@ -1,0 +1,9 @@
+{
+  "function_name": "InstagramPost",
+  "function_id": "bot_instagrampost",
+  "sleep_time": "2025-09-15T22:02:30.040977",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": false,
+  "minimal_system_sleep": true
+}

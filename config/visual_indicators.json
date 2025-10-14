@@ -1,0 +1,49 @@
+{
+  "status_colors": {
+    "secure": "#00FF00",
+    "warning": "#FFA500",
+    "danger": "#FF0000",
+    "info": "#0080FF",
+    "neutral": "#808080"
+  },
+  "status_icons": {
+    "secure": "✅",
+    "warning": "⚠️",
+    "danger": "❌",
+    "info": "ℹ️",
+    "loading": "⏳",
+    "success": "🎉",
+    "error": "💥"
+  },
+  "progress_indicators": {
+    "setup_progress": {
+      "steps": [
+        "Проверка системы",
+        "Установка компонентов",
+        "Настройка безопасности",
+        "Тестирование",
+        "Готово!"
+      ]
+    },
+    "scan_progress": {
+      "phases": [
+        "Подготовка",
+        "Сканирование файлов",
+        "Проверка угроз",
+        "Завершение"
+      ]
+    }
+  },
+  "ui_elements": {
+    "button_sizes": {
+      "primary": "large",
+      "secondary": "medium",
+      "tertiary": "small"
+    },
+    "spacing": {
+      "comfortable": "20px",
+      "compact": "10px",
+      "minimal": "5px"
+    }
+  }
+}

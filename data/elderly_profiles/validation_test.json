@@ -1,0 +1,12 @@
+{
+  "user_id": "validation_test",
+  "age": 68,
+  "age_category": "60-70",
+  "interface_complexity": "advanced",
+  "accessibility_level": "standard",
+  "preferences": {
+    "theme": "light"
+  },
+  "created_at": 1758051806.37299,
+  "updated_at": 1758051806.372991
+}

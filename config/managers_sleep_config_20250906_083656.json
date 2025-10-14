@@ -1,0 +1,97 @@
+{
+  "sleep_mode_info": {
+    "created_at": "2025-09-06T08:36:56.355063",
+    "version": "1.0",
+    "description": "Конфигурация спящего режима для менеджеров Этапа 8.3"
+  },
+  "managers": {
+    "function_76_monitor_manager": {
+      "name": "MonitorManager",
+      "description": "Менеджер мониторинга системы безопасности",
+      "file_path": "security/ai_agents/monitor_manager.py",
+      "status": "sleeping",
+      "quality_score": 0,
+      "priority": "HIGH",
+      "wake_up_time": "< 1 секунда",
+      "features": [
+        "Реальное время мониторинга",
+        "Автоматическое обнаружение аномалий",
+        "ML-анализ для предсказания проблем",
+        "Интеграция с системой алертов"
+      ]
+    },
+    "function_77_alert_manager": {
+      "name": "AlertManager",
+      "description": "Менеджер оповещений системы безопасности",
+      "file_path": "security/ai_agents/alert_manager.py",
+      "status": "sleeping",
+      "quality_score": 0,
+      "priority": "CRITICAL",
+      "wake_up_time": "< 0.5 секунды",
+      "features": [
+        "Умные уведомления с приоритизацией",
+        "Мультиканальные оповещения",
+        "Персонализированные алерты",
+        "ML-анализ для предотвращения спама"
+      ]
+    },
+    "function_78_report_manager": {
+      "name": "ReportManager",
+      "description": "Менеджер отчетов системы безопасности",
+      "file_path": "security/ai_agents/report_manager.py",
+      "status": "sleeping",
+      "quality_score": 0,
+      "priority": "MEDIUM",
+      "wake_up_time": "< 2 секунды",
+      "features": [
+        "Автоматическая генерация отчетов",
+        "Экспорт в различные форматы",
+        "Периодические отчеты",
+        "ML-анализ для выявления трендов"
+      ]
+    },
+    "function_79_analytics_manager": {
+      "name": "AnalyticsManager",
+      "description": "Расширенный менеджер аналитики системы безопасности",
+      "file_path": "security/ai_agents/analytics_manager.py",
+      "status": "sleeping",
+      "quality_score": 0,
+      "priority": "HIGH",
+      "wake_up_time": "< 1.5 секунды",
+      "features": [
+        "Глубокая аналитика поведения пользователей",
+        "Предсказательная аналитика",
+        "Корреляционный анализ событий",
+        "Обнаружение аномалий в реальном времени"
+      ]
+    },
+    "function_80_dashboard_manager": {
+      "name": "DashboardManager",
+      "description": "Расширенный менеджер панели управления",
+      "file_path": "security/ai_agents/dashboard_manager.py",
+      "status": "sleeping",
+      "quality_score": 0,
+      "priority": "HIGH",
+      "wake_up_time": "< 1 секунда",
+      "features": [
+        "Единая панель управления системой",
+        "Персонализированные дашборды",
+        "Управление пользователями и правами",
+        "ML-оптимизация интерфейса"
+      ]
+    }
+  },
+  "sleep_mode_settings": {
+    "auto_wake_on_critical": true,
+    "wake_up_threshold": 0.8,
+    "resource_optimization": true,
+    "background_processing": true,
+    "monitoring_interval": 300
+  },
+  "integration_status": {
+    "safe_function_manager": "ready",
+    "security_core": "ready",
+    "external_apis": "configured",
+    "database": "ready"
+  }
+}

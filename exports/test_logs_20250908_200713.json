@@ -1,0 +1,33 @@
+{
+  "hits": 2,
+  "total": 6,
+  "logs": [
+    {
+      "log_id": "log_006",
+      "timestamp": "2025-09-08T20:06:43.769340",
+      "level": "INFO",
+      "component": "FamilySecurityManager",
+      "message": "Родительский контроль активирован для ребенка",
+      "metadata": {
+        "child_id": "child_001",
+        "age": 12,
+        "relevance_score": 1.0
+      }
+    },
+    {
+      "log_id": "log_001",
+      "timestamp": "2025-09-08T20:02:13.769275",
+      "level": "INFO",
+      "component": "SecurityMonitoringManager",
+      "message": "Система мониторинга безопасности активна",
+      "metadata": {
+        "status": "active",
+        "uptime": "2h 15m",
+        "relevance_score": 1.0
+      }
+    }
+  ],
+  "query": "security",
+  "index": "system_logs",
+  "took": 0.001
+}

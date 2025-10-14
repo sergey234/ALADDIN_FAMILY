@@ -1,0 +1,1977 @@
+{
+  "class_methods": {
+    "MonitoringInterface": {
+      "methods": [
+        {
+          "name": "log_event",
+          "line": 71,
+          "args": [
+            "self",
+            "event_type",
+            "data"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Логирование события",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_metrics",
+          "line": 75,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение метрик",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        }
+      ],
+      "total_methods": 2
+    },
+    "CacheInterface": {
+      "methods": [
+        {
+          "name": "get",
+          "line": 83,
+          "args": [
+            "self",
+            "key"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение из кэша",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "set",
+          "line": 87,
+          "args": [
+            "self",
+            "key",
+            "value",
+            "ttl"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Сохранение в кэш",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        }
+      ],
+      "total_methods": 2
+    },
+    "DatabaseInterface": {
+      "methods": [
+        {
+          "name": "save_function_data",
+          "line": 95,
+          "args": [
+            "self",
+            "function_id",
+            "data"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Сохранение данных функции",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "load_function_data",
+          "line": 99,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Загрузка данных функции",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        }
+      ],
+      "total_methods": 2
+    },
+    "LazyInitializer": {
+      "methods": [
+        {
+          "name": "__init__",
+          "line": 112,
+          "args": [
+            "self",
+            "factory_func"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": null,
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": true,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get",
+          "line": 117,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение экземпляра с ленивой инициализацией",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "reset",
+          "line": 125,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Сброс экземпляра для повторной инициализации",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        }
+      ],
+      "total_methods": 3
+    },
+    "SecurityAlert": {
+      "methods": [
+        {
+          "name": "__init__",
+          "line": 133,
+          "args": [
+            "self",
+            "alert_type",
+            "message",
+            "severity"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": null,
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": true,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        }
+      ],
+      "total_methods": 1
+    },
+    "FunctionStatus": {
+      "methods": [],
+      "total_methods": 0
+    },
+    "SecurityFunction": {
+      "methods": [
+        {
+          "name": "__init__",
+          "line": 154,
+          "args": [
+            "self",
+            "function_id",
+            "name",
+            "description",
+            "function_type",
+            "security_level"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": null,
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": true,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "to_dict",
+          "line": 184,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Преобразование в словарь",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        }
+      ],
+      "total_methods": 2
+    },
+    "SafeFunctionManager": {
+      "methods": [
+        {
+          "name": "__init__",
+          "line": 211,
+          "args": [
+            "self",
+            "name",
+            "config"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": null,
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": true,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "initialize",
+          "line": 328,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Инициализация менеджера безопасных функций",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_initialize_performance_optimizations",
+          "line": 400,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Инициализация оптимизаций производительности",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_initialize_service_mesh_manager",
+          "line": 418,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Инициализация ServiceMeshManager для управления микросервисами",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_register_sfm_services",
+          "line": 459,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Регистрация сервисов SFM в ServiceMeshManager",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_cached_result",
+          "line": 490,
+          "args": [
+            "self",
+            "function_id",
+            "args_hash"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение результата из кэша (Redis или встроенный)",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "cache_result",
+          "line": 526,
+          "args": [
+            "self",
+            "function_id",
+            "args_hash",
+            "result"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Сохранение результата в кэш (Redis или встроенный)",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "clear_cache",
+          "line": 547,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Очистка кэша (Redis или встроенный)",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_cache_stats",
+          "line": 582,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение статистики кэша",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_circuit_breaker",
+          "line": 601,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение Circuit Breaker для функции",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_on_circuit_breaker_state_change",
+          "line": 621,
+          "args": [
+            "self",
+            "name",
+            "old_state",
+            "new_state"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Callback при изменении состояния Circuit Breaker",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_on_circuit_breaker_alert",
+          "line": 628,
+          "args": [
+            "self",
+            "alert_data"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Callback при алерте Circuit Breaker",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_circuit_breaker_stats",
+          "line": 639,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение статистики Circuit Breaker'ов",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_register_basic_functions",
+          "line": 650,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Регистрация базовых функций",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_setup_dependencies",
+          "line": 747,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Настройка зависимостей между функциями",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_initialize_critical_functions",
+          "line": 765,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Инициализация критических функций",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_start_auto_management",
+          "line": 773,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Запуск автоматического управления",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "register_function",
+          "line": 778,
+          "args": [
+            "self",
+            "function_id",
+            "name",
+            "description",
+            "function_type",
+            "security_level",
+            "is_critical",
+            "auto_enable",
+            "handler"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Регистрация новой функции\n\nArgs:\n    function_id: Уникальный ID функции\n    name: Название функции\n    description: Описание функции\n    function_type: Тип функции\n    security_level: Уровень безопасности\n    is_critical: Критическая функция\n    auto_enable: Автоматическое включение\n    handler: Обработчик функции (опционально)\n\nReturns:\n    bool: True если функция зарегистрирована",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "unregister_function",
+          "line": 858,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Отмена регистрации функции\n\nArgs:\n    function_id: ID функции\n\nReturns:\n    bool: True если функция отменена",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_has_dependent_functions",
+          "line": 891,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Проверка наличия зависимых функций",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "enable_function",
+          "line": 898,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Включение функции\n\nArgs:\n    function_id: ID функции\n\nReturns:\n    bool: True если функция включена",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "disable_function",
+          "line": 936,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Отключение функции\n\nArgs:\n    function_id: ID функции\n\nReturns:\n    bool: True если функция отключена",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_check_dependencies",
+          "line": 967,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Проверка зависимостей функции",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "execute_function",
+          "line": 984,
+          "args": [
+            "self",
+            "function_id",
+            "params"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Выполнение функции\n\nArgs:\n    function_id: ID функции\n    params: Параметры выполнения\n\nReturns:\n    Tuple[bool, Any, str]: (успех, результат, сообщение)",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "execute_function_async",
+          "line": 1083,
+          "args": [
+            "self",
+            "function_id",
+            "params"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Асинхронное выполнение функции с использованием пула потоков\n\nArgs:\n    function_id: ID функции\n    params: Параметры выполнения\n\nReturns:\n    Future объект для получения результата",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "save_functions_async",
+          "line": 1111,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Асинхронное сохранение функций с использованием I/O менеджера\n\nReturns:\n    Future объект для получения результата",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "load_functions_async",
+          "line": 1137,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Асинхронная загрузка функций с использованием I/O менеджера\n\nReturns:\n    Future объект для получения результата",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "shutdown_optimizations",
+          "line": 1163,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Корректное завершение работы оптимизаций",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_execute_function_handler",
+          "line": 1181,
+          "args": [
+            "self",
+            "function_id",
+            "params"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Выполнение обработчика функции",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_update_function_stats",
+          "line": 1190,
+          "args": [
+            "self",
+            "function_id",
+            "success",
+            "execution_time"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Обновление статистики функции",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "register_function_handler",
+          "line": 1212,
+          "args": [
+            "self",
+            "function_id",
+            "handler"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Регистрация обработчика функции\n\nArgs:\n    function_id: ID функции\n    handler: Обработчик функции\n\nReturns:\n    bool: True если обработчик зарегистрирован",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_function_status",
+          "line": 1235,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение статуса функции\n\nArgs:\n    function_id: ID функции\n\nReturns:\n    Optional[Dict[str, Any]]: Статус функции",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_all_functions_status",
+          "line": 1251,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение статуса всех функций\n\nReturns:\n    List[Dict[str, Any]]: Список статусов функций",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_enabled_functions",
+          "line": 1260,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение включенных функций\n\nReturns:\n    List[Dict[str, Any]]: Список включенных функций",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_critical_functions",
+          "line": 1269,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение критических функций\n\nReturns:\n    List[Dict[str, Any]]: Список критических функций",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_function_dependencies",
+          "line": 1278,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение зависимостей функции\n\nArgs:\n    function_id: ID функции\n\nReturns:\n    List[str]: Список зависимостей",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_dependent_functions",
+          "line": 1293,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение функций, зависящих от указанной\n\nArgs:\n    function_id: ID функции\n\nReturns:\n    List[str]: Список зависимых функций",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "test_function",
+          "line": 1310,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Тестирование функции\n\nArgs:\n    function_id: ID функции\n\nReturns:\n    Tuple[bool, str]: (успех, сообщение)",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_status",
+          "line": 1347,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение общего статуса SFM с кэш-статистикой\n\nReturns:\n    Dict[str, Any]: Общий статус SFM",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_safe_function_stats",
+          "line": 1396,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение статистики менеджера безопасных функций\n\nReturns:\n    Dict[str, Any]: Статистика менеджера",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_get_functions_by_type",
+          "line": 1423,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение количества функций по типам",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_get_functions_by_security_level",
+          "line": 1431,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение количества функций по уровням безопасности",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_get_functions_by_status",
+          "line": 1439,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение количества функций по статусам",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "sleep_function",
+          "line": 1447,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Перевод функции в спящий режим\n\nArgs:\n    function_id: ID функции\n\nReturns:\n    bool: True если функция переведена в спящий режим",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "wake_function",
+          "line": 1509,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Пробуждение функции из спящего режима\n\nArgs:\n    function_id: ID функции\n\nReturns:\n    bool: True если функция пробуждена",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "register_function_with_sleep",
+          "line": 1560,
+          "args": [
+            "self",
+            "function_id",
+            "name",
+            "description",
+            "function_type",
+            "handler",
+            "security_level",
+            "dependencies",
+            "is_critical",
+            "auto_sleep",
+            "sleep_after_hours"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Регистрация функции с поддержкой спящего режима\n\nArgs:\n    function_id: ID функции\n    name: Название функции\n    description: Описание функции\n    function_type: Тип функции\n    handler: Обработчик функции\n    security_level: Уровень безопасности\n    dependencies: Список зависимостей\n    is_critical: Критическая ли функция\n    auto_sleep: Автоматический перевод в спящий режим\n    sleep_after_hours: Через сколько часов переводить в спящий режим\n\nReturns:\n    bool: True если функция зарегистрирована",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_sleeping_functions",
+          "line": 1641,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение списка функций в спящем режиме\n\nReturns:\n    List[Dict[str, Any]]: Список функций в спящем режиме",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "auto_sleep_management",
+          "line": 1654,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Автоматическое управление спящим режимом\n\nReturns:\n    int: Количество функций переведенных в спящий режим",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_start_sleep_management",
+          "line": 1695,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Запуск автоматического управления спящим режимом",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_stop_sleep_management",
+          "line": 1713,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Остановка автоматического управления спящим режимом",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_sleep_management_worker",
+          "line": 1730,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Рабочий поток для автоматического управления спящим режимом",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_sleep_statistics",
+          "line": 1771,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение статистики спящего режима",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "configure_sleep_mode",
+          "line": 1785,
+          "args": [
+            "self",
+            "enable_sleep_mode",
+            "sleep_check_interval",
+            "default_sleep_hours",
+            "auto_sleep_enabled",
+            "sleep_grace_period"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Конфигурация спящего режима",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_send_monitoring_metric",
+          "line": 1826,
+          "args": [
+            "self",
+            "metric_name",
+            "value",
+            "metric_type",
+            "tags"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Отправка метрики в систему мониторинга",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_send_monitoring_alert",
+          "line": 1841,
+          "args": [
+            "self",
+            "alert_id",
+            "title",
+            "message",
+            "severity",
+            "metric_name",
+            "threshold_value",
+            "current_value"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Отправка алерта в систему мониторинга",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_setup_monitoring_rules",
+          "line": 1872,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Настройка правил мониторинга для SFM",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_update_monitoring_metrics",
+          "line": 1918,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Обновление метрик для мониторинга",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_monitoring_dashboard_data",
+          "line": 1953,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение данных для дашборда мониторинга",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_collect_performance_metrics",
+          "line": 1998,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Сбор метрик производительности",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_optimize_sleep_management",
+          "line": 2047,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Оптимизация управления спящим режимом",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_optimize_function_execution",
+          "line": 2116,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Оптимизация выполнения функций",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_run_performance_optimization",
+          "line": 2178,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Запуск оптимизации производительности",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_performance_metrics",
+          "line": 2214,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение метрик производительности",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "configure_performance_optimization",
+          "line": 2240,
+          "args": [
+            "self",
+            "optimization_enabled",
+            "optimization_interval"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Конфигурация оптимизации производительности",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_setup_security_monitoring_rules",
+          "line": 2259,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Настройка правил мониторинга безопасности для SFM",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_send_security_alert",
+          "line": 2326,
+          "args": [
+            "self",
+            "alert_id",
+            "title",
+            "message",
+            "severity",
+            "component",
+            "alert_type"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Отправка алерта безопасности",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_monitor_function_security",
+          "line": 2367,
+          "args": [
+            "self",
+            "function_id",
+            "action",
+            "details"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Мониторинг безопасности функций",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_update_security_monitoring_data",
+          "line": 2416,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Обновление данных мониторинга безопасности",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_security_monitoring_status",
+          "line": 2442,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение статуса мониторинга безопасности",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "configure_security_monitoring",
+          "line": 2470,
+          "args": [
+            "self",
+            "monitoring_integration_enabled",
+            "alert_retention_days"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Конфигурация мониторинга безопасности",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "start",
+          "line": 2493,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Запуск менеджера безопасных функций",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "stop",
+          "line": 2506,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Остановка менеджера безопасных функций",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_validate_function_id",
+          "line": 2540,
+          "args": [
+            "self",
+            "function_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Валидация идентификатора функции\n\nArgs:\n    function_id (str): Идентификатор функции для валидации\n\nReturns:\n    Tuple[bool, str]: (валидный, сообщение об ошибке)",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_validate_function_name",
+          "line": 2597,
+          "args": [
+            "self",
+            "name"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Валидация названия функции\n\nArgs:\n    name (str): Название функции для валидации\n\nReturns:\n    Tuple[bool, str]: (валидное, сообщение об ошибке)",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_validate_function_params",
+          "line": 2632,
+          "args": [
+            "self",
+            "params"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Валидация параметров функции\n\nArgs:\n    params (Dict[str, Any]): Параметры для валидации\n\nReturns:\n    Tuple[bool, str]: (валидные, сообщение об ошибке)",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_sanitize_input",
+          "line": 2696,
+          "args": [
+            "self",
+            "input_data"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Санитизация входных данных\n\nArgs:\n    input_data (str): Данные для санитизации\n\nReturns:\n    str: Санитизированные данные",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_log_security_event",
+          "line": 2728,
+          "args": [
+            "self",
+            "event_type",
+            "function_id",
+            "details"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Логирование события безопасности\n\nArgs:\n    event_type (str): Тип события безопасности\n    function_id (str): ID функции\n    details (Dict[str, Any]): Дополнительные детали",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_check_security_threats",
+          "line": 2755,
+          "args": [
+            "self",
+            "function_id",
+            "params"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Проверка на угрозы безопасности\n\nArgs:\n    function_id (str): ID функции\n    params (Dict[str, Any]): Параметры функции\n\nReturns:\n    bool: True если угроз не обнаружено",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_security_status",
+          "line": 2833,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение статуса безопасности\n\nReturns:\n    Dict[str, Any]: Статус безопасности",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_get_risk_reasons",
+          "line": 2918,
+          "args": [
+            "self",
+            "function",
+            "risk_score"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение причин риска для функции\n\nArgs:\n    function: Объект функции\n    risk_score (int): Оценка риска\n\nReturns:\n    List[str]: Список причин риска",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_initialize_persistence",
+          "line": 2946,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Инициализация персистентности",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_load_saved_functions",
+          "line": 2966,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Загрузка сохраненных функций и обработчиков",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_service_mesh_manager",
+          "line": 3053,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение экземпляра ServiceMeshManager",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "is_service_mesh_enabled",
+          "line": 3057,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Проверка, включен ли ServiceMeshManager",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "register_service_in_mesh",
+          "line": 3061,
+          "args": [
+            "self",
+            "service_info"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Регистрация сервиса в ServiceMeshManager",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "unregister_service_from_mesh",
+          "line": 3076,
+          "args": [
+            "self",
+            "service_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Отмена регистрации сервиса из ServiceMeshManager",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_service_health",
+          "line": 3091,
+          "args": [
+            "self",
+            "service_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение состояния здоровья сервиса",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_service_metrics",
+          "line": 3112,
+          "args": [
+            "self",
+            "service_id"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение метрик сервиса",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "list_services_in_mesh",
+          "line": 3133,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение списка всех сервисов в ServiceMesh",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "enable_service_mesh",
+          "line": 3157,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Включение ServiceMeshManager",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "disable_service_mesh",
+          "line": 3178,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Отключение ServiceMeshManager",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_service_mesh_status",
+          "line": 3199,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение статуса ServiceMeshManager",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_save_functions",
+          "line": 3231,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Сохранение функций и обработчиков в файл",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_setup_emergencymlanalyzer_handler",
+          "line": 3308,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Настройка обработчика для EmergencyMLAnalyzer",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_initialize_auto_scaling_engine",
+          "line": 3346,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Инициализация AutoScalingEngine для автоматического масштабирования",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_setup_scaling_rules",
+          "line": 3371,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Настройка правил масштабирования для SFM",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "get_scaling_status",
+          "line": 3416,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Получение статуса масштабирования",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "collect_scaling_metrics",
+          "line": 3441,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Сбор метрик для масштабирования",
+          "is_private": false,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_calculate_cpu_usage",
+          "line": 3474,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Расчет использования CPU",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_calculate_memory_usage",
+          "line": 3493,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Расчет использования памяти",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        },
+        {
+          "name": "_calculate_error_rate",
+          "line": 3506,
+          "args": [
+            "self"
+          ],
+          "decorators": [],
+          "is_async": false,
+          "docstring": "Расчет коэффициента ошибок",
+          "is_private": true,
+          "is_protected": false,
+          "is_magic": false,
+          "is_static": false,
+          "is_classmethod": false,
+          "is_property": false
+        }
+      ],
+      "total_methods": 101
+    }
+  },
+  "total_methods": 113,
+  "statistics": {
+    "total_methods": 113,
+    "async_methods": 0,
+    "static_methods": 0,
+    "class_methods": 0,
+    "properties": 0,
+    "private_methods": 51,
+    "magic_methods": 4
+  },
+  "timestamp": "2025-01-27"
+}

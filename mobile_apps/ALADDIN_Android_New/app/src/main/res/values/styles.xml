@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ALADDIN Theme -->
+    <style name="Theme.ALADDIN" parent="Theme.AppCompat.DayNight">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/aladdin_primary</item>
+        <item name="colorPrimaryDark">@color/aladdin_secondary</item>
+        <item name="colorAccent">@color/aladdin_accent</item>
+        
+        <!-- Status bar color -->
+        <item name="android:statusBarColor">@color/aladdin_primary</item>
+        
+        <!-- Window background -->
+        <item name="android:windowBackground">@color/aladdin_background</item>
+    </style>
+    
+    <!-- Splash Screen Theme -->
+    <style name="Theme.ALADDIN.Splash" parent="Theme.ALADDIN">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+</resources>

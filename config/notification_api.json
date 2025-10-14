@@ -1,0 +1,80 @@
+{
+  "api_config": {
+    "name": "API уведомлений ALADDIN",
+    "version": "1.0",
+    "base_url": "http://localhost:8007",
+    "authentication": "JWT",
+    "rate_limiting": "100 requests per minute"
+  },
+  "endpoints": {
+    "send_notification": {
+      "method": "POST",
+      "path": "/api/notifications/send",
+      "description": "Отправить уведомление",
+      "parameters": {
+        "user_id": "string",
+        "category": "string",
+        "title": "string",
+        "body": "string",
+        "data": "object",
+        "priority": "string"
+      },
+      "response": {
+        "success": "boolean",
+        "notification_id": "string",
+        "delivery_status": "string"
+      }
+    },
+    "get_notifications": {
+      "method": "GET",
+      "path": "/api/notifications/get",
+      "description": "Получить уведомления пользователя",
+      "parameters": {
+        "user_id": "string",
+        "limit": "integer",
+        "offset": "integer",
+        "category": "string",
+        "status": "string"
+      },
+      "response": {
+        "notifications": "array",
+        "total_count": "integer",
+        "has_more": "boolean"
+      }
+    },
+    "mark_read": {
+      "method": "PUT",
+      "path": "/api/notifications/mark_read",
+      "description": "Отметить уведомление как прочитанное",
+      "parameters": {
+        "notification_id": "string",
+        "user_id": "string"
+      },
+      "response": {
+        "success": "boolean",
+        "updated_at": "timestamp"
+      }
+    },
+    "delete_notification": {
+      "method": "DELETE",
+      "path": "/api/notifications/delete",
+      "description": "Удалить уведомление",
+      "parameters": {
+        "notification_id": "string",
+        "user_id": "string"
+      },
+      "response": {
+        "success": "boolean",
+        "deleted_at": "timestamp"
+      }
+    }
+  },
+  "error_handling": {
+    "400": "Bad Request - неверные параметры",
+    "401": "Unauthorized - неверная аутентификация",
+    "403": "Forbidden - недостаточно прав",
+    "404": "Not Found - уведомление не найдено",
+    "429": "Too Many Requests - превышен лимит запросов",
+    "500": "Internal Server Error - внутренняя ошибка сервера"
+  }
+}

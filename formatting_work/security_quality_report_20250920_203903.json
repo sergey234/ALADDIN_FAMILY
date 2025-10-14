@@ -1,0 +1,157 @@
+{
+  "file": "security/active/intrusion_prevention.py",
+  "timestamp": "2025-09-20T20:39:03.906637",
+  "total_analysis_time_seconds": 0.07309269905090332,
+  "overall_quality_score": 100,
+  "analysis_details": {
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": true,
+      "current_function_data": {
+        "function_id": "intrusion_prevention",
+        "name": "IntrusionPrevention",
+        "description": "Система предотвращения вторжений",
+        "function_type": "security",
+        "security_level": "critical",
+        "status": "active",
+        "created_at": "2025-09-18T12:32:24.856696",
+        "is_critical": true,
+        "auto_enable": true,
+        "wake_time": "2025-09-18T12:32:24.856696",
+        "emergency_wake_up": true,
+        "file_path": "security/intrusion_prevention.py",
+        "class_name": "IntrusionPrevention",
+        "methods": [
+          "add_rule",
+          "remove_rule",
+          "update_rule",
+          "analyze_log_entry",
+          "analyze_network_flow",
+          "check_rate_limit",
+          "get_statistics",
+          "get_recent_attempts"
+        ],
+        "dependencies": [
+          "time",
+          "json",
+          "re",
+          "collections",
+          "dataclasses",
+          "enum",
+          "typing"
+        ],
+        "quality_metrics": {
+          "flake8_errors": 0,
+          "test_coverage": "100%"
+        }
+      },
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "auth",
+        "authorize",
+        "permission",
+        "security",
+        "hash",
+        "key",
+        "session",
+        "intrusion",
+        "threat",
+        "malware",
+        "alert",
+        "log"
+      ],
+      "message": "Найдено 12 ключевых слов безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "imports": {
+      "status": "success",
+      "message": "Импорты корректны"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 31876,
+      "lines": 660,
+      "message": "Размер: 31876 байт, Строк: 660"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 107)",
+        "Отсутствует тип возвращаемого значения для функции _initialize_intrusion_patterns (строка 133)",
+        "Отсутствует тип возвращаемого значения для функции _initialize_prevention_rules (строка 213)",
+        "Отсутствует тип возвращаемого значения для функции _setup_family_protection (строка 296)"
+      ],
+      "message": "Найдено 4 отсутствующих type hints"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 18,
+      "num_classes": 8,
+      "message": "Функций: 18, Классов: 8"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "logging",
+        "dataclasses",
+        "enum",
+        "hashlib",
+        "time",
+        "core",
+        "typing",
+        "datetime"
+      ],
+      "message": "Зависимости: 8"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 107)"
+      ],
+      "message": "Найдено 1 отсутствующих docstring"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 12,
+    "security_classes_found": 0,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": true,
+    "syntax_ok": true,
+    "imports_ok": true,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Добавьте классы системы безопасности.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

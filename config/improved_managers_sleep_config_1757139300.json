@@ -1,0 +1,80 @@
+{
+  "sleep_mode": true,
+  "timestamp": "2025-09-06T10:15:00.025277",
+  "managers": {
+    "MonitorManager": {
+      "status": "sleeping",
+      "priority": "high",
+      "wake_time": "< 1 second",
+      "quality_score": 49.3,
+      "quality_grade": "C",
+      "features": [
+        "ML anomaly detection",
+        "Real-time monitoring",
+        "Statistical analysis",
+        "Performance optimization"
+      ]
+    },
+    "AlertManager": {
+      "status": "sleeping",
+      "priority": "critical",
+      "wake_time": "< 0.5 seconds",
+      "quality_score": 42.9,
+      "quality_grade": "C",
+      "features": [
+        "Smart alert processing",
+        "ML prioritization",
+        "Spam detection",
+        "Alert clustering"
+      ]
+    },
+    "ReportManager": {
+      "status": "sleeping",
+      "priority": "medium",
+      "wake_time": "< 2 seconds",
+      "quality_score": 39.6,
+      "quality_grade": "C",
+      "features": [
+        "Automated report generation",
+        "Data visualization",
+        "ML insights",
+        "Template management"
+      ]
+    },
+    "AnalyticsManager": {
+      "status": "sleeping",
+      "priority": "high",
+      "wake_time": "< 1.5 seconds",
+      "quality_score": 42.7,
+      "quality_grade": "C",
+      "features": [
+        "Behavioral analytics",
+        "Threat intelligence",
+        "Network analysis",
+        "ML classification"
+      ]
+    },
+    "DashboardManager": {
+      "status": "sleeping",
+      "priority": "medium",
+      "wake_time": "< 1 second",
+      "quality_score": 42.6,
+      "quality_grade": "C",
+      "features": [
+        "ML layout optimization",
+        "User personalization",
+        "Widget management",
+        "Real-time updates"
+      ]
+    }
+  },
+  "system_stats": {
+    "total_managers": 5,
+    "sleeping_managers": 5,
+    "average_quality": 43.4,
+    "total_improvements": "+3.3%",
+    "ml_algorithms_added": 25,
+    "documentation_added": 150,
+    "type_hints_added": 200
+  }
+}

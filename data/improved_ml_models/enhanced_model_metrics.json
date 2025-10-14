@@ -1,0 +1,38 @@
+{
+  "enhanced_severity_predictor": {
+    "model_name": "Enhanced Severity Predictor",
+    "algorithm": "Gradient Boosting (Enhanced)",
+    "accuracy": 0.0,
+    "feature_importance": [
+      0.0,
+      0.0,
+      0.9653052976504629,
+      0.034694702349537095
+    ],
+    "training_samples": 11,
+    "test_samples": 3,
+    "feature_names": [
+      "fraud_type_encoded",
+      "region_encoded",
+      "amount_normalized",
+      "is_major_city"
+    ]
+  },
+  "enhanced_region_analyzer": {
+    "model_name": "Enhanced Regional Risk Analyzer",
+    "algorithm": "Random Forest Regressor (Enhanced)",
+    "mse": 0.12357283333333335,
+    "r2_score": 0.9749922873685986,
+    "feature_importance": [
+      0.44711065664444727,
+      0.4491815460978752,
+      0.10370779725767741
+    ],
+    "training_samples": 6,
+    "feature_names": [
+      "population_factor",
+      "economic_factor",
+      "is_major_city"
+    ]
+  }
+}

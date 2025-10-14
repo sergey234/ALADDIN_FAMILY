@@ -1,0 +1,77 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a1128;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e3a5f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2e5090;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Milky Way Gradient #2: Розово-фиолетовый (теплый млечный путь) -->
+    <radialGradient id="milkyway-eye-02" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#F0ABFC;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#E879F9;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#C084FC;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A78BFA;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Sirius Star Gradient -->
+    <radialGradient id="sirius-pupil" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E40AF;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Fibonacci Glow -->
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="226" fill="url(#bg-gradient)"/>
+  
+  <!-- ALADDIN Text (Fibonacci Position: y=233px) -->
+  <text x="512" y="233" 
+        font-family="Arial, sans-serif" 
+        font-size="72" 
+        font-weight="900" 
+        fill="#F0ABFC" 
+        text-anchor="middle"
+        letter-spacing="8"
+        filter="url(#glow)">ALADDIN</text>
+  
+  <!-- Central Milky Way Eye (Fibonacci Center: y=512) -->
+  <g transform="translate(512, 512)">
+    <!-- Outer Eye Ring (Fibonacci: r=233px) - Milky Way -->
+    <ellipse cx="0" cy="0" rx="233" ry="144" fill="url(#milkyway-eye-02)" filter="url(#glow)" opacity="0.9"/>
+    
+    <!-- Pupil (Sirius Star - Fibonacci: r=89px) -->
+    <circle cx="0" cy="0" r="89" fill="url(#sirius-pupil)" filter="url(#glow)"/>
+    
+    <!-- Iris Pattern (Fibonacci Spirals) -->
+    <g opacity="0.6" stroke="#F0ABFC" stroke-width="3" fill="none">
+      <path d="M 0 0 Q 34 -21 0 -42 Q -34 -63 0 -84 Q 34 -105 0 -126"/>
+      <path d="M 0 0 Q -34 -21 0 -42 Q 34 -63 0 -84 Q -34 -105 0 -126"/>
+      <path d="M 0 0 Q 34 21 0 42 Q -34 63 0 84 Q 34 105 0 126"/>
+      <path d="M 0 0 Q -34 21 0 42 Q 34 63 0 84 Q -34 105 0 126"/>
+    </g>
+  </g>
+  
+  <!-- Bottom Tagline Area (Fibonacci Position: y=791) -->
+  <text x="512" y="791" 
+        font-family="Arial, sans-serif" 
+        font-size="48" 
+        font-weight="600" 
+        fill="#FFFFFF" 
+        text-anchor="middle"
+        opacity="0.9"
+        letter-spacing="2">AI ЗАЩИТА СЕМЬИ</text>
+</svg>
+
+

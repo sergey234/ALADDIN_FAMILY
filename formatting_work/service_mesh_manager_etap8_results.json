@@ -1,0 +1,175 @@
+{
+  "classes_tested": [
+    "CircuitBreakerConfig",
+    "ServiceInfo",
+    "ServiceEndpoint",
+    "ServiceMeshManager"
+  ],
+  "methods_tested": [
+    {
+      "test_name": "CircuitBreakerConfig.__init__",
+      "status": "PASS",
+      "details": "Создание конфигурации по умолчанию",
+      "timestamp": "2025-09-22T13:39:37.450632"
+    },
+    {
+      "test_name": "CircuitBreakerConfig.validation",
+      "status": "PASS",
+      "details": "Валидация работает корректно",
+      "timestamp": "2025-09-22T13:39:37.450722"
+    },
+    {
+      "test_name": "CircuitBreakerConfig.to_dict",
+      "status": "PASS",
+      "details": "Преобразование в словарь",
+      "timestamp": "2025-09-22T13:39:37.450746"
+    },
+    {
+      "test_name": "CircuitBreakerConfig.from_dict",
+      "status": "PASS",
+      "details": "Создание из словаря",
+      "timestamp": "2025-09-22T13:39:37.450771"
+    },
+    {
+      "test_name": "CircuitBreakerConfig.get_default_config",
+      "status": "PASS",
+      "details": "Получение конфигурации по умолчанию",
+      "timestamp": "2025-09-22T13:39:37.450790"
+    },
+    {
+      "test_name": "CircuitBreakerConfig.get_aggressive_config",
+      "status": "PASS",
+      "details": "Получение агрессивной конфигурации",
+      "timestamp": "2025-09-22T13:39:37.450808"
+    },
+    {
+      "test_name": "CircuitBreakerConfig.get_conservative_config",
+      "status": "PASS",
+      "details": "Получение консервативной конфигурации",
+      "timestamp": "2025-09-22T13:39:37.450829"
+    },
+    {
+      "test_name": "ServiceInfo.__init__",
+      "status": "PASS",
+      "details": "Создание ServiceInfo",
+      "timestamp": "2025-09-22T13:39:37.450887"
+    },
+    {
+      "test_name": "ServiceInfo.to_dict",
+      "status": "PASS",
+      "details": "Преобразование в словарь",
+      "timestamp": "2025-09-22T13:39:37.451205"
+    },
+    {
+      "test_name": "ServiceEndpoint.__init__",
+      "status": "PASS",
+      "details": "Создание ServiceEndpoint",
+      "timestamp": "2025-09-22T13:39:37.451235"
+    },
+    {
+      "test_name": "ServiceEndpoint.get_url",
+      "status": "PASS",
+      "details": "Получение URL",
+      "timestamp": "2025-09-22T13:39:37.451252"
+    },
+    {
+      "test_name": "ServiceEndpoint.to_dict",
+      "status": "PASS",
+      "details": "Преобразование в словарь",
+      "timestamp": "2025-09-22T13:39:37.451315"
+    },
+    {
+      "test_name": "ServiceMeshManager.__init__",
+      "status": "PASS",
+      "details": "Создание с конфигурацией по умолчанию",
+      "timestamp": "2025-09-22T13:39:37.453194"
+    },
+    {
+      "test_name": "ServiceMeshManager.__init__",
+      "status": "PASS",
+      "details": "Создание с кастомной конфигурацией",
+      "timestamp": "2025-09-22T13:39:37.454039"
+    },
+    {
+      "test_name": "ServiceMeshManager.initialize",
+      "status": "PASS",
+      "details": "Инициализация: True",
+      "timestamp": "2025-09-22T13:39:37.564125"
+    },
+    {
+      "test_name": "ServiceMeshManager.register_service",
+      "status": "PASS",
+      "details": "Регистрация сервиса: True",
+      "timestamp": "2025-09-22T13:39:37.565836"
+    },
+    {
+      "test_name": "ServiceMeshManager.get_service_status",
+      "status": "PASS",
+      "details": "Получение статуса сервиса",
+      "timestamp": "2025-09-22T13:39:37.565939"
+    },
+    {
+      "test_name": "Integration.register_service",
+      "status": "PASS",
+      "details": "Сервис зарегистрирован",
+      "timestamp": "2025-09-22T13:39:37.675914"
+    },
+    {
+      "test_name": "Integration.get_endpoint",
+      "status": "PASS",
+      "details": "Endpoint получен",
+      "timestamp": "2025-09-22T13:39:37.676312"
+    },
+    {
+      "test_name": "Integration.unregister_service",
+      "status": "PASS",
+      "details": "Сервис отменен",
+      "timestamp": "2025-09-22T13:39:37.676733"
+    },
+    {
+      "test_name": "ErrorHandling.nonexistent_service",
+      "status": "PASS",
+      "details": "Корректная обработка несуществующего сервиса",
+      "timestamp": "2025-09-22T13:39:37.678474"
+    },
+    {
+      "test_name": "ErrorHandling.invalid_service",
+      "status": "PASS",
+      "details": "Корректная обработка None",
+      "timestamp": "2025-09-22T13:39:37.678502"
+    }
+  ],
+  "integration_tests": [
+    {
+      "scenario": "service_lifecycle",
+      "status": "PASS",
+      "details": "Полный жизненный цикл сервиса"
+    }
+  ],
+  "errors": [
+    {
+      "test_name": "ServiceMeshManager.methods",
+      "status": "ERROR",
+      "details": "Ошибка: ",
+      "timestamp": "2025-09-22T13:39:37.566160"
+    }
+  ],
+  "warnings": [
+    {
+      "test_name": "Integration.mesh_status",
+      "status": "WARNING",
+      "details": "Неполный статус сетки",
+      "timestamp": "2025-09-22T13:39:37.676952"
+    }
+  ],
+  "statistics": {
+    "total_tests": 22,
+    "passed_tests": 22,
+    "error_tests": 1,
+    "warning_tests": 1,
+    "success_rate": 100.0,
+    "duration_seconds": 0.22806096076965332,
+    "classes_tested_count": 4,
+    "integration_tests_count": 1
+  }
+}

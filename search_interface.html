@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Log Search - Elasticsearch</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .search-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .search-input {
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-select {
+            padding: 1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .search-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .results-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .results-count {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .results-time {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .log-entry {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .log-entry:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .log-level {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .log-level.DEBUG { background: #e3f2fd; color: #1976d2; }
+        .log-level.INFO { background: #e8f5e8; color: #388e3c; }
+        .log-level.WARNING { background: #fff3e0; color: #f57c00; }
+        .log-level.ERROR { background: #ffebee; color: #d32f2f; }
+        .log-level.CRITICAL { background: #f3e5f5; color: #7b1fa2; }
+
+        .log-timestamp {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .log-component {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .log-message {
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .log-metadata {
+            background: #e9ecef;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #d32f2f;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border: 1px solid #ffcdd2;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 ALADDIN Log Search - Elasticsearch</h1>
+    </div>
+
+    <div class="container">
+        <!-- Статистика -->
+        <div class="stats-panel" id="stats-panel">
+            <div class="stat-card">
+                <div class="stat-value" id="total-logs">--</div>
+                <div class="stat-label">Всего логов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-indices">--</div>
+                <div class="stat-label">Индексов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="search-queries">--</div>
+                <div class="stat-label">Поисковых запросов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="last-indexed">--</div>
+                <div class="stat-label">Последняя индексация</div>
+            </div>
+        </div>
+
+        <!-- Панель поиска -->
+        <div class="search-panel">
+            <form class="search-form" id="search-form">
+                <input type="text" class="search-input" id="search-input" 
+                       placeholder="Введите поисковый запрос..." autocomplete="off">
+                
+                <select class="search-select" id="index-select">
+                    <option value="system_logs">Все логи</option>
+                    <option value="security_logs">Безопасность</option>
+                    <option value="error_logs">Ошибки</option>
+                    <option value="performance_logs">Производительность</option>
+                    <option value="family_logs">Семья</option>
+                </select>
+                
+                <select class="search-select" id="level-select">
+                    <option value="">Все уровни</option>
+                    <option value="DEBUG">DEBUG</option>
+                    <option value="INFO">INFO</option>
+                    <option value="WARNING">WARNING</option>
+                    <option value="ERROR">ERROR</option>
+                    <option value="CRITICAL">CRITICAL</option>
+                </select>
+                
+                <button type="submit" class="search-btn">🔍 Поиск</button>
+            </form>
+        </div>
+
+        <!-- Результаты поиска -->
+        <div class="results-panel">
+            <div class="results-header">
+                <div class="results-count" id="results-count">Введите поисковый запрос</div>
+                <div class="results-time" id="results-time"></div>
+            </div>
+            
+            <div id="results-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Загрузка логов...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>ALADDIN Security System v1.0 | Elasticsearch Simulator | Последнее обновление: <span id="last-update">--</span></p>
+    </div>
+
+    <script>
+        // Глобальные переменные
+        let currentQuery = '';
+        let currentResults = [];
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadRecentLogs();
+            
+            // Обработчик формы поиска
+            document.getElementById('search-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                performSearch();
+            });
+            
+            // Автообновление статистики каждые 30 секунд
+            setInterval(loadStats, 30000);
+        });
+
+        // Загрузка статистики
+        async function loadStats() {
+            try {
+                const response = await fetch('http://localhost:5001/api/elasticsearch/stats');
+                const stats = await response.json();
+                
+                document.getElementById('total-logs').textContent = stats.total_logs || 0;
+                document.getElementById('total-indices').textContent = Object.keys(stats.indices || {}).length;
+                document.getElementById('search-queries').textContent = stats.search_queries || 0;
+                document.getElementById('last-indexed').textContent = 
+                    stats.last_indexed ? new Date(stats.last_indexed).toLocaleTimeString('ru-RU') : '--';
+                
+                document.getElementById('last-update').textContent = new Date().toLocaleString('ru-RU');
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+            }
+        }
+
+        // Загрузка последних логов
+        async function loadRecentLogs() {
+            try {
+                const response = await fetch('http://localhost:5001/api/elasticsearch/logs/recent?limit=10');
+                const data = await response.json();
+                
+                if (data.logs && data.logs.length > 0) {
+                    displayResults(data.logs, data.hits, data.total);
+                } else {
+                    displayNoResults();
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки логов:', error);
+                displayError('Ошибка загрузки логов: ' + error.message);
+            }
+        }
+
+        // Выполнение поиска
+        async function performSearch() {
+            const query = document.getElementById('search-input').value.trim();
+            const index = document.getElementById('index-select').value;
+            const level = document.getElementById('level-select').value;
+            
+            currentQuery = query;
+            
+            // Показываем загрузку
+            document.getElementById('results-container').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Поиск выполняется...</p>
+                </div>
+            `;
+            
+            try {
+                // Формируем URL запроса
+                const params = new URLSearchParams();
+                if (query) params.append('q', query);
+                if (index) params.append('index', index);
+                if (level) params.append('level', level);
+                params.append('limit', '50');
+                
+                const response = await fetch(`http://localhost:5001/api/elasticsearch/search?${params}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    displayError('Ошибка поиска: ' + data.error);
+                } else {
+                    currentResults = data.logs || [];
+                    displayResults(currentResults, data.hits, data.total);
+                }
+            } catch (error) {
+                console.error('Ошибка поиска:', error);
+                displayError('Ошибка поиска: ' + error.message);
+            }
+        }
+
+        // Отображение результатов
+        function displayResults(logs, hits, total) {
+            const container = document.getElementById('results-container');
+            
+            if (logs.length === 0) {
+                displayNoResults();
+                return;
+            }
+            
+            // Обновляем заголовок
+            document.getElementById('results-count').textContent = 
+                `Найдено ${hits} из ${total} логов`;
+            document.getElementById('results-time').textContent = 
+                `Время поиска: ${new Date().toLocaleTimeString('ru-RU')}`;
+            
+            // Отображаем логи
+            container.innerHTML = logs.map(log => `
+                <div class="log-entry">
+                    <div class="log-header">
+                        <span class="log-level ${log.level}">${log.level}</span>
+                        <span class="log-timestamp">${new Date(log.timestamp).toLocaleString('ru-RU')}</span>
+                    </div>
+                    <div class="log-component">${log.component}</div>
+                    <div class="log-message">${log.message}</div>
+                    ${log.metadata && Object.keys(log.metadata).length > 0 ? `
+                        <div class="log-metadata">
+                            ${JSON.stringify(log.metadata, null, 2)}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Отображение отсутствия результатов
+        function displayNoResults() {
+            document.getElementById('results-container').innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #6c757d;">
+                    <h3>Логи не найдены</h3>
+                    <p>Попробуйте изменить поисковый запрос или фильтры</p>
+                </div>
+            `;
+            document.getElementById('results-count').textContent = 'Результаты не найдены';
+        }
+
+        // Отображение ошибки
+        function displayError(message) {
+            document.getElementById('results-container').innerHTML = `
+                <div class="error">
+                    <strong>Ошибка:</strong> ${message}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

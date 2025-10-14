@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPN Test - Singapore</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        h1 { font-size: 2em; margin-bottom: 30px; }
+        .button {
+            background: #4CAF50;
+            color: white;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 20px 0;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .button:hover { background: #45a049; }
+        .info { 
+            background: rgba(255, 255, 255, 0.2); 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            text-align: left;
+        }
+        .status { font-size: 16px; margin: 10px 0; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .loading { color: #FFC107; }
+        .demo { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 VPN Test</h1>
+        <div class="info">
+            <h3>🇸🇬 Singapore VPN</h3>
+            <p>Нажмите кнопку для тестирования подключения к Singapore</p>
+        </div>
+        
+        <button class="button" onclick="testSingapore()">🚀 Тест Singapore</button>
+        
+        <div class="info">
+            <div class="status" id="status">Готов к тестированию</div>
+        </div>
+        
+        <div class="info">
+            <h3>📱 Инструкции:</h3>
+            <p>1. Нажмите "Тест Singapore"</p>
+            <p>2. Дождитесь результата (5-10 секунд)</p>
+            <p>3. Проверьте IP адрес</p>
+            <p>4. При успехе - VPN работает!</p>
+        </div>
+        
+        <div class="info">
+            <h3>🌐 Подключение:</h3>
+            <p>• Локально: http://localhost:8000</p>
+            <p>• С телефона: http://192.168.0.101:8000</p>
+            <p>• QR-код: отсканируйте камерой</p>
+        </div>
+        
+        <div class="info">
+            <h3>🔧 Режим тестирования:</h3>
+            <p>• Демо-режим (без API)</p>
+            <p>• Имитация подключения</p>
+            <p>• Проверка интерфейса</p>
+        </div>
+    </div>
+
+    <script>
+        async function testSingapore() {
+            const status = document.getElementById('status');
+            const button = event.target;
+            
+            status.innerHTML = '<div class="loading">🔄 Тестирование подключения к Singapore...</div>';
+            button.disabled = true;
+            button.textContent = '🔄 Тестирование...';
+            
+            // Имитация задержки
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Имитация успешного подключения
+            status.innerHTML = `
+                <div class="success">
+                    ✅ Тест Singapore успешен!<br><br>
+                    <strong>Подключение:</strong> Подключен к Singapore WireGuard (Singapore) - wireguard<br>
+                    <strong>Отключение:</strong> Отключен от VPN<br>
+                    <strong>Длительность:</strong> 3 секунды<br>
+                    <strong>Провайдер:</strong> internal<br>
+                    <strong>Время подключения:</strong> 2.00с<br>
+                    <strong>Уровень безопасности:</strong> HIGH<br><br>
+                    <strong>🎉 VPN работает отлично!</strong><br><br>
+                    <div class="demo">
+                        📱 Это демо-режим для тестирования интерфейса<br>
+                        🔧 Для реального тестирования используйте API
+                    </div>
+                </div>
+            `;
+            
+            button.disabled = false;
+            button.textContent = '🚀 Тест Singapore';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "registry_security": {
+    "enabled": true,
+    "components": [
+      "registry_protection_system",
+      "registry_format_validator",
+      "registry_monitor",
+      "registry_problem_reporter",
+      "registry_security_manager"
+    ],
+    "protection_level": "maximum",
+    "auto_backup": true,
+    "monitoring_active": true,
+    "validation_strict": true
+  },
+  "integration_date": "2025-09-17T16:15:24.899182",
+  "version": "1.0"
+}

@@ -1,0 +1,463 @@
+/* ALADDIN UI Components CSS
+ * Красивые компоненты с грозовым небом и золотыми акцентами
+ * Поддержка glassmorphism, neumorphism, touch-friendly элементов
+ */
+
+/* MARK: - CSS Variables (Storm Sky Color Scheme) */
+:root {
+    /* Storm Sky Colors */
+    --storm-sky-dark: #0f172a;
+    --storm-sky-blue: #1E3A8A;
+    --storm-sky-medium: #3B82F6;
+    --storm-sky-light: #60A5FA;
+    
+    /* Golden Accents */
+    --golden-accent: #F59E0B;
+    --golden-accent-light: #FCD34D;
+    --golden-accent-dark: #D97706;
+    
+    /* Text Colors */
+    --text-primary: #FFFFFF;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-muted: rgba(255, 255, 255, 0.6);
+    
+    /* Background Colors */
+    --bg-primary: var(--storm-sky-dark);
+    --bg-secondary: var(--storm-sky-blue);
+    --bg-glass: rgba(30, 58, 138, 0.2);
+    --bg-glass-border: rgba(251, 191, 36, 0.3);
+    
+    /* Shadows */
+    --shadow-soft: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 8px 16px rgba(0, 0, 0, 0.2);
+    --shadow-strong: 0 12px 24px rgba(0, 0, 0, 0.3);
+    
+    /* Border Radius */
+    --radius-small: 8px;
+    --radius-medium: 12px;
+    --radius-large: 16px;
+    --radius-xl: 20px;
+    
+    /* Spacing */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+}
+
+/* MARK: - Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    background: linear-gradient(135deg, var(--storm-sky-dark) 0%, var(--storm-sky-blue) 50%, var(--storm-sky-medium) 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* MARK: - ALADDIN Button */
+.aladdin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md) var(--spacing-lg);
+    min-height: 44px; /* Touch-friendly */
+    min-width: 44px;
+    border: none;
+    border-radius: var(--radius-large);
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.aladdin-btn:active {
+    transform: scale(0.95);
+}
+
+/* Button Styles */
+.aladdin-btn--primary {
+    background: linear-gradient(135deg, var(--golden-accent), var(--golden-accent-dark));
+    color: var(--text-primary);
+    box-shadow: var(--shadow-medium);
+}
+
+.aladdin-btn--primary:hover {
+    box-shadow: var(--shadow-strong);
+    transform: translateY(-2px);
+}
+
+.aladdin-btn--secondary {
+    background: linear-gradient(135deg, var(--storm-sky-blue), var(--storm-sky-medium));
+    color: var(--text-primary);
+    box-shadow: var(--shadow-medium);
+}
+
+.aladdin-btn--secondary:hover {
+    box-shadow: var(--shadow-strong);
+    transform: translateY(-2px);
+}
+
+.aladdin-btn--danger {
+    background: linear-gradient(135deg, #EF4444, #DC2626);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-medium);
+}
+
+.aladdin-btn--danger:hover {
+    box-shadow: var(--shadow-strong);
+    transform: translateY(-2px);
+}
+
+.aladdin-btn--ghost {
+    background: transparent;
+    color: var(--golden-accent);
+    border: 2px solid var(--golden-accent);
+}
+
+.aladdin-btn--ghost:hover {
+    background: var(--golden-accent);
+    color: var(--text-primary);
+}
+
+.aladdin-btn--glassmorphism {
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--bg-glass-border);
+    color: var(--golden-accent);
+    box-shadow: var(--shadow-medium);
+}
+
+.aladdin-btn--glassmorphism:hover {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: var(--golden-accent);
+}
+
+.aladdin-btn--neumorphism {
+    background: linear-gradient(145deg, var(--storm-sky-blue), var(--storm-sky-medium));
+    color: var(--golden-accent);
+    box-shadow: 
+        8px 8px 16px rgba(0, 0, 0, 0.3),
+        -8px -8px 16px rgba(255, 255, 255, 0.05);
+}
+
+.aladdin-btn--neumorphism:active {
+    box-shadow: 
+        inset 8px 8px 16px rgba(0, 0, 0, 0.3),
+        inset -8px -8px 16px rgba(255, 255, 255, 0.05);
+}
+
+/* MARK: - ALADDIN Card */
+.aladdin-card {
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-xl);
+    position: relative;
+    overflow: hidden;
+}
+
+.aladdin-card--glassmorphism {
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--bg-glass-border);
+    box-shadow: var(--shadow-medium);
+}
+
+.aladdin-card--neumorphism {
+    background: linear-gradient(145deg, var(--storm-sky-blue), var(--storm-sky-medium));
+    box-shadow: 
+        12px 12px 24px rgba(0, 0, 0, 0.3),
+        -12px -12px 24px rgba(255, 255, 255, 0.05);
+}
+
+.aladdin-card--solid {
+    background: var(--storm-sky-blue);
+    border: 1px solid var(--bg-glass-border);
+    box-shadow: var(--shadow-medium);
+}
+
+.aladdin-card--gradient {
+    background: linear-gradient(135deg, var(--storm-sky-dark), var(--storm-sky-blue));
+    border: 1px solid var(--bg-glass-border);
+    box-shadow: var(--shadow-medium);
+}
+
+/* MARK: - ALADDIN Text Field */
+.aladdin-input {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: none;
+    border-radius: var(--radius-medium);
+    font-size: 16px;
+    color: var(--text-primary);
+    background: transparent;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.aladdin-input::placeholder {
+    color: var(--text-muted);
+}
+
+.aladdin-input--glassmorphism {
+    background: var(--bg-glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--bg-glass-border);
+}
+
+.aladdin-input--glassmorphism:focus {
+    border-color: var(--golden-accent);
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+}
+
+.aladdin-input--neumorphism {
+    background: linear-gradient(145deg, var(--storm-sky-blue), var(--storm-sky-medium));
+    box-shadow: 
+        inset 6px 6px 12px rgba(0, 0, 0, 0.3),
+        inset -6px -6px 12px rgba(255, 255, 255, 0.05);
+}
+
+.aladdin-input--neumorphism:focus {
+    box-shadow: 
+        inset 6px 6px 12px rgba(0, 0, 0, 0.3),
+        inset -6px -6px 12px rgba(255, 255, 255, 0.05),
+        0 0 0 3px rgba(251, 191, 36, 0.1);
+}
+
+.aladdin-input--solid {
+    background: var(--storm-sky-blue);
+    border: 1px solid var(--bg-glass-border);
+}
+
+.aladdin-input--solid:focus {
+    border-color: var(--golden-accent);
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+}
+
+/* MARK: - ALADDIN Status Indicator */
+.aladdin-status {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--text-primary);
+    position: relative;
+}
+
+.aladdin-status--connected {
+    background-color: #10B981;
+}
+
+.aladdin-status--connecting {
+    background-color: #F59E0B;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.aladdin-status--disconnected {
+    background-color: #6B7280;
+}
+
+.aladdin-status--error {
+    background-color: #EF4444;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
+}
+
+/* MARK: - ALADDIN Loading View */
+.aladdin-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    text-align: center;
+}
+
+.aladdin-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid var(--bg-glass-border);
+    border-top: 4px solid var(--golden-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: var(--spacing-md);
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.aladdin-loading__message {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* MARK: - ALADDIN Bottom Navigation */
+.aladdin-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-around;
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: var(--bg-glass);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid var(--bg-glass-border);
+    z-index: 1000;
+}
+
+.aladdin-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-sm);
+    min-width: 44px; /* Touch-friendly */
+    min-height: 44px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-radius: var(--radius-small);
+}
+
+.aladdin-nav-item:hover {
+    color: var(--golden-accent);
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.aladdin-nav-item--active {
+    color: var(--golden-accent);
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.aladdin-nav-item__icon {
+    font-size: 20px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.aladdin-nav-item__label {
+    font-size: 10px;
+    font-weight: 500;
+}
+
+/* MARK: - Responsive Design */
+@media (max-width: 768px) {
+    .aladdin-btn {
+        min-height: 48px;
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+    
+    .aladdin-card {
+        padding: var(--spacing-md);
+        border-radius: var(--radius-large);
+    }
+    
+    .aladdin-bottom-nav {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+    
+    .aladdin-nav-item {
+        min-width: 48px;
+        min-height: 48px;
+    }
+}
+
+@media (max-width: 480px) {
+    .aladdin-btn {
+        min-height: 52px;
+        font-size: 18px;
+    }
+    
+    .aladdin-card {
+        padding: var(--spacing-sm);
+        border-radius: var(--radius-medium);
+    }
+    
+    .aladdin-nav-item__icon {
+        font-size: 24px;
+    }
+    
+    .aladdin-nav-item__label {
+        font-size: 12px;
+    }
+}
+
+/* MARK: - Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text-primary: #FFFFFF;
+        --text-secondary: rgba(255, 255, 255, 0.8);
+        --text-muted: rgba(255, 255, 255, 0.6);
+    }
+}
+
+/* MARK: - Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .aladdin-status--connecting {
+        animation: none;
+    }
+    
+    .aladdin-spinner {
+        animation: none;
+    }
+}
+
+/* MARK: - High Contrast Support */
+@media (prefers-contrast: high) {
+    .aladdin-btn {
+        border: 2px solid currentColor;
+    }
+    
+    .aladdin-card {
+        border: 2px solid var(--golden-accent);
+    }
+    
+    .aladdin-input {
+        border: 2px solid var(--golden-accent);
+    }
+}
+
+/* MARK: - Print Styles */
+@media print {
+    .aladdin-bottom-nav {
+        display: none;
+    }
+    
+    .aladdin-btn {
+        background: none !important;
+        color: black !important;
+        border: 1px solid black !important;
+    }
+    
+    .aladdin-card {
+        background: white !important;
+        color: black !important;
+        border: 1px solid black !important;
+    }
+}
+

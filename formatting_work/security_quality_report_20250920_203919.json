@@ -1,0 +1,122 @@
+{
+  "file": "security/ai_agents/emergency_response_system.py",
+  "timestamp": "2025-09-20T20:39:19.844414",
+  "total_analysis_time_seconds": 0.06814789772033691,
+  "overall_quality_score": 81.9,
+  "analysis_details": {
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "security",
+        "key",
+        "monitoring",
+        "alert",
+        "response",
+        "log"
+      ],
+      "message": "Найдено 6 ключевых слов безопасности"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 128)",
+        "Отсутствует docstring для test_emergency_response_system (строка 629)"
+      ],
+      "message": "Найдено 2 отсутствующих docstring"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "logging",
+        "dataclasses",
+        "enum",
+        "time",
+        "core",
+        "typing",
+        "asyncio",
+        "datetime"
+      ],
+      "message": "Зависимости: 8"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 25496,
+      "lines": 663,
+      "message": "Размер: 25496 байт, Строк: 663"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 128)",
+        "Отсутствует тип возвращаемого значения для функции _notify_family_emergency (строка 373)",
+        "Отсутствует тип возвращаемого значения для функции _alert_banks (строка 505)",
+        "Отсутствует тип возвращаемого значения для функции _activate_protective_measures (строка 519)",
+        "Отсутствует тип возвращаемого значения для функции _execute_protective_action (строка 542)",
+        "Отсутствует тип возвращаемого значения для функции _integrate_with_blocking_system (строка 555)",
+        "Отсутствует тип возвращаемого значения для функции test_emergency_response_system (строка 629)"
+      ],
+      "message": "Найдено 7 отсутствующих type hints"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'core.base'",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 24,
+      "num_classes": 7,
+      "message": "Функций: 24, Классов: 7"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 6,
+    "security_classes_found": 0,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Зарегистрируйте функцию в SFM реестре.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

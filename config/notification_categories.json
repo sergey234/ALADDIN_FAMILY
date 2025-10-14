@@ -1,0 +1,62 @@
+{
+  "security_alerts": {
+    "name": "Оповещения безопасности",
+    "priority": "high",
+    "icon": "🛡️",
+    "sound": "alert",
+    "vibration": "strong",
+    "led_color": "red",
+    "auto_dismiss": false,
+    "requires_action": true
+  },
+  "vpn_status": {
+    "name": "Статус VPN",
+    "priority": "medium",
+    "icon": "🔒",
+    "sound": "notification",
+    "vibration": "light",
+    "led_color": "blue",
+    "auto_dismiss": true,
+    "requires_action": false
+  },
+  "antivirus_scan": {
+    "name": "Сканирование антивируса",
+    "priority": "medium",
+    "icon": "🔍",
+    "sound": "notification",
+    "vibration": "medium",
+    "led_color": "yellow",
+    "auto_dismiss": true,
+    "requires_action": false
+  },
+  "family_activity": {
+    "name": "Активность семьи",
+    "priority": "low",
+    "icon": "👨‍👩‍👧‍👦",
+    "sound": "gentle",
+    "vibration": "light",
+    "led_color": "green",
+    "auto_dismiss": true,
+    "requires_action": false
+  },
+  "system_updates": {
+    "name": "Обновления системы",
+    "priority": "medium",
+    "icon": "🔄",
+    "sound": "notification",
+    "vibration": "medium",
+    "led_color": "blue",
+    "auto_dismiss": false,
+    "requires_action": true
+  },
+  "performance_alerts": {
+    "name": "Оповещения производительности",
+    "priority": "low",
+    "icon": "⚡",
+    "sound": "gentle",
+    "vibration": "light",
+    "led_color": "orange",
+    "auto_dismiss": true,
+    "requires_action": false
+  }
+}

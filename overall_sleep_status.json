@@ -1,0 +1,11 @@
+{
+  "timestamp": 1759054081.100897,
+  "status": "SLEEPING",
+  "systems": [
+    "rate_limiter",
+    "circuit_breaker",
+    "user_interface_manager"
+  ],
+  "sleep_mode": true,
+  "message": "Все системы переведены в спящий режим"
+}

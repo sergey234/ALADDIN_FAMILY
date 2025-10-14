@@ -1,0 +1,51 @@
+{
+  "orchestration": {
+    "health_check_interval": 30,
+    "auto_restart": true,
+    "max_restart_attempts": 3,
+    "startup_timeout": 60,
+    "shutdown_timeout": 30
+  },
+  "services": {
+    "vpn_core": {
+      "enabled": true,
+      "port": 8001,
+      "dependencies": []
+    },
+    "vpn_manager": {
+      "enabled": true,
+      "port": 8002,
+      "dependencies": [
+        "vpn_core"
+      ]
+    },
+    "vpn_monitoring": {
+      "enabled": true,
+      "port": 8003,
+      "dependencies": [
+        "vpn_core",
+        "vpn_manager"
+      ]
+    },
+    "vpn_analytics": {
+      "enabled": true,
+      "port": 8004,
+      "dependencies": [
+        "vpn_manager",
+        "vpn_monitoring"
+      ]
+    },
+    "vpn_integration": {
+      "enabled": true,
+      "port": 8005,
+      "dependencies": [
+        "vpn_manager"
+      ]
+    }
+  },
+  "load_balancing": {
+    "algorithm": "round_robin",
+    "health_check_enabled": true,
+    "failover_enabled": true
+  }
+}

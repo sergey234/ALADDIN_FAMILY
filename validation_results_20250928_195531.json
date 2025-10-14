@@ -1,0 +1,2953 @@
+{
+  "etapa6": {
+    "6.1": {
+      "classes_found": {
+        "SecurityAlert": {
+          "line": 61,
+          "bases": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 62,
+              "is_async": false,
+              "args": [
+                "self",
+                "alert_type",
+                "message",
+                "severity"
+              ],
+              "decorators": []
+            }
+          ],
+          "attributes": [],
+          "docstring": null
+        },
+        "FunctionStatus": {
+          "line": 69,
+          "bases": [
+            "Enum"
+          ],
+          "methods": [],
+          "attributes": [
+            "DISABLED",
+            "ENABLED",
+            "TESTING",
+            "ERROR",
+            "MAINTENANCE",
+            "SLEEPING"
+          ],
+          "docstring": "Статусы функций"
+        },
+        "SecurityFunction": {
+          "line": 80,
+          "bases": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 83,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "name",
+                "description",
+                "function_type",
+                "security_level"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "to_dict",
+              "line": 113,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            }
+          ],
+          "attributes": [],
+          "docstring": "Класс для представления безопасной функции"
+        },
+        "SafeFunctionManager": {
+          "line": 143,
+          "bases": [
+            "SecurityBase"
+          ],
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 146,
+              "is_async": false,
+              "args": [
+                "self",
+                "name",
+                "config"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "initialize",
+              "line": 291,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_initialize_performance_optimizations",
+              "line": 368,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_initialize_service_mesh_manager",
+              "line": 400,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_register_sfm_services",
+              "line": 453,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_cached_result",
+              "line": 495,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "args_hash"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "cache_result",
+              "line": 531,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "args_hash",
+                "result"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "clear_cache",
+              "line": 552,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_cache_stats",
+              "line": 587,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_circuit_breaker",
+              "line": 606,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_on_circuit_breaker_state_change",
+              "line": 626,
+              "is_async": false,
+              "args": [
+                "self",
+                "name",
+                "old_state",
+                "new_state"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_on_circuit_breaker_alert",
+              "line": 633,
+              "is_async": false,
+              "args": [
+                "self",
+                "alert_data"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_circuit_breaker_stats",
+              "line": 647,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_register_basic_functions",
+              "line": 661,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_setup_dependencies",
+              "line": 759,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_initialize_critical_functions",
+              "line": 777,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_start_auto_management",
+              "line": 785,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "register_function",
+              "line": 790,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "name",
+                "description",
+                "function_type",
+                "security_level",
+                "is_critical",
+                "auto_enable",
+                "handler"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "unregister_function",
+              "line": 881,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_has_dependent_functions",
+              "line": 919,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "enable_function",
+              "line": 926,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "disable_function",
+              "line": 966,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_check_dependencies",
+              "line": 998,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "execute_function",
+              "line": 1015,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "params"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "execute_function_async",
+              "line": 1157,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "params"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "save_functions_async",
+              "line": 1195,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "load_functions_async",
+              "line": 1229,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "shutdown_optimizations",
+              "line": 1263,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_execute_function_handler",
+              "line": 1284,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "params"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_update_function_stats",
+              "line": 1297,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "success",
+                "execution_time"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "register_function_handler",
+              "line": 1324,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "handler"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_function_status",
+              "line": 1354,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_all_functions_status",
+              "line": 1371,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_enabled_functions",
+              "line": 1380,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_critical_functions",
+              "line": 1390,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_function_dependencies",
+              "line": 1403,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_dependent_functions",
+              "line": 1418,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "test_function",
+              "line": 1435,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_status",
+              "line": 1476,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_safe_function_stats",
+              "line": 1539,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_get_functions_by_type",
+              "line": 1574,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_get_functions_by_security_level",
+              "line": 1582,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_get_functions_by_status",
+              "line": 1590,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "sleep_function",
+              "line": 1598,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "wake_function",
+              "line": 1669,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "register_function_with_sleep",
+              "line": 1726,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "name",
+                "description",
+                "function_type",
+                "handler",
+                "security_level",
+                "dependencies",
+                "is_critical",
+                "auto_sleep",
+                "sleep_after_hours"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_sleeping_functions",
+              "line": 1813,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "auto_sleep_management",
+              "line": 1826,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_start_sleep_management",
+              "line": 1879,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_stop_sleep_management",
+              "line": 1905,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_sleep_management_worker",
+              "line": 1928,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_sleep_statistics",
+              "line": 1983,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "configure_sleep_mode",
+              "line": 1997,
+              "is_async": false,
+              "args": [
+                "self",
+                "enable_sleep_mode",
+                "sleep_check_interval",
+                "default_sleep_hours",
+                "auto_sleep_enabled",
+                "sleep_grace_period"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_send_monitoring_metric",
+              "line": 2038,
+              "is_async": false,
+              "args": [
+                "self",
+                "metric_name",
+                "value",
+                "metric_type",
+                "tags"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_send_monitoring_alert",
+              "line": 2063,
+              "is_async": false,
+              "args": [
+                "self",
+                "alert_id",
+                "title",
+                "message",
+                "severity",
+                "metric_name",
+                "threshold_value",
+                "current_value"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_setup_monitoring_rules",
+              "line": 2093,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_update_monitoring_metrics",
+              "line": 2143,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_monitoring_dashboard_data",
+              "line": 2200,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_collect_performance_metrics",
+              "line": 2258,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_optimize_sleep_management",
+              "line": 2313,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_optimize_function_execution",
+              "line": 2389,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_run_performance_optimization",
+              "line": 2447,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_performance_metrics",
+              "line": 2477,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "configure_performance_optimization",
+              "line": 2503,
+              "is_async": false,
+              "args": [
+                "self",
+                "optimization_enabled",
+                "optimization_interval"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_setup_security_monitoring_rules",
+              "line": 2522,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_send_security_alert",
+              "line": 2589,
+              "is_async": false,
+              "args": [
+                "self",
+                "alert_id",
+                "title",
+                "message",
+                "severity",
+                "component",
+                "alert_type"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_monitor_function_security",
+              "line": 2624,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "action",
+                "details"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_update_security_monitoring_data",
+              "line": 2673,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_security_monitoring_status",
+              "line": 2700,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "configure_security_monitoring",
+              "line": 2727,
+              "is_async": false,
+              "args": [
+                "self",
+                "monitoring_integration_enabled",
+                "alert_retention_days"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "start",
+              "line": 2750,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "stop",
+              "line": 2767,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_validate_function_id",
+              "line": 2803,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_validate_function_name",
+              "line": 2843,
+              "is_async": false,
+              "args": [
+                "self",
+                "name"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_validate_function_params",
+              "line": 2878,
+              "is_async": false,
+              "args": [
+                "self",
+                "params"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_sanitize_input",
+              "line": 2942,
+              "is_async": false,
+              "args": [
+                "self",
+                "input_data"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_log_security_event",
+              "line": 2973,
+              "is_async": false,
+              "args": [
+                "self",
+                "event_type",
+                "function_id",
+                "details"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_check_security_threats",
+              "line": 3000,
+              "is_async": false,
+              "args": [
+                "self",
+                "function_id",
+                "params"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_security_status",
+              "line": 3066,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_get_risk_reasons",
+              "line": 3147,
+              "is_async": false,
+              "args": [
+                "self",
+                "function",
+                "risk_score"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_initialize_persistence",
+              "line": 3175,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_load_saved_functions",
+              "line": 3195,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_service_mesh_manager",
+              "line": 3281,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "is_service_mesh_enabled",
+              "line": 3285,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "register_service_in_mesh",
+              "line": 3289,
+              "is_async": false,
+              "args": [
+                "self",
+                "service_info"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "unregister_service_from_mesh",
+              "line": 3304,
+              "is_async": false,
+              "args": [
+                "self",
+                "service_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_service_health",
+              "line": 3319,
+              "is_async": false,
+              "args": [
+                "self",
+                "service_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_service_metrics",
+              "line": 3340,
+              "is_async": false,
+              "args": [
+                "self",
+                "service_id"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "list_services_in_mesh",
+              "line": 3361,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "enable_service_mesh",
+              "line": 3383,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "disable_service_mesh",
+              "line": 3404,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_service_mesh_status",
+              "line": 3425,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_save_functions",
+              "line": 3457,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_setup_emergencymlanalyzer_handler",
+              "line": 3534,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_initialize_auto_scaling_engine",
+              "line": 3569,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_setup_scaling_rules",
+              "line": 3596,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_scaling_status",
+              "line": 3641,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "collect_scaling_metrics",
+              "line": 3670,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_calculate_cpu_usage",
+              "line": 3703,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_calculate_memory_usage",
+              "line": 3722,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_calculate_error_rate",
+              "line": 3735,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            }
+          ],
+          "attributes": [],
+          "docstring": "Главный менеджер безопасных функций ALADDIN"
+        }
+      },
+      "base_classes": {
+        "SecurityAlert": [],
+        "FunctionStatus": [
+          "Enum"
+        ],
+        "SecurityFunction": [],
+        "SafeFunctionManager": [
+          "SecurityBase"
+        ]
+      },
+      "inheritance_hierarchy": {
+        "SecurityAlert": {
+          "bases": [],
+          "children": []
+        },
+        "FunctionStatus": {
+          "bases": [
+            "Enum"
+          ],
+          "children": []
+        },
+        "SecurityFunction": {
+          "bases": [],
+          "children": []
+        },
+        "SafeFunctionManager": {
+          "bases": [
+            "SecurityBase"
+          ],
+          "children": []
+        }
+      },
+      "total_classes": 4
+    },
+    "6.2": {
+      "SecurityAlert": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "FunctionStatus": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "SecurityFunction": {
+        "public_methods": [
+          {
+            "name": "to_dict",
+            "line": 113,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          }
+        ],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "SafeFunctionManager": {
+        "public_methods": [
+          {
+            "name": "initialize",
+            "line": 291,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_cached_result",
+            "line": 495,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id",
+              "args_hash"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "cache_result",
+            "line": 531,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id",
+              "args_hash",
+              "result"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "clear_cache",
+            "line": 552,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_cache_stats",
+            "line": 587,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_circuit_breaker",
+            "line": 606,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_circuit_breaker_stats",
+            "line": 647,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "register_function",
+            "line": 790,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id",
+              "name",
+              "description",
+              "function_type",
+              "security_level",
+              "is_critical",
+              "auto_enable",
+              "handler"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "unregister_function",
+            "line": 881,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "enable_function",
+            "line": 926,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "disable_function",
+            "line": 966,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "execute_function",
+            "line": 1015,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id",
+              "params"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "execute_function_async",
+            "line": 1157,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id",
+              "params"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "save_functions_async",
+            "line": 1195,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "load_functions_async",
+            "line": 1229,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "shutdown_optimizations",
+            "line": 1263,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "register_function_handler",
+            "line": 1324,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id",
+              "handler"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_function_status",
+            "line": 1354,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_all_functions_status",
+            "line": 1371,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_enabled_functions",
+            "line": 1380,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_critical_functions",
+            "line": 1390,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_function_dependencies",
+            "line": 1403,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_dependent_functions",
+            "line": 1418,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "test_function",
+            "line": 1435,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_status",
+            "line": 1476,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_safe_function_stats",
+            "line": 1539,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "sleep_function",
+            "line": 1598,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "wake_function",
+            "line": 1669,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "register_function_with_sleep",
+            "line": 1726,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id",
+              "name",
+              "description",
+              "function_type",
+              "handler",
+              "security_level",
+              "dependencies",
+              "is_critical",
+              "auto_sleep",
+              "sleep_after_hours"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_sleeping_functions",
+            "line": 1813,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "auto_sleep_management",
+            "line": 1826,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_sleep_statistics",
+            "line": 1983,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "configure_sleep_mode",
+            "line": 1997,
+            "is_async": false,
+            "args": [
+              "self",
+              "enable_sleep_mode",
+              "sleep_check_interval",
+              "default_sleep_hours",
+              "auto_sleep_enabled",
+              "sleep_grace_period"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_monitoring_dashboard_data",
+            "line": 2200,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_performance_metrics",
+            "line": 2477,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "configure_performance_optimization",
+            "line": 2503,
+            "is_async": false,
+            "args": [
+              "self",
+              "optimization_enabled",
+              "optimization_interval"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_security_monitoring_status",
+            "line": 2700,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "configure_security_monitoring",
+            "line": 2727,
+            "is_async": false,
+            "args": [
+              "self",
+              "monitoring_integration_enabled",
+              "alert_retention_days"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "start",
+            "line": 2750,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "stop",
+            "line": 2767,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_security_status",
+            "line": 3066,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_service_mesh_manager",
+            "line": 3281,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "is_service_mesh_enabled",
+            "line": 3285,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "register_service_in_mesh",
+            "line": 3289,
+            "is_async": false,
+            "args": [
+              "self",
+              "service_info"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "unregister_service_from_mesh",
+            "line": 3304,
+            "is_async": false,
+            "args": [
+              "self",
+              "service_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_service_health",
+            "line": 3319,
+            "is_async": false,
+            "args": [
+              "self",
+              "service_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_service_metrics",
+            "line": 3340,
+            "is_async": false,
+            "args": [
+              "self",
+              "service_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "list_services_in_mesh",
+            "line": 3361,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "enable_service_mesh",
+            "line": 3383,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "disable_service_mesh",
+            "line": 3404,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_service_mesh_status",
+            "line": 3425,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_scaling_status",
+            "line": 3641,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "collect_scaling_metrics",
+            "line": 3670,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          }
+        ],
+        "private_methods": [],
+        "protected_methods": [
+          {
+            "name": "_initialize_performance_optimizations",
+            "line": 368,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_initialize_service_mesh_manager",
+            "line": 400,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_register_sfm_services",
+            "line": 453,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_on_circuit_breaker_state_change",
+            "line": 626,
+            "is_async": false,
+            "args": [
+              "self",
+              "name",
+              "old_state",
+              "new_state"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_on_circuit_breaker_alert",
+            "line": 633,
+            "is_async": false,
+            "args": [
+              "self",
+              "alert_data"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_register_basic_functions",
+            "line": 661,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_setup_dependencies",
+            "line": 759,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_initialize_critical_functions",
+            "line": 777,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_start_auto_management",
+            "line": 785,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_has_dependent_functions",
+            "line": 919,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_check_dependencies",
+            "line": 998,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_execute_function_handler",
+            "line": 1284,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id",
+              "params"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_update_function_stats",
+            "line": 1297,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id",
+              "success",
+              "execution_time"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_get_functions_by_type",
+            "line": 1574,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_get_functions_by_security_level",
+            "line": 1582,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_get_functions_by_status",
+            "line": 1590,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_start_sleep_management",
+            "line": 1879,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_stop_sleep_management",
+            "line": 1905,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_sleep_management_worker",
+            "line": 1928,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_send_monitoring_metric",
+            "line": 2038,
+            "is_async": false,
+            "args": [
+              "self",
+              "metric_name",
+              "value",
+              "metric_type",
+              "tags"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_send_monitoring_alert",
+            "line": 2063,
+            "is_async": false,
+            "args": [
+              "self",
+              "alert_id",
+              "title",
+              "message",
+              "severity",
+              "metric_name",
+              "threshold_value",
+              "current_value"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_setup_monitoring_rules",
+            "line": 2093,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_update_monitoring_metrics",
+            "line": 2143,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_collect_performance_metrics",
+            "line": 2258,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_optimize_sleep_management",
+            "line": 2313,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_optimize_function_execution",
+            "line": 2389,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_run_performance_optimization",
+            "line": 2447,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_setup_security_monitoring_rules",
+            "line": 2522,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_send_security_alert",
+            "line": 2589,
+            "is_async": false,
+            "args": [
+              "self",
+              "alert_id",
+              "title",
+              "message",
+              "severity",
+              "component",
+              "alert_type"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_monitor_function_security",
+            "line": 2624,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id",
+              "action",
+              "details"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_update_security_monitoring_data",
+            "line": 2673,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_validate_function_id",
+            "line": 2803,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_validate_function_name",
+            "line": 2843,
+            "is_async": false,
+            "args": [
+              "self",
+              "name"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_validate_function_params",
+            "line": 2878,
+            "is_async": false,
+            "args": [
+              "self",
+              "params"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_sanitize_input",
+            "line": 2942,
+            "is_async": false,
+            "args": [
+              "self",
+              "input_data"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_log_security_event",
+            "line": 2973,
+            "is_async": false,
+            "args": [
+              "self",
+              "event_type",
+              "function_id",
+              "details"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_check_security_threats",
+            "line": 3000,
+            "is_async": false,
+            "args": [
+              "self",
+              "function_id",
+              "params"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_get_risk_reasons",
+            "line": 3147,
+            "is_async": false,
+            "args": [
+              "self",
+              "function",
+              "risk_score"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_initialize_persistence",
+            "line": 3175,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_load_saved_functions",
+            "line": 3195,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_save_functions",
+            "line": 3457,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_setup_emergencymlanalyzer_handler",
+            "line": 3534,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_initialize_auto_scaling_engine",
+            "line": 3569,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_setup_scaling_rules",
+            "line": 3596,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_calculate_cpu_usage",
+            "line": 3703,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_calculate_memory_usage",
+            "line": 3722,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_calculate_error_rate",
+            "line": 3735,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          }
+        ],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      }
+    },
+    "6.3": {
+      "SecurityAlert": {
+        "instantiation_test": true,
+        "method_tests": {
+          "__init__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      },
+      "FunctionStatus": {
+        "instantiation_test": true,
+        "method_tests": {},
+        "errors": []
+      },
+      "SecurityFunction": {
+        "instantiation_test": true,
+        "method_tests": {
+          "__init__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "to_dict": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      },
+      "SafeFunctionManager": {
+        "instantiation_test": true,
+        "method_tests": {
+          "__init__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "initialize": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_initialize_performance_optimizations": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_initialize_service_mesh_manager": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_register_sfm_services": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_cached_result": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "cache_result": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "clear_cache": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_cache_stats": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_circuit_breaker": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_on_circuit_breaker_state_change": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_on_circuit_breaker_alert": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_circuit_breaker_stats": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_register_basic_functions": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_setup_dependencies": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_initialize_critical_functions": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_start_auto_management": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "register_function": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "unregister_function": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_has_dependent_functions": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "enable_function": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "disable_function": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_check_dependencies": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "execute_function": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "execute_function_async": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "save_functions_async": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "load_functions_async": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "shutdown_optimizations": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_execute_function_handler": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_update_function_stats": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "register_function_handler": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_function_status": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_all_functions_status": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_enabled_functions": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_critical_functions": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_function_dependencies": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_dependent_functions": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "test_function": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_status": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_safe_function_stats": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_get_functions_by_type": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_get_functions_by_security_level": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_get_functions_by_status": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "sleep_function": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "wake_function": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "register_function_with_sleep": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_sleeping_functions": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "auto_sleep_management": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_start_sleep_management": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_stop_sleep_management": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_sleep_management_worker": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_sleep_statistics": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "configure_sleep_mode": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_send_monitoring_metric": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_send_monitoring_alert": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_setup_monitoring_rules": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_update_monitoring_metrics": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_monitoring_dashboard_data": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_collect_performance_metrics": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_optimize_sleep_management": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_optimize_function_execution": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_run_performance_optimization": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_performance_metrics": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "configure_performance_optimization": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_setup_security_monitoring_rules": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_send_security_alert": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_monitor_function_security": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_update_security_monitoring_data": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_security_monitoring_status": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "configure_security_monitoring": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "start": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "stop": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_validate_function_id": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_validate_function_name": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_validate_function_params": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_sanitize_input": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_log_security_event": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_check_security_threats": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_security_status": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_get_risk_reasons": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_initialize_persistence": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_load_saved_functions": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_service_mesh_manager": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "is_service_mesh_enabled": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "register_service_in_mesh": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "unregister_service_from_mesh": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_service_health": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_service_metrics": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "list_services_in_mesh": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "enable_service_mesh": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "disable_service_mesh": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_service_mesh_status": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_save_functions": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_setup_emergencymlanalyzer_handler": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_initialize_auto_scaling_engine": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_setup_scaling_rules": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_scaling_status": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "collect_scaling_metrics": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_calculate_cpu_usage": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_calculate_memory_usage": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_calculate_error_rate": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      }
+    },
+    "6.4": {
+      "emergencymlanalyzer_handler": {
+        "line": 3537,
+        "is_async": false,
+        "args": [],
+        "decorators": [],
+        "docstring": "Обработчик для EmergencyMLAnalyzer"
+      },
+      "create_handler_wrapper": {
+        "line": 3259,
+        "is_async": false,
+        "args": [
+          "func_id",
+          "handler_name"
+        ],
+        "decorators": [],
+        "docstring": null
+      },
+      "wrapper": {
+        "line": 3260,
+        "is_async": false,
+        "args": [],
+        "decorators": [],
+        "docstring": null
+      }
+    },
+    "6.5": {
+      "standard": [
+        "threading",
+        "json",
+        "datetime",
+        "enum",
+        "typing",
+        "re",
+        "html",
+        "os",
+        "os",
+        "json",
+        "os"
+      ],
+      "third_party": [
+        "time",
+        "hashlib",
+        "core.base",
+        "security.advanced_monitoring_manager",
+        "security.reactive.performance_optimizer",
+        "security.security_monitoring",
+        "security.circuit_breaker",
+        "security.smart_monitoring",
+        "security.thread_pool_manager",
+        "security.async_io_manager",
+        "security.microservices.service_mesh_manager",
+        "security.scaling.auto_scaling_engine",
+        "redis",
+        "security.advanced_monitoring_manager",
+        "security.advanced_monitoring_manager",
+        "psutil",
+        "security.advanced_monitoring_manager",
+        "security.ai_agents.emergency_ml_analyzer",
+        "security.advanced_monitoring_manager"
+      ],
+      "local": [],
+      "unused": [
+        "security.ai_agents.emergency_ml_analyzer",
+        "security.async_io_manager",
+        "security.smart_monitoring",
+        "security.scaling.auto_scaling_engine",
+        "security.security_monitoring",
+        "security.reactive.performance_optimizer",
+        "security.circuit_breaker",
+        "enum",
+        "security.thread_pool_manager",
+        "core.base",
+        "security.advanced_monitoring_manager",
+        "security.microservices.service_mesh_manager",
+        "typing"
+      ],
+      "circular": []
+    },
+    "6.6": {
+      "SecurityAlert": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "FunctionStatus": {
+        "class_attributes": [
+          "DISABLED",
+          "ENABLED",
+          "TESTING",
+          "ERROR",
+          "MAINTENANCE",
+          "SLEEPING"
+        ],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "SecurityFunction": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "SafeFunctionManager": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      }
+    },
+    "6.7": {
+      "SecurityAlert": {
+        "present": [
+          "init"
+        ],
+        "missing": [
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "FunctionStatus": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "SecurityFunction": {
+        "present": [
+          "init"
+        ],
+        "missing": [
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "SafeFunctionManager": {
+        "present": [
+          "init"
+        ],
+        "missing": [
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__str__",
+          "__repr__"
+        ]
+      }
+    },
+    "6.8": {
+      "classes_with_docstring": 3,
+      "classes_without_docstring": 1,
+      "methods_with_docstring": 101,
+      "methods_without_docstring": 3,
+      "functions_with_docstring": 1,
+      "functions_without_docstring": 2,
+      "missing_docstrings": [
+        "Класс SecurityAlert",
+        "Метод SecurityAlert.__init__",
+        "Метод SecurityFunction.__init__",
+        "Метод SafeFunctionManager.__init__",
+        "Функция create_handler_wrapper",
+        "Функция wrapper"
+      ]
+    },
+    "6.9": {
+      "methods_with_try_except": 73,
+      "methods_without_try_except": 31,
+      "logging_usage": 0,
+      "error_return_handling": 0
+    },
+    "6.10": {
+      "syntax_valid": true,
+      "imports_valid": true,
+      "classes_instantiable": true,
+      "methods_callable": true,
+      "integration_ok": true,
+      "errors": []
+    },
+    "6.11": {
+      "file_exists": true,
+      "file_readable": true,
+      "file_size": 164932,
+      "last_modified": 

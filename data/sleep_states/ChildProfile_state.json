@@ -1,0 +1,9 @@
+{
+  "function_name": "ChildProfile",
+  "function_id": "bot_childprofile",
+  "sleep_time": "2025-09-15T22:02:30.015969",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": false,
+  "minimal_system_sleep": true
+}

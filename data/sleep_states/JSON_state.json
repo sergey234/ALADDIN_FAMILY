@@ -1,0 +1,9 @@
+{
+  "function_name": "JSON",
+  "function_id": "microservice_json",
+  "sleep_time": "2025-09-15T22:02:29.908456",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": true,
+  "minimal_system_sleep": true
+}

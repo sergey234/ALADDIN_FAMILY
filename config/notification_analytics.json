@@ -1,0 +1,68 @@
+{
+  "analytics_config": {
+    "name": "Аналитика уведомлений ALADDIN",
+    "version": "1.0",
+    "tracking_enabled": true,
+    "privacy_compliant": true
+  },
+  "metrics_tracked": {
+    "delivery_metrics": {
+      "sent_count": "total_notifications_sent",
+      "delivered_count": "successfully_delivered",
+      "failed_count": "delivery_failures",
+      "delivery_rate": "percentage_delivered"
+    },
+    "engagement_metrics": {
+      "opened_count": "notifications_opened",
+      "clicked_count": "notifications_clicked",
+      "dismissed_count": "notifications_dismissed",
+      "engagement_rate": "percentage_engaged"
+    },
+    "user_behavior": {
+      "preferred_categories": "most_engaged_categories",
+      "optimal_timing": "best_send_times",
+      "device_preferences": "device_usage_patterns",
+      "response_times": "average_response_time"
+    }
+  },
+  "reporting": {
+    "daily_reports": {
+      "enabled": true,
+      "metrics": [
+        "delivery_rate",
+        "engagement_rate",
+        "top_categories"
+      ]
+    },
+    "weekly_reports": {
+      "enabled": true,
+      "metrics": [
+        "user_behavior",
+        "trend_analysis",
+        "performance_insights"
+      ]
+    },
+    "monthly_reports": {
+      "enabled": true,
+      "metrics": [
+        "comprehensive_analytics",
+        "recommendations",
+        "optimization_suggestions"
+      ]
+    }
+  },
+  "optimization": {
+    "auto_optimization": {
+      "enabled": true,
+      "optimize_timing": true,
+      "optimize_content": true,
+      "optimize_frequency": true
+    },
+    "a_b_testing": {
+      "enabled": true,
+      "test_templates": true,
+      "test_timing": true,
+      "test_frequency": true
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "sleep_status": {
+    "mobile_navigation": false,
+    "gaming_security": false,
+    "emergency_response": false,
+    "parental_control": false,
+    "notification": false,
+    "whatsapp": false,
+    "telegram": false,
+    "instagram": false,
+    "max_messenger": false,
+    "analytics": false,
+    "website_navigation": false,
+    "browser_security": false,
+    "cloud_storage": false,
+    "network_security": false,
+    "device_security": false
+  },
+  "last_updated": "2025-09-15 15:01:28.869367",
+  "bot_count": 15
+}

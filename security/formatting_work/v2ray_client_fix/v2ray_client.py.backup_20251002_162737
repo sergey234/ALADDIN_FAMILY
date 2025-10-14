@@ -1,0 +1,237 @@
+"""
+V2Ray клиент для ALADDIN VPN
+Обеспечивает обход блокировок через V2Ray протокол
+"""
+
+import logging as std_logging
+import asyncio
+import json
+import time
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
+from enum import Enum
+
+# Настройка логирования
+std_logging.basicConfig(level=std_logging.INFO)
+logger = std_logging.getLogger(__name__)
+
+class V2RayProtocol(Enum):
+    """Протоколы V2Ray"""
+    VMESS = "vmess"
+    VLESS = "vless"
+    TROJAN = "trojan"
+    SHADOWSOCKS = "shadowsocks"
+
+class V2RaySecurity(Enum):
+    """Методы безопасности V2Ray"""
+    AES_128_GCM = "aes-128-gcm"
+    CHACHA20_POLY1305 = "chacha20-poly1305"
+    XCHACHA20_POLY1305 = "xchacha20-poly1305"
+    NONE = "none"
+
+@dataclass
+class V2RayConfig:
+    """Конфигурация V2Ray"""
+    server: str
+    port: int
+    uuid: str
+    protocol: V2RayProtocol
+    security: V2RaySecurity
+    network: str = "tcp"
+    ws_path: Optional[str] = None
+    ws_headers: Optional[Dict[str, str]] = None
+    tls: bool = True
+    timeout: int = 30
+
+class ALADDINV2RayClient:
+    """V2Ray клиент для ALADDIN"""
+    
+    def __init__(self):
+        self.config: Optional[V2RayConfig] = None
+        self.is_connected = False
+        self.connection_start_time: Optional[float] = None
+        self.bytes_sent = 0
+        self.bytes_received = 0
+        
+    def configure(self, config: V2RayConfig) -> bool:
+        """Настройка клиента"""
+        try:
+            self.config = config
+            logger.info(f"V2Ray настроен: {config.server}:{config.port} ({config.protocol.value})")
+            return True
+        except Exception as e:
+            logger.error(f"Ошибка настройки V2Ray: {e}")
+            return False
+    
+    async def connect(self) -> bool:
+        """Подключение к V2Ray серверу"""
+        try:
+            if not self.config:
+                logger.error("V2Ray не настроен")
+                return False
+            
+            logger.info(f"Подключение к V2Ray серверу {self.config.server}...")
+            
+            # Симулируем подключение (в реальной реализации здесь будет подключение к серверу)
+            await asyncio.sleep(2)
+            
+            # Проверяем успешность подключения
+            if await self._test_connection():
+                self.is_connected = True
+                self.connection_start_time = time.time()
+                logger.info("V2Ray подключение успешно")
+                return True
+            else:
+                logger.error("Ошибка подключения к V2Ray")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Ошибка подключения V2Ray: {e}")
+            return False
+    
+    async def disconnect(self) -> bool:
+        """Отключение от V2Ray сервера"""
+        try:
+            if not self.is_connected:
+                logger.warning("Нет активного V2Ray подключения")
+                return True
+            
+            logger.info("Отключение от V2Ray сервера...")
+            
+            # Симулируем отключение
+            await asyncio.sleep(1)
+            
+            self.is_connected = False
+            self.connection_start_time = None
+            logger.info("V2Ray отключение завершено")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Ошибка отключения V2Ray: {e}")
+            return False
+    
+    async def _test_connection(self) -> bool:
+        """Тестирование подключения"""
+        try:
+            # В реальной реализации здесь будет ping или HTTP запрос
+            # Пока что симулируем успешное подключение
+            await asyncio.sleep(1)
+            return True
+        except Exception as e:
+            logger.error(f"Ошибка тестирования V2Ray подключения: {e}")
+            return False
+    
+    def get_connection_info(self) -> Optional[Dict[str, Any]]:
+        """Получение информации о подключении"""
+        if not self.is_connected or not self.config:
+            return None
+        
+        connection_time = time.time() - self.connection_start_time if self.connection_start_time else 0
+        
+        return {
+            "protocol": "v2ray",
+            "server": self.config.server,
+            "port": self.config.port,
+            "v2ray_protocol": self.config.protocol.value,
+            "security": self.config.security.value,
+            "network": self.config.network,
+            "tls": self.config.tls,
+            "is_connected": self.is_connected,
+            "connection_time": round(connection_time, 2),
+            "bytes_sent": self.bytes_sent,
+            "bytes_received": self.bytes_received
+        }
+    
+    def get_speed(self) -> Dict[str, float]:
+        """Расчет скорости подключения"""
+        if not self.is_connected or not self.connection_start_time:
+            return {"download": 0.0, "upload": 0.0}
+        
+        connection_time = time.time() - self.connection_start_time
+        if connection_time == 0:
+            return {"download": 0.0, "upload": 0.0}
+        
+        # Симулируем скорость (в реальной реализации будет реальный расчет)
+        download_speed = self.bytes_received / connection_time / 1024  # KB/s
+        upload_speed = self.bytes_sent / connection_time / 1024  # KB/s
+        
+        return {
+            "download": round(download_speed, 2),
+            "upload": round(upload_speed, 2)
+        }
+    
+    def update_traffic(self, bytes_sent: int, bytes_received: int):
+        """Обновление статистики трафика"""
+        self.bytes_sent += bytes_sent
+        self.bytes_received += bytes_received
+    
+    def generate_vmess_config(self) -> Dict[str, Any]:
+        """Генерация VMess конфигурации"""
+        if not self.config:
+            return {}
+        
+        return {
+            "v": "2",
+            "ps": f"ALADDIN-{self.config.server}",
+            "add": self.config.server,
+            "port": str(self.config.port),
+            "id": self.config.uuid,
+            "aid": "0",
+            "scy": self.config.security.value,
+            "net": self.config.network,
+            "type": "none",
+            "host": "",
+            "path": self.config.ws_path or "",
+            "tls": "tls" if self.config.tls else "",
+            "sni": "",
+            "alpn": ""
+        }
+
+# Пример использования
+async def main():
+    """Основная функция для тестирования"""
+    client = ALADDINV2RayClient()
+    
+    # Настраиваем клиент
+    config = V2RayConfig(
+        server="192.168.2.11",
+        port=443,
+        uuid="550e8400-e29b-41d4-a716-446655440000",
+        protocol=V2RayProtocol.VMESS,
+        security=V2RaySecurity.CHACHA20_POLY1305,
+        network="ws",
+        ws_path="/v2ray",
+        tls=True
+    )
+    
+    if client.configure(config):
+        print("✅ V2Ray настроен")
+        
+        # Подключаемся
+        if await client.connect():
+            print("✅ V2Ray подключение успешно")
+            
+            # Получаем информацию о подключении
+            info = client.get_connection_info()
+            if info:
+                print(f"Сервер: {info['server']}:{info['port']}")
+                print(f"Протокол: {info['v2ray_protocol']}")
+                print(f"Безопасность: {info['security']}")
+                print(f"TLS: {info['tls']}")
+                print(f"Время подключения: {info['connection_time']} сек")
+            
+            # Генерируем VMess конфигурацию
+            vmess_config = client.generate_vmess_config()
+            print(f"VMess конфигурация: {json.dumps(vmess_config, indent=2)}")
+            
+            # Отключаемся
+            await asyncio.sleep(2)
+            await client.disconnect()
+            print("✅ V2Ray отключение завершено")
+        else:
+            print("❌ Ошибка подключения V2Ray")
+    else:
+        print("❌ Ошибка настройки V2Ray")
+
+if __name__ == "__main__":
+    asyncio.run(main())

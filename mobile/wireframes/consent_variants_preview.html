@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10 Вариантов Окна Согласия</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 100%);
+            color: white;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 32px;
+        }
+        
+        .variants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .variant-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 20px;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: 0.3s;
+        }
+        
+        .variant-card:hover {
+            border-color: #F59E0B;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+        }
+        
+        .variant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .variant-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        
+        .variant-badge {
+            background: #10B981;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .variant-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .variant-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .consent-preview {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2e5090 100%);
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 350px;
+            cursor: pointer;
+        }
+        
+        .consent-preview:hover {
+            background: linear-gradient(135deg, #2e5090 0%, #3e60a0 100%);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .legal-text {
+            font-size: 10px;
+            opacity: 0.7;
+            text-align: center;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+        
+        .recommendation {
+            background: rgba(245, 158, 11, 0.2);
+            border: 2px solid #F59E0B;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 10 Вариантов Окна Согласия</h1>
+        
+        <div class="variants-grid">
+            <!-- Вариант 1 -->
+            <div class="variant-card" onclick="openVariant(1)">
+                <div class="variant-header">
+                    <div class="variant-number">#1</div>
+                    <div class="variant-badge">⭐ РЕКОМЕНДУЮ</div>
+                </div>
+                <div class="variant-title">Минимализм</div>
+                <div class="variant-stats">
+                    <span>📏 320x400</span>
+                    <span>⏱️ 15 сек</span>
+                    <span>⭐ 5/5</span>
+                </div>
+                <div class="consent-preview">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 32px;">🛡️</div>
+                        <div style="font-size: 20px; font-weight: 600; margin-top: 10px;">ALADDIN</div>
+                    </div>
+                    <div style="font-size: 13px; text-align: center; margin-bottom: 15px;">
+                        Добро пожаловать в систему<br>семейной безопасности!
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 15px;">
+                        <strong>Мы НЕ собираем ваши данные:</strong><br>
+                        ❌ Имя, email, телефон<br>
+                        ❌ История, сообщения
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 15px;">
+                        ✅ Полная анонимность<br>
+                        ✅ Шифрование E2E<br>
+                        ✅ Защита 152-ФЗ
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-secondary" style="flex: 1;">Подробнее</button>
+                        <button class="btn btn-primary" style="flex: 1;">Принять ✓</button>
+                    </div>
+                    <div class="legal-text">
+                        Принимая условия, вы соглашаетесь с Политикой<br>
+                        конфиденциальности ALADDIN и VPN согласно<br>
+                        ФЗ-152 от 27.07.2006 (статья 9)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вариант 2 -->
+            <div class="variant-card" onclick="openVariant(2)">
+                <div class="variant-header">
+                    <div class="variant-number">#2</div>
+                </div>
+                <div class="variant-title">С иконками</div>
+                <div class="variant-stats">
+                    <span>📏 340x480</span>
+                    <span>⏱️ 30 сек</span>
+                    <span>⭐ 4/5</span>
+                </div>
+                <div class="consent-preview">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <span style="font-size: 24px;">🛡️</span>
+                        <span style="font-size: 24px; margin-left: 10px;">🔐</span>
+                        <div style="font-size: 16px; font-weight: 600; margin-top: 8px;">
+                            ALADDIN & VPN Protection
+                        </div>
+                    </div>
+                    <div style="font-size: 11px; margin-bottom: 12px;">
+                        <strong style="color: #F59E0B;">✅ Мы НЕ собираем:</strong><br>
+                        • Персональные данные<br>
+                        • Историю посещений<br>
+                        • Ваши сообщения
+                    </div>
+                    <div style="font-size: 11px; margin-bottom: 12px;">
+                        <strong style="color: #10B981;">🔒 Мы используем:</strong><br>
+                        • AES-256 шифрование<br>
+                        • Zero-logs (нет логов)<br>
+                        • Анонимные профили
+                    </div>
+                    <div style="font-size: 10px; opacity: 0.7; text-align: center; margin: 12px 0;">
+                        Версия 2.0 | 10.10.2025
+                    </div>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;">
+                        Читать полностью
+                    </button>
+                    <button class="btn btn-primary" style="width: 100%;">
+                        ✓ Принимаю условия
+                    </button>
+                    <div class="legal-text">
+                        Согласие с Политикой ALADDIN и VPN<br>
+                        (ФЗ-152, ст. 9)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вариант 3 -->
+            <div class="variant-card" onclick="openVariant(3)">
+                <div class="variant-header">
+                    <div class="variant-number">#3</div>
+                    <div class="variant-badge" style="background: #10B981;">⭐ ТОП-3</div>
+                </div>
+                <div class="variant-title">Карточки</div>
+                <div class="variant-stats">
+                    <span>📏 350x380</span>
+                    <span>⏱️ 20 сек</span>
+                    <span>⭐ 5/5</span>
+                </div>
+                <div class="consent-preview">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <div style="font-size: 18px; font-weight: 600;">🎯 Начнём!</div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div style="background: rgba(245, 158, 11, 0.2); border: 1px solid #F59E0B; border-radius: 12px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px;">🛡️</div>
+                            <div style="font-size: 12px; font-weight: 600; margin: 5px 0;">ALADDIN</div>
+                            <div style="font-size: 10px; opacity: 0.8;">Не храним<br>ваши данные</div>
+                        </div>
+                        <div style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10B981; border-radius: 12px; padding: 12px; text-align: center;">
+                            <div style="font-size: 24px;">🔐</div>
+                            <div style="font-size: 12px; font-weight: 600; margin: 5px 0;">VPN</div>
+                            <div style="font-size: 10px; opacity: 0.8;">No-logs<br>политика</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 15px;">
+                        <strong>✨ Что вы получаете:</strong><br>
+                        • Полную анонимность<br>
+                        • Защиту всей семьи<br>
+                        • Без слежки и сбора данных
+                    </div>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px; font-size: 12px;">
+                        📜 Политика
+                    </button>
+                    <button class="btn btn-primary" style="width: 100%; font-size: 13px;">
+                        Принять ✓
+                    </button>
+                    <div class="legal-text">
+                        Соглашаясь, вы принимаете Политику<br>
+                        ALADDIN и VPN (ФЗ-152, ст. 9)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вариант 4 -->
+            <div class="variant-card" onclick="openVariant(4)">
+                <div class="variant-header">
+                    <div class="variant-number">#4</div>
+                </div>
+                <div class="variant-title">Accordion</div>
+                <div class="variant-stats">
+                    <span>📏 320x350</span>
+                    <span>⏱️ 10 сек</span>
+                    <span>⭐ 3/5</span>
+                </div>
+                <div class="consent-preview">
+                    <div style="font-size: 16px; font-weight: 600; text-align: center; margin-bottom: 15px;">
+                        📜 Условия использования
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">
+                            ▼ ALADDIN - Политика
+                        </div>
+                        <div style="font-size: 11px; opacity: 0.9;">
+                            Мы НЕ собираем персональные данные.<br>
+                            Только анонимные ID. 152-ФЗ соблюдён.
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; margin-bottom: 15px;">
+                        <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">
+                            ▼ VPN - Политика
+                        </div>
+                        <div style="font-size: 11px; opacity: 0.9;">
+                            Zero-logs. Не храним историю.<br>
+                            Анонимная оплата. Шифрование.
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; text-align: center; margin-bottom: 15px;">
+                        ✅ Согласен с обеими политиками
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;">
+                        Принять и продолжить
+                    </button>
+                    <div class="legal-text">
+                        ФЗ-152 от 27.07.2006 (ст. 9)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вариант 5 -->
+            <div class="variant-card" onclick="openVariant(5)">
+                <div class="variant-header">
+                    <div class="variant-number">#5</div>
+                </div>
+                <div class="variant-title">Чекбоксы</div>
+                <div class="variant-stats">
+                    <span>📏 330x420</span>
+                    <span>⏱️ 25 сек</span>
+                    <span>⭐ 3/5</span>
+                </div>
+                <div class="consent-preview">
+                    <div style="font-size: 16px; font-weight: 600; text-align: center; margin-bottom: 15px;">
+                        🔐 Ваша приватность важна!
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 15px;">
+                        Пожалуйста, подтвердите:
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 12px; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: start; gap: 10px;">
+                            <div style="font-size: 18px;">☑️</div>
+                            <div style="font-size: 11px;">
+                                <strong>Я принимаю политику ALADDIN</strong><br>
+                                (анонимная защита семьи)<br>
+                                <span style="color: #3B82F6; cursor: pointer;">📄 Читать →</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 12px; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: start; gap: 10px;">
+                            <div style="font-size: 18px;">☑️</div>
+                            <div style="font-size: 11px;">
+                                <strong>Я принимаю политику VPN</strong><br>
+                                (zero-logs, шифрование)<br>
+                                <span style="color: #3B82F6; cursor: pointer;">📄 Читать →</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;">
+                        Принять всё ✓
+                    </button>
+                    <div class="legal-text">
+                        Согласие согласно ФЗ-152 (ст. 9)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вариант 6 -->
+            <div class="variant-card" onclick="openVariant(6)">
+                <div class="variant-header">
+                    <div class="variant-number">#6</div>
+                </div>
+                <div class="variant-title">Визуальный</div>
+                <div class="variant-stats">
+                    <span>📏 340x420</span>
+                    <span>⏱️ 20 сек</span>
+                    <span>⭐ 5/5</span>
+                </div>
+                <div class="consent-preview">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <div style="font-size: 40px;">🛡️</div>
+                        <div style="font-size: 18px; font-weight: 600;">ALADDIN FAMILY</div>
+                    </div>
+                    <div style="background: rgba(239, 68, 68, 0.2); border-left: 3px solid #EF4444; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
+                        <div style="font-size: 12px; font-weight: 600; margin-bottom: 5px;">
+                            ❌ Не собираем
+                        </div>
+                        <div style="font-size: 10px;">
+                            Имя • Email • История
+                        </div>
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.2); border-left: 3px solid #10B981; padding: 12px; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="font-size: 12px; font-weight: 600; margin-bottom: 5px;">
+                            ✅ Защищаем!
+                        </div>
+                        <div style="font-size: 10px;">
+                            Анонимно • Zero-logs • 152-ФЗ
+                        </div>
+                    </div>
+                    <div style="font-size: 11px; text-align: center; margin-bottom: 15px;">
+                        💡 Краткая политика:<br>
+                        • Анонимные ID<br>
+                        • Zero-logs VPN<br>
+                        • 152-ФЗ соблюдён
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" style="flex: 1; font-size: 11px;">Подробнее</button>
+                        <button class="btn btn-primary" style="flex: 2; font-size: 12px;">Принимаю</button>
+                    </div>
+                    <div class="legal-text">
+                        Согласие с политикой (ФЗ-152, ст. 9)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вариант 7 -->
+            <div class="variant-card" onclick="openVariant(7)">
+                <div class="variant-header">
+                    <div class="variant-number">#7</div>
+                </div>
+                <div class="variant-title">Слайдер</div>
+                <div class="variant-stats">
+                    <span>📏 340x440</span>
+                    <span>⏱️ 40 сек</span>
+                    <span>⭐ 5/5</span>
+                </div>
+                <div class="consent-preview">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <div style="font-size: 14px; color: #F59E0B;">Шаг 1 из 2</div>
+                        <div style="font-size: 18px; font-weight: 600; margin-top: 5px;">
+                            🛡️ ALADDIN
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 12px;">
+                        <strong>Что НЕ собираем:</strong><br>
+                        ❌ Имя, фамилия, отчество<br>
+                        ❌ Email, телефон, адрес<br>
+                        ❌ История, сообщения
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 15px;">
+                        <strong>Что собираем:</strong><br>
+                        ✅ User ID (анонимный)<br>
+                        ✅ Роль в семье<br>
+                        ✅ Статистика угроз
+                    </div>
+                    <div style="text-align: center; margin: 15px 0;">
+                        <span style="width: 8px; height: 8px; background: #F59E0B; border-radius: 50%; display: inline-block;"></span>
+                        <span style="width: 8px; height: 8px; background: rgba(255,255,255,0.3); border-radius: 50%; display: inline-block; margin-left: 5px;"></span>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;">
+                        Далее →
+                    </button>
+                    <div class="legal-text">
+                        152-ФЗ соблюдён
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вариант 8 -->
+            <div class="variant-card" onclick="openVariant(8)">
+                <div class="variant-header">
+                    <div class="variant-number">#8</div>
+                    <div class="variant-badge" style="background: #3B82F6;">⭐ ТОП-3</div>
+                </div>
+                <div class="variant-title">Короткий</div>
+                <div class="variant-stats">
+                    <span>📏 320x360</span>
+                    <span>⏱️ 10 сек</span>
+                    <span>⭐ 5/5</span>
+                </div>
+                <div class="consent-preview">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <div style="font-size: 32px;">👋</div>
+                        <div style="font-size: 18px; font-weight: 600; margin-top: 10px;">
+                            Привет!
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; text-align: center; margin-bottom: 15px; line-height: 1.6;">
+                        Для начала работы примите<br>
+                        нашу политику конфиденциальности
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 15px;">
+                        ✅ Мы не собираем ваши данные<br>
+                        ✅ Полная анонимность<br>
+                        ✅ Соответствие 152-ФЗ
+                    </div>
+                    <div style="font-size: 11px; opacity: 0.8; margin-bottom: 15px; text-align: center;">
+                        Нажимая "Принять", вы<br>
+                        соглашаетесь с условиями<br>
+                        ALADDIN и VPN.
+                    </div>
+                    <button class="btn btn-secondary" style="width: 100%; margin-bottom: 8px; font-size: 11px;">
+                        📜 Прочитать полностью →
+                    </button>
+                    <button class="btn btn-primary" style="width: 100%; font-size: 13px;">
+                        Принять и начать
+                    </button>
+                    <div class="legal-text">
+                        ФЗ-152 (ст. 9)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вариант 9 -->
+            <div class="variant-card" onclick="openVariant(9)">
+                <div class="variant-header">
+                    <div class="variant-number">#9</div>
+                </div>
+                <div class="variant-title">С выделением</div>
+                <div class="variant-stats">
+                    <span>📏 340x450</span>
+                    <span>⏱️ 25 сек</span>
+                    <span>⭐ 4/5</span>
+                </div>
+                <div class="consent-preview">
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <div style="font-size: 18px; font-weight: 600;">🔐 Ваша Приватность</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: center;">
+                        <div style="font-size: 14px; font-weight: 700;">
+                            МЫ НЕ СОБИРАЕМ<br>
+                            ПЕРСОНАЛЬНЫЕ ДАННЫЕ!
+                        </div>
+                    </div>
+                    <div style="font-size: 11px; margin-bottom: 10px;">
+                        <strong>ALADDIN Политика:</strong><br>
+                        • Анонимные ID<br>
+                        • Локальная обработка<br>
+                        • 152-ФЗ соблюдён
+                    </div>
+                    <div style="font-size: 11px; margin-bottom: 15px;">
+                        <strong>VPN Политика:</strong><br>
+                        • Zero-logs (нет логов)<br>
+                        • No-tracking (нет слежки)<br>
+                        • AES-256 шифрование
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" style="flex: 1; font-size: 11px;">Подробнее</button>
+                        <button class="btn btn-primary" style="flex: 1; font-size: 12px;">Принимаю</button>
+                    </div>
+                    <div class="legal-text">
+                        Согласие согласно ФЗ-152 (ст. 9)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Вариант 10 -->
+            <div class="variant-card" onclick="openVariant(10)">
+                <div class="variant-header">
+                    <div class="variant-number">#10</div>
+                </div>
+                <div class="variant-title">Прогресс-бар</div>
+                <div class="variant-stats">
+                    <span>📏 340x480</span>
+                    <span>⏱️ 30 сек</span>
+                    <span>⭐ 4/5</span>
+                </div>
+                <div class="consent-preview">
+                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">
+                        📋 Согласие (шаг 1 из 1)
+                    </div>
+                    <div style="background: rgba(255,255,255,0.2); height: 6px; border-radius: 3px; margin-bottom: 15px; overflow: hidden;">
+                        <div style="width: 100%; height: 100%; background: #10B981;"></div>
+                    </div>
+                    <div style="font-size: 11px; margin-bottom: 10px;">
+                        <strong style="color: #F59E0B;">🛡️ Политика ALADDIN:</strong><br>
+                        ✅ Не собираем персональные данные<br>
+                        ✅ Только анонимные User ID<br>
+                        ✅ Соответствие 152-ФЗ
+                    </div>
+                    <div style="font-size: 11px; margin-bottom: 15px;">
+                        <strong style="color: #10B981;">🔐 Политика VPN:</strong><br>
+                        ✅ Zero-logs (нулевое логирование)<br>
+                        ✅ Военное шифрование<br>
+                        ✅ Анонимные платежи
+                    </div>
+                    <div style="font-size: 10px; opacity: 0.7; text-align: center; margin-bottom: 15px;">
+                        📜 Полный текст (2 мин чтения)
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" style="flex: 1; font-size: 11px;">Читать</button>
+                        <button class="btn btn-primary" style="flex: 2; font-size: 12px;">Принять условия</button>
+                    </div>
+                    <div class="legal-text">
+                        Согласие с Политикой согласно<br>
+                        ФЗ-152 от 27.07.2006 (статья 9)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Остальные варианты - упрощённые превью -->
+            <div class="variant-card" style="opacity: 0.6;">
+                <div class="variant-header">
+                    <div class="variant-number">→</div>
+                </div>
+                <div class="variant-title">Все 10 вариантов</div>
+                <div style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">🎨</div>
+                    <div style="font-size: 14px; margin-bottom: 15px;">
+                        Нажмите на любой вариант<br>
+                        чтобы увидеть детали
+                    </div>
+                    <div style="font-size: 12px; opacity: 0.8;">
+                        10 дизайнов<br>
+                        3 рекомендованных ⭐<br>
+                        1 идеальный для ALADDIN
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Рекомендация -->
+        <div class="recommendation">
+            <h2 style="margin-bottom: 20px;">🏆 МОЯ РЕКОМЕНДАЦИЯ</h2>
+            <div style="font-size: 16px; margin-bottom: 15px;">
+                <strong>ВАРИАНТ 1: Минимализм</strong> ⭐
+            </div>
+            <div style="font-size: 14px; line-height: 1.6;">
+                ✅ Самый компактный (320x400px)<br>
+                ✅ Фокус на "НЕ собираем данные"<br>
+                ✅ Быстро читается (15 секунд)<br>
+                ✅ Дружелюбный и не пугает<br>
+                ✅ Юридический текст внизу<br><br>
+                <strong>Пользователь сразу видит главное:</strong><br>
+                "Мы не собираем ваши данные!"
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openVariant(number) {
+            alert(`Вы выбрали Вариант ${number}!\n\nДля реализации в HTML:\n• Создам полноценную страницу\n• С рабочими кнопками\n• И сохранением согласия\n\nПродолжить?`);
+        }
+    </script>
+</body>
+</html>
+
+

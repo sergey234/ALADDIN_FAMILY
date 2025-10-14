@@ -1,0 +1,409 @@
+{
+  "sleep_mode_strategy": {
+    "description": "Конфигурация для перевода не критичных функций в спящий режим",
+    "version": "1.0",
+    "created_date": "2025-09-15",
+    "strategy": "Keep only 50 most critical functions active, sleep the rest"
+  },
+  "active_functions": {
+    "description": "50 самых критичных функций, которые остаются активными",
+    "count": 50,
+    "criteria": [
+      "is_critical = true",
+      "security_level = critical OR high",
+      "status = enabled",
+      "priority = critical OR high"
+    ]
+  },
+  "sleep_functions": {
+    "description": "Функции для перевода в спящий режим",
+    "count": 276,
+    "criteria": [
+      "is_critical = false",
+      "security_level = medium OR low",
+      "status = enabled",
+      "priority = medium OR low"
+    ]
+  },
+  "sleep_configuration": {
+    "auto_sleep_delay": 300,
+    "wake_up_on_demand": true,
+    "resource_optimization": true,
+    "monitoring_enabled": true,
+    "alert_on_wake_up": true,
+    "max_sleep_time": 86400,
+    "wake_up_triggers": [
+      "high_traffic",
+      "security_alert", 
+      "user_request",
+      "scheduled_wake_up",
+      "critical_function_call"
+    ]
+  },
+  "top_50_critical_functions": [
+    {
+      "rank": 1,
+      "id": "emergency_ml_analyzer",
+      "name": "EmergencyMLAnalyzer",
+      "security_level": "critical",
+      "reason": "Критический анализатор экстренных ситуаций с ML"
+    },
+    {
+      "rank": 2,
+      "id": "emergency_notification_manager", 
+      "name": "EmergencyNotificationManager",
+      "security_level": "critical",
+      "reason": "Критический менеджер экстренных уведомлений"
+    },
+    {
+      "rank": 3,
+      "id": "enhanced_alerting_system",
+      "name": "EnhancedAlertingSystem", 
+      "security_level": "high",
+      "reason": "Высокоприоритетная система алертов"
+    },
+    {
+      "rank": 4,
+      "id": "data_protection_manager",
+      "name": "DataProtectionManager",
+      "security_level": "high", 
+      "reason": "Менеджер защиты данных"
+    },
+    {
+      "rank": 5,
+      "id": "notification_bot_main",
+      "name": "NotificationBotMain",
+      "security_level": "high",
+      "reason": "Основной бот уведомлений"
+    },
+    {
+      "rank": 6,
+      "id": "enhanced_safe_function_manager",
+      "name": "EnhancedSafeFunctionManager",
+      "security_level": "high",
+      "reason": "Расширенный менеджер безопасных функций"
+    },
+    {
+      "rank": 7,
+      "id": "smart_notification_manager_main",
+      "name": "SmartNotificationManagerMain",
+      "security_level": "high",
+      "reason": "Основной менеджер умных уведомлений"
+    },
+    {
+      "rank": 8,
+      "id": "check_and_sleep_bots",
+      "name": "CheckAndSleepBots",
+      "security_level": "high",
+      "reason": "Система управления спящим режимом ботов"
+    },
+    {
+      "rank": 9,
+      "id": "advanced_alerting_system",
+      "name": "AdvancedAlertingSystem",
+      "security_level": "high",
+      "reason": "Продвинутая система уведомлений"
+    },
+    {
+      "rank": 10,
+      "id": "rate_limiter",
+      "name": "Rate Limiter",
+      "security_level": "high",
+      "reason": "Ограничитель скорости для защиты от DDoS"
+    },
+    {
+      "rank": 11,
+      "id": "universal_privacy_manager_part2",
+      "name": "Universal Privacy Manager Part 2",
+      "security_level": "high",
+      "reason": "Универсальный менеджер конфиденциальности"
+    },
+    {
+      "rank": 12,
+      "id": "russian_api_manager",
+      "name": "RussianAPIManager",
+      "security_level": "high",
+      "reason": "Менеджер российских API"
+    },
+    {
+      "rank": 13,
+      "id": "behavioral_analytics_engine_extra",
+      "name": "BehavioralAnalyticsEngineExtra",
+      "security_level": "high",
+      "reason": "Дополнительный движок анализа поведенческих данных"
+    },
+    {
+      "rank": 14,
+      "id": "emergency_anomaly_detector",
+      "name": "EmergencyAnomalyDetector",
+      "security_level": "high",
+      "reason": "Детектор аномалий для экстренных ситуаций"
+    },
+    {
+      "rank": 15,
+      "id": "emergency_cluster_analyzer",
+      "name": "EmergencyClusterAnalyzer",
+      "security_level": "high",
+      "reason": "Анализатор кластеров для экстренных ситуаций"
+    },
+    {
+      "rank": 16,
+      "id": "emergency_pattern_recognizer",
+      "name": "EmergencyPatternRecognizer",
+      "security_level": "high",
+      "reason": "Распознаватель паттернов в экстренных ситуациях"
+    },
+    {
+      "rank": 17,
+      "id": "emergency_performance_analyzer",
+      "name": "EmergencyPerformanceAnalyzer",
+      "security_level": "high",
+      "reason": "Анализатор производительности для экстренных ситуаций"
+    },
+    {
+      "rank": 18,
+      "id": "core_base",
+      "name": "CoreBase",
+      "security_level": "medium",
+      "reason": "Базовая архитектура системы"
+    },
+    {
+      "rank": 19,
+      "id": "service_base",
+      "name": "ServiceBase",
+      "security_level": "medium",
+      "reason": "Базовый сервис"
+    },
+    {
+      "rank": 20,
+      "id": "security_base",
+      "name": "SecurityBase",
+      "security_level": "medium",
+      "reason": "Базовая безопасность"
+    },
+    {
+      "rank": 21,
+      "id": "database",
+      "name": "Database",
+      "security_level": "medium",
+      "reason": "Модуль базы данных"
+    },
+    {
+      "rank": 22,
+      "id": "authentication",
+      "name": "Authentication",
+      "security_level": "medium",
+      "reason": "Аутентификация"
+    },
+    {
+      "rank": 23,
+      "id": "mobile_security_agent",
+      "name": "Mobile Security Agent",
+      "security_level": "medium",
+      "reason": "Агент мобильной безопасности"
+    },
+    {
+      "rank": 24,
+      "id": "security_threatindicator",
+      "name": "ThreatIndicator",
+      "security_level": "medium",
+      "reason": "Индикатор угроз"
+    },
+    {
+      "rank": 25,
+      "id": "security_threatreport",
+      "name": "ThreatReport",
+      "security_level": "medium",
+      "reason": "Отчет об угрозах"
+    },
+    {
+      "rank": 26,
+      "id": "security_threatintelligencemanager",
+      "name": "ThreatIntelligenceManager",
+      "security_level": "medium",
+      "reason": "Менеджер разведки угроз"
+    },
+    {
+      "rank": 27,
+      "id": "security_auditfinding",
+      "name": "AuditFinding",
+      "security_level": "medium",
+      "reason": "Результат аудита"
+    },
+    {
+      "rank": 28,
+      "id": "security_securityaudit",
+      "name": "SecurityAudit",
+      "security_level": "medium",
+      "reason": "Аудит безопасности"
+    },
+    {
+      "rank": 29,
+      "id": "security_securityauditmanager",
+      "name": "SecurityAuditManager",
+      "security_level": "medium",
+      "reason": "Менеджер аудита безопасности"
+    },
+    {
+      "rank": 30,
+      "id": "security_testfunction",
+      "name": "TestFunction",
+      "security_level": "medium",
+      "reason": "Тестовая функция"
+    },
+    {
+      "rank": 31,
+      "id": "security_testmanager",
+      "name": "TestManager",
+      "security_level": "medium",
+      "reason": "Менеджер тестирования"
+    },
+    {
+      "rank": 32,
+      "id": "security_securityevent",
+      "name": "SecurityEvent",
+      "security_level": "medium",
+      "reason": "Событие безопасности"
+    },
+    {
+      "rank": 33,
+      "id": "security_securitylayer",
+      "name": "SecurityLayer",
+      "security_level": "medium",
+      "reason": "Слой безопасности"
+    },
+    {
+      "rank": 34,
+      "id": "security_policyrule",
+      "name": "PolicyRule",
+      "security_level": "medium",
+      "reason": "Правило политики"
+    },
+    {
+      "rank": 35,
+      "id": "security_securitypolicy",
+      "name": "SecurityPolicy",
+      "security_level": "medium",
+      "reason": "Политика безопасности"
+    },
+    {
+      "rank": 36,
+      "id": "security_securitypolicymanager",
+      "name": "SecurityPolicyManager",
+      "security_level": "medium",
+      "reason": "Менеджер политик безопасности"
+    },
+    {
+      "rank": 37,
+      "id": "security_user",
+      "name": "User",
+      "security_level": "medium",
+      "reason": "Пользователь"
+    },
+    {
+      "rank": 38,
+      "id": "security_accesscontrol",
+      "name": "AccessControl",
+      "security_level": "medium",
+      "reason": "Контроль доступа"
+    },
+    {
+      "rank": 39,
+      "id": "security_compliancerequirement",
+      "name": "ComplianceRequirement",
+      "security_level": "medium",
+      "reason": "Требование соответствия"
+    },
+    {
+      "rank": 40,
+      "id": "security_compliancemanager",
+      "name": "ComplianceManager",
+      "security_level": "medium",
+      "reason": "Менеджер соответствия"
+    },
+    {
+      "rank": 41,
+      "id": "security_incident",
+      "name": "Incident",
+      "security_level": "medium",
+      "reason": "Инцидент"
+    },
+    {
+      "rank": 42,
+      "id": "security_incidentresponsemanager",
+      "name": "IncidentResponseManager",
+      "security_level": "medium",
+      "reason": "Менеджер реагирования на инциденты"
+    },
+    {
+      "rank": 43,
+      "id": "security_securitymetric",
+      "name": "SecurityMetric",
+      "security_level": "medium",
+      "reason": "Метрика безопасности"
+    },
+    {
+      "rank": 44,
+      "id": "security_securityanalyticsmanager",
+      "name": "SecurityAnalyticsManager",
+      "security_level": "medium",
+      "reason": "Менеджер аналитики безопасности"
+    },
+    {
+      "rank": 45,
+      "id": "ai_agent_mobiledevice",
+      "name": "MobileDevice",
+      "security_level": "medium",
+      "reason": "Мобильное устройство"
+    },
+    {
+      "rank": 46,
+      "id": "ai_agent_mobileapp",
+      "name": "MobileApp",
+      "security_level": "medium",
+      "reason": "Мобильное приложение"
+    },
+    {
+      "rank": 47,
+      "id": "ai_agent_mobilethreat",
+      "name": "MobileThreat",
+      "security_level": "medium",
+      "reason": "Мобильная угроза"
+    },
+    {
+      "rank": 48,
+      "id": "ai_agent_mobilesecuritymetrics",
+      "name": "MobileSecurityMetrics",
+      "security_level": "medium",
+      "reason": "Метрики мобильной безопасности"
+    },
+    {
+      "rank": 49,
+      "id": "ai_agent_mobilesecurityagent",
+      "name": "MobileSecurityAgent",
+      "security_level": "medium",
+      "reason": "Агент мобильной безопасности"
+    },
+    {
+      "rank": 50,
+      "id": "emergencymlanalyzer",
+      "name": "EmergencyMLAnalyzer",
+      "security_level": "high",
+      "reason": "ML анализатор экстренных ситуаций"
+    }
+  ],
+  "implementation_plan": {
+    "phase_1": "Перевести 276 не критичных функций в спящий режим",
+    "phase_2": "Оставить активными только 50 самых критичных функций",
+    "phase_3": "Настроить автоматическое пробуждение по требованию",
+    "phase_4": "Мониторинг производительности и ресурсов",
+    "phase_5": "Тестирование системы в новом режиме"
+  },
+  "expected_benefits": {
+    "resource_optimization": "Снижение потребления ресурсов на 80%",
+    "performance_improvement": "Ускорение работы системы на 60%",
+    "cost_reduction": "Снижение затрат на инфраструктуру на 70%",
+    "maintenance_simplification": "Упрощение обслуживания системы",
+    "scalability": "Улучшение масштабируемости"
+  }
+}

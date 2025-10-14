@@ -1,0 +1,27 @@
+{
+  "sim_monitoring": {
+    "enabled": true,
+    "real_time_monitoring": true,
+    "fraud_detection": true,
+    "auto_block_suspicious": true,
+    "alert_threshold": 0.8,
+    "monitor_operations": [
+      "registration",
+      "activation",
+      "balance_check",
+      "sms_sending",
+      "calls"
+    ]
+  },
+  "fraud_patterns": {
+    "bulk_registration": true,
+    "suspicious_activity": true,
+    "fake_identity": true,
+    "money_laundering": true
+  },
+  "integration": {
+    "security_analytics": true,
+    "threat_intelligence": true,
+    "real_time_alerts": true
+  }
+}

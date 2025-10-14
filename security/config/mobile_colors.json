@@ -1,0 +1,311 @@
+{
+  "matrix_ai_mobile_colors": {
+    "version": "1.0.0",
+    "description": "Цветовая схема Matrix AI для мобильного приложения",
+    "themes": {
+      "matrix_ai": {
+        "name": "Matrix AI",
+        "description": "Основная тема Matrix AI",
+        "colors": {
+          "primary": "#1E3A8A",
+          "secondary": "#0F172A",
+          "accent": "#F59E0B",
+          "text": "#FFFFFF",
+          "background": "#1E3A8A",
+          "success": "#00FF41",
+          "warning": "#F59E0B",
+          "error": "#EF4444",
+          "info": "#66FF99"
+        },
+        "ios_colors": {
+          "systemBlue": "#1E3A8A",
+          "systemGreen": "#00FF41",
+          "systemYellow": "#F59E0B",
+          "systemRed": "#EF4444",
+          "systemPurple": "#66FF99",
+          "label": "#FFFFFF",
+          "systemBackground": "#1E3A8A",
+          "secondarySystemBackground": "#0F172A",
+          "tertiarySystemBackground": "#1E293B"
+        },
+        "android_colors": {
+          "colorPrimary": "#1E3A8A",
+          "colorPrimaryDark": "#0F172A",
+          "colorPrimaryLight": "#3B82F6",
+          "colorAccent": "#F59E0B",
+          "colorBackground": "#1E3A8A",
+          "colorSurface": "#1E3A8A",
+          "colorOnPrimary": "#FFFFFF",
+          "colorOnSecondary": "#FFFFFF",
+          "colorOnBackground": "#FFFFFF",
+          "colorOnSurface": "#FFFFFF",
+          "colorSuccess": "#00FF41",
+          "colorWarning": "#F59E0B",
+          "colorError": "#EF4444",
+          "colorInfo": "#66FF99"
+        }
+      },
+      "dark_matrix": {
+        "name": "Dark Matrix",
+        "description": "Темная матричная тема",
+        "colors": {
+          "primary": "#0F172A",
+          "secondary": "#1E293B",
+          "accent": "#00FF41",
+          "text": "#F8FAFC",
+          "background": "#0F172A",
+          "success": "#00CC33",
+          "warning": "#F59E0B",
+          "error": "#DC2626",
+          "info": "#60A5FA"
+        }
+      },
+      "light_matrix": {
+        "name": "Light Matrix",
+        "description": "Светлая матричная тема",
+        "colors": {
+          "primary": "#3B82F6",
+          "secondary": "#E0E7FF",
+          "accent": "#F59E0B",
+          "text": "#1F2937",
+          "background": "#FFFFFF",
+          "success": "#10B981",
+          "warning": "#F59E0B",
+          "error": "#EF4444",
+          "info": "#06B6D4"
+        }
+      },
+      "elderly_friendly": {
+        "name": "Elderly Friendly",
+        "description": "Тема для пожилых людей",
+        "colors": {
+          "primary": "#1E40AF",
+          "secondary": "#F3F4F6",
+          "accent": "#F59E0B",
+          "text": "#000000",
+          "background": "#FFFFFF",
+          "success": "#059669",
+          "warning": "#D97706",
+          "error": "#DC2626",
+          "info": "#0284C7"
+        },
+        "accessibility": {
+          "high_contrast": {
+            "background": "#FFFFFF",
+            "text": "#000000",
+            "accent": "#FF6B00",
+            "success": "#006600",
+            "warning": "#FF6600",
+            "error": "#CC0000"
+          },
+          "low_vision": {
+            "background": "#F8F9FA",
+            "text": "#212529",
+            "accent": "#0D6EFD",
+            "success": "#198754",
+            "warning": "#FD7E14",
+            "error": "#DC3545"
+          }
+        }
+      },
+      "child_friendly": {
+        "name": "Child Friendly",
+        "description": "Тема для детей",
+        "colors": {
+          "primary": "#3B82F6",
+          "secondary": "#FEF3C7",
+          "accent": "#F59E0B",
+          "text": "#1F2937",
+          "background": "#F0F9FF",
+          "success": "#10B981",
+          "warning": "#F59E0B",
+          "error": "#EF4444",
+          "info": "#8B5CF6"
+        },
+        "age_specific": {
+          "1-6": {
+            "primary": "#FF6B6B",
+            "secondary": "#4ECDC4",
+            "accent": "#FFEAA7",
+            "background": "#FFF8E1"
+          },
+          "7-9": {
+            "primary": "#3B82F6",
+            "secondary": "#FEF3C7",
+            "accent": "#F59E0B",
+            "background": "#F0F9FF"
+          },
+          "10-13": {
+            "primary": "#8B5CF6",
+            "secondary": "#E0E7FF",
+            "accent": "#F59E0B",
+            "background": "#FAFAFA"
+          },
+          "14-18": {
+            "primary": "#1E40AF",
+            "secondary": "#F3F4F6",
+            "accent": "#F59E0B",
+            "background": "#FFFFFF"
+          },
+          "19-24": {
+            "primary": "#1E3A8A",
+            "secondary": "#F8FAFC",
+            "accent": "#F59E0B",
+            "background": "#FFFFFF"
+          }
+        }
+      }
+    },
+    "ui_components": {
+      "buttons": {
+        "primary": {
+          "background": "var(--color-primary)",
+          "text": "var(--color-text)",
+          "border": "var(--color-primary)",
+          "hover": "var(--color-primary-dark)",
+          "active": "var(--color-primary-darker)"
+        },
+        "secondary": {
+          "background": "var(--color-secondary)",
+          "text": "var(--color-text)",
+          "border": "var(--color-secondary)",
+          "hover": "var(--color-secondary-dark)",
+          "active": "var(--color-secondary-darker)"
+        },
+        "accent": {
+          "background": "var(--color-accent)",
+          "text": "var(--color-text)",
+          "border": "var(--color-accent)",
+          "hover": "var(--color-accent-dark)",
+          "active": "var(--color-accent-darker)"
+        }
+      },
+      "cards": {
+        "default": {
+          "background": "var(--color-background)",
+          "border": "var(--color-secondary)",
+          "shadow": "var(--shadow-medium)"
+        },
+        "elevated": {
+          "background": "var(--color-background)",
+          "border": "var(--color-secondary)",
+          "shadow": "var(--shadow-dark)"
+        }
+      },
+      "text": {
+        "primary": {
+          "color": "var(--color-text)",
+          "size": "16px",
+          "weight": "400"
+        },
+        "secondary": {
+          "color": "var(--color-text-secondary)",
+          "size": "14px",
+          "weight": "400"
+        },
+        "accent": {
+          "color": "var(--color-accent)",
+          "size": "16px",
+          "weight": "600"
+        }
+      },
+      "status": {
+        "success": {
+          "background": "var(--color-success)",
+          "text": "var(--text-on-success)",
+          "border": "var(--color-success)"
+        },
+        "warning": {
+          "background": "var(--color-warning)",
+          "text": "var(--text-on-warning)",
+          "border": "var(--color-warning)"
+        },
+        "error": {
+          "background": "var(--color-error)",
+          "text": "var(--text-on-error)",
+          "border": "var(--color-error)"
+        },
+        "info": {
+          "background": "var(--color-info)",
+          "text": "var(--text-on-info)",
+          "border": "var(--color-info)"
+        }
+      }
+    },
+    "gradients": {
+      "primary_gradient": {
+        "from": "var(--color-primary)",
+        "to": "var(--color-secondary)",
+        "direction": "to bottom right"
+      },
+      "matrix_gradient": {
+        "from": "var(--color-success)",
+        "to": "var(--color-info)",
+        "direction": "to right"
+      },
+      "accent_gradient": {
+        "from": "var(--color-accent)",
+        "to": "var(--color-warning)",
+        "direction": "to bottom"
+      }
+    },
+    "shadows": {
+      "light": "0 2px 4px var(--shadow-light)",
+      "medium": "0 4px 8px var(--shadow-medium)",
+      "dark": "0 8px 16px var(--shadow-dark)",
+      "accent": "0 4px 8px var(--shadow-accent)"
+    },
+    "spacing": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "16px",
+      "lg": "24px",
+      "xl": "32px",
+      "2xl": "48px"
+    },
+    "typography": {
+      "font_family": {
+        "primary": "system-ui, -apple-system, sans-serif",
+        "monospace": "Menlo, Monaco, Consolas, monospace"
+      },
+      "font_sizes": {
+        "xs": "12px",
+        "sm": "14px",
+        "base": "16px",
+        "lg": "18px",
+        "xl": "20px",
+        "2xl": "24px",
+        "3xl": "30px",
+        "4xl": "36px"
+      },
+      "font_weights": {
+        "light": "300",
+        "normal": "400",
+        "medium": "500",
+        "semibold": "600",
+        "bold": "700",
+        "extrabold": "800"
+      }
+    },
+    "breakpoints": {
+      "mobile": "320px",
+      "tablet": "768px",
+      "desktop": "1024px",
+      "wide": "1440px"
+    },
+    "accessibility": {
+      "contrast_ratios": {
+        "AA": 4.5,
+        "AAA": 7.0
+      },
+      "focus_indicators": {
+        "outline": "2px solid var(--color-accent)",
+        "outline_offset": "2px"
+      },
+      "touch_targets": {
+        "minimum_size": "44px",
+        "recommended_size": "48px"
+      }
+    }
+  }
+}

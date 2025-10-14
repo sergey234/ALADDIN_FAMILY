@@ -1,0 +1,159 @@
+{
+  "functions": {
+    "core_base": {
+      "function_id": "core_base",
+      "name": "CoreBase",
+      "description": "Базовая архитектура системы",
+      "function_type": "core",
+      "security_level": "high",
+      "status": "enabled",
+      "is_critical": true,
+      "execution_count": 0,
+      "success_count": 0,
+      "error_count": 0
+    },
+    "service_base": {
+      "function_id": "service_base",
+      "name": "ServiceBase",
+      "description": "Базовый сервис",
+      "function_type": "core",
+      "security_level": "high",
+      "status": "enabled",
+      "is_critical": true,
+      "execution_count": 0,
+      "success_count": 0,
+      "error_count": 0
+    },
+    "security_base": {
+      "function_id": "security_base",
+      "name": "SecurityBase",
+      "description": "Базовая безопасность",
+      "function_type": "security",
+      "security_level": "high",
+      "status": "enabled",
+      "is_critical": true,
+      "execution_count": 0,
+      "success_count": 0,
+      "error_count": 0
+    },
+    "database": {
+      "function_id": "database",
+      "name": "Database",
+      "description": "Модуль базы данных",
+      "function_type": "core",
+      "security_level": "high",
+      "status": "enabled",
+      "is_critical": true,
+      "execution_count": 0,
+      "success_count": 0,
+      "error_count": 0
+    },
+    "configuration": {
+      "function_id": "configuration",
+      "name": "Configuration",
+      "description": "Управление конфигурацией",
+      "function_type": "core",
+      "security_level": "medium",
+      "status": "enabled",
+      "is_critical": false,
+      "execution_count": 0,
+      "success_count": 0,
+      "error_count": 0
+    },
+    "logging_module": {
+      "function_id": "logging_module",
+      "name": "LoggingModule",
+      "description": "Система логирования",
+      "function_type": "core",
+      "security_level": "medium",
+      "status": "enabled",
+      "is_critical": false,
+      "execution_count": 0,
+      "success_count": 0,
+      "error_count": 0
+    },
+    "authentication": {
+      "function_id": "authentication",
+      "name": "Authentication",
+      "description": "Аутентификация",
+      "function_type": "security",
+      "security_level": "high",
+      "status": "enabled",
+      "is_critical": true,
+      "execution_count": 0,
+      "success_count": 0,
+      "error_count": 0
+    },
+    "mobile_security_agent": {
+      "function_id": "mobile_security_agent",
+      "name": "Mobile Security Agent",
+      "description": "Агент мобильной безопасности для iOS и Android устройств",
+      "function_type": "ai_agent",
+      "security_level": "high",
+      "status": "enabled",
+      "is_critical": true,
+      "execution_count": 0,
+      "success_count": 0,
+      "error_count": 0
+    },
+    "test_function": {
+      "function_id": "test_function",
+      "name": "Test Function",
+      "description": "Тестовая функция для проверки API",
+      "function_type": "test",
+      "security_level": "medium",
+      "status": "disabled",
+      "is_critical": false,
+      "execution_count": 0,
+      "success_count": 0,
+      "error_count": 0
+    },
+    "test_auto_save": {
+      "function_id": "test_auto_save",
+      "name": "Test Auto Save",
+      "description": "Тест автоматического сохранения",
+      "function_type": "test",
+      "security_level": "medium",
+      "status": "disabled",
+      "is_critical": false,
+      "execution_count": 0,
+      "success_count": 0,
+      "error_count": 0
+    },
+    "test_cache": {
+      "function_id": "test_cache",
+      "name": "Test Cache",
+      "description": "Тест кэширования",
+      "function_type": "test",
+      "security_level": "medium",
+      "status": "disabled",
+      "is_critical": false,
+      "execution_count": 0,
+      "success_count": 0,
+      "error_count": 0
+    }
+  },
+  "handlers": {
+    "mobile_security_agent": {
+      "type": "function",
+      "function_name": "wrapper",
+      "module": "safe_function_manager"
+    },
+    "test_function": {
+      "type": "function",
+      "function_name": "wrapper",
+      "module": "safe_function_manager"
+    },
+    "test_auto_save": {
+      "type": "function",
+      "function_name": "wrapper",
+      "module": "safe_function_manager"
+    },
+    "test_cache": {
+      "type": "function",
+      "function_name": "wrapper",
+      "module": "safe_function_manager"
+    }
+  },
+  "last_updated": "2025-09-11T21:31:47.332324"
+}

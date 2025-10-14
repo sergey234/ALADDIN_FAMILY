@@ -1,0 +1,36 @@
+{
+  "ddos_protection": {
+    "enabled": true,
+    "strict_mode": true,
+    "auto_block_attacks": true,
+    "monitor_http": true,
+    "monitor_https": true,
+    "monitor_tcp": true,
+    "monitor_udp": true,
+    "protection_level": "maximum",
+    "rate_limiting": true,
+    "ip_whitelist": [],
+    "ip_blacklist": []
+  },
+  "protection_features": {
+    "volumetric_ddos_protection": true,
+    "application_layer_ddos_protection": true,
+    "distributed_ddos_protection": true,
+    "rate_limiting": true,
+    "ip_blocking": true,
+    "traffic_monitoring": true
+  },
+  "thresholds": {
+    "requests_per_minute": 1000,
+    "requests_per_second": 50,
+    "concurrent_connections": 100,
+    "bandwidth_threshold": 1000000,
+    "attack_duration_threshold": 60,
+    "unique_ip_threshold": 1000
+  },
+  "integration": {
+    "network_security": true,
+    "security_monitoring": true,
+    "real_time_alerts": true
+  }
+}

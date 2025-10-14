@@ -1,0 +1,8 @@
+{
+    "cpu_threshold": 80.0,
+    "memory_threshold": 85.0,
+    "response_time_threshold": 1000,
+    "error_rate_threshold": 5.0,
+    "active_alerts": 46,
+    "configured_at": "2025-10-04T22:30:00"
+}

@@ -1,0 +1,22 @@
+{
+  "caching": {
+    "enabled": true,
+    "memory_cache_size": "256MB",
+    "disk_cache_size": "1GB",
+    "cache_ttl": 3600
+  },
+  "threading": {
+    "max_workers": 16,
+    "thread_pool_size": 8
+  },
+  "async": {
+    "enabled": true,
+    "max_concurrent_requests": 100,
+    "request_timeout": 30
+  },
+  "compression": {
+    "enabled": true,
+    "algorithm": "gzip",
+    "min_size": 1024
+  }
+}

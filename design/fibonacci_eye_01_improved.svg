@@ -1,0 +1,127 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Stormy Sky Background -->
+    <linearGradient id="storm-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a1128;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e3a5f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2e5090;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Golden Eye Gradient -->
+    <radialGradient id="golden-eye" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Sirius Star Gradient (Bright Blue with White Glow) -->
+    <radialGradient id="sirius-pupil" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#60A5FA;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E40AF;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Cosmic Star Gradient (Multi-color Star) -->
+    <radialGradient id="cosmic-star" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:1" />
+      <stop offset="25%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#EF4444;stop-opacity:1" />
+      <stop offset="75%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Golden Glow -->
+    <linearGradient id="golden-glow" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0" />
+    </linearGradient>
+    
+    <!-- Fibonacci Glow Filter -->
+    <filter id="fibonacci-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Sirius Glow Filter -->
+    <filter id="sirius-glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="15" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="226" fill="url(#storm-bg)"/>
+  
+  <!-- Fibonacci Golden Rectangle Frame -->
+  <rect x="195" y="195" width="633" height="633" fill="none" stroke="url(#golden-glow)" stroke-width="6" opacity="0.3"/>
+  
+  <!-- ALADDIN Text Above Eye -->
+  <text x="512" y="180" 
+        font-family="Arial, sans-serif" 
+        font-size="48" 
+        font-weight="900" 
+        fill="#FCD34D" 
+        text-anchor="middle"
+        letter-spacing="6"
+        filter="url(#fibonacci-glow)">ALADDIN</text>
+  
+  <!-- Central Golden Eye (Fibonacci Proportions) -->
+  <g transform="translate(512, 450)">
+    <!-- Outer Eye Ring (Fibonacci Circle: r=233px) -->
+    <circle cx="0" cy="0" r="233" fill="none" stroke="url(#golden-glow)" stroke-width="12" opacity="0.4" filter="url(#fibonacci-glow)"/>
+    
+    <!-- Middle Eye Ring (Fibonacci Circle: r=144px) -->
+    <circle cx="0" cy="0" r="144" fill="none" stroke="url(#golden-glow)" stroke-width="8" opacity="0.6" filter="url(#fibonacci-glow)"/>
+    
+    <!-- Inner Eye Ring (Fibonacci Circle: r=89px) -->
+    <circle cx="0" cy="0" r="89" fill="url(#golden-eye)" filter="url(#fibonacci-glow)"/>
+    
+    <!-- Pupil (Sirius Star Color - Fibonacci Circle: r=55px) -->
+    <circle cx="0" cy="0" r="55" fill="url(#sirius-pupil)" filter="url(#sirius-glow)"/>
+    
+    <!-- Iris Pattern (Fibonacci Spirals) -->
+    <g opacity="0.8" stroke="#FCD34D" stroke-width="3" fill="none">
+      <path d="M 0 0 Q 21 -21 0 -42 Q -21 -63 0 -84 Q 21 -105 0 -126 Q -21 -147 0 -168"/>
+      <path d="M 0 0 Q -21 -21 0 -42 Q 21 -63 0 -84 Q -21 -105 0 -126 Q 21 -147 0 -168"/>
+      <path d="M 0 0 Q 21 21 0 42 Q -21 63 0 84 Q 21 105 0 126 Q -21 147 0 168"/>
+      <path d="M 0 0 Q -21 21 0 42 Q 21 63 0 84 Q -21 105 0 126 Q 21 147 0 168"/>
+    </g>
+    
+    <!-- Eye Highlight (Cosmic Star - Multi-color) -->
+    <g transform="translate(-15, -15)">
+      <path d="M 15 0 L 18 12 L 30 12 L 21 20 L 24 32 L 15 24 L 6 32 L 9 20 L 0 12 L 12 12 Z" 
+            fill="url(#cosmic-star)" 
+            opacity="0.9"
+            filter="url(#fibonacci-glow)"/>
+    </g>
+    
+    <!-- Eyelid (Fibonacci Arc) -->
+    <path d="M -233 -100 Q 0 -150 233 -100" stroke="#FCD34D" stroke-width="8" fill="none" opacity="0.7"/>
+  </g>
+  
+  <!-- Fibonacci Spiral Stars -->
+  <g opacity="0.6" fill="#FCD34D">
+    <!-- Stars positioned on Fibonacci grid -->
+    <g transform="translate(200, 200)">
+      <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+    </g>
+    <g transform="translate(824, 200)">
+      <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+    </g>
+    <g transform="translate(200, 824)">
+      <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+    </g>
+    <g transform="translate(824, 824)">
+      <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+    </g>
+  </g>
+</svg>
+
+

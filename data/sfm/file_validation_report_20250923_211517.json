@@ -1,0 +1,1899 @@
+{
+  "timestamp": "2025-09-23T21:15:17.548868",
+  "validation_type": "file_existence",
+  "total_functions": 341,
+  "existing_files": 27,
+  "missing_files": 314,
+  "validity_percentage": 7.9178885630498534,
+  "missing_functions": [
+    {
+      "function_id": "anti_fraud_master_ai",
+      "file_path": "НЕ УКАЗАН",
+      "name": "AntiFraudMasterAI",
+      "status": "active"
+    },
+    {
+      "function_id": "threat_detection_agent",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ThreatDetectionAgent",
+      "status": "active"
+    },
+    {
+      "function_id": "security_monitoring",
+      "file_path": "НЕ УКАЗАН",
+      "name": "SecurityMonitoring",
+      "status": "active"
+    },
+    {
+      "function_id": "mobile_security_agent",
+      "file_path": "ai_agents/mobile security agent.py",
+      "name": "Mobile Security Agent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "incident_response_agent",
+      "file_path": "НЕ УКАЗАН",
+      "name": "IncidentResponseAgent",
+      "status": "running"
+    },
+    {
+      "function_id": "threat_intelligence_agent",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ThreatIntelligenceAgent",
+      "status": "running"
+    },
+    {
+      "function_id": "performance_optimization_agent",
+      "file_path": "НЕ УКАЗАН",
+      "name": "PerformanceOptimizationAgent",
+      "status": "running"
+    },
+    {
+      "function_id": "voice_analysis_engine",
+      "file_path": "НЕ УКАЗАН",
+      "name": "VoiceAnalysisEngine",
+      "status": "running"
+    },
+    {
+      "function_id": "telegram_security_bot",
+      "file_path": "НЕ УКАЗАН",
+      "name": "TelegramSecurityBot",
+      "status": "running"
+    },
+    {
+      "function_id": "whatsapp_security_bot",
+      "file_path": "НЕ УКАЗАН",
+      "name": "WhatsAppSecurityBot",
+      "status": "running"
+    },
+    {
+      "function_id": "instagram_security_bot",
+      "file_path": "НЕ УКАЗАН",
+      "name": "InstagramSecurityBot",
+      "status": "running"
+    },
+    {
+      "function_id": "gaming_security_bot",
+      "file_path": "НЕ УКАЗАН",
+      "name": "GamingSecurityBot",
+      "status": "running"
+    },
+    {
+      "function_id": "parental_control_bot",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ParentalControlBot",
+      "status": "running"
+    },
+    {
+      "function_id": "emergency_response_bot",
+      "file_path": "НЕ УКАЗАН",
+      "name": "EmergencyResponseBot",
+      "status": "active"
+    },
+    {
+      "function_id": "network_security_bot",
+      "file_path": "НЕ УКАЗАН",
+      "name": "NetworkSecurityBot",
+      "status": "running"
+    },
+    {
+      "function_id": "device_security_bot",
+      "file_path": "НЕ УКАЗАН",
+      "name": "DeviceSecurityBot",
+      "status": "running"
+    },
+    {
+      "function_id": "zero_trust_manager",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ZeroTrustManager",
+      "status": "active"
+    },
+    {
+      "function_id": "zero_trust_service",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ZeroTrustService",
+      "status": "active"
+    },
+    {
+      "function_id": "ransomware_protection",
+      "file_path": "НЕ УКАЗАН",
+      "name": "RansomwareProtection",
+      "status": "active"
+    },
+    {
+      "function_id": "threat_intelligence",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ThreatIntelligence",
+      "status": "running"
+    },
+    {
+      "function_id": "incident_response",
+      "file_path": "НЕ УКАЗАН",
+      "name": "IncidentResponse",
+      "status": "running"
+    },
+    {
+      "function_id": "security_analytics",
+      "file_path": "НЕ УКАЗАН",
+      "name": "SecurityAnalytics",
+      "status": "running"
+    },
+    {
+      "function_id": "security_audit",
+      "file_path": "НЕ УКАЗАН",
+      "name": "SecurityAudit",
+      "status": "running"
+    },
+    {
+      "function_id": "family_profile_manager",
+      "file_path": "НЕ УКАЗАН",
+      "name": "FamilyProfileManager",
+      "status": "running"
+    },
+    {
+      "function_id": "parental_controls",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ParentalControls",
+      "status": "running"
+    },
+    {
+      "function_id": "elderly_protection",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ElderlyProtection",
+      "status": "running"
+    },
+    {
+      "function_id": "child_protection",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ChildProtection",
+      "status": "active"
+    },
+    {
+      "function_id": "super_ai_support_assistant",
+      "file_path": "НЕ УКАЗАН",
+      "name": "super_ai_support_assistant",
+      "status": "active"
+    },
+    {
+      "function_id": "recovery_service",
+      "file_path": "НЕ УКАЗАН",
+      "name": "recovery_service",
+      "status": "active"
+    },
+    {
+      "function_id": "registry_protection_system",
+      "file_path": "НЕ УКАЗАН",
+      "name": "RegistryProtectionSystem",
+      "status": "active"
+    },
+    {
+      "function_id": "registry_format_validator",
+      "file_path": "НЕ УКАЗАН",
+      "name": "RegistryFormatValidator",
+      "status": "active"
+    },
+    {
+      "function_id": "registry_monitor",
+      "file_path": "НЕ УКАЗАН",
+      "name": "RegistryMonitor",
+      "status": "active"
+    },
+    {
+      "function_id": "registry_problem_reporter",
+      "file_path": "НЕ УКАЗАН",
+      "name": "RegistryProblemReporter",
+      "status": "active"
+    },
+    {
+      "function_id": "registry_security_manager",
+      "file_path": "НЕ УКАЗАН",
+      "name": "RegistrySecurityManager",
+      "status": "active"
+    },
+    {
+      "function_id": "context_aware_access",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ContextAwareAccess",
+      "status": "active"
+    },
+    {
+      "function_id": "risk_assessment",
+      "file_path": "НЕ УКАЗАН",
+      "name": "RiskAssessmentService",
+      "status": "active"
+    },
+    {
+      "function_id": "security_mfaservice",
+      "file_path": "services/mfaservice.py",
+      "name": "MFAService",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "modern_encryption",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ModernEncryptionSystem",
+      "status": "active"
+    },
+    {
+      "function_id": "security_usersessionrecord",
+      "file_path": "security/usersessionrecord.py",
+      "name": "UserSessionRecord",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_activityalert",
+      "file_path": "security/activityalert.py",
+      "name": "ActivityAlert",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_whatsappsecuritybot",
+      "file_path": "bots/whatsappsecuritybot.py",
+      "name": "WhatsAppSecurityBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_hashes",
+      "file_path": "security/hashes.py",
+      "name": "hashes",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securityevent",
+      "file_path": "security/securityevent.py",
+      "name": "SecurityEvent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_ratelimitviolation",
+      "file_path": "security/ratelimitviolation.py",
+      "name": "RateLimitViolation",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "color_scheme",
+      "file_path": "security/matrixaicolorscheme.py",
+      "name": "MatrixAIColorScheme",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_userpreference",
+      "file_path": "security/userpreference.py",
+      "name": "UserPreference",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_notificationbot",
+      "file_path": "bots/notificationbot.py",
+      "name": "NotificationBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_loadbalancingresponse",
+      "file_path": "security/loadbalancingresponse.py",
+      "name": "LoadBalancingResponse",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_messageanalysisresult",
+      "file_path": "security/messageanalysisresult.py",
+      "name": "MessageAnalysisResult",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_healthcheckresponse",
+      "file_path": "security/healthcheckresponse.py",
+      "name": "HealthCheckResponse",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securityfunction",
+      "file_path": "security/securityfunction.py",
+      "name": "SecurityFunction",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_threatintelligencemanager",
+      "file_path": "managers/threatintelligencemanager.py",
+      "name": "ThreatIntelligenceManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_behavioralanalysisagent",
+      "file_path": "ai_agents/behavioralanalysisagent.py",
+      "name": "BehavioralAnalysisAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_dataprotectionresult",
+      "file_path": "security/dataprotectionresult.py",
+      "name": "DataProtectionResult",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_performancemetrics",
+      "file_path": "security/performancemetrics.py",
+      "name": "PerformanceMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "emergency_notification_manager",
+      "file_path": "managers/emergencynotificationmanager.py",
+      "name": "EmergencyNotificationManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_mobilesecuritymetrics",
+      "file_path": "security/mobilesecuritymetrics.py",
+      "name": "MobileSecurityMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_podinfo",
+      "file_path": "security/podinfo.py",
+      "name": "PodInfo",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_familycontact",
+      "file_path": "security/familycontact.py",
+      "name": "FamilyContact",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_auditfinding",
+      "file_path": "security/auditfinding.py",
+      "name": "AuditFinding",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_behaviorpattern",
+      "file_path": "security/behaviorpattern.py",
+      "name": "BehaviorPattern",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_notificationanalytics",
+      "file_path": "security/notificationanalytics.py",
+      "name": "NotificationAnalytics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securitylayer",
+      "file_path": "security/securitylayer.py",
+      "name": "SecurityLayer",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_incident",
+      "file_path": "security/incident.py",
+      "name": "Incident",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_threatintelligence",
+      "file_path": "security/threatintelligence.py",
+      "name": "ThreatIntelligence",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_passwordmetrics",
+      "file_path": "security/passwordmetrics.py",
+      "name": "PasswordMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "advanced_alerting_system",
+      "file_path": "security/advancedalertingsystem.py",
+      "name": "AdvancedAlertingSystem",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_parentalcontrolbot",
+      "file_path": "bots/parentalcontrolbot.py",
+      "name": "ParentalControlBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_apirequest",
+      "file_path": "security/apirequest.py",
+      "name": "APIRequest",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_tokenbucket",
+      "file_path": "security/tokenbucket.py",
+      "name": "TokenBucket",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_apiinterface",
+      "file_path": "security/apiinterface.py",
+      "name": "APIInterface",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_cacheentry",
+      "file_path": "security/cacheentry.py",
+      "name": "CacheEntry",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securityauditmanager",
+      "file_path": "managers/securityauditmanager.py",
+      "name": "SecurityAuditManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_securityrule",
+      "file_path": "security/securityrule.py",
+      "name": "SecurityRule",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_instagramsecurityconfig",
+      "file_path": "security/instagramsecurityconfig.py",
+      "name": "InstagramSecurityConfig",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_activitylog",
+      "file_path": "security/activitylog.py",
+      "name": "ActivityLog",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_dataprotectionevent",
+      "file_path": "security/dataprotectionevent.py",
+      "name": "DataProtectionEvent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "optimizationmetrics",
+      "file_path": "security/optimizationmetrics.py",
+      "name": "OptimizationMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_scampattern",
+      "file_path": "security/scampattern.py",
+      "name": "ScamPattern",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_ratelimitrecord",
+      "file_path": "security/ratelimitrecord.py",
+      "name": "RateLimitRecord",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_investigation",
+      "file_path": "security/investigation.py",
+      "name": "Investigation",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_emergencyresponsesystem",
+      "file_path": "security/emergencyresponsesystem.py",
+      "name": "EmergencyResponseSystem",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_networkthreat",
+      "file_path": "security/networkthreat.py",
+      "name": "NetworkThreat",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "integrate_all_bots_to_sleep",
+      "file_path": "bots/integrate all bots to sleep.py",
+      "name": "Integrate All Bots to Sleep",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_complianceagent",
+      "file_path": "ai_agents/complianceagent.py",
+      "name": "ComplianceAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_parentalnotification",
+      "file_path": "security/parentalnotification.py",
+      "name": "ParentalNotification",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_networkstatus",
+      "file_path": "security/networkstatus.py",
+      "name": "NetworkStatus",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_notificationtemplate",
+      "file_path": "security/notificationtemplate.py",
+      "name": "NotificationTemplate",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_passwordsecurityagent",
+      "file_path": "ai_agents/passwordsecurityagent.py",
+      "name": "PasswordSecurityAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "emergency_ml_analyzer",
+      "file_path": "security/emergencymlanalyzer.py",
+      "name": "EmergencyMLAnalyzer",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_recoveryreport",
+      "file_path": "security/recoveryreport.py",
+      "name": "RecoveryReport",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_familymember",
+      "file_path": "security/familymember.py",
+      "name": "FamilyMember",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_ratelimitresponse",
+      "file_path": "security/ratelimitresponse.py",
+      "name": "RateLimitResponse",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securityanalyticsmanager",
+      "file_path": "managers/securityanalyticsmanager.py",
+      "name": "SecurityAnalyticsManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_deepfakeanalysisresult",
+      "file_path": "security/deepfakeanalysisresult.py",
+      "name": "DeepfakeAnalysisResult",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_loadbalancer",
+      "file_path": "security/loadbalancer.py",
+      "name": "LoadBalancer",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_elderlyactivity",
+      "file_path": "security/elderlyactivity.py",
+      "name": "ElderlyActivity",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_device",
+      "file_path": "security/device.py",
+      "name": "Device",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securitymetric",
+      "file_path": "security/securitymetric.py",
+      "name": "SecurityMetric",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_kubernetesorchestrator",
+      "file_path": "security/kubernetesorchestrator.py",
+      "name": "KubernetesOrchestrator",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_whatsappsecurityconfig",
+      "file_path": "security/whatsappsecurityconfig.py",
+      "name": "WhatsAppSecurityConfig",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_gaming",
+      "file_path": "bots/gamingsecuritybot.py",
+      "name": "GamingSecurityBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_recoverytask",
+      "file_path": "security/recoverytask.py",
+      "name": "RecoveryTask",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_threatdetection",
+      "file_path": "security/threatdetection.py",
+      "name": "ThreatDetection",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "behavioral_analytics_engine_extra",
+      "file_path": "security/behavioralanalyticsengineextra.py",
+      "name": "BehavioralAnalyticsEngineExtra",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_useridentity",
+      "file_path": "security/useridentity.py",
+      "name": "UserIdentity",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_ratelimitconfig",
+      "file_path": "security/ratelimitconfig.py",
+      "name": "RateLimitConfig",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_threatseverity",
+      "file_path": "security/threatseverity.py",
+      "name": "ThreatSeverity",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "emergency_pattern_recognizer",
+      "file_path": "security/emergencypatternrecognizer.py",
+      "name": "EmergencyPatternRecognizer",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_routeconfig",
+      "file_path": "security/routeconfig.py",
+      "name": "RouteConfig",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_whatsappcontact",
+      "file_path": "security/whatsappcontact.py",
+      "name": "WhatsAppContact",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_dataprotectionmetrics",
+      "file_path": "security/dataprotectionmetrics.py",
+      "name": "DataProtectionMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "test_cache",
+      "file_path": "security/test cache.py",
+      "name": "Test Cache",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_parentalcontrolconfig",
+      "file_path": "security/parentalcontrolconfig.py",
+      "name": "ParentalControlConfig",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_zerotrustmanager",
+      "file_path": "managers/zerotrustmanager.py",
+      "name": "ZeroTrustManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_emergencyresponsebot",
+      "file_path": "bots/emergencyresponsebot.py",
+      "name": "EmergencyResponseBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_familyprofile",
+      "file_path": "security/familyprofile.py",
+      "name": "FamilyProfile",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_instagrampost",
+      "file_path": "security/instagrampost.py",
+      "name": "InstagramPost",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "check_and_sleep_bots",
+      "file_path": "bots/checkandsleepbots.py",
+      "name": "CheckAndSleepBots",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_mobileinterface",
+      "file_path": "security/mobileinterface.py",
+      "name": "MobileInterface",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_website",
+      "file_path": "bots/websitenavigationbot.py",
+      "name": "WebsiteNavigationBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_countbasedstrategy",
+      "file_path": "security/countbasedstrategy.py",
+      "name": "CountBasedStrategy",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_pbkdf2hmac",
+      "file_path": "security/pbkdf2hmac.py",
+      "name": "PBKDF2HMAC",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_financialprotectionhub",
+      "file_path": "security/financialprotectionhub.py",
+      "name": "FinancialProtectionHub",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securitypolicymanager",
+      "file_path": "managers/securitypolicymanager.py",
+      "name": "SecurityPolicyManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_circuitbreakerresponse",
+      "file_path": "security/circuitbreakerresponse.py",
+      "name": "CircuitBreakerResponse",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_networksecurityagent",
+      "file_path": "ai_agents/networksecurityagent.py",
+      "name": "NetworkSecurityAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securitypolicy",
+      "file_path": "security/securitypolicy.py",
+      "name": "SecurityPolicy",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_networkalert",
+      "file_path": "security/networkalert.py",
+      "name": "NetworkAlert",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_performancemetric",
+      "file_path": "security/performancemetric.py",
+      "name": "PerformanceMetric",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_metricdata",
+      "file_path": "security/metricdata.py",
+      "name": "MetricData",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_networkdevice",
+      "file_path": "security/networkdevice.py",
+      "name": "NetworkDevice",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "enhanced_alerting_system",
+      "file_path": "security/enhancedalertingsystem.py",
+      "name": "EnhancedAlertingSystem",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_healthcheckinterface",
+      "file_path": "security/healthcheckinterface.py",
+      "name": "HealthCheckInterface",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_contentanalysisresult",
+      "file_path": "security/contentanalysisresult.py",
+      "name": "ContentAnalysisResult",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "emergency_performance_analyzer",
+      "file_path": "security/emergencyperformanceanalyzer.py",
+      "name": "EmergencyPerformanceAnalyzer",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_parentalcontrols",
+      "file_path": "security/parentalcontrols.py",
+      "name": "ParentalControls",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_devicetype",
+      "file_path": "security/devicetype.py",
+      "name": "DeviceType",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_incidentresponsemanager",
+      "file_path": "managers/incidentresponsemanager.py",
+      "name": "IncidentResponseManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_networkmetrics",
+      "file_path": "security/networkmetrics.py",
+      "name": "NetworkMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_rediscachemanager",
+      "file_path": "managers/rediscachemanager.py",
+      "name": "RedisCacheManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_serviceresponse",
+      "file_path": "services/serviceresponse.py",
+      "name": "ServiceResponse",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_notification",
+      "file_path": "security/notification.py",
+      "name": "Notification",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_antifraudmasterai",
+      "file_path": "security/antifraudmasterai.py",
+      "name": "AntiFraudMasterAI",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_notificationrequest",
+      "file_path": "security/notificationrequest.py",
+      "name": "NotificationRequest",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_telegramchat",
+      "file_path": "security/telegramchat.py",
+      "name": "TelegramChat",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_accesscontrol",
+      "file_path": "security/accesscontrol.py",
+      "name": "AccessControl",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_scalingdecision",
+      "file_path": "security/scalingdecision.py",
+      "name": "ScalingDecision",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_scalingrule",
+      "file_path": "security/scalingrule.py",
+      "name": "ScalingRule",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_forensicsservice",
+      "file_path": "services/forensicsservice.py",
+      "name": "ForensicsService",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_mobilenavigation",
+      "file_path": "bots/mobilenavigationbot.py",
+      "name": "MobileNavigationBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_metricscollectorinterface",
+      "file_path": "security/metricscollectorinterface.py",
+      "name": "MetricsCollectorInterface",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_analytics",
+      "file_path": "bots/analyticsbot.py",
+      "name": "AnalyticsBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_compliancemetrics",
+      "file_path": "security/compliancemetrics.py",
+      "name": "ComplianceMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_threatstatus",
+      "file_path": "security/threatstatus.py",
+      "name": "ThreatStatus",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_dataprotectionagent",
+      "file_path": "ai_agents/dataprotectionagent.py",
+      "name": "DataProtectionAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_accesscontrolmanager",
+      "file_path": "managers/accesscontrolmanager.py",
+      "name": "AccessControlManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "data_protection_manager",
+      "file_path": "managers/dataprotectionmanager.py",
+      "name": "DataProtectionManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_deepfakeprotectionsystem",
+      "file_path": "security/deepfakeprotectionsystem.py",
+      "name": "DeepfakeProtectionSystem",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_devicesecurity",
+      "file_path": "security/devicesecurity.py",
+      "name": "DeviceSecurity",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_mobilesecurityagent",
+      "file_path": "ai_agents/mobilesecurityagent.py",
+      "name": "MobileSecurityAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_interfacerequest",
+      "file_path": "security/interfacerequest.py",
+      "name": "InterfaceRequest",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_apigateway",
+      "file_path": "security/apigateway.py",
+      "name": "APIGateway",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_loadbalancingalgorithminterface",
+      "file_path": "security/loadbalancingalgorithminterface.py",
+      "name": "LoadBalancingAlgorithmInterface",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_actiontype",
+      "file_path": "security/actiontype.py",
+      "name": "ActionType",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_user",
+      "file_path": "security/user.py",
+      "name": "User",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_behaviormetrics",
+      "file_path": "security/behaviormetrics.py",
+      "name": "BehaviorMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_optimizationrecommendation",
+      "file_path": "security/optimizationrecommendation.py",
+      "name": "OptimizationRecommendation",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_telegramsecurityconfig",
+      "file_path": "security/telegramsecurityconfig.py",
+      "name": "TelegramSecurityConfig",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_behaviorevent",
+      "file_path": "security/behaviorevent.py",
+      "name": "BehaviorEvent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_interfaceeventrecord",
+      "file_path": "security/interfaceeventrecord.py",
+      "name": "InterfaceEventRecord",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "emergency_cluster_analyzer",
+      "file_path": "security/emergencyclusteranalyzer.py",
+      "name": "EmergencyClusterAnalyzer",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_phishingprotection",
+      "file_path": "ai_agents/phishingprotectionagent.py",
+      "name": "PhishingProtectionAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_alertlevel",
+      "file_path": "security/alertlevel.py",
+      "name": "AlertLevel",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_loadbalancingrequest",
+      "file_path": "security/loadbalancingrequest.py",
+      "name": "LoadBalancingRequest",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_mobilethreat",
+      "file_path": "security/mobilethreat.py",
+      "name": "MobileThreat",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_apilog",
+      "file_path": "security/apilog.py",
+      "name": "APILog",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_notificationresponse",
+      "file_path": "security/notificationresponse.py",
+      "name": "NotificationResponse",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_intrusionattempt",
+      "file_path": "security/intrusionattempt.py",
+      "name": "IntrusionAttempt",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_devicesecuritymetrics",
+      "file_path": "security/devicesecuritymetrics.py",
+      "name": "DeviceSecurityMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_circuitbreakerrecord",
+      "file_path": "security/circuitbreakerrecord.py",
+      "name": "CircuitBreakerRecord",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_recoveryplan",
+      "file_path": "security/recoveryplan.py",
+      "name": "RecoveryPlan",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_accessrequest",
+      "file_path": "security/accessrequest.py",
+      "name": "AccessRequest",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_safefunctionmanager",
+      "file_path": "managers/safefunctionmanager.py",
+      "name": "SafeFunctionManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_attacktype",
+      "file_path": "security/attacktype.py",
+      "name": "AttackType",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "all_bots_sleep_manager",
+      "file_path": "bots/allbotssleepmanager.py",
+      "name": "AllBotsSleepManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_interfaceconfig",
+      "file_path": "security/interfaceconfig.py",
+      "name": "InterfaceConfig",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_networkmetric",
+      "file_path": "security/networkmetric.py",
+      "name": "NetworkMetric",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_voiceinterface",
+      "file_path": "security/voiceinterface.py",
+      "name": "VoiceInterface",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_fixedwindow",
+      "file_path": "security/fixedwindow.py",
+      "name": "FixedWindow",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_malwaredetection",
+      "file_path": "ai_agents/malwaredetectionagent.py",
+      "name": "MalwareDetectionAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_leastconnectionsalgorithm",
+      "file_path": "security/leastconnectionsalgorithm.py",
+      "name": "LeastConnectionsAlgorithm",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_browser",
+      "file_path": "bots/browsersecuritybot.py",
+      "name": "BrowserSecurityBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_circuitbreaker",
+      "file_path": "security/circuitbreaker.py",
+      "name": "CircuitBreaker",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_mobileapp",
+      "file_path": "security/mobileapp.py",
+      "name": "MobileApp",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_loadbalancingmetrics",
+      "file_path": "security/loadbalancingmetrics.py",
+      "name": "LoadBalancingMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_circuitbreakerevent",
+      "file_path": "security/circuitbreakerevent.py",
+      "name": "CircuitBreakerEvent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "test_function",
+      "file_path": "security/test function.py",
+      "name": "Test Function",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_devicestatus",
+      "file_path": "security/devicestatus.py",
+      "name": "DeviceStatus",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_instagramcomment",
+      "file_path": "security/instagramcomment.py",
+      "name": "InstagramComment",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_instagramuser",
+      "file_path": "security/instagramuser.py",
+      "name": "InstagramUser",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_compliancerequirement",
+      "file_path": "security/compliancerequirement.py",
+      "name": "ComplianceRequirement",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_malwareprotection",
+      "file_path": "security/malwareprotection.py",
+      "name": "MalwareProtection",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_scalingmetrics",
+      "file_path": "security/scalingmetrics.py",
+      "name": "ScalingMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_orchestrationmetrics",
+      "file_path": "security/orchestrationmetrics.py",
+      "name": "OrchestrationMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_timebasedstrategy",
+      "file_path": "security/timebasedstrategy.py",
+      "name": "TimeBasedStrategy",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "rate_limiter",
+      "file_path": "security/rate limiter.py",
+      "name": "Rate Limiter",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securityalert",
+      "file_path": "security/securityalert.py",
+      "name": "SecurityAlert",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_compliancemanager",
+      "file_path": "managers/compliancemanager.py",
+      "name": "ComplianceManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_incidentresponseagent",
+      "file_path": "ai_agents/incidentresponseagent.py",
+      "name": "IncidentResponseAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securityaudit",
+      "file_path": "security/securityaudit.py",
+      "name": "SecurityAudit",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "universal_privacy_manager_part2",
+      "file_path": "managers/universal privacy manager part 2.py",
+      "name": "Universal Privacy Manager Part 2",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_detectionmetrics",
+      "file_path": "security/detectionmetrics.py",
+      "name": "DetectionMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_networkmonitoring",
+      "file_path": "security/networkmonitoring.py",
+      "name": "NetworkMonitoring",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_recoveryservice",
+      "file_path": "services/recoveryservice.py",
+      "name": "RecoveryService",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_ratelimitrequest",
+      "file_path": "security/ratelimitrequest.py",
+      "name": "RateLimitRequest",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_threatdetectionagent",
+      "file_path": "ai_agents/threatdetectionagent.py",
+      "name": "ThreatDetectionAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_devicefingerprint",
+      "file_path": "security/devicefingerprint.py",
+      "name": "DeviceFingerprint",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securitylevel",
+      "file_path": "security/securitylevel.py",
+      "name": "SecurityLevel",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_authenticationinterface",
+      "file_path": "security/authenticationinterface.py",
+      "name": "AuthenticationInterface",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_networkpacket",
+      "file_path": "security/networkpacket.py",
+      "name": "NetworkPacket",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_telegrammessage",
+      "file_path": "security/telegrammessage.py",
+      "name": "TelegramMessage",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_incidentresponsemetrics",
+      "file_path": "security/incidentresponsemetrics.py",
+      "name": "IncidentResponseMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "smart_notification_manager_main",
+      "file_path": "managers/smartnotificationmanagermain.py",
+      "name": "SmartNotificationManagerMain",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_circuitbreakerrequest",
+      "file_path": "security/circuitbreakerrequest.py",
+      "name": "CircuitBreakerRequest",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_intrusionprevention",
+      "file_path": "security/intrusionprevention.py",
+      "name": "IntrusionPrevention",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_optimizationresult",
+      "file_path": "security/optimizationresult.py",
+      "name": "OptimizationResult",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_performanceoptimizer",
+      "file_path": "security/performanceoptimizer.py",
+      "name": "PerformanceOptimizer",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "network_protection_manager",
+      "file_path": "managers/networkprotectionmanager.py",
+      "name": "NetworkProtectionManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_voiceanalysisengine",
+      "file_path": "security/voiceanalysisengine.py",
+      "name": "VoiceAnalysisEngine",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_threatlevel",
+      "file_path": "security/threatlevel.py",
+      "name": "ThreatLevel",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_threatintelligenceagent",
+      "file_path": "ai_agents/threatintelligenceagent.py",
+      "name": "ThreatIntelligenceAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_threatintelligencemetrics",
+      "file_path": "security/threatintelligencemetrics.py",
+      "name": "ThreatIntelligenceMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_forensicsreport",
+      "file_path": "security/forensicsreport.py",
+      "name": "ForensicsReport",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_slidingwindow",
+      "file_path": "security/slidingwindow.py",
+      "name": "SlidingWindow",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_loadbalancingsession",
+      "file_path": "security/loadbalancingsession.py",
+      "name": "LoadBalancingSession",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_emergencybotconfig",
+      "file_path": "bots/emergencybotconfig.py",
+      "name": "EmergencyBotConfig",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_threatreport",
+      "file_path": "security/threatreport.py",
+      "name": "ThreatReport",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_errorratebasedstrategy",
+      "file_path": "security/errorratebasedstrategy.py",
+      "name": "ErrorRateBasedStrategy",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_evidence",
+      "file_path": "security/evidence.py",
+      "name": "Evidence",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_serviceinfo",
+      "file_path": "services/serviceinfo.py",
+      "name": "ServiceInfo",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_roundrobinalgorithm",
+      "file_path": "security/roundrobinalgorithm.py",
+      "name": "RoundRobinAlgorithm",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_telegramsecuritybot",
+      "file_path": "bots/telegramsecuritybot.py",
+      "name": "TelegramSecurityBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_mobiledevice",
+      "file_path": "security/mobiledevice.py",
+      "name": "MobileDevice",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_emergencyincident",
+      "file_path": "security/emergencyincident.py",
+      "name": "EmergencyIncident",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "enhanced_safe_function_manager",
+      "file_path": "managers/enhancedsafefunctionmanager.py",
+      "name": "EnhancedSafeFunctionManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "emergency_anomaly_detector",
+      "file_path": "security/emergencyanomalydetector.py",
+      "name": "EmergencyAnomalyDetector",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_nodeinfo",
+      "file_path": "security/nodeinfo.py",
+      "name": "NodeInfo",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_behavioranalysis",
+      "file_path": "security/behavioranalysis.py",
+      "name": "BehaviorAnalysis",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_contentfilter",
+      "file_path": "security/contentfilter.py",
+      "name": "ContentFilter",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_telegramuser",
+      "file_path": "security/telegramuser.py",
+      "name": "TelegramUser",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_networkanalysis",
+      "file_path": "security/networkanalysis.py",
+      "name": "NetworkAnalysis",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_device",
+      "file_path": "bots/devicesecuritybot.py",
+      "name": "DeviceSecurityBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_threatindicator",
+      "file_path": "security/threatindicator.py",
+      "name": "ThreatIndicator",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_apiroute",
+      "file_path": "security/apiroute.py",
+      "name": "APIRoute",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_serviceendpoint",
+      "file_path": "services/serviceendpoint.py",
+      "name": "ServiceEndpoint",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "test_auto_save",
+      "file_path": "security/test auto save.py",
+      "name": "Test Auto Save",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_familyprofilemanager",
+      "file_path": "managers/familyprofilemanager.py",
+      "name": "FamilyProfileManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_controlrule",
+      "file_path": "security/controlrule.py",
+      "name": "ControlRule",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_maxmessenger",
+      "file_path": "bots/maxmessengersecuritybot.py",
+      "name": "MaxMessengerSecurityBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "incognito_protection_bot",
+      "file_path": "bots/incognitoprotectionbot.py",
+      "name": "IncognitoProtectionBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_emergencyresponse",
+      "file_path": "security/emergencyresponse.py",
+      "name": "EmergencyResponse",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_circuitbreakerconfig",
+      "file_path": "security/circuitbreakerconfig.py",
+      "name": "CircuitBreakerConfig",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_emergencycontactinfo",
+      "file_path": "security/emergencycontactinfo.py",
+      "name": "EmergencyContactInfo",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_interfacerecord",
+      "file_path": "security/interfacerecord.py",
+      "name": "InterfaceRecord",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_instagramsecuritybot",
+      "file_path": "bots/instagramsecuritybot.py",
+      "name": "InstagramSecurityBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_emergencyalert",
+      "file_path": "security/emergencyalert.py",
+      "name": "EmergencyAlert",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_childprotection",
+      "file_path": "security/childprotection.py",
+      "name": "ChildProtection",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_policyrule",
+      "file_path": "security/policyrule.py",
+      "name": "PolicyRule",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_securitythreat",
+      "file_path": "security/securitythreat.py",
+      "name": "SecurityThreat",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_cachemetrics",
+      "file_path": "security/cachemetrics.py",
+      "name": "CacheMetrics",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_childprofile",
+      "file_path": "security/childprofile.py",
+      "name": "ChildProfile",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "russian_api_manager",
+      "file_path": "managers/russianapimanager.py",
+      "name": "RussianAPIManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_cloud",
+      "file_path": "bots/cloudstoragesecuritybot.py",
+      "name": "CloudStorageSecurityBot",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_servicerequest",
+      "file_path": "services/servicerequest.py",
+      "name": "ServiceRequest",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_ratelimiter",
+      "file_path": "security/ratelimiter.py",
+      "name": "RateLimiter",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_passwordpolicy",
+      "file_path": "security/passwordpolicy.py",
+      "name": "PasswordPolicy",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_webinterface",
+      "file_path": "security/webinterface.py",
+      "name": "WebInterface",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_financialriskassessment",
+      "file_path": "security/financialriskassessment.py",
+      "name": "FinancialRiskAssessment",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_apikey",
+      "file_path": "security/apikey.py",
+      "name": "APIKey",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_elderlyprotection",
+      "file_path": "security/elderlyprotection.py",
+      "name": "ElderlyProtection",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_interfaceresponse",
+      "file_path": "security/interfaceresponse.py",
+      "name": "InterfaceResponse",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "performanceoptimization_agent",
+      "file_path": "ai_agents/performanceoptimizationagent.py",
+      "name": "PerformanceOptimizationAgent",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_userinterfacemanager",
+      "file_path": "managers/userinterfacemanager.py",
+      "name": "UserInterfaceManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_networkflow",
+      "file_path": "security/networkflow.py",
+      "name": "NetworkFlow",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_apiresponse",
+      "file_path": "security/apiresponse.py",
+      "name": "APIResponse",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_emergencycontact",
+      "file_path": "security/emergencycontact.py",
+      "name": "EmergencyContact",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_threattype",
+      "file_path": "security/threattype.py",
+      "name": "ThreatType",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_testmanager",
+      "file_path": "managers/testmanager.py",
+      "name": "TestManager",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "ai_agent_voiceanalysisresult",
+      "file_path": "security/voiceanalysisresult.py",
+      "name": "VoiceAnalysisResult",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "bot_whatsappmessage",
+      "file_path": "security/whatsappmessage.py",
+      "name": "WhatsAppMessage",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "security_childactivitysummary",
+      "file_path": "security/childactivitysummary.py",
+      "name": "ChildActivitySummary",
+      "status": "sleeping"
+    },
+    {
+      "function_id": "emergency_contact_manager",
+      "file_path": "security/ai_agents/emergency_contact_manager.py",
+      "name": "EmergencyContactManager",
+      "status": "active"
+    },
+    {
+      "function_id": "parent_control_panel",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ParentControlPanel",
+      "status": "active"
+    },
+    {
+      "function_id": "voice_control_manager",
+      "file_path": "НЕ УКАЗАН",
+      "name": "VoiceControlManager",
+      "status": "active"
+    },
+    {
+      "function_id": "function_77",
+      "file_path": "security/ai_agents/alert_manager.py",
+      "name": "AlertManager",
+      "status": "active"
+    },
+    {
+      "function_id": "emergency_event_manager",
+      "file_path": "security/ai_agents/emergency_event_manager.py",
+      "name": "EmergencyEventManager",
+      "status": "active"
+    },
+    {
+      "function_id": "robocall_filtering",
+      "file_path": "НЕ УКАЗАН",
+      "name": "RobocallFiltering",
+      "status": "active"
+    },
+    {
+      "function_id": "caller_id_protection",
+      "file_path": "НЕ УКАЗАН",
+      "name": "CallerIDProtection",
+      "status": "active"
+    },
+    {
+      "function_id": "email_breach_alerts",
+      "file_path": "НЕ УКАЗАН",
+      "name": "EmailBreachAlerts",
+      "status": "active"
+    },
+    {
+      "function_id": "virtual_card_generation",
+      "file_path": "НЕ УКАЗАН",
+      "name": "VirtualCardGeneration",
+      "status": "active"
+    },
+    {
+      "function_id": "family_call_monitoring",
+      "file_path": "НЕ УКАЗАН",
+      "name": "FamilyCallMonitoring",
+      "status": "active"
+    },
+    {
+      "function_id": "auto_learning_system",
+      "file_path": "НЕ УКАЗАН",
+      "name": "AutoLearningSystem",
+      "status": "active"
+    },
+    {
+      "function_id": "enhanced_data_collector",
+      "file_path": "НЕ УКАЗАН",
+      "name": "EnhancedDataCollector",
+      "status": "active"
+    },
+    {
+      "function_id": "fraud_detection_api",
+      "file_path": "НЕ УКАЗАН",
+      "name": "FraudDetectionAPI",
+      "status": "active"
+    },
+    {
+      "function_id": "improved_ml_models",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ImprovedMLModels",
+      "status": "active"
+    },
+    {
+      "function_id": "core_base",
+      "file_path": "НЕ УКАЗАН",
+      "name": "CoreBase",
+      "status": "enabled"
+    },
+    {
+      "function_id": "service_base",
+      "file_path": "НЕ УКАЗАН",
+      "name": "ServiceBase",
+      "status": "enabled"
+    },
+    {
+      "function_id": "security_base",
+      "file_path": "НЕ УКАЗАН",
+      "name": "SecurityBase",
+      "status": "enabled"
+    },
+    {
+      "function_id": "database",
+      "file_path": "НЕ УКАЗАН",
+      "name": "Database",
+      "status": "enabled"
+    },
+    {
+      "function_id": "configuration",
+      "file_path": "НЕ УКАЗАН",
+      "name": "Configuration",
+      "status": "enabled"
+    },
+    {
+      "function_id": "logging_module",
+      "file_path": "НЕ УКАЗАН",
+      "name": "LoggingModule",
+      "status": "enabled"
+    },
+    {
+      "function_id": "authentication",
+      "file_path": "НЕ УКАЗАН",
+      "name": "Authentication",
+      "status": "enabled"
+    },
+    {
+      "function_id": "emergencymlanalyzer",
+      "file_path": "НЕ УКАЗАН",
+      "name": "EmergencyMLAnalyzer",
+      "status": "enabled"
+    }
+  ],
+  "recommendations": [
+    "Удалить функции с несуществующими файлами",
+    "Проверить правильность путей к файлам",
+    "Обновить регистрацию функций"
+  ]
+}

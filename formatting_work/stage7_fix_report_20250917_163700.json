@@ -1,0 +1,12 @@
+{
+  "timestamp": "2025-09-17T16:37:00.551203",
+  "file_path": "security/reactive/recovery_service.py",
+  "fixes_applied": [
+    "Добавлен атрибут: recovery_plans",
+    "Добавлен атрибут: recovery_reports",
+    "Добавлен атрибут: recovery_statistics",
+    "Добавлен атрибут: last_cleanup_date"
+  ],
+  "errors": [],
+  "total_fixes": 4
+}

@@ -1,0 +1,52 @@
+# Dockerfile для API Documentation
+FROM python:3.9-slim
+
+# Установка системных зависимостей
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Создание пользователя для безопасности
+RUN useradd -m -s /bin/bash aladdin
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Копирование requirements
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Дополнительные зависимости для документации
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    pyjwt \
+    cryptography
+
+# Копирование исходного кода
+COPY api_docs/ ./api_docs/
+COPY core/ ./core/
+COPY config/ ./config/
+
+# Создание директорий
+RUN mkdir -p /app/logs
+
+# Установка прав доступа
+RUN chown -R aladdin:aladdin /app
+
+# Переключение на пользователя aladdin
+USER aladdin
+
+# Открытие портов
+EXPOSE 8008
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8008/health || exit 1
+
+# Запуск API Documentation
+CMD ["python", "api_docs/secure_api_docs.py"]

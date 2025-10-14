@@ -1,0 +1,83 @@
+{
+  "startup": {
+    "name": "Стартап",
+    "description": "Для небольших стартапов (1-10 сотрудников)",
+    "company_size": "1-10",
+    "security_level": "medium",
+    "features": {
+      "team_management": true,
+      "device_management": true,
+      "basic_compliance": true,
+      "cost_optimized": true
+    },
+    "vpn_settings": {
+      "team_vpn": true,
+      "office_remote": true,
+      "cost_optimized": true
+    },
+    "antivirus_settings": {
+      "centralized_management": true,
+      "team_licenses": true,
+      "basic_protection": true
+    },
+    "monitoring_settings": {
+      "team_dashboard": true,
+      "basic_alerts": true,
+      "usage_analytics": true
+    }
+  },
+  "small_business": {
+    "name": "Малый бизнес",
+    "description": "Для малого бизнеса (11-50 сотрудников)",
+    "company_size": "11-50",
+    "security_level": "high",
+    "features": {
+      "advanced_team_management": true,
+      "compliance_tools": true,
+      "incident_response": true,
+      "backup_management": true
+    },
+    "vpn_settings": {
+      "enterprise_vpn": true,
+      "multi_site": true,
+      "advanced_routing": true
+    },
+    "antivirus_settings": {
+      "enterprise_protection": true,
+      "advanced_threat_detection": true,
+      "centralized_quarantine": true
+    },
+    "monitoring_settings": {
+      "enterprise_dashboard": true,
+      "advanced_analytics": true,
+      "compliance_reporting": true
+    }
+  },
+  "enterprise": {
+    "name": "Корпорация",
+    "description": "Для крупных корпораций (50+ сотрудников)",
+    "company_size": "50+",
+    "security_level": "maximum",
+    "features": {
+      "enterprise_management": true,
+      "full_compliance": true,
+      "advanced_analytics": true,
+      "custom_integrations": true
+    },
+    "vpn_settings": {
+      "enterprise_grade": true,
+      "global_deployment": true,
+      "custom_protocols": true
+    },
+    "antivirus_settings": {
+      "enterprise_grade": true,
+      "ai_threat_detection": true,
+      "custom_policies": true
+    },
+    "monitoring_settings": {
+      "enterprise_grade": true,
+      "real_time_analytics": true,
+      "custom_dashboards": true
+    }
+  }
+}

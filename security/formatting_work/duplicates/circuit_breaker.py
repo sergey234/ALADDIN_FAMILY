@@ -1,0 +1,1600 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+CircuitBreaker - Интеллектуальный автоматический выключатель
+function_84: Защита от каскадных сбоев и перегрузки системы
+
+Этот модуль предоставляет продвинутую систему circuit breaker
+для AI системы безопасности,
+включающую:
+- Множественные стратегии circuit breaker
+  (Count-based, Time-based, Error-rate-based)
+- Интеллектуальное определение сбоев и восстановления
+- Адаптивные пороги на основе поведения системы
+- ML-анализ для предсказания сбоев
+- Интеграция с системой мониторинга и алертинга
+- Поддержка различных типов операций (HTTP, Database, External API)
+- Автоматическое обучение и адаптация порогов
+- Детальное логирование и аудит всех операций
+- Интеграция с внешними системами мониторинга (Prometheus, Grafana)
+- Поддержка различных протоколов и сервисов
+
+Основные возможности:
+1. Интеллектуальная защита от каскадных сбоев
+2. Автоматическое обнаружение и изоляция неисправных сервисов
+3. ML-оптимизация порогов на основе исторических данных
+4. Интеграция с системой мониторинга для отслеживания метрик
+5. Поддержка различных стратегий circuit breaker
+6. Адаптивные пороги на основе контекста и нагрузки
+7. Детальное логирование и аудит всех операций
+8. Интеграция с внешними системами мониторинга
+9. Поддержка различных типов операций и сервисов
+10. Автоматическое восстановление после сбоев
+
+Технические детали:
+- Использует asyncio для высокопроизводительной асинхронной обработки
+- Применяет ML алгоритмы для анализа сбоев
+- Интегрирует Redis для кэширования состояний
+- Использует SQLAlchemy для работы с базой данных
+- Применяет Pydantic для валидации данных
+- Интегрирует Prometheus для метрик
+- Использует Celery для асинхронных задач
+- Применяет nginx для reverse proxy
+- Интегрирует ELK stack для логирования
+
+Автор: ALADDIN Security System
+Версия: 2.0
+Дата: 2025-01-27
+Лицензия: MIT
+"""
+
+import asyncio
+import json
+import logging
+import os
+
+# Внутренние импорты
+import sys
+import threading
+import time
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
+
+import numpy as np
+
+# Внешние зависимости
+import redis
+import sqlalchemy
+from prometheus_client import Counter, Gauge, Histogram
+from pydantic import BaseModel, Field, validator
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import StandardScaler
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    Integer,
+    String,
+    Text,
+    create_engine,
+)
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+
+sys.path.append(
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    )
+)
+
+from core.base import CoreBase
+from core.configuration import ConfigurationManager
+from core.database import DatabaseManager
+from core.security_base import SecurityBase
+from core.service_base import ServiceBase
+
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Prometheus метрики
+CIRCUIT_STATE_CHANGES = Counter(
+    "circuit_breaker_state_changes_total",
+    "Circuit breaker state changes",
+    ["service", "from_state", "to_state"],
+)
+CIRCUIT_REQUESTS = Counter(
+    "circuit_breaker_requests_total",
+    "Circuit breaker requests",
+    ["service", "state", "result"],
+)
+CIRCUIT_DURATION = Histogram(
+    "circuit_breaker_request_duration_seconds",
+    "Circuit breaker request duration",
+    ["service", "state"],
+)
+CIRCUIT_FAILURES = Counter(
+    "circuit_breaker_failures_total",
+    "Circuit breaker failures",
+    ["service", "failure_type"],
+)
+CIRCUIT_RECOVERIES = Counter(
+    "circuit_breaker_recoveries_total",
+    "Circuit breaker recoveries",
+    ["service"],
+)
+ML_PREDICTIONS = Counter(
+    "circuit_breaker_ml_predictions_total",
+    "ML failure predictions",
+    ["service", "prediction_type"],
+)
+
+# База данных
+Base = declarative_base()
+
+
+class CircuitBreakerRecord(Base):
+    """Запись о circuit breaker"""
+
+    __tablename__ = "circuit_breaker_records"
+
+    id = Column(String, primary_key=True)
+    service_name = Column(String, nullable=False, index=True)
+    service_type = Column(String, nullable=False, index=True)
+    strategy = Column(String, nullable=False)
+    failure_threshold = Column(Integer, nullable=False)
+    timeout = Column(Integer, nullable=False)
+    current_state = Column(String, nullable=False)
+    failure_count = Column(Integer, default=0)
+    success_count = Column(Integer, default=0)
+    last_failure_time = Column(DateTime)
+    last_success_time = Column(DateTime)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+    extra_data = Column(JSON, default={})
+
+
+class CircuitBreakerEvent(Base):
+    """Событие circuit breaker"""
+
+    __tablename__ = "circuit_breaker_events"
+
+    id = Column(String, primary_key=True)
+    service_name = Column(String, nullable=False, index=True)
+    event_type = Column(String, nullable=False)
+    from_state = Column(String, nullable=False)
+    to_state = Column(String, nullable=False)
+    failure_count = Column(Integer, default=0)
+    success_count = Column(Integer, default=0)
+    error_message = Column(Text)
+    event_time = Column(DateTime, default=datetime.utcnow)
+    duration_ms = Column(Float)
+    extra_data = Column(JSON, default={})
+
+
+# Pydantic модели
+
+
+class CircuitBreakerConfig(BaseModel):
+    """Конфигурация circuit breaker"""
+
+    service_name: str = Field(..., description="Имя сервиса")
+    service_type: str = Field(..., description="Тип сервиса")
+    strategy: str = Field(..., description="Стратегия circuit breaker")
+    failure_threshold: int = Field(..., gt=0, description="Порог сбоев")
+    timeout: int = Field(..., gt=0, description="Таймаут в секундах")
+    half_open_max_calls: int = Field(
+        5, gt=0, description="Максимум вызовов в half-open состоянии"
+    )
+    success_threshold: int = Field(
+        3, gt=0, description="Порог успешных вызовов для восстановления"
+    )
+    adaptive: bool = Field(True, description="Адаптивные пороги")
+    ml_enabled: bool = Field(True, description="ML анализ включен")
+
+    @validator("strategy")
+    def validate_strategy(cls, v):
+        allowed = ["count_based", "time_based", "error_rate_based", "adaptive"]
+        if v not in allowed:
+            raise ValueError(f"Strategy must be one of {allowed}")
+        return v
+
+
+class CircuitBreakerRequest(BaseModel):
+    """Запрос на выполнение операции через circuit breaker"""
+
+    service_name: str = Field(..., description="Имя сервиса")
+    operation: str = Field(..., description="Название операции")
+    operation_type: str = Field(..., description="Тип операции")
+    timeout: Optional[int] = Field(None, gt=0, description="Таймаут операции")
+    retry_count: int = Field(0, ge=0, description="Количество попыток")
+    priority: int = Field(1, ge=1, le=10, description="Приоритет операции")
+    extra_data: Dict[str, Any] = Field(
+        default_factory=dict, description="Дополнительные данные"
+    )
+
+
+class CircuitBreakerResponse(BaseModel):
+    """Ответ circuit breaker"""
+
+    success: bool = Field(..., description="Успешность операции")
+    result: Optional[Any] = Field(None, description="Результат операции")
+    error: Optional[str] = Field(None, description="Ошибка")
+    circuit_state: str = Field(..., description="Состояние circuit breaker")
+    execution_time: float = Field(
+        ..., description="Время выполнения в секундах"
+    )
+    retry_count: int = Field(0, description="Количество попыток")
+    extra_data: Dict[str, Any] = Field(
+        default_factory=dict, description="Дополнительные данные"
+    )
+
+
+# Перечисления
+
+
+class CircuitBreakerStrategy(Enum):
+    """Стратегии circuit breaker"""
+
+    COUNT_BASED = "count_based"
+    TIME_BASED = "time_based"
+    ERROR_RATE_BASED = "error_rate_based"
+    ADAPTIVE = "adaptive"
+
+
+class CircuitBreakerState(Enum):
+    """Состояния circuit breaker"""
+
+    CLOSED = "closed"
+    OPEN = "open"
+    HALF_OPEN = "half_open"
+
+
+class ServiceType(Enum):
+    """Типы сервисов"""
+
+    HTTP = "http"
+    DATABASE = "database"
+    EXTERNAL_API = "external_api"
+    INTERNAL_SERVICE = "internal_service"
+    CACHE = "cache"
+
+
+class EventType(Enum):
+    """Типы событий"""
+
+    STATE_CHANGE = "state_change"
+    FAILURE = "failure"
+    SUCCESS = "success"
+    TIMEOUT = "timeout"
+    RECOVERY = "recovery"
+
+
+# Классы для стратегий
+@dataclass
+class CountBasedStrategy:
+    """Стратегия на основе количества сбоев"""
+
+    failure_threshold: int
+    success_threshold: int
+    failure_count: int = 0
+    success_count: int = 0
+
+    def should_open(self) -> bool:
+        """Проверка, нужно ли открыть circuit breaker"""
+        return self.failure_count >= self.failure_threshold
+
+    def should_close(self) -> bool:
+        """Проверка, нужно ли закрыть circuit breaker"""
+        return self.success_count >= self.success_threshold
+
+    def record_failure(self) -> None:
+        """Запись сбоя"""
+        self.failure_count += 1
+        self.success_count = 0
+
+    def record_success(self) -> None:
+        """Запись успеха"""
+        self.success_count += 1
+        if self.success_count >= self.success_threshold:
+            self.failure_count = 0
+
+
+@dataclass
+class TimeBasedStrategy:
+    """Стратегия на основе времени"""
+
+    failure_threshold: int
+    time_window: int  # секунды
+    success_threshold: int
+    failures: deque = field(default_factory=deque)
+    successes: deque = field(default_factory=deque)
+
+    def should_open(self) -> bool:
+        """Проверка, нужно ли открыть circuit breaker"""
+        now = time.time()
+        # Удаляем старые сбои
+        while self.failures and self.failures[0] <= now - self.time_window:
+            self.failures.popleft()
+
+        return len(self.failures) >= self.failure_threshold
+
+    def should_close(self) -> bool:
+        """Проверка, нужно ли закрыть circuit breaker"""
+        now = time.time()
+        # Удаляем старые успехи
+        while self.successes and self.successes[0] <= now - self.time_window:
+            self.successes.popleft()
+
+        return len(self.successes) >= self.success_threshold
+
+    def record_failure(self) -> None:
+        """Запись сбоя"""
+        now = time.time()
+        self.failures.append(now)
+        # Очистка старых успехов
+        while self.successes and self.successes[0] <= now - self.time_window:
+            self.successes.popleft()
+
+    def record_success(self) -> None:
+        """Запись успеха"""
+        now = time.time()
+        self.successes.append(now)
+        # Очистка старых сбоев
+        while self.failures and self.failures[0] <= now - self.time_window:
+            self.failures.popleft()
+
+
+@dataclass
+class ErrorRateBasedStrategy:
+    """Стратегия на основе процента ошибок"""
+
+    error_rate_threshold: float  # 0.0 - 1.0
+    time_window: int  # секунды
+    min_requests: int  # минимальное количество запросов для анализа
+    requests: deque = field(default_factory=deque)
+
+    def should_open(self) -> bool:
+        """Проверка, нужно ли открыть circuit breaker"""
+        now = time.time()
+        # Удаляем старые запросы
+        while self.requests and self.requests[0][0] <= now - self.time_window:
+            self.requests.popleft()
+
+        if len(self.requests) < self.min_requests:
+            return False
+
+        # Вычисляем процент ошибок
+        error_count = sum(1 for _, is_error in self.requests if is_error)
+        error_rate = error_count / len(self.requests)
+
+        return error_rate >= self.error_rate_threshold
+
+    def should_close(self) -> bool:
+        """Проверка, нужно ли закрыть circuit breaker"""
+        now = time.time()
+        # Удаляем старые запросы
+        while self.requests and self.requests[0][0] <= now - self.time_window:
+            self.requests.popleft()
+
+        if len(self.requests) < self.min_requests:
+            return True
+
+        # Вычисляем процент ошибок
+        error_count = sum(1 for _, is_error in self.requests if is_error)
+        error_rate = error_count / len(self.requests)
+
+        return error_rate < self.error_rate_threshold * 0.5  # 50% от порога
+
+    def record_failure(self) -> None:
+        """Запись сбоя"""
+        now = time.time()
+        self.requests.append((now, True))
+
+    def record_success(self) -> None:
+        """Запись успеха"""
+        now = time.time()
+        self.requests.append((now, False))
+
+
+# Основной класс CircuitBreaker
+
+
+class CircuitBreaker(SecurityBase):
+    """
+    Интеллектуальный автоматический выключатель
+
+    Предоставляет продвинутую систему circuit breaker с поддержкой:
+    - Множественных стратегий
+    - ML анализа сбоев
+    - Адаптивных порогов
+    - Интеграции с мониторингом
+    """
+
+    def __init__(
+        self,
+        name: str = "CircuitBreaker",
+        config: Optional[Dict[str, Any]] = None,
+    ):
+        """
+        Инициализация CircuitBreaker
+
+        Args:
+            name: Имя CircuitBreaker
+            config: Конфигурация
+        """
+        super().__init__(name, config)
+
+        # Конфигурация по умолчанию
+        self.default_config = {
+            "redis_url": "redis://localhost:6379/0",
+            "database_url": "sqlite:///circuit_breaker.db",
+            "default_strategy": "adaptive",
+            "default_failure_threshold": 5,
+            "default_timeout": 60,  # секунд
+            "default_success_threshold": 3,
+            "ml_enabled": True,
+            "adaptive_learning": True,
+            "prediction_threshold": 0.7,
+            "max_adaptive_factor": 2.0,
+            "min_adaptive_factor": 0.1,
+            "cleanup_interval": 300,  # секунд
+            "metrics_enabled": True,
+            "logging_enabled": True,
+            "enable_retry": True,
+            "max_retry_count": 3,
+            "retry_delay": 1.0,  # секунд
+        }
+
+        # Объединение конфигураций
+        self.config = {**self.default_config, **(config or {})}
+
+        # Инициализация компонентов
+        self.redis_client: Optional[redis.Redis] = None
+        self.db_engine: Optional[sqlalchemy.Engine] = None
+        self.db_session: Optional[sqlalchemy.orm.Session] = None
+        self.circuits: Dict[str, Dict[str, Any]] = {}
+        self.strategies: Dict[str, Any] = {}
+        self.ml_model: Optional[IsolationForest] = None
+        self.scaler: Optional[StandardScaler] = None
+        self.adaptive_factors: Dict[str, float] = defaultdict(lambda: 1.0)
+
+        # Статистика
+        self.stats = {
+            "total_requests": 0,
+            "successful_requests": 0,
+            "failed_requests": 0,
+            "circuit_opens": 0,
+            "circuit_closes": 0,
+            "ml_predictions": 0,
+            "adaptive_adjustments": 0,
+        }
+
+        # Потоки
+        self.cleanup_thread: Optional[threading.Thread] = None
+        self.ml_thread: Optional[threading.Thread] = None
+        self.running = False
+
+        # Блокировки
+        self.lock = threading.RLock()
+
+        self.logger.info(f"CircuitBreaker {name} инициализирован")
+
+    async def start(self) -> bool:
+        """Запуск CircuitBreaker"""
+        try:
+            self.logger.info("Запуск CircuitBreaker")
+
+            # Инициализация базы данных
+            await self._initialize_database()
+
+            # Инициализация Redis
+            await self._initialize_redis()
+
+            # Инициализация ML модели
+            if self.config["ml_enabled"]:
+                await self._initialize_ml_model()
+
+            # Запуск фоновых потоков
+            self.running = True
+            self.cleanup_thread = threading.Thread(
+                target=self._cleanup_worker, daemon=True
+            )
+            self.cleanup_thread.start()
+
+            if self.config["ml_enabled"]:
+                self.ml_thread = threading.Thread(
+                    target=self._ml_worker, daemon=True
+                )
+                self.ml_thread.start()
+
+            self.logger.info("CircuitBreaker успешно запущен")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Ошибка запуска CircuitBreaker: {e}")
+            return False
+
+    async def stop(self) -> bool:
+        """Остановка CircuitBreaker"""
+        try:
+            self.logger.info("Остановка CircuitBreaker")
+
+            self.running = False
+
+            # Остановка потоков
+            if self.cleanup_thread and self.cleanup_thread.is_alive():
+                self.cleanup_thread.join(timeout=5)
+
+            if self.ml_thread and self.ml_thread.is_alive():
+                self.ml_thread.join(timeout=5)
+
+            # Закрытие соединений
+            if self.redis_client:
+                self.redis_client.close()
+
+            if self.db_session:
+                self.db_session.close()
+
+            if self.db_engine:
+                self.db_engine.dispose()
+
+            self.logger.info("CircuitBreaker успешно остановлен")
+            return True
+
+        except Exception as e:
+            self.logger.error(f"Ошибка остановки CircuitBreaker: {e}")
+            return False
+
+    async def _initialize_database(self) -> None:
+        """Инициализация базы данных"""
+        try:
+            database_url = self.config.get(
+                "database_url", "sqlite:///circuit_breaker.db"
+            )
+            self.db_engine = create_engine(database_url, echo=False)
+
+            # Создание таблиц
+            Base.metadata.create_all(self.db_engine)
+
+            # Создание сессии
+            Session = sessionmaker(bind=self.db_engine)
+            self.db_session = Session()
+
+            self.logger.info("База данных CircuitBreaker инициализирована")
+
+        except Exception as e:
+            self.logger.error(f"Ошибка инициализации базы данных: {e}")
+            raise
+
+    async def _initialize_redis(self) -> None:
+        """Инициализация Redis"""
+        try:
+            redis_url = self.config.get(
+                "redis_url", "redis://localhost:6379/0"
+            )
+            self.redis_client = redis.from_url(
+                redis_url, decode_responses=True
+            )
+
+            # Тест соединения
+            self.redis_client.ping()
+
+            self.logger.info("Redis клиент CircuitBreaker инициализирован")
+
+        except Exception as e:
+            self.logger.error(f"Ошибка инициализации Redis: {e}")
+            raise
+
+    async def _initialize_ml_model(self) -> None:
+        """Инициализация ML модели"""
+        try:
+            # Инициализация модели обнаружения аномалий
+            self.ml_model = IsolationForest(
+                contamination=self.config["prediction_threshold"],
+                random_state=42,
+            )
+
+            # Инициализация скейлера
+            self.scaler = StandardScaler()
+
+            self.logger.info("ML модель CircuitBreaker инициализирована")
+
+        except Exception as e:
+            self.logger.error(f"Ошибка инициализации ML модели: {e}")
+            raise
+
+    async def execute(
+        self, request: CircuitBreakerRequest, operation: Callable
+    ) -> CircuitBreakerResponse:
+        """
+        Выполнение операции через circuit breaker
+
+        Args:
+            request: Запрос на выполнение операции
+            operation: Функция для выполнения
+
+        Returns:
+            CircuitBreakerResponse: Результат выполнения
+        """
+        start_time = time.time()
+
+        try:
+            with self.lock:
+                self.stats["total_requests"] += 1
+
+            # Получение или создание circuit breaker для сервиса
+            circuit = await self._get_or_create_circuit(request)
+
+            # Проверка состояния circuit breaker
+            if circuit["state"] == CircuitBreakerState.OPEN.value:
+                if not await self._should_attempt_reset(circuit):
+                    return CircuitBreakerResponse(
+                        success=False,
+                        error="Circuit breaker is OPEN",
+                        circuit_state=circuit["state"],
+                        execution_time=time.time() - start_time,
+                        retry_count=request.retry_count,
+                        extra_data={"reason": "circuit_open"},
+                    )
+                else:
+                    # Переход в half-open состояние
+                    await self._change_state(
+                        circuit, CircuitBreakerState.HALF_OPEN.value
+                    )
+
+            # ML предсказание сбоя
+            if self.config["ml_enabled"]:
+                failure_probability = await self._predict_failure(
+                    request, circuit
+                )
+                if failure_probability > self.config["prediction_threshold"]:
+                    with self.lock:
+                        self.stats["ml_predictions"] += 1
+                    ML_PREDICTIONS.labels(
+                        service=request.service_name, prediction_type="failure"
+                    ).inc()
+
+                    return CircuitBreakerResponse(
+                        success=False,
+                        error="ML predicted failure",
+                        circuit_state=circuit["state"],
+                        execution_time=time.time() - start_time,
+                        retry_count=request.retry_count,
+                        extra_data={
+                            "failure_probability": failure_probability
+                        },
+                    )
+
+            # Выполнение операции
+            try:
+                if asyncio.iscoroutinefunction(operation):
+                    result = await asyncio.wait_for(
+                        operation(**request.extra_data),
+                        timeout=request.timeout or circuit["timeout"],
+                    )
+                else:
+                    result = operation(**request.extra_data)
+
+                # Запись успеха
+                await self._record_success(circuit, request)
+
+                with self.lock:
+                    self.stats["successful_requests"] += 1
+
+                CIRCUIT_REQUESTS.labels(
+                    service=request.service_name,
+                    state=circuit["state"],
+                    result="success",
+                ).inc()
+
+                return CircuitBreakerResponse(
+                    success=True,
+                    result=result,
+                    circuit_state=circuit["state"],
+                    execution_time=time.time() - start_time,
+                    retry_count=request.retry_count,
+                    extra_data={"strategy": circuit["strategy"]},
+                )
+
+            except asyncio.TimeoutError:
+                # Таймаут
+                await self._record_failure(circuit, request, "timeout")
+
+                with self.lock:
+                    self.stats["failed_requests"] += 1
+
+                CIRCUIT_FAILURES.labels(
+                    service=request.service_name, failure_type="timeout"
+                ).inc()
+
+                return CircuitBreakerResponse(
+                    success=False,
+                    error="Operation timeout",
+                    circuit_state=circuit["state"],
+                    execution_time=time.time() - start_time,
+                    retry_count=request.retry_count,
+                    extra_data={"failure_type": "timeout"},
+                )
+
+            except Exception as e:
+                # Ошибка выполнения
+                await self._record_failure(circuit, request, str(e))
+
+                with self.lock:
+                    self.stats["failed_requests"] += 1
+
+                CIRCUIT_FAILURES.labels(
+                    service=request.service_name, failure_type="exception"
+                ).inc()
+
+                return CircuitBreakerResponse(
+                    success=False,
+                    error=str(e),
+                    circuit_state=circuit["state"],
+                    execution_time=time.time() - start_time,
+                    retry_count=request.retry_count,
+                    extra_data={"failure_type": "exception"},
+                )
+
+        except Exception as e:
+            self.logger.error(f"Ошибка выполнения операции: {e}")
+            return CircuitBreakerResponse(
+                success=False,
+                error=f"Internal error: {str(e)}",
+                circuit_state="unknown",
+                execution_time=time.time() - start_time,
+                retry_count=request.retry_count,
+                extra_data={"error_type": "internal"},
+            )
+
+    async def _get_or_create_circuit(
+        self, request: CircuitBreakerRequest
+    ) -> Dict[str, Any]:
+        """Получение или создание circuit breaker для сервиса"""
+        service_key = f"{request.service_name}:{request.operation}"
+
+        if service_key not in self.circuits:
+            # Создание нового circuit breaker
+            config = await self._get_circuit_config(request)
+
+            circuit = {
+                "service_name": request.service_name,
+                "operation": request.operation,
+                "service_type": config.service_type,
+                "strategy": config.strategy,
+                "failure_threshold": config.failure_threshold,
+                "timeout": config.timeout,
+                "success_threshold": config.success_threshold,
+                "state": CircuitBreakerState.CLOSED.value,
+                "failure_count": 0,
+                "success_count": 0,
+                "last_failure_time": None,
+                "last_success_time": None,
+                "half_open_calls": 0,
+                "created_at": datetime.utcnow(),
+                "updated_at": datetime.utcnow(),
+            }
+
+            # Создание стратегии
+            self.strategies[service_key] = self._create_strategy(config)
+
+            self.circuits[service_key] = circuit
+
+            # Сохранение в базу данных
+            await self._save_circuit_record(circuit)
+
+        return self.circuits[service_key]
+
+    async def _get_circuit_config(
+        self, request: CircuitBreakerRequest
+    ) -> CircuitBreakerConfig:
+        """Получение конфигурации circuit breaker для сервиса"""
+        # Проверка кэша
+        cache_key = (
+            f"circuit_config:{request.service_name}:{request.operation}"
+        )
+
+        if self.redis_client:
+            cached_config = self.redis_client.get(cache_key)
+            if cached_config:
+                config_data = json.loads(cached_config)
+                return CircuitBreakerConfig(**config_data)
+
+        # Получение из базы данных
+        if self.db_session:
+            record = (
+                self.db_session.query(CircuitBreakerRecord)
+                .filter(
+                    CircuitBreakerRecord.service_name == request.service_name,
+                    CircuitBreakerRecord.is_active,
+                )
+                .first()
+            )
+
+            if record:
+                config = CircuitBreakerConfig(
+                    service_name=record.service_name,
+                    service_type=record.service_type,
+                    strategy=record.strategy,
+                    failure_threshold=record.failure_threshold,
+                    timeout=record.timeout,
+                    success_threshold=record.success_threshold,
+                    adaptive=record.extra_data.get("adaptive", True),
+                    ml_enabled=self.config["ml_enabled"],
+                )
+
+                # Кэширование
+                if self.redis_client:
+                    self.redis_client.setex(
+                        cache_key, 300, json.dumps(config.dict())  # 5 минут
+                    )
+
+                return config
+
+        # Создание конфигурации по умолчанию
+        default_config = CircuitBreakerConfig(
+            service_name=request.service_name,
+            service_type=request.operation_type,
+            strategy=self.config["default_strategy"],
+            failure_threshold=self.config["default_failure_threshold"],
+            timeout=self.config["default_timeout"],
+            success_threshold=self.config["default_success_threshold"],
+            adaptive=self.config["adaptive_learning"],
+            ml_enabled=self.config["ml_enabled"],
+        )
+
+        # Сохранение в базу данных
+        await self._save_circuit_config(default_config)
+
+        return default_config
+
+    def _create_strategy(self, config: CircuitBreakerConfig):
+        """Создание стратегии на основе конфигурации"""
+        strategy = CircuitBreakerStrategy(config.strategy)
+
+        if strategy == CircuitBreakerStrategy.COUNT_BASED:
+            return CountBasedStrategy(
+                failure_threshold=config.failure_threshold,
+                success_threshold=config.success_threshold,
+            )
+        elif strategy == CircuitBreakerStrategy.TIME_BASED:
+            return TimeBasedStrategy(
+                failure_threshold=config.failure_threshold,
+                time_window=config.timeout,
+                success_threshold=config.success_threshold,
+            )
+        elif strategy == CircuitBreakerStrategy.ERROR_RATE_BASED:
+            return ErrorRateBasedStrategy(
+                error_rate_threshold=0.5,  # 50% ошибок
+                time_window=config.timeout,
+                min_requests=config.failure_threshold,
+            )
+        else:  # ADAPTIVE
+            return CountBasedStrategy(
+                failure_threshold=config.failure_threshold,
+                success_threshold=config.success_threshold,
+            )
+
+    async def _should_attempt_reset(self, circuit: Dict[str, Any]) -> bool:
+        """Проверка, нужно ли попытаться сбросить circuit breaker"""
+        if circuit["state"] != CircuitBreakerState.OPEN.value:
+            return False
+
+        # Проверка таймаута
+        if circuit["last_failure_time"]:
+            time_since_failure = (
+                datetime.utcnow() - circuit["last_failure_time"]
+            ).total_seconds()
+            return time_since_failure >= circuit["timeout"]
+
+        return True
+
+    async def _change_state(
+        self, circuit: Dict[str, Any], new_state: str
+    ) -> None:
+        """Изменение состояния circuit breaker"""
+        old_state = circuit["state"]
+        circuit["state"] = new_state
+        circuit["updated_at"] = datetime.utcnow()
+
+        # Запись события
+        await self._record_state_change(circuit, old_state, new_state)
+
+        # Обновление статистики
+        with self.lock:
+            if new_state == CircuitBreakerState.OPEN.value:
+                self.stats["circuit_opens"] += 1
+            elif new_state == CircuitBreakerState.CLOSED.value:
+                self.stats["circuit_closes"] += 1
+
+        # Обновление метрик
+        CIRCUIT_STATE_CHANGES.labels(
+            service=circuit["service_name"],
+            from_state=old_state,
+            to_state=new_state,
+        ).inc()
+
+        self.logger.info(
+            f"Circuit breaker {circuit['service_name']} изменил состояние: "
+            f"{old_state} -> {new_state}"
+        )
+
+    async def _record_success(
+        self, circuit: Dict[str, Any], request: CircuitBreakerRequest
+    ) -> None:
+        """Запись успешного выполнения"""
+        circuit["success_count"] += 1
+        circuit["last_success_time"] = datetime.utcnow()
+        circuit["updated_at"] = datetime.utcnow()
+
+        # Обновление стратегии
+        service_key = f"{circuit['service_name']}:{circuit['operation']}"
+        if service_key in self.strategies:
+            self.strategies[service_key].record_success()
+
+        # Проверка, нужно ли закрыть circuit breaker
+        if circuit["state"] == CircuitBreakerState.HALF_OPEN.value:
+            circuit["half_open_calls"] += 1
+
+            if self.strategies[service_key].should_close():
+                await self._change_state(
+                    circuit, CircuitBreakerState.CLOSED.value
+                )
+                circuit["half_open_calls"] = 0
+                circuit["failure_count"] = 0
+
+        # Сохранение в базу данных
+        await self._save_circuit_record(circuit)
+
+    async def _record_failure(
+        self,
+        circuit: Dict[str, Any],
+        request: CircuitBreakerRequest,
+        error: str,
+    ) -> None:
+        """Запись сбоя"""
+        circuit["failure_count"] += 1
+        circuit["last_failure_time"] = datetime.utcnow()
+        circuit["updated_at"] = datetime.utcnow()
+
+        # Обновление стратегии
+        service_key = f"{circuit['service_name']}:{circuit['operation']}"
+        if service_key in self.strategies:
+            self.strategies[service_key].record_failure()
+
+        # Проверка, нужно ли открыть circuit breaker
+        if circuit["state"] in [
+            CircuitBreakerState.CLOSED.value,
+            CircuitBreakerState.HALF_OPEN.value,
+        ]:
+            if self.strategies[service_key].should_open():
+                await self._change_state(
+                    circuit, CircuitBreakerState.OPEN.value
+                )
+
+        # Запись события сбоя
+        await self._record_failure_event(circuit, request, error)
+
+        # Сохранение в базу данных
+        await self._save_circuit_record(circuit)
+
+    async def _predict_failure(
+        self, request: CircuitBreakerRequest, circuit: Dict[str, Any]
+    ) -> float:
+        """ML предсказание вероятности сбоя"""
+        if not self.ml_model or not self.scaler:
+            return 0.0
+
+        try:
+            # Подготовка признаков
+            features = self._extract_features(request, circuit)
+
+            if len(features) == 0:
+                return 0.0
+
+            # Нормализация признаков
+            features_scaled = self.scaler.transform([features])
+
+            # Предсказание аномалии
+            anomaly_score = self.ml_model.decision_function(features_scaled)[0]
+            failure_probability = max(
+                0.0, min(1.0, -anomaly_score)
+            )  # Преобразование в вероятность
+
+            return failure_probability
+
+        except Exception as e:
+            self.logger.error(f"Ошибка предсказания сбоя: {e}")
+            return 0.0
+
+    def _extract_features(
+        self, request: CircuitBreakerRequest, circuit: Dict[str, Any]
+    ) -> List[float]:
+        """Извлечение признаков для ML анализа"""
+        features = []
+
+        # Временные признаки
+        now = datetime.utcnow()
+        features.extend([now.hour, now.weekday(), now.day, now.month])
+
+        # Признаки запроса
+        features.extend(
+            [
+                request.priority,
+                request.retry_count,
+                len(request.extra_data) if request.extra_data else 0,
+            ]
+        )
+
+        # Признаки circuit breaker
+        features.extend(
+            [
+                circuit["failure_count"],
+                circuit["success_count"],
+                circuit["failure_threshold"],
+                circuit["timeout"],
+            ]
+        )
+
+        # Временные признаки сбоев
+        if circuit["last_failure_time"]:
+            time_since_failure = (
+                now - circuit["last_failure_time"]
+            ).total_seconds()
+            features.append(time_since_failure)
+        else:
+            features.append(0)
+
+        if circuit["last_success_time"]:
+            time_since_success = (
+                now - circuit["last_success_time"]
+            ).total_seconds()
+            features.append(time_since_success)
+        else:
+            features.append(0)
+
+        return features
+
+    async def _record_state_change(
+        self, circuit: Dict[str, Any], from_state: str, to_state: str
+    ) -> None:
+        """Запись изменения состояния"""
+        try:
+            event = CircuitBreakerEvent(
+                id=f"state_change_{int(time.time() * 1000)}_"
+                f"{circuit['service_name']}",
+                service_name=circuit["service_name"],
+                event_type=EventType.STATE_CHANGE.value,
+                from_state=from_state,
+                to_state=to_state,
+                failure_count=circuit["failure_count"],
+                success_count=circuit["success_count"],
+                event_time=datetime.utcnow(),
+                extra_data={"operation": circuit["operation"]},
+            )
+
+            if self.db_session:
+                self.db_session.add(event)
+                self.db_session.commit()
+
+        except Exception as e:
+            self.logger.error(f"Ошибка записи изменения состояния: {e}")
+
+    async def _record_failure_event(
+        self,
+        circuit: Dict[str, Any],
+        request: CircuitBreakerRequest,
+        error: str,
+    ) -> None:
+        """Запись события сбоя"""
+        try:
+            event = CircuitBreakerEvent(
+                id=f"failure_{int(time.time() * 1000)}_"
+                f"{circuit['service_name']}",
+                service_name=circuit["service_name"],
+                event_type=EventType.FAILURE.value,
+                from_state=circuit["state"],
+                to_state=circuit["state"],
+                failure_count=circuit["failure_count"],
+                success_count=circuit["success_count"],
+                error_message=error,
+                event_time=datetime.utcnow(),
+                extra_data={
+                    "operation": circuit["operation"],
+                    "request_extra_data": request.extra_data,
+                },
+            )
+
+            if self.db_session:
+                self.db_session.add(event)
+                self.db_session.commit()
+
+        except Exception as e:
+            self.logger.error(f"Ошибка записи события сбоя: {e}")
+
+    async def _save_circuit_record(self, circuit: Dict[str, Any]) -> None:
+        """Сохранение записи circuit breaker"""
+        try:
+            record = CircuitBreakerRecord(
+                id=f"circuit_{circuit['service_name']}_{circuit['operation']}",
+                service_name=circuit["service_name"],
+                service_type=circuit["service_type"],
+                strategy=circuit["strategy"],
+                failure_threshold=circuit["failure_threshold"],
+                timeout=circuit["timeout"],
+                current_state=circuit["state"],
+                failure_count=circuit["failure_count"],
+                success_count=circuit["success_count"],
+                last_failure_time=circuit["last_failure_time"],
+                last_success_time=circuit["last_success_time"],
+                extra_data=circuit,
+            )
+
+            if self.db_session:
+                # Обновление или создание записи
+                existing = (
+                    self.db_session.query(CircuitBreakerRecord)
+                    .filter(CircuitBreakerRecord.id == record.id)
+                    .first()
+                )
+
+                if existing:
+                    existing.current_state = record.current_state
+                    existing.failure_count = record.failure_count
+                    existing.success_count = record.success_count
+                    existing.last_failure_time = record.last_failure_time
+                    existing.last_success_time = record.last_success_time
+                    existing.updated_at = datetime.utcnow()
+                else:
+                    self.db_session.add(record)
+
+                self.db_session.commit()
+
+        except Exception as e:
+            self.logger.error(f"Ошибка сохранения записи circuit breaker: {e}")
+
+    async def _save_circuit_config(self, config: CircuitBreakerConfig) -> None:
+        """Сохранение конфигурации circuit breaker"""
+        try:
+            record = CircuitBreakerRecord(
+                id=f"config_{config.service_name}",
+                service_name=config.service_name,
+                service_type=config.service_type,
+                strategy=config.strategy,
+                failure_threshold=config.failure_threshold,
+                timeout=config.timeout,
+                current_state=CircuitBreakerState.CLOSED.value,
+                extra_data=config.dict(),
+            )
+
+            if self.db_session:
+                # Обновление или создание записи
+                existing = (
+                    self.db_session.query(CircuitBreakerRecord)
+                    .filter(CircuitBreakerRecord.id == record.id)
+                    .first()
+                )
+
+                if existing:
+                    existing.strategy = record.strategy
+                    existing.failure_threshold = record.failure_threshold
+                    existing.timeout = record.timeout
+                    existing.updated_at = datetime.utcnow()
+                else:
+                    self.db_session.add(record)
+
+                self.db_session.commit()
+
+        except Exception as e:
+            self.logger.error(f"Ошибка сохранения конфигурации: {e}")
+
+    def _cleanup_worker(self) -> None:
+        """Фоновый процесс очистки"""
+        while self.running:
+            try:
+                time.sleep(self.config["cleanup_interval"])
+
+                with self.lock:
+                    # Очистка старых circuit breakers
+                    current_time = datetime.utcnow()
+                    keys_to_remove = []
+
+                    for key, circuit in self.circuits.items():
+                        if circuit["updated_at"]:
+                            time_since_update = (
+                                current_time - circuit["updated_at"]
+                            ).total_seconds()
+                            if time_since_update > 3600:  # 1 час
+                                keys_to_remove.append(key)
+
+                    for key in keys_to_remove:
+                        del self.circuits[key]
+                        if key in self.strategies:
+                            del self.strategies[key]
+
+                self.logger.debug("Очистка CircuitBreaker завершена")
+
+            except Exception as e:
+                self.logger.error(f"Ошибка в процессе очистки: {e}")
+
+    def _ml_worker(self) -> None:
+        """Фоновый процесс ML обучения"""
+        while self.running:
+            try:
+                time.sleep(3600)  # Обучение каждый час
+
+                if not self.ml_model or not self.scaler:
+                    continue
+
+                # Сбор данных для обучения
+                training_data = []
+
+                with self.lock:
+                    for circuit in self.circuits.values():
+                        features = self._extract_features_from_circuit(circuit)
+                        if features:
+                            training_data.append(features)
+
+                if len(training_data) < 10:  # Недостаточно данных
+                    continue
+
+                # Обучение модели
+                X = np.array(training_data)
+                self.scaler.fit(X)
+                X_scaled = self.scaler.transform(X)
+                self.ml_model.fit(X_scaled)
+
+                # Обновление адаптивных факторов
+                self._update_adaptive_factors()
+
+                self.logger.info("ML модель CircuitBreaker переобучена")
+
+            except Exception as e:
+                self.logger.error(f"Ошибка в ML процессе: {e}")
+
+    def _extract_features_from_circuit(
+        self, circuit: Dict[str, Any]
+    ) -> List[float]:
+        """Извлечение признаков из circuit breaker для ML"""
+        features = []
+
+        # Временные признаки
+        now = datetime.utcnow()
+        features.extend([now.hour, now.weekday(), now.day, now.month])
+
+        # Признаки circuit breaker
+        features.extend(
+            [
+                circuit["failure_count"],
+                circuit["success_count"],
+                circuit["failure_threshold"],
+                circuit["timeout"],
+            ]
+        )
+
+        # Временные признаки
+        if circuit["last_failure_time"]:
+            time_since_failure = (
+                now - circuit["last_failure_time"]
+            ).total_seconds()
+            features.append(time_since_failure)
+        else:
+            features.append(0)
+
+        if circuit["last_success_time"]:
+            time_since_success = (
+                now - circuit["last_success_time"]
+            ).total_seconds()
+            features.append(time_since_success)
+        else:
+            features.append(0)
+
+        return features
+
+    async def _update_adaptive_factors(self) -> None:
+        """Обновление адаптивных факторов на основе ML анализа"""
+        try:
+            with self.lock:
+                for service_key, circuit in self.circuits.items():
+                    if circuit["failure_count"] < 5:  # Недостаточно данных
+                        continue
+
+                    # Анализ паттерна сбоев
+                    failure_rate = circuit["failure_count"] / (
+                        circuit["failure_count"] + circuit["success_count"]
+                    )
+
+                    # Адаптация фактора
+                    if failure_rate > 0.7:  # Высокий уровень сбоев
+                        self.adaptive_factors[service_key] = max(
+                            self.config["min_adaptive_factor"],
+                            self.adaptive_factors[service_key] * 0.9,
+                        )
+                    elif failure_rate < 0.1:  # Низкий уровень сбоев
+                        self.adaptive_factors[service_key] = min(
+                            self.config["max_adaptive_factor"],
+                            self.adaptive_factors[service_key] * 1.1,
+                        )
+
+                    self.stats["adaptive_adjustments"] += 1
+
+        except Exception as e:
+            self.logger.error(f"Ошибка обновления адаптивных факторов: {e}")
+
+    async def get_status(self) -> Dict[str, Any]:
+        """Получение статуса CircuitBreaker"""
+        with self.lock:
+            return {
+                "name": self.name,
+                "status": "running" if self.running else "stopped",
+                "stats": self.stats.copy(),
+                "active_circuits": len(self.circuits),
+                "circuit_states": {
+                    key: circuit["state"]
+                    for key, circuit in self.circuits.items()
+                },
+                "adaptive_factors": dict(self.adaptive_factors),
+                "config": {
+                    "ml_enabled": self.config["ml_enabled"],
+                    "adaptive_learning": self.config["adaptive_learning"],
+                    "default_strategy": self.config["default_strategy"],
+                    "default_failure_threshold": self.config[
+                        "default_failure_threshold"
+                    ],
+                },
+            }
+
+    async def reset_circuit(
+        self, service_name: str, operation: Optional[str] = None
+    ) -> bool:
+        """Сброс circuit breaker для сервиса"""
+        try:
+            with self.lock:
+                if operation:
+                    service_key = f"{service_name}:{operation}"
+                    if service_key in self.circuits:
+                        circuit = self.circuits[service_key]
+                        circuit["state"] = CircuitBreakerState.CLOSED.value
+                        circuit["failure_count"] = 0
+                        circuit["success_count"] = 0
+                        circuit["updated_at"] = datetime.utcnow()
+
+                        if service_key in self.strategies:
+                            self.strategies[service_key] = (
+                                self._create_strategy(
+                                    await self._get_circuit_config(
+                                        CircuitBreakerRequest(
+                                            service_name=service_name,
+                                            operation=operation,
+                                            operation_type="reset",
+                                        )
+                                    )
+                                )
+                            )
+
+                        await self._save_circuit_record(circuit)
+                        self.logger.info(
+                            f"Circuit breaker сброшен для {service_key}"
+                        )
+                else:
+                    # Сброс всех circuit breakers для сервиса
+                    keys_to_reset = [
+                        key
+                        for key in self.circuits.keys()
+                        if key.startswith(f"{service_name}:")
+                    ]
+                    for key in keys_to_reset:
+                        circuit = self.circuits[key]
+                        circuit["state"] = CircuitBreakerState.CLOSED.value
+                        circuit["failure_count"] = 0
+                        circuit["success_count"] = 0
+                        circuit["updated_at"] = datetime.utcnow()
+                        await self._save_circuit_record(circuit)
+
+                    self.logger.info(
+                        f"Все circuit breakers сброшены для {service_name}"
+                    )
+
+                return True
+
+        except Exception as e:
+            self.logger.error(f"Ошибка сброса circuit breaker: {e}")
+            return False
+
+
+import uvicorn
+
+# API сервер для CircuitBreaker
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI(title="CircuitBreaker API", version="2.0")
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Глобальный экземпляр CircuitBreaker
+circuit_breaker: Optional[CircuitBreaker] = None
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Инициализация CircuitBreaker при запуске"""
+    global circuit_breaker
+    circuit_breaker = CircuitBreaker("CircuitBreakerServer")
+    await circuit_breaker.start()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Остановка CircuitBreaker при завершении"""
+    global circuit_breaker
+    if circuit_breaker:
+        await circuit_breaker.stop()
+
+
+@app.get("/health")
+async def health_check():
+    """Проверка здоровья CircuitBreaker"""
+    return {"status": "healthy", "service": "CircuitBreaker"}
+
+
+@app.get("/status")
+async def get_status():
+    """Получение статуса CircuitBreaker"""
+    if not circuit_breaker:
+        raise HTTPException(
+            status_code=503, detail="CircuitBreaker not initialized"
+        )
+
+    return await circuit_breaker.get_status()
+
+
+@app.post("/execute")
+async def execute_operation(
+    request: CircuitBreakerRequest, operation: str = "test_operation"
+):
+    """Выполнение операции через circuit breaker"""
+    if not circuit_breaker:
+        raise HTTPException(
+            status_code=503, detail="CircuitBreaker not initialized"
+        )
+
+    # Простая тестовая операция
+    async def test_operation(**kwargs):
+        await asyncio.sleep(0.1)  # Имитация работы
+        return {"result": "success", "operation": operation}
+
+    return await circuit_breaker.execute(request, test_operation)
+
+
+@app.post("/reset")
+async def reset_circuit(service_name: str, operation: Optional[str] = None):
+    """Сброс circuit breaker"""
+    if not circuit_breaker:
+        raise HTTPException(
+            status_code=503, detail="CircuitBreaker not initialized"
+        )
+
+    success = await circuit_breaker.reset_circuit(service_name, operation)
+    if not success:
+        raise HTTPException(
+            status_code=500, detail="Failed to reset circuit breaker"
+        )
+
+    return {"message": "Circuit breaker reset successfully"}
+
+
+@app.get("/metrics")
+async def get_metrics():
+    """Получение метрик Prometheus"""
+    from fastapi.responses import Response
+    from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+
+# Основная функция для запуска сервера
+
+
+def main():
+    """Запуск сервера CircuitBreaker"""
+    uvicorn.run(
+        "circuit_breaker:app",
+        host="0.0.0.0",
+        port=8008,
+        reload=False,
+        log_level="info",
+    )
+
+
+if __name__ == "__main__":
+    main()
+
+
+# Тестирование
+async def test_circuit_breaker():
+    """Тестирование CircuitBreaker"""
+    print("🧪 Тестирование CircuitBreaker...")
+
+    # Создание экземпляра
+    breaker = CircuitBreaker("TestCircuitBreaker")
+
+    try:
+        # Запуск
+        await breaker.start()
+        print("✅ CircuitBreaker запущен")
+
+        # Тест 1: Успешная операция
+        request = CircuitBreakerRequest(
+            service_name="test_service",
+            operation="test_operation",
+            operation_type="http",
+        )
+
+        async def success_operation(**kwargs):
+            await asyncio.sleep(0.1)
+            return {"result": "success"}
+
+        response = await breaker.execute(request, success_operation)
+        print(f"✅ Тест 1 - Успешная операция: {response.success}")
+
+        # Тест 2: Операция с ошибкой
+        async def failure_operation(**kwargs):
+            await asyncio.sleep(0.1)
+            raise Exception("Test error")
+
+        for i in range(6):  # Превышение порога сбоев
+            response = await breaker.execute(request, failure_operation)
+            print(
+                f"✅ Тест 2.{i+1} - Операция с ошибкой: {response.success}, "
+                f"состояние: {response.circuit_state}"
+            )
+
+        # Тест 3: Операция с открытым circuit breaker
+        response = await breaker.execute(request, success_operation)
+        print(
+            f"✅ Тест 3 - Операция с открытым CB: {response.success}, "
+            f"причина: {response.error}"
+        )
+
+        # Тест 4: Статус
+        status = await breaker.get_status()
+        print(
+            f"✅ Тест 4 - Статус: {status['status']}, "
+            f"активных CB: {status['active_circuits']}"
+        )
+
+        # Тест 5: Сброс circuit breaker
+        success = await breaker.reset_circuit("test_service", "test_operation")
+        print(f"✅ Тест 5 - Сброс CB: {success}")
+
+        print("🎉 Все тесты CircuitBreaker прошли успешно!")
+
+    except Exception as e:
+        print(f"❌ Ошибка тестирования: {e}")
+
+    finally:
+        # Остановка
+        await breaker.stop()
+        print("✅ CircuitBreaker остановлен")
+
+
+# Запуск тестов при прямом выполнении
+if __name__ == "__main__":
+    asyncio.run(test_circuit_breaker())

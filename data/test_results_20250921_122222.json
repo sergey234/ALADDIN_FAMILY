@@ -1,0 +1,56 @@
+{
+  "tests_run": 9,
+  "tests_passed": 9,
+  "tests_failed": 0,
+  "test_details": {
+    "Импорт CBRDataCollector": {
+      "status": "PASSED",
+      "duration": 0.28499817848205566,
+      "result": true
+    },
+    "Импорт NewsScraper": {
+      "status": "PASSED",
+      "duration": 0.004226207733154297,
+      "result": true
+    },
+    "Импорт ThreatIntelligenceAgent": {
+      "status": "PASSED",
+      "duration": 0.002958059310913086,
+      "result": true
+    },
+    "Сбор данных ЦБ РФ": {
+      "status": "PASSED",
+      "duration": 0.8246328830718994,
+      "result": true
+    },
+    "Сбор новостных данных": {
+      "status": "PASSED",
+      "duration": 319.1711001396179,
+      "result": true
+    },
+    "Методы ThreatIntelligenceAgent": {
+      "status": "PASSED",
+      "duration": 0.0011930465698242188,
+      "result": true
+    },
+    "Сохранение данных": {
+      "status": "PASSED",
+      "duration": 0.0010020732879638672,
+      "result": true
+    },
+    "Обработка ошибок": {
+      "status": "PASSED",
+      "duration": 6.023046970367432,
+      "result": true
+    },
+    "Асинхронные методы": {
+      "status": "PASSED",
+      "duration": 0.002073049545288086,
+      "result": true
+    }
+  },
+  "start_time": "2025-09-21 12:16:56.077084",
+  "end_time": "2025-09-21 12:22:22.398403",
+  "overall_status": "PASSED",
+  "total_duration": 326.321319
+}

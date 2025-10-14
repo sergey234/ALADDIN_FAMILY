@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Политика конфиденциальности ALADDIN</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        /* Кнопка "Полный текст" */
+        .full-text-btn {
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            border: none;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            transition: 0.3s;
+            white-space: nowrap;
+            color: white;
+        }
+        
+        .full-text-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+        }
+        
+        /* Модальное окно */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 100%);
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 100%);
+            padding: 10px 0;
+            z-index: 100;
+        }
+        
+        .modal-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #F59E0B;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            line-height: 1;
+        }
+        
+        .policy-block {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .policy-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #3B82F6;
+            margin-bottom: 8px;
+        }
+        
+        .policy-section {
+            font-size: 9px;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        
+        .section-num {
+            font-weight: 600;
+            color: #F59E0B;
+        }
+        
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .modal-content::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+        
+        .modal-content::-webkit-scrollbar-thumb {
+            background: rgba(245, 158, 11, 0.5);
+            border-radius: 4px;
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .title {
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .policy-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #F59E0B;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-text {
+            font-size: 12px;
+            line-height: 1.7;
+            opacity: 0.9;
+        }
+        
+        .highlight {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 3px solid #10B981;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .list-item {
+            padding-left: 15px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="screen">
+            <div class="header">
+                <div class="back-btn" onclick="goBackSmart()">←</div>
+                <div class="title">📜 Политика конфиденциальности</div>
+                <button class="full-text-btn" onclick="openFullPolicy()">📋 Полный текст</button>
+            </div>
+            
+            <div class="content">
+                <!-- Введение -->
+                <div class="policy-section">
+                    <div class="section-title">🛡️ Наша миссия</div>
+                    <div class="section-text">
+                        ALADDIN защищает вашу семью в сети, сохраняя полную анонимность и приватность. 
+                        Мы НЕ собираем персональные данные и используем максимальную защиту для вашей безопасности.
+                    </div>
+                    <div class="highlight">
+                        <strong>✅ ПОЛНАЯ АНОНИМНОСТЬ</strong><br>
+                        Мы не знаем ваших имён, адресов, email или телефонов!
+                    </div>
+                </div>
+                
+                <!-- Что НЕ собираем -->
+                <div class="policy-section">
+                    <div class="section-title">❌ Что мы НЕ собираем</div>
+                    <div class="section-text">
+                        <div class="list-item">❌ Имя, фамилию, отчество</div>
+                        <div class="list-item">❌ Email адрес</div>
+                        <div class="list-item">❌ Номер телефона</div>
+                        <div class="list-item">❌ Домашний адрес</div>
+                        <div class="list-item">❌ Паспортные данные</div>
+                        <div class="list-item">❌ Фотографии лица</div>
+                        <div class="list-item">❌ История браузера (без вашего согласия)</div>
+                        <div class="list-item">❌ Личные сообщения</div>
+                    </div>
+                </div>
+                
+                <!-- Что собираем -->
+                <div class="policy-section">
+                    <div class="section-title">✅ Что мы собираем</div>
+                    <div class="section-text">
+                        <div class="list-item">✅ User ID (анонимный: aladdin_family_abc123)</div>
+                        <div class="list-item">✅ Роль в семье (Родитель А, Ребенок Б)</div>
+                        <div class="list-item">✅ Возрастная группа (7-12 лет)</div>
+                        <div class="list-item">✅ Статистика угроз (для защиты)</div>
+                        <div class="list-item">✅ Технические логи (для улучшения)</div>
+                    </div>
+                    <div class="highlight">
+                        <strong>📊 Только для безопасности!</strong><br>
+                        Данные используются ТОЛЬКО для защиты вашей семьи
+                    </div>
+                </div>
+                
+                <!-- VPN Политика -->
+                <div class="policy-section">
+                    <div class="section-title">🔐 ALADDIN VPN - Политика</div>
+                    <div class="section-text">
+                        <strong>No-Logs Policy (Нулевое логирование):</strong><br><br>
+                        <div class="list-item">✅ НЕ записываем ваши посещённые сайты</div>
+                        <div class="list-item">✅ НЕ храним историю подключений</div>
+                        <div class="list-item">✅ НЕ знаем что вы делаете в сети</div>
+                        <div class="list-item">✅ НЕ передаём данные третьим лицам</div>
+                        <div class="list-item">✅ НЕ сотрудничаем с рекламодателями</div>
+                    </div>
+                    <div class="highlight">
+                        <strong>🔒 Zero-Knowledge (Нулевое знание)</strong><br>
+                        Даже мы не можем узнать что вы делаете через VPN!
+                    </div>
+                </div>
+                
+                <!-- Шифрование -->
+                <div class="policy-section">
+                    <div class="section-title">🔐 Шифрование данных</div>
+                    <div class="section-text">
+                        <div class="list-item">🔒 AES-256-GCM - военное шифрование</div>
+                        <div class="list-item">🔐 E2EE - сквозное шифрование чатов</div>
+                        <div class="list-item">🛡️ Perfect Forward Secrecy</div>
+                        <div class="list-item">🔑 Локальное хранение ключей</div>
+                        <div class="list-item">📱 Биометрическая защита (Face ID)</div>
+                    </div>
+                </div>
+                
+                <!-- Российское законодательство -->
+                <div class="policy-section">
+                    <div class="section-title">🇷🇺 Российское законодательство</div>
+                    <div class="section-text">
+                        <strong>Соответствие 152-ФЗ:</strong><br><br>
+                        <div class="list-item">✅ Согласие на обработку данных</div>
+                        <div class="list-item">✅ Локальная обработка в России</div>
+                        <div class="list-item">✅ Защита данных детей</div>
+                        <div class="list-item">✅ Право на удаление данных</div>
+                        <div class="list-item">✅ Прозрачность обработки</div>
+                    </div>
+                </div>
+                
+                <!-- Безопасность детей -->
+                <div class="policy-section">
+                    <div class="section-title">👶 Защита данных детей</div>
+                    <div class="section-text">
+                        <div class="list-item">✅ Требуется согласие родителей</div>
+                        <div class="list-item">✅ Минимальный сбор данных</div>
+                        <div class="list-item">✅ Полная анонимность ребёнка</div>
+                        <div class="list-item">✅ Контроль доступа родителями</div>
+                        <div class="list-item">✅ Шифрование всех данных</div>
+                    </div>
+                </div>
+                
+                <!-- Ваши права -->
+                <div class="policy-section">
+                    <div class="section-title">⚖️ Ваши права</div>
+                    <div class="section-text">
+                        <div class="list-item">📄 Доступ к вашим данным</div>
+                        <div class="list-item">✏️ Исправление данных</div>
+                        <div class="list-item">🗑️ Удаление всех данных</div>
+                        <div class="list-item">⛔ Отзыв согласия</div>
+                        <div class="list-item">📩 Экспорт данных</div>
+                    </div>
+                    <div class="highlight">
+                        <strong>💬 Свяжитесь с нами:</strong><br>
+                        Email: privacy@aladdin-family.com<br>
+                        Telegram: @ALADDIN_Privacy
+                    </div>
+                </div>
+                
+                <!-- Обновления -->
+                <div class="policy-section">
+                    <div class="section-title">📅 Обновления политики</div>
+                    <div class="section-text">
+                        <strong>Последнее обновление:</strong> 10 октября 2025<br>
+                        <strong>Версия:</strong> 2.0<br><br>
+                        При изменении политики мы уведомим вас через приложение.
+                        Вы сможете принять новые условия или удалить свои данные.
+                    </div>
+                </div>
+                
+                <!-- Технологии шифрования -->
+                <div class="policy-section">
+                    <div class="section-title">🔐 Технологии шифрования</div>
+                    <div class="section-text">
+                        <strong style="color: #F59E0B;">ВСЕ 3 - ВОЕННЫЙ УРОВЕНЬ!</strong><br><br>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <strong>1. AES-256-GCM 🔐 (Основное)</strong><br>
+                            <div style="font-size: 11px; opacity: 0.9; padding-left: 10px; margin-top: 5px;">
+                                • Как <strong>банковский сейф</strong> - самый надёжный стандарт<br>
+                                • Используется банками, спецслужбами, военными, правительством<br>
+                                • 256 бит = 2^256 комбинаций (невозможно взломать)<br>
+                                • Защита: ⭐⭐⭐⭐⭐ Максимальная<br>
+                                • <em>Где: Файлы, пароли, профили семьи</em>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <strong>2. ChaCha20-Poly1305 🔒 (Быстрое)</strong><br>
+                            <div style="font-size: 11px; opacity: 0.9; padding-left: 10px; margin-top: 5px;">
+                                • Как <strong>спортивный автомобиль</strong> - быстрый и надёжный<br>
+                                • Создан Google для мобильных устройств<br>
+                                • Работает быстрее AES на телефонах<br>
+                                • Защита: ⭐⭐⭐⭐⭐ Максимальная<br>
+                                • <em>Где: VPN, мобильные, энергосбережение</em>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <strong>3. XChaCha20-Poly1305 🛡️ (Космический уровень)</strong><br>
+                            <div style="font-size: 11px; opacity: 0.9; padding-left: 10px; margin-top: 5px;">
+                                • Как <strong>квантовая дверь будущего</strong> - новейшая технология<br>
+                                • Улучшенная версия ChaCha20<br>
+                                • Защита от атак будущего<br>
+                                • Защита: ⭐⭐⭐⭐⭐+ Максимум+<br>
+                                • <em>Где: Максимальная защита, обход блокировок</em>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="highlight">
+                        <strong>💡 ПРОСТАЯ АНАЛОГИЯ:</strong><br><br>
+                        <strong>Представьте дверь в дом:</strong><br><br>
+                        🔐 <strong>AES-256-GCM</strong> = Стальная дверь банковского хранилища<br>
+                        <em>Очень надёжная, тяжёлая, открывается медленнее</em><br><br>
+                        
+                        🔒 <strong>ChaCha20-Poly1305</strong> = Современная умная дверь<br>
+                        <em>Такая же надёжная, но открывается быстрее,<br>
+                        меньше энергии на открытие/закрытие</em><br><br>
+                        
+                        🛡️ <strong>XChaCha20-Poly1305</strong> = Квантовая дверь будущего<br>
+                        <em>Самая продвинутая технология,<br>
+                        защита от атак будущего</em>
+                    </div>
+                    
+                    <div class="highlight" style="margin-top: 12px; background: rgba(16, 185, 129, 0.2);">
+                        <strong style="color: #10B981;">🎯 ВСЕ 3 - ВОЕННЫЙ УРОВЕНЬ!</strong><br><br>
+                        ✅ Все 3 шифрования <strong>НЕВОЗМОЖНО взломать</strong><br>
+                        ✅ Используются ЦРУ, АНБ, военными<br>
+                        ✅ Вы защищены на <strong>100%</strong><br>
+                        ✅ Разница только в скорости и батарее<br><br>
+                        <strong style="font-size: 13px;">"Ваши данные под тройной защитой!"</strong> 🛡️🔐🔒
+                    </div>
+                </div>
+                
+                <!-- Ключевые особенности -->
+                <div class="policy-section" style="background: rgba(245, 158, 11, 0.1); border: 2px solid #F59E0B;">
+                    <div class="section-title" style="font-size: 16px;">⭐ КЛЮЧЕВЫЕ ОСОБЕННОСТИ ПОЛИТИКИ ALADDIN</div>
+                    <div class="section-text">
+                        <div class="list-item">✅ <strong>НЕ собираем персональные данные</strong> - полное соответствие 152-ФЗ</div>
+                        <div class="list-item">✅ <strong>Анонимная аутентификация</strong> - через роли и возрастные группы</div>
+                        <div class="list-item">✅ <strong>Локальная обработка</strong> - биометрия остаётся на устройстве</div>
+                        <div class="list-item">✅ <strong>Обезличенная аналитика</strong> - только статистика без привязки к личности</div>
+                        <div class="list-item">✅ <strong>Семейные группы</strong> - через QR-коды без имён участников</div>
+                        <div class="list-item">✅ <strong>Автоматическое удаление</strong> - данные не хранятся дольше необходимого</div>
+                        <div class="list-item">✅ <strong>Тройное военное шифрование</strong> - AES-256 + ChaCha20 + XChaCha20</div>
+                        <div class="list-item">✅ <strong>Российские серверы</strong> - данные обрабатываются в РФ</div>
+                        <div class="list-item">✅ <strong>Zero-logs VPN</strong> - не храним историю посещений</div>
+                        <div class="list-item">✅ <strong>Энергосбережение</strong> - экономия 30-40% батареи</div>
+                    </div>
+                    <div class="highlight" style="margin-top: 15px; background: rgba(16, 185, 129, 0.2); border-left-color: #10B981;">
+                        <strong style="font-size: 14px; color: #10B981;">
+                            Система ALADDIN обеспечивает максимальную безопасность<br>
+                            при полном соблюдении российского законодательства! 🛡️
+                        </strong>
+                    </div>
+                </div>
+                
+                <!-- Итог -->
+                <div class="highlight" style="margin-top: 20px;">
+                    <strong style="font-size: 14px;">🎯 ГЛАВНОЕ:</strong><br><br>
+                    ✅ Мы на вашей стороне<br>
+                    ✅ Ваша приватность - наш приоритет<br>
+                    ✅ Полная прозрачность<br>
+                    ✅ Максимальная безопасность<br><br>
+                    <strong>ALADDIN защищает, не собирая!</strong> 🛡️
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Умная навигация назад
+        function goBackSmart() {
+            const previousPage = sessionStorage.getItem('previousPage');
+            
+            if (previousPage && previousPage !== '19_privacy_policy.html') {
+                window.location.href = previousPage;
+            } else {
+                window.location.href = '01_main_screen.html';
+            }
+        }
+        
+        // Открыть модальное окно с полными политиками
+        function openFullPolicy() {
+            document.getElementById('fullPolicyModal').style.display = 'flex';
+        }
+        
+        // Закрыть модальное окно
+        function closeFullPolicy() {
+            document.getElementById('fullPolicyModal').style.display = 'none';
+        }
+        
+        // Закрытие по клику на фон
+        window.onclick = function(event) {
+            const modal = document.getElementById('fullPolicyModal');
+            if (event.target === modal) {
+                closeFullPolicy();
+            }
+        }
+    </script>
+    
+    <!-- Модальное окно с полными политиками -->
+    <div id="fullPolicyModal" class="modal-overlay">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">📜 Полное соглашение (152-ФЗ)</div>
+                <button class="close-btn" onclick="closeFullPolicy()">×</button>
+            </div>
+            
+            <!-- ПОЛИТИКА ALADDIN -->
+            <div class="policy-block" style="border: 2px solid #3B82F6;">
+                <div class="policy-title">📱 ПОЛИТИКА ALADDIN</div>
+                
+                <div class="policy-section"><span class="section-num">1. Общие положения</span><br>
+                1.1. Составлена в соответствии с <strong>152-ФЗ «О персональных данных»</strong>.<br>
+                1.2. <strong>ВАЖНО:</strong> Система ALADDIN спроектирована для работы <strong>БЕЗ сбора персональных данных</strong>.<br>
+                1.3. Применяется ко всей информации о пользователях мобильного приложения ALADDIN.
+                </div>
+                
+                <div class="policy-section"><span class="section-num">2. Основные понятия</span><br>
+                • Анонимная сессия - без привязки к личности<br>
+                • Анонимный профиль - только роли и возраст<br>
+                • Обезличенные данные - не определяют пользователя<br>
+                • Агрегированная аналитика - статистика угроз<br>
+                • Локальная аутентификация - только на устройстве<br>
+                • Биометрия - локально, не передаётся
+                </div>
+                
+                <div class="policy-section"><span class="section-num">3. Принципы работы</span><br>
+                • Анонимность - не собираем ПД<br>
+                • Локальная обработка - всё на устройстве<br>
+                • Обезличивание - автоматическое<br>
+                • Минимальная необходимость
+                </div>
+                
+                <div class="policy-section"><span class="section-num">4. Регистрация</span><br>
+                <strong>Анонимная:</strong> роль, возраст, тип устройства<br>
+                <strong>НЕ требуется:</strong> имя, email, телефон, адрес<br>
+                <strong>Аутентификация:</strong> PIN, биометрия, QR-код<br>
+                <strong>Семейные группы:</strong> через QR без имён
+                </div>
+                
+                <div class="policy-section" style="background: rgba(239,68,68,0.1);"><span class="section-num">5. НЕ собираем</span><br>
+                ❌ Имена, адреса, телефоны, email<br>
+                ❌ Паспорта, СНИЛС, ИНН<br>
+                ❌ Финансы, медицину, политику, религию
+                </div>
+                
+                <div class="policy-section" style="background: rgba(16,185,129,0.1);"><span class="section-num">6. Собираем (обезличенные)</span><br>
+                ✅ Анонимные ID сессий, устройств<br>
+                ✅ Тип устройства, ОС, версия<br>
+                ✅ Статистика угроз (обезличенная)
+                </div>
+                
+                <div class="policy-section"><span class="section-num">7. Цели</span><br>
+                Безопасность, обнаружение угроз, образовательный контент, мониторинг, аналитика.
+                </div>
+                
+                <div class="policy-section"><span class="section-num">8. Меры защиты</span><br>
+                <strong>Технические:</strong> Шифрование, анонимизация, локальное хранение<br>
+                <strong>Организационные:</strong> Обучение, аудит, контроль доступа
+                </div>
+                
+                <div class="policy-section"><span class="section-num">9. Права пользователей</span><br>
+                ✅ Получать информацию, требовать удаления, отозвать согласие, получать отчёты
+                </div>
+                
+                <div class="policy-section"><span class="section-num">10. Сроки хранения</span><br>
+                • Сессии: 24 часа<br>
+                • Статистика: 30 дней<br>
+                • Аналитика: 1 год
+                </div>
+                
+                <div class="policy-section"><span class="section-num">11. Трансграничная передача</span><br>
+                <strong>НЕ осуществляется</strong>, т.к. не собираем ПД
+                </div>
+                
+                <div class="policy-section"><span class="section-num">12. Ответственность</span><br>
+                Гарантируем: анонимность, соответствие 152-ФЗ, регулярный аудит
+                </div>
+                
+                <div class="policy-section"><span class="section-num">13. Контакты</span><br>
+                📧 sergey21-02-84@list.ru<br>
+                📞 +7 (927) 005-15-77<br>
+                🏠 Самара, ул. Советской Армии, 240Б, кв. 52
+                </div>
+                
+                <div class="policy-section"><span class="section-num">14. Заключение</span><br>
+                Действует бессрочно, изменения через уведомления
+                </div>
+            </div>
+            
+            <!-- ПОЛИТИКА VPN -->
+            <div class="policy-block" style="border: 2px solid #10B981;">
+                <div class="policy-title">🔐 ПОЛИТИКА ALADDIN VPN</div>
+                
+                <div class="policy-section"><span class="section-num">1. Общие положения VPN</span><br>
+                1.1. Составлена в соответствии с <strong>152-ФЗ</strong>.<br>
+                1.2. <strong>ВАЖНО:</strong> ALADDIN VPN работает <strong>БЕЗ сбора ПД</strong>.<br>
+                1.3. Применяется ко всем пользователям ALADDIN VPN.
+                </div>
+                
+                <div class="policy-section"><span class="section-num">2. Основные понятия VPN</span><br>
+                • Анонимная сессия безопасности<br>
+                • Анонимный профиль безопасности<br>
+                • Обезличенные данные безопасности<br>
+                • Защищённый трафик - зашифрован<br>
+                • Локальная аутентификация безопасности
+                </div>
+                
+                <div class="policy-section" style="background: rgba(16,185,129,0.1);"><span class="section-num">3. Принципы VPN</span><br>
+                ✅ Анонимность - не собираем ПД<br>
+                ✅ Локальная обработка<br>
+                ✅ Обезличивание данных<br>
+                ✅ Минимальная необходимость<br>
+                ✅ <strong>No-Logs</strong> - не ведём логи!
+                </div>
+                
+                <div class="policy-section"><span class="section-num">4. Регистрация VPN</span><br>
+                <strong>Анонимная:</strong> роль, возраст, тип устройства<br>
+                <strong>НЕ требуется:</strong> имя, email, телефон<br>
+                <strong>Аутентификация:</strong> PIN, Face ID, QR-код<br>
+                <strong>НЕ передаётся:</strong> биометрия, пароли
+                </div>
+                
+                <div class="policy-section" style="background: rgba(239,68,68,0.1);"><span class="section-num">5. НЕ собираем (VPN)</span><br>
+                <strong>5.1. Персональные данные:</strong><br>
+                ❌ Имена, адреса, телефоны, email<br>
+                ❌ Паспорта, СНИЛС, ИНН<br><br>
+                <strong>5.2. Конфиденциальная информация:</strong><br>
+                ❌ Финансы, медицина, политика, религия<br><br>
+                <strong>5.3. VPN-трафик:</strong><br>
+                ❌ Посещаемые сайты<br>
+                ❌ Содержимое веб-страниц<br>
+                ❌ Скачиваемые файлы<br>
+                ❌ Сообщения, пароли, банковские операции
+                </div>
+                
+                <div class="policy-section" style="background: rgba(16,185,129,0.1);"><span class="section-num">6. Собираем VPN (обезличенные)</span><br>
+                ✅ Анонимные ID VPN-сессий<br>
+                ✅ Тип устройства, ОС<br>
+                ✅ Время подключения (без привязки)<br>
+                ✅ Статистика производительности
+                </div>
+                
+                <div class="policy-section"><span class="section-num">7. Цели VPN</span><br>
+                VPN-безопасность, стабильное соединение, мониторинг производительности, анализ эффективности.
+                </div>
+                
+                <div class="policy-section"><span class="section-num">8. Меры защиты VPN</span><br>
+                <strong>Технические:</strong> AES-256, анонимизация, No-Logs<br>
+                <strong>Организационные:</strong> Обучение, аудит, контроль
+                </div>
+                
+                <div class="policy-section"><span class="section-num">9. Права пользователей VPN</span><br>
+                ✅ Получать информацию о VPN-данных<br>
+                ✅ Требовать удаления<br>
+                ✅ Отозвать согласие<br>
+                ✅ Получать отчёты (анонимно)
+                </div>
+                
+                <div class="policy-section"><span class="section-num">10. Сроки хранения VPN</span><br>
+                • VPN-сессии: 24 часа<br>
+                • Статистика: 30 дней<br>
+                • Аналитика: 1 год
+                </div>
+                
+                <div class="policy-section"><span class="section-num">11. Трансграничная передача VPN</span><br>
+                <strong>НЕ осуществляется</strong>, т.к. не собираем ПД
+                </div>
+                
+                <div class="policy-section"><span class="section-num">12. Ответственность VPN</span><br>
+                Гарантируем: анонимность, 152-ФЗ, No-Logs, аудит
+                </div>
+                
+                <div class="policy-section"><span class="section-num">13. Контакты VPN</span><br>
+                📧 sergey21-02-84@list.ru<br>
+                📞 +7 (927) 005-15-77<br>
+                🏠 Самара, ул. Советской Армии, 240Б, кв. 52
+                </div>
+                
+                <div class="policy-section"><span class="section-num">14. Заключение VPN</span><br>
+                Действует бессрочно, изменения через уведомления
+                </div>
+            </div>
+            
+            <!-- ШИФРОВАНИЕ -->
+            <div class="policy-block" style="border: 2px solid #F59E0B;">
+                <div class="policy-title">🔐 3 ВИДА ШИФРОВАНИЯ - ВОЕННЫЙ УРОВЕНЬ</div>
+                
+                <div class="policy-section" style="background: rgba(245,158,11,0.1);">
+                <strong>1. AES-256-GCM 🔐</strong><br>
+                • Банковский сейф - самый надёжный<br>
+                • Используется военными, спецслужбами<br>
+                • 2^256 комбинаций - невозможно взломать<br>
+                • Где: Файлы, пароли, профили<br>
+                • Защита: ⭐⭐⭐⭐⭐
+                </div>
+                
+                <div class="policy-section" style="background: rgba(16,185,129,0.1);">
+                <strong>2. ChaCha20-Poly1305 🔒</strong><br>
+                • Спортивный автомобиль - быстрый<br>
+                • Создан Google для мобильных<br>
+                • Быстрее AES на телефонах<br>
+                • Где: VPN, мобильные, энергосбережение<br>
+                • ⚡ Очень быстрое + ⭐⭐⭐⭐⭐<br>
+                • Экономия 30-40% батареи
+                </div>
+                
+                <div class="policy-section" style="background: rgba(139,92,246,0.1);">
+                <strong>3. XChaCha20-Poly1305 🛡️</strong><br>
+                • Квантовая дверь будущего<br>
+                • Защита от атак будущего<br>
+                • Где: Максимальная параноя, корпорации<br>
+                • Защита: ⭐⭐⭐⭐⭐+ Максимум+
+                </div>
+                
+                <div class="policy-section" style="background: rgba(59,130,246,0.2); text-align: center; font-weight: 600;">
+                🎯 ВСЕ 3 - ВОЕННЫЙ УРОВЕНЬ!<br>
+                ✅ НЕВОЗМОЖНО взломать<br>
+                ✅ Используются ЦРУ, АНБ<br>
+                ✅ Защита на 100%<br>
+                "Ваши данные под тройной защитой!" 🛡️🔐🔒
+                </div>
+            </div>
+            
+            <!-- NO-LOGS -->
+            <div class="policy-block" style="border: 2px solid #EF4444;">
+                <div class="policy-title">🔒 NO-LOGS POLICY</div>
+                
+                <div class="policy-section" style="font-weight: 600;">
+                ❌ НЕ записываем посещённые сайты<br>
+                ❌ НЕ храним историю подключений<br>
+                ❌ НЕ знаем что вы делаете в сети<br>
+                ❌ НЕ отслеживаем загрузки<br>
+                ❌ НЕ передаём третьим лицам<br>
+                ❌ НЕ требуем email для регистрации<br>
+                ❌ НЕ храним платёжные данные
+                </div>
+                
+                <div class="policy-section" style="background: rgba(16,185,129,0.2); text-align: center; font-weight: 600; margin-top: 10px;">
+                "Даже мы не можем узнать<br>что вы делаете через VPN!"<br>
+                🔒 Zero-Knowledge
+                </div>
+            </div>
+            
+            <div style="text-align: center; font-size: 10px; opacity: 0.7; margin-top: 15px;">
+                Версия 2.0 | 10 октября 2025<br>
+                Соответствие 152-ФЗ РФ
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

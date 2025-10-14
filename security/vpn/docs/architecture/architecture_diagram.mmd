@@ -1,0 +1,170 @@
+graph TB
+    %% ALADDIN VPN Architecture Diagram
+    
+    %% External Users
+    subgraph "External Users"
+        WEB[Web Users]
+        MOBILE[Mobile Users]
+        API[API Clients]
+    end
+    
+    %% Load Balancer
+    LB[Load Balancer<br/>Nginx]
+    
+    %% Web Layer
+    subgraph "Web Layer"
+        WEBUI[Web UI<br/>React/Vue.js]
+        ADMIN[Admin Panel<br/>Dashboard]
+        MOBILEAPP[Mobile App<br/>iOS/Android]
+    end
+    
+    %% API Layer
+    subgraph "API Layer"
+        REST[REST API<br/>FastAPI]
+        GRAPHQL[GraphQL API]
+        WS[WebSocket<br/>Real-time]
+    end
+    
+    %% Application Layer
+    subgraph "Application Layer"
+        VPNMGR[VPN Manager<br/>Connection Control]
+        SECMGR[Security Manager<br/>DDoS, Rate Limit, IDS]
+        AUTHMGR[Auth Manager<br/>2FA, LDAP, OAuth]
+        MONMGR[Monitoring Manager<br/>Metrics, Alerts]
+        CONFMGR[Config Manager<br/>Settings, Secrets]
+        INTMGR[Integration Manager<br/>External APIs]
+    end
+    
+    %% Core Services Layer
+    subgraph "Core Services Layer"
+        subgraph "VPN Services"
+            WG[WireGuard Server]
+            OVPN[OpenVPN Server]
+            IPSEC[IPSec Server]
+        end
+        
+        subgraph "Security Services"
+            DDOS[DDoS Protection]
+            RATE[Rate Limiting]
+            IDS[Intrusion Detection]
+            FIREWALL[Firewall]
+        end
+        
+        subgraph "Monitoring Services"
+            PROM[Prometheus]
+            GRAF[Grafana]
+            ELK[ELK Stack]
+        end
+    end
+    
+    %% Infrastructure Layer
+    subgraph "Infrastructure Layer"
+        subgraph "Database"
+            PG[PostgreSQL<br/>Primary DB]
+            MONGO[MongoDB<br/>Logs & Analytics]
+        end
+        
+        subgraph "Cache"
+            REDIS[Redis<br/>Session & Cache]
+            MEMCACHE[Memcached<br/>Object Cache]
+        end
+        
+        subgraph "Message Queue"
+            RABBIT[RabbitMQ<br/>Task Queue]
+            KAFKA[Kafka<br/>Event Stream]
+        end
+    end
+    
+    %% External Services
+    subgraph "External Services"
+        CLOUD[Cloud Providers<br/>AWS, GCP, Azure]
+        CDN[CDN<br/>Cloudflare]
+        EMAIL[Email Service<br/>SendGrid]
+        SMS[SMS Service<br/>Twilio]
+    end
+    
+    %% Connections
+    WEB --> LB
+    MOBILE --> LB
+    API --> LB
+    
+    LB --> WEBUI
+    LB --> ADMIN
+    LB --> MOBILEAPP
+    LB --> REST
+    LB --> GRAPHQL
+    LB --> WS
+    
+    WEBUI --> REST
+    ADMIN --> REST
+    MOBILEAPP --> REST
+    MOBILEAPP --> WS
+    
+    REST --> VPNMGR
+    REST --> SECMGR
+    REST --> AUTHMGR
+    REST --> MONMGR
+    REST --> CONFMGR
+    REST --> INTMGR
+    
+    GRAPHQL --> VPNMGR
+    GRAPHQL --> SECMGR
+    GRAPHQL --> AUTHMGR
+    
+    WS --> MONMGR
+    WS --> VPNMGR
+    
+    VPNMGR --> WG
+    VPNMGR --> OVPN
+    VPNMGR --> IPSEC
+    
+    SECMGR --> DDOS
+    SECMGR --> RATE
+    SECMGR --> IDS
+    SECMGR --> FIREWALL
+    
+    MONMGR --> PROM
+    MONMGR --> GRAF
+    MONMGR --> ELK
+    
+    AUTHMGR --> PG
+    CONFMGR --> PG
+    INTMGR --> CLOUD
+    
+    VPNMGR --> REDIS
+    SECMGR --> REDIS
+    MONMGR --> REDIS
+    
+    MONMGR --> RABBIT
+    SECMGR --> KAFKA
+    
+    WG --> CLOUD
+    OVPN --> CLOUD
+    IPSEC --> CLOUD
+    
+    PROM --> PG
+    GRAF --> PG
+    ELK --> MONGO
+    
+    REST --> CDN
+    WEBUI --> CDN
+    
+    AUTHMGR --> EMAIL
+    AUTHMGR --> SMS
+    
+    %% Styling
+    classDef userClass fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef webClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef apiClass fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef appClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef coreClass fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef infraClass fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+    classDef externalClass fill:#e0f2f1,stroke:#004d40,stroke-width:2px
+    
+    class WEB,MOBILE,API userClass
+    class WEBUI,ADMIN,MOBILEAPP webClass
+    class REST,GRAPHQL,WS apiClass
+    class VPNMGR,SECMGR,AUTHMGR,MONMGR,CONFMGR,INTMGR appClass
+    class WG,OVPN,IPSEC,DDOS,RATE,IDS,FIREWALL,PROM,GRAF,ELK coreClass
+    class PG,MONGO,REDIS,MEMCACHE,RABBIT,KAFKA infraClass
+    class CLOUD,CDN,EMAIL,SMS externalClass

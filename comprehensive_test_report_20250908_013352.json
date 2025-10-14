@@ -1,0 +1,98 @@
+{
+  "timestamp": "2025-09-08T01:33:52.864800",
+  "duration": 32.24819731712341,
+  "total_tests": 15,
+  "passed_tests": 10,
+  "results": [
+    {
+      "test": "Импорт основных компонентов",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-08T01:33:20.711139"
+    },
+    {
+      "test": "Создание экземпляров",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-08T01:33:20.712002"
+    },
+    {
+      "test": "Инициализация компонентов",
+      "success": false,
+      "details": "CQM: initialized, Config: initializing, DB: initializing, Security: initializing",
+      "timestamp": "2025-09-08T01:33:20.712048"
+    },
+    {
+      "test": "Создание компонентов безопасности",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-08T01:33:20.715878"
+    },
+    {
+      "test": "Аутентификация",
+      "success": false,
+      "details": "Статус: initializing",
+      "timestamp": "2025-09-08T01:33:20.715909"
+    },
+    {
+      "test": "Контроль доступа",
+      "success": false,
+      "details": "Статус: initializing",
+      "timestamp": "2025-09-08T01:33:20.715928"
+    },
+    {
+      "test": "Проверка качества файла",
+      "success": true,
+      "details": "Оценка: 171.4/100",
+      "timestamp": "2025-09-08T01:33:37.633423"
+    },
+    {
+      "test": "PEP8 соответствие",
+      "success": true,
+      "details": "E501 ошибок: 0",
+      "timestamp": "2025-09-08T01:33:39.325231"
+    },
+    {
+      "test": "Создание таблиц БД",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-08T01:33:39.358592"
+    },
+    {
+      "test": "Добавление события безопасности",
+      "success": true,
+      "details": "",
+      "timestamp": "2025-09-08T01:33:39.360873"
+    },
+    {
+      "test": "Получение событий безопасности",
+      "success": true,
+      "details": "Событий: 1",
+      "timestamp": "2025-09-08T01:33:39.361256"
+    },
+    {
+      "test": "Операции с БД",
+      "success": false,
+      "details": "'DatabaseManager' object has no attribute 'get_system_stats'",
+      "timestamp": "2025-09-08T01:33:39.361309"
+    },
+    {
+      "test": "Правила безопасности",
+      "success": false,
+      "details": "add_security_rule() missing 1 required positional argument: 'rule'",
+      "timestamp": "2025-09-08T01:33:39.362464"
+    },
+    {
+      "test": "Производительность проверки качества",
+      "success": true,
+      "details": "Время: 13.50с",
+      "timestamp": "2025-09-08T01:33:52.864440"
+    },
+    {
+      "test": "Производительность импорта",
+      "success": true,
+      "details": "Время: 0.00с",
+      "timestamp": "2025-09-08T01:33:52.864488"
+    }
+  ]
+}

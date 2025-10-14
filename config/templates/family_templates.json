@@ -1,0 +1,95 @@
+{
+  "young_family": {
+    "name": "Молодая семья",
+    "description": "Для семей с маленькими детьми (0-12 лет)",
+    "age_groups": [
+      "0-3",
+      "4-6",
+      "7-9",
+      "10-12"
+    ],
+    "security_level": "high",
+    "features": {
+      "parental_controls": true,
+      "content_filtering": true,
+      "time_restrictions": true,
+      "location_tracking": true,
+      "emergency_contacts": true
+    },
+    "vpn_settings": {
+      "auto_connect": true,
+      "kill_switch": true,
+      "child_safe_servers": true
+    },
+    "antivirus_settings": {
+      "real_time_protection": true,
+      "child_safe_scanning": true,
+      "quarantine_automatic": true
+    },
+    "monitoring_settings": {
+      "alerts_to_parents": true,
+      "daily_reports": true,
+      "suspicious_activity": true
+    }
+  },
+  "teenage_family": {
+    "name": "Семья с подростками",
+    "description": "Для семей с подростками (13-17 лет)",
+    "age_groups": [
+      "13-15",
+      "16-17"
+    ],
+    "security_level": "medium",
+    "features": {
+      "parental_controls": true,
+      "content_filtering": "moderate",
+      "time_restrictions": "flexible",
+      "privacy_protection": true,
+      "social_media_monitoring": true
+    },
+    "vpn_settings": {
+      "auto_connect": false,
+      "kill_switch": true,
+      "privacy_focused": true
+    },
+    "antivirus_settings": {
+      "real_time_protection": true,
+      "gaming_mode": true,
+      "performance_optimized": true
+    },
+    "monitoring_settings": {
+      "weekly_reports": true,
+      "privacy_respecting": true,
+      "educational_alerts": true
+    }
+  },
+  "adult_family": {
+    "name": "Взрослая семья",
+    "description": "Для семей только со взрослыми (18+ лет)",
+    "age_groups": [
+      "18+"
+    ],
+    "security_level": "balanced",
+    "features": {
+      "privacy_protection": true,
+      "work_security": true,
+      "financial_protection": true,
+      "identity_protection": true
+    },
+    "vpn_settings": {
+      "auto_connect": false,
+      "kill_switch": true,
+      "work_compatible": true
+    },
+    "antivirus_settings": {
+      "real_time_protection": true,
+      "work_mode": true,
+      "financial_protection": true
+    },
+    "monitoring_settings": {
+      "security_alerts": true,
+      "performance_monitoring": true,
+      "threat_intelligence": true
+    }
+  }
+}

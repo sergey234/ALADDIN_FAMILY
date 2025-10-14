@@ -1,0 +1,81 @@
+{
+  "vk_messenger_protection": {
+    "enabled": true,
+    "strict_mode": true,
+    "auto_block_suspicious": true,
+    "monitor_private_messages": true,
+    "monitor_group_messages": true,
+    "monitor_comments": true,
+    "monitor_wall_posts": true,
+    "threat_detection_threshold": 0.7,
+    "vk_api_enabled": false,
+    "vk_token": "",
+    "monitored_groups": [],
+    "blacklisted_users": []
+  },
+  "protection_features": {
+    "spam_detection": true,
+    "phishing_detection": true,
+    "scam_detection": true,
+    "fake_news_detection": true,
+    "cyberbullying_detection": true,
+    "extremism_detection": true,
+    "malware_detection": true,
+    "suspicious_link_analysis": true
+  },
+  "threat_patterns": {
+    "spam": {
+      "keywords": [
+        "реклама",
+        "заработок",
+        "криптовалюта"
+      ],
+      "threshold": 0.6
+    },
+    "phishing": {
+      "keywords": [
+        "пароль",
+        "логин",
+        "вход"
+      ],
+      "threshold": 0.8
+    },
+    "scam": {
+      "keywords": [
+        "бесплатно",
+        "подарок",
+        "выигрыш"
+      ],
+      "threshold": 0.7
+    },
+    "fake_news": {
+      "keywords": [
+        "срочно",
+        "внимание",
+        "важно"
+      ],
+      "threshold": 0.5
+    },
+    "cyberbullying": {
+      "keywords": [
+        "убить",
+        "умри",
+        "ненавижу"
+      ],
+      "threshold": 0.8
+    },
+    "extremism": {
+      "keywords": [
+        "война",
+        "террор",
+        "взрыв"
+      ],
+      "threshold": 0.9
+    }
+  },
+  "integration": {
+    "security_analytics": true,
+    "threat_intelligence": true,
+    "real_time_alerts": true
+  }
+}

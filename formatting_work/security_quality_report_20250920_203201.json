@@ -1,0 +1,102 @@
+{
+  "file": "security/ai_agents/emergency_security_utils_enhanced.py",
+  "timestamp": "2025-09-20T20:32:01.979523",
+  "total_analysis_time_seconds": 0.22493886947631836,
+  "overall_quality_score": 99.2,
+  "analysis_details": {
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "security",
+        "hash",
+        "key",
+        "alert",
+        "log"
+      ],
+      "message": "Найдено 5 ключевых слов безопасности"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "sfm_functions": {
+      "status": "info",
+      "found_functions": [],
+      "message": "Найдено 0 функций SFM"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции run_async_tests (строка 994)"
+      ],
+      "message": "Найдено 1 отсутствующих type hints"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для run_async_tests (строка 994)"
+      ],
+      "message": "Найдено 1 отсутствующих docstring"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 40122,
+      "lines": 1010,
+      "message": "Размер: 40122 байт, Строк: 1010"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "asyncio",
+        "hashlib",
+        "datetime",
+        "typing",
+        "re",
+        "logging"
+      ],
+      "message": "Зависимости: 6"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 22,
+      "num_classes": 6,
+      "message": "Функций: 22, Классов: 6"
+    },
+    "imports": {
+      "status": "success",
+      "message": "Импорты корректны"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 5,
+    "security_classes_found": 0,
+    "sfm_functions_found": 0,
+    "syntax_ok": true,
+    "imports_ok": true,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Добавьте классы системы безопасности.",
+    "Добавьте функции SFM.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "function_name": "SmartNotificationManagerMain",
+  "function_id": "smart_notification_manager_main",
+  "sleep_time": "2025-09-15T22:02:30.061362",
+  "previous_status": "sleeping",
+  "security_level": "high",
+  "is_critical": true,
+  "minimal_system_sleep": true
+}

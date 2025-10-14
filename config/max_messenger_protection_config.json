@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "strict_mode": true,
+  "auto_block_threats": true,
+  "monitor_government_bots": true,
+  "monitor_fake_accounts": true,
+  "monitor_spam": true,
+  "monitor_phishing": true,
+  "threat_detection_threshold": 0.7
+}

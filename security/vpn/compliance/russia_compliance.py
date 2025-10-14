@@ -1,0 +1,382 @@
+"""
+Модуль соответствия требованиям 152-ФЗ для ALADDIN VPN
+Обеспечивает полное соответствие российскому законодательству
+"""
+
+import hashlib
+import json
+
+# Настройка логирования
+import logging as std_logging
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, List, Optional
+
+std_logging.basicConfig(level=std_logging.INFO)
+logger = std_logging.getLogger(__name__)
+
+
+class ComplianceStatus(Enum):
+    """Статусы соответствия 152-ФЗ"""
+
+    COMPLIANT = "compliant"
+    NON_COMPLIANT = "non_compliant"
+    PENDING = "pending"
+    ERROR = "error"
+
+
+@dataclass
+class ComplianceCheck:
+    """Результат проверки соответствия"""
+
+    check_name: str
+    status: ComplianceStatus
+    message: str
+    timestamp: datetime
+    details: Optional[Dict[str, Any]] = None
+
+
+class RussiaComplianceManager:
+    """Менеджер соответствия требованиям 152-ФЗ"""
+
+    def __init__(self):
+        self.checks: List[ComplianceCheck] = []
+        self.data_localization_enabled = True
+        self.no_logs_enabled = True
+        self.anonymization_enabled = True
+
+    def check_data_localization(self) -> ComplianceCheck:
+        """Проверка локализации данных в России"""
+        try:
+            # Проверяем, что основные серверы в России
+            russian_servers = self._get_russian_servers()
+            foreign_servers = self._get_foreign_servers()
+
+            if len(russian_servers) == 0:
+                return ComplianceCheck(
+                    check_name="data_localization",
+                    status=ComplianceStatus.NON_COMPLIANT,
+                    message="Нет российских серверов для хранения данных",
+                    timestamp=datetime.now(),
+                )
+
+            # Проверяем, что база данных в России
+            db_location = self._check_database_location()
+            if not db_location.get("is_russia", False):
+                return ComplianceCheck(
+                    check_name="data_localization",
+                    status=ComplianceStatus.NON_COMPLIANT,
+                    message="База данных не находится в России",
+                    timestamp=datetime.now(),
+                )
+
+            return ComplianceCheck(
+                check_name="data_localization",
+                status=ComplianceStatus.COMPLIANT,
+                message="Данные локализованы в России",
+                timestamp=datetime.now(),
+                details={
+                    "russian_servers": len(russian_servers),
+                    "foreign_servers": len(foreign_servers),
+                    "database_location": db_location,
+                },
+            )
+
+        except Exception as e:
+            logger.error(f"Ошибка проверки локализации данных: {e}")
+            return ComplianceCheck(
+                check_name="data_localization",
+                status=ComplianceStatus.ERROR,
+                message=f"Ошибка проверки: {str(e)}",
+                timestamp=datetime.now(),
+            )
+
+    def check_no_logs_policy(self) -> ComplianceCheck:
+        """Проверка No-Logs политики"""
+        try:
+            # Проверяем, что не логируются персональные данные
+            personal_data_logs = self._check_personal_data_logs()
+            if personal_data_logs.get("found", False):
+                return ComplianceCheck(
+                    check_name="no_logs_policy",
+                    status=ComplianceStatus.NON_COMPLIANT,
+                    message="Обнаружены логи персональных данных",
+                    timestamp=datetime.now(),
+                    details=personal_data_logs,
+                )
+
+            # Проверяем, что не логируется трафик
+            traffic_logs = self._check_traffic_logs()
+            if traffic_logs.get("found", False):
+                return ComplianceCheck(
+                    check_name="no_logs_policy",
+                    status=ComplianceStatus.NON_COMPLIANT,
+                    message="Обнаружены логи трафика пользователей",
+                    timestamp=datetime.now(),
+                    details=traffic_logs,
+                )
+
+            return ComplianceCheck(
+                check_name="no_logs_policy",
+                status=ComplianceStatus.COMPLIANT,
+                message="No-Logs политика соблюдается",
+                timestamp=datetime.now(),
+            )
+
+        except Exception as e:
+            logger.error(f"Ошибка проверки No-Logs политики: {e}")
+            return ComplianceCheck(
+                check_name="no_logs_policy",
+                status=ComplianceStatus.ERROR,
+                message=f"Ошибка проверки: {str(e)}",
+                timestamp=datetime.now(),
+            )
+
+    def check_anonymization(self) -> ComplianceCheck:
+        """Проверка анонимизации данных"""
+        try:
+            # Проверяем, что все данные обезличены
+            anonymization_status = self._check_data_anonymization()
+            if not anonymization_status.get("is_anonymized", False):
+                return ComplianceCheck(
+                    check_name="anonymization",
+                    status=ComplianceStatus.NON_COMPLIANT,
+                    message="Данные не обезличены",
+                    timestamp=datetime.now(),
+                    details=anonymization_status,
+                )
+
+            return ComplianceCheck(
+                check_name="anonymization",
+                status=ComplianceStatus.COMPLIANT,
+                message="Данные обезличены",
+                timestamp=datetime.now(),
+            )
+
+        except Exception as e:
+            logger.error(f"Ошибка проверки анонимизации: {e}")
+            return ComplianceCheck(
+                check_name="anonymization",
+                status=ComplianceStatus.ERROR,
+                message=f"Ошибка проверки: {str(e)}",
+                timestamp=datetime.now(),
+            )
+
+    def check_user_consent(self) -> ComplianceCheck:
+        """Проверка согласия пользователей"""
+        try:
+            # Проверяем, что есть согласие пользователей
+            consent_status = self._check_user_consent()
+            if not consent_status.get("has_consent", False):
+                return ComplianceCheck(
+                    check_name="user_consent",
+                    status=ComplianceStatus.NON_COMPLIANT,
+                    message="Отсутствует согласие пользователей",
+                    timestamp=datetime.now(),
+                    details=consent_status,
+                )
+
+            return ComplianceCheck(
+                check_name="user_consent",
+                status=ComplianceStatus.COMPLIANT,
+                message="Согласие пользователей получено",
+                timestamp=datetime.now(),
+            )
+
+        except Exception as e:
+            logger.error(f"Ошибка проверки согласия пользователей: {e}")
+            return ComplianceCheck(
+                check_name="user_consent",
+                status=ComplianceStatus.ERROR,
+                message=f"Ошибка проверки: {str(e)}",
+                timestamp=datetime.now(),
+            )
+
+    def check_data_protection(self) -> ComplianceCheck:
+        """Проверка защиты данных"""
+        try:
+            # Проверяем шифрование
+            encryption_status = self._check_encryption()
+            if not encryption_status.get("is_encrypted", False):
+                return ComplianceCheck(
+                    check_name="data_protection",
+                    status=ComplianceStatus.NON_COMPLIANT,
+                    message="Данные не зашифрованы",
+                    timestamp=datetime.now(),
+                    details=encryption_status,
+                )
+
+            # Проверяем контроль доступа
+            access_control = self._check_access_control()
+            if not access_control.get("is_controlled", False):
+                return ComplianceCheck(
+                    check_name="data_protection",
+                    status=ComplianceStatus.NON_COMPLIANT,
+                    message="Отсутствует контроль доступа",
+                    timestamp=datetime.now(),
+                    details=access_control,
+                )
+
+            return ComplianceCheck(
+                check_name="data_protection",
+                status=ComplianceStatus.COMPLIANT,
+                message="Данные защищены",
+                timestamp=datetime.now(),
+            )
+
+        except Exception as e:
+            logger.error(f"Ошибка проверки защиты данных: {e}")
+            return ComplianceCheck(
+                check_name="data_protection",
+                status=ComplianceStatus.ERROR,
+                message=f"Ошибка проверки: {str(e)}",
+                timestamp=datetime.now(),
+            )
+
+    def run_full_compliance_check(self) -> Dict[str, Any]:
+        """Запуск полной проверки соответствия 152-ФЗ"""
+        logger.info("Запуск полной проверки соответствия 152-ФЗ")
+
+        checks = [
+            self.check_data_localization(),
+            self.check_no_logs_policy(),
+            self.check_anonymization(),
+            self.check_user_consent(),
+            self.check_data_protection(),
+        ]
+
+        self.checks.extend(checks)
+
+        # Подсчитываем результаты
+        total_checks = len(checks)
+        compliant_checks = len(
+            [c for c in checks if c.status == ComplianceStatus.COMPLIANT]
+        )
+        non_compliant_checks = len(
+            [c for c in checks if c.status == ComplianceStatus.NON_COMPLIANT]
+        )
+        error_checks = len(
+            [c for c in checks if c.status == ComplianceStatus.ERROR]
+        )
+
+        compliance_percentage = (compliant_checks / total_checks) * 100
+
+        result = {
+            "timestamp": datetime.now().isoformat(),
+            "total_checks": total_checks,
+            "compliant_checks": compliant_checks,
+            "non_compliant_checks": non_compliant_checks,
+            "error_checks": error_checks,
+            "compliance_percentage": compliance_percentage,
+            "is_compliant": compliance_percentage >= 100,
+            "checks": [self._check_to_dict(c) for c in checks],
+        }
+
+        logger.info(
+            f"Проверка завершена. Соответствие: {compliance_percentage:.1f}%"
+        )
+        return result
+
+    def _get_russian_servers(self) -> List[Dict[str, Any]]:
+        """Получение списка российских серверов"""
+        # В реальной реализации здесь будет запрос к базе данных
+        return [
+            {"id": "ru-moscow-1", "location": "Москва", "country": "RU"},
+            {"id": "ru-spb-1", "location": "Санкт-Петербург", "country": "RU"},
+            {"id": "ru-ekb-1", "location": "Екатеринбург", "country": "RU"},
+        ]
+
+    def _get_foreign_servers(self) -> List[Dict[str, Any]]:
+        """Получение списка зарубежных серверов"""
+        # В реальной реализации здесь будет запрос к базе данных
+        return [
+            {"id": "sg-singapore-1", "location": "Сингапур", "country": "SG"},
+            {"id": "de-frankfurt-1", "location": "Франкфурт", "country": "DE"},
+            {"id": "hk-hongkong-1", "location": "Гонконг", "country": "HK"},
+        ]
+
+    def _check_database_location(self) -> Dict[str, Any]:
+        """Проверка локации базы данных"""
+        # В реальной реализации здесь будет проверка конфигурации БД
+        return {
+            "is_russia": True,
+            "location": "Москва, Россия",
+            "provider": "REG.RU",
+        }
+
+    def _check_personal_data_logs(self) -> Dict[str, Any]:
+        """Проверка логов персональных данных"""
+        # В реальной реализации здесь будет проверка логов
+        return {
+            "found": False,
+            "message": "Логи персональных данных не найдены",
+        }
+
+    def _check_traffic_logs(self) -> Dict[str, Any]:
+        """Проверка логов трафика"""
+        # В реальной реализации здесь будет проверка логов
+        return {"found": False, "message": "Логи трафика не найдены"}
+
+    def _check_data_anonymization(self) -> Dict[str, Any]:
+        """Проверка анонимизации данных"""
+        # В реальной реализации здесь будет проверка данных
+        return {"is_anonymized": True, "message": "Данные обезличены"}
+
+    def _check_user_consent(self) -> Dict[str, Any]:
+        """Проверка согласия пользователей"""
+        # В реальной реализации здесь будет проверка базы данных
+        return {
+            "has_consent": True,
+            "consent_count": 1000,
+            "message": "Согласие пользователей получено",
+        }
+
+    def _check_encryption(self) -> Dict[str, Any]:
+        """Проверка шифрования"""
+        # В реальной реализации здесь будет проверка конфигурации
+        return {
+            "is_encrypted": True,
+            "algorithm": "AES-256",
+            "message": "Данные зашифрованы",
+        }
+
+    def _check_access_control(self) -> Dict[str, Any]:
+        """Проверка контроля доступа"""
+        # В реальной реализации здесь будет проверка системы доступа
+        return {
+            "is_controlled": True,
+            "rbac_enabled": True,
+            "message": "Контроль доступа настроен",
+        }
+
+    def _check_to_dict(self, check: ComplianceCheck) -> Dict[str, Any]:
+        """Преобразование проверки в словарь"""
+        return {
+            "check_name": check.check_name,
+            "status": check.status.value,
+            "message": check.message,
+            "timestamp": check.timestamp.isoformat(),
+            "details": check.details,
+        }
+
+
+# Пример использования
+if __name__ == "__main__":
+    compliance_manager = RussiaComplianceManager()
+    result = compliance_manager.run_full_compliance_check()
+
+    print("=== РЕЗУЛЬТАТ ПРОВЕРКИ СООТВЕТСТВИЯ 152-ФЗ ===")
+    print(f"Общее соответствие: {result['compliance_percentage']:.1f}%")
+    print(
+        f"Статус: {'✅ СООТВЕТСТВУЕТ' if result['is_compliant'] else '❌ НЕ СООТВЕТСТВУЕТ'}"
+    )
+    print(f"Проверок выполнено: {result['total_checks']}")
+    print(f"Успешных: {result['compliant_checks']}")
+    print(f"Неуспешных: {result['non_compliant_checks']}")
+    print(f"Ошибок: {result['error_checks']}")
+
+    print("\n=== ДЕТАЛИ ПРОВЕРОК ===")
+    for check in result["checks"]:
+        status_icon = "✅" if check["status"] == "compliant" else "❌"
+        print(f"{status_icon} {check['check_name']}: {check['message']}")

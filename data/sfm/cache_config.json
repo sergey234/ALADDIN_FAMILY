@@ -1,0 +1,9 @@
+{
+    "redis_enabled": true,
+    "memory_cache_enabled": true,
+    "cache_strategy": "lru",
+    "default_ttl": 300,
+    "max_cache_size": "100MB",
+    "cache_hit_ratio_target": 0.8,
+    "activated_functions": 6
+}

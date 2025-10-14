@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Аналитика</title>
+    <!-- Chart.js для графиков -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        
+        .filter-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 5px;
+        }
+        
+        .time-selector {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 5px;
+            margin-bottom: 15px;
+        }
+        
+        .time-option {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .time-option.active {
+            background: #F59E0B;
+            color: #0a1128;
+            font-weight: bold;
+        }
+        
+        .overview-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        /* Графики */
+        .charts-section {
+            margin: 15px 0;
+            display: none; /* Показываем только для usage */
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .chart-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #F59E0B;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .chart-canvas {
+            width: 100%;
+            max-height: 180px;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            min-height: 300px;
+        }
+        
+        .empty-state.show {
+            display: flex;
+        }
+        
+        .empty-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .empty-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 12px;
+        }
+        
+        .empty-description {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 28px;
+            max-width: 300px;
+            line-height: 1.6;
+        }
+        
+        .empty-action {
+            background: rgba(245, 158, 11, 0.2);
+            border: 2px solid #F59E0B;
+            color: #F59E0B;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .empty-action:hover {
+            background: rgba(245, 158, 11, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .overview-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .overview-card:hover {
+            transform: translateY(-3px);
+            border-color: #F59E0B;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+        }
+        
+        .card-icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+        
+        .card-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 4px;
+        }
+        
+        .card-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.2;
+        }
+        
+        .details-btn {
+            width: 100%;
+            padding: 15px;
+            background: rgba(245, 158, 11, 0.2);
+            border: 2px solid #F59E0B;
+            border-radius: 15px;
+            color: #F59E0B;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+        
+        .details-btn:hover {
+            background: rgba(245, 158, 11, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 6px 2px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            gap: 2px;
+            transition: all 0.3s ease;
+            background: none;
+            border: none;
+            padding: 4px 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #F59E0B;
+            color: #0a1128;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Аналитика (TABS + MODAL)</div>
+        <div class="screen">
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="back-btn" onclick="goBackSmart()" style="cursor: pointer;">←</div>
+                <div class="title">Аналитика</div>
+                <div class="filter-btn" onclick="searchAnalytics()">🔍</div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="main-content" role="main">
+                <!-- Селектор времени -->
+                <div class="time-selector">
+                    <div class="time-option" onclick="selectTime(this, 'День')">День</div>
+                    <div class="time-option active" onclick="selectTime(this, 'Неделя')">Неделя</div>
+                    <div class="time-option" onclick="selectTime(this, 'Месяц')">Месяц</div>
+                    <div class="time-option" onclick="selectTime(this, 'Год')">Год</div>
+                </div>
+                
+                <!-- TABS ВВЕРХУ: Семья и Безопасность -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                    <div id="tab-family" onclick="switchTab('family')" style="padding: 12px; background: rgba(245, 158, 11, 0.2); border-radius: 15px; cursor: pointer; font-size: 14px; font-weight: 700; text-align: center; border: 2px solid #F59E0B; color: #F59E0B; padding-top: 16px;">👨‍👩‍👧‍👦 Семья</div>
+                    <div id="tab-security" onclick="switchTab('security')" style="padding: 12px; background: transparent; border-radius: 15px; cursor: pointer; font-size: 14px; font-weight: 700; text-align: center; border: 2px solid #F59E0B; color: #F59E0B;">🛡️ Безопасность</div>
+                </div>
+                
+                <!-- КОНТЕНТ АКТИВНОГО ТАБА -->
+                <div id="active-tab-content">
+                    <!-- Empty State (скрыт когда есть данные) -->
+                    <div class="empty-state" id="empty-analytics">
+                        <div class="empty-icon">📊</div>
+                        <div class="empty-title">Нет данных</div>
+                        <div class="empty-description">
+                            Статистика появится после первого использования приложения членами семьи
+                        </div>
+                        <a href="01_main_screen.html" class="empty-action">
+                            🏠 На главную
+                        </a>
+                    </div>
+                    
+                    <!-- 4 БОЛЬШИЕ КАРТОЧКИ (меняются в зависимости от таба) -->
+                    <div class="overview-cards" role="region" aria-label="Обзор статистики">
+                        <div class="overview-card" onclick="sessionStorage.setItem('previousPage', '04_analytics_screen.html'); window.location.href='03_family_screen.html'">
+                            <div class="card-icon">👨‍👩‍👧‍👦</div>
+                            <div class="card-value">4</div>
+                            <div class="card-label">Члена семьи</div>
+                        </div>
+                        <div class="overview-card">
+                            <div class="card-icon">📊</div>
+                            <div class="card-value">12ч</div>
+                            <div class="card-label">Общее время</div>
+                        </div>
+                        <div class="overview-card">
+                            <div class="card-icon">🛡️</div>
+                            <div class="card-value">856</div>
+                            <div class="card-label">Угроз заблокировано</div>
+                        </div>
+                        <div class="overview-card">
+                            <div class="card-icon">✅</div>
+                            <div class="card-value">98%</div>
+                            <div class="card-label">Защищено</div>
+                        </div>
+                    </div>
+                    
+                    <!-- ГРАФИКИ (показываются только для "Использование") -->
+                    <div class="charts-section" id="charts-section">
+                        <!-- График 1: Линейный - Экранное время -->
+                        <div class="chart-container">
+                            <div class="chart-title">📈 Экранное время по дням</div>
+                            <canvas id="screenTimeChart" class="chart-canvas"></canvas>
+                        </div>
+                        
+                        <!-- График 2: Столбчатый - Топ приложений -->
+                        <div class="chart-container">
+                            <div class="chart-title">📊 Топ-5 приложений</div>
+                            <canvas id="topAppsChart" class="chart-canvas"></canvas>
+                        </div>
+                        
+                        <!-- График 3: Круговая - Распределение активности -->
+                        <div class="chart-container">
+                            <div class="chart-title">🥧 Распределение активности</div>
+                            <canvas id="activityPieChart" class="chart-canvas"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- TABS ВНИЗУ: Использование и Устройства -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0;">
+                        <div id="tab-usage" onclick="switchTab('usage')" style="padding: 12px; background: transparent; border-radius: 15px; cursor: pointer; font-size: 14px; font-weight: 700; text-align: center; border: 2px solid #F59E0B; color: #F59E0B;">📊 Использование</div>
+                        <div id="tab-devices" onclick="switchTab('devices')" style="padding: 12px; background: transparent; border-radius: 15px; cursor: pointer; font-size: 14px; font-weight: 700; text-align: center; border: 2px solid #F59E0B; color: #F59E0B; padding-top: 16px;">📱 Устройства</div>
+                    </div>
+                    
+                    <!-- КНОПКА ПОДРОБНЕЕ (ближе к Bottom Nav) -->
+                    <button class="details-btn" id="details-btn" onclick="openDetailsModal('family')" style="margin-top: 20px;">📊 Подробная статистика →</button>
+                </div>
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN">
+                    <div class="nav-icon">🛡️</div>
+                    <div class="nav-label">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления">
+                    <div class="nav-icon">🔔</div>
+                    <div class="nav-label">Уведомления</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи">
+                    <div class="nav-icon">📱</div>
+                    <div class="nav-label">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    function switchTab(category) {
+        // Определяем группу табов
+        let tabGroup = [];
+        if (category === 'family' || category === 'security') {
+            tabGroup = ['family', 'security'];
+        } else {
+            tabGroup = ['usage', 'devices'];
+        }
+        
+        // Сбрасываем только табы в той же группе
+        tabGroup.forEach(tab => {
+            const tabEl = document.getElementById('tab-' + tab);
+            if (tabEl) {
+                tabEl.style.background = 'transparent';
+                tabEl.style.color = '#F59E0B';
+                // border остаётся золотым
+            }
+        });
+        
+        // Активируем выбранный таб
+        const selectedTab = document.getElementById('tab-' + category);
+        selectedTab.style.background = 'rgba(245, 158, 11, 0.2)';
+        selectedTab.style.color = '#F59E0B';
+        
+        // Меняем 4 карточки в зависимости от категории
+        const cardsContainer = document.querySelector('.overview-cards');
+        const detailsBtn = document.getElementById('details-btn');
+        
+        let cardsHTML = '';
+        
+        if (category === 'family') {
+            cardsHTML = `
+                <div class="overview-card" onclick="window.location.href='03_family_screen.html'">
+                    <div class="card-icon">👨‍👩‍👧‍👦</div>
+                    <div class="card-value">4</div>
+                    <div class="card-label">Члена семьи</div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-value">12ч</div>
+                    <div class="card-label">Общее время</div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">🛡️</div>
+                    <div class="card-value">856</div>
+                    <div class="card-label">Угроз</div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">✅</div>
+                    <div class="card-value">98%</div>
+                    <div class="card-label">Защищено</div>
+                </div>`;
+        } else if (category === 'security') {
+            cardsHTML = `
+                <div class="overview-card" onclick="showThreatDetails()">
+                    <div class="card-icon">🛡️</div>
+                    <div class="card-value">1,247</div>
+                    <div class="card-label">Угроз заблокировано</div>
+                </div>
+                <div class="overview-card" onclick="window.location.href='02_protection_screen.html'">
+                    <div class="card-icon">🌐</div>
+                    <div class="card-value">2.3 GB</div>
+                    <div class="card-label">Трафик через VPN</div>
+                </div>
+                <div class="overview-card" onclick="window.location.href='03_family_screen.html'">
+                    <div class="card-icon">👨‍👩‍👧‍👦</div>
+                    <div class="card-value">4</div>
+                    <div class="card-label">Активных пользователей</div>
+                </div>
+                <div class="overview-card" onclick="showProtectionTime()">
+                    <div class="card-icon">⏱️</div>
+                    <div class="card-value">12ч</div>
+                    <div class="card-label">Время защиты</div>
+                </div>`;
+        } else if (category === 'usage') {
+            cardsHTML = `
+                <div class="overview-card">
+                    <div class="card-icon">⏱️</div>
+                    <div class="card-value">8ч 24м</div>
+                    <div class="card-label">Экранное время</div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">📱</div>
+                    <div class="card-value">342</div>
+                    <div class="card-label">Сайтов посещено</div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">🎮</div>
+                    <div class="card-value">28</div>
+                    <div class="card-label">Приложений</div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">📊</div>
+                    <div class="card-value">2.3 GB</div>
+                    <div class="card-label">Трафика</div>
+                </div>`;
+        } else if (category === 'devices') {
+            cardsHTML = `
+                <div class="overview-card" onclick="window.location.href='12_devices_screen.html'">
+                    <div class="card-icon">📱</div>
+                    <div class="card-value">6</div>
+                    <div class="card-label">Устройств</div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">🟢</div>
+                    <div class="card-value">4</div>
+                    <div class="card-label">Онлайн</div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">⭕</div>
+                    <div class="card-value">2</div>
+                    <div class="card-label">Офлайн</div>
+                </div>
+                <div class="overview-card">
+                    <div class="card-icon">🛡️</div>
+                    <div class="card-value">100%</div>
+                    <div class="card-label">Защита</div>
+                </div>`;
+        }
+        
+        cardsContainer.innerHTML = cardsHTML;
+        detailsBtn.setAttribute('onclick', `openDetailsModal('${category}')`);
+        
+        // Показываем/скрываем графики
+        updateChartsVisibility(category);
+        
+        // НЕ показываем уведомление, чтобы не было дублирования!
+    }
+    
+    function openDetailsModal(category) {
+        let modalContent = '';
+        
+        if (category === 'security') {
+            modalContent = `🛡️ ДЕТАЛЬНАЯ СТАТИСТИКА: БЕЗОПАСНОСТЬ\n\n📊 Заблокированные угрозы:\n• Фишинговые сайты: 542\n• Вредоносные файлы: 318\n• Подозрительные приложения: 187\n• Опасные ссылки: 200\n\nПОСЛЕДНИЕ УГРОЗЫ:\n✅ Фишинговый сайт (2 мин назад)\n⚠️ Подозрительное приложение (15 мин)\n🚫 Вредоносный файл (1 час назад)\n\n📈 Трафик через VPN:\n• Сегодня: 2.3 GB\n• За неделю: 15.8 GB\n• Защищено: 100%`;
+        } else if (category === 'usage') {
+            modalContent = `📊 ДЕТАЛЬНАЯ СТАТИСТИКА: ИСПОЛЬЗОВАНИЕ\n\n⏱️ Активность по часам:\n🌅 Утро (6-12): 2ч 15м (27%)\n☀️ День (12-18): 3ч 42м (44%)\n🌙 Вечер (18-24): 2ч 27м (29%)\n\n📱 Top-5 приложений:\n1. Instagram: 2ч 15м\n2. YouTube: 1ч 48м\n3. WhatsApp: 1ч 12м\n4. Safari: 58мин\n5. TikTok: 45мин\n\n🌐 Top-5 сайтов:\n1. youtube.com (142 визита)\n2. vk.com (89 визитов)\n3. google.com (67 визитов)\n4. yandex.ru (54 визита)\n5. mail.ru (42 визита)\n\n📊 Всего трафика: 2.3 GB`;
+        } else if (category === 'family') {
+            modalContent = `📊 ДЕТАЛЬНАЯ СТАТИСТИКА: СЕМЬЯ\n\n👨‍👩‍👧‍👦 Активность по членам:\n👨 Александр: 4ч 15м (35%)\n👩 Елена: 3ч 42м (31%)\n👦 Алексей: 2ч 27м (20%)\n👵 Бабушка: 1ч 40м (14%)\n\n🛡️ Заблокировано угроз:\n👨 Александр: 245\n👩 Елена: 189\n👦 Алексей: 342 ⚠️ (самый уязвимый!)\n👵 Бабушка: 80\n\nПОСЛЕДНЯЯ АКТИВНОСТЬ:\n👦 Алексей → безопасная игра (5 мин)\n👧 Мария → урок безопасности (30 мин)\n👩 Мама → родительский контроль (2ч)\n\n📱 Устройства:\n👨 Александр → iPhone 13 Pro\n👩 Елена → iPhone 12\n👦 Алексей → iPad Air\n👵 Бабушка → iMac 27"`;
+        } else if (category === 'devices') {
+            modalContent = `📊 ДЕТАЛЬНАЯ СТАТИСТИКА: УСТРОЙСТВА\n\n📱 Активность по устройствам:\n📱 iPhone 13 Pro: 4ч 15м (35%)\n💻 MacBook Pro: 3ч 42м (31%)\n📱 iPhone 12: 2ч 27м (20%)\n🖥️ iMac 27": 1ч 40м (14%)\n📲 iPad Air: 45мин (6%)\n⌚ Apple Watch: 15мин (2%)\n\n🛡️ Угрозы по устройствам:\n📱 iPhone 13 Pro: 245 блок.\n💻 MacBook Pro: 189 блок.\n📱 iPhone 12: 142 блок.\n🖥️ iMac 27": 198 блок.\n📲 iPad Air: 82 блок.\n⌚ Apple Watch: 5 блок.\n\n📊 Статус:\n✅ Онлайн: 4 устройства\n⭕ Офлайн: 2 устройства\n🛡️ Защита: 100%`;
+        }
+        
+        showNotification(modalContent, 'info');
+    }
+    
+    function searchAnalytics() {
+        showNotification('🔍 Поиск по аналитике\n\nВведите запрос для поиска в статистике', 'info');
+    }
+    
+    function selectTime(element, period) {
+        document.querySelectorAll('.time-option').forEach(opt => opt.classList.remove('active'));
+        element.classList.add('active');
+        // НЕ показываем уведомление - убрали дублирование!
+    }
+    
+    function showThreatDetails() {
+        showNotification('🛡️ ЗАБЛОКИРОВАННЫЕ УГРОЗЫ\n\n✅ Фишинговый сайт (2 мин назад) - 3 попытки\n⚠️ Подозрительное приложение (15 мин назад)\n🚫 Вредоносный файл (1 час назад) - 2 файла\n\nВсего за неделю: 1,247 угроз', 'warning');
+    }
+    
+    function showProtectionTime() {
+        showNotification('⏱️ ВРЕМЯ ЗАЩИТЫ\n\nАктивная защита: 12 часов\n\nСегодня:\n• VPN активен: 8ч 24м\n• Антивирус: 12ч (постоянно)\n• Родительский контроль: 3ч\n\n✅ Семья под защитой 24/7!', 'success');
+    }
+    
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.innerHTML = message.replace(/\n/g, '<br>');
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#10B981' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
+            color: white;
+            padding: 20px 25px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 2000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            max-width: 320px;
+            text-align: left;
+            line-height: 1.8;
+            cursor: pointer;
+        `;
+        
+        // Свайп для закрытия
+        let startY = 0;
+        notification.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+        });
+        
+        notification.addEventListener('touchmove', (e) => {
+            const deltaY = e.touches[0].clientY - startY;
+            if (deltaY < -30) { // Свайп вверх
+                notification.style.transform = `translateX(-50%) translateY(${deltaY}px)`;
+                notification.style.opacity = 1 - Math.abs(deltaY) / 100;
+            }
+        });
+        
+        notification.addEventListener('touchend', (e) => {
+            const deltaY = e.changedTouches[0].clientY - startY;
+            if (deltaY < -50) { // Свайпнули достаточно
+                notification.remove();
+            } else {
+                notification.style.transform = 'translateX(-50%) translateY(0)';
+                notification.style.opacity = '1';
+            }
+        });
+        
+        // Клик для закрытия
+        notification.addEventListener('click', () => {
+            notification.remove();
+        });
+        
+        document.body.appendChild(notification);
+        
+        // Автоматическое закрытие через 6 секунд
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => {
+                    if (notification.parentNode) notification.remove();
+                }, 300);
+            }
+        }, 6000);
+    }
+    
+    // Умная навигация назад
+    function goBackSmart() {
+        const previousPage = sessionStorage.getItem('previousPage');
+        console.log('🔍 Previous page:', previousPage);
+        
+        if (previousPage && previousPage !== '04_analytics_screen.html') {
+            console.log('✅ Возврат на:', previousPage);
+            window.location.href = previousPage;
+        } else {
+            console.log('✅ Возврат на главную (default)');
+            window.location.href = '01_main_screen.html';
+        }
+    }
+    
+    // ГРАФИКИ Chart.js
+    let screenTimeChartInstance = null;
+    let topAppsChartInstance = null;
+    let activityPieChartInstance = null;
+    
+    function initCharts() {
+        // График 1: Линейный - Экранное время по дням недели
+        const ctx1 = document.getElementById('screenTimeChart');
+        if (ctx1 && !screenTimeChartInstance) {
+            screenTimeChartInstance = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+                    datasets: [{
+                        label: 'Часы',
+                        data: [2.25, 2.75, 3.25, 2.5, 3.08, 4.33, 3.9],
+                        borderColor: '#F59E0B',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointBackgroundColor: '#F59E0B',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 17, 40, 0.9)',
+                            titleColor: '#F59E0B',
+                            bodyColor: '#fff',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Время: ' + context.parsed.y + ' ч';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                callback: function(value) {
+                                    return value + 'ч';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // График 2: Столбчатый - Топ-5 приложений
+        const ctx2 = document.getElementById('topAppsChart');
+        if (ctx2 && !topAppsChartInstance) {
+            topAppsChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['Instagram', 'TikTok', 'WhatsApp', 'Telegram', 'Игры'],
+                    datasets: [{
+                        label: 'Часы',
+                        data: [2.25, 1.73, 1.53, 1.17, 0.9],
+                        backgroundColor: [
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(168, 85, 247, 0.8)'
+                        ],
+                        borderColor: [
+                            '#F59E0B',
+                            '#EF4444',
+                            '#10B981',
+                            '#3B82F6',
+                            '#A855F7'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 17, 40, 0.9)',
+                            titleColor: '#F59E0B',
+                            bodyColor: '#fff',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Время: ' + context.parsed.y + ' ч';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 2.5,
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                callback: function(value) {
+                                    return value + 'ч';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // График 3: Круговая - Распределение активности
+        const ctx3 = document.getElementById('activityPieChart');
+        if (ctx3 && !activityPieChartInstance) {
+            activityPieChartInstance = new Chart(ctx3, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Соцсети', 'Образование', 'Развлечения', 'Связь', 'Другое'],
+                    datasets: [{
+                        data: [45, 15, 25, 10, 5],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(168, 85, 247, 0.8)'
+                        ],
+                        borderColor: [
+                            '#EF4444',
+                            '#10B981',
+                            '#F59E0B',
+                            '#3B82F6',
+                            '#A855F7'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                padding: 10,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(10, 17, 40, 0.9)',
+                            titleColor: '#F59E0B',
+                            bodyColor: '#fff',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Показать/скрыть графики
+    function updateChartsVisibility(category) {
+        const chartsSection = document.getElementById('charts-section');
+        if (chartsSection) {
+            if (category === 'usage') {
+                chartsSection.style.display = 'block';
+                // Небольшая задержка для правильной отрисовки
+                setTimeout(() => {
+                    if (!screenTimeChartInstance) initCharts();
+                }, 100);
+            } else {
+                chartsSection.style.display = 'none';
+            }
+        }
+    }
+    
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        // Графики не показываются по умолчанию (только для usage)
+        const chartsSection = document.getElementById('charts-section');
+        if (chartsSection) {
+            chartsSection.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>

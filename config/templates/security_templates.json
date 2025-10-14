@@ -1,0 +1,59 @@
+{
+  "basic": {
+    "name": "Базовая защита",
+    "description": "Минимальная защита для начинающих",
+    "security_level": "basic",
+    "features": {
+      "basic_vpn": true,
+      "basic_antivirus": true,
+      "simple_monitoring": true
+    },
+    "complexity": "low",
+    "setup_time": "5 минут",
+    "maintenance": "минимальная"
+  },
+  "standard": {
+    "name": "Стандартная защита",
+    "description": "Сбалансированная защита для большинства",
+    "security_level": "standard",
+    "features": {
+      "advanced_vpn": true,
+      "advanced_antivirus": true,
+      "real_time_monitoring": true,
+      "backup_protection": true
+    },
+    "complexity": "medium",
+    "setup_time": "15 минут",
+    "maintenance": "умеренная"
+  },
+  "advanced": {
+    "name": "Продвинутая защита",
+    "description": "Максимальная защита для экспертов",
+    "security_level": "advanced",
+    "features": {
+      "enterprise_vpn": true,
+      "enterprise_antivirus": true,
+      "advanced_monitoring": true,
+      "threat_intelligence": true,
+      "custom_policies": true
+    },
+    "complexity": "high",
+    "setup_time": "30 минут",
+    "maintenance": "активная"
+  },
+  "maximum": {
+    "name": "Максимальная защита",
+    "description": "Военная защита для критически важных систем",
+    "security_level": "maximum",
+    "features": {
+      "military_grade_vpn": true,
+      "military_grade_antivirus": true,
+      "real_time_threat_intelligence": true,
+      "zero_trust_architecture": true,
+      "custom_integrations": true
+    },
+    "complexity": "expert",
+    "setup_time": "60 минут",
+    "maintenance": "постоянная"
+  }
+}

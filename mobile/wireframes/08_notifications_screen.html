@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN - Уведомления</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            border: none;
+            color: white;
+        }
+        
+        .back-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .filter-btn {
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .filter-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 80px;
+        }
+        
+        /* NOTIFICATION TABS */
+        .notification-tabs {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px;
+            border-radius: 12px;
+        }
+        
+        .notification-tab {
+            padding: 10px 6px;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid #F59E0B;
+            color: #F59E0B;
+        }
+        
+        .notification-tab:hover {
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .notification-tab.active {
+            background: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+        }
+        
+        .notification-content {
+            display: none;
+        }
+        
+        .notification-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        
+        .filter-chip {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            font-size: 12px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .filter-chip.active {
+            background: #F59E0B;
+            border-color: #F59E0B;
+        }
+        
+        .filter-chip:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .notifications-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .notification-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .notification-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .notification-card.unread {
+            border-left: 3px solid #F59E0B;
+        }
+        
+        .notification-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .notification-icon {
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .notification-info {
+            flex: 1;
+        }
+        
+        .notification-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .notification-time {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+        
+        .notification-badge {
+            width: 8px;
+            height: 8px;
+            background: #F59E0B;
+            border-radius: 50%;
+        }
+        
+        .notification-message {
+            font-size: 12px;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        .notification-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .notification-btn {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .notification-btn.primary {
+            background: #F59E0B;
+            border-color: #F59E0B;
+        }
+        
+        .notification-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            opacity: 0.6;
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+        }
+        
+        .empty-text {
+            font-size: 16px;
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 6px 2px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 4px 1px;
+            gap: 2px;
+            flex: 1;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            min-width: 0;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-item:hover {
+            transform: scale(1.1);
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Уведомления</div>
+        <div class="screen">
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="back-btn" onclick="window.location.href='01_main_screen.html'" style="cursor: pointer;">←</div>
+                <div class="title">🔔 Уведомления</div>
+                <div class="filter-btn" onclick="openNotificationSettings()" style="cursor: pointer;">⚙️</div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="main-content" role="main">
+                <!-- NOTIFICATION TABS с счётчиками -->
+                <div class="notification-tabs" role="region" aria-label="Фильтры уведомлений">
+                    <div id="tab-all" class="notification-tab active" onclick="switchNotificationTab('all')" style="padding-top: 12px; position: relative;">
+                        Все
+                        <span style="position: absolute; top: 6px; right: 6px; background: #EF4444; color: white; border-radius: 10px; padding: 2px 6px; font-size: 9px; font-weight: bold;">12</span>
+                    </div>
+                    <div id="tab-security" class="notification-tab" onclick="switchNotificationTab('security')" style="position: relative;">
+                        🛡️<br>Безопасн.
+                        <span style="position: absolute; top: 4px; right: 4px; background: #EF4444; color: white; border-radius: 10px; padding: 2px 5px; font-size: 8px; font-weight: bold;">5</span>
+                    </div>
+                    <div id="tab-family" class="notification-tab" onclick="switchNotificationTab('family')" style="position: relative;">
+                        👨‍👩‍👧‍👦<br>Семья
+                        <span style="position: absolute; top: 4px; right: 4px; background: #EF4444; color: white; border-radius: 10px; padding: 2px 5px; font-size: 8px; font-weight: bold;">3</span>
+                    </div>
+                    <div id="tab-system" class="notification-tab" onclick="switchNotificationTab('system')" style="position: relative;">
+                        ⚙️<br>Система
+                        <span style="position: absolute; top: 4px; right: 4px; background: #F59E0B; color: white; border-radius: 10px; padding: 2px 5px; font-size: 8px; font-weight: bold;">2</span>
+                    </div>
+                    <div id="tab-tariffs" class="notification-tab" onclick="switchNotificationTab('tariffs')" style="position: relative;">
+                        💎<br>Тарифы
+                        <span style="position: absolute; top: 4px; right: 4px; background: #10B981; color: white; border-radius: 10px; padding: 2px 5px; font-size: 8px; font-weight: bold;">2</span>
+                    </div>
+                </div>
+                
+                <!-- Список уведомлений -->
+                <div class="notifications-list" role="region" aria-label="Список уведомлений">
+                    <!-- Непрочитанное уведомление -->
+                    <div class="notification-card unread">
+                        <div class="notification-header">
+                            <div class="notification-icon">🛡️</div>
+                            <div class="notification-info">
+                                <div class="notification-title">Угроза обнаружена</div>
+                                <div class="notification-time">2 минуты назад</div>
+                            </div>
+                            <div class="notification-badge"></div>
+                        </div>
+                        <div class="notification-message">
+                            Обнаружена попытка фишинга на устройстве "iPhone 13". Сайт заблокирован автоматически.
+                        </div>
+                        <div class="notification-actions">
+                            <button class="notification-btn primary" onclick="viewDetails('Угроза обнаружена')">Подробнее</button>
+                            <button class="notification-btn" onclick="markAsRead(1)">Игнорировать</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Семейное уведомление -->
+                    <div class="notification-card unread">
+                        <div class="notification-header">
+                            <div class="notification-icon">👨‍👩‍👧‍👦</div>
+                            <div class="notification-info">
+                                <div class="notification-title">Новый запрос от ребенка</div>
+                                <div class="notification-time">15 минут назад</div>
+                            </div>
+                            <div class="notification-badge"></div>
+                        </div>
+                        <div class="notification-message">
+                            Ребенок "Б" запрашивает доступ к YouTube на 30 минут.
+                        </div>
+                        <div class="notification-actions">
+                            <button class="notification-btn primary" onclick="allowRequest()">Разрешить</button>
+                            <button class="notification-btn" onclick="denyRequest()">Отклонить</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Системное уведомление -->
+                    <div class="notification-card">
+                        <div class="notification-header">
+                            <div class="notification-icon">⚙️</div>
+                            <div class="notification-info">
+                                <div class="notification-title">Обновление системы</div>
+                                <div class="notification-time">1 час назад</div>
+                            </div>
+                        </div>
+                        <div class="notification-message">
+                            Доступна новая версия ALADDIN 2.5.3. Включает улучшения безопасности и новые функции.
+                        </div>
+                        <div class="notification-actions">
+                            <button class="notification-btn primary" onclick="updateNow()">Обновить</button>
+                            <button class="notification-btn" onclick="updateLater()">Позже</button>
+                        </div>
+                    </div>
+                    
+                    <!-- VPN уведомление -->
+                    <div class="notification-card">
+                        <div class="notification-header">
+                            <div class="notification-icon">🌐</div>
+                            <div class="notification-info">
+                                <div class="notification-title">VPN подключен</div>
+                                <div class="notification-time">2 часа назад</div>
+                            </div>
+                        </div>
+                        <div class="notification-message">
+                            VPN успешно подключен к серверу в России. Ваше соединение защищено.
+                        </div>
+                    </div>
+                    
+                    <!-- Аналитика -->
+                    <div class="notification-card">
+                        <div class="notification-header">
+                            <div class="notification-icon">📊</div>
+                            <div class="notification-info">
+                                <div class="notification-title">Еженедельный отчет</div>
+                                <div class="notification-time">Сегодня, 9:00</div>
+                            </div>
+                        </div>
+                        <div class="notification-message">
+                            Готов еженедельный отчет по безопасности. Заблокировано 47 угроз, время экрана детей снижено на 12%.
+                        </div>
+                        <div class="notification-actions">
+                            <button class="notification-btn primary">Просмотреть</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Тарифное уведомление -->
+                    <div class="notification-card">
+                        <div class="notification-header">
+                            <div class="notification-icon">💎</div>
+                            <div class="notification-info">
+                                <div class="notification-title">Скидка на Premium</div>
+                                <div class="notification-time">Вчера, 18:30</div>
+                            </div>
+                        </div>
+                        <div class="notification-message">
+                            Специальное предложение: переход на Premium со скидкой 30% в течение 7 дней.
+                        </div>
+                        <div class="notification-actions">
+                            <button class="notification-btn primary">Узнать больше</button></nav>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация" style="position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); padding: 6px 2px;">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🏠</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🛡️</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Защита</div>
+                </button>
+                <button class="nav-item active" aria-current="page" aria-label="Уведомления" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🔔</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Уведомления</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">👤</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">📱</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    function switchNotificationTab(type) {
+        // Сбрасываем все табы
+        ['all', 'security', 'family', 'system', 'tariffs'].forEach(tab => {
+            const tabEl = document.getElementById('tab-' + tab);
+            if (tabEl) {
+                tabEl.classList.remove('active');
+                tabEl.style.background = 'transparent';
+            }
+        });
+        
+        // Активируем выбранный таб
+        const selectedTab = document.getElementById('tab-' + type);
+        selectedTab.classList.add('active');
+        selectedTab.style.background = 'rgba(245, 158, 11, 0.2)';
+        
+        // Фильтруем уведомления (визуально)
+        const allCards = document.querySelectorAll('.notification-card');
+        allCards.forEach(card => {
+            if (type === 'all') {
+                card.style.display = 'block';
+            } else {
+                // Показываем только нужные (по иконке)
+                const icon = card.querySelector('.notification-icon').textContent;
+                if ((type === 'security' && icon === '🛡️') ||
+                    (type === 'family' && icon === '👨‍👩‍👧‍👦') ||
+                    (type === 'system' && icon === '⚙️') ||
+                    (type === 'tariffs' && icon === '💎')) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+        });
+    }
+    
+    function openNotificationSettings() {
+        const settings = [
+            '⚙️ НАСТРОЙКИ УВЕДОМЛЕНИЙ',
+            '',
+            '🔔 Push-уведомления: Включены',
+            '🔊 Звук: Включен',
+            '📳 Вибрация: Включена',
+            '🌙 Тихий режим: 23:00-07:00',
+            '',
+            '💡 Можно отключить звук для',
+            'отдельных категорий:',
+            '',
+            '🛡️ Безопасность: Звук ВКЛ',
+            '👨‍👩‍👧‍👦 Семья: Звук ВКЛ',
+            '⚙️ Система: Тихий режим',
+            '💎 Тарифы: Отключено'
+        ].join('\n');
+        
+        alert(settings);
+    }
+
+    function filterNotifications(type) {
+        const messages = {
+            'all': '📋 Показаны ВСЕ уведомления',
+            'security': '🛡️ Фильтр: Безопасность\n\nПереход на экран защиты...',
+            'family': '👨‍👩‍👧‍👦 Фильтр: Семья\n\nПереход на семейный экран...',
+            'system': '⚙️ Фильтр: Система\n\nПереход в настройки...',
+            'tariffs': '💎 Фильтр: Тарифы\n\nПереход на экран тарифов...'
+        };
+        
+        if (type === 'all') {
+            alert(messages[type]);
+        }
+        // Для остальных переход происходит автоматически
+    }
+
+    function markAsRead(notificationId) {
+        alert(`✅ Уведомление ${notificationId} отмечено как прочитанное`);
+    }
+
+    function deleteNotification(notificationId) {
+        if (confirm(`❌ Удалить уведомление ${notificationId}?`)) {
+            alert(`🗑️ Уведомление ${notificationId} удалено`);
+        }
+    }
+
+    function viewDetails(title) {
+        const details = {
+            'Угроза обнаружена': '🛡️ ДЕТАЛИ УГРОЗЫ\n\n📱 Устройство: iPhone 13\n🌐 Сайт: phishing-site.ru\n⏰ Время: 2 минуты назад\n🚫 Действие: Заблокирован\n\n✅ Ваши данные в безопасности!',
+            'Новый запрос от ребенка': '👨‍👩‍👧‍👦 ЗАПРОС ДОСТУПА\n\n👦 Ребёнок: Б (12 лет)\n📱 Устройство: iPad\n🌐 Ресурс: YouTube\n⏱️ Время: 30 минут\n📝 Причина: Посмотреть урок по математике',
+            'Обновление системы': '⚙️ ОБНОВЛЕНИЕ 2.5.3\n\n✨ Что нового:\n- Улучшена защита от фишинга\n- Новые VPN серверы (5 стран)\n- Оптимизация батареи (-15%)\n- Исправлены баги (12 шт)\n\n📦 Размер: 45 МБ'
+        };
+        
+        alert(details[title] || `📄 Подробности: ${title}`);
+    }
+
+    function allowRequest() {
+        alert('✅ ДОСТУП РАЗРЕШЁН\n\n👦 Ребёнок "Б" получил доступ к YouTube на 30 минут\n⏱️ До 15:30\n📊 Будет отслеживаться родительским контролем');
+    }
+
+    function denyRequest() {
+        alert('❌ ДОСТУП ОТКЛОНЁН\n\n👦 Ребёнку "Б" отказано в доступе к YouTube\n📧 Отправлено объяснение\n📊 Зафиксировано в статистике');
+    }
+
+    function updateNow() {
+        alert('📥 НАЧИНАЕМ ОБНОВЛЕНИЕ...\n\n⏬ Скачивание: 0%...\n⏱️ Примерное время: 3 минуты\n\n⚠️ Не закрывайте приложение!');
+    }
+
+    function updateLater() {
+        alert('⏰ ОБНОВЛЕНИЕ ОТЛОЖЕНО\n\n📅 Напомним завтра\n💡 Рекомендуем обновиться как можно скорее для безопасности');
+    }
+</script>
+</body>
+</html>

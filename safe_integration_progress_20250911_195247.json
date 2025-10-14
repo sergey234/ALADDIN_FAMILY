@@ -1,0 +1,260 @@
+{
+  "integration_type": "SAFE_ONE_BY_ONE",
+  "timestamp": "2025-09-11T19:52:47.493224",
+  "statistics": {
+    "total_functions": 33,
+    "processed_functions": 1,
+    "successful_integrations": 0,
+    "failed_integrations": 1,
+    "current_function": "ThreatIntelligence",
+    "start_time": "2025-09-11T19:52:47.044098",
+    "results": [
+      {
+        "success": false,
+        "function_name": "ThreatIntelligence",
+        "file_path": "/Users/sergejhlystov/ALADDIN_NEW/security/threat_intelligence.py",
+        "quality_score": 0,
+        "registered_functions": [],
+        "sfm_verification": false,
+        "errors": [
+          "Ошибка регистрации в SFM: __init__() missing 1 required positional argument: 'name'"
+        ],
+        "steps_completed": 10,
+        "integration_time": 0
+      }
+    ]
+  },
+  "functions_queue": [
+    {
+      "name": "ThreatIntelligence",
+      "file": "security/threat_intelligence.py",
+      "priority": "CRITICAL",
+      "phase": 1,
+      "description": "Система разведки угроз"
+    },
+    {
+      "name": "SecurityAudit",
+      "file": "security/security_audit.py",
+      "priority": "CRITICAL",
+      "phase": 1,
+      "description": "Аудит безопасности"
+    },
+    {
+      "name": "SecurityLayer",
+      "file": "security/security_layer.py",
+      "priority": "CRITICAL",
+      "phase": 1,
+      "description": "Слой безопасности"
+    },
+    {
+      "name": "SecurityPolicy",
+      "file": "security/security_policy.py",
+      "priority": "CRITICAL",
+      "phase": 1,
+      "description": "Политики безопасности"
+    },
+    {
+      "name": "AccessControl",
+      "file": "security/access_control.py",
+      "priority": "CRITICAL",
+      "phase": 1,
+      "description": "Контроль доступа"
+    },
+    {
+      "name": "ComplianceManager",
+      "file": "security/compliance_manager.py",
+      "priority": "CRITICAL",
+      "phase": 1,
+      "description": "Управление соответствием"
+    },
+    {
+      "name": "IncidentResponse",
+      "file": "security/incident_response.py",
+      "priority": "CRITICAL",
+      "phase": 1,
+      "description": "Реагирование на инциденты"
+    },
+    {
+      "name": "SecurityAnalytics",
+      "file": "security/security_analytics.py",
+      "priority": "CRITICAL",
+      "phase": 1,
+      "description": "Аналитика безопасности"
+    },
+    {
+      "name": "MobileSecurityAgent",
+      "file": "security/ai_agents/mobile_security_agent.py",
+      "priority": "HIGH",
+      "phase": 2,
+      "description": "Агент мобильной безопасности"
+    },
+    {
+      "name": "ThreatDetectionAgent",
+      "file": "security/ai_agents/threat_detection_agent.py",
+      "priority": "HIGH",
+      "phase": 2,
+      "description": "Агент обнаружения угроз"
+    },
+    {
+      "name": "BehavioralAnalysisAgent",
+      "file": "security/ai_agents/behavioral_analysis_agent.py",
+      "priority": "HIGH",
+      "phase": 2,
+      "description": "Агент поведенческого анализа"
+    },
+    {
+      "name": "PasswordSecurityAgent",
+      "file": "security/ai_agents/password_security_agent.py",
+      "priority": "HIGH",
+      "phase": 2,
+      "description": "Агент безопасности паролей"
+    },
+    {
+      "name": "IncidentResponseAgent",
+      "file": "security/ai_agents/incident_response_agent.py",
+      "priority": "HIGH",
+      "phase": 2,
+      "description": "Агент реагирования на инциденты"
+    },
+    {
+      "name": "ThreatIntelligenceAgent",
+      "file": "security/ai_agents/threat_intelligence_agent.py",
+      "priority": "HIGH",
+      "phase": 2,
+      "description": "Агент разведки угроз"
+    },
+    {
+      "name": "NetworkSecurityAgent",
+      "file": "security/ai_agents/network_security_agent.py",
+      "priority": "HIGH",
+      "phase": 2,
+      "description": "Агент сетевой безопасности"
+    },
+    {
+      "name": "DataProtectionAgent",
+      "file": "security/ai_agents/data_protection_agent.py",
+      "priority": "HIGH",
+      "phase": 2,
+      "description": "Агент защиты данных"
+    },
+    {
+      "name": "ComplianceAgent",
+      "file": "security/ai_agents/compliance_agent.py",
+      "priority": "HIGH",
+      "phase": 2,
+      "description": "Агент соответствия"
+    },
+    {
+      "name": "PerformanceOptimizationAgent",
+      "file": "security/ai_agents/performance_optimization_agent.py",
+      "priority": "HIGH",
+      "phase": 2,
+      "description": "Агент оптимизации производительности"
+    },
+    {
+      "name": "EmergencyResponseBot",
+      "file": "security/bots/emergency_response_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот экстренного реагирования"
+    },
+    {
+      "name": "ParentalControlBot",
+      "file": "security/bots/parental_control_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот родительского контроля"
+    },
+    {
+      "name": "NotificationBot",
+      "file": "security/bots/notification_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот уведомлений"
+    },
+    {
+      "name": "NetworkSecurityBot",
+      "file": "security/bots/network_security_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот сетевой безопасности"
+    },
+    {
+      "name": "WhatsAppSecurityBot",
+      "file": "security/bots/whatsapp_security_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот безопасности WhatsApp"
+    },
+    {
+      "name": "TelegramSecurityBot",
+      "file": "security/bots/telegram_security_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот безопасности Telegram"
+    },
+    {
+      "name": "InstagramSecurityBot",
+      "file": "security/bots/instagram_security_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот безопасности Instagram"
+    },
+    {
+      "name": "MaxMessengerSecurityBot",
+      "file": "security/bots/max_messenger_security_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот безопасности Max Messenger"
+    },
+    {
+      "name": "MobileNavigationBot",
+      "file": "security/bots/mobile_navigation_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот мобильной навигации"
+    },
+    {
+      "name": "GamingSecurityBot",
+      "file": "security/bots/gaming_security_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот игровой безопасности"
+    },
+    {
+      "name": "AnalyticsBot",
+      "file": "security/bots/analytics_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот аналитики"
+    },
+    {
+      "name": "WebsiteNavigationBot",
+      "file": "security/bots/website_navigation_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот навигации по сайтам"
+    },
+    {
+      "name": "BrowserSecurityBot",
+      "file": "security/bots/browser_security_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот безопасности браузера"
+    },
+    {
+      "name": "CloudStorageSecurityBot",
+      "file": "security/bots/cloud_storage_security_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот безопасности облачного хранилища"
+    },
+    {
+      "name": "DeviceSecurityBot",
+      "file": "security/bots/device_security_bot.py",
+      "priority": "MEDIUM",
+      "phase": 3,
+      "description": "Бот безопасности устройств"
+    }
+  ]
+}

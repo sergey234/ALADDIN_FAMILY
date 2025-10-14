@@ -1,0 +1,23 @@
+{
+  "user_level": "beginner",
+  "simplified_mode": true,
+  "features": {
+    "one_click_setup": true,
+    "smart_recommendations": true,
+    "contextual_help": true,
+    "visual_indicators": true,
+    "auto_optimization": true
+  },
+  "ui_elements": {
+    "large_buttons": true,
+    "color_coding": true,
+    "progress_indicators": true,
+    "tooltips": true,
+    "warnings": true
+  },
+  "language": {
+    "technical_terms": "simplified",
+    "explanations": "detailed",
+    "help_text": "contextual"
+  }
+}

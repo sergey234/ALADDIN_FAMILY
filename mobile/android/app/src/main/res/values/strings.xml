@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Основные строки приложения -->
+    <string name="app_name">ALADDIN Security</string>
+    <string name="app_version">2.0.1</string>
+    <string name="app_description">Семейная система безопасности с AI помощником</string>
+    
+    <!-- Навигация -->
+    <string name="nav_home">Главная</string>
+    <string name="nav_protection">Защита</string>
+    <string name="nav_family">Семья</string>
+    <string name="nav_analytics">Аналитика</string>
+    <string name="nav_ai">AI Помощник</string>
+    <string name="nav_settings">Настройки</string>
+    
+    <!-- Главный экран -->
+    <string name="main_title">🌩️ ALADDIN</string>
+    <string name="main_subtitle">Семейная защита</string>
+    <string name="main_welcome">Добро пожаловать в ALADDIN Security</string>
+    
+    <!-- Карточки функций -->
+    <string name="card_protection_title">Защита</string>
+    <string name="card_protection_subtitle">VPN • Антивирус</string>
+    <string name="card_family_title">Семья</string>
+    <string name="card_family_subtitle">Профили • Контроль</string>
+    <string name="card_analytics_title">Аналитика</string>
+    <string name="card_analytics_subtitle">Статистика • Отчеты</string>
+    <string name="card_settings_title">Настройки</string>
+    <string name="card_settings_subtitle">Конфигурация</string>
+    
+    <!-- AI Помощник -->
+    <string name="ai_title">🤖 AI Помощник</string>
+    <string name="ai_welcome_message">Привет! Я помогу настроить защиту для вашей семьи. Чем могу помочь?</string>
+    <string name="ai_input_hint">Задайте вопрос...</string>
+    <string name="ai_send_button">Отправить</string>
+    <string name="ai_typing">AI помощник печатает...</string>
+    <string name="ai_error">Ошибка: %s</string>
+    <string name="ai_status_online">AI помощник онлайн</string>
+    <string name="ai_status_offline">AI помощник офлайн</string>
+    
+    <!-- Защита -->
+    <string name="protection_title">🛡️ Защита</string>
+    <string name="protection_vpn_title">VPN</string>
+    <string name="protection_vpn_connected">Подключен</string>
+    <string name="protection_vpn_disconnected">Отключен</string>
+    <string name="protection_antivirus_title">Антивирус</string>
+    <string name="protection_antivirus_active">Активен</string>
+    <string name="protection_antivirus_inactive">Неактивен</string>
+    <string name="protection_scan_button">Запустить проверку</string>
+    <string name="protection_connect_button">Подключиться</string>
+    <string name="protection_disconnect_button">Отключиться</string>
+    
+    <!-- Семья -->
+    <string name="family_title">👨‍👩‍👧‍👦 Семья</string>
+    <string name="family_members_title">Участники семьи</string>
+    <string name="family_add_member">Добавить участника</string>
+    <string name="family_parental_control">Родительский контроль</string>
+    <string name="family_child_profiles">Детские профили</string>
+    <string name="family_elderly_profiles">Профили для пожилых</string>
+    
+    <!-- Аналитика -->
+    <string name="analytics_title">📊 Аналитика</string>
+    <string name="analytics_threats_blocked">Угроз заблокировано</string>
+    <string name="analytics_traffic_vpn">Трафик через VPN</string>
+    <string name="analytics_active_users">Активных пользователей</string>
+    <string name="analytics_protection_time">Время защиты</string>
+    <string name="analytics_activity_chart">Активность защиты</string>
+    <string name="analytics_threats_list">Заблокированные угрозы</string>
+    <string name="analytics_family_activity">Активность семьи</string>
+    
+    <!-- Настройки -->
+    <string name="settings_title">⚙️ Настройки</string>
+    <string name="settings_profile">Профиль</string>
+    <string name="settings_security">Безопасность</string>
+    <string name="settings_notifications">Уведомления</string>
+    <string name="settings_theme">Тема</string>
+    <string name="settings_language">Язык</string>
+    <string name="settings_about">О приложении</string>
+    <string name="settings_privacy">Конфиденциальность</string>
+    <string name="settings_support">Поддержка</string>
+    
+    <!-- Статусы -->
+    <string name="status_online">Онлайн</string>
+    <string name="status_offline">Офлайн</string>
+    <string name="status_secure">🛡️ Защита активна</string>
+    <string name="status_insecure">⚠️ Проверьте настройки</string>
+    <string name="status_loading">Загрузка...</string>
+    <string name="status_error">Ошибка</string>
+    
+    <!-- Ошибки -->
+    <string name="error_network">Ошибка сети</string>
+    <string name="error_permission">Недостаточно разрешений</string>
+    <string name="error_unknown">Неизвестная ошибка</string>
+    <string name="error_ai_unavailable">AI помощник недоступен</string>
+    <string name="error_vpn_failed">Не удалось подключиться к VPN</string>
+    <string name="error_scan_failed">Ошибка сканирования</string>
+    
+    <!-- Успех -->
+    <string name="success_connected">Подключено</string>
+    <string name="success_disconnected">Отключено</string>
+    <string name="success_scan_completed">Сканирование завершено</string>
+    <string name="success_settings_saved">Настройки сохранены</string>
+    <string name="success_message_sent">Сообщение отправлено</string>
+    
+    <!-- Подтверждения -->
+    <string name="confirm_disconnect">Отключить защиту?</string>
+    <string name="confirm_delete">Удалить элемент?</string>
+    <string name="confirm_reset">Сбросить настройки?</string>
+    <string name="confirm_exit">Выйти из приложения?</string>
+    
+    <!-- Действия -->
+    <string name="action_retry">Повторить</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_ok">ОК</string>
+    <string name="action_save">Сохранить</string>
+    <string name="action_delete">Удалить</string>
+    <string name="action_edit">Редактировать</string>
+    <string name="action_share">Поделиться</string>
+    <string name="action_copy">Копировать</string>
+    
+    <!-- Разрешения -->
+    <string name="permission_camera_title">Доступ к камере</string>
+    <string name="permission_camera_message">Нужен доступ к камере для сканирования QR кодов</string>
+    <string name="permission_location_title">Доступ к местоположению</string>
+    <string name="permission_location_message">Нужен доступ к местоположению для семейной безопасности</string>
+    <string name="permission_microphone_title">Доступ к микрофону</string>
+    <string name="permission_microphone_message">Нужен доступ к микрофону для голосового управления</string>
+    <string name="permission_storage_title">Доступ к хранилищу</string>
+    <string name="permission_storage_message">Нужен доступ к хранилищу для сохранения данных</string>
+    
+    <!-- Технические строки -->
+    <string name="encryption_key">aladdin_storm_sky_2024</string>
+    <string name="api_endpoint">https://api.aladdin.security</string>
+    <string name="ai_endpoint">https://ai.aladdin.security</string>
+    <string name="vpn_endpoint">https://vpn.aladdin.security</string>
+    
+    <!-- Цветовая схема Storm Sky -->
+    <string name="theme_storm_sky">Грозовое небо</string>
+    <string name="theme_primary_color">#0a1128</string>
+    <string name="theme_secondary_color">#1e3a5f</string>
+    <string name="theme_accent_color">#F59E0B</string>
+    <string name="theme_text_color">#FFFFFF</string>
+    <string name="theme_background_color">#2e5090</string>
+    
+    <!-- Версии и информация -->
+    <string name="version_name">2.0.1</string>
+    <string name="version_code">201</string>
+    <string name="build_date">2024-01-27</string>
+    <string name="developer">ALADDIN Security Team</string>
+    <string name="copyright">© 2024 ALADDIN Security. Все права защищены.</string>
+    
+</resources>
+

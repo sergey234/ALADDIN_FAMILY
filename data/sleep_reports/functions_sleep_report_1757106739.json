@@ -1,0 +1,48 @@
+{
+  "sleep_report": {
+    "timestamp": "2025-09-06T01:12:19.923434",
+    "total_functions": 2,
+    "functions": [
+      {
+        "function_id": "function_48",
+        "name": "SuperAISupportAssistant",
+        "description": "Супер AI-ассистент поддержки",
+        "status": "SLEEPING",
+        "quality": "A+",
+        "integration": "COMPLETED",
+        "sleep_reason": "Разработка завершена, функция готова к использованию",
+        "sleep_date": "2025-09-06T01:12:19.923390",
+        "features": [
+          "20+ сфер поддержки",
+          "12 языков",
+          "8 AI-функций",
+          "Эмоциональный анализ",
+          "Машинное обучение"
+        ]
+      },
+      {
+        "function_id": "function_50",
+        "name": "FamilyDashboardManager",
+        "description": "Семейный интерфейс",
+        "status": "SLEEPING",
+        "quality": "A+",
+        "integration": "COMPLETED",
+        "sleep_reason": "Разработка завершена, функция готова к использованию",
+        "sleep_date": "2025-09-06T01:12:19.923427",
+        "features": [
+          "6 тем интерфейса",
+          "10 типов виджетов",
+          "5 ролей пользователей",
+          "Семейные уведомления",
+          "Экстренные функции"
+        ]
+      }
+    ],
+    "summary": {
+      "completed_functions": 2,
+      "quality_achieved": "A+",
+      "integration_status": "COMPLETED",
+      "ready_for_production": true
+    }
+  }
+}

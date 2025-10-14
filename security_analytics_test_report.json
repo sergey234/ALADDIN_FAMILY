@@ -1,0 +1,201 @@
+{
+  "test_summary": {
+    "total_time_seconds": 0.022592,
+    "total_tests": 83,
+    "passed_tests": 82,
+    "failed_tests": 1,
+    "success_rate_percent": 98.79518072289156,
+    "classes_tested": [
+      "SecurityMetric",
+      "SecurityAnalyticsManager",
+      "AsyncSecurityAnalyticsManager",
+      "EnhancedSecurityAnalyticsManager"
+    ],
+    "integration_tests_passed": 6
+  },
+  "classes_analysis": {
+    "SecurityMetric": {
+      "methods": [
+        "update_value",
+        "set_threshold",
+        "check_thresholds",
+        "to_dict",
+        "validate",
+        "reset",
+        "get_statistics",
+        "export_data",
+        "import_data",
+        "add_threshold",
+        "get_history",
+        "clear_history"
+      ],
+      "magic_methods": [
+        "__str__",
+        "__repr__",
+        "__eq__",
+        "__hash__",
+        "__len__",
+        "__contains__"
+      ]
+    },
+    "SecurityAnalyticsManager": {
+      "methods": [
+        "initialize",
+        "add_metric",
+        "update_metric",
+        "get_metric",
+        "get_metrics_by_category",
+        "conduct_threat_analysis",
+        "conduct_risk_assessment",
+        "analyze_performance_metrics",
+        "detect_anomalies",
+        "generate_insights",
+        "get_analytics_dashboard_data",
+        "get_analytics_stats",
+        "start",
+        "stop",
+        "get_health_status",
+        "backup_data",
+        "restore_data",
+        "cleanup_old_data",
+        "get_performance_metrics",
+        "validate_integrity",
+        "remove_metric",
+        "analyze_security_metrics",
+        "get_analytics_summary",
+        "export_analytics",
+        "import_analytics"
+      ],
+      "magic_methods": [
+        "__str__",
+        "__repr__",
+        "__eq__",
+        "__hash__",
+        "__len__",
+        "__contains__"
+      ]
+    },
+    "AsyncSecurityAnalyticsManager": {
+      "methods": [
+        "async_analyze_security_metrics",
+        "async_detect_anomalies",
+        "async_generate_insights",
+        "get_async_performance_metrics"
+      ]
+    },
+    "EnhancedSecurityAnalyticsManager": {
+      "methods": [
+        "get_cached_statistics",
+        "get_enhanced_performance_metrics",
+        "export_enhanced_analytics"
+      ]
+    }
+  },
+  "method_status": {
+    "validate_metric_id_valid": "PASS",
+    "validate_metric_id_empty": "PASS",
+    "validate_metric_value_valid": "PASS",
+    "validate_metric_value_negative": "PASS",
+    "validate_threshold_value_valid": "PASS",
+    "validate_config_dict_valid": "PASS",
+    "SecurityMetric_creation": "PASS",
+    "SecurityMetric_update_value": "PASS",
+    "SecurityMetric_set_threshold": "PASS",
+    "SecurityMetric_check_thresholds": "PASS",
+    "SecurityMetric_to_dict": "PASS",
+    "SecurityMetric_validate": "PASS",
+    "SecurityMetric_reset": "PASS",
+    "SecurityMetric_get_statistics": "PASS",
+    "SecurityMetric_export_data": "PASS",
+    "SecurityMetric_add_threshold": "PASS",
+    "SecurityMetric_get_history": "PASS",
+    "SecurityMetric_clear_history": "PASS",
+    "SecurityMetric___str__": "PASS",
+    "SecurityMetric___repr__": "PASS",
+    "SecurityMetric___eq__": "PASS",
+    "SecurityMetric___hash__": "PASS",
+    "SecurityMetric___len__": "PASS",
+    "SecurityMetric___contains__": "PASS",
+    "SecurityAnalyticsManager_creation": "PASS",
+    "SecurityAnalyticsManager_initialize": "PASS",
+    "SecurityAnalyticsManager_add_metric": "PASS",
+    "SecurityAnalyticsManager_update_metric": "PASS",
+    "SecurityAnalyticsManager_get_metric": "PASS",
+    "SecurityAnalyticsManager_get_metrics_by_category": "PASS",
+    "SecurityAnalyticsManager_conduct_threat_analysis": "PASS",
+    "SecurityAnalyticsManager_conduct_risk_assessment": "PASS",
+    "SecurityAnalyticsManager_analyze_performance_metrics": "PASS",
+    "SecurityAnalyticsManager_detect_anomalies": "PASS",
+    "SecurityAnalyticsManager_generate_insights": "PASS",
+    "SecurityAnalyticsManager_get_analytics_dashboard_data": "PASS",
+    "SecurityAnalyticsManager_get_analytics_stats": "PASS",
+    "SecurityAnalyticsManager_start": "PASS",
+    "SecurityAnalyticsManager_stop": "PASS",
+    "SecurityAnalyticsManager_get_health_status": "PASS",
+    "SecurityAnalyticsManager_backup_data": "PASS",
+    "SecurityAnalyticsManager_cleanup_old_data": "PASS",
+    "SecurityAnalyticsManager_get_performance_metrics": "PASS",
+    "SecurityAnalyticsManager_validate_integrity": "PASS",
+    "SecurityAnalyticsManager_remove_metric": "PASS",
+    "SecurityAnalyticsManager_analyze_security_metrics": "PASS",
+    "SecurityAnalyticsManager_get_analytics_summary": "PASS",
+    "SecurityAnalyticsManager_export_analytics": "PASS",
+    "SecurityAnalyticsManager_import_analytics": "PASS",
+    "SecurityAnalyticsManager___str__": "PASS",
+    "SecurityAnalyticsManager___repr__": "PASS",
+    "SecurityAnalyticsManager___eq__": "PASS",
+    "SecurityAnalyticsManager___hash__": "PASS",
+    "SecurityAnalyticsManager___len__": "PASS",
+    "SecurityAnalyticsManager___contains__": "PASS",
+    "AsyncSecurityAnalyticsManager_creation": "PASS",
+    "AsyncSecurityAnalyticsManager_initialize": "PASS",
+    "AsyncSecurityAnalyticsManager_async_analyze_security_metrics": "PASS",
+    "AsyncSecurityAnalyticsManager_async_detect_anomalies": "PASS",
+    "AsyncSecurityAnalyticsManager_async_generate_insights": "PASS",
+    "AsyncSecurityAnalyticsManager_get_async_performance_metrics": "PASS",
+    "EnhancedSecurityAnalyticsManager_creation": "PASS",
+    "EnhancedSecurityAnalyticsManager_initialize": "PASS",
+    "EnhancedSecurityAnalyticsManager_get_cached_statistics": "PASS",
+    "EnhancedSecurityAnalyticsManager_get_enhanced_performance_metrics": "PASS",
+    "EnhancedSecurityAnalyticsManager_export_enhanced_analytics": "PASS",
+    "Integration_add_metric_metric1": "PASS",
+    "Integration_add_metric_metric2": "PASS",
+    "Integration_add_metric_metric3": "PASS",
+    "Integration_update_metric_interaction": "PASS",
+    "Integration_get_metric_interaction": "PASS",
+    "Integration_category_filtering": "PASS",
+    "Integration_threat_analysis_with_metrics": "PASS",
+    "Integration_anomaly_detection_with_metrics": "PASS",
+    "Integration_insight_generation_with_metrics": "PASS",
+    "Integration_data_flow": "PASS",
+    "Integration_shared_state": "FAIL",
+    "ErrorHandling_ValidationError": "PASS",
+    "ErrorHandling_NonexistentMetric": "PASS",
+    "ErrorHandling_InvalidValue": "PASS",
+    "Performance_metric_creation": "PASS",
+    "Performance_metric_update": "PASS",
+    "Performance_analysis": "PASS"
+  },
+  "performance_metrics": {
+    "metric_creation_time": 0.0005481243133544922,
+    "metric_update_time": 0.0004718303680419922,
+    "analysis_time": 9.608268737792969e-05
+  },
+  "errors_found": [
+    {
+      "test_name": "Integration_shared_state",
+      "status": "FAIL",
+      "timestamp": "2025-09-22T17:51:13.872323",
+      "details": "Ожидалось 3 метрики, получено 8"
+    }
+  ],
+  "recommendations": [
+    "Исправить ошибки в методах с статусом FAIL",
+    "Добавить больше асинхронных методов для улучшения производительности",
+    "Добавить больше unit-тестов для покрытия edge cases",
+    "Улучшить документацию методов",
+    "Добавить метрики производительности в реальном времени",
+    "Реализовать автоматическое масштабирование на основе нагрузки"
+  ],
+  "test_timestamp": "2025-09-22T17:51:13.874660"
+}

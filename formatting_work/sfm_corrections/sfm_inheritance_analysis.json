@@ -1,0 +1,116 @@
+{
+  "class_hierarchy": {
+    "MonitoringInterface": {
+      "bases": [
+        "Protocol"
+      ],
+      "line": 68,
+      "is_protocol": true,
+      "is_enum": false,
+      "inherits_from_security_base": false
+    },
+    "CacheInterface": {
+      "bases": [
+        "Protocol"
+      ],
+      "line": 80,
+      "is_protocol": true,
+      "is_enum": false,
+      "inherits_from_security_base": false
+    },
+    "DatabaseInterface": {
+      "bases": [
+        "Protocol"
+      ],
+      "line": 92,
+      "is_protocol": true,
+      "is_enum": false,
+      "inherits_from_security_base": false
+    },
+    "LazyInitializer": {
+      "bases": [],
+      "line": 109,
+      "is_protocol": false,
+      "is_enum": false,
+      "inherits_from_security_base": false
+    },
+    "SecurityAlert": {
+      "bases": [],
+      "line": 132,
+      "is_protocol": false,
+      "is_enum": false,
+      "inherits_from_security_base": false
+    },
+    "FunctionStatus": {
+      "bases": [
+        "Enum"
+      ],
+      "line": 140,
+      "is_protocol": false,
+      "is_enum": true,
+      "inherits_from_security_base": false
+    },
+    "SecurityFunction": {
+      "bases": [],
+      "line": 151,
+      "is_protocol": false,
+      "is_enum": false,
+      "inherits_from_security_base": false
+    },
+    "SafeFunctionManager": {
+      "bases": [
+        "SecurityBase"
+      ],
+      "line": 208,
+      "is_protocol": false,
+      "is_enum": false,
+      "inherits_from_security_base": true
+    }
+  },
+  "root_classes": [
+    "LazyInitializer",
+    "SecurityAlert",
+    "SecurityFunction"
+  ],
+  "derived_classes": [
+    {
+      "name": "MonitoringInterface",
+      "bases": [
+        "Protocol"
+      ]
+    },
+    {
+      "name": "CacheInterface",
+      "bases": [
+        "Protocol"
+      ]
+    },
+    {
+      "name": "DatabaseInterface",
+      "bases": [
+        "Protocol"
+      ]
+    },
+    {
+      "name": "FunctionStatus",
+      "bases": [
+        "Enum"
+      ]
+    },
+    {
+      "name": "SafeFunctionManager",
+      "bases": [
+        "SecurityBase"
+      ]
+    }
+  ],
+  "statistics": {
+    "total_classes": 8,
+    "protocol_classes": 3,
+    "enum_classes": 1,
+    "security_base_derived": 1,
+    "root_classes": 3,
+    "derived_classes": 5
+  },
+  "timestamp": "2025-01-27"
+}

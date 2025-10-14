@@ -1,0 +1,75 @@
+{
+  "timestamp": "2025-10-04T18:48:50",
+  "missing_files": [
+    [
+      "threat_detection_agent",
+      "security/threat_detection_agent.py"
+    ],
+    [
+      "incident_response_agent",
+      "security/incident_response_agent.py"
+    ],
+    [
+      "performance_optimization_agent",
+      "security/performance_optimization_agent.py"
+    ],
+    [
+      "voice_analysis_engine",
+      "security/voice_analysis_engine.py"
+    ],
+    [
+      "telegram_security_bot",
+      "security/telegram_security_bot.py"
+    ],
+    [
+      "whatsapp_security_bot",
+      "security/whatsapp_security_bot.py"
+    ],
+    [
+      "instagram_security_bot",
+      "security/instagram_security_bot.py"
+    ],
+    [
+      "gaming_security_bot",
+      "security/gaming_security_bot.py"
+    ],
+    [
+      "parental_control_bot",
+      "security/parental_control_bot.py"
+    ],
+    [
+      "emergency_response_bot",
+      "security/emergency_response_bot.py"
+    ]
+  ],
+  "unknown_types": [
+    "security_usersessionrecord",
+    "bot_activityalert",
+    "security_hashes",
+    "security_ratelimitviolation",
+    "color_scheme",
+    "bot_userpreference",
+    "security_loadbalancingresponse",
+    "bot_messageanalysisresult",
+    "security_healthcheckresponse",
+    "ai_agent_dataprotectionresult"
+  ],
+  "critical_sleeping": [
+    "security_mfaservice",
+    "security_usersessionrecord",
+    "security_hashes",
+    "security_securityevent",
+    "security_ratelimitviolation",
+    "security_loadbalancingresponse",
+    "security_healthcheckresponse",
+    "security_securityfunction",
+    "ai_agent_behavioralanalysisagent",
+    "ai_agent_dataprotectionresult"
+  ],
+  "statistics": {
+    "total_missing": 283,
+    "total_correct": 185,
+    "total_unknown": 180,
+    "total_critical_sleeping": 204
+  }
+}

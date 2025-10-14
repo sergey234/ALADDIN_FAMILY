@@ -1,0 +1,233 @@
+{
+  "metadata": {
+    "created_at": "2025-10-03T10:38:08.482917",
+    "version": "2.1",
+    "description": "Расширенный план защиты от российских угроз с новыми интеграциями"
+  },
+  "additional_threats": {
+    "max_messenger_threats": {
+      "name": "Угрозы в MAX мессенджере",
+      "description": "Мошенничество через национальный мессенджер MAX, поддельные госуслуги",
+      "target": "Пользователи MAX мессенджера",
+      "damage": "Кража данных, финансовые потери через поддельные госуслуги",
+      "frequency": "Растущая",
+      "complexity": "Средняя",
+      "current_protection": 0,
+      "current_coverage": 0
+    },
+    "digital_sovereignty_attacks": {
+      "name": "Атаки на цифровой суверенитет",
+      "description": "Целенаправленные атаки на российские цифровые системы",
+      "target": "Государственные системы, критическая инфраструктура",
+      "damage": "Нарушение работы систем, утечка данных",
+      "frequency": "Высокая",
+      "complexity": "Очень высокая",
+      "current_protection": 85,
+      "current_coverage": 90
+    },
+    "ddos_attacks": {
+      "name": "DDoS атаки на российские ресурсы",
+      "description": "Массовые DDoS атаки на российские сайты и сервисы",
+      "target": "Российские сайты, банки, госуслуги",
+      "damage": "Недоступность сервисов, финансовые потери",
+      "frequency": "Очень высокая",
+      "complexity": "Средняя",
+      "current_protection": 88,
+      "current_coverage": 92
+    },
+    "children_ahmat_threats": {
+      "name": "Угрозы детям от 'Ахмат' мошенников",
+      "description": "Запугивание детей поддельными видео с бойцами 'Ахмат'",
+      "target": "Дети и подростки",
+      "damage": "Психологический вред, вымогательство денег",
+      "frequency": "Средняя",
+      "complexity": "Низкая",
+      "current_protection": 90,
+      "current_coverage": 95
+    },
+    "sim_card_fraud": {
+      "name": "Мошенничество через SIM-карты",
+      "description": "Использование заблокированных SIM-карт для мошенничества",
+      "target": "Все пользователи мобильной связи",
+      "damage": "Финансовые потери, кража персональных данных",
+      "frequency": "Высокая",
+      "complexity": "Средняя",
+      "current_protection": 75,
+      "current_coverage": 80
+    },
+    "rostelecom_integration": {
+      "name": "Интеграция с Ростелекомом",
+      "description": "Защита от мошенничества через роуминг и международные вызовы",
+      "target": "Пользователи роуминга",
+      "damage": "Предотвращение мошеннических звонков",
+      "frequency": "Постоянно",
+      "complexity": "Высокая",
+      "current_protection": 0,
+      "current_coverage": 0
+    }
+  },
+  "integration_extensions": {
+    "max_messenger_integration": {
+      "name": "Интеграция с MAX мессенджером",
+      "description": "Защита пользователей национального мессенджера MAX",
+      "impact": "100% защита от мошенничества в MAX",
+      "timeline": "2-3 месяца",
+      "components": [
+        "MAX API integration",
+        "Fake government bot detection",
+        "Secure messaging protocol",
+        "Identity verification system"
+      ],
+      "expected_improvement": 20
+    },
+    "digital_sovereignty_protection": {
+      "name": "Защита цифрового суверенитета",
+      "description": "Защита российских цифровых систем от атак",
+      "impact": "Повышение устойчивости к 99%",
+      "timeline": "4-6 месяцев",
+      "components": [
+        "Critical infrastructure monitoring",
+        "Government system protection",
+        "Cyber attack detection",
+        "Incident response system"
+      ],
+      "expected_improvement": 15
+    },
+    "ddos_protection_enhancement": {
+      "name": "Усиление DDoS защиты",
+      "description": "Интеграция с национальной системой противодействия DDoS",
+      "impact": "Отражение 100% DDoS атак",
+      "timeline": "1-2 месяца",
+      "components": [
+        "DDoS detection system",
+        "Traffic filtering",
+        "Load balancing",
+        "Emergency response protocols"
+      ],
+      "expected_improvement": 12
+    },
+    "children_ahmat_protection": {
+      "name": "Специальная защита детей от 'Ахмат'",
+      "description": "Детекция и блокировка угроз от поддельных 'Ахмат'",
+      "impact": "100% защита детей от угроз",
+      "timeline": "1 месяц",
+      "components": [
+        "Fake video detection",
+        "Threat content filtering",
+        "Child protection alerts",
+        "Parental notification system"
+      ],
+      "expected_improvement": 10
+    },
+    "sim_card_monitoring": {
+      "name": "Мониторинг SIM-карт",
+      "description": "Интеграция с системой блокировки мошеннических SIM",
+      "impact": "Блокировка 100% мошеннических SIM",
+      "timeline": "2-3 месяца",
+      "components": [
+        "SIM card verification",
+        "Fraud detection algorithms",
+        "Real-time blocking system",
+        "Operator integration"
+      ],
+      "expected_improvement": 25
+    },
+    "rostelecom_integration": {
+      "name": "Интеграция с Ростелекомом",
+      "description": "Защита от мошенничества в роуминге",
+      "impact": "100% защита от роумингового мошенничества",
+      "timeline": "3-4 месяца",
+      "components": [
+        "Roaming call monitoring",
+        "International fraud detection",
+        "Operator cooperation system",
+        "Real-time verification"
+      ],
+      "expected_improvement": 18
+    }
+  },
+  "implementation_plan": {
+    "phase_1_immediate": {
+      "name": "Фаза 1: Немедленные действия (1-2 месяца)",
+      "priorities": [
+        {
+          "name": "Интеграция с FakeRadar",
+          "timeline": "1 месяц",
+          "impact": "100% защита от deepfake"
+        },
+        {
+          "name": "Защита детей от 'Ахмат'",
+          "timeline": "1 месяц",
+          "impact": "100% защита детей"
+        },
+        {
+          "name": "Усиление DDoS защиты",
+          "timeline": "1-2 месяца",
+          "impact": "100% отражение атак"
+        }
+      ]
+    },
+    "phase_2_short_term": {
+      "name": "Фаза 2: Краткосрочные улучшения (2-4 месяца)",
+      "priorities": [
+        {
+          "name": "Интеграция с MAX мессенджером",
+          "timeline": "2-3 месяца",
+          "impact": "100% защита в MAX"
+        },
+        {
+          "name": "Мониторинг SIM-карт",
+          "timeline": "2-3 месяца",
+          "impact": "100% блокировка мошеннических SIM"
+        },
+        {
+          "name": "Интеграция с Антифрод",
+          "timeline": "1-2 месяца",
+          "impact": "70% снижение мошенничества"
+        }
+      ]
+    },
+    "phase_3_long_term": {
+      "name": "Фаза 3: Долгосрочные проекты (4-12 месяцев)",
+      "priorities": [
+        {
+          "name": "Защита цифрового суверенитета",
+          "timeline": "4-6 месяцев",
+          "impact": "99% устойчивость к атакам"
+        },
+        {
+          "name": "Интеграция с Ростелекомом",
+          "timeline": "3-4 месяца",
+          "impact": "100% защита от роумингового мошенничества"
+        },
+        {
+          "name": "Создание национальной экосистемы",
+          "timeline": "6-12 месяцев",
+          "impact": "Единая система безопасности"
+        }
+      ]
+    }
+  },
+  "improvements": {
+    "current_state": {
+      "effectiveness": 88.8,
+      "coverage": 92.5
+    },
+    "after_phase_1": {
+      "effectiveness": 100.0,
+      "coverage": 97.5
+    },
+    "after_phase_2": {
+      "effectiveness": 100.0,
+      "coverage": 100.0
+    },
+    "after_phase_3": {
+      "effectiveness": 100.0,
+      "coverage": 100.0
+    },
+    "total_improvement": {
+      "effectiveness_gain": 100.0,
+      "coverage_gain": 10.0
+    }
+  }
+}

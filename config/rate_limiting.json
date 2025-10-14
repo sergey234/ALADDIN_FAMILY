@@ -1,0 +1,11 @@
+{
+  "default_strategy": "sliding_window",
+  "default_action": "block",
+  "redis_enabled": true,
+  "redis_ttl": 3600,
+  "cleanup_interval": 300,
+  "max_local_entries": 100000,
+  "burst_handling": true,
+  "graceful_degradation": true,
+  "monitoring_enabled": true
+}

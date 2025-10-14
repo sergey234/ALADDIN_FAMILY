@@ -1,0 +1,132 @@
+{
+  "file": "security/ai_agents/security_quality_analyzer.py",
+  "timestamp": "2025-09-27T16:32:56.997500",
+  "total_analysis_time_seconds": 0.07117414474487305,
+  "overall_quality_score": 100,
+  "analysis_details": {
+    "imports": {
+      "status": "success",
+      "message": "Импорты корректны"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "encrypt",
+        "decrypt",
+        "auth",
+        "authenticate",
+        "authorize",
+        "permission",
+        "security",
+        "hash",
+        "ssl",
+        "tls",
+        "cipher",
+        "key",
+        "token",
+        "session",
+        "firewall",
+        "intrusion",
+        "threat",
+        "vulnerability",
+        "malware",
+        "virus",
+        "circuit_breaker",
+        "monitoring",
+        "alert",
+        "incident",
+        "response",
+        "compliance",
+        "audit",
+        "log",
+        "trace",
+        "forensic",
+        "analysis"
+      ],
+      "message": "Найдено 31 ключевых слов безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 26798,
+      "lines": 703,
+      "message": "Размер: 26798 байт, Строк: 703"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 375,
+      "active_functions": 99,
+      "critical_functions": 297,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 375 функций, 99 активных, 297 критических"
+    },
+    "type_hints": {
+      "status": "success",
+      "missing_type_hints": [],
+      "message": "Найдено 0 отсутствующих type hints"
+    },
+    "docstrings": {
+      "status": "success",
+      "missing_docstrings": [],
+      "message": "Найдено 0 отсутствующих docstring"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "os",
+        "typing",
+        "ast",
+        "json",
+        "time",
+        "datetime",
+        "subprocess",
+        "concurrent",
+        "sys"
+      ],
+      "message": "Зависимости: 9"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 16,
+      "num_classes": 0,
+      "message": "Функций: 16, Классов: 0"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 31,
+    "security_classes_found": 0,
+    "sfm_total_functions": 375,
+    "sfm_active_functions": 99,
+    "sfm_critical_functions": 297,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": true,
+    "docstrings_ok": true,
+    "type_hints_ok": true
+  },
+  "recommendations": [
+    "Добавьте классы системы безопасности.",
+    "Зарегистрируйте функцию в SFM реестре."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN - Детальная архитектура системы</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .architecture-layers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .layer-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .layer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+        }
+
+        .layer-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            border-color: #4ecdc4;
+        }
+
+        .layer-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .layer-icon {
+            font-size: 3em;
+            margin-right: 20px;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .layer-title {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .layer-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .stat-desc {
+            font-size: 0.85em;
+            color: #6c757d;
+        }
+
+        .layer-description {
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .components-list {
+            margin-bottom: 25px;
+        }
+
+        .components-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .component-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .component-item:hover {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            transform: translateX(5px);
+        }
+
+        .component-name {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .component-status {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-ready {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .status-active {
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            color: white;
+        }
+
+        .status-optimizing {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: white;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-ready-badge {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .mobile-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 50px 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .mobile-title {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .mobile-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .mobile-stat {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .mobile-stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .mobile-stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .flow-diagram {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 50px 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .flow-title {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+
+        .flow-step::after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            color: #4ecdc4;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        .flow-step-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .flow-step-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .flow-step-desc {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .architecture-layers {
+                grid-template-columns: 1fr;
+            }
+            
+            .flow-container {
+                flex-direction: column;
+            }
+            
+            .flow-step::after {
+                content: '↓';
+                right: 50%;
+                top: 100%;
+                transform: translateX(50%);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(78, 205, 196, 0.5); }
+            to { box-shadow: 0 0 30px rgba(78, 205, 196, 0.8); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ ALADDIN Security System</h1>
+            <p>Детальная архитектура системы безопасности - 6 октября 2025</p>
+            <p>Актуальные данные: 3,623 файла, 2.4M строк кода, 1,065 SFM функций</p>
+        </div>
+
+        <div class="stats-overview">
+            <div class="stat-box pulse">
+                <div class="stat-number">3,623</div>
+                <div class="stat-label">Python файлов</div>
+            </div>
+            <div class="stat-box pulse">
+                <div class="stat-number">2.4M</div>
+                <div class="stat-label">Строк кода</div>
+            </div>
+            <div class="stat-box pulse">
+                <div class="stat-number">514</div>
+                <div class="stat-label">Файлов безопасности</div>
+            </div>
+            <div class="stat-box pulse">
+                <div class="stat-number">331K</div>
+                <div class="stat-label">Строк безопасности</div>
+            </div>
+            <div class="stat-box pulse">
+                <div class="stat-number">1,065</div>
+                <div class="stat-label">SFM функций</div>
+            </div>
+            <div class="stat-box pulse">
+                <div class="stat-number">A+</div>
+                <div class="stat-label">Качество кода</div>
+            </div>
+        </div>
+
+        <div class="architecture-layers">
+            <div class="layer-card glow">
+                <div class="layer-header">
+                    <div class="layer-icon">🤖</div>
+                    <div class="layer-title">AI Агенты безопасности</div>
+                </div>
+                <div class="layer-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">66</div>
+                        <div class="stat-desc">файлов</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">68,357</div>
+                        <div class="stat-desc">строк кода</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">20.6%</div>
+                        <div class="stat-desc">от security/</div>
+                    </div>
+                </div>
+                <div class="layer-description">
+                    Искусственный интеллект для анализа угроз, поведенческой аналитики, 
+                    детекции мошенничества и автоматизированной защиты.
+                </div>
+                <div class="components-list">
+                    <div class="components-title">Ключевые компоненты:</div>
+                    <div class="component-item">
+                        <span class="component-name">Mobile Security Agent</span>
+                        <span class="component-status status-ready">3,093 строки</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Threat Intelligence Agent</span>
+                        <span class="component-status status-ready">2,599 строк</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Behavioral Analysis Agent</span>
+                        <span class="component-status status-ready">1,669 строк</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Password Security Agent</span>
+                        <span class="component-status status-ready">2,035 строк</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Incident Response Agent</span>
+                        <span class="component-status status-ready">2,433 строки</span>
+                    </div>
+                </div>
+                <div class="status-badge status-ready-badge">✅ 100% Готово</div>
+            </div>
+
+            <div class="layer-card glow">
+                <div class="layer-header">
+                    <div class="layer-icon">🔒</div>
+                    <div class="layer-title">VPN Система</div>
+                </div>
+                <div class="layer-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">101</div>
+                        <div class="stat-desc">файлов</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">39,439</div>
+                        <div class="stat-desc">строк кода</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">11.9%</div>
+                        <div class="stat-desc">от security/</div>
+                    </div>
+                </div>
+                <div class="layer-description">
+                    Защищенная виртуальная сеть с шифрованием, анонимизацией трафика 
+                    и защитой от утечек DNS.
+                </div>
+                <div class="components-list">
+                    <div class="components-title">Ключевые компоненты:</div>
+                    <div class="component-item">
+                        <span class="component-name">VPN Manager</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">VPN Analytics</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">VPN Integration</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">VPN Monitoring</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Encryption System</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                </div>
+                <div class="status-badge status-ready-badge">✅ 100% Готово</div>
+            </div>
+
+            <div class="layer-card glow">
+                <div class="layer-header">
+                    <div class="layer-icon">🤖</div>
+                    <div class="layer-title">Боты безопасности</div>
+                </div>
+                <div class="layer-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">30</div>
+                        <div class="stat-desc">файлов</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">31,104</div>
+                        <div class="stat-desc">строк кода</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">9.4%</div>
+                        <div class="stat-desc">от security/</div>
+                    </div>
+                </div>
+                <div class="layer-description">
+                    Автоматизированные агенты для защиты мессенджеров, браузеров, 
+                    мобильных устройств и игровых платформ.
+                </div>
+                <div class="components-list">
+                    <div class="components-title">Ключевые компоненты:</div>
+                    <div class="component-item">
+                        <span class="component-name">Parental Control Bot</span>
+                        <span class="component-status status-ready">2,684 строки</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Mobile Navigation Bot</span>
+                        <span class="component-status status-ready">1,122 строки</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">WhatsApp Security Bot</span>
+                        <span class="component-status status-ready">1,050 строк</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Telegram Security Bot</span>
+                        <span class="component-status status-ready">1,204 строки</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Instagram Security Bot</span>
+                        <span class="component-status status-ready">1,263 строки</span>
+                    </div>
+                </div>
+                <div class="status-badge status-ready-badge">✅ 100% Готово</div>
+            </div>
+
+            <div class="layer-card glow">
+                <div class="layer-header">
+                    <div class="layer-icon">⚙️</div>
+                    <div class="layer-title">Менеджеры системы</div>
+                </div>
+                <div class="layer-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">19</div>
+                        <div class="stat-desc">файлов</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">15,094</div>
+                        <div class="stat-desc">строк кода</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">4.6%</div>
+                        <div class="stat-desc">от security/</div>
+                    </div>
+                </div>
+                <div class="layer-description">
+                    Управляющие компоненты для мониторинга, алертов, аналитики, 
+                    дашбордов и системных операций.
+                </div>
+                <div class="components-list">
+                    <div class="components-title">Ключевые компоненты:</div>
+                    <div class="component-item">
+                        <span class="component-name">Safe Function Manager</span>
+                        <span class="component-status status-ready">4,417 строк</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Smart Monitoring</span>
+                        <span class="component-status status-ready">3,258 строк</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Analytics Manager</span>
+                        <span class="component-status status-ready">558 строк</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Dashboard Manager</span>
+                        <span class="component-status status-ready">601 строка</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Alert Manager</span>
+                        <span class="component-status status-ready">857 строк</span>
+                    </div>
+                </div>
+                <div class="status-badge status-ready-badge">✅ 100% Готово</div>
+            </div>
+
+            <div class="layer-card glow">
+                <div class="layer-header">
+                    <div class="layer-icon">🌐</div>
+                    <div class="layer-title">Микросервисы</div>
+                </div>
+                <div class="layer-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">17</div>
+                        <div class="stat-desc">файлов</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">11,105</div>
+                        <div class="stat-desc">строк кода</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">3.4%</div>
+                        <div class="stat-desc">от security/</div>
+                    </div>
+                </div>
+                <div class="layer-description">
+                    Модульные сервисы для API Gateway, Load Balancer, Service Mesh 
+                    и распределенной архитектуры.
+                </div>
+                <div class="components-list">
+                    <div class="components-title">Ключевые компоненты:</div>
+                    <div class="component-item">
+                        <span class="component-name">API Gateway Manager</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Load Balancer</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Service Mesh Manager</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Redis Cache Manager</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Health Check System</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                </div>
+                <div class="status-badge status-ready-badge">✅ 100% Готово</div>
+            </div>
+
+            <div class="layer-card glow">
+                <div class="layer-header">
+                    <div class="layer-icon">👨‍👩‍👧‍👦</div>
+                    <div class="layer-title">Семейная безопасность</div>
+                </div>
+                <div class="layer-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">17</div>
+                        <div class="stat-desc">файлов</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">11,106</div>
+                        <div class="stat-desc">строк кода</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">3.4%</div>
+                        <div class="stat-desc">от security/</div>
+                    </div>
+                </div>
+                <div class="layer-description">
+                    Специализированные функции для защиты детей, пожилых людей, 
+                    родительского контроля и семейных устройств.
+                </div>
+                <div class="components-list">
+                    <div class="components-title">Ключевые компоненты:</div>
+                    <div class="component-item">
+                        <span class="component-name">Family Profile Manager</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Child Safety Monitor</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Parental Controls</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Elderly Protection</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                    <div class="component-item">
+                        <span class="component-name">Family Device Manager</span>
+                        <span class="component-status status-ready">Готово</span>
+                    </div>
+                </div>
+                <div class="status-badge status-ready-badge">✅ 100% Готово</div>
+            </div>
+        </div>
+
+        <div class="mobile-section">
+            <div class="mobile-title">📱 Готовность к мобильной разработке: 95%</div>
+            <p style="font-size: 1.2em; color: #6c757d; margin-bottom: 30px;">
+                Система полностью готова для создания мобильных приложений iOS и Android
+            </p>
+            <div class="mobile-stats">
+                <div class="mobile-stat">
+                    <div class="mobile-stat-number">3,093</div>
+                    <div class="mobile-stat-label">строк Mobile Security Agent</div>
+                </div>
+                <div class="mobile-stat">
+                    <div class="mobile-stat-number">1,122</div>
+                    <div class="mobile-stat-label">строк Mobile Navigation Bot</div>
+                </div>
+                <div class="mobile-stat">
+                    <div class="mobile-stat-number">100%</div>
+                    <div class="mobile-stat-label">iOS поддержка</div>
+                </div>
+                <div class="mobile-stat">
+                    <div class="mobile-stat-number">100%</div>
+                    <div class="mobile-stat-label">Android поддержка</div>
+                </div>
+                <div class="mobile-stat">
+                    <div class="mobile-stat-number">✅</div>
+                    <div class="mobile-stat-label">Push уведомления</div>
+                </div>
+                <div class="mobile-stat">
+                    <div class="mobile-stat-number">✅</div>
+                    <div class="mobile-stat-label">Офлайн режим</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flow-diagram">
+            <div class="flow-title">🔄 Поток данных и взаимодействие компонентов</div>
+            <div class="flow-container">
+                <div class="flow-step">
+                    <div class="flow-step-icon">👤</div>
+                    <div class="flow-step-title">Пользователь</div>
+                    <div class="flow-step-desc">Запрос через API</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">🌐</div>
+                    <div class="flow-step-title">API Gateway</div>
+                    <div class="flow-step-desc">Аутентификация</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">🔗</div>
+                    <div class="flow-step-title">Service Mesh</div>
+                    <div class="flow-step-desc">Маршрутизация</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">🤖</div>
+                    <div class="flow-step-title">AI Security</div>
+                    <div class="flow-step-desc">Анализ угроз</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">🛡️</div>
+                    <div class="flow-step-title">Защита</div>
+                    <div class="flow-step-desc">Применение правил</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">📊</div>
+                    <div class="flow-step-title">Аналитика</div>
+                    <div class="flow-step-desc">Логирование</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Анимация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.stat-box, .layer-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(50px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Интерактивность для карточек
+        document.querySelectorAll('.layer-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // Анимация чисел
+        function animateNumbers() {
+            const numbers = document.querySelectorAll('.stat-number, .mobile-stat-number');
+            numbers.forEach(number => {
+                const target = parseInt(number.textContent.replace(/[^\d]/g, ''));
+                if (target) {
+                    let current = 0;
+                    const increment = target / 50;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= target) {
+                            current = target;
+                            clearInterval(timer);
+                        }
+                        if (number.textContent.includes('M')) {
+                            number.textContent = (current / 1000000).toFixed(1) + 'M';
+                        } else if (number.textContent.includes('K')) {
+                            number.textContent = (current / 1000).toFixed(0) + 'K';
+                        } else {
+                            number.textContent = Math.floor(current).toLocaleString();
+                        }
+                    }, 30);
+                }
+            });
+        }
+
+        // Запуск анимации чисел через 1 секунду
+        setTimeout(animateNumbers, 1000);
+    </script>
+</body>
+</html>

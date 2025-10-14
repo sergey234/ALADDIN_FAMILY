@@ -1,0 +1,2342 @@
+{
+  "created_at": "2025-09-15T21:14:12.858829",
+  "critical_functions": [
+    "core_base",
+    "service_base",
+    "security_base",
+    "database",
+    "authentication",
+    "emergencymlanalyzer",
+    "mobile_security_agent",
+    "security_threatindicator",
+    "security_threatreport",
+    "security_threatintelligencemanager",
+    "security_auditfinding",
+    "security_securityaudit",
+    "security_securityauditmanager",
+    "security_testfunction",
+    "security_testmanager",
+    "security_securityevent",
+    "security_securitylayer",
+    "security_policyrule",
+    "security_securitypolicy",
+    "security_securitypolicymanager",
+    "security_user",
+    "security_accesscontrol",
+    "security_compliancerequirement",
+    "security_compliancemanager",
+    "security_incident",
+    "security_incidentresponsemanager",
+    "security_securitymetric",
+    "security_securityanalyticsmanager",
+    "ai_agent_mobiledevice",
+    "ai_agent_mobileapp",
+    "ai_agent_mobilethreat",
+    "ai_agent_mobilesecuritymetrics",
+    "ai_agent_mobilesecurityagent",
+    "ai_agent_threatindicator",
+    "ai_agent_threatdetection",
+    "ai_agent_detectionmetrics",
+    "ai_agent_threatdetectionagent",
+    "ai_agent_behaviorevent",
+    "ai_agent_behaviorpattern",
+    "ai_agent_behavioranalysis",
+    "ai_agent_behaviormetrics",
+    "ai_agent_behavioralanalysisagent",
+    "ai_agent_passwordpolicy",
+    "ai_agent_passwordmetrics",
+    "ai_agent_passwordsecurityagent",
+    "ai_agent_incident",
+    "ai_agent_incidentresponsemetrics",
+    "ai_agent_incidentresponseagent",
+    "ai_agent_threatintelligence",
+    "ai_agent_threatintelligencemetrics",
+    "ai_agent_threatintelligenceagent",
+    "ai_agent_networkpacket",
+    "ai_agent_networkthreat",
+    "ai_agent_networkflow",
+    "ai_agent_networkanalysis",
+    "ai_agent_networkmetrics",
+    "ai_agent_networksecurityagent",
+    "ai_agent_dataprotectionevent",
+    "ai_agent_dataprotectionresult",
+    "ai_agent_dataprotectionmetrics",
+    "ai_agent_dataprotectionagent",
+    "security_authentication",
+    "security_defaultdict",
+    "security_deque",
+    "security_threatlevel",
+    "security_attacktype",
+    "security_actiontype",
+    "security_intrusionattempt",
+    "security_securityrule",
+    "security_networkflow",
+    "security_intrusionprevention",
+    "security_threatseverity",
+    "security_threatstatus",
+    "security_threattype",
+    "security_threatdetection",
+    "security_detectionmetrics",
+    "security_devicetype",
+    "security_securitylevel",
+    "security_devicestatus",
+    "security_device",
+    "security_securitythreat",
+    "security_devicesecuritymetrics",
+    "security_devicesecurity",
+    "security_networkstatus",
+    "security_alertlevel",
+    "security_networkmetric",
+    "security_networkalert",
+    "security_networkdevice",
+    "security_networkmonitoring",
+    "security_mfaservice",
+    "security_malwareprotection",
+    "ai_agent_voiceanalysisresult",
+    "ai_agent_deepfakeanalysisresult",
+    "ai_agent_financialriskassessment",
+    "ai_agent_emergencyalert",
+    "ai_agent_antifraudmasterai",
+    "ai_agent_voiceanalysisengine",
+    "ai_agent_deepfakeprotectionsystem",
+    "ai_agent_financialprotectionhub",
+    "ai_agent_emergencyresponsesystem",
+    "ai_agent_elderlyprotectioninterface",
+    "microservice_base",
+    "microservice_basemodel",
+    "microservice_boolean",
+    "microservice_corsmiddleware",
+    "microservice_clienttype",
+    "microservice_column",
+    "microservice_configurationmanager",
+    "microservice_corebase",
+    "microservice_counter",
+    "microservice_databasemanager",
+    "microservice_datetime",
+    "microservice_enum",
+    "microservice_fastapi",
+    "microservice_fixedwindow",
+    "microservice_gauge",
+    "microservice_httpexception",
+    "microservice_histogram",
+    "microservice_integer",
+    "microservice_isolationforest",
+    "microservice_json",
+    "microservice_ratelimitalgorithm",
+    "microservice_ratelimitconfig",
+    "microservice_ratelimitrecord",
+    "microservice_ratelimitrequest",
+    "microservice_ratelimitresponse",
+    "microservice_ratelimitviolation",
+    "microservice_ratelimiter",
+    "microservice_securitybase",
+    "microservice_servicebase",
+    "microservice_slidingwindow",
+    "microservice_standardscaler",
+    "microservice_string",
+    "microservice_tokenbucket",
+    "microservice_violationseverity",
+    "microservice_defaultdict",
+    "microservice_deque",
+    "microservice_sessionmaker",
+    "microservice_timedelta",
+    "security_ratelimitrecord",
+    "security_ratelimitviolation",
+    "security_ratelimitconfig",
+    "security_ratelimitrequest",
+    "security_ratelimitresponse",
+    "security_tokenbucket",
+    "security_slidingwindow",
+    "security_fixedwindow",
+    "security_ratelimiter",
+    "security_circuitbreakerrecord",
+    "security_circuitbreakerevent",
+    "security_circuitbreakerconfig",
+    "security_circuitbreakerrequest",
+    "security_circuitbreakerresponse",
+    "security_countbasedstrategy",
+    "security_timebasedstrategy",
+    "security_errorratebasedstrategy",
+    "security_circuitbreaker",
+    "security_pbkdf2hmac",
+    "security_hashes",
+    "security_devicefingerprint",
+    "security_useridentity",
+    "security_accessrequest",
+    "security_zerotrustmanager",
+    "ai_agent_performancemetric",
+    "ai_agent_optimizationrecommendation",
+    "ai_agent_optimizationresult",
+    "ai_agent_optimizationmetrics",
+    "ai_agent_performanceoptimizationagent",
+    "security_accesscontrolmanager",
+    "security_familymember",
+    "security_familyprofile",
+    "security_familyprofilemanager",
+    "security_serviceendpoint",
+    "security_serviceinfo",
+    "security_servicerequest",
+    "security_serviceresponse",
+    "security_servicemeshmanager",
+    "security_apikey",
+    "security_apiroute",
+    "security_apilog",
+    "security_routeconfig",
+    "security_apirequest",
+    "security_apiresponse",
+    "security_authenticationinterface",
+    "security_apigateway",
+    "security_cacheentry",
+    "security_cachemetrics",
+    "security_rediscachemanager",
+    "security_podinfo",
+    "security_nodeinfo",
+    "security_orchestrationmetrics",
+    "security_kubernetesorchestrator",
+    "security_metricdata",
+    "security_scalingrule",
+    "security_scalingdecision",
+    "security_scalingmetrics",
+    "security_autoscalingengine",
+    "security_controlrule",
+    "security_parentalnotification",
+    "security_childactivitysummary",
+    "security_parentalcontrols",
+    "security_childprofile",
+    "security_contentfilter",
+    "security_activitylog",
+    "security_childprotection",
+    "security_scampattern",
+    "security_elderlyactivity",
+    "security_familycontact",
+    "security_elderlyprotection",
+    "security_performancemetrics",
+    "security_optimizationresult",
+    "security_performanceoptimizer",
+    "security_recoverytask",
+    "security_recoveryplan",
+    "security_recoveryreport",
+    "security_recoveryservice",
+    "security_evidence",
+    "security_investigation",
+    "security_forensicsreport",
+    "security_forensicsservice",
+    "security_loadbalancingsession",
+    "security_loadbalancingmetrics",
+    "security_loadbalancingrequest",
+    "security_loadbalancingresponse",
+    "security_healthcheckresponse",
+    "security_loadbalancingalgorithminterface",
+    "security_healthcheckinterface",
+    "security_metricscollectorinterface",
+    "security_roundrobinalgorithm",
+    "security_leastconnectionsalgorithm",
+    "security_loadbalancer",
+    "security_interfacerecord",
+    "security_usersessionrecord",
+    "security_interfaceeventrecord",
+    "security_interfaceconfig",
+    "security_interfacerequest",
+    "security_interfaceresponse",
+    "security_webinterface",
+    "security_mobileinterface",
+    "security_voiceinterface",
+    "security_apiinterface",
+    "security_userinterfacemanager",
+    "ai_agent_compliancerequirement",
+    "ai_agent_compliancemetrics",
+    "ai_agent_complianceagent",
+    "security_securityalert",
+    "security_securityfunction",
+    "security_safefunctionmanager",
+    "bot_maxmessenger",
+    "bot_mobilenavigation",
+    "bot_gaming",
+    "bot_analytics",
+    "bot_website",
+    "bot_browser",
+    "bot_cloud",
+    "bot_device",
+    "ai_agent_phishingprotection",
+    "ai_agent_malwaredetection",
+    "enhanced_alerting_system",
+    "data_protection_manager",
+    "notification_bot_main",
+    "enhanced_safe_function_manager",
+    "smart_notification_manager_main",
+    "check_and_sleep_bots",
+    "advanced_alerting_system",
+    "rate_limiter",
+    "universal_privacy_manager_part2",
+    "russian_api_manager",
+    "emergency_ml_analyzer",
+    "behavioral_analytics_engine_extra",
+    "emergency_anomaly_detector",
+    "emergency_cluster_analyzer",
+    "emergency_pattern_recognizer",
+    "emergency_notification_manager",
+    "emergency_performance_analyzer"
+  ],
+  "ml_components": [],
+  "dependencies": {
+    "russian_api_manager": [
+      "core.base.SecurityBase",
+      "security.russian_api_manager"
+    ],
+    "emergency_ml_analyzer": [
+      "core.base.SecurityBase",
+      "security.ai_agents.emergency_ml_analyzer"
+    ],
+    "behavioral_analytics_engine_extra": [
+      "security.ai_agents.behavioral_analytics_engine_extra"
+    ],
+    "emergency_anomaly_detector": [
+      "security.ai_agents.emergency_ml_models"
+    ],
+    "emergency_cluster_analyzer": [
+      "security.ai_agents.emergency_ml_models"
+    ],
+    "emergency_pattern_recognizer": [
+      "security.ai_agents.emergency_ml_models"
+    ],
+    "emergency_notification_manager": [
+      "security.ai_agents.emergency_notification_manager"
+    ],
+    "emergency_performance_analyzer": [
+      "security.ai_agents.emergency_performance_analyzer"
+    ],
+    "color_scheme": [
+      "typing",
+      "dataclasses",
+      "enum"
+    ]
+  },
+  "ml_model_dependencies": {},
+  "risks": {
+    "high_risk_components": [],
+    "critical_dependencies": [],
+    "ml_model_risks": [],
+    "sleep_mode_risks": []
+  },
+  "sleep_mode_candidates": [
+    {
+      "function_id": "color_scheme",
+      "name": "MatrixAIColorScheme",
+      "security_level": "low",
+      "dependencies_count": 3,
+      "priority": 85
+    },
+    {
+      "function_id": "configuration",
+      "name": "Configuration",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "logging_module",
+      "name": "LoggingModule",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "test_function",
+      "name": "Test Function",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "test_auto_save",
+      "name": "Test Auto Save",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "test_cache",
+      "name": "Test Cache",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "test_function_123",
+      "name": "TestFunction",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "optimizationmetrics",
+      "name": "OptimizationMetrics",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "performanceoptimization_agent",
+      "name": "PerformanceOptimizationAgent",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_emergencycontact",
+      "name": "EmergencyContact",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_emergencyincident",
+      "name": "EmergencyIncident",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_emergencyresponse",
+      "name": "EmergencyResponse",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_emergencycontactinfo",
+      "name": "EmergencyContactInfo",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_emergencybotconfig",
+      "name": "EmergencyBotConfig",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_emergencyresponsebot",
+      "name": "EmergencyResponseBot",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_childprofile",
+      "name": "ChildProfile",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_contentfilter",
+      "name": "ContentFilter",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_activitylog",
+      "name": "ActivityLog",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_parentalcontrolconfig",
+      "name": "ParentalControlConfig",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_contentanalysisresult",
+      "name": "ContentAnalysisResult",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_activityalert",
+      "name": "ActivityAlert",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_parentalcontrolbot",
+      "name": "ParentalControlBot",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_userpreference",
+      "name": "UserPreference",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_notification",
+      "name": "Notification",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_notificationtemplate",
+      "name": "NotificationTemplate",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_notificationrequest",
+      "name": "NotificationRequest",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_notificationresponse",
+      "name": "NotificationResponse",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_notificationanalytics",
+      "name": "NotificationAnalytics",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_notificationbot",
+      "name": "NotificationBot",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_whatsappmessage",
+      "name": "WhatsAppMessage",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_whatsappcontact",
+      "name": "WhatsAppContact",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_securityrule",
+      "name": "SecurityRule",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_messageanalysisresult",
+      "name": "MessageAnalysisResult",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_whatsappsecurityconfig",
+      "name": "WhatsAppSecurityConfig",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_whatsappsecuritybot",
+      "name": "WhatsAppSecurityBot",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_telegrammessage",
+      "name": "TelegramMessage",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_telegramuser",
+      "name": "TelegramUser",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_telegramchat",
+      "name": "TelegramChat",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_telegramsecurityconfig",
+      "name": "TelegramSecurityConfig",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_telegramsecuritybot",
+      "name": "TelegramSecurityBot",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_instagrampost",
+      "name": "InstagramPost",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_instagramuser",
+      "name": "InstagramUser",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_instagramcomment",
+      "name": "InstagramComment",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_instagramsecurityconfig",
+      "name": "InstagramSecurityConfig",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "bot_instagramsecuritybot",
+      "name": "InstagramSecurityBot",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "incognito_protection_bot",
+      "name": "IncognitoProtectionBot",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "advanced_parental_controls",
+      "name": "AdvancedParentalControls",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "network_protection_manager",
+      "name": "NetworkProtectionManager",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "all_bots_sleep_manager",
+      "name": "AllBotsSleepManager",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "integrate_all_bots_to_sleep",
+      "name": "Integrate All Bots to Sleep",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    },
+    {
+      "function_id": "user_interface_manager",
+      "name": "User Interface Manager",
+      "security_level": "medium",
+      "dependencies_count": 0,
+      "priority": 100
+    }
+  ],
+  "active_required": [
+    {
+      "function_id": "core_base",
+      "name": "CoreBase",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "service_base",
+      "name": "ServiceBase",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_base",
+      "name": "SecurityBase",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "database",
+      "name": "Database",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "authentication",
+      "name": "Authentication",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "emergencymlanalyzer",
+      "name": "EmergencyMLAnalyzer",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "mobile_security_agent",
+      "name": "Mobile Security Agent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_threatindicator",
+      "name": "ThreatIndicator",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_threatreport",
+      "name": "ThreatReport",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_threatintelligencemanager",
+      "name": "ThreatIntelligenceManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_auditfinding",
+      "name": "AuditFinding",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securityaudit",
+      "name": "SecurityAudit",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securityauditmanager",
+      "name": "SecurityAuditManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_testfunction",
+      "name": "TestFunction",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_testmanager",
+      "name": "TestManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securityevent",
+      "name": "SecurityEvent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securitylayer",
+      "name": "SecurityLayer",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_policyrule",
+      "name": "PolicyRule",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securitypolicy",
+      "name": "SecurityPolicy",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securitypolicymanager",
+      "name": "SecurityPolicyManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_user",
+      "name": "User",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_accesscontrol",
+      "name": "AccessControl",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_compliancerequirement",
+      "name": "ComplianceRequirement",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_compliancemanager",
+      "name": "ComplianceManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_incident",
+      "name": "Incident",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_incidentresponsemanager",
+      "name": "IncidentResponseManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securitymetric",
+      "name": "SecurityMetric",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securityanalyticsmanager",
+      "name": "SecurityAnalyticsManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_mobiledevice",
+      "name": "MobileDevice",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_mobileapp",
+      "name": "MobileApp",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_mobilethreat",
+      "name": "MobileThreat",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_mobilesecuritymetrics",
+      "name": "MobileSecurityMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_mobilesecurityagent",
+      "name": "MobileSecurityAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_threatindicator",
+      "name": "ThreatIndicator",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_threatdetection",
+      "name": "ThreatDetection",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_detectionmetrics",
+      "name": "DetectionMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_threatdetectionagent",
+      "name": "ThreatDetectionAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_behaviorevent",
+      "name": "BehaviorEvent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_behaviorpattern",
+      "name": "BehaviorPattern",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_behavioranalysis",
+      "name": "BehaviorAnalysis",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_behaviormetrics",
+      "name": "BehaviorMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_behavioralanalysisagent",
+      "name": "BehavioralAnalysisAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_passwordpolicy",
+      "name": "PasswordPolicy",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_passwordmetrics",
+      "name": "PasswordMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_passwordsecurityagent",
+      "name": "PasswordSecurityAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_incident",
+      "name": "Incident",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_incidentresponsemetrics",
+      "name": "IncidentResponseMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_incidentresponseagent",
+      "name": "IncidentResponseAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_threatintelligence",
+      "name": "ThreatIntelligence",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_threatintelligencemetrics",
+      "name": "ThreatIntelligenceMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_threatintelligenceagent",
+      "name": "ThreatIntelligenceAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_networkpacket",
+      "name": "NetworkPacket",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_networkthreat",
+      "name": "NetworkThreat",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_networkflow",
+      "name": "NetworkFlow",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_networkanalysis",
+      "name": "NetworkAnalysis",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_networkmetrics",
+      "name": "NetworkMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_networksecurityagent",
+      "name": "NetworkSecurityAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_dataprotectionevent",
+      "name": "DataProtectionEvent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_dataprotectionresult",
+      "name": "DataProtectionResult",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_dataprotectionmetrics",
+      "name": "DataProtectionMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_dataprotectionagent",
+      "name": "DataProtectionAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_authentication",
+      "name": "Authentication",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_defaultdict",
+      "name": "defaultdict",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_deque",
+      "name": "deque",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_threatlevel",
+      "name": "ThreatLevel",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_attacktype",
+      "name": "AttackType",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_actiontype",
+      "name": "ActionType",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_intrusionattempt",
+      "name": "IntrusionAttempt",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securityrule",
+      "name": "SecurityRule",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_networkflow",
+      "name": "NetworkFlow",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_intrusionprevention",
+      "name": "IntrusionPrevention",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_threatseverity",
+      "name": "ThreatSeverity",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_threatstatus",
+      "name": "ThreatStatus",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_threattype",
+      "name": "ThreatType",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_threatdetection",
+      "name": "ThreatDetection",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_detectionmetrics",
+      "name": "DetectionMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_devicetype",
+      "name": "DeviceType",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securitylevel",
+      "name": "SecurityLevel",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_devicestatus",
+      "name": "DeviceStatus",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_device",
+      "name": "Device",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securitythreat",
+      "name": "SecurityThreat",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_devicesecuritymetrics",
+      "name": "DeviceSecurityMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_devicesecurity",
+      "name": "DeviceSecurity",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_networkstatus",
+      "name": "NetworkStatus",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_alertlevel",
+      "name": "AlertLevel",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_networkmetric",
+      "name": "NetworkMetric",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_networkalert",
+      "name": "NetworkAlert",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_networkdevice",
+      "name": "NetworkDevice",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_networkmonitoring",
+      "name": "NetworkMonitoring",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_mfaservice",
+      "name": "MFAService",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_malwareprotection",
+      "name": "MalwareProtection",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_voiceanalysisresult",
+      "name": "VoiceAnalysisResult",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_deepfakeanalysisresult",
+      "name": "DeepfakeAnalysisResult",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_financialriskassessment",
+      "name": "FinancialRiskAssessment",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_emergencyalert",
+      "name": "EmergencyAlert",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_antifraudmasterai",
+      "name": "AntiFraudMasterAI",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_voiceanalysisengine",
+      "name": "VoiceAnalysisEngine",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_deepfakeprotectionsystem",
+      "name": "DeepfakeProtectionSystem",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_financialprotectionhub",
+      "name": "FinancialProtectionHub",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_emergencyresponsesystem",
+      "name": "EmergencyResponseSystem",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_elderlyprotectioninterface",
+      "name": "ElderlyProtectionInterface",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_base",
+      "name": "Base",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_basemodel",
+      "name": "BaseModel",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_boolean",
+      "name": "Boolean",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_corsmiddleware",
+      "name": "CORSMiddleware",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_clienttype",
+      "name": "ClientType",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_column",
+      "name": "Column",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_configurationmanager",
+      "name": "ConfigurationManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_corebase",
+      "name": "CoreBase",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_counter",
+      "name": "Counter",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_databasemanager",
+      "name": "DatabaseManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_datetime",
+      "name": "DateTime",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_enum",
+      "name": "Enum",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_fastapi",
+      "name": "FastAPI",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_fixedwindow",
+      "name": "FixedWindow",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_gauge",
+      "name": "Gauge",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_httpexception",
+      "name": "HTTPException",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_histogram",
+      "name": "Histogram",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_integer",
+      "name": "Integer",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_isolationforest",
+      "name": "IsolationForest",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_json",
+      "name": "JSON",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_ratelimitalgorithm",
+      "name": "RateLimitAlgorithm",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_ratelimitconfig",
+      "name": "RateLimitConfig",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_ratelimitrecord",
+      "name": "RateLimitRecord",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_ratelimitrequest",
+      "name": "RateLimitRequest",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_ratelimitresponse",
+      "name": "RateLimitResponse",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_ratelimitviolation",
+      "name": "RateLimitViolation",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_ratelimiter",
+      "name": "RateLimiter",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_securitybase",
+      "name": "SecurityBase",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_servicebase",
+      "name": "ServiceBase",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_slidingwindow",
+      "name": "SlidingWindow",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_standardscaler",
+      "name": "StandardScaler",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_string",
+      "name": "String",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_tokenbucket",
+      "name": "TokenBucket",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_violationseverity",
+      "name": "ViolationSeverity",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_defaultdict",
+      "name": "defaultdict",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_deque",
+      "name": "deque",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_sessionmaker",
+      "name": "sessionmaker",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "microservice_timedelta",
+      "name": "timedelta",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_ratelimitrecord",
+      "name": "RateLimitRecord",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_ratelimitviolation",
+      "name": "RateLimitViolation",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_ratelimitconfig",
+      "name": "RateLimitConfig",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_ratelimitrequest",
+      "name": "RateLimitRequest",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_ratelimitresponse",
+      "name": "RateLimitResponse",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_tokenbucket",
+      "name": "TokenBucket",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_slidingwindow",
+      "name": "SlidingWindow",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_fixedwindow",
+      "name": "FixedWindow",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_ratelimiter",
+      "name": "RateLimiter",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_circuitbreakerrecord",
+      "name": "CircuitBreakerRecord",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_circuitbreakerevent",
+      "name": "CircuitBreakerEvent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_circuitbreakerconfig",
+      "name": "CircuitBreakerConfig",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_circuitbreakerrequest",
+      "name": "CircuitBreakerRequest",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_circuitbreakerresponse",
+      "name": "CircuitBreakerResponse",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_countbasedstrategy",
+      "name": "CountBasedStrategy",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_timebasedstrategy",
+      "name": "TimeBasedStrategy",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_errorratebasedstrategy",
+      "name": "ErrorRateBasedStrategy",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_circuitbreaker",
+      "name": "CircuitBreaker",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_pbkdf2hmac",
+      "name": "PBKDF2HMAC",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_hashes",
+      "name": "hashes",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_devicefingerprint",
+      "name": "DeviceFingerprint",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_useridentity",
+      "name": "UserIdentity",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_accessrequest",
+      "name": "AccessRequest",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_zerotrustmanager",
+      "name": "ZeroTrustManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_performancemetric",
+      "name": "PerformanceMetric",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_optimizationrecommendation",
+      "name": "OptimizationRecommendation",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_optimizationresult",
+      "name": "OptimizationResult",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_optimizationmetrics",
+      "name": "OptimizationMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_performanceoptimizationagent",
+      "name": "PerformanceOptimizationAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_accesscontrolmanager",
+      "name": "AccessControlManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_familymember",
+      "name": "FamilyMember",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_familyprofile",
+      "name": "FamilyProfile",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_familyprofilemanager",
+      "name": "FamilyProfileManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_serviceendpoint",
+      "name": "ServiceEndpoint",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_serviceinfo",
+      "name": "ServiceInfo",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_servicerequest",
+      "name": "ServiceRequest",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_serviceresponse",
+      "name": "ServiceResponse",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_servicemeshmanager",
+      "name": "ServiceMeshManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_apikey",
+      "name": "APIKey",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_apiroute",
+      "name": "APIRoute",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_apilog",
+      "name": "APILog",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_routeconfig",
+      "name": "RouteConfig",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_apirequest",
+      "name": "APIRequest",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_apiresponse",
+      "name": "APIResponse",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_authenticationinterface",
+      "name": "AuthenticationInterface",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_apigateway",
+      "name": "APIGateway",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_cacheentry",
+      "name": "CacheEntry",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_cachemetrics",
+      "name": "CacheMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_rediscachemanager",
+      "name": "RedisCacheManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_podinfo",
+      "name": "PodInfo",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_nodeinfo",
+      "name": "NodeInfo",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_orchestrationmetrics",
+      "name": "OrchestrationMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_kubernetesorchestrator",
+      "name": "KubernetesOrchestrator",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_metricdata",
+      "name": "MetricData",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_scalingrule",
+      "name": "ScalingRule",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_scalingdecision",
+      "name": "ScalingDecision",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_scalingmetrics",
+      "name": "ScalingMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_autoscalingengine",
+      "name": "AutoScalingEngine",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_controlrule",
+      "name": "ControlRule",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_parentalnotification",
+      "name": "ParentalNotification",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_childactivitysummary",
+      "name": "ChildActivitySummary",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_parentalcontrols",
+      "name": "ParentalControls",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_childprofile",
+      "name": "ChildProfile",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_contentfilter",
+      "name": "ContentFilter",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_activitylog",
+      "name": "ActivityLog",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_childprotection",
+      "name": "ChildProtection",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_scampattern",
+      "name": "ScamPattern",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_elderlyactivity",
+      "name": "ElderlyActivity",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_familycontact",
+      "name": "FamilyContact",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_elderlyprotection",
+      "name": "ElderlyProtection",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_performancemetrics",
+      "name": "PerformanceMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_optimizationresult",
+      "name": "OptimizationResult",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_performanceoptimizer",
+      "name": "PerformanceOptimizer",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_recoverytask",
+      "name": "RecoveryTask",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_recoveryplan",
+      "name": "RecoveryPlan",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_recoveryreport",
+      "name": "RecoveryReport",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_recoveryservice",
+      "name": "RecoveryService",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_evidence",
+      "name": "Evidence",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_investigation",
+      "name": "Investigation",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_forensicsreport",
+      "name": "ForensicsReport",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_forensicsservice",
+      "name": "ForensicsService",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_loadbalancingsession",
+      "name": "LoadBalancingSession",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_loadbalancingmetrics",
+      "name": "LoadBalancingMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_loadbalancingrequest",
+      "name": "LoadBalancingRequest",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_loadbalancingresponse",
+      "name": "LoadBalancingResponse",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_healthcheckresponse",
+      "name": "HealthCheckResponse",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_loadbalancingalgorithminterface",
+      "name": "LoadBalancingAlgorithmInterface",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_healthcheckinterface",
+      "name": "HealthCheckInterface",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_metricscollectorinterface",
+      "name": "MetricsCollectorInterface",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_roundrobinalgorithm",
+      "name": "RoundRobinAlgorithm",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_leastconnectionsalgorithm",
+      "name": "LeastConnectionsAlgorithm",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_loadbalancer",
+      "name": "LoadBalancer",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_interfacerecord",
+      "name": "InterfaceRecord",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_usersessionrecord",
+      "name": "UserSessionRecord",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_interfaceeventrecord",
+      "name": "InterfaceEventRecord",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_interfaceconfig",
+      "name": "InterfaceConfig",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_interfacerequest",
+      "name": "InterfaceRequest",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_interfaceresponse",
+      "name": "InterfaceResponse",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_webinterface",
+      "name": "WebInterface",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_mobileinterface",
+      "name": "MobileInterface",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_voiceinterface",
+      "name": "VoiceInterface",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_apiinterface",
+      "name": "APIInterface",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_userinterfacemanager",
+      "name": "UserInterfaceManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_compliancerequirement",
+      "name": "ComplianceRequirement",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_compliancemetrics",
+      "name": "ComplianceMetrics",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_complianceagent",
+      "name": "ComplianceAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securityalert",
+      "name": "SecurityAlert",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_securityfunction",
+      "name": "SecurityFunction",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "security_safefunctionmanager",
+      "name": "SafeFunctionManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "bot_maxmessenger",
+      "name": "MaxMessengerSecurityBot",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "bot_mobilenavigation",
+      "name": "MobileNavigationBot",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "bot_gaming",
+      "name": "GamingSecurityBot",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "bot_analytics",
+      "name": "AnalyticsBot",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "bot_website",
+      "name": "WebsiteNavigationBot",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "bot_browser",
+      "name": "BrowserSecurityBot",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "bot_cloud",
+      "name": "CloudStorageSecurityBot",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "bot_device",
+      "name": "DeviceSecurityBot",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_phishingprotection",
+      "name": "PhishingProtectionAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "ai_agent_malwaredetection",
+      "name": "MalwareDetectionAgent",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "enhanced_alerting_system",
+      "name": "EnhancedAlertingSystem",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "data_protection_manager",
+      "name": "DataProtectionManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "notification_bot_main",
+      "name": "NotificationBotMain",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "enhanced_safe_function_manager",
+      "name": "EnhancedSafeFunctionManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "smart_notification_manager_main",
+      "name": "SmartNotificationManagerMain",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "check_and_sleep_bots",
+      "name": "CheckAndSleepBots",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "advanced_alerting_system",
+      "name": "AdvancedAlertingSystem",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "rate_limiter",
+      "name": "Rate Limiter",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "universal_privacy_manager_part2",
+      "name": "Universal Privacy Manager Part 2",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "russian_api_manager",
+      "name": "RussianAPIManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "emergency_ml_analyzer",
+      "name": "EmergencyMLAnalyzer",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "behavioral_analytics_engine_extra",
+      "name": "BehavioralAnalyticsEngineExtra",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "emergency_anomaly_detector",
+      "name": "EmergencyAnomalyDetector",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "emergency_cluster_analyzer",
+      "name": "EmergencyClusterAnalyzer",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "emergency_pattern_recognizer",
+      "name": "EmergencyPatternRecognizer",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "emergency_notification_manager",
+      "name": "EmergencyNotificationManager",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    },
+    {
+      "function_id": "emergency_performance_analyzer",
+      "name": "EmergencyPerformanceAnalyzer",
+      "reason": "Critical function",
+      "priority": "HIGH"
+    }
+  ],
+  "statistics": {
+    "total_functions": 326,
+    "critical_functions": 275,
+    "ml_components": 0,
+    "sleep_candidates": 51,
+    "active_required": 275,
+    "ml_models_count": 0,
+    "dependencies_count": 9,
+    "risks_count": 0
+  }
+}

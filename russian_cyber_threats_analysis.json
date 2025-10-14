@@ -1,0 +1,409 @@
+{
+  "timestamp": "2025-10-03T02:05:07.068544",
+  "threats": {
+    "fake_work_chats": {
+      "name": "Поддельные рабочие чаты в Telegram",
+      "description": "Мошенники создают фейковые рабочие чаты, добавляют жертв в группы школ, ЖК, детсадов, рабочих коллективов",
+      "attack_vector": "Социальная инженерия через мессенджеры",
+      "target": "Работники, родители, жители ЖК",
+      "damage": "Кража данных Госуслуг, перевод денег на 'безопасные счета'",
+      "frequency": "Массово",
+      "complexity": "Средняя",
+      "detection_difficulty": "Высокая"
+    },
+    "deepfake_attacks": {
+      "name": "Deepfake атаки",
+      "description": "Использование нейросетей для создания поддельных видео/аудио для обмана",
+      "attack_vector": "Видео/аудио подмена в видеозвонках",
+      "target": "Банковские клиенты, родители, работодатели",
+      "damage": "Финансовые потери, кража данных, мошенничество",
+      "frequency": "Растущая",
+      "complexity": "Высокая",
+      "detection_difficulty": "Очень высокая"
+    },
+    "phone_fraud": {
+      "name": "Телефонное мошенничество",
+      "description": "Звонки от имени банков, налоговой, спецслужб с требованием перевести деньги",
+      "attack_vector": "Голосовые звонки с подменой номера",
+      "target": "Пожилые люди, банковские клиенты",
+      "damage": "Кража денег через переводы на 'безопасные счета'",
+      "frequency": "Очень высокая",
+      "complexity": "Низкая",
+      "detection_difficulty": "Средняя"
+    },
+    "crypto_scams": {
+      "name": "Криптовалютные мошенничества",
+      "description": "Обман через криптовалютные инвестиции, поддельные 'инвесторы'",
+      "attack_vector": "Социальные сети, мессенджеры, поддельные платформы",
+      "target": "Инвесторы, криптоэнтузиасты",
+      "damage": "Потеря криптовалют, личных данных",
+      "frequency": "Высокая",
+      "complexity": "Средняя",
+      "detection_difficulty": "Высокая"
+    },
+    "child_online_threats": {
+      "name": "Угрозы для детей в интернете",
+      "description": "Кибербуллинг, груминг, нежелательный контент, мошенничество против детей",
+      "attack_vector": "Социальные сети, игры, мессенджеры",
+      "target": "Дети и подростки",
+      "damage": "Психологический вред, кража данных, вымогательство",
+      "frequency": "Очень высокая",
+      "complexity": "Низкая",
+      "detection_difficulty": "Высокая"
+    },
+    "elderly_fraud": {
+      "name": "Мошенничество против пожилых",
+      "description": "Целенаправленные атаки на пожилых людей через телефон, интернет",
+      "attack_vector": "Телефонные звонки, поддельные сайты, социнженерия",
+      "target": "Пожилые люди 60+",
+      "damage": "Финансовые потери, кража данных, психологический вред",
+      "frequency": "Очень высокая",
+      "complexity": "Низкая",
+      "detection_difficulty": "Средняя"
+    },
+    "data_breaches": {
+      "name": "Утечки персональных данных",
+      "description": "Кража и продажа персональных данных россиян",
+      "attack_vector": "Взлом баз данных, фишинг, инсайдеры",
+      "target": "Все пользователи интернета",
+      "damage": "Кража личности, финансовые потери, шантаж",
+      "frequency": "Высокая",
+      "complexity": "Высокая",
+      "detection_difficulty": "Средняя"
+    },
+    "ddos_attacks": {
+      "name": "DDoS атаки на российские ресурсы",
+      "description": "Атаки на отказ в обслуживании российских сайтов и сервисов",
+      "attack_vector": "Сетевые атаки, ботнеты",
+      "target": "Государственные и коммерческие сайты",
+      "damage": "Недоступность сервисов, финансовые потери",
+      "frequency": "Высокая",
+      "complexity": "Средняя",
+      "detection_difficulty": "Низкая"
+    }
+  },
+  "aladdin_capabilities": {
+    "ai_agents": {
+      "threat_detection_agent": {
+        "capabilities": [
+          "Анализ поведения пользователей",
+          "Детекция аномальных паттернов",
+          "ML-анализ угроз в реальном времени",
+          "Классификация типов атак"
+        ],
+        "effectiveness": "Высокая",
+        "coverage": "Все типы угроз"
+      },
+      "behavioral_analysis_agent": {
+        "capabilities": [
+          "Анализ поведения в мессенджерах",
+          "Детекция подозрительной активности",
+          "Профилирование пользователей",
+          "Предсказание атак"
+        ],
+        "effectiveness": "Очень высокая",
+        "coverage": "Социальная инженерия, мошенничество"
+      },
+      "mobile_security_agent": {
+        "capabilities": [
+          "Защита мобильных устройств",
+          "Анализ приложений",
+          "Детекция вредоносного ПО",
+          "Безопасность мессенджеров"
+        ],
+        "effectiveness": "Высокая",
+        "coverage": "Мобильные угрозы, мессенджеры"
+      },
+      "voice_analysis_engine": {
+        "capabilities": [
+          "Анализ голоса в реальном времени",
+          "Детекция deepfake аудио",
+          "Верификация личности по голосу",
+          "Анализ эмоций и стресса"
+        ],
+        "effectiveness": "Очень высокая",
+        "coverage": "Deepfake, телефонное мошенничество"
+      }
+    },
+    "security_bots": {
+      "telegram_security_bot": {
+        "capabilities": [
+          "Анализ чатов и групп",
+          "Детекция поддельных аккаунтов",
+          "Фильтрация подозрительных сообщений",
+          "Блокировка мошеннических ботов"
+        ],
+        "effectiveness": "Высокая",
+        "coverage": "Telegram мошенничество, фейковые чаты"
+      },
+      "whatsapp_security_bot": {
+        "capabilities": [
+          "Защита WhatsApp",
+          "Анализ звонков и сообщений",
+          "Детекция спама и фишинга",
+          "Блокировка подозрительных контактов"
+        ],
+        "effectiveness": "Высокая",
+        "coverage": "WhatsApp мошенничество"
+      },
+      "emergency_response_bot": {
+        "capabilities": [
+          "Экстренное реагирование на угрозы",
+          "Автоматическая блокировка атак",
+          "Уведомления о критических угрозах",
+          "Координация с правоохранительными органами"
+        ],
+        "effectiveness": "Очень высокая",
+        "coverage": "Все критические угрозы"
+      },
+      "parental_control_bot": {
+        "capabilities": [
+          "Контроль активности детей",
+          "Фильтрация контента",
+          "Мониторинг общения",
+          "Блокировка опасных контактов"
+        ],
+        "effectiveness": "Очень высокая",
+        "coverage": "Защита детей"
+      }
+    },
+    "family_protection": {
+      "child_protection": {
+        "capabilities": [
+          "Защита детей от киберугроз",
+          "Родительский контроль",
+          "Фильтрация контента",
+          "Мониторинг активности"
+        ],
+        "effectiveness": "Очень высокая",
+        "coverage": "Детские угрозы"
+      },
+      "elderly_protection": {
+        "capabilities": [
+          "Специальная защита пожилых",
+          "Простое управление",
+          "Автоматическая блокировка угроз",
+          "Уведомления родственникам"
+        ],
+        "effectiveness": "Высокая",
+        "coverage": "Мошенничество против пожилых"
+      }
+    },
+    "advanced_security": {
+      "deepfake_detection": {
+        "capabilities": [
+          "Анализ видео на deepfake",
+          "Детекция нейросетевых подделок",
+          "Верификация личности",
+          "Блокировка поддельного контента"
+        ],
+        "effectiveness": "Очень высокая",
+        "coverage": "Deepfake атаки"
+      },
+      "anti_fraud_system": {
+        "capabilities": [
+          "Детекция финансового мошенничества",
+          "Анализ транзакций",
+          "Блокировка подозрительных операций",
+          "Интеграция с банками"
+        ],
+        "effectiveness": "Очень высокая",
+        "coverage": "Финансовое мошенничество"
+      },
+      "network_security": {
+        "capabilities": [
+          "Защита от DDoS",
+          "Мониторинг сетевого трафика",
+          "Блокировка атак",
+          "Анализ угроз"
+        ],
+        "effectiveness": "Высокая",
+        "coverage": "Сетевые атаки"
+      }
+    }
+  },
+  "protection_matrix": {
+    "fake_work_chats": {
+      "threat": {
+        "name": "Поддельные рабочие чаты в Telegram",
+        "description": "Мошенники создают фейковые рабочие чаты, добавляют жертв в группы школ, ЖК, детсадов, рабочих коллективов",
+        "attack_vector": "Социальная инженерия через мессенджеры",
+        "target": "Работники, родители, жители ЖК",
+        "damage": "Кража данных Госуслуг, перевод денег на 'безопасные счета'",
+        "frequency": "Массово",
+        "complexity": "Средняя",
+        "detection_difficulty": "Высокая"
+      },
+      "protection_level": "Высокая",
+      "aladdin_solutions": [
+        "Telegram Security Bot - анализ чатов",
+        "Behavioral Analysis Agent - детекция подозрительной активности",
+        "Threat Detection Agent - ML-анализ угроз",
+        "Family Protection - защита семейных групп"
+      ],
+      "effectiveness_score": 85,
+      "coverage_percentage": 90,
+      "recommendations": []
+    },
+    "deepfake_attacks": {
+      "threat": {
+        "name": "Deepfake атаки",
+        "description": "Использование нейросетей для создания поддельных видео/аудио для обмана",
+        "attack_vector": "Видео/аудио подмена в видеозвонках",
+        "target": "Банковские клиенты, родители, работодатели",
+        "damage": "Финансовые потери, кража данных, мошенничество",
+        "frequency": "Растущая",
+        "complexity": "Высокая",
+        "detection_difficulty": "Очень высокая"
+      },
+      "protection_level": "Очень высокая",
+      "aladdin_solutions": [
+        "Voice Analysis Engine - детекция deepfake аудио",
+        "Deepfake Detection - анализ видео",
+        "Behavioral Analysis Agent - анализ поведения",
+        "Threat Detection Agent - ML-детекция"
+      ],
+      "effectiveness_score": 95,
+      "coverage_percentage": 95,
+      "recommendations": []
+    },
+    "phone_fraud": {
+      "threat": {
+        "name": "Телефонное мошенничество",
+        "description": "Звонки от имени банков, налоговой, спецслужб с требованием перевести деньги",
+        "attack_vector": "Голосовые звонки с подменой номера",
+        "target": "Пожилые люди, банковские клиенты",
+        "damage": "Кража денег через переводы на 'безопасные счета'",
+        "frequency": "Очень высокая",
+        "complexity": "Низкая",
+        "detection_difficulty": "Средняя"
+      },
+      "protection_level": "Очень высокая",
+      "aladdin_solutions": [
+        "Voice Analysis Engine - анализ голоса",
+        "WhatsApp Security Bot - защита мессенджера",
+        "Anti-Fraud System - детекция мошенничества",
+        "Elderly Protection - специальная защита пожилых"
+      ],
+      "effectiveness_score": 90,
+      "coverage_percentage": 95,
+      "recommendations": []
+    },
+    "crypto_scams": {
+      "threat": {
+        "name": "Криптовалютные мошенничества",
+        "description": "Обман через криптовалютные инвестиции, поддельные 'инвесторы'",
+        "attack_vector": "Социальные сети, мессенджеры, поддельные платформы",
+        "target": "Инвесторы, криптоэнтузиасты",
+        "damage": "Потеря криптовалют, личных данных",
+        "frequency": "Высокая",
+        "complexity": "Средняя",
+        "detection_difficulty": "Высокая"
+      },
+      "protection_level": "Высокая",
+      "aladdin_solutions": [
+        "Behavioral Analysis Agent - анализ инвестиционного поведения",
+        "Threat Detection Agent - детекция мошеннических схем",
+        "Anti-Fraud System - блокировка подозрительных операций",
+        "Network Security - защита от фишинговых сайтов"
+      ],
+      "effectiveness_score": 80,
+      "coverage_percentage": 85,
+      "recommendations": []
+    },
+    "child_online_threats": {
+      "threat": {
+        "name": "Угрозы для детей в интернете",
+        "description": "Кибербуллинг, груминг, нежелательный контент, мошенничество против детей",
+        "attack_vector": "Социальные сети, игры, мессенджеры",
+        "target": "Дети и подростки",
+        "damage": "Психологический вред, кража данных, вымогательство",
+        "frequency": "Очень высокая",
+        "complexity": "Низкая",
+        "detection_difficulty": "Высокая"
+      },
+      "protection_level": "Очень высокая",
+      "aladdin_solutions": [
+        "Parental Control Bot - полный контроль активности детей",
+        "Child Protection - специализированная защита",
+        "Behavioral Analysis Agent - анализ поведения детей",
+        "Content Filtering - фильтрация опасного контента"
+      ],
+      "effectiveness_score": 95,
+      "coverage_percentage": 98,
+      "recommendations": []
+    },
+    "elderly_fraud": {
+      "threat": {
+        "name": "Мошенничество против пожилых",
+        "description": "Целенаправленные атаки на пожилых людей через телефон, интернет",
+        "attack_vector": "Телефонные звонки, поддельные сайты, социнженерия",
+        "target": "Пожилые люди 60+",
+        "damage": "Финансовые потери, кража данных, психологический вред",
+        "frequency": "Очень высокая",
+        "complexity": "Низкая",
+        "detection_difficulty": "Средняя"
+      },
+      "protection_level": "Очень высокая",
+      "aladdin_solutions": [
+        "Elderly Protection - специальная защита пожилых",
+        "Voice Analysis Engine - анализ телефонных звонков",
+        "Anti-Fraud System - блокировка мошеннических операций",
+        "Simple Interface - простое управление"
+      ],
+      "effectiveness_score": 92,
+      "coverage_percentage": 95,
+      "recommendations": []
+    },
+    "data_breaches": {
+      "threat": {
+        "name": "Утечки персональных данных",
+        "description": "Кража и продажа персональных данных россиян",
+        "attack_vector": "Взлом баз данных, фишинг, инсайдеры",
+        "target": "Все пользователи интернета",
+        "damage": "Кража личности, финансовые потери, шантаж",
+        "frequency": "Высокая",
+        "complexity": "Высокая",
+        "detection_difficulty": "Средняя"
+      },
+      "protection_level": "Высокая",
+      "aladdin_solutions": [
+        "Data Protection Agent - защита персональных данных",
+        "Privacy Manager - управление приватностью",
+        "Network Security - защита от взломов",
+        "Threat Detection Agent - детекция утечек"
+      ],
+      "effectiveness_score": 85,
+      "coverage_percentage": 90,
+      "recommendations": []
+    },
+    "ddos_attacks": {
+      "threat": {
+        "name": "DDoS атаки на российские ресурсы",
+        "description": "Атаки на отказ в обслуживании российских сайтов и сервисов",
+        "attack_vector": "Сетевые атаки, ботнеты",
+        "target": "Государственные и коммерческие сайты",
+        "damage": "Недоступность сервисов, финансовые потери",
+        "frequency": "Высокая",
+        "complexity": "Средняя",
+        "detection_difficulty": "Низкая"
+      },
+      "protection_level": "Высокая",
+      "aladdin_solutions": [
+        "Network Security - защита от DDoS",
+        "Load Balancer - распределение нагрузки",
+        "Circuit Breaker - защита от каскадных сбоев",
+        "Emergency Response Bot - экстренное реагирование"
+      ],
+      "effectiveness_score": 88,
+      "coverage_percentage": 92,
+      "recommendations": []
+    }
+  },
+  "summary": {
+    "total_threats": 8,
+    "high_protection_count": 8,
+    "average_effectiveness": 88.75,
+    "average_coverage": 92.5
+  }
+}

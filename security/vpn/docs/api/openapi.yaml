@@ -1,0 +1,650 @@
+openapi: 3.0.3
+info:
+  title: ALADDIN VPN API
+  description: |
+    API для управления VPN системой ALADDIN Security.
+    
+    ## Возможности
+    - Управление VPN соединениями
+    - Мониторинг безопасности
+    - Аутентификация и авторизация
+    - Управление серверами
+    - Аналитика и отчеты
+    
+  version: 2.0.0
+  contact:
+    name: ALADDIN Security Team
+    email: support@aladdin-security.com
+    url: https://aladdin-security.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.aladdin-vpn.com/v2
+    description: Production server
+  - url: https://staging-api.aladdin-vpn.com/v2
+    description: Staging server
+  - url: http://localhost:5000/v2
+    description: Development server
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Вход в систему
+      description: Аутентификация пользователя с поддержкой 2FA
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: "admin"
+                password:
+                  type: string
+                  format: password
+                  example: "SecurePassword123!"
+                two_factor_code:
+                  type: string
+                  description: Код двухфакторной аутентификации
+                  example: "123456"
+      responses:
+        '200':
+          description: Успешная аутентификация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user:
+                    $ref: '#/components/schemas/User'
+                  expires_in:
+                    type: integer
+                    example: 3600
+        '401':
+          description: Неверные учетные данные
+        '429':
+          description: Превышен лимит попыток входа
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Выход из системы
+      description: Завершение сессии пользователя
+      responses:
+        '200':
+          description: Успешный выход
+        '401':
+          description: Не авторизован
+
+  /vpn/connect:
+    post:
+      tags:
+        - VPN Management
+      summary: Подключение к VPN
+      description: Установка VPN соединения
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - server_id
+              properties:
+                server_id:
+                  type: string
+                  example: "sg-singapore-01"
+                protocol:
+                  type: string
+                  enum: [wireguard, openvpn, ipsec]
+                  default: wireguard
+                encryption:
+                  type: string
+                  enum: [aes-256-gcm, aes-256-cbc, chacha20-poly1305]
+                  default: aes-256-gcm
+      responses:
+        '200':
+          description: Успешное подключение
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  connection_id:
+                    type: string
+                    example: "conn_123456789"
+                  server_info:
+                    $ref: '#/components/schemas/Server'
+                  connection_time:
+                    type: string
+                    format: date-time
+        '400':
+          description: Неверные параметры
+        '409':
+          description: Уже подключен
+
+  /vpn/disconnect:
+    post:
+      tags:
+        - VPN Management
+      summary: Отключение от VPN
+      description: Завершение VPN соединения
+      responses:
+        '200':
+          description: Успешное отключение
+        '404':
+          description: Соединение не найдено
+
+  /vpn/status:
+    get:
+      tags:
+        - VPN Management
+      summary: Статус VPN соединения
+      description: Получение текущего статуса VPN
+      responses:
+        '200':
+          description: Статус соединения
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionStatus'
+
+  /vpn/servers:
+    get:
+      tags:
+        - Server Management
+      summary: Список серверов
+      description: Получение списка доступных VPN серверов
+      parameters:
+        - name: country
+          in: query
+          description: Фильтр по стране
+          schema:
+            type: string
+            example: "SG"
+        - name: protocol
+          in: query
+          description: Фильтр по протоколу
+          schema:
+            type: string
+            enum: [wireguard, openvpn, ipsec]
+        - name: status
+          in: query
+          description: Фильтр по статусу
+          schema:
+            type: string
+            enum: [online, offline, maintenance]
+      responses:
+        '200':
+          description: Список серверов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  servers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Server'
+                  total:
+                    type: integer
+                    example: 25
+
+  /vpn/servers/{server_id}:
+    get:
+      tags:
+        - Server Management
+      summary: Информация о сервере
+      description: Получение детальной информации о сервере
+      parameters:
+        - name: server_id
+          in: path
+          required: true
+          description: ID сервера
+          schema:
+            type: string
+            example: "sg-singapore-01"
+      responses:
+        '200':
+          description: Информация о сервере
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Server'
+        '404':
+          description: Сервер не найден
+
+  /security/events:
+    get:
+      tags:
+        - Security
+      summary: События безопасности
+      description: Получение событий безопасности
+      parameters:
+        - name: severity
+          in: query
+          description: Фильтр по серьезности
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: type
+          in: query
+          description: Тип события
+          schema:
+            type: string
+            enum: [ddos, intrusion, rate_limit, auth_failure]
+        - name: limit
+          in: query
+          description: Количество записей
+          schema:
+            type: integer
+            default: 100
+            maximum: 1000
+      responses:
+        '200':
+          description: События безопасности
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SecurityEvent'
+                  total:
+                    type: integer
+
+  /security/block-ip:
+    post:
+      tags:
+        - Security
+      summary: Блокировка IP
+      description: Блокировка IP адреса
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ip_address
+                - reason
+              properties:
+                ip_address:
+                  type: string
+                  format: ipv4
+                  example: "192.168.1.100"
+                reason:
+                  type: string
+                  example: "Suspicious activity detected"
+                duration_minutes:
+                  type: integer
+                  default: 60
+                  example: 60
+      responses:
+        '200':
+          description: IP заблокирован
+        '400':
+          description: Неверный IP адрес
+
+  /monitoring/metrics:
+    get:
+      tags:
+        - Monitoring
+      summary: Метрики системы
+      description: Получение метрик производительности
+      parameters:
+        - name: metric_type
+          in: query
+          description: Тип метрики
+          schema:
+            type: string
+            enum: [system, network, security, vpn]
+        - name: time_range
+          in: query
+          description: Временной диапазон
+          schema:
+            type: string
+            enum: [1h, 24h, 7d, 30d]
+            default: "1h"
+      responses:
+        '200':
+          description: Метрики системы
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metrics'
+
+  /monitoring/alerts:
+    get:
+      tags:
+        - Monitoring
+      summary: Активные алерты
+      description: Получение активных алертов
+      responses:
+        '200':
+          description: Список алертов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alerts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alert'
+
+  /analytics/usage:
+    get:
+      tags:
+        - Analytics
+      summary: Аналитика использования
+      description: Получение аналитики использования VPN
+      parameters:
+        - name: period
+          in: query
+          description: Период анализа
+          schema:
+            type: string
+            enum: [day, week, month, year]
+            default: "week"
+        - name: user_id
+          in: query
+          description: ID пользователя (только для админов)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Аналитика использования
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageAnalytics'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "user_123456789"
+        username:
+          type: string
+          example: "admin"
+        email:
+          type: string
+          format: email
+          example: "admin@aladdin-security.com"
+        role:
+          type: string
+          enum: [admin, user, viewer]
+          example: "admin"
+        created_at:
+          type: string
+          format: date-time
+        last_login:
+          type: string
+          format: date-time
+        two_factor_enabled:
+          type: boolean
+          example: true
+
+    Server:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "sg-singapore-01"
+        name:
+          type: string
+          example: "Singapore #1"
+        country:
+          type: string
+          example: "SG"
+        city:
+          type: string
+          example: "Singapore"
+        ip_address:
+          type: string
+          format: ipv4
+          example: "103.123.45.67"
+        protocols:
+          type: array
+          items:
+            type: string
+            enum: [wireguard, openvpn, ipsec]
+          example: ["wireguard", "openvpn"]
+        status:
+          type: string
+          enum: [online, offline, maintenance]
+          example: "online"
+        load:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 25
+        latency:
+          type: integer
+          example: 45
+        bandwidth:
+          type: integer
+          example: 1000
+
+    ConnectionStatus:
+      type: object
+      properties:
+        connected:
+          type: boolean
+          example: true
+        server:
+          $ref: '#/components/schemas/Server'
+        connection_time:
+          type: string
+          format: date-time
+        bytes_sent:
+          type: integer
+          example: 1048576
+        bytes_received:
+          type: integer
+          example: 2097152
+        current_ip:
+          type: string
+          format: ipv4
+          example: "103.123.45.67"
+
+    SecurityEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "evt_123456789"
+        timestamp:
+          type: string
+          format: date-time
+        type:
+          type: string
+          enum: [ddos, intrusion, rate_limit, auth_failure, blocked_ip]
+          example: "ddos"
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+          example: "high"
+        source_ip:
+          type: string
+          format: ipv4
+          example: "192.168.1.100"
+        description:
+          type: string
+          example: "DDoS attack detected from multiple IPs"
+        details:
+          type: object
+          additionalProperties: true
+
+    Metrics:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        system:
+          type: object
+          properties:
+            cpu_usage:
+              type: number
+              example: 45.2
+            memory_usage:
+              type: number
+              example: 67.8
+            disk_usage:
+              type: number
+              example: 23.1
+        network:
+          type: object
+          properties:
+            bandwidth_in:
+              type: integer
+              example: 1000000
+            bandwidth_out:
+              type: integer
+              example: 2000000
+            connections:
+              type: integer
+              example: 150
+        security:
+          type: object
+          properties:
+            blocked_requests:
+              type: integer
+              example: 25
+            ddos_attacks:
+              type: integer
+              example: 3
+            failed_logins:
+              type: integer
+              example: 12
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "alert_123456789"
+        title:
+          type: string
+          example: "High CPU Usage"
+        description:
+          type: string
+          example: "CPU usage exceeded 80% for 5 minutes"
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+          example: "high"
+        status:
+          type: string
+          enum: [active, acknowledged, resolved]
+          example: "active"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    UsageAnalytics:
+      type: object
+      properties:
+        period:
+          type: string
+          example: "week"
+        total_connections:
+          type: integer
+          example: 1250
+        total_bytes:
+          type: integer
+          example: 1073741824
+        average_session_duration:
+          type: integer
+          example: 1800
+        top_servers:
+          type: array
+          items:
+            type: object
+            properties:
+              server_id:
+                type: string
+              connections:
+                type: integer
+        top_countries:
+          type: array
+          items:
+            type: object
+            properties:
+              country:
+                type: string
+              connections:
+                type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Invalid request"
+        message:
+          type: string
+          example: "The provided server ID is invalid"
+        code:
+          type: integer
+          example: 400
+        details:
+          type: object
+          additionalProperties: true
+
+tags:
+  - name: Authentication
+    description: Аутентификация и авторизация
+  - name: VPN Management
+    description: Управление VPN соединениями
+  - name: Server Management
+    description: Управление VPN серверами
+  - name: Security
+    description: Системы безопасности
+  - name: Monitoring
+    description: Мониторинг и метрики
+  - name: Analytics
+    description: Аналитика и отчеты

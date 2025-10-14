@@ -1,0 +1,502 @@
+[
+  {
+    "rank": 1,
+    "id": "emergency_ml_analyzer",
+    "name": "EmergencyMLAnalyzer",
+    "description": "Анализатор экстренных ситуаций с использованием машинного обучения",
+    "security_level": "critical",
+    "function_type": "ml_analyzer",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 2,
+    "id": "emergency_notification_manager",
+    "name": "EmergencyNotificationManager",
+    "description": "Менеджер экстренных уведомлений с поддержкой множественных каналов связи",
+    "security_level": "critical",
+    "function_type": "notification_manager",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 3,
+    "id": "emergencymlanalyzer",
+    "name": "EmergencyMLAnalyzer",
+    "description": "ML анализатор экстренных ситуаций",
+    "security_level": "high",
+    "function_type": "ai_agent",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 4,
+    "id": "enhanced_alerting_system",
+    "name": "EnhancedAlertingSystem",
+    "description": "Улучшенная система алертов для мониторинга безопасности",
+    "security_level": "high",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 5,
+    "id": "data_protection_manager",
+    "name": "DataProtectionManager",
+    "description": "Менеджер защиты данных и соответствия требованиям",
+    "security_level": "high",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 6,
+    "id": "notification_bot_main",
+    "name": "NotificationBotMain",
+    "description": "Основной бот уведомлений с поддержкой 8 каналов",
+    "security_level": "high",
+    "function_type": "ai_agent",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 7,
+    "id": "enhanced_safe_function_manager",
+    "name": "EnhancedSafeFunctionManager",
+    "description": "Расширенный менеджер безопасных функций с поддержкой режимов компонентов",
+    "security_level": "high",
+    "function_type": "manager",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 8,
+    "id": "smart_notification_manager_main",
+    "name": "SmartNotificationManagerMain",
+    "description": "Основной менеджер умных уведомлений с поддержкой множественных каналов доставки",
+    "security_level": "high",
+    "function_type": "manager",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 9,
+    "id": "check_and_sleep_bots",
+    "name": "CheckAndSleepBots",
+    "description": "Система проверки статуса и перевода ботов в спящий режим",
+    "security_level": "high",
+    "function_type": "bot_manager",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 10,
+    "id": "advanced_alerting_system",
+    "name": "AdvancedAlertingSystem",
+    "description": "Продвинутая система уведомлений с поддержкой множественных каналов",
+    "security_level": "high",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 11,
+    "id": "rate_limiter",
+    "name": "Rate Limiter",
+    "description": "Ограничитель скорости запросов для защиты от DDoS атак",
+    "security_level": "high",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 12,
+    "id": "universal_privacy_manager_part2",
+    "name": "Universal Privacy Manager Part 2",
+    "description": "Универсальный менеджер конфиденциальности (часть 2) для управления приватностью данных",
+    "security_level": "high",
+    "function_type": "privacy",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 13,
+    "id": "russian_api_manager",
+    "name": "RussianAPIManager",
+    "description": "Менеджер российских API для интеграции с государственными сервисами",
+    "security_level": "high",
+    "function_type": "api_manager",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 14,
+    "id": "behavioral_analytics_engine_extra",
+    "name": "BehavioralAnalyticsEngineExtra",
+    "description": "Дополнительный движок анализа поведенческих данных с расширенными возможностями",
+    "security_level": "high",
+    "function_type": "analytics_engine",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 15,
+    "id": "emergency_anomaly_detector",
+    "name": "EmergencyAnomalyDetector",
+    "description": "Детектор аномалий для экстренных ситуаций с использованием IsolationForest",
+    "security_level": "high",
+    "function_type": "ml_detector",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 16,
+    "id": "emergency_cluster_analyzer",
+    "name": "EmergencyClusterAnalyzer",
+    "description": "Анализатор кластеров для экстренных ситуаций с использованием DBSCAN",
+    "security_level": "high",
+    "function_type": "ml_analyzer",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 17,
+    "id": "emergency_pattern_recognizer",
+    "name": "EmergencyPatternRecognizer",
+    "description": "Распознаватель паттернов в экстренных ситуациях",
+    "security_level": "high",
+    "function_type": "ml_recognizer",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 18,
+    "id": "emergency_performance_analyzer",
+    "name": "EmergencyPerformanceAnalyzer",
+    "description": "Анализатор производительности для экстренных ситуаций с мониторингом системы",
+    "security_level": "high",
+    "function_type": "performance_analyzer",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 19,
+    "id": "core_base",
+    "name": "CoreBase",
+    "description": "Базовая архитектура системы",
+    "security_level": "medium",
+    "function_type": "core",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 20,
+    "id": "service_base",
+    "name": "ServiceBase",
+    "description": "Базовый сервис",
+    "security_level": "medium",
+    "function_type": "core",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 21,
+    "id": "security_base",
+    "name": "SecurityBase",
+    "description": "Базовая безопасность",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 22,
+    "id": "database",
+    "name": "Database",
+    "description": "Модуль базы данных",
+    "security_level": "medium",
+    "function_type": "core",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 23,
+    "id": "authentication",
+    "name": "Authentication",
+    "description": "Аутентификация",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 24,
+    "id": "mobile_security_agent",
+    "name": "Mobile Security Agent",
+    "description": "Агент мобильной безопасности для iOS и Android устройств",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 25,
+    "id": "security_threatindicator",
+    "name": "ThreatIndicator",
+    "description": "Компонент ThreatIndicator",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 26,
+    "id": "security_threatreport",
+    "name": "ThreatReport",
+    "description": "Компонент ThreatReport",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 27,
+    "id": "security_threatintelligencemanager",
+    "name": "ThreatIntelligenceManager",
+    "description": "Компонент ThreatIntelligenceManager",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 28,
+    "id": "security_auditfinding",
+    "name": "AuditFinding",
+    "description": "Компонент AuditFinding",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 29,
+    "id": "security_securityaudit",
+    "name": "SecurityAudit",
+    "description": "Компонент SecurityAudit",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 30,
+    "id": "security_securityauditmanager",
+    "name": "SecurityAuditManager",
+    "description": "Компонент SecurityAuditManager",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 31,
+    "id": "security_testfunction",
+    "name": "TestFunction",
+    "description": "Компонент TestFunction",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 32,
+    "id": "security_testmanager",
+    "name": "TestManager",
+    "description": "Компонент TestManager",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 33,
+    "id": "security_securityevent",
+    "name": "SecurityEvent",
+    "description": "Компонент SecurityEvent",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 34,
+    "id": "security_securitylayer",
+    "name": "SecurityLayer",
+    "description": "Компонент SecurityLayer",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 35,
+    "id": "security_policyrule",
+    "name": "PolicyRule",
+    "description": "Компонент PolicyRule",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 36,
+    "id": "security_securitypolicy",
+    "name": "SecurityPolicy",
+    "description": "Компонент SecurityPolicy",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 37,
+    "id": "security_securitypolicymanager",
+    "name": "SecurityPolicyManager",
+    "description": "Компонент SecurityPolicyManager",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 38,
+    "id": "security_user",
+    "name": "User",
+    "description": "Компонент User",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 39,
+    "id": "security_accesscontrol",
+    "name": "AccessControl",
+    "description": "Компонент AccessControl",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 40,
+    "id": "security_compliancerequirement",
+    "name": "ComplianceRequirement",
+    "description": "Компонент ComplianceRequirement",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 41,
+    "id": "security_compliancemanager",
+    "name": "ComplianceManager",
+    "description": "Компонент ComplianceManager",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 42,
+    "id": "security_incident",
+    "name": "Incident",
+    "description": "Компонент Incident",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 43,
+    "id": "security_incidentresponsemanager",
+    "name": "IncidentResponseManager",
+    "description": "Компонент IncidentResponseManager",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 44,
+    "id": "security_securitymetric",
+    "name": "SecurityMetric",
+    "description": "Компонент SecurityMetric",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 45,
+    "id": "security_securityanalyticsmanager",
+    "name": "SecurityAnalyticsManager",
+    "description": "Компонент SecurityAnalyticsManager",
+    "security_level": "medium",
+    "function_type": "security",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 46,
+    "id": "ai_agent_mobiledevice",
+    "name": "MobileDevice",
+    "description": "Компонент MobileDevice",
+    "security_level": "medium",
+    "function_type": "ai_agent",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 47,
+    "id": "ai_agent_mobileapp",
+    "name": "MobileApp",
+    "description": "Компонент MobileApp",
+    "security_level": "medium",
+    "function_type": "ai_agent",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 48,
+    "id": "ai_agent_mobilethreat",
+    "name": "MobileThreat",
+    "description": "Компонент MobileThreat",
+    "security_level": "medium",
+    "function_type": "ai_agent",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 49,
+    "id": "ai_agent_mobilesecuritymetrics",
+    "name": "MobileSecurityMetrics",
+    "description": "Компонент MobileSecurityMetrics",
+    "security_level": "medium",
+    "function_type": "ai_agent",
+    "file_path": "",
+    "is_critical": true
+  },
+  {
+    "rank": 50,
+    "id": "ai_agent_mobilesecurityagent",
+    "name": "MobileSecurityAgent",
+    "description": "Компонент MobileSecurityAgent",
+    "security_level": "medium",
+    "function_type": "ai_agent",
+    "file_path": "",
+    "is_critical": true
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-09-21T12:46:43.476476",
+  "data_summary": {
+    "total_records": 0,
+    "total_sources": 8,
+    "collection_duration": 66.32257223129272,
+    "cbr_records": 0,
+    "news_records": 0,
+    "government_records": 0
+  },
+  "fraud_patterns": {
+    "by_type": {},
+    "by_region": {},
+    "by_severity": {}
+  },
+  "recommendations": [
+    "Интегрировать с реальными API банков",
+    "Добавить источники данных МВД и ФСБ",
+    "Реализовать машинное обучение для классификации",
+    "Создать систему раннего предупреждения",
+    "Добавить геолокационный анализ"
+  ]
+}

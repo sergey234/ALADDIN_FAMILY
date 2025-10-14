@@ -1,0 +1,208 @@
+{
+  "file": "security/ai_agents/compliance_agent.py",
+  "timestamp": "2025-09-20T20:39:20.803628",
+  "total_analysis_time_seconds": 0.12362909317016602,
+  "overall_quality_score": 63.9,
+  "analysis_details": {
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "auth",
+        "security",
+        "hash",
+        "key",
+        "threat",
+        "vulnerability",
+        "monitoring",
+        "alert",
+        "incident",
+        "response",
+        "compliance",
+        "audit",
+        "log",
+        "analysis"
+      ],
+      "message": "Найдено 14 ключевых слов безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "security_classes": {
+      "status": "success",
+      "found_classes": [
+        "ComplianceAgent"
+      ],
+      "message": "Найдено 1 классов системы безопасности"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'core.base'",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 55886,
+      "lines": 1415,
+      "message": "Размер: 55886 байт, Строк: 1415"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 35,
+      "num_classes": 6,
+      "message": "Функций: 35, Классов: 6"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "enum",
+        "hashlib",
+        "time",
+        "json",
+        "core",
+        "typing",
+        "os",
+        "sys",
+        "datetime"
+      ],
+      "message": "Зависимости: 9"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 66)",
+        "Отсутствует docstring для __init__ (строка 203)",
+        "Отсутствует docstring для __init__ (строка 295)"
+      ],
+      "message": "Найдено 3 отсутствующих docstring"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 66)",
+        "Отсутствует тип для аргумента 'requirement_id' в функции __init__ (строка 66)",
+        "Отсутствует тип для аргумента 'title' в функции __init__ (строка 66)",
+        "Отсутствует тип для аргумента 'description' в функции __init__ (строка 66)",
+        "Отсутствует тип для аргумента 'standard' в функции __init__ (строка 66)",
+        "Отсутствует тип для аргумента 'category' в функции __init__ (строка 66)",
+        "Отсутствует тип для аргумента 'priority' в функции __init__ (строка 66)",
+        "Отсутствует тип возвращаемого значения для функции add_evidence (строка 89)",
+        "Отсутствует тип для аргумента 'evidence_type' в функции add_evidence (строка 89)",
+        "Отсутствует тип для аргумента 'data' в функции add_evidence (строка 89)",
+        "Отсутствует тип для аргумента 'description' в функции add_evidence (строка 89)",
+        "Отсутствует тип возвращаемого значения для функции add_control (строка 100)",
+        "Отсутствует тип для аргумента 'control_id' в функции add_control (строка 100)",
+        "Отсутствует тип для аргумента 'control_name' в функции add_control (строка 100)",
+        "Отсутствует тип для аргумента 'implementation_status' в функции add_control (строка 100)",
+        "Отсутствует тип для аргумента 'description' в функции add_control (строка 100)",
+        "Отсутствует тип возвращаемого значения для функции add_risk (строка 114)",
+        "Отсутствует тип для аргумента 'risk_id' в функции add_risk (строка 114)",
+        "Отсутствует тип для аргумента 'risk_description' в функции add_risk (строка 114)",
+        "Отсутствует тип для аргумента 'risk_level' в функции add_risk (строка 114)",
+        "Отсутствует тип для аргумента 'mitigation' в функции add_risk (строка 114)",
+        "Отсутствует тип возвращаемого значения для функции add_recommendation (строка 126)",
+        "Отсутствует тип для аргумента 'recommendation' в функции add_recommendation (строка 126)",
+        "Отсутствует тип для аргумента 'priority' в функции add_recommendation (строка 126)",
+        "Отсутствует тип для аргумента 'implementation_date' в функции add_recommendation (строка 126)",
+        "Отсутствует тип возвращаемого значения для функции update_status (строка 139)",
+        "Отсутствует тип для аргумента 'new_status' в функции update_status (строка 139)",
+        "Отсутствует тип для аргумента 'assessor' в функции update_status (строка 139)",
+        "Отсутствует тип для аргумента 'notes' в функции update_status (строка 139)",
+        "Отсутствует тип возвращаемого значения для функции to_dict (строка 155)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 203)",
+        "Отсутствует тип возвращаемого значения для функции to_dict (строка 247)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 295)",
+        "Отсутствует тип для аргумента 'name' в функции __init__ (строка 295)",
+        "Отсутствует тип возвращаемого значения для функции initialize (строка 333)",
+        "Отсутствует тип возвращаемого значения для функции _initialize_ai_models (строка 362)",
+        "Отсутствует тип возвращаемого значения для функции _load_compliance_standards (строка 462)",
+        "Отсутствует тип возвращаемого значения для функции _initialize_requirements (строка 567)",
+        "Отсутствует тип возвращаемого значения для функции _create_requirements_for_standard (строка 583)",
+        "Отсутствует тип для аргумента 'standard' в функции _create_requirements_for_standard (строка 583)",
+        "Отсутствует тип для аргумента 'standard_info' в функции _create_requirements_for_standard (строка 583)",
+        "Отсутствует тип возвращаемого значения для функции _map_category (строка 628)",
+        "Отсутствует тип для аргумента 'category_name' в функции _map_category (строка 628)",
+        "Отсутствует тип возвращаемого значения для функции _calculate_priority (строка 653)",
+        "Отсутствует тип для аргумента 'standard' в функции _calculate_priority (строка 653)",
+        "Отсутствует тип для аргумента 'category' в функции _calculate_priority (строка 653)",
+        "Отсутствует тип возвращаемого значения для функции _setup_monitoring (строка 679)",
+        "Отсутствует тип возвращаемого значения для функции _start_background_processes (строка 719)",
+        "Отсутствует тип возвращаемого значения для функции create_requirement (строка 734)",
+        "Отсутствует тип для аргумента 'title' в функции create_requirement (строка 734)",
+        "Отсутствует тип для аргумента 'description' в функции create_requirement (строка 734)",
+        "Отсутствует тип для аргумента 'standard' в функции create_requirement (строка 734)",
+        "Отсутствует тип для аргумента 'category' в функции create_requirement (строка 734)",
+        "Отсутствует тип для аргумента 'priority' в функции create_requirement (строка 734)",
+        "Отсутствует тип возвращаемого значения для функции _validate_requirement_data (строка 780)",
+        "Отсутствует тип для аргумента 'title' в функции _validate_requirement_data (строка 780)",
+        "Отсутствует тип для аргумента 'description' в функции _validate_requirement_data (строка 780)",
+        "Отсутствует тип для аргумента 'standard' в функции _validate_requirement_data (строка 780)",
+        "Отсутствует тип для аргумента 'category' в функции _validate_requirement_data (строка 780)",
+        "Отсутствует тип возвращаемого значения для функции assess_requirement (строка 836)",
+        "Отсутствует тип для аргумента 'requirement_id' в функции assess_requirement (строка 836)",
+        "Отсутствует тип для аргумента 'assessor' в функции assess_requirement (строка 836)",
+        "Отсутствует тип для аргумента 'evidence' в функции assess_requirement (строка 836)",
+        "Отсутствует тип для аргумента 'controls' в функции assess_requirement (строка 836)",
+        "Отсутствует тип возвращаемого значения для функции _analyze_compliance (строка 894)",
+        "Отсутствует тип для аргумента 'requirement' в функции _analyze_compliance (строка 894)",
+        "Отсутствует тип для аргумента 'evidence' в функции _analyze_compliance (строка 894)",
+        "Отсутствует тип для аргумента 'controls' в функции _analyze_compliance (строка 894)",
+        "Отсутствует тип возвращаемого значения для функции _analyze_evidence_quality (строка 943)",
+        "Отсутствует тип для аргумента 'evidence' в функции _analyze_evidence_quality (строка 943)",
+        "Отсутствует тип возвращаемого значения для функции _analyze_control_effectiveness (строка 979)",
+        "Отсутствует тип для аргумента 'controls' в функции _analyze_control_effectiveness (строка 979)",
+        "Отсутствует тип возвращаемого значения для функции _analyze_risk_level (строка 1023)",
+        "Отсутствует тип для аргумента 'requirement' в функции _analyze_risk_level (строка 1023)",
+        "Отсутствует тип возвращаемого значения для функции _update_metrics (строка 1058)",
+        "Отсутствует тип для аргумента 'requirement' в функции _update_metrics (строка 1058)",
+        "Отсутствует тип для аргумента 'action' в функции _update_metrics (строка 1058)",
+        "Отсутствует тип возвращаемого значения для функции _recalculate_compliance_metrics (строка 1103)",
+        "Отсутствует тип возвращаемого значения для функции generate_compliance_report (строка 1143)",
+        "Отсутствует тип возвращаемого значения для функции _generate_recommendations (строка 1215)",
+        "Отсутствует тип возвращаемого значения для функции stop (строка 1263)",
+        "Отсутствует тип возвращаемого значения для функции _save_data (строка 1281)"
+      ],
+      "message": "Найдено 82 отсутствующих type hints"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 14,
+    "security_classes_found": 1,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Зарегистрируйте функцию в SFM реестре.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

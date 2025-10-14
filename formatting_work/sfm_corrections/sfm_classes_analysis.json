@@ -1,0 +1,73 @@
+{
+  "total_classes": 8,
+  "classes": [
+    {
+      "name": "MonitoringInterface",
+      "line": 68,
+      "bases": [
+        "Protocol"
+      ],
+      "methods_count": 2,
+      "docstring": "Интерфейс для мониторинга"
+    },
+    {
+      "name": "CacheInterface",
+      "line": 80,
+      "bases": [
+        "Protocol"
+      ],
+      "methods_count": 2,
+      "docstring": "Интерфейс для кэширования"
+    },
+    {
+      "name": "DatabaseInterface",
+      "line": 92,
+      "bases": [
+        "Protocol"
+      ],
+      "methods_count": 2,
+      "docstring": "Интерфейс для базы данных"
+    },
+    {
+      "name": "LazyInitializer",
+      "line": 109,
+      "bases": [],
+      "methods_count": 3,
+      "docstring": "Класс для ленивой инициализации компонентов"
+    },
+    {
+      "name": "SecurityAlert",
+      "line": 132,
+      "bases": [],
+      "methods_count": 1,
+      "docstring": null
+    },
+    {
+      "name": "FunctionStatus",
+      "line": 140,
+      "bases": [
+        "Enum"
+      ],
+      "methods_count": 0,
+      "docstring": "Статусы функций"
+    },
+    {
+      "name": "SecurityFunction",
+      "line": 151,
+      "bases": [],
+      "methods_count": 2,
+      "docstring": "Класс для представления безопасной функции"
+    },
+    {
+      "name": "SafeFunctionManager",
+      "line": 208,
+      "bases": [
+        "SecurityBase"
+      ],
+      "methods_count": 101,
+      "docstring": "Главный менеджер безопасных функций ALADDIN"
+    }
+  ],
+  "file": "security/safe_function_manager.py",
+  "timestamp": "2025-01-27"
+}

@@ -1,0 +1,54 @@
+# Dockerfile для Safe Function Manager (SFM)
+FROM python:3.9-slim
+
+# Метаданные
+LABEL maintainer="ALADDIN Security Team"
+LABEL version="2.0"
+LABEL description="Safe Function Manager for ALADDIN Security System"
+
+# Установка системных зависимостей
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Создание пользователя для безопасности
+RUN useradd -m -s /bin/bash sfm
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Копирование requirements
+COPY requirements-test.txt .
+
+# Установка Python зависимостей
+RUN pip install --no-cache-dir -r requirements-test.txt
+
+# Копирование исходного кода SFM
+COPY security/safe_function_manager.py .
+COPY core/ ./core/
+COPY config/ ./config/
+COPY data/ ./data/
+
+# Создание директорий для логов и данных SFM
+RUN mkdir -p /app/logs /app/data/sfm /app/reports
+
+# Установка прав доступа
+RUN chown -R sfm:sfm /app
+RUN chmod -R 755 /app
+
+# Переключение на пользователя sfm
+USER sfm
+
+# Открытие портов
+EXPOSE 8011
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8011/health || exit 1
+
+# Команда запуска SFM
+CMD ["python", "safe_function_manager.py"]

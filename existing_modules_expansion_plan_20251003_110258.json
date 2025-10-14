@@ -1,0 +1,216 @@
+{
+  "metadata": {
+    "created_at": "2025-10-03T11:02:58.169921",
+    "version": "1.0",
+    "description": "План расширения существующих модулей ALADDIN"
+  },
+  "existing_modules": {
+    "core_modules": {
+      "safe_function_manager": {
+        "path": "security/safe_function_manager.py",
+        "size": "49KB",
+        "lines": 1092,
+        "current_functionality": "Управление безопасными функциями",
+        "expansion_potential": "Высокая",
+        "new_integrations": [
+          "FakeRadar API integration",
+          "Russian threat intelligence",
+          "Advanced analytics"
+        ]
+      },
+      "security_monitoring": {
+        "path": "security/security_monitoring.py",
+        "size": "31KB",
+        "lines": 748,
+        "current_functionality": "Мониторинг безопасности",
+        "expansion_potential": "Очень высокая",
+        "new_integrations": [
+          "Real-time deepfake detection",
+          "SIM card monitoring",
+          "Russian bank API integration"
+        ]
+      },
+      "threat_intelligence": {
+        "path": "security/threat_intelligence.py",
+        "size": "30KB",
+        "lines": 749,
+        "current_functionality": "Разведка угроз",
+        "expansion_potential": "Очень высокая",
+        "new_integrations": [
+          "Russian cyber threats database",
+          "MAX messenger threats",
+          "Gosuslugi integration"
+        ]
+      },
+      "anti_fraud_system": {
+        "path": "security/security_analytics.py",
+        "size": "30KB",
+        "lines": 740,
+        "current_functionality": "Аналитика безопасности",
+        "expansion_potential": "Высокая",
+        "new_integrations": [
+          "Antifrod system integration",
+          "Banking fraud detection",
+          "Crypto fraud monitoring"
+        ]
+      }
+    },
+    "ai_agents": {
+      "elderly_interface_manager": {
+        "path": "security/ai_agents/elderly_interface_manager.py",
+        "size": "111KB",
+        "lines": 2283,
+        "current_functionality": "Интерфейс для пожилых",
+        "expansion_potential": "Очень высокая",
+        "new_integrations": [
+          "Russian social services integration",
+          "Voice analysis enhancement",
+          "Emergency response system"
+        ]
+      },
+      "family_communication_hub": {
+        "path": "security/ai_agents/family_communication_hub.py",
+        "size": "53KB",
+        "lines": 1287,
+        "current_functionality": "Семейная коммуникация",
+        "new_integrations": [
+          "Child protection enhancement",
+          "Parental control improvements",
+          "Family threat detection"
+        ]
+      }
+    },
+    "bots": {
+      "incognito_protection_bot": {
+        "path": "security/bots/incognito_protection_bot.py",
+        "size": "27KB",
+        "lines": 666,
+        "current_functionality": "Анонимная защита",
+        "expansion_potential": "Средняя",
+        "new_integrations": [
+          "Telegram fake chat detection",
+          "MAX messenger protection",
+          "Russian privacy laws compliance"
+        ]
+      }
+    }
+  },
+  "expansion_plan": {
+    "phase_1_critical_expansions": {
+      "name": "Фаза 1: Критические расширения (1-2 месяца)",
+      "modules": [
+        {
+          "module": "security_monitoring",
+          "expansion": "FakeRadar Integration",
+          "description": "Добавить интеграцию с FakeRadar в существующий модуль мониторинга",
+          "new_functions": [
+            "analyze_video_with_fakeradar()",
+            "detect_deepfake_calls()",
+            "real_time_video_analysis()"
+          ],
+          "impact": "+25% эффективности защиты от deepfake",
+          "timeline": "1 месяц"
+        },
+        {
+          "module": "security_analytics",
+          "expansion": "Antifrod System Integration",
+          "description": "Интегрировать систему 'Антифрод' в существующий модуль аналитики",
+          "new_functions": [
+            "verify_call_with_antifrod()",
+            "block_fraud_calls()",
+            "monitor_phone_fraud()"
+          ],
+          "impact": "+15% эффективности против телефонного мошенничества",
+          "timeline": "1-2 месяца"
+        },
+        {
+          "module": "elderly_interface_manager",
+          "expansion": "Child Cyber Threats Protection",
+          "description": "Расширить защиту детей в существующем семейном модуле",
+          "new_functions": [
+            "detect_fake_video_threats()",
+            "parental_notification_system()",
+            "child_content_filtering()"
+          ],
+          "impact": "+10% эффективности защиты детей",
+          "timeline": "1 месяц"
+        }
+      ]
+    },
+    "phase_2_short_term_expansions": {
+      "name": "Фаза 2: Краткосрочные расширения (2-4 месяца)",
+      "modules": [
+        {
+          "module": "incognito_protection_bot",
+          "expansion": "Telegram Fake Chat Detection",
+          "description": "Добавить детекцию фейковых рабочих чатов в Telegram",
+          "new_functions": [
+            "analyze_telegram_chat()",
+            "detect_fake_work_groups()",
+            "verify_chat_authenticity()"
+          ],
+          "impact": "+10% эффективности защиты Telegram",
+          "timeline": "1-2 месяца"
+        },
+        {
+          "module": "threat_intelligence",
+          "expansion": "Russian Context Analysis",
+          "description": "Добавить анализ российского контекста в разведку угроз",
+          "new_functions": [
+            "analyze_russian_threats()",
+            "gosuslugi_integration()",
+            "russian_bank_monitoring()"
+          ],
+          "impact": "+12% эффективности против российских угроз",
+          "timeline": "2-3 месяца"
+        },
+        {
+          "module": "family_communication_hub",
+          "expansion": "MAX Messenger Integration",
+          "description": "Добавить поддержку MAX мессенджера в семейную коммуникацию",
+          "new_functions": [
+            "monitor_max_messenger()",
+            "detect_fake_government_bots()",
+            "secure_max_communication()"
+          ],
+          "impact": "+20% эффективности в MAX",
+          "timeline": "2-3 месяца"
+        }
+      ]
+    },
+    "phase_3_long_term_expansions": {
+      "name": "Фаза 3: Долгосрочные расширения (4-12 месяцев)",
+      "modules": [
+        {
+          "module": "safe_function_manager",
+          "expansion": "Digital Sovereignty Protection",
+          "description": "Добавить защиту цифрового суверенитета в менеджер функций",
+          "new_functions": [
+            "monitor_critical_infrastructure()",
+            "protect_government_systems()",
+            "cyber_sovereignty_analysis()"
+          ],
+          "impact": "+15% устойчивости к кибератакам",
+          "timeline": "4-6 месяцев"
+        },
+        {
+          "module": "security_monitoring",
+          "expansion": "SIM Card Monitoring",
+          "description": "Добавить мониторинг SIM-карт в систему мониторинга",
+          "new_functions": [
+            "monitor_sim_cards()",
+            "detect_fraudulent_sim()",
+            "block_suspicious_sim()"
+          ],
+          "impact": "+25% защиты от SIM-мошенничества",
+          "timeline": "3-4 месяца"
+        }
+      ]
+    }
+  },
+  "expansion_scripts": {
+    "phase1_fakeradar_expansion": "\n# Расширение security_monitoring.py для FakeRadar\ndef add_fakeradar_integration():\n    \"\"\"Добавляет интеграцию с FakeRadar в существующий модуль\"\"\"\n    # Импорты\n    from .integrations.fakeradar_integration import FakeRadarIntegration\n    \n    class SecurityMonitoring:\n        def __init__(self):\n            # Существующий код\n            self.existing_monitors = []\n            # Новая интеграция\n            self.fakeradar = FakeRadarIntegration()\n        \n        def analyze_video_with_fakeradar(self, video_frame):\n            \"\"\"Новая функция для анализа видео через FakeRadar\"\"\"\n            return self.fakeradar.analyze_frame(video_frame)\n        \n        def detect_deepfake_calls(self, call_data):\n            \"\"\"Новая функция для детекции deepfake в звонках\"\"\"\n            return self.fakeradar.detect_deepfake_in_call(call_data)\n",
+    "phase1_antifrod_expansion": "\n# Расширение security_analytics.py для Антифрод\ndef add_antifrod_integration():\n    \"\"\"Добавляет интеграцию с Антифрод в существующий модуль\"\"\"\n    from .integrations.antifrod_integration import AntifrodIntegration\n    \n    class SecurityAnalytics:\n        def __init__(self):\n            # Существующий код\n            self.existing_analytics = []\n            # Новая интеграция\n            self.antifrod = AntifrodIntegration()\n        \n        def verify_call_with_antifrod(self, call_data):\n            \"\"\"Новая функция для верификации звонков через Антифрод\"\"\"\n            return self.antifrod.verify_call(call_data)\n        \n        def block_fraud_calls(self, fraud_detection):\n            \"\"\"Новая функция для блокировки мошеннических звонков\"\"\"\n            return self.antifrod.block_fraud_call(fraud_detection)\n",
+    "phase1_children_protection_expansion": "\n# Расширение elderly_interface_manager.py для защиты детей\ndef add_children_cyber_protection():\n    \"\"\"Добавляет защиту детей от киберугроз в семейный модуль\"\"\"\n    from .integrations.children_protection import ChildrenCyberProtection\n    \n    class ElderlyInterfaceManager:\n        def __init__(self):\n            # Существующий код\n            self.existing_family_features = []\n            # Новая интеграция\n            self.children_protection = ChildrenCyberProtection()\n        \n        def detect_fake_video_threats(self, video_content):\n            \"\"\"Новая функция для детекции угроз в видео\"\"\"\n            return self.children_protection.analyze_video_content(video_content)\n        \n        def parental_notification_system(self, threat_detected):\n            \"\"\"Новая функция для уведомления родителей\"\"\"\n            return self.children_protection.notify_parents(threat_detected)\n"
+  }
+}

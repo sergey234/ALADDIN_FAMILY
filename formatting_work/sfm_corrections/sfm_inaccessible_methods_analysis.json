@@ -1,0 +1,464 @@
+{
+  "accessible_methods": [
+    "add_security_event",
+    "add_security_rule",
+    "auto_sleep_management",
+    "cache_result",
+    "clear_cache",
+    "clear_security_events",
+    "collect_scaling_metrics",
+    "configure_performance_optimization",
+    "configure_security_monitoring",
+    "configure_sleep_mode",
+    "detect_threat",
+    "disable_function",
+    "disable_service_mesh",
+    "enable_function",
+    "enable_service_mesh",
+    "execute_function",
+    "execute_function_async",
+    "get_all_functions_status",
+    "get_cache_stats",
+    "get_cached_result",
+    "get_circuit_breaker",
+    "get_circuit_breaker_stats",
+    "get_critical_functions",
+    "get_dependent_functions",
+    "get_enabled_functions",
+    "get_function_dependencies",
+    "get_function_status",
+    "get_monitoring_dashboard_data",
+    "get_performance_metrics",
+    "get_safe_function_stats",
+    "get_scaling_status",
+    "get_security_events",
+    "get_security_monitoring_status",
+    "get_security_report",
+    "get_security_status",
+    "get_service_health",
+    "get_service_mesh_manager",
+    "get_service_mesh_status",
+    "get_service_metrics",
+    "get_sleep_statistics",
+    "get_sleeping_functions",
+    "get_status",
+    "initialize",
+    "is_service_mesh_enabled",
+    "list_services_in_mesh",
+    "load_functions_async",
+    "log_activity",
+    "register_function",
+    "register_function_handler",
+    "register_function_with_sleep",
+    "register_service_in_mesh",
+    "save_functions_async",
+    "set_security_level",
+    "shutdown_optimizations",
+    "sleep_function",
+    "start",
+    "stop",
+    "test_function",
+    "unregister_function",
+    "unregister_service_from_mesh",
+    "update_metrics",
+    "wake_function"
+  ],
+  "inaccessible_methods": [
+    [
+      "active_executions",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "activity_log",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "async_io_enabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "async_io_manager",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "auto_scaling_engine",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "auto_sleep_count",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "auto_sleep_enabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "auto_test_interval",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "cache_hits",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "cache_misses",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "cache_timestamps",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "cache_ttl",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "circuit_breaker_enabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "circuit_breakers",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "config",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "data_dir",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "default_sleep_hours",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "enable_auto_management",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "enable_sleep_mode",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "encryption_enabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "execution_lock",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "execution_queue",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "failed_executions",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "function_dependencies",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "function_handlers",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "function_lock",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "function_timeout",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "functions",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "functions_disabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "functions_enabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "functions_sleeping",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "incidents_handled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "last_activity",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "logger",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "manual_sleep_count",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "manual_wake_count",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "max_concurrent_functions",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "max_thread_pool_workers",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "memory_cache",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "metrics",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "monitoring_integration_enabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "monitoring_rules",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "name",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "optimization_enabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "optimization_interval",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "optimization_results",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "performance_metrics",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "performance_optimizer",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "redis_client",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "redis_enabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "redis_url",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "registry_file",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "scaling_config",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "scaling_enabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "security_alerts",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "security_level",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "security_monitoring",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "security_rules",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "service_mesh_config",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "service_mesh_enabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "service_mesh_manager",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "sleep_check_interval",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "sleep_grace_period",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "sleep_management_active",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "sleep_management_stop_event",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "sleep_management_thread",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "sleep_transitions",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "start_time",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "status",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "successful_executions",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "thread_pool",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "thread_pool_enabled",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "threats_detected",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "total_executions",
+      "НЕ ВЫЗЫВАЕМ"
+    ],
+    [
+      "wake_transitions",
+      "НЕ ВЫЗЫВАЕМ"
+    ]
+  ],
+  "attribute_methods": [
+    "active_executions",
+    "activity_log",
+    "async_io_enabled",
+    "async_io_manager",
+    "auto_scaling_engine",
+    "auto_sleep_count",
+    "auto_sleep_enabled",
+    "auto_test_interval",
+    "cache_hits",
+    "cache_misses",
+    "cache_timestamps",
+    "cache_ttl",
+    "circuit_breaker_enabled",
+    "circuit_breakers",
+    "config",
+    "data_dir",
+    "default_sleep_hours",
+    "enable_auto_management",
+    "enable_sleep_mode",
+    "encryption_enabled",
+    "execution_lock",
+    "execution_queue",
+    "failed_executions",
+    "function_dependencies",
+    "function_handlers",
+    "function_lock",
+    "function_timeout",
+    "functions",
+    "functions_disabled",
+    "functions_enabled",
+    "functions_sleeping",
+    "incidents_handled",
+    "last_activity",
+    "logger",
+    "manual_sleep_count",
+    "manual_wake_count",
+    "max_concurrent_functions",
+    "max_thread_pool_workers",
+    "memory_cache",
+    "metrics",
+    "monitoring_integration_enabled",
+    "monitoring_rules",
+    "name",
+    "optimization_enabled",
+    "optimization_interval",
+    "optimization_results",
+    "performance_metrics",
+    "performance_optimizer",
+    "redis_client",
+    "redis_enabled",
+    "redis_url",
+    "registry_file",
+    "scaling_config",
+    "scaling_enabled",
+    "security_alerts",
+    "security_level",
+    "security_monitoring",
+    "security_rules",
+    "service_mesh_config",
+    "service_mesh_enabled",
+    "service_mesh_manager",
+    "sleep_check_interval",
+    "sleep_grace_period",
+    "sleep_management_active",
+    "sleep_management_stop_event",
+    "sleep_management_thread",
+    "sleep_transitions",
+    "start_time",
+    "status",
+    "successful_executions",
+    "thread_pool",
+    "thread_pool_enabled",
+    "threats_detected",
+    "total_executions",
+    "wake_transitions"
+  ],
+  "missing_methods": [],
+  "needs_fix": [
+    "redis_client",
+    "redis_enabled",
+    "redis_url",
+    "sleep_check_interval",
+    "sleep_management_stop_event",
+    "start_time",
+    "status"
+  ],
+  "statistics": {
+    "total_public_methods": 137,
+    "accessible_count": 62,
+    "inaccessible_count": 75,
+    "attribute_count": 75,
+    "missing_count": 0,
+    "needs_fix_count": 7,
+    "accessibility_percentage": 45.3
+  }
+}

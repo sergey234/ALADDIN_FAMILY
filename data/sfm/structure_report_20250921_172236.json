@@ -1,0 +1,33 @@
+{
+  "timestamp": "2025-09-21T17:22:36.741630",
+  "total_functions": 329,
+  "structure_valid": true,
+  "functions_by_type": {
+    "ai_agent": 40,
+    "security": 21,
+    "security_bot": 8,
+    "security_system": 9,
+    "preliminary": 1,
+    "family_component": 5,
+    "validation": 1,
+    "monitoring": 4,
+    "reporting": 1,
+    "management": 1,
+    "service": 7,
+    "unknown": 183,
+    "bot": 20,
+    "manager": 22,
+    "microservice": 1,
+    "security_manager": 1,
+    "data_collector": 1,
+    "api_server": 1,
+    "ml_models": 1,
+    "utility": 1
+  },
+  "functions_by_status": {
+    "active": 50,
+    "sleeping": 261,
+    "running": 18
+  },
+  "critical_functions": 260
+}

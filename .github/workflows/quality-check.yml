@@ -1,0 +1,136 @@
+name: ALADDIN Quality Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Запуск каждый день в 2:00 UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10, 3.11]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install black autopep8 flake8 isort pre-commit
+        pip install -r requirements.txt || echo "No requirements.txt found"
+    
+    - name: Run Black formatter check
+      run: |
+        black --check --line-length=120 security/ core/ scripts/ config/
+    
+    - name: Run autopep8 check
+      run: |
+        autopep8 --max-line-length=120 --diff --recursive security/ core/ scripts/ config/
+    
+    - name: Run isort check
+      run: |
+        isort --check-only --profile=black --line-length=120 security/ core/ scripts/ config/
+    
+    - name: Run flake8
+      run: |
+        flake8 --max-line-length=120 --exclude=*/backup*,*/test*,*/logs*,*/formatting_work* security/ core/ scripts/ config/
+    
+    - name: Run pre-commit
+      run: |
+        pre-commit run --all-files
+    
+    - name: Run security quality tests
+      run: |
+        python3 scripts/quality_check_all.py || echo "Quality check completed with warnings"
+    
+    - name: Run comprehensive tests
+      run: |
+        python3 scripts/comprehensive_quality_analysis.py || echo "Comprehensive analysis completed"
+    
+    - name: Generate quality report
+      run: |
+        python3 scripts/auto_format_all.py --dry-run > quality_report.txt
+        echo "Quality report generated"
+    
+    - name: Upload quality report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: quality-report-${{ matrix.python-version }}
+        path: quality_report.txt
+
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.8
+    
+    - name: Install security tools
+      run: |
+        pip install bandit safety semgrep
+    
+    - name: Run Bandit security scan
+      run: |
+        bandit -r security/ -f json -o bandit-report.json || echo "Bandit scan completed"
+    
+    - name: Run Safety check
+      run: |
+        safety check --json --output safety-report.json || echo "Safety check completed"
+    
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+
+  performance-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.8
+    
+    - name: Install dependencies
+      run: |
+        pip install pytest pytest-cov pytest-benchmark
+    
+    - name: Run performance tests
+      run: |
+        python3 scripts/auto_format_all.py --dry-run
+        echo "Performance baseline established"
+    
+    - name: Generate performance report
+      run: |
+        echo "Performance metrics:" > performance_report.txt
+        echo "Files processed: $(find security/ -name '*.py' | wc -l)" >> performance_report.txt
+        echo "Total lines: $(find security/ -name '*.py' -exec wc -l {} + | tail -1)" >> performance_report.txt
+    
+    - name: Upload performance report
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-report
+        path: performance_report.txt

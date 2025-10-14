@@ -1,0 +1,127 @@
+{
+  "file": "security/bots/messenger_integration.py",
+  "timestamp": "2025-09-20T20:39:21.951854",
+  "total_analysis_time_seconds": 0.0927422046661377,
+  "overall_quality_score": 100,
+  "analysis_details": {
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "imports": {
+      "status": "success",
+      "message": "Импорты корректны"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "encrypt",
+        "security",
+        "hash",
+        "key",
+        "alert",
+        "response",
+        "audit",
+        "log"
+      ],
+      "message": "Найдено 8 ключевых слов безопасности"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 105)",
+        "Отсутствует docstring для SecurityBase (строка 32)",
+        "Отсутствует docstring для __init__ (строка 33)"
+      ],
+      "message": "Найдено 3 отсутствующих docstring"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 36769,
+      "lines": 952,
+      "message": "Размер: 36769 байт, Строк: 952"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 105)",
+        "Отсутствует тип возвращаемого значения для функции _initialize_color_scheme (строка 115)",
+        "Отсутствует тип возвращаемого значения для функции _initialize_messengers (строка 172)",
+        "Отсутствует тип возвращаемого значения для функции _setup_logging (строка 232)",
+        "Отсутствует тип возвращаемого значения для функции _load_configuration (строка 252)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 33)",
+        "Отсутствует тип для аргумента 'name' в функции __init__ (строка 33)",
+        "Отсутствует тип для аргумента 'description' в функции __init__ (строка 33)"
+      ],
+      "message": "Найдено 8 отсутствующих type hints"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 31,
+      "num_classes": 7,
+      "message": "Функций: 31, Классов: 7"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "logging",
+        "dataclasses",
+        "enum",
+        "hashlib",
+        "json",
+        "security_base",
+        "config",
+        "typing",
+        "os",
+        "sys",
+        "requests",
+        "datetime"
+      ],
+      "message": "Зависимости: 12"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 8,
+    "security_classes_found": 0,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": true,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Добавьте классы системы безопасности.",
+    "Зарегистрируйте функцию в SFM реестре.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "function_id": "function_81",
+  "function_name": "APIGateway",
+  "sleep_timestamp": "2025-09-06T12:47:00.890708",
+  "quality_metrics": {
+    "total_score": 80.3,
+    "grade": "A",
+    "size_score": 100.0,
+    "documentation_score": 74.1,
+    "type_hints_score": 96.3,
+    "complexity_score": 37.8,
+    "structure_score": 100.0
+  },
+  "functionality_status": {
+    "initialization": "SUCCESS",
+    "authentication": "SUCCESS",
+    "routing": "SUCCESS",
+    "ml_components": "SUCCESS",
+    "security": "SUCCESS"
+  },
+  "performance_metrics": {
+    "lines_of_code": 1586,
+    "classes": 17,
+    "functions": 27,
+    "methods": 24,
+    "imports": 44,
+    "ml_algorithms": 0,
+    "complex_loops": 3,
+    "mathematical_operations": 14,
+    "exception_handling": 24
+  },
+  "security_features": [
+    "JWT токен аутентификация",
+    "API ключи с хешированием SHA-256",
+    "Rate limiting (100 запросов/минуту)",
+    "Blacklist/Whitelist IP адресов",
+    "CORS защита",
+    "Валидация размера запросов",
+    "ML детекция аномалий",
+    "Prometheus мониторинг"
+  ],
+  "wake_up_instructions": [
+    "1. Установить зависимости: pip3 install fastapi uvicorn PyJWT redis sqlalchemy scikit-learn numpy",
+    "2. Настроить Redis (опционально)",
+    "3. Изменить JWT секретный ключ в продакшене",
+    "4. Запустить: python3 -c \"from security.ai_agents.api_gateway import run_server; run_server()\"",
+    "5. Проверить health: curl http://localhost:8000/health"
+  ],
+  "integration_status": "READY",
+  "sleep_duration": "INDEFINITE",
+  "wake_up_priority": "HIGH"
+}

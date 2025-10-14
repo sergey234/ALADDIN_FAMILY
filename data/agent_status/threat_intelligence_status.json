@@ -1,0 +1,14 @@
+{
+  "status": "SLEEPING", 
+  "agent": "ThreatIntelligenceAgent", 
+  "last_update": "2025-09-04T20:56:22.776636", 
+  "score": "90/100", 
+  "sleep_duration": "INDEFINITE", 
+  "quality": "A+", 
+  "wake_up_conditions": [
+    "Обновление источников угроз", 
+    "Новые типы угроз обнаружены", 
+    "Изменение конфигурации разведки", 
+    "Критические угрозы в системе"
+  ]
+}

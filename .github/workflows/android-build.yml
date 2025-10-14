@@ -1,0 +1,95 @@
+name: Android Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: [ 'mobile/android/**' ]
+  pull_request:
+    branches: [ main ]
+    paths: [ 'mobile/android/**' ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Grant execute permission for gradlew
+      run: chmod +x mobile/android/gradlew
+      
+    - name: Build Android app
+      run: |
+        cd mobile/android
+        ./gradlew assembleDebug --stacktrace
+        
+    - name: Run Android tests
+      run: |
+        cd mobile/android
+        ./gradlew testDebugUnitTest --stacktrace
+        
+    - name: Run Detekt
+      run: |
+        cd mobile/android
+        ./gradlew detekt --stacktrace
+        
+    - name: Run ktlint
+      run: |
+        cd mobile/android
+        if command -v ktlint &> /dev/null; then
+          ktlint check
+        else
+          echo "ktlint not installed, skipping..."
+        fi
+        
+    - name: Run Android Lint
+      run: |
+        cd mobile/android
+        ./gradlew lintDebug --stacktrace
+        
+    - name: Generate test report
+      uses: davidrussell/github-actions-android-test-results@v1
+      if: always()
+      
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      if: success()
+      with:
+        name: android-build
+        path: mobile/android/app/build/outputs/
+        
+    - name: Security scan
+      run: |
+        cd mobile/android
+        # Проверка на уязвимости в зависимостях
+        if command -v dependency-check &> /dev/null; then
+          dependency-check --project ALADDINMobile --scan .
+        fi
+        
+    - name: Code quality check
+      run: |
+        cd mobile/android
+        # Проверка качества кода
+        echo "Running code quality checks..."
+        find . -name "*.kt" -exec wc -l {} + | tail -1
+

@@ -1,0 +1,16 @@
+{
+  "test_reports": [
+    {
+      "title": "Тест 1",
+      "content": "Содержание 1"
+    },
+    {
+      "title": "Тест 2",
+      "content": "Содержание 2"
+    }
+  ],
+  "metadata": {
+    "collected_at": "2025-09-21T12:22:16.370846",
+    "total_records": 2
+  }
+}

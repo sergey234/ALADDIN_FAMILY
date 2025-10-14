@@ -1,0 +1,9 @@
+{
+  "function_name": "DeviceType",
+  "function_id": "security_devicetype",
+  "sleep_time": "2025-09-15T22:02:29.873180",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": true,
+  "minimal_system_sleep": true
+}

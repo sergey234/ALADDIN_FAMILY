@@ -1,0 +1,18 @@
+{
+  "INC_1758291357_51a6150a": {
+    "incident_id": "INC_1758291357_51a6150a",
+    "title": "Test Incident",
+    "description": "Testing validation",
+    "incident_type": "malware",
+    "severity": "high",
+    "status": "in_progress",
+    "created_at": "2025-09-19T18:15:57.026250",
+    "updated_at": "2025-09-19T18:15:57.026597",
+    "assigned_to": null,
+    "priority": 4,
+    "affected_systems": [
+      {
+        "system_id": "server1",
+        "system_type": "database",
+        "description": "Main server",
+        "added_at": 

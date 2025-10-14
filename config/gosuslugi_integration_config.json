@@ -1,0 +1,30 @@
+{
+  "gosuslugi_integration": {
+    "enabled": true,
+    "api_endpoint": "https://api.gosuslugi.ru/v1",
+    "api_key": "",
+    "verification_features": {
+      "user_verification": true,
+      "document_verification": true,
+      "profile_validation": true,
+      "fake_profile_detection": true
+    },
+    "monitoring_features": {
+      "login_monitoring": true,
+      "activity_tracking": true,
+      "suspicious_behavior": true,
+      "real_time_alerts": true
+    }
+  },
+  "security_features": {
+    "auto_block_fake_profiles": true,
+    "profile_verification": true,
+    "document_validation": true,
+    "identity_protection": true
+  },
+  "integration": {
+    "threat_intelligence": true,
+    "security_analytics": true,
+    "family_protection": true
+  }
+}

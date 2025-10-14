@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN - Главная страница</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .nav-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .nav-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .nav-description {
+            font-size: 1.1em;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .nav-stats {
+            font-size: 0.9em;
+            color: #888;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .stats-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            color: white;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5em; }
+            .nav-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ ALADDIN</h1>
+            <p>Система безопасности нового поколения с AI-анализом угроз</p>
+        </div>
+
+        <div class="stats-section">
+            <h2 style="text-align: center; margin-bottom: 25px; color: #2c3e50;">📊 Общая статистика системы</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">125</div>
+                    <div class="stat-label">Основных модулей</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">4,619</div>
+                    <div class="stat-label">Функций безопасности</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">132,236</div>
+                    <div class="stat-label">Строк кода</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">307+</div>
+                    <div class="stat-label">Функций в SFM</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">A+</div>
+                    <div class="stat-label">Качество кода</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">96.2%</div>
+                    <div class="stat-label">Security модули</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-grid">
+            <a href="ARCHITECTURE_VISUALIZATION.html" class="nav-card">
+                <span class="nav-icon">🏗️</span>
+                <div class="nav-title">Архитектура системы</div>
+                <div class="nav-description">
+                    Интерактивная диаграмма архитектуры с анимированными карточками, 
+                    кликабельными компонентами и потоком данных
+                </div>
+                <div class="nav-stats">
+                    ✨ Анимации | 🎯 Интерактивность | 📱 Адаптивный дизайн
+                </div>
+            </a>
+
+            <a href="DETAILED_ARCHITECTURE_DIAGRAM.html" class="nav-card">
+                <span class="nav-icon">📁</span>
+                <div class="nav-title">Детальная структура файлов</div>
+                <div class="nav-description">
+                    Полная структура всех 125 модулей с категоризацией, 
+                    статистикой и детальной информацией о каждом компоненте
+                </div>
+                <div class="nav-stats">
+                    📂 6 категорий | 📊 Статистика | 🔍 Детали
+                </div>
+            </a>
+
+            <a href="ARCHITECTURE_OVERVIEW.md" class="nav-card">
+                <span class="nav-icon">📋</span>
+                <div class="nav-title">Текстовое описание</div>
+                <div class="nav-description">
+                    Подробное текстовое описание архитектуры, 
+                    структуры файлов и ключевых особенностей системы
+                </div>
+                <div class="nav-stats">
+                    📈 Статистика | 🏗️ Слои | 🔄 Поток данных
+                </div>
+            </a>
+
+            <a href="DETAILED_FUNCTIONS_DESCRIPTION.html" class="nav-card">
+                <span class="nav-icon">📝</span>
+                <div class="nav-title">Детальное описание функций</div>
+                <div class="nav-description">
+                    Полное описание всех 4,619 функций системы безопасности 
+                    простым и понятным языком для обычного пользователя
+                </div>
+                <div class="nav-stats">
+                    🤖 AI Agents | 🤖 Bots | ⚙️ Managers | 🔧 Microservices
+                </div>
+            </a>
+
+            <a href="security/" class="nav-card">
+                <span class="nav-icon">🔒</span>
+                <div class="nav-title">Исходный код</div>
+                <div class="nav-description">
+                    Просмотр исходного кода всех модулей безопасности, 
+                    AI агентов, ботов и менеджеров
+                </div>
+                <div class="nav-stats">
+                    🤖 AI Agents | 🤖 Bots | ⚙️ Managers
+                </div>
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>🛡️ ALADDIN Security System - Защита нового поколения с AI-анализом угроз</p>
+            <p>📊 125 модулей | 4,619 функций | 132,236 строк кода | Качество A+</p>
+        </div>
+    </div>
+</body>
+</html>

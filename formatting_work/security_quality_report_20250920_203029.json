@@ -1,0 +1,137 @@
+{
+  "file": "security/smart_monitoring.py",
+  "timestamp": "2025-09-20T20:30:29.407220",
+  "total_analysis_time_seconds": 0.10490989685058594,
+  "overall_quality_score": 87.5,
+  "analysis_details": {
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "monitoring",
+        "alert",
+        "log"
+      ],
+      "message": "Найдено 3 ключевых слов безопасности"
+    },
+    "sfm_functions": {
+      "status": "info",
+      "found_functions": [],
+      "message": "Найдено 0 функций SFM"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции validate_input (строка 22)",
+        "Отсутствует тип для аргумента 'func' в функции validate_input (строка 22)",
+        "Отсутствует тип возвращаемого значения для функции performance_monitor (строка 36)",
+        "Отсутствует тип для аргумента 'func' в функции performance_monitor (строка 36)",
+        "Отсутствует тип возвращаемого значения для функции log_execution (строка 59)",
+        "Отсутствует тип для аргумента 'func' в функции log_execution (строка 59)",
+        "Отсутствует тип возвращаемого значения для функции transaction (строка 79)",
+        "Отсутствует тип для аргумента 'func' в функции transaction (строка 79)",
+        "Отсутствует тип возвращаемого значения для функции private_method (строка 96)",
+        "Отсутствует тип для аргумента 'func' в функции private_method (строка 96)",
+        "Отсутствует тип возвращаемого значения для функции setup_default_rules (строка 695)",
+        "Отсутствует тип возвращаемого значения для функции wrapper (строка 26)",
+        "Отсутствует тип возвращаемого значения для функции wrapper (строка 40)",
+        "Отсутствует тип возвращаемого значения для функции wrapper (строка 63)",
+        "Отсутствует тип возвращаемого значения для функции wrapper (строка 83)",
+        "Отсутствует тип возвращаемого значения для функции wrapper (строка 100)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 162)",
+        "Отсутствует тип для аргумента 'cls' в функции from_config (строка 219)",
+        "Отсутствует тип возвращаемого значения для функции add_rule (строка 237)",
+        "Отсутствует тип возвращаемого значения для функции add_metric (строка 249)",
+        "Отсутствует тип возвращаемого значения для функции _check_rules (строка 285)",
+        "Отсутствует тип возвращаемого значения для функции _generate_alert (строка 391)",
+        "Отсутствует тип возвращаемого значения для функции _adapt_threshold (строка 441)",
+        "Отсутствует тип возвращаемого значения для функции _send_alert (строка 486)",
+        "Отсутствует тип возвращаемого значения для функции add_alert_callback (строка 502)",
+        "Отсутствует тип возвращаемого значения для функции suppress_alert (строка 611)",
+        "Отсутствует тип возвращаемого значения для функции resolve_alert (строка 630)",
+        "Отсутствует тип возвращаемого значения для функции _start_cleanup_thread (строка 647)",
+        "Отсутствует тип возвращаемого значения для функции _cleanup_old_data (строка 667)",
+        "Отсутствует тип возвращаемого значения для функции cleanup_worker (строка 651)"
+      ],
+      "message": "Найдено 30 отсутствующих type hints"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "time",
+        "enum",
+        "typing",
+        "statistics",
+        "threading",
+        "functools",
+        "dataclasses",
+        "datetime"
+      ],
+      "message": "Зависимости: 8"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 27355,
+      "lines": 753,
+      "message": "Размер: 27355 байт, Строк: 753"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 36,
+      "num_classes": 5,
+      "message": "Функций: 36, Классов: 5"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для wrapper (строка 26)",
+        "Отсутствует docstring для wrapper (строка 40)",
+        "Отсутствует docstring для wrapper (строка 63)",
+        "Отсутствует docstring для wrapper (строка 83)",
+        "Отсутствует docstring для wrapper (строка 100)",
+        "Отсутствует docstring для __init__ (строка 162)",
+        "Отсутствует docstring для cleanup_worker (строка 651)"
+      ],
+      "message": "Найдено 7 отсутствующих docstring"
+    },
+    "imports": {
+      "status": "success",
+      "message": "Импорты корректны"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 3,
+    "security_classes_found": 0,
+    "sfm_functions_found": 0,
+    "syntax_ok": true,
+    "imports_ok": true,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Добавьте классы системы безопасности.",
+    "Добавьте функции SFM.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

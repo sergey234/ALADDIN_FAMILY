@@ -1,0 +1,49 @@
+{
+  "timestamp": "2025-09-19T21:34:16.754858",
+  "registry_path": "data/sfm/function_registry.json",
+  "basic_stats": {
+    "total_functions": 335,
+    "active_functions": 28,
+    "sleeping_functions": 288,
+    "critical_functions": 266,
+    "functions_by_type": {
+      "ai_agent": 26,
+      "security": 21,
+      "security_bot": 8,
+      "security_system": 8,
+      "preliminary": 1,
+      "family_component": 5,
+      "validation": 1,
+      "monitoring": 3,
+      "reporting": 1,
+      "management": 1,
+      "service": 7,
+      "unknown": 208,
+      "bot": 20,
+      "manager": 24,
+      "security_manager": 1
+    },
+    "functions_by_status": {
+      "active": 28,
+      "sleeping": 288,
+      "running": 19
+    },
+    "last_updated": "2025-09-19T20:35:00.000000"
+  },
+  "detailed_analysis": {
+    "total_functions": 335,
+    "valid_functions": 335,
+    "invalid_functions": 0,
+    "functions_with_errors": [],
+    "quality_metrics": {
+      "a_plus_functions": 12,
+      "functions_with_tests": 14,
+      "functions_with_docs": 335
+    },
+    "security_analysis": {
+      "high_security": 44,
+      "critical_functions": 266,
+      "auto_enable_functions": 8
+    }
+  }
+}

@@ -1,0 +1,38 @@
+# ALADDIN Security Dashboard Requirements
+# Требования для веб-дашборда системы безопасности
+
+# Веб-фреймворк
+Flask==2.3.3
+Flask-CORS==4.0.0
+
+# Системные метрики
+psutil==5.9.6
+
+# Обработка данных
+pandas==2.0.3
+numpy==1.24.3
+
+# Валидация данных
+pydantic==2.4.2
+
+# HTTP клиент
+requests==2.31.0
+
+# Логирование
+colorlog==6.7.0
+
+# Дата и время
+python-dateutil==2.8.2
+
+# JSON обработка
+ujson==5.8.0
+
+# Безопасность
+cryptography==41.0.4
+
+# Мониторинг
+prometheus-client==0.17.1
+
+# Тестирование
+pytest==7.4.2
+pytest-flask==1.2.0

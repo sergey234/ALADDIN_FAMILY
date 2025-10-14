@@ -1,0 +1,123 @@
+{
+  "analysis_date": "2025-09-21T01:36:36.860170",
+  "total_unrated": 14,
+  "functions_analyzed": 10,
+  "quality_distribution": {
+    "A": 6,
+    "C+": 2,
+    "F": 1,
+    "D": 1
+  },
+  "error_distribution": {
+    "0": 6,
+    "6-15": 2,
+    "50+": 1,
+    "31-50": 1
+  },
+  "size_distribution": {
+    "501-1000": 9,
+    "1000+": 1
+  },
+  "detailed_results": [
+    {
+      "function_id": "mobile_security_agent_main",
+      "name": "MobileSecurityAgentMain",
+      "file_path": "security/ai_agents/mobile_security_agent_main.py",
+      "lines_of_code": 695,
+      "file_size_kb": 26.347,
+      "flake8_errors": 0,
+      "quality_score": "A",
+      "analysis_status": "completed"
+    },
+    {
+      "function_id": "financial_protection_hub",
+      "name": "FinancialProtectionHub",
+      "file_path": "security/ai_agents/financial_protection_hub.py",
+      "lines_of_code": 862,
+      "file_size_kb": 31.683,
+      "flake8_errors": 0,
+      "quality_score": "A",
+      "analysis_status": "completed"
+    },
+    {
+      "function_id": "ipv6_dns_protection",
+      "name": "IPv6DNSProtectionSystem",
+      "file_path": "security/vpn/protection/ipv6_dns_protection.py",
+      "lines_of_code": 669,
+      "file_size_kb": 24.604,
+      "flake8_errors": 6,
+      "quality_score": "C+",
+      "analysis_status": "completed"
+    },
+    {
+      "function_id": "advanced_monitoring_manager",
+      "name": "AdvancedMonitoringManager",
+      "file_path": "security/advanced_monitoring_manager.py",
+      "lines_of_code": 1192,
+      "file_size_kb": 43.559,
+      "flake8_errors": 74,
+      "quality_score": "F",
+      "analysis_status": "completed"
+    },
+    {
+      "function_id": "ai_agent_elderlyprotectioninterface",
+      "name": "ElderlyProtectionInterface",
+      "file_path": "security/ai_agents/elderly_protection_interface.py",
+      "lines_of_code": 939,
+      "file_size_kb": 36.861,
+      "flake8_errors": 41,
+      "quality_score": "D",
+      "analysis_status": "completed"
+    },
+    {
+      "function_id": "security_smart_monitoring",
+      "name": "SmartMonitoringSystem",
+      "file_path": "security/smart_monitoring.py",
+      "lines_of_code": 753,
+      "file_size_kb": 26.714,
+      "flake8_errors": 0,
+      "quality_score": "A",
+      "analysis_status": "completed"
+    },
+    {
+      "function_id": "secure_config_manager",
+      "name": "SecureConfigManager",
+      "file_path": "security/secure_config_manager.py",
+      "lines_of_code": 585,
+      "file_size_kb": 21.656,
+      "flake8_errors": 0,
+      "quality_score": "A",
+      "analysis_status": "completed"
+    },
+    {
+      "function_id": "family_communication_replacement",
+      "name": "FamilyCommunicationReplacement",
+      "file_path": "security/ai_agents/family_communication_replacement.py",
+      "lines_of_code": 992,
+      "file_size_kb": 35.117,
+      "flake8_errors": 0,
+      "quality_score": "A",
+      "analysis_status": "completed"
+    },
+    {
+      "function_id": "smart_monitoring_system",
+      "name": "SmartMonitoringSystem",
+      "file_path": "security/smart_monitoring.py",
+      "lines_of_code": 753,
+      "file_size_kb": 26.714,
+      "flake8_errors": 0,
+      "quality_score": "A",
+      "analysis_status": "completed"
+    },
+    {
+      "function_id": "intrusion_prevention",
+      "name": "IntrusionPrevention",
+      "file_path": "security/intrusion_prevention.py",
+      "lines_of_code": 681,
+      "file_size_kb": 26.657,
+      "flake8_errors": 6,
+      "quality_score": "C+",
+      "analysis_status": "completed"
+    }
+  ]
+}

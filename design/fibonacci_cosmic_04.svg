@@ -1,0 +1,163 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Cosmic Background -->
+    <linearGradient id="cosmic-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a1128;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#1e3a5f;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#2e5090;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Golden Star Gradient -->
+    <radialGradient id="golden-star" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#F59E0B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+    </radialGradient>
+    
+    <!-- Golden Glow -->
+    <linearGradient id="golden-glow" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" style="stop-color:#FCD34D;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#F59E0B;stop-opacity:0" />
+    </linearGradient>
+    
+    <!-- Fibonacci Glow Filter -->
+    <filter id="fibonacci-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="25" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="226" fill="url(#cosmic-bg)"/>
+  
+  <!-- Fibonacci Golden Spiral -->
+  <g opacity="0.2" stroke="#FCD34D" stroke-width="4" fill="none">
+    <!-- Spiral based on Fibonacci sequence -->
+    <path d="M 512 512 Q 512 368 656 368 Q 800 368 800 512 Q 800 656 656 656 Q 512 656 512 512 Q 512 512 580 512 Q 648 512 648 580 Q 648 648 580 648 Q 512 648 512 580 Q 512 512 512 512"/>
+  </g>
+  
+  <!-- Cosmic Portal (Fibonacci Proportions) -->
+  <g transform="translate(512, 450)">
+    <!-- Outer Portal Ring (Fibonacci Circle: r=233px) -->
+    <circle cx="0" cy="0" r="233" fill="none" stroke="url(#golden-glow)" stroke-width="12" opacity="0.4" filter="url(#fibonacci-glow)"/>
+    
+    <!-- Middle Portal Ring (Fibonacci Circle: r=144px) -->
+    <circle cx="0" cy="0" r="144" fill="none" stroke="url(#golden-glow)" stroke-width="8" opacity="0.6" filter="url(#fibonacci-glow)"/>
+    
+    <!-- Inner Portal Ring (Fibonacci Circle: r=89px) -->
+    <circle cx="0" cy="0" r="89" fill="none" stroke="url(#golden-glow)" stroke-width="6" opacity="0.8" filter="url(#fibonacci-glow)"/>
+    
+    <!-- Portal Core (Fibonacci Circle: r=55px) -->
+    <circle cx="0" cy="0" r="55" fill="url(#golden-star)" filter="url(#fibonacci-glow)"/>
+    
+    <!-- Portal Energy Waves (Fibonacci Spirals) -->
+    <g opacity="0.7" stroke="#FCD34D" stroke-width="4" fill="none">
+      <!-- Wave 1 -->
+      <path d="M 0 0 Q 89 -89 178 -178 Q 267 -267 356 -356"/>
+      
+      <!-- Wave 2 -->
+      <path d="M 0 0 Q -89 -89 -178 -178 Q -267 -267 -356 -356"/>
+      
+      <!-- Wave 3 -->
+      <path d="M 0 0 Q 89 89 178 178 Q 267 267 356 356"/>
+      
+      <!-- Wave 4 -->
+      <path d="M 0 0 Q -89 89 -178 178 Q -267 267 -356 356"/>
+    </g>
+    
+    <!-- Portal Stars (Fibonacci Positions) -->
+    <g fill="#FCD34D" opacity="0.8">
+      <!-- 8 Stars around portal -->
+      <g transform="translate(0, -233)">
+        <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+      </g>
+      <g transform="translate(165, -165)">
+        <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+      </g>
+      <g transform="translate(233, 0)">
+        <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+      </g>
+      <g transform="translate(165, 165)">
+        <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+      </g>
+      <g transform="translate(0, 233)">
+        <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+      </g>
+      <g transform="translate(-165, 165)">
+        <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+      </g>
+      <g transform="translate(-233, 0)">
+        <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+      </g>
+      <g transform="translate(-165, -165)">
+        <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+      </g>
+    </g>
+    
+    <!-- Portal Energy Particles -->
+    <g opacity="0.6" fill="#FCD34D">
+      <!-- Fibonacci Circles -->
+      <circle cx="0" cy="-350" r="21" opacity="0.8"/>
+      <circle cx="350" cy="0" r="21" opacity="0.8"/>
+      <circle cx="0" cy="350" r="21" opacity="0.8"/>
+      <circle cx="-350" cy="0" r="21" opacity="0.8"/>
+      
+      <!-- Diagonal Particles -->
+      <circle cx="247" cy="-247" r="13" opacity="0.8"/>
+      <circle cx="-247" cy="247" r="13" opacity="0.8"/>
+      <circle cx="247" cy="247" r="13" opacity="0.8"/>
+      <circle cx="-247" cy="-247" r="13" opacity="0.8"/>
+    </g>
+    
+    <!-- Portal Core Star -->
+    <path d="M 0 -55 L 16 -17 L 55 -17 L 25 7 L 34 46 L 0 28 L -34 46 L -25 7 L -55 -17 L -16 -17 Z" 
+          fill="#FFFFFF" opacity="0.9"/>
+  </g>
+  
+  <!-- Golden "A" (Fibonacci Size: 89×144px) -->
+  <g transform="translate(512, 720)">
+    <path d="M -44 72 L 0 -72 L 44 72" 
+          stroke="#FFFFFF" 
+          stroke-width="32" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none"
+          filter="url(#fibonacci-glow)"/>
+    <line x1="-22" y1="10" x2="22" y2="10" 
+          stroke="#FFFFFF" 
+          stroke-width="32" 
+          stroke-linecap="round"/>
+  </g>
+  
+  <!-- Fibonacci Spiral Stars -->
+  <g opacity="0.8" fill="#FCD34D">
+    <!-- Stars positioned on Fibonacci grid -->
+    <g transform="translate(100, 100)">
+      <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+    </g>
+    <g transform="translate(924, 100)">
+      <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+    </g>
+    <g transform="translate(100, 924)">
+      <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+    </g>
+    <g transform="translate(924, 924)">
+      <path d="M 0 -21 L 6 -6 L 21 -6 L 10 3 L 16 18 L 0 9 L -16 18 L -10 3 L -21 -6 L -6 -6 Z" opacity="0.8"/>
+    </g>
+  </g>
+  
+  <!-- Bottom Text -->
+  <text x="512" y="850" 
+        font-family="Arial, sans-serif" 
+        font-size="55" 
+        font-weight="900" 
+        fill="#FCD34D" 
+        text-anchor="middle"
+        letter-spacing="8">ALADDIN</text>
+</svg>
+
+

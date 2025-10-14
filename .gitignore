@@ -1,0 +1,30 @@
+# Backup папки
+backup*/
+backups/
+*.backup
+
+# Временные файлы
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IDE файлы
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Логи
+*.log
+logs/
+
+# Xcode файлы
+*.xcuserstate
+*.xcworkspace
+DerivedData/
+
+# НЕ ИГНОРИРУЕМ:
+# Backend секреты остаются в git!
+# .env файлы остаются!
+# SSL ключи остаются!

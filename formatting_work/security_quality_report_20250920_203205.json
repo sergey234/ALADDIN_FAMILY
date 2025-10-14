@@ -1,0 +1,125 @@
+{
+  "file": "security/ai_agents/security_quality_analyzer.py",
+  "timestamp": "2025-09-20T20:32:05.844482",
+  "total_analysis_time_seconds": 0.06287884712219238,
+  "overall_quality_score": 100,
+  "analysis_details": {
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "encrypt",
+        "decrypt",
+        "auth",
+        "authenticate",
+        "authorize",
+        "permission",
+        "security",
+        "hash",
+        "ssl",
+        "tls",
+        "cipher",
+        "key",
+        "token",
+        "session",
+        "firewall",
+        "intrusion",
+        "threat",
+        "vulnerability",
+        "malware",
+        "virus",
+        "circuit_breaker",
+        "monitoring",
+        "alert",
+        "incident",
+        "response",
+        "compliance",
+        "audit",
+        "log",
+        "trace",
+        "forensic",
+        "analysis"
+      ],
+      "message": "Найдено 31 ключевых слов безопасности"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "imports": {
+      "status": "success",
+      "message": "Импорты корректны"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "docstrings": {
+      "status": "success",
+      "missing_docstrings": [],
+      "message": "Найдено 0 отсутствующих docstring"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 22178,
+      "lines": 410,
+      "message": "Размер: 22178 байт, Строк: 410"
+    },
+    "type_hints": {
+      "status": "success",
+      "missing_type_hints": [],
+      "message": "Найдено 0 отсутствующих type hints"
+    },
+    "sfm_functions": {
+      "status": "info",
+      "found_functions": [],
+      "message": "Найдено 0 функций SFM"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "subprocess",
+        "sys",
+        "datetime",
+        "time",
+        "os",
+        "typing",
+        "concurrent",
+        "json",
+        "ast"
+      ],
+      "message": "Зависимости: 9"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 16,
+      "num_classes": 0,
+      "message": "Функций: 16, Классов: 0"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 31,
+    "security_classes_found": 0,
+    "sfm_functions_found": 0,
+    "syntax_ok": true,
+    "imports_ok": true,
+    "docstrings_ok": true,
+    "type_hints_ok": true
+  },
+  "recommendations": [
+    "Добавьте классы системы безопасности.",
+    "Добавьте функции SFM."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

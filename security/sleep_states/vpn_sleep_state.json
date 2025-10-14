@@ -1,0 +1,25 @@
+{
+  "function_id": "vpn_security",
+  "name": "VPN Security System",
+  "status": "sleeping",
+  "sleep_mode": true,
+  "sleep_reason": "Интеграция завершена, перевод в спящий режим",
+  "sleep_time": "2025-09-07T19:31:32.565493",
+  "wake_conditions": [
+    "Пользователь запрашивает VPN подключение",
+    "Система безопасности требует VPN защиту",
+    "Мобильное приложение активирует VPN"
+  ],
+  "sleep_features": {
+    "vpn_servers": "Доступны 15 серверов в 5 странах",
+    "protocols": "OpenVPN и WireGuard поддерживаются",
+    "security_levels": "LOW, MEDIUM, HIGH доступны",
+    "failover": "Автоматическое переключение на внешние провайдеры"
+  },
+  "integration_status": {
+    "safe_function_manager": "Интегрирован",
+    "mobile_api": "Готов для мобильного приложения",
+    "web_interface": "Доступен",
+    "monitoring": "Активен"
+  }
+}

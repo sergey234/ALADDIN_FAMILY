@@ -1,0 +1,44 @@
+{
+  "timestamp": "2025-09-08T11:14:26.320562",
+  "total_duration": 1.0376839637756348,
+  "total_tests": 5,
+  "passed_tests": 5,
+  "improvement_percentage": 93.2088745826202,
+  "results": [
+    {
+      "test": "Кэшированный импорт",
+      "success": true,
+      "details": "",
+      "duration": 0.1782379150390625,
+      "timestamp": "2025-09-08T11:14:25.460791"
+    },
+    {
+      "test": "Мгновенное создание",
+      "success": true,
+      "details": "Создано: 4/4",
+      "duration": 0.0019779205322265625,
+      "timestamp": "2025-09-08T11:14:25.462830"
+    },
+    {
+      "test": "Быстрая PEP8 проверка",
+      "success": true,
+      "details": "PEP8: OK",
+      "duration": 0.824566125869751,
+      "timestamp": "2025-09-08T11:14:26.287545"
+    },
+    {
+      "test": "Мгновенная БД",
+      "success": true,
+      "details": "БД работает",
+      "duration": 0.031232595443725586,
+      "timestamp": "2025-09-08T11:14:26.318896"
+    },
+    {
+      "test": "Проверка статуса",
+      "success": true,
+      "details": "Статус: initialized",
+      "duration": 0.0012009143829345703,
+      "timestamp": "2025-09-08T11:14:26.320163"
+    }
+  ]
+}

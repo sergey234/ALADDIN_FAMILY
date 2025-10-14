@@ -1,0 +1,9 @@
+{
+  "function_name": "HTTPException",
+  "function_id": "microservice_httpexception",
+  "sleep_time": "2025-09-15T22:02:29.903880",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": true,
+  "minimal_system_sleep": true
+}

@@ -1,0 +1,2700 @@
+{
+  "timestamp": "2025-10-04T15:45:22.032953",
+  "base_directory": "/Users/sergejhlystov/ALADDIN_NEW",
+  "total_functions": 492,
+  "existing_files": 185,
+  "missing_files": 283,
+  "missing_files_details": [
+    {
+      "function_id": "threat_detection_agent",
+      "original_path": "security/threat_detection_agent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/threat_detection_agent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/threat_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_threat_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/threat_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/threat_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/threat_detection_agent.py"
+      ]
+    },
+    {
+      "function_id": "incident_response_agent",
+      "original_path": "security/incident_response_agent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/incident_response_agent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/incident_response_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_incident_response_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/incident_response_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/incident_response_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/incident_response_agent.py"
+      ]
+    },
+    {
+      "function_id": "performance_optimization_agent",
+      "original_path": "security/performance_optimization_agent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/performance_optimization_agent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/performance_optimization_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_performance_optimization_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/performance_optimization_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/performance_optimization_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/performance_optimization_agent.py"
+      ]
+    },
+    {
+      "function_id": "voice_analysis_engine",
+      "original_path": "security/voice_analysis_engine.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/voice_analysis_engine.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/voice_analysis_engine.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/voice_analysis_engine.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/voice_analysis_engine.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/voice_analysis_engine.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/ai_agents/voice_analysis_engine.py"
+      ]
+    },
+    {
+      "function_id": "telegram_security_bot",
+      "original_path": "security/telegram_security_bot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/telegram_security_bot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/telegram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/telegram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/telegram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/telegram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/telegram_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "whatsapp_security_bot",
+      "original_path": "security/whatsapp_security_bot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/whatsapp_security_bot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/whatsapp_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/whatsapp_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/whatsapp_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/whatsapp_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/whatsapp_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "instagram_security_bot",
+      "original_path": "security/instagram_security_bot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/instagram_security_bot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/instagram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/instagram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/instagram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/instagram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/instagram_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "gaming_security_bot",
+      "original_path": "security/gaming_security_bot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/gaming_security_bot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/gaming_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/gaming_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/gaming_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/gaming_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/gaming_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "parental_control_bot",
+      "original_path": "security/parental_control_bot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/parental_control_bot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/parental_control_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/parental_control_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/parental_control_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/parental_control_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/parental_control_bot.py"
+      ]
+    },
+    {
+      "function_id": "emergency_response_bot",
+      "original_path": "security/emergency_response_bot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergency_response_bot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/emergency_response_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/formatting_work/test_emergency_response_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/emergency_response_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/emergency_response_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/emergency_response_bot.py"
+      ]
+    },
+    {
+      "function_id": "network_security_bot",
+      "original_path": "security/network_security_bot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/network_security_bot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/network_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/network_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/network_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/network_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/network_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "device_security_bot",
+      "original_path": "security/device_security_bot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/device_security_bot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/device_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/device_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/device_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/device_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/device_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "zero_trust_service",
+      "original_path": "security/zero_trust_service.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/zero_trust_service.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/preliminary/zero_trust_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_zero_trust_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/preliminary/zero_trust_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/preliminary/zero_trust_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/preliminary/zero_trust_service.py"
+      ]
+    },
+    {
+      "function_id": "parental_controls",
+      "original_path": "security/parental_controls.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/parental_controls.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/family/parental_controls.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/family/advanced_parental_controls.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_parental_controls.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/family/parental_controls.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/family/advanced_parental_controls.py"
+      ]
+    },
+    {
+      "function_id": "elderly_protection",
+      "original_path": "security/elderly_protection.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/elderly_protection.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/family/elderly_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_elderly_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/family/elderly_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/family/elderly_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/family/elderly_protection.py"
+      ]
+    },
+    {
+      "function_id": "super_ai_support_assistant",
+      "original_path": "security/super_ai_support_assistant.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/super_ai_support_assistant.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai/super_ai_support_assistant.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_super_ai_support_assistant.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai/super_ai_support_assistant.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai/super_ai_support_assistant.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai/super_ai_support_assistant.py"
+      ]
+    },
+    {
+      "function_id": "registry_protection_system",
+      "original_path": "security/registry_protection_system.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/registry_protection_system.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/scripts/registry_protection_system.py"
+      ]
+    },
+    {
+      "function_id": "registry_format_validator",
+      "original_path": "security/registry_format_validator.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/registry_format_validator.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/scripts/registry_format_validator.py"
+      ]
+    },
+    {
+      "function_id": "registry_monitor",
+      "original_path": "security/registry_monitor.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/registry_monitor.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/scripts/registry_monitor.py"
+      ]
+    },
+    {
+      "function_id": "registry_problem_reporter",
+      "original_path": "security/registry_problem_reporter.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/registry_problem_reporter.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/scripts/registry_problem_reporter.py"
+      ]
+    },
+    {
+      "function_id": "registry_security_manager",
+      "original_path": "security/registry_security_manager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/registry_security_manager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/scripts/registry_security_manager.py"
+      ]
+    },
+    {
+      "function_id": "risk_assessment",
+      "original_path": "security/risk_assessment.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/risk_assessment.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/preliminary/risk_assessment.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_risk_assessment.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/preliminary/risk_assessment.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/preliminary/risk_assessment.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/preliminary/risk_assessment.py"
+      ]
+    },
+    {
+      "function_id": "security_mfaservice",
+      "original_path": "services/mfaservice.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/services/mfaservice.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/mfa_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/preliminary/mfa_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_mfa_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/mfa_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/preliminary/mfa_service.py"
+      ]
+    },
+    {
+      "function_id": "modern_encryption",
+      "original_path": "security/modern_encryption.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/modern_encryption.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/vpn/encryption/modern_encryption.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/vpn/encryption/modern_encryption.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/vpn/encryption/modern_encryption.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/vpn/encryption/modern_encryption.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/vpn/encryption/modern_encryption.py"
+      ]
+    },
+    {
+      "function_id": "security_usersessionrecord",
+      "original_path": "security/usersessionrecord.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/usersessionrecord.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_activityalert",
+      "original_path": "security/activityalert.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/activityalert.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_whatsappsecuritybot",
+      "original_path": "bots/whatsappsecuritybot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/whatsappsecuritybot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/whatsapp_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/whatsapp_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/whatsapp_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/whatsapp_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/whatsapp_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "security_hashes",
+      "original_path": "security/hashes.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/hashes.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_securityevent",
+      "original_path": "security/securityevent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/securityevent.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_ratelimitviolation",
+      "original_path": "security/ratelimitviolation.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/ratelimitviolation.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "color_scheme",
+      "original_path": "security/matrixaicolorscheme.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/matrixaicolorscheme.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/config/color_scheme.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/config/color_scheme.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/config/color_scheme.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/config/color_scheme.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/config/color_scheme.py"
+      ]
+    },
+    {
+      "function_id": "bot_userpreference",
+      "original_path": "security/userpreference.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/userpreference.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_notificationbot",
+      "original_path": "bots/notificationbot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/notificationbot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/backup_old_components_20250905_235049/notification_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/notification_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/notification_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/notification_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/notification_bot.py"
+      ]
+    },
+    {
+      "function_id": "security_loadbalancingresponse",
+      "original_path": "security/loadbalancingresponse.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/loadbalancingresponse.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_messageanalysisresult",
+      "original_path": "security/messageanalysisresult.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/messageanalysisresult.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_healthcheckresponse",
+      "original_path": "security/healthcheckresponse.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/healthcheckresponse.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_securityfunction",
+      "original_path": "security/securityfunction.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/securityfunction.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/test_security_function.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/test_security_function.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/test_security_function.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/test_security_function.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/security/test_security_function.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_behavioralanalysisagent",
+      "original_path": "ai_agents/behavioralanalysisagent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/ai_agents/behavioralanalysisagent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/behavioral_analysis_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_behavioral_analysis_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/behavioral_analysis_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/behavioral_analysis_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/behavioral_analysis_agent.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_dataprotectionresult",
+      "original_path": "security/dataprotectionresult.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/dataprotectionresult.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_performancemetrics",
+      "original_path": "security/performancemetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/performancemetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "emergency_notification_manager",
+      "original_path": "managers/emergencynotificationmanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/emergencynotificationmanager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/managers/emergency_notification_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/formatting_work/backup_emergency_notification_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/emergency_notification_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/emergency_notification_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/managers/emergency_notification_manager.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_mobilesecuritymetrics",
+      "original_path": "security/mobilesecuritymetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/mobilesecuritymetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_podinfo",
+      "original_path": "security/podinfo.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/podinfo.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_familycontact",
+      "original_path": "security/familycontact.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/familycontact.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_auditfinding",
+      "original_path": "security/auditfinding.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/auditfinding.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_behaviorpattern",
+      "original_path": "security/behaviorpattern.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/behaviorpattern.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_notificationanalytics",
+      "original_path": "security/notificationanalytics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/notificationanalytics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_securitylayer",
+      "original_path": "security/securitylayer.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/securitylayer.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/security_layer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/security_layer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/security_layer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/security_layer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/security/security_layer.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_incident",
+      "original_path": "security/incident.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/incident.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_threatintelligence",
+      "original_path": "security/threatintelligence.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/threatintelligence.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/advanced_threat_intelligence.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/threat_intelligence.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/russian_threat_intelligence.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/reactive/threat_intelligence.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/integrations/russian_threat_intelligence.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_passwordmetrics",
+      "original_path": "security/passwordmetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/passwordmetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "advanced_alerting_system",
+      "original_path": "security/advancedalertingsystem.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/advancedalertingsystem.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/advanced_alerting_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/advanced_alerting_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/advanced_alerting_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/advanced_alerting_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/security/advanced_alerting_system.py"
+      ]
+    },
+    {
+      "function_id": "bot_parentalcontrolbot",
+      "original_path": "bots/parentalcontrolbot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/parentalcontrolbot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/parental_control_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/parental_control_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/parental_control_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/parental_control_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/parental_control_bot.py"
+      ]
+    },
+    {
+      "function_id": "security_apirequest",
+      "original_path": "security/apirequest.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/apirequest.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_tokenbucket",
+      "original_path": "security/tokenbucket.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/tokenbucket.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_apiinterface",
+      "original_path": "security/apiinterface.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/apiinterface.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_cacheentry",
+      "original_path": "security/cacheentry.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/cacheentry.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_securityauditmanager",
+      "original_path": "managers/securityauditmanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/securityauditmanager.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_securityrule",
+      "original_path": "security/securityrule.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/securityrule.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_instagramsecurityconfig",
+      "original_path": "security/instagramsecurityconfig.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/instagramsecurityconfig.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_activitylog",
+      "original_path": "security/activitylog.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/activitylog.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_dataprotectionevent",
+      "original_path": "security/dataprotectionevent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/dataprotectionevent.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "optimizationmetrics",
+      "original_path": "security/optimizationmetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/optimizationmetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_scampattern",
+      "original_path": "security/scampattern.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/scampattern.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_ratelimitrecord",
+      "original_path": "security/ratelimitrecord.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/ratelimitrecord.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_investigation",
+      "original_path": "security/investigation.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/investigation.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_emergencyresponsesystem",
+      "original_path": "security/emergencyresponsesystem.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergencyresponsesystem.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/emergency_response_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/emergency_response_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/emergency_response_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/emergency_response_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/ai_agents/emergency_response_system.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_networkthreat",
+      "original_path": "security/networkthreat.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/networkthreat.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "integrate_all_bots_to_sleep",
+      "original_path": "bots/integrate all bots to sleep.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/integrate all bots to sleep.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_parentalnotification",
+      "original_path": "security/parentalnotification.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/parentalnotification.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_networkstatus",
+      "original_path": "security/networkstatus.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/networkstatus.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_notificationtemplate",
+      "original_path": "security/notificationtemplate.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/notificationtemplate.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_passwordsecurityagent",
+      "original_path": "ai_agents/passwordsecurityagent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/ai_agents/passwordsecurityagent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/password_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_password_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/password_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/password_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/password_security_agent.py"
+      ]
+    },
+    {
+      "function_id": "emergency_ml_analyzer",
+      "original_path": "security/emergencymlanalyzer.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergencymlanalyzer.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/emergency_ml_analyzer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/emergency_ml_analyzer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/emergency_ml_analyzer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/emergency_ml_analyzer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/ai_agents/emergency_ml_analyzer.py"
+      ]
+    },
+    {
+      "function_id": "security_recoveryreport",
+      "original_path": "security/recoveryreport.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/recoveryreport.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_familymember",
+      "original_path": "security/familymember.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/familymember.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_ratelimitresponse",
+      "original_path": "security/ratelimitresponse.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/ratelimitresponse.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_securityanalyticsmanager",
+      "original_path": "managers/securityanalyticsmanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/securityanalyticsmanager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/managers/analytics_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/managers/analytics_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/analytics_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/managers/analytics_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/analytics_manager.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_deepfakeanalysisresult",
+      "original_path": "security/deepfakeanalysisresult.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/deepfakeanalysisresult.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_loadbalancer",
+      "original_path": "security/loadbalancer.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/loadbalancer.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/microservices/load_balancer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/scripts/test_load_balancer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/microservices/load_balancer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/microservices/load_balancer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/microservices/load_balancer.py"
+      ]
+    },
+    {
+      "function_id": "security_elderlyactivity",
+      "original_path": "security/elderlyactivity.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/elderlyactivity.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_device",
+      "original_path": "security/device.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/device.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_securitymetric",
+      "original_path": "security/securitymetric.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/securitymetric.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_kubernetesorchestrator",
+      "original_path": "security/kubernetesorchestrator.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/kubernetesorchestrator.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/orchestration/kubernetes_orchestrator.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_kubernetes_orchestrator.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/orchestration/kubernetes_orchestrator.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/orchestration/kubernetes_orchestrator.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/orchestration/kubernetes_orchestrator.py"
+      ]
+    },
+    {
+      "function_id": "bot_whatsappsecurityconfig",
+      "original_path": "security/whatsappsecurityconfig.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/whatsappsecurityconfig.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_gaming",
+      "original_path": "bots/gamingsecuritybot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/gamingsecuritybot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/gaming_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/gaming_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/gaming_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/gaming_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/gaming_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "security_recoverytask",
+      "original_path": "security/recoverytask.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/recoverytask.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_threatdetection",
+      "original_path": "security/threatdetection.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/threatdetection.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/threat_detection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/active/threat_detection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_threat_detection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/threat_detection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/active/threat_detection.py"
+      ]
+    },
+    {
+      "function_id": "behavioral_analytics_engine_extra",
+      "original_path": "security/behavioralanalyticsengineextra.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/behavioralanalyticsengineextra.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/formatting_work/duplicates/behavioral_analytics_engine_extra.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/behavioral_analytics_engine_extra.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/behavioral_analytics_engine_extra.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/behavioral_analytics_engine_extra.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/ai_agents/behavioral_analytics_engine_extra.py"
+      ]
+    },
+    {
+      "function_id": "security_useridentity",
+      "original_path": "security/useridentity.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/useridentity.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_ratelimitconfig",
+      "original_path": "security/ratelimitconfig.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/ratelimitconfig.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_threatseverity",
+      "original_path": "security/threatseverity.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/threatseverity.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "emergency_pattern_recognizer",
+      "original_path": "security/emergencypatternrecognizer.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergencypatternrecognizer.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_routeconfig",
+      "original_path": "security/routeconfig.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/routeconfig.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_whatsappcontact",
+      "original_path": "security/whatsappcontact.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/whatsappcontact.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_dataprotectionmetrics",
+      "original_path": "security/dataprotectionmetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/dataprotectionmetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "test_cache",
+      "original_path": "security/test cache.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/test cache.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_parentalcontrolconfig",
+      "original_path": "security/parentalcontrolconfig.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/parentalcontrolconfig.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_zerotrustmanager",
+      "original_path": "managers/zerotrustmanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/zerotrustmanager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/zero_trust_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/zero_trust_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/zero_trust_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/zero_trust_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/security/zero_trust_manager.py"
+      ]
+    },
+    {
+      "function_id": "bot_emergencyresponsebot",
+      "original_path": "bots/emergencyresponsebot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/emergencyresponsebot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/emergency_response_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/formatting_work/test_emergency_response_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/emergency_response_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/emergency_response_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/emergency_response_bot.py"
+      ]
+    },
+    {
+      "function_id": "security_familyprofile",
+      "original_path": "security/familyprofile.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/familyprofile.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_instagrampost",
+      "original_path": "security/instagrampost.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/instagrampost.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "check_and_sleep_bots",
+      "original_path": "bots/checkandsleepbots.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/checkandsleepbots.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/managers/check_and_sleep_bots.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/formatting_work/backup_check_and_sleep_bots.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/check_and_sleep_bots.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/check_and_sleep_bots.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/managers/check_and_sleep_bots.py"
+      ]
+    },
+    {
+      "function_id": "security_mobileinterface",
+      "original_path": "security/mobileinterface.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/mobileinterface.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_website",
+      "original_path": "bots/websitenavigationbot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/websitenavigationbot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/website_navigation_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/website_navigation_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/website_navigation_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/website_navigation_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/website_navigation_bot.py"
+      ]
+    },
+    {
+      "function_id": "security_countbasedstrategy",
+      "original_path": "security/countbasedstrategy.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/countbasedstrategy.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_pbkdf2hmac",
+      "original_path": "security/pbkdf2hmac.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/pbkdf2hmac.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_financialprotectionhub",
+      "original_path": "security/financialprotectionhub.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/financialprotectionhub.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/financial_protection_hub.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/financial_protection_hub.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/financial_protection_hub.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/financial_protection_hub.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/ai_agents/financial_protection_hub.py"
+      ]
+    },
+    {
+      "function_id": "security_securitypolicymanager",
+      "original_path": "managers/securitypolicymanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/securitypolicymanager.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_circuitbreakerresponse",
+      "original_path": "security/circuitbreakerresponse.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/circuitbreakerresponse.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_networksecurityagent",
+      "original_path": "ai_agents/networksecurityagent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/ai_agents/networksecurityagent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/network_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_network_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/network_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/network_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/network_security_agent.py"
+      ]
+    },
+    {
+      "function_id": "security_securitypolicy",
+      "original_path": "security/securitypolicy.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/securitypolicy.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/security_policy.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/security_policy.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/security_policy.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/security_policy.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/security/security_policy.py"
+      ]
+    },
+    {
+      "function_id": "security_networkalert",
+      "original_path": "security/networkalert.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/networkalert.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_performancemetric",
+      "original_path": "security/performancemetric.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/performancemetric.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_metricdata",
+      "original_path": "security/metricdata.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/metricdata.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_networkdevice",
+      "original_path": "security/networkdevice.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/networkdevice.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "enhanced_alerting_system",
+      "original_path": "security/enhancedalertingsystem.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/enhancedalertingsystem.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_healthcheckinterface",
+      "original_path": "security/healthcheckinterface.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/healthcheckinterface.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_contentanalysisresult",
+      "original_path": "security/contentanalysisresult.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/contentanalysisresult.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "emergency_performance_analyzer",
+      "original_path": "security/emergencyperformanceanalyzer.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergencyperformanceanalyzer.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/performance_analyzer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/emergency_performance_analyzer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/emergency_performance_analyzer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/emergency_performance_analyzer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/emergency_performance_analyzer.py"
+      ]
+    },
+    {
+      "function_id": "security_parentalcontrols",
+      "original_path": "security/parentalcontrols.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/parentalcontrols.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/family/parental_controls.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/family/advanced_parental_controls.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_parental_controls.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/family/parental_controls.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/family/advanced_parental_controls.py"
+      ]
+    },
+    {
+      "function_id": "security_devicetype",
+      "original_path": "security/devicetype.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/devicetype.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_incidentresponsemanager",
+      "original_path": "managers/incidentresponsemanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/incidentresponsemanager.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_networkmetrics",
+      "original_path": "security/networkmetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/networkmetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_rediscachemanager",
+      "original_path": "managers/rediscachemanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/rediscachemanager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/microservices/redis_cache_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/components/cache_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_redis_cache_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/microservices/redis_cache_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/microservices/redis_cache_manager.py"
+      ]
+    },
+    {
+      "function_id": "security_serviceresponse",
+      "original_path": "services/serviceresponse.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/services/serviceresponse.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_notification",
+      "original_path": "security/notification.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/notification.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_antifraudmasterai",
+      "original_path": "security/antifraudmasterai.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/antifraudmasterai.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/anti_fraud_master_ai.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/scripts/integrate_anti_fraud_master_ai.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/anti_fraud_master_ai.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/anti_fraud_master_ai.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/anti_fraud_master_ai.py"
+      ]
+    },
+    {
+      "function_id": "bot_notificationrequest",
+      "original_path": "security/notificationrequest.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/notificationrequest.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_telegramchat",
+      "original_path": "security/telegramchat.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/telegramchat.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_accesscontrol",
+      "original_path": "security/accesscontrol.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/accesscontrol.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/access_control.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/access_control.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/access_control.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/access_control.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/security/access_control.py"
+      ]
+    },
+    {
+      "function_id": "security_scalingdecision",
+      "original_path": "security/scalingdecision.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/scalingdecision.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_scalingrule",
+      "original_path": "security/scalingrule.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/scalingrule.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_forensicsservice",
+      "original_path": "services/forensicsservice.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/services/forensicsservice.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/reactive/forensics_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_forensics_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/reactive/forensics_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/reactive/forensics_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/reactive/forensics_service.py"
+      ]
+    },
+    {
+      "function_id": "bot_mobilenavigation",
+      "original_path": "bots/mobilenavigationbot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/mobilenavigationbot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/mobile_navigation_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/mobile_navigation_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/mobile_navigation_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/mobile_navigation_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/mobile_navigation_bot.py"
+      ]
+    },
+    {
+      "function_id": "security_metricscollectorinterface",
+      "original_path": "security/metricscollectorinterface.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/metricscollectorinterface.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_analytics",
+      "original_path": "bots/analyticsbot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/analyticsbot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/analytics_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/analytics_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/analytics_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/analytics_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/analytics_bot.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_compliancemetrics",
+      "original_path": "security/compliancemetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/compliancemetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_threatstatus",
+      "original_path": "security/threatstatus.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/threatstatus.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_accesscontrolmanager",
+      "original_path": "managers/accesscontrolmanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/accesscontrolmanager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/access_control_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/access_control_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/access_control_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/access_control_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/security/access_control_manager.py"
+      ]
+    },
+    {
+      "function_id": "data_protection_manager",
+      "original_path": "managers/dataprotectionmanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/dataprotectionmanager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/data_protection_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/compliance/russian_data_protection_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/data_protection_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/compliance/russian_data_protection_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/data_protection_manager.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_deepfakeprotectionsystem",
+      "original_path": "security/deepfakeprotectionsystem.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/deepfakeprotectionsystem.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/deepfake_protection_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/deepfake_protection_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/deepfake_protection_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/deepfake_protection_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/ai_agents/deepfake_protection_system.py"
+      ]
+    },
+    {
+      "function_id": "security_devicesecurity",
+      "original_path": "security/devicesecurity.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/devicesecurity.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/formatting_work/duplicates/device_security.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/active/device_security.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_device_security.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/device_security.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/active/device_security.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_mobilesecurityagent",
+      "original_path": "ai_agents/mobilesecurityagent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/ai_agents/mobilesecurityagent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/mobile_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_mobile_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/mobile_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/mobile_security_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/mobile_security_agent.py"
+      ]
+    },
+    {
+      "function_id": "security_interfacerequest",
+      "original_path": "security/interfacerequest.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/interfacerequest.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_loadbalancingalgorithminterface",
+      "original_path": "security/loadbalancingalgorithminterface.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/loadbalancingalgorithminterface.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_actiontype",
+      "original_path": "security/actiontype.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/actiontype.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_user",
+      "original_path": "security/user.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/user.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_behaviormetrics",
+      "original_path": "security/behaviormetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/behaviormetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_optimizationrecommendation",
+      "original_path": "security/optimizationrecommendation.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/optimizationrecommendation.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_telegramsecurityconfig",
+      "original_path": "security/telegramsecurityconfig.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/telegramsecurityconfig.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_behaviorevent",
+      "original_path": "security/behaviorevent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/behaviorevent.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_interfaceeventrecord",
+      "original_path": "security/interfaceeventrecord.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/interfaceeventrecord.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "emergency_cluster_analyzer",
+      "original_path": "security/emergencyclusteranalyzer.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergencyclusteranalyzer.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_phishingprotection",
+      "original_path": "ai_agents/phishingprotectionagent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/ai_agents/phishingprotectionagent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/phishing_protection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_phishing_protection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/phishing_protection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/phishing_protection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/phishing_protection_agent.py"
+      ]
+    },
+    {
+      "function_id": "security_alertlevel",
+      "original_path": "security/alertlevel.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/alertlevel.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_loadbalancingrequest",
+      "original_path": "security/loadbalancingrequest.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/loadbalancingrequest.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_mobilethreat",
+      "original_path": "security/mobilethreat.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/mobilethreat.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_apilog",
+      "original_path": "security/apilog.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/apilog.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_notificationresponse",
+      "original_path": "security/notificationresponse.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/notificationresponse.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_intrusionattempt",
+      "original_path": "security/intrusionattempt.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/intrusionattempt.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_devicesecuritymetrics",
+      "original_path": "security/devicesecuritymetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/devicesecuritymetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_circuitbreakerrecord",
+      "original_path": "security/circuitbreakerrecord.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/circuitbreakerrecord.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_recoveryplan",
+      "original_path": "security/recoveryplan.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/recoveryplan.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_accessrequest",
+      "original_path": "security/accessrequest.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/accessrequest.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_safefunctionmanager",
+      "original_path": "managers/safefunctionmanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/safefunctionmanager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/enhanced_safe_function_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/safe_function_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/formatting_work/enhanced_safe_function_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/enhanced_safe_function_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/safe_function_manager.py"
+      ]
+    },
+    {
+      "function_id": "all_bots_sleep_manager",
+      "original_path": "bots/allbotssleepmanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/allbotssleepmanager.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_interfaceconfig",
+      "original_path": "security/interfaceconfig.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/interfaceconfig.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_networkmetric",
+      "original_path": "security/networkmetric.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/networkmetric.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_voiceinterface",
+      "original_path": "security/voiceinterface.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/voiceinterface.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_fixedwindow",
+      "original_path": "security/fixedwindow.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/fixedwindow.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_malwaredetection",
+      "original_path": "ai_agents/malwaredetectionagent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/ai_agents/malwaredetectionagent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/malware_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/malware_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/malware_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/malware_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/ai_agents/malware_detection_agent.py"
+      ]
+    },
+    {
+      "function_id": "security_leastconnectionsalgorithm",
+      "original_path": "security/leastconnectionsalgorithm.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/leastconnectionsalgorithm.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_browser",
+      "original_path": "bots/browsersecuritybot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/browsersecuritybot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/browser_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/browser_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/browser_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/browser_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/browser_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "security_circuitbreaker",
+      "original_path": "security/circuitbreaker.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/circuitbreaker.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/circuit_breaker.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/formatting_work/duplicates/circuit_breaker.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/scripts/integrate_circuit_breaker.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/circuit_breaker.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/microservices/circuit_breaker.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_mobileapp",
+      "original_path": "security/mobileapp.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/mobileapp.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_loadbalancingmetrics",
+      "original_path": "security/loadbalancingmetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/loadbalancingmetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_circuitbreakerevent",
+      "original_path": "security/circuitbreakerevent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/circuitbreakerevent.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "test_function",
+      "original_path": "security/test function.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/test function.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_devicestatus",
+      "original_path": "security/devicestatus.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/devicestatus.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_instagramcomment",
+      "original_path": "security/instagramcomment.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/instagramcomment.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_instagramuser",
+      "original_path": "security/instagramuser.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/instagramuser.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_compliancerequirement",
+      "original_path": "security/compliancerequirement.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/compliancerequirement.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_malwareprotection",
+      "original_path": "security/malwareprotection.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/malwareprotection.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/active/malware_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_malware_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/malware_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/active/malware_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/malware_protection.py"
+      ]
+    },
+    {
+      "function_id": "security_scalingmetrics",
+      "original_path": "security/scalingmetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/scalingmetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_orchestrationmetrics",
+      "original_path": "security/orchestrationmetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/orchestrationmetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_timebasedstrategy",
+      "original_path": "security/timebasedstrategy.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/timebasedstrategy.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_securityalert",
+      "original_path": "security/securityalert.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/securityalert.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_incidentresponseagent",
+      "original_path": "ai_agents/incidentresponseagent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/ai_agents/incidentresponseagent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/incident_response_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_incident_response_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/incident_response_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/incident_response_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/incident_response_agent.py"
+      ]
+    },
+    {
+      "function_id": "security_securityaudit",
+      "original_path": "security/securityaudit.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/securityaudit.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/security_audit.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/scripts/comprehensive_security_audit.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/security_audit.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/security_audit.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/security_audit.py"
+      ]
+    },
+    {
+      "function_id": "universal_privacy_manager_part2",
+      "original_path": "managers/universal privacy manager part 2.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/universal privacy manager part 2.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_detectionmetrics",
+      "original_path": "security/detectionmetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/detectionmetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_networkmonitoring",
+      "original_path": "security/networkmonitoring.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/networkmonitoring.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/formatting_work/duplicates/network_monitoring.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/active/network_monitoring.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_network_monitoring.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/network_monitoring.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/active/network_monitoring.py"
+      ]
+    },
+    {
+      "function_id": "security_recoveryservice",
+      "original_path": "services/recoveryservice.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/services/recoveryservice.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/reactive/recovery_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_recovery_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/reactive/recovery_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/reactive/recovery_service.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/reactive/recovery_service.py"
+      ]
+    },
+    {
+      "function_id": "security_ratelimitrequest",
+      "original_path": "security/ratelimitrequest.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/ratelimitrequest.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_threatdetectionagent",
+      "original_path": "ai_agents/threatdetectionagent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/ai_agents/threatdetectionagent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/threat_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_threat_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/threat_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/threat_detection_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/threat_detection_agent.py"
+      ]
+    },
+    {
+      "function_id": "security_devicefingerprint",
+      "original_path": "security/devicefingerprint.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/devicefingerprint.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_securitylevel",
+      "original_path": "security/securitylevel.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/securitylevel.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_authenticationinterface",
+      "original_path": "security/authenticationinterface.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/authenticationinterface.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_networkpacket",
+      "original_path": "security/networkpacket.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/networkpacket.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_telegrammessage",
+      "original_path": "security/telegrammessage.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/telegrammessage.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_incidentresponsemetrics",
+      "original_path": "security/incidentresponsemetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/incidentresponsemetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "smart_notification_manager_main",
+      "original_path": "managers/smartnotificationmanagermain.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/smartnotificationmanagermain.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/smart_notification_manager_main.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/smart_notification_manager_main.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/ai_agents/smart_notification_manager_main.py"
+      ]
+    },
+    {
+      "function_id": "security_circuitbreakerrequest",
+      "original_path": "security/circuitbreakerrequest.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/circuitbreakerrequest.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_intrusionprevention",
+      "original_path": "security/intrusionprevention.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/intrusionprevention.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/formatting_work/duplicates/intrusion_prevention.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/active/intrusion_prevention.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_intrusion_prevention.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/intrusion_prevention.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/active/intrusion_prevention.py"
+      ]
+    },
+    {
+      "function_id": "security_optimizationresult",
+      "original_path": "security/optimizationresult.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/optimizationresult.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_performanceoptimizer",
+      "original_path": "security/performanceoptimizer.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/performanceoptimizer.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/performance_optimizer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/performance_optimizer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/components/performance_optimizer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/reactive/performance_optimizer.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_performance_optimizer.py"
+      ]
+    },
+    {
+      "function_id": "network_protection_manager",
+      "original_path": "managers/networkprotectionmanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/networkprotectionmanager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/system/network_protection_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/system/network_protection_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/system/network_protection_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/system/network_protection_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/system/network_protection_manager.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_voiceanalysisengine",
+      "original_path": "security/voiceanalysisengine.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/voiceanalysisengine.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/voice_analysis_engine.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/voice_analysis_engine.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/voice_analysis_engine.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/voice_analysis_engine.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/ai_agents/voice_analysis_engine.py"
+      ]
+    },
+    {
+      "function_id": "security_threatlevel",
+      "original_path": "security/threatlevel.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/threatlevel.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_threatintelligenceagent",
+      "original_path": "ai_agents/threatintelligenceagent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/ai_agents/threatintelligenceagent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/threat_intelligence_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_threat_intelligence_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/threat_intelligence_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/threat_intelligence_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/threat_intelligence_agent.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_threatintelligencemetrics",
+      "original_path": "security/threatintelligencemetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/threatintelligencemetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_forensicsreport",
+      "original_path": "security/forensicsreport.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/forensicsreport.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_slidingwindow",
+      "original_path": "security/slidingwindow.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/slidingwindow.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_loadbalancingsession",
+      "original_path": "security/loadbalancingsession.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/loadbalancingsession.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_emergencybotconfig",
+      "original_path": "bots/emergencybotconfig.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/emergencybotconfig.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_threatreport",
+      "original_path": "security/threatreport.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/threatreport.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_errorratebasedstrategy",
+      "original_path": "security/errorratebasedstrategy.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/errorratebasedstrategy.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_evidence",
+      "original_path": "security/evidence.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/evidence.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_serviceinfo",
+      "original_path": "services/serviceinfo.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/services/serviceinfo.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_roundrobinalgorithm",
+      "original_path": "security/roundrobinalgorithm.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/roundrobinalgorithm.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_telegramsecuritybot",
+      "original_path": "bots/telegramsecuritybot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/telegramsecuritybot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/telegram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/telegram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/telegram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/telegram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/telegram_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_mobiledevice",
+      "original_path": "security/mobiledevice.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/mobiledevice.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_emergencyincident",
+      "original_path": "security/emergencyincident.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergencyincident.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "emergency_anomaly_detector",
+      "original_path": "security/emergencyanomalydetector.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergencyanomalydetector.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_nodeinfo",
+      "original_path": "security/nodeinfo.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/nodeinfo.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_behavioranalysis",
+      "original_path": "security/behavioranalysis.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/behavioranalysis.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_contentfilter",
+      "original_path": "security/contentfilter.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/contentfilter.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_telegramuser",
+      "original_path": "security/telegramuser.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/telegramuser.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_networkanalysis",
+      "original_path": "security/networkanalysis.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/networkanalysis.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_device",
+      "original_path": "bots/devicesecuritybot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/devicesecuritybot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/device_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/device_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/device_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/device_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/device_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_threatindicator",
+      "original_path": "security/threatindicator.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/threatindicator.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_apiroute",
+      "original_path": "security/apiroute.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/apiroute.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_serviceendpoint",
+      "original_path": "services/serviceendpoint.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/services/serviceendpoint.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "test_auto_save",
+      "original_path": "security/test auto save.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/test auto save.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_familyprofilemanager",
+      "original_path": "managers/familyprofilemanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/familyprofilemanager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/formatting_work/enhanced_family_profile_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/formatting_work/duplicates/family_profile_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_family_profile_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/family/family_profile_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/old_files_removal_20250926_165806/family_profile_manager.py"
+      ]
+    },
+    {
+      "function_id": "security_controlrule",
+      "original_path": "security/controlrule.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/controlrule.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_maxmessenger",
+      "original_path": "bots/maxmessengersecuritybot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/maxmessengersecuritybot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/max_messenger_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/max_messenger_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/max_messenger_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/max_messenger_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/max_messenger_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "incognito_protection_bot",
+      "original_path": "bots/incognitoprotectionbot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/incognitoprotectionbot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/incognito_protection_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/incognito_protection_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/incognito_protection_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/incognito_protection_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/incognito_protection_bot.py"
+      ]
+    },
+    {
+      "function_id": "bot_emergencyresponse",
+      "original_path": "security/emergencyresponse.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergencyresponse.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_circuitbreakerconfig",
+      "original_path": "security/circuitbreakerconfig.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/circuitbreakerconfig.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_emergencycontactinfo",
+      "original_path": "security/emergencycontactinfo.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergencycontactinfo.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_interfacerecord",
+      "original_path": "security/interfacerecord.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/interfacerecord.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_instagramsecuritybot",
+      "original_path": "bots/instagramsecuritybot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/instagramsecuritybot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/instagram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/instagram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/instagram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/instagram_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/instagram_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_emergencyalert",
+      "original_path": "security/emergencyalert.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergencyalert.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_childprotection",
+      "original_path": "security/childprotection.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/childprotection.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/family/child_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_child_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/family/child_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/family/child_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/family/child_protection.py"
+      ]
+    },
+    {
+      "function_id": "security_policyrule",
+      "original_path": "security/policyrule.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/policyrule.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_securitythreat",
+      "original_path": "security/securitythreat.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/securitythreat.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_cachemetrics",
+      "original_path": "security/cachemetrics.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/cachemetrics.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_childprofile",
+      "original_path": "security/childprofile.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/childprofile.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_cloud",
+      "original_path": "bots/cloudstoragesecuritybot.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/bots/cloudstoragesecuritybot.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/bots/cloud_storage_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/bots/cloud_storage_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/bots/cloud_storage_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/bots/cloud_storage_security_bot.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/bots/cloud_storage_security_bot.py"
+      ]
+    },
+    {
+      "function_id": "security_servicerequest",
+      "original_path": "services/servicerequest.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/services/servicerequest.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_ratelimiter",
+      "original_path": "security/ratelimiter.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/ratelimiter.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/microservices/rate_limiter.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/vpn/protection/rate_limiter.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/scripts/force_integrate_ratelimiter.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/microservices/rate_limiter.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/microservices/rate_limiter.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_passwordpolicy",
+      "original_path": "security/passwordpolicy.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/passwordpolicy.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_webinterface",
+      "original_path": "security/webinterface.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/webinterface.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/vpn/web/vpn_web_interface.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/family/parent_child_elderly_web_interface.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/vpn/web/vpn_web_interface.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/vpn/web/vpn_web_interface.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/vpn/web/vpn_web_interface.py"
+      ]
+    },
+    {
+      "function_id": "ai_agent_financialriskassessment",
+      "original_path": "security/financialriskassessment.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/financialriskassessment.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/preliminary/risk_assessment.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/preliminary/risk_assessment.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/preliminary/risk_assessment.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/preliminary/risk_assessment.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/preliminary/risk_assessment.py"
+      ]
+    },
+    {
+      "function_id": "security_apikey",
+      "original_path": "security/apikey.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/apikey.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_elderlyprotection",
+      "original_path": "security/elderlyprotection.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/elderlyprotection.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/family/elderly_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_elderly_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/family/elderly_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/family/elderly_protection.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/family/elderly_protection.py"
+      ]
+    },
+    {
+      "function_id": "security_interfaceresponse",
+      "original_path": "security/interfaceresponse.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/interfaceresponse.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "performanceoptimization_agent",
+      "original_path": "ai_agents/performanceoptimizationagent.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/ai_agents/performanceoptimizationagent.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/performance_optimization_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/tests/test_performance_optimization_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/performance_optimization_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/performance_optimization_agent.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/performance_optimization_agent.py"
+      ]
+    },
+    {
+      "function_id": "security_userinterfacemanager",
+      "original_path": "managers/userinterfacemanager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/managers/userinterfacemanager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/microservices/user_interface_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/microservices/user_interface_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/microservices/user_interface_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/microservices/user_interface_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/microservices/user_interface_manager.py"
+      ]
+    },
+    {
+      "function_id": "security_networkflow",
+      "original_path": "security/networkflow.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/networkflow.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_apiresponse",
+      "original_path": "security/apiresponse.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/apiresponse.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_emergencycontact",
+      "original_path": "security/emergencycontact.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/emergencycontact.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_threattype",
+      "original_path": "security/threattype.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/threattype.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "ai_agent_voiceanalysisresult",
+      "original_path": "security/voiceanalysisresult.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/voiceanalysisresult.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "bot_whatsappmessage",
+      "original_path": "security/whatsappmessage.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/whatsappmessage.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "security_childactivitysummary",
+      "original_path": "security/childactivitysummary.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/childactivitysummary.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "emergency_contact_manager",
+      "original_path": "security/ai_agents/emergency_contact_manager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/emergency_contact_manager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/managers/emergency_contact_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/formatting_work/backup_emergency_contact_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/emergency_contact_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/emergency_contact_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/managers/emergency_contact_manager.py"
+      ]
+    },
+    {
+      "function_id": "parent_control_panel",
+      "original_path": "security/parent_control_panel.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/parent_control_panel.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/parent_control_panel.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/parent_control_panel.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/parent_control_panel.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/parent_control_panel.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_100946/ai_agents/parent_control_panel.py"
+      ]
+    },
+    {
+      "function_id": "voice_control_manager",
+      "original_path": "security/voice_control_manager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/voice_control_manager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/managers/voice_control_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/formatting_work/architecture_fix/backup_voice_control_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/voice_control_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/voice_control_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/managers/voice_control_manager.py"
+      ]
+    },
+    {
+      "function_id": "function_77",
+      "original_path": "security/ai_agents/alert_manager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/alert_manager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/managers/alert_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/formatting_work/backup_alert_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/alert_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/alert_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/managers/alert_manager.py"
+      ]
+    },
+    {
+      "function_id": "emergency_event_manager",
+      "original_path": "security/ai_agents/emergency_event_manager.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/emergency_event_manager.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/managers/emergency_event_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/formatting_work/backup_emergency_event_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/ai_agents/emergency_event_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/ai_agents/emergency_event_manager.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/managers/emergency_event_manager.py"
+      ]
+    },
+    {
+      "function_id": "robocall_filtering",
+      "original_path": "security/robocall_filtering.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/robocall_filtering.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "caller_id_protection",
+      "original_path": "security/caller_id_protection.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/caller_id_protection.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "email_breach_alerts",
+      "original_path": "security/email_breach_alerts.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/email_breach_alerts.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "virtual_card_generation",
+      "original_path": "security/virtual_card_generation.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/virtual_card_generation.py",
+      "similar_files": []
+    },
+    {
+      "function_id": "auto_learning_system",
+      "original_path": "security/auto_learning_system.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/auto_learning_system.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/auto_learning_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/auto_learning_system.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backup_sys_path_removal/ai_agents/auto_learning_system.py"
+      ]
+    },
+    {
+      "function_id": "enhanced_data_collector",
+      "original_path": "security/enhanced_data_collector.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/enhanced_data_collector.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/enhanced_data_collector.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/enhanced_data_collector.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backup_sys_path_removal/ai_agents/enhanced_data_collector.py"
+      ]
+    },
+    {
+      "function_id": "fraud_detection_api",
+      "original_path": "security/fraud_detection_api.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/fraud_detection_api.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/fraud_detection_api.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/fraud_detection_api.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backup_sys_path_removal/ai_agents/fraud_detection_api.py"
+      ]
+    },
+    {
+      "function_id": "improved_ml_models",
+      "original_path": "security/improved_ml_models.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/improved_ml_models.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/improved_ml_models.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/ALADDIN_SECURITY_FULL_BACKUP_20250928_164750/security/ai_agents/improved_ml_models.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backup_sys_path_removal/ai_agents/improved_ml_models.py"
+      ]
+    },
+    {
+      "function_id": "active_network_monitoring",
+      "original_path": "security/active_network_monitoring.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/active_network_monitoring.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/security/formatting_work/duplicates/network_monitoring.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/security/active/network_monitoring.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/network_monitoring.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/fixed_registry_merge_backup_20250918_102437/security/active/network_monitoring.py",
+        "/Users/sergejhlystov/ALADDIN_NEW/backups/registry_merge_backup_20250918_101310/security/network_monitoring.py"
+      ]
+    },
+    {
+      "function_id": "emergency_security_utils_enhanced",
+      "original_path": "security/ai_agents/emergency_security_utils_enhanced.py",
+      "normalized_path": "/Users/sergejhlystov/ALADDIN_NEW/security/ai_agents/emergency_security_utils_enhanced.py",
+      "similar_files": [
+        "/Users/sergejhlystov/ALADDIN_NEW/formatting_work/emergency_security_utils_enhanced.py"
+      ]
+    }
+  ],
+  "type_statistics": {
+    "ai_agent": {
+      "total": 61,
+      "missing": 26,
+      "existing": 34
+    },
+    "utility": {
+      "total": 3,
+      "missing": 0,
+      "existing": 3
+    },
+    "security_bot": {
+      "total": 10,
+      "missing": 8,
+      "existing": 2
+    },
+    "security_system": {
+      "total": 10,
+      "missing": 2,
+      "existing": 8
+    },
+    "preliminary": {
+      "total": 1,
+      "missing": 1,
+      "existing": 0
+    },
+    "family_component": {
+      "total": 3,
+      "missing": 2,
+      "existing": 1
+    },
+    "security": {
+      "total": 25,
+      "missing": 17,
+      "existing": 6
+    },
+    "validation": {
+      "total": 1,
+      "missing": 1,
+      "existing": 0
+    },
+    "monitoring": {
+      "total": 4,
+      "missing": 1,
+      "existing": 3
+    },
+    "reporting": {
+      "total": 1,
+      "missing": 1,
+      "existing": 0
+    },
+    "management": {
+      "total": 1,
+      "missing": 1,
+      "existing": 0
+    },
+    "service": {
+      "total": 7,
+      "missing": 7,
+      "existing": 0
+    },
+    "monitoring_manager": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "unknown": {
+      "total": 180,
+      "missing": 178,
+      "existing": 2
+    },
+    "bot": {
+      "total": 19,
+      "missing": 19,
+      "existing": 0
+    },
+    "manager": {
+      "total": 27,
+      "missing": 15,
+      "existing": 12
+    },
+    "microservice": {
+      "total": 4,
+      "missing": 0,
+      "existing": 4
+    },
+    "scaling_engine": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "core_system": {
+      "total": 2,
+      "missing": 0,
+      "existing": 2
+    },
+    "integration": {
+      "total": 17,
+      "missing": 0,
+      "existing": 14
+    },
+    "config": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "security_manager": {
+      "total": 3,
+      "missing": 0,
+      "existing": 3
+    },
+    "data_collector": {
+      "total": 3,
+      "missing": 1,
+      "existing": 2
+    },
+    "api_server": {
+      "total": 1,
+      "missing": 1,
+      "existing": 0
+    },
+    "ml_models": {
+      "total": 1,
+      "missing": 1,
+      "existing": 0
+    },
+    "core": {
+      "total": 6,
+      "missing": 0,
+      "existing": 1
+    },
+    "security_service": {
+      "total": 2,
+      "missing": 1,
+      "existing": 1
+    },
+    "scanner": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "engine": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "integration_layer": {
+      "total": 2,
+      "missing": 0,
+      "existing": 2
+    },
+    "api_interface": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "component": {
+      "total": 2,
+      "missing": 0,
+      "existing": 2
+    },
+    "integrator": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "base_class": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "performance_component": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "bot_component": {
+      "total": 3,
+      "missing": 0,
+      "existing": 3
+    },
+    "core_service": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "security_module": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "compliance_module": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "data_manager": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "family_manager": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "family_security": {
+      "total": 1,
+      "missing": 0,
+      "existing": 0
+    },
+    "family_notifications": {
+      "total": 1,
+      "missing": 0,
+      "existing": 0
+    },
+    "family_testing": {
+      "total": 1,
+      "missing": 0,
+      "existing": 0
+    },
+    "compliance": {
+      "total": 5,
+      "missing": 0,
+      "existing": 3
+    },
+    "ai_agents": {
+      "total": 6,
+      "missing": 0,
+      "existing": 6
+    },
+    "family": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "bots": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "microservices": {
+      "total": 3,
+      "missing": 0,
+      "existing": 3
+    },
+    "active": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "managers": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "threat_intelligence": {
+      "total": 2,
+      "missing": 0,
+      "existing": 0
+    },
+    "analytics": {
+      "total": 2,
+      "missing": 0,
+      "existing": 1
+    },
+    "audit": {
+      "total": 2,
+      "missing": 0,
+      "existing": 0
+    },
+    "dashboard": {
+      "total": 2,
+      "missing": 0,
+      "existing": 0
+    },
+    "testing": {
+      "total": 1,
+      "missing": 0,
+      "existing": 0
+    },
+    "vpn": {
+      "total": 5,
+      "missing": 0,
+      "existing": 5
+    },
+    "orchestration": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "ci_cd": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "protocol": {
+      "total": 3,
+      "missing": 0,
+      "existing": 3
+    },
+    "api": {
+      "total": 2,
+      "missing": 0,
+      "existing": 2
+    },
+    "feature": {
+      "total": 3,
+      "missing": 0,
+      "existing": 3
+    },
+    "performance": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "ui": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "validator": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "ml_analytics": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "factory": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "web_interface": {
+      "total": 4,
+      "missing": 0,
+      "existing": 4
+    },
+    "data_models": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "package_init": {
+      "total": 4,
+      "missing": 0,
+      "existing": 4
+    },
+    "configuration": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "vpn_protocol": {
+      "total": 4,
+      "missing": 0,
+      "existing": 4
+    },
+    "security_expansion": {
+      "total": 3,
+      "missing": 0,
+      "existing": 3
+    },
+    "threat_intelligence_expansion": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "family_ai_agent": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "expansion": {
+      "total": 2,
+      "missing": 0,
+      "existing": 2
+    },
+    "creation_script": {
+      "total": 6,
+      "missing": 0,
+      "existing": 6
+    },
+    "test_system": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    },
+    "integration_system": {
+      "total": 1,
+      "missing": 0,
+      "existing": 1
+    }
+  }
+}

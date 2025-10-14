@@ -1,0 +1,77 @@
+{
+  "cleanup_date": "2025-09-26T15:24:42.130934",
+  "removed_functions": [
+    {
+      "function_id": "family_communication_hub",
+      "name": "FamilyCommunicationHub",
+      "description": "Семейный коммуникационный центр с AI-анализом и безопасностью",
+      "function_type": "ai_agent",
+      "security_level": "high",
+      "status": "active",
+      "created_at": "2025-09-20T09:53:42.000000",
+      "is_critical": true,
+      "auto_enable": false,
+      "wake_time": "2025-09-20T09:53:42.000000",
+      "emergency_wake_up": true,
+      "quality_grade": "A+",
+      "test_coverage": "100%",
+      "features": [
+        "AI анализ сообщений",
+        "Семейная коммуникация",
+        "Анализ тональности",
+        "Определение срочности",
+        "Анализ эмоций",
+        "Статистика семьи",
+        "Безопасная передача"
+      ],
+      "dependencies": [
+        "asyncio",
+        "json",
+        "logging",
+        "re",
+        "uuid",
+        "dataclasses",
+        "datetime",
+        "enum",
+        "typing"
+      ],
+      "file_path": "security/ai_agents/family_communication_hub.py",
+      "class_name": "FamilyCommunicationHub",
+      "global_instance": "family_communication_hub_instance",
+      "methods": [
+        "add_family_member",
+        "send_message",
+        "get_family_statistics",
+        "start",
+        "stop"
+      ],
+      "quality_metrics": {
+        "flake8_errors": 0,
+        "test_coverage": "100%",
+        "pep8_compliant": true
+      },
+      "quality_score": "B+",
+      "lines_of_code": 413,
+      "file_size_kb": 13.289,
+      "flake8_errors": 0,
+      "last_updated": "2025-09-21T01:37:46.397124",
+      "analysis_date": "2025-09-21T01:36:36.860170",
+      "removed_at": "2025-09-26T15:24:42.102171",
+      "removal_reason": "Заменена на enhanced версию"
+    }
+  ],
+  "removed_files": [
+    "security/ai_agents/family_communication_hub.py"
+  ],
+  "backup_files": [
+    "data/sfm/function_registry_backup_before_cleanup_20250926_152442.json",
+    "formatting_work/family_integration_analysis/removed_family_communication_hub.py"
+  ],
+  "remaining_family_functions": [
+    "family_profile_manager",
+    "family_profile_manager_enhanced",
+    "family_communication_hub_a_plus",
+    "family_integration_layer"
+  ],
+  "total_functions_after_cleanup": 356
+}

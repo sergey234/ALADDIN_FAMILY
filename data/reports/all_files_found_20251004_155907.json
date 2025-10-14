@@ -1,0 +1,990 @@
+{
+  "timestamp": "2025-10-04T15:59:07.653683",
+  "base_directory": "/Users/sergejhlystov/ALADDIN_NEW",
+  "total_files": 61,
+  "categories": {
+    "ROOT": {
+      "count": 61,
+      "files": [
+        {
+          "path": "external_integrations.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/external_integrations.py",
+          "name": "external_integrations.py",
+          "category": "ROOT",
+          "size": 34489,
+          "modified": "2025-10-02T00:27:22.678166"
+        },
+        {
+          "path": "fix_sfm_manual.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_sfm_manual.py",
+          "name": "fix_sfm_manual.py",
+          "category": "ROOT",
+          "size": 6113,
+          "modified": "2025-09-20T08:50:22.490946"
+        },
+        {
+          "path": "threat_intelligence_system.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/threat_intelligence_system.py",
+          "name": "threat_intelligence_system.py",
+          "category": "ROOT",
+          "size": 25239,
+          "modified": "2025-10-02T00:27:23.271943"
+        },
+        {
+          "path": "dashboard_server_optimized.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/dashboard_server_optimized.py",
+          "name": "dashboard_server_optimized.py",
+          "category": "ROOT",
+          "size": 4835,
+          "modified": "2025-10-04T14:00:16.350142"
+        },
+        {
+          "path": "audit_scheduler.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/audit_scheduler.py",
+          "name": "audit_scheduler.py",
+          "category": "ROOT",
+          "size": 17224,
+          "modified": "2025-10-02T00:27:25.649054"
+        },
+        {
+          "path": "monitoring_api_server.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/monitoring_api_server.py",
+          "name": "monitoring_api_server.py",
+          "category": "ROOT",
+          "size": 10684,
+          "modified": "2025-09-11T03:04:49.271649"
+        },
+        {
+          "path": "fix_invalid_sfm_functions.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_invalid_sfm_functions.py",
+          "name": "fix_invalid_sfm_functions.py",
+          "category": "ROOT",
+          "size": 4214,
+          "modified": "2025-10-02T17:41:24.369987"
+        },
+        {
+          "path": "register_vpn_functions_in_json.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/register_vpn_functions_in_json.py",
+          "name": "register_vpn_functions_in_json.py",
+          "category": "ROOT",
+          "size": 10382,
+          "modified": "2025-10-02T17:36:51.400952"
+        },
+        {
+          "path": "update_logging.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/update_logging.py",
+          "name": "update_logging.py",
+          "category": "ROOT",
+          "size": 1438,
+          "modified": "2025-09-17T01:14:53.238457"
+        },
+        {
+          "path": "demo_auto_learning.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/demo_auto_learning.py",
+          "name": "demo_auto_learning.py",
+          "category": "ROOT",
+          "size": 9094,
+          "modified": "2025-09-21T13:10:58.287254"
+        },
+        {
+          "path": "performance_analyzer.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/performance_analyzer.py",
+          "name": "performance_analyzer.py",
+          "category": "ROOT",
+          "size": 10541,
+          "modified": "2025-09-11T03:04:49.282464"
+        },
+        {
+          "path": "fix_vpn_flake8.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_vpn_flake8.py",
+          "name": "fix_vpn_flake8.py",
+          "category": "ROOT",
+          "size": 2955,
+          "modified": "2025-10-01T02:46:39.668190"
+        },
+        {
+          "path": "russian_apis_server.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/russian_apis_server.py",
+          "name": "russian_apis_server.py",
+          "category": "ROOT",
+          "size": 12779,
+          "modified": "2025-09-13T10:40:32.213311"
+        },
+        {
+          "path": "simple_architecture_visualizer.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/simple_architecture_visualizer.py",
+          "name": "simple_architecture_visualizer.py",
+          "category": "ROOT",
+          "size": 24349,
+          "modified": "2025-09-26T16:41:12.524518"
+        },
+        {
+          "path": "expert_integration_report.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/expert_integration_report.py",
+          "name": "expert_integration_report.py",
+          "category": "ROOT",
+          "size": 13246,
+          "modified": "2025-09-11T03:04:49.198551"
+        },
+        {
+          "path": "real_world_demo.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/real_world_demo.py",
+          "name": "real_world_demo.py",
+          "category": "ROOT",
+          "size": 17279,
+          "modified": "2025-09-21T13:23:43.096988"
+        },
+        {
+          "path": "external_integrations_dashboard.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/external_integrations_dashboard.py",
+          "name": "external_integrations_dashboard.py",
+          "category": "ROOT",
+          "size": 16464,
+          "modified": "2025-10-02T00:27:27.272297"
+        },
+        {
+          "path": "advanced_threat_intelligence.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/advanced_threat_intelligence.py",
+          "name": "advanced_threat_intelligence.py",
+          "category": "ROOT",
+          "size": 24902,
+          "modified": "2025-10-02T00:27:21.164276"
+        },
+        {
+          "path": "enhanced_security_integration.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_security_integration.py",
+          "name": "enhanced_security_integration.py",
+          "category": "ROOT",
+          "size": 16323,
+          "modified": "2025-10-02T00:27:22.115765"
+        },
+        {
+          "path": "simple_export_api.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/simple_export_api.py",
+          "name": "simple_export_api.py",
+          "category": "ROOT",
+          "size": 8104,
+          "modified": "2025-09-11T03:04:49.853497"
+        },
+        {
+          "path": "automated_audit_system.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/automated_audit_system.py",
+          "name": "automated_audit_system.py",
+          "category": "ROOT",
+          "size": 34436,
+          "modified": "2025-10-02T00:27:24.634516"
+        },
+        {
+          "path": "fix_all_invalid_functions_one_by_one.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_all_invalid_functions_one_by_one.py",
+          "name": "fix_all_invalid_functions_one_by_one.py",
+          "category": "ROOT",
+          "size": 6294,
+          "modified": "2025-10-02T17:50:54.707132"
+        },
+        {
+          "path": "fix_flake8_errors.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_flake8_errors.py",
+          "name": "fix_flake8_errors.py",
+          "category": "ROOT",
+          "size": 2128,
+          "modified": "2025-09-21T13:04:42.147828"
+        },
+        {
+          "path": "enhanced_elasticsearch_simulator.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_elasticsearch_simulator.py",
+          "name": "enhanced_elasticsearch_simulator.py",
+          "category": "ROOT",
+          "size": 13226,
+          "modified": "2025-09-11T03:04:49.197886"
+        },
+        {
+          "path": "audit_dashboard_integration.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/audit_dashboard_integration.py",
+          "name": "audit_dashboard_integration.py",
+          "category": "ROOT",
+          "size": 20346,
+          "modified": "2025-10-02T00:27:26.666000"
+        },
+        {
+          "path": "advanced_behavioral_analytics.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/advanced_behavioral_analytics.py",
+          "name": "advanced_behavioral_analytics.py",
+          "category": "ROOT",
+          "size": 36923,
+          "modified": "2025-10-02T00:27:21.704480"
+        },
+        {
+          "path": "export_manager.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/export_manager.py",
+          "name": "export_manager.py",
+          "category": "ROOT",
+          "size": 16434,
+          "modified": "2025-09-11T03:04:49.202377"
+        },
+        {
+          "path": "system_report.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/system_report.py",
+          "name": "system_report.py",
+          "category": "ROOT",
+          "size": 3979,
+          "modified": "2025-09-11T03:04:49.861422"
+        },
+        {
+          "path": "start_enhanced_services.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/start_enhanced_services.py",
+          "name": "start_enhanced_services.py",
+          "category": "ROOT",
+          "size": 8975,
+          "modified": "2025-09-26T16:41:13.036752"
+        },
+        {
+          "path": "sfm_stats_universal.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/sfm_stats_universal.py",
+          "name": "sfm_stats_universal.py",
+          "category": "ROOT",
+          "size": 6122,
+          "modified": "2025-09-19T18:30:00.037975"
+        },
+        {
+          "path": "compliance_monitor.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/compliance_monitor.py",
+          "name": "compliance_monitor.py",
+          "category": "ROOT",
+          "size": 26660,
+          "modified": "2025-10-02T00:27:26.164053"
+        },
+        {
+          "path": "flake8_analysis_script.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/flake8_analysis_script.py",
+          "name": "flake8_analysis_script.py",
+          "category": "ROOT",
+          "size": 10731,
+          "modified": "2025-10-02T00:26:49.558605"
+        },
+        {
+          "path": "fix_logging_calls.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_logging_calls.py",
+          "name": "fix_logging_calls.py",
+          "category": "ROOT",
+          "size": 1316,
+          "modified": "2025-09-11T03:04:49.213306"
+        },
+        {
+          "path": "check_all_vpn_flake8.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/check_all_vpn_flake8.py",
+          "name": "check_all_vpn_flake8.py",
+          "category": "ROOT",
+          "size": 4721,
+          "modified": "2025-10-02T18:02:09.837986"
+        },
+        {
+          "path": "export_api.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/export_api.py",
+          "name": "export_api.py",
+          "category": "ROOT",
+          "size": 11381,
+          "modified": "2025-09-11T03:04:49.200144"
+        },
+        {
+          "path": "alerts_api.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/alerts_api.py",
+          "name": "alerts_api.py",
+          "category": "ROOT",
+          "size": 9033,
+          "modified": "2025-09-11T03:04:48.956169"
+        },
+        {
+          "path": "enhanced_architecture_visualizer.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_architecture_visualizer.py",
+          "name": "enhanced_architecture_visualizer.py",
+          "category": "ROOT",
+          "size": 52579,
+          "modified": "2025-09-26T16:41:16.148165"
+        },
+        {
+          "path": "enhanced_dashboard_v2.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_dashboard_v2.py",
+          "name": "enhanced_dashboard_v2.py",
+          "category": "ROOT",
+          "size": 35799,
+          "modified": "2025-10-02T00:27:25.215940"
+        },
+        {
+          "path": "register_our_formatted_files.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/register_our_formatted_files.py",
+          "name": "register_our_formatted_files.py",
+          "category": "ROOT",
+          "size": 7568,
+          "modified": "2025-09-28T16:28:02.254398"
+        },
+        {
+          "path": "system_status_check.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/system_status_check.py",
+          "name": "system_status_check.py",
+          "category": "ROOT",
+          "size": 8489,
+          "modified": "2025-09-21T13:29:11.150248"
+        },
+        {
+          "path": "enhanced_russian_threats_integration_plan.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_russian_threats_integration_plan.py",
+          "name": "enhanced_russian_threats_integration_plan.py",
+          "category": "ROOT",
+          "size": 23132,
+          "modified": "2025-10-04T00:43:27.580337"
+        },
+        {
+          "path": "fix_sfm_structure.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_sfm_structure.py",
+          "name": "fix_sfm_structure.py",
+          "category": "ROOT",
+          "size": 4657,
+          "modified": "2025-09-20T08:50:21.636753"
+        },
+        {
+          "path": "wake_up_systems.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/wake_up_systems.py",
+          "name": "wake_up_systems.py",
+          "category": "ROOT",
+          "size": 1290,
+          "modified": "2025-09-28T14:08:01.101301"
+        },
+        {
+          "path": "EXISTING_MODULES_EXPANSION_PLAN.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/EXISTING_MODULES_EXPANSION_PLAN.py",
+          "name": "EXISTING_MODULES_EXPANSION_PLAN.py",
+          "category": "ROOT",
+          "size": 25108,
+          "modified": "2025-10-04T00:43:32.710568"
+        },
+        {
+          "path": "manage_password_agents.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/manage_password_agents.py",
+          "name": "manage_password_agents.py",
+          "category": "ROOT",
+          "size": 7440,
+          "modified": "2025-09-21T10:30:03.090596"
+        },
+        {
+          "path": "final_system_report.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/final_system_report.py",
+          "name": "final_system_report.py",
+          "category": "ROOT",
+          "size": 6463,
+          "modified": "2025-09-11T03:04:49.212014"
+        },
+        {
+          "path": "analyze_system.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/analyze_system.py",
+          "name": "analyze_system.py",
+          "category": "ROOT",
+          "size": 4240,
+          "modified": "2025-09-11T03:04:48.967031"
+        },
+        {
+          "path": "performance_optimizer.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/performance_optimizer.py",
+          "name": "performance_optimizer.py",
+          "category": "ROOT",
+          "size": 17840,
+          "modified": "2025-10-04T13:50:52.027239"
+        },
+        {
+          "path": "register_sfm_components.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/register_sfm_components.py",
+          "name": "register_sfm_components.py",
+          "category": "ROOT",
+          "size": 21726,
+          "modified": "2025-10-02T00:26:47.585961"
+        },
+        {
+          "path": "analyze_all_files.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/analyze_all_files.py",
+          "name": "analyze_all_files.py",
+          "category": "ROOT",
+          "size": 5109,
+          "modified": "2025-09-19T10:02:34.644050"
+        },
+        {
+          "path": "enhanced_russian_threats_advanced_plan.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_russian_threats_advanced_plan.py",
+          "name": "enhanced_russian_threats_advanced_plan.py",
+          "category": "ROOT",
+          "size": 26078,
+          "modified": "2025-10-04T00:43:27.918491"
+        },
+        {
+          "path": "demo_ml_models.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/demo_ml_models.py",
+          "name": "demo_ml_models.py",
+          "category": "ROOT",
+          "size": 11071,
+          "modified": "2025-09-21T12:38:40.040917"
+        },
+        {
+          "path": "serve_monitoring_dashboard.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/serve_monitoring_dashboard.py",
+          "name": "serve_monitoring_dashboard.py",
+          "category": "ROOT",
+          "size": 2374,
+          "modified": "2025-09-11T03:04:49.852820"
+        },
+        {
+          "path": "dashboard_server.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/dashboard_server.py",
+          "name": "dashboard_server.py",
+          "category": "ROOT",
+          "size": 23771,
+          "modified": "2025-09-11T03:04:49.044721"
+        },
+        {
+          "path": "advanced_ml_analytics.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/advanced_ml_analytics.py",
+          "name": "advanced_ml_analytics.py",
+          "category": "ROOT",
+          "size": 21113,
+          "modified": "2025-09-26T16:41:14.752265"
+        },
+        {
+          "path": "demo_active_system.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/demo_active_system.py",
+          "name": "demo_active_system.py",
+          "category": "ROOT",
+          "size": 7138,
+          "modified": "2025-09-21T13:33:52.466293"
+        },
+        {
+          "path": "elasticsearch_api.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/elasticsearch_api.py",
+          "name": "elasticsearch_api.py",
+          "category": "ROOT",
+          "size": 9842,
+          "modified": "2025-09-11T03:04:49.196421"
+        },
+        {
+          "path": "start_new_services.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/start_new_services.py",
+          "name": "start_new_services.py",
+          "category": "ROOT",
+          "size": 11823,
+          "modified": "2025-09-26T16:41:11.476060"
+        },
+        {
+          "path": "add_vpn_functions_to_sfm.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/add_vpn_functions_to_sfm.py",
+          "name": "add_vpn_functions_to_sfm.py",
+          "category": "ROOT",
+          "size": 11634,
+          "modified": "2025-10-02T17:36:51.400712"
+        },
+        {
+          "path": "elasticsearch_simulator.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/elasticsearch_simulator.py",
+          "name": "elasticsearch_simulator.py",
+          "category": "ROOT",
+          "size": 17380,
+          "modified": "2025-09-11T03:04:49.197053"
+        },
+        {
+          "path": "external_apis_server.py",
+          "full_path": "/Users/sergejhlystov/ALADDIN_NEW/external_apis_server.py",
+          "name": "external_apis_server.py",
+          "category": "ROOT",
+          "size": 11640,
+          "modified": "2025-09-19T16:14:45.171792"
+        }
+      ]
+    }
+  },
+  "all_files": [
+    {
+      "path": "external_integrations.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/external_integrations.py",
+      "name": "external_integrations.py",
+      "category": "ROOT",
+      "size": 34489,
+      "modified": "2025-10-02T00:27:22.678166"
+    },
+    {
+      "path": "fix_sfm_manual.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_sfm_manual.py",
+      "name": "fix_sfm_manual.py",
+      "category": "ROOT",
+      "size": 6113,
+      "modified": "2025-09-20T08:50:22.490946"
+    },
+    {
+      "path": "threat_intelligence_system.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/threat_intelligence_system.py",
+      "name": "threat_intelligence_system.py",
+      "category": "ROOT",
+      "size": 25239,
+      "modified": "2025-10-02T00:27:23.271943"
+    },
+    {
+      "path": "dashboard_server_optimized.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/dashboard_server_optimized.py",
+      "name": "dashboard_server_optimized.py",
+      "category": "ROOT",
+      "size": 4835,
+      "modified": "2025-10-04T14:00:16.350142"
+    },
+    {
+      "path": "audit_scheduler.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/audit_scheduler.py",
+      "name": "audit_scheduler.py",
+      "category": "ROOT",
+      "size": 17224,
+      "modified": "2025-10-02T00:27:25.649054"
+    },
+    {
+      "path": "monitoring_api_server.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/monitoring_api_server.py",
+      "name": "monitoring_api_server.py",
+      "category": "ROOT",
+      "size": 10684,
+      "modified": "2025-09-11T03:04:49.271649"
+    },
+    {
+      "path": "fix_invalid_sfm_functions.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_invalid_sfm_functions.py",
+      "name": "fix_invalid_sfm_functions.py",
+      "category": "ROOT",
+      "size": 4214,
+      "modified": "2025-10-02T17:41:24.369987"
+    },
+    {
+      "path": "register_vpn_functions_in_json.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/register_vpn_functions_in_json.py",
+      "name": "register_vpn_functions_in_json.py",
+      "category": "ROOT",
+      "size": 10382,
+      "modified": "2025-10-02T17:36:51.400952"
+    },
+    {
+      "path": "update_logging.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/update_logging.py",
+      "name": "update_logging.py",
+      "category": "ROOT",
+      "size": 1438,
+      "modified": "2025-09-17T01:14:53.238457"
+    },
+    {
+      "path": "demo_auto_learning.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/demo_auto_learning.py",
+      "name": "demo_auto_learning.py",
+      "category": "ROOT",
+      "size": 9094,
+      "modified": "2025-09-21T13:10:58.287254"
+    },
+    {
+      "path": "performance_analyzer.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/performance_analyzer.py",
+      "name": "performance_analyzer.py",
+      "category": "ROOT",
+      "size": 10541,
+      "modified": "2025-09-11T03:04:49.282464"
+    },
+    {
+      "path": "fix_vpn_flake8.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_vpn_flake8.py",
+      "name": "fix_vpn_flake8.py",
+      "category": "ROOT",
+      "size": 2955,
+      "modified": "2025-10-01T02:46:39.668190"
+    },
+    {
+      "path": "russian_apis_server.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/russian_apis_server.py",
+      "name": "russian_apis_server.py",
+      "category": "ROOT",
+      "size": 12779,
+      "modified": "2025-09-13T10:40:32.213311"
+    },
+    {
+      "path": "simple_architecture_visualizer.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/simple_architecture_visualizer.py",
+      "name": "simple_architecture_visualizer.py",
+      "category": "ROOT",
+      "size": 24349,
+      "modified": "2025-09-26T16:41:12.524518"
+    },
+    {
+      "path": "expert_integration_report.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/expert_integration_report.py",
+      "name": "expert_integration_report.py",
+      "category": "ROOT",
+      "size": 13246,
+      "modified": "2025-09-11T03:04:49.198551"
+    },
+    {
+      "path": "real_world_demo.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/real_world_demo.py",
+      "name": "real_world_demo.py",
+      "category": "ROOT",
+      "size": 17279,
+      "modified": "2025-09-21T13:23:43.096988"
+    },
+    {
+      "path": "external_integrations_dashboard.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/external_integrations_dashboard.py",
+      "name": "external_integrations_dashboard.py",
+      "category": "ROOT",
+      "size": 16464,
+      "modified": "2025-10-02T00:27:27.272297"
+    },
+    {
+      "path": "advanced_threat_intelligence.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/advanced_threat_intelligence.py",
+      "name": "advanced_threat_intelligence.py",
+      "category": "ROOT",
+      "size": 24902,
+      "modified": "2025-10-02T00:27:21.164276"
+    },
+    {
+      "path": "enhanced_security_integration.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_security_integration.py",
+      "name": "enhanced_security_integration.py",
+      "category": "ROOT",
+      "size": 16323,
+      "modified": "2025-10-02T00:27:22.115765"
+    },
+    {
+      "path": "simple_export_api.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/simple_export_api.py",
+      "name": "simple_export_api.py",
+      "category": "ROOT",
+      "size": 8104,
+      "modified": "2025-09-11T03:04:49.853497"
+    },
+    {
+      "path": "automated_audit_system.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/automated_audit_system.py",
+      "name": "automated_audit_system.py",
+      "category": "ROOT",
+      "size": 34436,
+      "modified": "2025-10-02T00:27:24.634516"
+    },
+    {
+      "path": "fix_all_invalid_functions_one_by_one.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_all_invalid_functions_one_by_one.py",
+      "name": "fix_all_invalid_functions_one_by_one.py",
+      "category": "ROOT",
+      "size": 6294,
+      "modified": "2025-10-02T17:50:54.707132"
+    },
+    {
+      "path": "fix_flake8_errors.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_flake8_errors.py",
+      "name": "fix_flake8_errors.py",
+      "category": "ROOT",
+      "size": 2128,
+      "modified": "2025-09-21T13:04:42.147828"
+    },
+    {
+      "path": "enhanced_elasticsearch_simulator.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_elasticsearch_simulator.py",
+      "name": "enhanced_elasticsearch_simulator.py",
+      "category": "ROOT",
+      "size": 13226,
+      "modified": "2025-09-11T03:04:49.197886"
+    },
+    {
+      "path": "audit_dashboard_integration.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/audit_dashboard_integration.py",
+      "name": "audit_dashboard_integration.py",
+      "category": "ROOT",
+      "size": 20346,
+      "modified": "2025-10-02T00:27:26.666000"
+    },
+    {
+      "path": "advanced_behavioral_analytics.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/advanced_behavioral_analytics.py",
+      "name": "advanced_behavioral_analytics.py",
+      "category": "ROOT",
+      "size": 36923,
+      "modified": "2025-10-02T00:27:21.704480"
+    },
+    {
+      "path": "export_manager.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/export_manager.py",
+      "name": "export_manager.py",
+      "category": "ROOT",
+      "size": 16434,
+      "modified": "2025-09-11T03:04:49.202377"
+    },
+    {
+      "path": "system_report.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/system_report.py",
+      "name": "system_report.py",
+      "category": "ROOT",
+      "size": 3979,
+      "modified": "2025-09-11T03:04:49.861422"
+    },
+    {
+      "path": "start_enhanced_services.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/start_enhanced_services.py",
+      "name": "start_enhanced_services.py",
+      "category": "ROOT",
+      "size": 8975,
+      "modified": "2025-09-26T16:41:13.036752"
+    },
+    {
+      "path": "sfm_stats_universal.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/sfm_stats_universal.py",
+      "name": "sfm_stats_universal.py",
+      "category": "ROOT",
+      "size": 6122,
+      "modified": "2025-09-19T18:30:00.037975"
+    },
+    {
+      "path": "compliance_monitor.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/compliance_monitor.py",
+      "name": "compliance_monitor.py",
+      "category": "ROOT",
+      "size": 26660,
+      "modified": "2025-10-02T00:27:26.164053"
+    },
+    {
+      "path": "flake8_analysis_script.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/flake8_analysis_script.py",
+      "name": "flake8_analysis_script.py",
+      "category": "ROOT",
+      "size": 10731,
+      "modified": "2025-10-02T00:26:49.558605"
+    },
+    {
+      "path": "fix_logging_calls.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_logging_calls.py",
+      "name": "fix_logging_calls.py",
+      "category": "ROOT",
+      "size": 1316,
+      "modified": "2025-09-11T03:04:49.213306"
+    },
+    {
+      "path": "check_all_vpn_flake8.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/check_all_vpn_flake8.py",
+      "name": "check_all_vpn_flake8.py",
+      "category": "ROOT",
+      "size": 4721,
+      "modified": "2025-10-02T18:02:09.837986"
+    },
+    {
+      "path": "export_api.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/export_api.py",
+      "name": "export_api.py",
+      "category": "ROOT",
+      "size": 11381,
+      "modified": "2025-09-11T03:04:49.200144"
+    },
+    {
+      "path": "alerts_api.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/alerts_api.py",
+      "name": "alerts_api.py",
+      "category": "ROOT",
+      "size": 9033,
+      "modified": "2025-09-11T03:04:48.956169"
+    },
+    {
+      "path": "enhanced_architecture_visualizer.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_architecture_visualizer.py",
+      "name": "enhanced_architecture_visualizer.py",
+      "category": "ROOT",
+      "size": 52579,
+      "modified": "2025-09-26T16:41:16.148165"
+    },
+    {
+      "path": "enhanced_dashboard_v2.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_dashboard_v2.py",
+      "name": "enhanced_dashboard_v2.py",
+      "category": "ROOT",
+      "size": 35799,
+      "modified": "2025-10-02T00:27:25.215940"
+    },
+    {
+      "path": "register_our_formatted_files.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/register_our_formatted_files.py",
+      "name": "register_our_formatted_files.py",
+      "category": "ROOT",
+      "size": 7568,
+      "modified": "2025-09-28T16:28:02.254398"
+    },
+    {
+      "path": "system_status_check.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/system_status_check.py",
+      "name": "system_status_check.py",
+      "category": "ROOT",
+      "size": 8489,
+      "modified": "2025-09-21T13:29:11.150248"
+    },
+    {
+      "path": "enhanced_russian_threats_integration_plan.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_russian_threats_integration_plan.py",
+      "name": "enhanced_russian_threats_integration_plan.py",
+      "category": "ROOT",
+      "size": 23132,
+      "modified": "2025-10-04T00:43:27.580337"
+    },
+    {
+      "path": "fix_sfm_structure.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/fix_sfm_structure.py",
+      "name": "fix_sfm_structure.py",
+      "category": "ROOT",
+      "size": 4657,
+      "modified": "2025-09-20T08:50:21.636753"
+    },
+    {
+      "path": "wake_up_systems.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/wake_up_systems.py",
+      "name": "wake_up_systems.py",
+      "category": "ROOT",
+      "size": 1290,
+      "modified": "2025-09-28T14:08:01.101301"
+    },
+    {
+      "path": "EXISTING_MODULES_EXPANSION_PLAN.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/EXISTING_MODULES_EXPANSION_PLAN.py",
+      "name": "EXISTING_MODULES_EXPANSION_PLAN.py",
+      "category": "ROOT",
+      "size": 25108,
+      "modified": "2025-10-04T00:43:32.710568"
+    },
+    {
+      "path": "manage_password_agents.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/manage_password_agents.py",
+      "name": "manage_password_agents.py",
+      "category": "ROOT",
+      "size": 7440,
+      "modified": "2025-09-21T10:30:03.090596"
+    },
+    {
+      "path": "final_system_report.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/final_system_report.py",
+      "name": "final_system_report.py",
+      "category": "ROOT",
+      "size": 6463,
+      "modified": "2025-09-11T03:04:49.212014"
+    },
+    {
+      "path": "analyze_system.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/analyze_system.py",
+      "name": "analyze_system.py",
+      "category": "ROOT",
+      "size": 4240,
+      "modified": "2025-09-11T03:04:48.967031"
+    },
+    {
+      "path": "performance_optimizer.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/performance_optimizer.py",
+      "name": "performance_optimizer.py",
+      "category": "ROOT",
+      "size": 17840,
+      "modified": "2025-10-04T13:50:52.027239"
+    },
+    {
+      "path": "register_sfm_components.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/register_sfm_components.py",
+      "name": "register_sfm_components.py",
+      "category": "ROOT",
+      "size": 21726,
+      "modified": "2025-10-02T00:26:47.585961"
+    },
+    {
+      "path": "analyze_all_files.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/analyze_all_files.py",
+      "name": "analyze_all_files.py",
+      "category": "ROOT",
+      "size": 5109,
+      "modified": "2025-09-19T10:02:34.644050"
+    },
+    {
+      "path": "enhanced_russian_threats_advanced_plan.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/enhanced_russian_threats_advanced_plan.py",
+      "name": "enhanced_russian_threats_advanced_plan.py",
+      "category": "ROOT",
+      "size": 26078,
+      "modified": "2025-10-04T00:43:27.918491"
+    },
+    {
+      "path": "demo_ml_models.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/demo_ml_models.py",
+      "name": "demo_ml_models.py",
+      "category": "ROOT",
+      "size": 11071,
+      "modified": "2025-09-21T12:38:40.040917"
+    },
+    {
+      "path": "serve_monitoring_dashboard.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/serve_monitoring_dashboard.py",
+      "name": "serve_monitoring_dashboard.py",
+      "category": "ROOT",
+      "size": 2374,
+      "modified": "2025-09-11T03:04:49.852820"
+    },
+    {
+      "path": "dashboard_server.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/dashboard_server.py",
+      "name": "dashboard_server.py",
+      "category": "ROOT",
+      "size": 23771,
+      "modified": "2025-09-11T03:04:49.044721"
+    },
+    {
+      "path": "advanced_ml_analytics.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/advanced_ml_analytics.py",
+      "name": "advanced_ml_analytics.py",
+      "category": "ROOT",
+      "size": 21113,
+      "modified": "2025-09-26T16:41:14.752265"
+    },
+    {
+      "path": "demo_active_system.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/demo_active_system.py",
+      "name": "demo_active_system.py",
+      "category": "ROOT",
+      "size": 7138,
+      "modified": "2025-09-21T13:33:52.466293"
+    },
+    {
+      "path": "elasticsearch_api.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/elasticsearch_api.py",
+      "name": "elasticsearch_api.py",
+      "category": "ROOT",
+      "size": 9842,
+      "modified": "2025-09-11T03:04:49.196421"
+    },
+    {
+      "path": "start_new_services.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/start_new_services.py",
+      "name": "start_new_services.py",
+      "category": "ROOT",
+      "size": 11823,
+      "modified": "2025-09-26T16:41:11.476060"
+    },
+    {
+      "path": "add_vpn_functions_to_sfm.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/add_vpn_functions_to_sfm.py",
+      "name": "add_vpn_functions_to_sfm.py",
+      "category": "ROOT",
+      "size": 11634,
+      "modified": "2025-10-02T17:36:51.400712"
+    },
+    {
+      "path": "elasticsearch_simulator.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/elasticsearch_simulator.py",
+      "name": "elasticsearch_simulator.py",
+      "category": "ROOT",
+      "size": 17380,
+      "modified": "2025-09-11T03:04:49.197053"
+    },
+    {
+      "path": "external_apis_server.py",
+      "full_path": "/Users/sergejhlystov/ALADDIN_NEW/external_apis_server.py",
+      "name": "external_apis_server.py",
+      "category": "ROOT",
+      "size": 11640,
+      "modified": "2025-09-19T16:14:45.171792"
+    }
+  ]
+}

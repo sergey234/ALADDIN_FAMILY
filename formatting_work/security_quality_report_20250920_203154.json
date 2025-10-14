@@ -1,0 +1,116 @@
+{
+  "file": "security/active/malware_protection.py",
+  "timestamp": "2025-09-20T20:31:54.973106",
+  "total_analysis_time_seconds": 0.07132267951965332,
+  "overall_quality_score": 83.3,
+  "analysis_details": {
+    "sfm_functions": {
+      "status": "info",
+      "found_functions": [],
+      "message": "Найдено 0 функций SFM"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "encrypt",
+        "decrypt",
+        "security",
+        "hash",
+        "key",
+        "threat",
+        "malware",
+        "virus",
+        "alert",
+        "log"
+      ],
+      "message": "Найдено 10 ключевых слов безопасности"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'core.base'",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 17,
+      "num_classes": 8,
+      "message": "Функций: 17, Классов: 8"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для __init__ (строка 113)"
+      ],
+      "message": "Найдено 1 отсутствующих docstring"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 31020,
+      "lines": 656,
+      "message": "Размер: 31020 байт, Строк: 656"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 113)",
+        "Отсутствует тип возвращаемого значения для функции _initialize_malware_signatures (строка 141)",
+        "Отсутствует тип возвращаемого значения для функции _initialize_protection_rules (строка 229)",
+        "Отсутствует тип возвращаемого значения для функции _setup_family_protection (строка 309)"
+      ],
+      "message": "Найдено 4 отсутствующих type hints"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "hashlib",
+        "datetime",
+        "core",
+        "time",
+        "os",
+        "enum",
+        "typing",
+        "dataclasses",
+        "logging"
+      ],
+      "message": "Зависимости: 9"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 10,
+    "security_classes_found": 0,
+    "sfm_functions_found": 0,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Добавьте функции SFM.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

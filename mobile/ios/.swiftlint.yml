@@ -1,0 +1,105 @@
+# SwiftLint Configuration для ALADDIN Mobile iOS
+# Версия: 0.50.3
+
+# Отключаемые правила
+disabled_rules:
+  - trailing_whitespace
+  - line_length
+  - function_body_length
+  - file_length
+  - type_body_length
+  - cyclomatic_complexity
+
+# Включаемые правила
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - overridden_super_call
+  - prohibited_interface_builder
+  - redundant_nil_coalescing
+  - redundant_type_annotation
+  - single_test_class
+  - unneeded_parentheses_in_closure_argument
+  - vertical_parameter_alignment_on_call
+  - yoda_condition
+
+# Настройки правил
+line_length:
+  warning: 120
+  error: 200
+  ignores_urls: true
+  ignores_function_declarations: true
+  ignores_comments: true
+
+function_body_length:
+  warning: 50
+  error: 100
+
+file_length:
+  warning: 500
+  error: 1000
+
+type_body_length:
+  warning: 300
+  error: 500
+
+cyclomatic_complexity:
+  warning: 10
+  error: 20
+
+# Исключения
+excluded:
+  - Pods
+  - ALADDINMobile.xcodeproj
+  - ALADDINMobile.xcworkspace
+  - DerivedData
+  - build
+  - .build
+
+# Настройки для безопасности
+force_unwrapping:
+  severity: warning
+
+implicitly_unwrapped_optional:
+  severity: warning
+
+# Настройки для производительности
+empty_count:
+  severity: warning
+
+redundant_nil_coalescing:
+  severity: warning
+
+# Настройки для читаемости
+vertical_parameter_alignment_on_call:
+  severity: warning
+
+yoda_condition:
+  severity: warning
+
+# Настройки для тестов
+single_test_class:
+  severity: warning
+
+# Настройки для UI
+prohibited_interface_builder:
+  severity: warning
+
+# Настройки для замыканий
+unneeded_parentheses_in_closure_argument:
+  severity: warning
+
+# Настройки для переопределения
+overridden_super_call:
+  severity: warning
+
+# Настройки для строк
+empty_string:
+  severity: warning
+
+# Настройки для типов
+redundant_type_annotation:
+  severity: warning
+

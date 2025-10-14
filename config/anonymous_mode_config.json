@@ -1,0 +1,89 @@
+{
+  "anonymous_mode": {
+    "enabled": true,
+    "description": "Конфигурация анонимного режима для ALADDIN",
+    "version": "1.0.0",
+    "features": {
+      "personal_data_collection": false,
+      "family_profiles": false,
+      "geolocation_tracking": false,
+      "personal_notifications": false,
+      "biometric_data": false,
+      "device_tracking": false
+    },
+    "allowed_functions": {
+      "educational_content": true,
+      "general_security_recommendations": true,
+      "threat_intelligence": true,
+      "anonymous_dashboard": true,
+      "simulation_mode": true,
+      "general_analytics": true
+    },
+    "disabled_functions": {
+      "family_profile_manager": true,
+      "family_dashboard_manager": true,
+      "child_interface_manager": true,
+      "elderly_interface_manager": true,
+      "family_communication_hub": true,
+      "personal_notifications": true,
+      "geolocation_services": true,
+      "biometric_analysis": true,
+      "device_monitoring": true,
+      "personal_analytics": true
+    },
+    "replacement_functions": {
+      "family_profile_manager": "anonymous_family_adaptations.AnonymousFamilyManager",
+      "family_dashboard_manager": "anonymous_family_adaptations.AnonymousFamilyManager",
+      "threat_intelligence": "anonymous_family_adaptations.AnonymousThreatIntelligence"
+    },
+    "educational_content": {
+      "cybersecurity_basics": {
+        "enabled": true,
+        "lessons_count": 12,
+        "difficulty_levels": ["beginner", "intermediate", "advanced"]
+      },
+      "parental_guidance": {
+        "enabled": true,
+        "lessons_count": 8,
+        "target_audience": "parents"
+      },
+      "elderly_protection": {
+        "enabled": true,
+        "lessons_count": 6,
+        "target_audience": "elderly"
+      }
+    },
+    "security_recommendations": {
+      "general": {
+        "enabled": true,
+        "update_frequency": "daily",
+        "sources": ["threat_intelligence", "security_news", "best_practices"]
+      },
+      "educational": {
+        "enabled": true,
+        "content_types": ["articles", "videos", "interactive_lessons", "quizzes"]
+      }
+    },
+    "analytics": {
+      "anonymous_metrics": {
+        "enabled": true,
+        "collect_session_data": true,
+        "collect_educational_progress": true,
+        "collect_general_usage": true
+      },
+      "personal_metrics": {
+        "enabled": false,
+        "collect_personal_data": false,
+        "collect_family_data": false,
+        "collect_biometric_data": false
+      }
+    },
+    "compliance": {
+      "gdpr_compliant": true,
+      "152_fz_compliant": true,
+      "no_personal_data": true,
+      "no_geolocation": true,
+      "no_biometric_data": true
+    }
+  }
+}

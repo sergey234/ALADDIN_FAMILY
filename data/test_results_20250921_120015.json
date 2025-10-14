@@ -1,0 +1,56 @@
+{
+  "tests_run": 9,
+  "tests_passed": 3,
+  "tests_failed": 6,
+  "test_details": {
+    "Импорт CBRDataCollector": {
+      "status": "FAILED",
+      "duration": 0.3448913097381592,
+      "result": false
+    },
+    "Импорт NewsScraper": {
+      "status": "FAILED",
+      "duration": 0.00787210464477539,
+      "result": false
+    },
+    "Импорт ThreatIntelligenceAgent": {
+      "status": "PASSED",
+      "duration": 0.01813507080078125,
+      "result": true
+    },
+    "Сбор данных ЦБ РФ": {
+      "status": "FAILED",
+      "duration": 0.0011289119720458984,
+      "result": false
+    },
+    "Сбор новостных данных": {
+      "status": "FAILED",
+      "duration": 0.0013079643249511719,
+      "result": false
+    },
+    "Методы ThreatIntelligenceAgent": {
+      "status": "PASSED",
+      "duration": 0.0005130767822265625,
+      "result": true
+    },
+    "Сохранение данных": {
+      "status": "FAILED",
+      "duration": 0.0013687610626220703,
+      "result": false
+    },
+    "Обработка ошибок": {
+      "status": "FAILED",
+      "duration": 0.0014679431915283203,
+      "result": false
+    },
+    "Асинхронные методы": {
+      "status": "PASSED",
+      "duration": 0.0017371177673339844,
+      "result": true
+    }
+  },
+  "start_time": "2025-09-21 12:00:15.222067",
+  "end_time": "2025-09-21 12:00:15.603315",
+  "overall_status": "FAILED",
+  "total_duration": 0.381248
+}

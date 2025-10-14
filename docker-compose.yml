@@ -1,0 +1,411 @@
+version: '3.8'
+
+services:
+  # ALADDIN Security System Core
+  aladdin-core:
+    build:
+      context: .
+      dockerfile: Dockerfile.core
+    container_name: aladdin-core
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://aladdin:password@postgres:5432/aladdin_security
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./security:/app/security
+      - ./core:/app/core
+      - ./config:/app/config
+      - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8000:8000"  # ALADDIN API
+      - "8001:8001"  # ALADDIN Dashboard
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Safe Function Manager
+  safe-function-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile.sfm
+    container_name: aladdin-sfm
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app
+      - REDIS_URL=redis://redis:6379/1
+      - DATABASE_URL=postgresql://aladdin:password@postgres:5432/aladdin_security
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./security/safe_function_manager.py:/app/safe_function_manager.py
+      - ./data/sfm:/app/data/sfm
+      - ./logs:/app/logs
+    ports:
+      - "8002:8002"  # SFM API
+    depends_on:
+      - redis
+      - postgres
+      - aladdin-core
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8002/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: aladdin-gateway
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app
+      - REDIS_URL=redis://redis:6379/2
+      - DATABASE_URL=postgresql://aladdin:password@postgres:5432/aladdin_security
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./security/microservices/api_gateway.py:/app/api_gateway.py
+      - ./config:/app/config
+      - ./logs:/app/logs
+    ports:
+      - "80:80"      # HTTP
+      - "443:443"    # HTTPS
+      - "8003:8003"  # Gateway API
+    depends_on:
+      - redis
+      - postgres
+      - aladdin-core
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Service Mesh Manager
+  service-mesh:
+    build:
+      context: .
+      dockerfile: Dockerfile.mesh
+    container_name: aladdin-mesh
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app
+      - REDIS_URL=redis://redis:6379/3
+      - DATABASE_URL=postgresql://aladdin:password@postgres:5432/aladdin_security
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./security/microservices/service_mesh_manager.py:/app/service_mesh_manager.py
+      - ./logs:/app/logs
+    ports:
+      - "8004:8004"  # Service Mesh API
+    depends_on:
+      - redis
+      - postgres
+      - aladdin-core
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AI Agents
+  ai-agents:
+    build:
+      context: .
+      dockerfile: Dockerfile.agents
+    container_name: aladdin-ai-agents
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app
+      - REDIS_URL=redis://redis:6379/4
+      - DATABASE_URL=postgresql://aladdin:password@postgres:5432/aladdin_security
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./security/ai_agents:/app/ai_agents
+      - ./logs:/app/logs
+    ports:
+      - "8005:8005"  # AI Agents API
+    depends_on:
+      - redis
+      - postgres
+      - aladdin-core
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Security Bots
+  security-bots:
+    build:
+      context: .
+      dockerfile: Dockerfile.bots
+    container_name: aladdin-bots
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app
+      - REDIS_URL=redis://redis:6379/5
+      - DATABASE_URL=postgresql://aladdin:password@postgres:5432/aladdin_security
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./security/bots:/app/bots
+      - ./logs:/app/logs
+    ports:
+      - "8006:8006"  # Security Bots API
+    depends_on:
+      - redis
+      - postgres
+      - aladdin-core
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Architecture Visualizer
+  architecture-visualizer:
+    build:
+      context: .
+      dockerfile: Dockerfile.visualizer
+    container_name: aladdin-visualizer
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app
+      - REDIS_URL=redis://redis:6379/6
+      - DATABASE_URL=postgresql://aladdin:password@postgres:5432/aladdin_security
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./architecture:/app/architecture
+      - ./logs:/app/logs
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8007:8007"  # Architecture Visualizer
+    depends_on:
+      - redis
+      - postgres
+      - aladdin-core
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # API Documentation
+  api-docs:
+    build:
+      context: .
+      dockerfile: Dockerfile.docs
+    container_name: aladdin-docs
+    restart: unless-stopped
+    environment:
+      - PYTHONPATH=/app
+      - REDIS_URL=redis://redis:6379/7
+      - DATABASE_URL=postgresql://aladdin:password@postgres:5432/aladdin_security
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./api_docs:/app/api_docs
+      - ./logs:/app/logs
+    ports:
+      - "8008:8008"  # API Documentation
+    depends_on:
+      - redis
+      - postgres
+      - aladdin-core
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:13
+    container_name: aladdin-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=aladdin_security
+      - POSTGRES_USER=aladdin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./config/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aladdin -d aladdin_security"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: aladdin-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass password
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: aladdin-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: aladdin-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx Load Balancer
+  nginx:
+    image: nginx:alpine
+    container_name: aladdin-nginx
+    restart: unless-stopped
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/nginx/ssl:/etc/nginx/ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - api-gateway
+      - aladdin-core
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Log Aggregator
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: aladdin-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - aladdin-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Log Shipper
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.17.0
+    container_name: aladdin-filebeat
+    restart: unless-stopped
+    user: root
+    volumes:
+      - ./config/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/var/log/aladdin:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - elasticsearch
+    networks:
+      - aladdin-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+networks:
+  aladdin-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

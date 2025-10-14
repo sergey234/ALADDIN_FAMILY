@@ -1,0 +1,135 @@
+# Google Cloud Platform Infrastructure для ALADDIN Security System
+resources:
+  # VPC сеть
+  - name: aladdin-vpc
+    type: gcp-types/compute-v1:networks
+    properties:
+      name: aladdin-vpc
+      autoCreateSubnetworks: false
+  
+  # Публичная подсеть
+  - name: aladdin-public-subnet
+    type: gcp-types/compute-v1:subnetworks
+    properties:
+      name: aladdin-public-subnet
+      network: $(ref.aladdin-vpc.selfLink)
+      ipCidrRange: 10.0.1.0/24
+      region: us-central1
+  
+  # Приватная подсеть
+  - name: aladdin-private-subnet
+    type: gcp-types/compute-v1:subnetworks
+    properties:
+      name: aladdin-private-subnet
+      network: $(ref.aladdin-vpc.selfLink)
+      ipCidrRange: 10.0.2.0/24
+      region: us-central1
+  
+  # Firewall правила
+  - name: aladdin-firewall
+    type: gcp-types/compute-v1:firewalls
+    properties:
+      name: aladdin-firewall
+      network: $(ref.aladdin-vpc.selfLink)
+      allowed:
+        - IPProtocol: TCP
+          ports: ['22', '80', '443', '8000', '9090']
+      sourceRanges: ['0.0.0.0/0']
+      targetTags: ['aladdin-instance']
+  
+  # Compute Engine instance
+  - name: aladdin-instance
+    type: gcp-types/compute-v1:instances
+    properties:
+      name: aladdin-instance
+      machineType: zones/us-central1-a/machineTypes/e2-medium
+      zone: us-central1-a
+      tags:
+        items: ['aladdin-instance']
+      disks:
+        - deviceName: boot
+          type: PERSISTENT
+          boot: true
+          autoDelete: true
+          initializeParams:
+            sourceImage: projects/ubuntu-os-cloud/global/images/family/ubuntu-2004-lts
+            diskSizeGb: 50
+      networkInterfaces:
+        - network: $(ref.aladdin-vpc.selfLink)
+          subnetwork: $(ref.aladdin-public-subnet.selfLink)
+          accessConfigs:
+            - name: External NAT
+              type: ONE_TO_ONE_NAT
+      metadata:
+        items:
+          - key: startup-script
+            value: |
+              #!/bin/bash
+              apt-get update
+              apt-get install -y docker.io docker-compose
+              systemctl start docker
+              systemctl enable docker
+              usermod -aG docker ubuntu
+              
+              # Установка ALADDIN Security System
+              git clone https://github.com/your-repo/aladdin-security.git
+              cd aladdin-security
+              docker-compose up -d
+              
+              # Настройка мониторинга
+              docker run -d --name prometheus -p 9090:9090 prom/prometheus
+              docker run -d --name grafana -p 3000:3000 grafana/grafana
+  
+  # Cloud SQL для базы данных
+  - name: aladdin-database
+    type: gcp-types/sqladmin-v1beta4:instances
+    properties:
+      name: aladdin-database
+      region: us-central1
+      settings:
+        tier: db-f1-micro
+        dataDiskType: PD_SSD
+        dataDiskSizeGb: 20
+        ipConfiguration:
+          ipv4Enabled: false
+          privateNetwork: $(ref.aladdin-vpc.selfLink)
+        backupConfiguration:
+          enabled: true
+          startTime: '03:00'
+        maintenanceWindow:
+          day: 1
+          hour: 3
+        databaseFlags:
+          - name: shared_preload_libraries
+            value: 'pg_stat_statements'
+        userLabels:
+          environment: production
+      databaseVersion: POSTGRES_13
+      rootPassword: 'YourSecurePassword123!'
+  
+  # Cloud Storage для логов
+  - name: aladdin-logs-bucket
+    type: gcp-types/storage-v1:buckets
+    properties:
+      name: aladdin-logs-bucket
+      location: US
+      storageClass: STANDARD
+      lifecycle:
+        rule:
+          - action:
+              type: Delete
+            condition:
+              age: 90
+          - action:
+              type: SetStorageClass
+              storageClass: NEARLINE
+            condition:
+              age: 30
+
+outputs:
+  - name: aladdin-instance-ip
+    value: $(ref.aladdin-instance.networkInterfaces[0].accessConfigs[0].natIP)
+  - name: aladdin-database-ip
+    value: $(ref.aladdin-database.ipAddresses[0].ipAddress)
+  - name: aladdin-logs-bucket
+    value: $(ref.aladdin-logs-bucket.name)

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN - Единая тема "Грозовое небо"</title>
+    <link rel="stylesheet" href="../css/unified_storm_sky_theme.css">
+    <style>
+        .demo-section {
+            margin: 40px 0;
+            padding: 30px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .color-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .storm-sky-dark { background: var(--storm-sky-dark); }
+        .storm-sky-main { background: var(--storm-sky-main); }
+        .storm-sky-mid { background: var(--storm-sky-mid); }
+        .gold-main { background: var(--gold-main); }
+        .gold-light { background: var(--gold-light); }
+        .gold-dark { background: var(--gold-dark); }
+        .success-green { background: var(--success-green); }
+        .error-red { background: var(--error-red); }
+        .lightning-blue { background: var(--lightning-blue); }
+        
+        .gradient-demo {
+            height: 100px;
+            border-radius: 15px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .storm-sky-gradient { background: var(--storm-sky-gradient); }
+        .gold-gradient { background: var(--gold-gradient); }
+        .success-gradient { background: var(--success-gradient); }
+        .error-gradient { background: var(--error-gradient); }
+        
+        .button-demo {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .status-demo {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .mobile-preview {
+            max-width: 375px;
+            margin: 20px auto;
+            background: var(--storm-sky-gradient);
+            border-radius: 25px;
+            padding: 20px;
+            box-shadow: var(--shadow-card);
+        }
+        
+        .mobile-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .mobile-nav {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        
+        .mobile-nav-item {
+            background: var(--bg-card);
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+            color: var(--text-dark);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-nav-item:hover {
+            background: var(--gold-main);
+            color: white;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="storm-sky-bg">
+    <div class="container">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h1>🛡️ ALADDIN Security</h1>
+            <p class="gold-accent">Единая тема "Грозовое небо с золотыми акцентами"</p>
+            <p>Для основного приложения, VPN модуля и мобильного приложения</p>
+        </div>
+
+        <!-- Color Palette -->
+        <div class="demo-section">
+            <h2>🎨 Цветовая палитра</h2>
+            <div class="color-palette">
+                <div class="color-card storm-sky-dark">
+                    <h3>Storm Sky Dark</h3>
+                    <p>#0a1128</p>
+                    <p>Темно-синий глубокий</p>
+                </div>
+                <div class="color-card storm-sky-main">
+                    <h3>Storm Sky Main</h3>
+                    <p>#1e3a5f</p>
+                    <p>Синий грозового неба</p>
+                </div>
+                <div class="color-card storm-sky-mid">
+                    <h3>Storm Sky Mid</h3>
+                    <p>#2e5090</p>
+                    <p>Средний синий</p>
+                </div>
+                <div class="color-card gold-main">
+                    <h3>Gold Main</h3>
+                    <p>#F59E0B</p>
+                    <p>Золотой основной</p>
+                </div>
+                <div class="color-card gold-light">
+                    <h3>Gold Light</h3>
+                    <p>#FCD34D</p>
+                    <p>Золотой светлый</p>
+                </div>
+                <div class="color-card gold-dark">
+                    <h3>Gold Dark</h3>
+                    <p>#D97706</p>
+                    <p>Золотой темный</p>
+                </div>
+                <div class="color-card success-green">
+                    <h3>Success Green</h3>
+                    <p>#10B981</p>
+                    <p>Изумрудный успех</p>
+                </div>
+                <div class="color-card error-red">
+                    <h3>Error Red</h3>
+                    <p>#EF4444</p>
+                    <p>Рубиновый ошибка</p>
+                </div>
+                <div class="color-card lightning-blue">
+                    <h3>Lightning Blue</h3>
+                    <p>#60A5FA</p>
+                    <p>Голубой молнии</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gradients -->
+        <div class="demo-section">
+            <h2>🌈 Градиенты</h2>
+            <div class="gradient-demo storm-sky-gradient">
+                <h3>Грозовое небо</h3>
+            </div>
+            <div class="gradient-demo gold-gradient">
+                <h3>Золотые акценты</h3>
+            </div>
+            <div class="gradient-demo success-gradient">
+                <h3>Успех</h3>
+            </div>
+            <div class="gradient-demo error-gradient">
+                <h3>Ошибка</h3>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="demo-section">
+            <h2>🔘 Кнопки</h2>
+            <div class="button-demo">
+                <button class="btn btn-primary">Основная кнопка</button>
+                <button class="btn btn-success">Успех</button>
+                <button class="btn btn-error">Ошибка</button>
+                <button class="btn gold-button">Золотая кнопка</button>
+            </div>
+        </div>
+
+        <!-- Status Indicators -->
+        <div class="demo-section">
+            <h2>📊 Индикаторы статуса</h2>
+            <div class="status-demo">
+                <div>
+                    <span class="status-indicator status-connected"></span>
+                    <span>Подключено</span>
+                </div>
+                <div>
+                    <span class="status-indicator status-disconnected"></span>
+                    <span>Отключено</span>
+                </div>
+                <div>
+                    <span class="status-indicator status-warning"></span>
+                    <span>Предупреждение</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        <div class="demo-section">
+            <h2>🃏 Карточки</h2>
+            <div class="card-grid">
+                <div class="storm-card">
+                    <h3>Безопасность</h3>
+                    <p>Статус: <span class="status-indicator status-connected"></span> Защищено</p>
+                    <button class="btn btn-primary">Настроить</button>
+                </div>
+                <div class="storm-card">
+                    <h3>VPN</h3>
+                    <p>Статус: <span class="status-indicator status-disconnected"></span> Отключено</p>
+                    <button class="btn btn-success">Подключить</button>
+                </div>
+                <div class="storm-card">
+                    <h3>Семья</h3>
+                    <p>Участников: 4</p>
+                    <button class="btn gold-button">Управление</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Preview -->
+        <div class="demo-section">
+            <h2>📱 Мобильное приложение</h2>
+            <div class="mobile-preview">
+                <div class="mobile-header">
+                    <h3 class="gold-accent">ALADDIN Security</h3>
+                    <p>Грозовое небо</p>
+                </div>
+                
+                <div class="storm-card">
+                    <h4>Статус безопасности</h4>
+                    <p><span class="status-indicator status-connected"></span> Все системы защищены</p>
+                </div>
+                
+                <div class="mobile-nav">
+                    <a href="#" class="mobile-nav-item">
+                        <div>🛡️</div>
+                        <div>Безопасность</div>
+                    </a>
+                    <a href="#" class="mobile-nav-item">
+                        <div>🌐</div>
+                        <div>VPN</div>
+                    </a>
+                    <a href="#" class="mobile-nav-item">
+                        <div>👨‍👩‍👧‍👦</div>
+                        <div>Семья</div>
+                    </a>
+                    <a href="#" class="mobile-nav-item">
+                        <div>⚙️</div>
+                        <div>Настройки</div>
+                    </a>
+                </div>
+                
+                <div class="button-demo">
+                    <button class="btn btn-primary">Подключить VPN</button>
+                    <button class="btn gold-button">Премиум</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lightning Effects -->
+        <div class="demo-section">
+            <h2>⚡ Эффекты молний</h2>
+            <div class="lightning-effect" style="height: 100px; border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                <h3 class="gold-accent">Молнии грозового неба</h3>
+            </div>
+        </div>
+
+        <!-- Code Examples -->
+        <div class="demo-section">
+            <h2>💻 Примеры кода</h2>
+            <div class="storm-card">
+                <h4>CSS переменные:</h4>
+                <pre style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; color: var(--text-primary); overflow-x: auto;">
+:root {
+    --storm-sky-dark: #0a1128;
+    --storm-sky-main: #1e3a5f;
+    --storm-sky-mid: #2e5090;
+    --gold-main: #F59E0B;
+    --success-green: #10B981;
+    --error-red: #EF4444;
+}
+                </pre>
+            </div>
+            
+            <div class="storm-card">
+                <h4>Swift (iOS):</h4>
+                <pre style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; color: var(--text-primary); overflow-x: auto;">
+struct StormSkyColors {
+    static let stormSkyMain = Color(hex: "#1e3a5f")
+    static let goldMain = Color(hex: "#F59E0B")
+    static let successGreen = Color(hex: "#10B981")
+}
+                </pre>
+            </div>
+            
+            <div class="storm-card">
+                <h4>Kotlin (Android):</h4>
+                <pre style="background: var(--bg-secondary); padding: 15px; border-radius: 10px; color: var(--text-primary); overflow-x: auto;">
+object StormSkyColors {
+    val stormSkyMain = Color.parseColor("#1e3a5f")
+    val goldMain = Color.parseColor("#F59E0B")
+    val successGreen = Color.parseColor("#10B981")
+}
+                </pre>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-4">
+            <p class="gold-accent">🎉 Единая тема "Грозовое небо" готова для всех платформ!</p>
+            <p>iOS • Android • Web • VPN</p>
+        </div>
+    </div>
+
+    <script>
+        // Добавляем интерактивность
+        document.addEventListener('DOMContentLoaded', function() {
+            // Анимация появления карточек
+            const cards = document.querySelectorAll('.storm-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(50px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+
+            // Эффект hover для кнопок
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px) scale(1.02)';
+                });
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            // Эффект hover для карточек
+            const stormCards = document.querySelectorAll('.storm-card');
+            stormCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+

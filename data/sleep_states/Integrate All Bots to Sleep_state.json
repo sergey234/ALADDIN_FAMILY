@@ -1,0 +1,9 @@
+{
+  "function_name": "Integrate All Bots to Sleep",
+  "function_id": "integrate_all_bots_to_sleep",
+  "sleep_time": "2025-09-15T22:02:30.065683",
+  "previous_status": "sleeping",
+  "security_level": "medium",
+  "is_critical": false,
+  "minimal_system_sleep": true
+}

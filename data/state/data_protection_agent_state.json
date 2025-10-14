@@ -1,0 +1,26 @@
+{
+  "protected_data": {},
+  "metrics": {
+    "total_data_items": 0,
+    "protected_items": 0,
+    "encrypted_items": 0,
+    "anonymized_items": 0,
+    "compliant_items": 0,
+    "at_risk_items": 0,
+    "compromised_items": 0,
+    "encryption_operations": 0,
+    "backup_operations": 0,
+    "compliance_checks": 0,
+    "risk_assessments": 0,
+    "last_updated": "2025-09-25T17:54:09.389362"
+  },
+  "protection_events": [],
+  "config": {
+    "encryption_enabled": true,
+    "anonymization_enabled": true,
+    "backup_enabled": true,
+    "compliance_check_enabled": true,
+    "risk_assessment_enabled": true
+  },
+  "last_saved": "2025-09-25T17:54:09.389597"
+}

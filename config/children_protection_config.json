@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "strict_mode": true,
+  "auto_block_threats": true,
+  "parent_notifications": true,
+  "threat_detection_threshold": 0.7,
+  "content_filtering": true,
+  "video_analysis": true,
+  "text_analysis": true
+}

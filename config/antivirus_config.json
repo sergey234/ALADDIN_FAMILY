@@ -1,0 +1,9 @@
+{
+  "enabled": true,
+  "engine": "ClamAV",
+  "port": 8002,
+  "auto_scan": true,
+  "real_time_protection": true,
+  "quarantine_enabled": true,
+  "scan_schedule": "daily"
+}

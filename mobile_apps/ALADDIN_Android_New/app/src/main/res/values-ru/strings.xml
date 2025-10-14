@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    strings.xml (Russian)
+    ALADDIN - AI Защита Семьи
+    Русская локализация
+-->
+<resources>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         ОБЩИЕ
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="app_name">ALADDIN</string>
+    <string name="app_tagline">AI Защита Семьи</string>
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_done">Готово</string>
+    <string name="common_save">Сохранить</string>
+    <string name="common_delete">Удалить</string>
+    <string name="common_edit">Редактировать</string>
+    <string name="common_close">Закрыть</string>
+    <string name="common_back">Назад</string>
+    <string name="common_next">Далее</string>
+    <string name="common_loading">Загрузка...</string>
+    <string name="common_error">Ошибка</string>
+    <string name="common_success">Успешно</string>
+    <string name="common_warning">Внимание</string>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         ГЛАВНЫЙ ЭКРАН
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="main_title">ALADDIN</string>
+    <string name="main_subtitle">AI Защита Семьи</string>
+    <string name="main_vpn_title">VPN ЗАЩИТА</string>
+    <string name="main_functions_title">ОСНОВНЫЕ ФУНКЦИИ</string>
+    <string name="main_quick_actions">БЫСТРЫЕ ДЕЙСТВИЯ</string>
+    <string name="main_emergency">Экстренная помощь</string>
+    <string name="main_parental_control">Детский контроль</string>
+    <string name="main_device_security">Безопасность устройств</string>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         СЕМЬЯ
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="family_title">СЕМЬЯ</string>
+    <string name="family_subtitle">%d члена под защитой</string>
+    <string name="family_members">ЧЛЕНЫ СЕМЬИ</string>
+    <string name="family_add_member">Добавить члена семьи</string>
+    <string name="family_add_description">Пригласите близких в вашу защищённую сеть</string>
+    <string name="family_stats_threats">Угроз</string>
+    <string name="family_stats_protection">Защита</string>
+    <string name="family_stats_devices">Устройств</string>
+    <string name="family_role_parent">Родитель</string>
+    <string name="family_role_child">Ребёнок</string>
+    <string name="family_role_teenager">Подросток</string>
+    <string name="family_role_elderly">Пожилой</string>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         VPN
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="vpn_title">VPN ЗАЩИТА</string>
+    <string name="vpn_connected">Подключено</string>
+    <string name="vpn_disconnected">Отключено</string>
+    <string name="vpn_protected">ЗАЩИЩЕНО</string>
+    <string name="vpn_not_protected">НЕ ЗАЩИЩЕНО</string>
+    <string name="vpn_connection_encrypted">Ваше соединение зашифровано</string>
+    <string name="vpn_connection_not_encrypted">Ваше соединение не защищено</string>
+    <string name="vpn_server">СЕРВЕР</string>
+    <string name="vpn_statistics">СТАТИСТИКА</string>
+    <string name="vpn_downloaded">Загружено</string>
+    <string name="vpn_uploaded">Отправлено</string>
+    <string name="vpn_session_time">Время сессии</string>
+    <string name="vpn_threats_blocked">Заблокировано</string>
+    <string name="vpn_connect">Включить VPN</string>
+    <string name="vpn_disconnect">Отключить VPN</string>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         АНАЛИТИКА
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="analytics_title">АНАЛИТИКА</string>
+    <string name="analytics_subtitle">Статистика защиты</string>
+    <string name="analytics_overall">ОБЩАЯ СТАТИСТИКА</string>
+    <string name="analytics_threats">Угроз</string>
+    <string name="analytics_blocked">Заблок.</string>
+    <string name="analytics_scanned">Проверено</string>
+    <string name="analytics_protection_level">УРОВЕНЬ ЗАЩИТЫ</string>
+    <string name="analytics_efficiency">Эффективность защиты</string>
+    <string name="analytics_top_threats">ТОП УГРОЗ</string>
+    <string name="analytics_threat_types">ТИПЫ УГРОЗ</string>
+    <string name="analytics_period_day">День</string>
+    <string name="analytics_period_week">Неделя</string>
+    <string name="analytics_period_month">Месяц</string>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         AI ПОМОЩНИК
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="ai_title">AI ПОМОЩНИК</string>
+    <string name="ai_subtitle">Всегда готов помочь</string>
+    <string name="ai_placeholder">Ваше сообщение...</string>
+    <string name="ai_welcome">Привет! Я ваш AI помощник. Чем могу помочь?</string>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         РОДИТЕЛЬСКИЙ КОНТРОЛЬ
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="parental_title">РОДИТЕЛЬСКИЙ КОНТРОЛЬ</string>
+    <string name="parental_subtitle">Управление для %s</string>
+    <string name="parental_select_child">ВЫБОР РЕБЁНКА</string>
+    <string name="parental_content_filters">ФИЛЬТРЫ КОНТЕНТА</string>
+    <string name="parental_screen_time">ЛИМИТЫ ЭКРАННОГО ВРЕМЕНИ</string>
+    <string name="parental_location">ОТСЛЕЖИВАНИЕ МЕСТОПОЛОЖЕНИЯ</string>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         НАСТРОЙКИ
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="settings_title">НАСТРОЙКИ</string>
+    <string name="settings_subtitle">Управление приложением</string>
+    <string name="settings_profile">ПРОФИЛЬ</string>
+    <string name="settings_security">БЕЗОПАСНОСТЬ</string>
+    <string name="settings_application">ПРИЛОЖЕНИЕ</string>
+    <string name="settings_notifications">Уведомления</string>
+    <string name="settings_dark_mode">Тёмная тема</string>
+    <string name="settings_logout">Выйти</string>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         ТАРИФЫ
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="tariffs_title">ТАРИФЫ</string>
+    <string name="tariffs_subtitle">Выберите ваш план</string>
+    <string name="tariffs_subscribe">Подключить %s</string>
+    <string name="tariffs_restore">Восстановить покупки</string>
+    <string name="tariffs_basic">Базовый</string>
+    <string name="tariffs_individual">Индивидуальный</string>
+    <string name="tariffs_family">Семейный</string>
+    <string name="tariffs_premium">Премиум</string>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         АВТОРИЗАЦИЯ
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="auth_login">Войти</string>
+    <string name="auth_register">Зарегистрироваться</string>
+    <string name="auth_forgot_password">Забыли пароль?</string>
+    <string name="auth_email_placeholder">Email</string>
+    <string name="auth_password_placeholder">Пароль</string>
+    <string name="auth_no_account">Нет аккаунта?</string>
+    <string name="auth_have_account">Уже есть аккаунт?</string>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         ОНБОРДИНГ
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="onboarding_title_1">AI ЗАЩИТА СЕМЬИ</string>
+    <string name="onboarding_desc_1">Комплексная защита для всей вашей семьи от всех онлайн-угроз.</string>
+    <string name="onboarding_title_2">БЕЗОПАСНЫЙ ИНТЕРНЕТ</string>
+    <string name="onboarding_desc_2">VPN, антивирус и блокировка рекламы для всех ваших устройств.</string>
+    <string name="onboarding_title_3">РОДИТЕЛЬСКИЙ КОНТРОЛЬ</string>
+    <string name="onboarding_desc_3">Управляйте временем экрана и контентом для детей и подростков.</string>
+    <string name="onboarding_title_4">УМНАЯ АНАЛИТИКА</string>
+    <string name="onboarding_desc_4">Подробные отчёты и AI-помощник для вашей безопасности.</string>
+    <string name="onboarding_next">Далее</string>
+    <string name="onboarding_start">Начать пользоваться</string>
+    
+    <!-- ═══════════════════════════════════════════════════════════════
+         ОШИБКИ
+         ═══════════════════════════════════════════════════════════════ -->
+    
+    <string name="error_network">Ошибка сети. Проверьте подключение к интернету.</string>
+    <string name="error_unknown">Произошла неизвестная ошибка.</string>
+    <string name="error_invalid_credentials">Неверный email или пароль.</string>
+    <string name="success_saved">Данные сохранены!</string>
+    <string name="success_purchase">Подписка успешно оформлена!</string>
+    
+</resources>
+
+
+

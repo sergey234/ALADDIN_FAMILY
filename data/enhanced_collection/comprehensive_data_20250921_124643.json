@@ -1,0 +1,16 @@
+{
+  "metadata": {
+    "collection_timestamp": "2025-09-21T12:45:37.152657",
+    "total_sources": 8,
+    "total_records": 0,
+    "collection_duration": 66.32257223129272
+  },
+  "cbr_data": [],
+  "news_data": [],
+  "government_data": [],
+  "fraud_patterns": {
+    "by_type": {},
+    "by_region": {},
+    "by_severity": {}
+  }
+}

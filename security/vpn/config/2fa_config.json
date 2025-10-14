@@ -1,0 +1,66 @@
+{
+  "2fa_settings": {
+    "enabled": true,
+    "required_for": {
+      "admin_panel": true,
+      "vpn_connection": false,
+      "config_download": false,
+      "status_check": false,
+      "user_registration": false
+    },
+    "methods": {
+      "sms": {
+        "enabled": true,
+        "provider": "twilio",
+        "cost_per_sms": 0.01
+      },
+      "email": {
+        "enabled": true,
+        "smtp_server": "smtp.gmail.com",
+        "cost_per_email": 0.001
+      },
+      "totp_app": {
+        "enabled": true,
+        "issuer": "ALADDIN VPN",
+        "algorithm": "SHA1",
+        "digits": 6,
+        "period": 30
+      },
+      "backup_codes": {
+        "enabled": true,
+        "count": 10,
+        "length": 8
+      }
+    },
+    "security": {
+      "max_attempts": 3,
+      "lockout_duration_minutes": 15,
+      "code_expiry_minutes": 5,
+      "remember_device_days": 30
+    },
+    "bypass_conditions": {
+      "trusted_networks": [
+        "192.168.0.0/16",
+        "10.0.0.0/8",
+        "172.16.0.0/12"
+      ],
+      "emergency_codes": true,
+      "admin_override": true
+    }
+  },
+  "user_experience": {
+    "show_2fa_option": true,
+    "allow_skip_for_trusted": true,
+    "remember_this_device": true,
+    "auto_redirect_after_2fa": true
+  },
+  "cost_analysis": {
+    "monthly_2fa_costs": {
+      "sms": 0,
+      "email": 0,
+      "totp_app": 0,
+      "total": 0
+    },
+    "cost_per_user_per_month": 0
+  }
+}

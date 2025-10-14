@@ -1,0 +1,130 @@
+{
+  "file": "security/device_security.py",
+  "timestamp": "2025-09-20T20:38:51.955563",
+  "total_analysis_time_seconds": 0.06862115859985352,
+  "overall_quality_score": 97.8,
+  "analysis_details": {
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "encrypt",
+        "auth",
+        "authorize",
+        "security",
+        "threat",
+        "vulnerability",
+        "malware",
+        "virus",
+        "compliance"
+      ],
+      "message": "Найдено 9 ключевых слов безопасности"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип для аргумента 'cls' в функции from_dict (строка 110)",
+        "Отсутствует тип для аргумента 'cls' в функции from_dict (строка 163)",
+        "Отсутствует тип для аргумента 'cls' в функции from_dict (строка 210)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 231)",
+        "Отсутствует тип возвращаемого значения для функции update_metrics (строка 241)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 286)",
+        "Отсутствует тип возвращаемого значения для функции _save_policies (строка 349)",
+        "Отсутствует тип возвращаемого значения для функции _update_metrics (строка 573)",
+        "Отсутствует тип возвращаемого значения для функции export_device_report (строка 581)"
+      ],
+      "message": "Найдено 9 отсутствующих type hints"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 32,
+      "num_classes": 9,
+      "message": "Функций: 32, Классов: 9"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 25014,
+      "lines": 652,
+      "message": "Размер: 25014 байт, Строк: 652"
+    },
+    "docstrings": {
+      "status": "warning",
+      "missing_docstrings": [
+        "Отсутствует docstring для to_dict (строка 91)",
+        "Отсутствует docstring для from_dict (строка 110)",
+        "Отсутствует docstring для to_dict (строка 150)",
+        "Отсутствует docstring для from_dict (строка 163)",
+        "Отсутствует docstring для to_dict (строка 196)",
+        "Отсутствует docstring для from_dict (строка 210)",
+        "Отсутствует docstring для __init__ (строка 231)",
+        "Отсутствует docstring для to_dict (строка 268)",
+        "Отсутствует docstring для __init__ (строка 286)"
+      ],
+      "message": "Найдено 9 отсутствующих docstring"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "dataclasses",
+        "enum",
+        "time",
+        "json",
+        "typing",
+        "os",
+        "datetime"
+      ],
+      "message": "Зависимости: 7"
+    },
+    "imports": {
+      "status": "success",
+      "message": "Импорты корректны"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 9,
+    "security_classes_found": 0,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": true,
+    "docstrings_ok": false,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Добавьте классы системы безопасности.",
+    "Зарегистрируйте функцию в SFM реестре.",
+    "Добавьте отсутствующие docstrings для улучшения документации.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

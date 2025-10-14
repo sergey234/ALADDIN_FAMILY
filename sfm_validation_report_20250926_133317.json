@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-09-26T13:33:17.424248",
+  "file_analyzed": "security/family/family_profile_manager.py",
+  "total_classes": 5,
+  "total_functions": 0,
+  "total_methods": 8,
+  "errors_found": 0,
+  "warnings_found": 0,
+  "fixes_applied": 0,
+  "quality_score": 100.0
+}

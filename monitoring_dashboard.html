@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Security - Мониторинг в реальном времени</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .card h3 {
+            color: #4a5568;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-name {
+            font-weight: 500;
+            color: #2d3748;
+        }
+        
+        .metric-value {
+            font-weight: bold;
+            color: #3182ce;
+        }
+        
+        .metric-unit {
+            color: #718096;
+            font-size: 0.9em;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-running {
+            background-color: #48bb78;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-warning {
+            background-color: #ed8936;
+        }
+        
+        .status-error {
+            background-color: #f56565;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .refresh-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            margin: 50px 0;
+        }
+        
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .timestamp {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 20px;
+        }
+        
+        .alerts-section {
+            background: #fff5f5;
+            border-left: 4px solid #f56565;
+        }
+        
+        .metrics-section {
+            background: #f0fff4;
+            border-left: 4px solid #48bb78;
+        }
+        
+        .system-section {
+            background: #ebf8ff;
+            border-left: 4px solid #3182ce;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ ALADDIN Security</h1>
+            <p>Мониторинг системы в реальном времени</p>
+        </div>
+        
+        <button class="refresh-btn" onclick="loadDashboard()">
+            🔄 Обновить данные
+        </button>
+        
+        <div id="loading" class="loading">
+            ⏳ Загрузка данных мониторинга...
+        </div>
+        
+        <div id="error" class="error" style="display: none;">
+            ❌ Ошибка загрузки данных. Проверьте, что Monitoring API Server запущен на порту 5006.
+        </div>
+        
+        <div id="dashboard" class="dashboard-grid" style="display: none;">
+            <!-- Данные будут загружены через JavaScript -->
+        </div>
+        
+        <div id="timestamp" class="timestamp"></div>
+    </div>
+
+    <script>
+        let refreshInterval;
+        
+        async function loadDashboard() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const dashboard = document.getElementById('dashboard');
+            const timestamp = document.getElementById('timestamp');
+            
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            dashboard.style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:5006/api/monitoring/dashboard');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayDashboard(data.data);
+                
+                loading.style.display = 'none';
+                dashboard.style.display = 'grid';
+                timestamp.textContent = `Последнее обновление: ${new Date().toLocaleString('ru-RU')}`;
+                
+            } catch (err) {
+                console.error('Ошибка загрузки:', err);
+                loading.style.display = 'none';
+                error.style.display = 'block';
+                error.textContent = `❌ Ошибка загрузки данных: ${err.message}. Проверьте, что Monitoring API Server запущен на порту 5006.`;
+            }
+        }
+        
+        function displayDashboard(data) {
+            const dashboard = document.getElementById('dashboard');
+            
+            // Системная информация
+            const systemInfo = `
+                <div class="card system-section">
+                    <h3>🖥️ Системная информация</h3>
+                    <div class="metric">
+                        <span class="metric-name">Статус системы</span>
+                        <span class="metric-value">
+                            <span class="status-indicator status-running"></span>
+                            RUNNING
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-name">Время работы</span>
+                        <span class="metric-value">${data.system_info.uptime_formatted}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-name">Последнее обновление</span>
+                        <span class="metric-value">${new Date(data.system_info.last_update).toLocaleString('ru-RU')}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Метрики системы
+            let metricsHtml = `
+                <div class="card metrics-section">
+                    <h3>📊 Метрики системы</h3>
+            `;
+            
+            for (const [name, metric] of Object.entries(data.metrics)) {
+                const value = typeof metric.value === 'number' ? metric.value.toFixed(2) : metric.value;
+                const unit = metric.unit || '';
+                metricsHtml += `
+                    <div class="metric">
+                        <span class="metric-name">${name}</span>
+                        <span class="metric-value">${value} <span class="metric-unit">${unit}</span></span>
+                    </div>
+                `;
+            }
+            
+            metricsHtml += '</div>';
+            
+            // Алерты
+            const alertsHtml = `
+                <div class="card alerts-section">
+                    <h3>🚨 Алерты и уведомления</h3>
+                    <div class="metric">
+                        <span class="metric-name">Всего алертов</span>
+                        <span class="metric-value">${data.alerts.total}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-name">Активных правил</span>
+                        <span class="metric-value">${data.rules.active}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-name">Всего правил</span>
+                        <span class="metric-value">${data.rules.total}</span>
+                    </div>
+                </div>
+            `;
+            
+            // Статистика
+            const statsHtml = `
+                <div class="card">
+                    <h3>📈 Статистика</h3>
+                    <div class="metric">
+                        <span class="metric-name">Всего метрик</span>
+                        <span class="metric-value">${data.stats.total_metrics}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-name">Активных правил</span>
+                        <span class="metric-value">${data.stats.active_rules}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-name">Время работы системы</span>
+                        <span class="metric-value">${Math.floor(data.stats.system_uptime / 3600)}ч ${Math.floor((data.stats.system_uptime % 3600) / 60)}м</span>
+                    </div>
+                </div>
+            `;
+            
+            dashboard.innerHTML = systemInfo + metricsHtml + alertsHtml + statsHtml;
+        }
+        
+        // Автообновление каждые 10 секунд
+        function startAutoRefresh() {
+            refreshInterval = setInterval(loadDashboard, 10000);
+        }
+        
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+        
+        // Загрузка при старте
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboard();
+            startAutoRefresh();
+        });
+        
+        // Остановка автообновления при уходе со страницы
+        window.addEventListener('beforeunload', stopAutoRefresh);
+    </script>
+</body>
+</html>

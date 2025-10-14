@@ -1,0 +1,11 @@
+{
+  "enabled": true,
+  "port": 8004,
+  "real_time": true,
+  "alerts": true,
+  "dashboard": true,
+  "metrics_retention_days": 30,
+  "log_level": "INFO",
+  "performance_monitoring": true,
+  "security_monitoring": true
+}

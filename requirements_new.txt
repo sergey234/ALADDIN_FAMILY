@@ -1,0 +1,258 @@
+# Interactive API Docs и Real-time Architecture - Новые зависимости
+# FastAPI и связанные модули для Interactive API Docs
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+jinja2>=3.1.0
+python-multipart>=0.0.6
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+httpx>=0.25.0
+
+# Flask и связанные модули для Real-time Architecture
+flask>=3.0.0
+flask-socketio>=5.3.0
+flask-cors>=4.0.0
+
+# Для работы с Docker
+docker>=6.1.0
+
+# Для системного мониторинга
+psutil>=5.9.0
+
+# Для создания графов и визуализации
+networkx>=3.2
+matplotlib>=3.7.0
+numpy>=1.24.0
+
+# Для работы с YAML конфигурациями
+pyyaml>=6.0
+
+# Для шифрования и безопасности
+cryptography>=41.0.0
+pyjwt>=2.8.0
+
+# Для работы с базами данных
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+
+# Для мониторинга и метрик
+prometheus-client>=0.19.0
+
+# Для логирования
+structlog>=23.0.0
+
+# Для валидации данных
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Для работы с JSON
+orjson>=3.9.0
+
+# Для асинхронного программирования
+asyncio-mqtt>=0.16.0
+aiofiles>=23.2.0
+
+# Для работы с временем
+python-dateutil>=2.8.0
+
+# Для работы с HTTP
+requests>=2.31.0
+urllib3>=2.0.0
+
+# Для работы с процессами
+subprocess32>=3.5.4; python_version < '3.3'
+
+# Для работы с файловой системой
+watchdog>=3.0.0
+
+# Для работы с конфигурациями
+configparser>=6.0.0
+
+# Для работы с регулярными выражениями
+regex>=2023.10.0
+
+# Для работы с типами данных
+typing-extensions>=4.8.0
+
+# Для работы с JSON Schema
+jsonschema>=4.19.0
+
+# Для работы с OpenAPI
+openapi-spec-validator>=0.7.0
+
+# Для работы с CORS
+python-cors>=1.7.0
+
+# Для работы с WebSockets
+websockets>=12.0
+
+# Для работы с SSL/TLS
+certifi>=2023.7.0
+
+# Для работы с кодировками
+charset-normalizer>=3.3.0
+
+# Для работы с временными зонами
+pytz>=2023.3
+
+# Для работы с UUID
+uuid>=1.30
+
+# Для работы с хешированием
+hashlib-compat>=1.0.0
+
+# Для работы с base64
+base64>=0.1.0
+
+# Для работы с threading
+threading>=1.0.0
+
+# Для работы с multiprocessing
+multiprocessing-logging>=0.3.0
+
+# Для работы с сигналами
+signal>=1.0.0
+
+# Для работы с os
+os-sys>=2.1.0
+
+# Для работы с sys
+sys-argv>=1.0.0
+
+# Для работы с pathlib
+pathlib>=1.0.0
+
+# Для работы с tempfile
+tempfile>=1.0.0
+
+# Для работы с shutil
+shutil>=1.0.0
+
+# Для работы с glob
+glob2>=0.7
+
+# Для работы с fnmatch
+fnmatch>=1.0.0
+
+# Для работы с linecache
+linecache>=1.0.0
+
+# Для работы с traceback
+traceback2>=1.4.0
+
+# Для работы с warnings
+warnings>=1.0.0
+
+# Для работы с contextlib
+contextlib2>=21.6.0
+
+# Для работы с functools
+functools32>=3.2.0; python_version < '3.2'
+
+# Для работы с itertools
+itertools>=1.0.0
+
+# Для работы с collections
+collections-extended>=2.0.0
+
+# Для работы с dataclasses
+dataclasses-json>=0.6.0
+
+# Для работы с enum
+enum34>=1.1.0; python_version < '3.4'
+
+# Для работы с abc
+abc>=1.0.0
+
+# Для работы с copy
+copy2>=1.0.0
+
+# Для работы с pickle
+pickle5>=0.0.0; python_version < '3.8'
+
+# Для работы с json
+json5>=0.9.0
+
+# Для работы с yaml
+ruamel.yaml>=0.18.0
+
+# Для работы с toml
+toml>=0.10.0
+
+# Для работы с ini
+configobj>=5.0.0
+
+# Для работы с csv
+csvkit>=1.1.0
+
+# Для работы с xml
+lxml>=4.9.0
+
+# Для работы с html
+beautifulsoup4>=4.12.0
+
+# Для работы с markdown
+markdown>=3.5.0
+
+# Для работы с restructuredtext
+docutils>=0.20.0
+
+# Для работы с sphinx
+sphinx>=7.0.0
+
+# Для работы с pytest
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.0
+
+# Для работы с coverage
+coverage>=7.3.0
+
+# Для работы с black
+black>=23.0.0
+
+# Для работы с flake8
+flake8>=6.0.0
+
+# Для работы с mypy
+mypy>=1.6.0
+
+# Для работы с isort
+isort>=5.12.0
+
+# Для работы с pre-commit
+pre-commit>=3.5.0
+
+# Для работы с tox
+tox>=4.6.0
+
+# Для работы с pip-tools
+pip-tools>=7.0.0
+
+# Для работы с pipenv
+pipenv>=2023.10.0
+
+# Для работы с poetry
+poetry>=1.6.0
+
+# Для работы с setuptools
+setuptools>=69.0.0
+
+# Для работы с wheel
+wheel>=0.42.0
+
+# Для работы с twine
+twine>=4.0.0
+
+# Для работы с build
+build>=1.0.0
+
+# Для работы с hatch
+hatch>=1.8.0
+
+# Для работы с pdm
+pdm>=2.10.0
+
+# Для работы с uv
+uv>=0.1.0

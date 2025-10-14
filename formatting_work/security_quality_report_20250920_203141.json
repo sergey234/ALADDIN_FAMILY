@@ -1,0 +1,119 @@
+{
+  "file": "security/security_monitoring_a_plus.py",
+  "timestamp": "2025-09-20T20:31:41.974844",
+  "total_analysis_time_seconds": 0.05144500732421875,
+  "overall_quality_score": 80.8,
+  "analysis_details": {
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип для аргумента 'other' в функции __eq__ (строка 78)",
+        "Отсутствует тип для аргумента 'other' в функции __eq__ (строка 126)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 173)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 303)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 376)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 455)",
+        "Отсутствует тип для аргумента 'other' в функции __eq__ (строка 646)",
+        "Отсутствует тип возвращаемого значения для функции __iter__ (строка 656)",
+        "Отсутствует тип возвращаемого значения для функции __enter__ (строка 664)",
+        "Отсутствует тип возвращаемого значения для функции __exit__ (строка 669)",
+        "Отсутствует тип для аргумента 'exc_type' в функции __exit__ (строка 669)",
+        "Отсутствует тип для аргумента 'exc_val' в функции __exit__ (строка 669)",
+        "Отсутствует тип для аргумента 'exc_tb' в функции __exit__ (строка 669)",
+        "Отсутствует тип для аргумента 'cls' в функции create_with_custom_config (строка 711)"
+      ],
+      "message": "Найдено 14 отсутствующих type hints"
+    },
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "auth",
+        "authorize",
+        "security",
+        "threat",
+        "monitoring",
+        "alert",
+        "log"
+      ],
+      "message": "Найдено 7 ключевых слов безопасности"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'core.base'",
+      "security_level": "critical",
+      "severity": "high"
+    },
+    "sfm_functions": {
+      "status": "info",
+      "found_functions": [],
+      "message": "Найдено 0 функций SFM"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 50,
+      "num_classes": 11,
+      "message": "Функций: 50, Классов: 11"
+    },
+    "docstrings": {
+      "status": "success",
+      "missing_docstrings": [],
+      "message": "Найдено 0 отсутствующих docstring"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 24443,
+      "lines": 718,
+      "message": "Размер: 24443 байт, Строк: 718"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "asyncio",
+        "datetime",
+        "core",
+        "enum",
+        "typing",
+        "dataclasses",
+        "logging",
+        "abc"
+      ],
+      "message": "Зависимости: 8"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 7,
+    "security_classes_found": 0,
+    "sfm_functions_found": 0,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": true,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте классы системы безопасности.",
+    "Добавьте функции SFM.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

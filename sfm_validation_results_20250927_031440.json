@@ -1,0 +1,1267 @@
+{
+  "etapa6": {
+    "6.1": {
+      "classes_found": {
+        "MonitoringLevel": {
+          "line": 19,
+          "bases": [
+            "Enum"
+          ],
+          "methods": [],
+          "attributes": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "CRITICAL"
+          ],
+          "docstring": "Уровни мониторинга безопасности"
+        },
+        "AlertType": {
+          "line": 27,
+          "bases": [
+            "Enum"
+          ],
+          "methods": [],
+          "attributes": [
+            "THREAT_DETECTED",
+            "ANOMALY_FOUND",
+            "SYSTEM_BREACH",
+            "DATA_LEAK",
+            "UNAUTHORIZED_ACCESS"
+          ],
+          "docstring": "Типы алертов безопасности"
+        },
+        "SecurityEvent": {
+          "line": 37,
+          "bases": [],
+          "methods": [],
+          "attributes": [],
+          "docstring": "Событие безопасности"
+        },
+        "MonitoringConfig": {
+          "line": 49,
+          "bases": [],
+          "methods": [],
+          "attributes": [],
+          "docstring": "Конфигурация мониторинга безопасности"
+        },
+        "IMonitoringStrategy": {
+          "line": 58,
+          "bases": [
+            "ABC"
+          ],
+          "methods": [
+            {
+              "name": "get_strategy_name",
+              "line": 67,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": [
+                "abstractmethod"
+              ]
+            }
+          ],
+          "attributes": [],
+          "docstring": "Интерфейс стратегии мониторинга"
+        },
+        "BaseSecurityStrategy": {
+          "line": 72,
+          "bases": [
+            "IMonitoringStrategy"
+          ],
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 75,
+              "is_async": false,
+              "args": [
+                "self",
+                "config"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_is_enabled",
+              "line": 79,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_create_event",
+              "line": 83,
+              "is_async": false,
+              "args": [
+                "self",
+                "event_id",
+                "level",
+                "alert_type",
+                "description",
+                "source"
+              ],
+              "decorators": []
+            }
+          ],
+          "attributes": [],
+          "docstring": "Базовая стратегия безопасности"
+        },
+        "ThreatDetectionStrategy": {
+          "line": 97,
+          "bases": [
+            "BaseSecurityStrategy"
+          ],
+          "methods": [
+            {
+              "name": "get_strategy_name",
+              "line": 106,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            }
+          ],
+          "attributes": [],
+          "docstring": "Стратегия обнаружения угроз"
+        },
+        "AnomalyDetectionStrategy": {
+          "line": 111,
+          "bases": [
+            "BaseSecurityStrategy"
+          ],
+          "methods": [
+            {
+              "name": "get_strategy_name",
+              "line": 120,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            }
+          ],
+          "attributes": [],
+          "docstring": "Стратегия обнаружения аномалий"
+        },
+        "MonitoringDataManager": {
+          "line": 125,
+          "bases": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 128,
+              "is_async": false,
+              "args": [
+                "self",
+                "config"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "add_event",
+              "line": 133,
+              "is_async": false,
+              "args": [
+                "self",
+                "event"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_events",
+              "line": 138,
+              "is_async": false,
+              "args": [
+                "self",
+                "hours"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_events_by_level",
+              "line": 143,
+              "is_async": false,
+              "args": [
+                "self",
+                "level"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "_cleanup_old_events",
+              "line": 147,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            }
+          ],
+          "attributes": [],
+          "docstring": "Менеджер данных мониторинга"
+        },
+        "AlertManager": {
+          "line": 153,
+          "bases": [],
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 156,
+              "is_async": false,
+              "args": [
+                "self",
+                "config"
+              ],
+              "decorators": []
+            }
+          ],
+          "attributes": [],
+          "docstring": "Менеджер алертов"
+        },
+        "SecurityMonitoringManager": {
+          "line": 174,
+          "bases": [
+            "SecurityBase"
+          ],
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 177,
+              "is_async": false,
+              "args": [
+                "self",
+                "name",
+                "config"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "get_security_status",
+              "line": 225,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "add_monitoring_strategy",
+              "line": 238,
+              "is_async": false,
+              "args": [
+                "self",
+                "strategy"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "remove_monitoring_strategy",
+              "line": 243,
+              "is_async": false,
+              "args": [
+                "self",
+                "strategy_name"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "update_config",
+              "line": 248,
+              "is_async": false,
+              "args": [
+                "self",
+                "new_config"
+              ],
+              "decorators": []
+            },
+            {
+              "name": "stop_monitoring",
+              "line": 255,
+              "is_async": false,
+              "args": [
+                "self"
+              ],
+              "decorators": []
+            }
+          ],
+          "attributes": [],
+          "docstring": "Менеджер мониторинга безопасности"
+        }
+      },
+      "base_classes": {
+        "MonitoringLevel": [
+          "Enum"
+        ],
+        "AlertType": [
+          "Enum"
+        ],
+        "SecurityEvent": [],
+        "MonitoringConfig": [],
+        "IMonitoringStrategy": [
+          "ABC"
+        ],
+        "BaseSecurityStrategy": [
+          "IMonitoringStrategy"
+        ],
+        "ThreatDetectionStrategy": [
+          "BaseSecurityStrategy"
+        ],
+        "AnomalyDetectionStrategy": [
+          "BaseSecurityStrategy"
+        ],
+        "MonitoringDataManager": [],
+        "AlertManager": [],
+        "SecurityMonitoringManager": [
+          "SecurityBase"
+        ]
+      },
+      "inheritance_hierarchy": {
+        "MonitoringLevel": {
+          "bases": [
+            "Enum"
+          ],
+          "children": []
+        },
+        "AlertType": {
+          "bases": [
+            "Enum"
+          ],
+          "children": []
+        },
+        "SecurityEvent": {
+          "bases": [],
+          "children": []
+        },
+        "MonitoringConfig": {
+          "bases": [],
+          "children": []
+        },
+        "IMonitoringStrategy": {
+          "bases": [
+            "ABC"
+          ],
+          "children": [
+            "BaseSecurityStrategy"
+          ]
+        },
+        "BaseSecurityStrategy": {
+          "bases": [
+            "IMonitoringStrategy"
+          ],
+          "children": [
+            "ThreatDetectionStrategy",
+            "AnomalyDetectionStrategy"
+          ]
+        },
+        "ThreatDetectionStrategy": {
+          "bases": [
+            "BaseSecurityStrategy"
+          ],
+          "children": []
+        },
+        "AnomalyDetectionStrategy": {
+          "bases": [
+            "BaseSecurityStrategy"
+          ],
+          "children": []
+        },
+        "MonitoringDataManager": {
+          "bases": [],
+          "children": []
+        },
+        "AlertManager": {
+          "bases": [],
+          "children": []
+        },
+        "SecurityMonitoringManager": {
+          "bases": [
+            "SecurityBase"
+          ],
+          "children": []
+        }
+      },
+      "total_classes": 11
+    },
+    "6.2": {
+      "MonitoringLevel": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "AlertType": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "SecurityEvent": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "MonitoringConfig": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "IMonitoringStrategy": {
+        "public_methods": [
+          {
+            "name": "get_strategy_name",
+            "line": 67,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": [
+              "abstractmethod"
+            ]
+          }
+        ],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "BaseSecurityStrategy": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [
+          {
+            "name": "_is_enabled",
+            "line": 79,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "_create_event",
+            "line": 83,
+            "is_async": false,
+            "args": [
+              "self",
+              "event_id",
+              "level",
+              "alert_type",
+              "description",
+              "source"
+            ],
+            "decorators": []
+          }
+        ],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "ThreatDetectionStrategy": {
+        "public_methods": [
+          {
+            "name": "get_strategy_name",
+            "line": 106,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          }
+        ],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "AnomalyDetectionStrategy": {
+        "public_methods": [
+          {
+            "name": "get_strategy_name",
+            "line": 120,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          }
+        ],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "MonitoringDataManager": {
+        "public_methods": [
+          {
+            "name": "add_event",
+            "line": 133,
+            "is_async": false,
+            "args": [
+              "self",
+              "event"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_events",
+            "line": 138,
+            "is_async": false,
+            "args": [
+              "self",
+              "hours"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "get_events_by_level",
+            "line": 143,
+            "is_async": false,
+            "args": [
+              "self",
+              "level"
+            ],
+            "decorators": []
+          }
+        ],
+        "private_methods": [],
+        "protected_methods": [
+          {
+            "name": "_cleanup_old_events",
+            "line": 147,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          }
+        ],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "AlertManager": {
+        "public_methods": [],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      },
+      "SecurityMonitoringManager": {
+        "public_methods": [
+          {
+            "name": "get_security_status",
+            "line": 225,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "add_monitoring_strategy",
+            "line": 238,
+            "is_async": false,
+            "args": [
+              "self",
+              "strategy"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "remove_monitoring_strategy",
+            "line": 243,
+            "is_async": false,
+            "args": [
+              "self",
+              "strategy_name"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "update_config",
+            "line": 248,
+            "is_async": false,
+            "args": [
+              "self",
+              "new_config"
+            ],
+            "decorators": []
+          },
+          {
+            "name": "stop_monitoring",
+            "line": 255,
+            "is_async": false,
+            "args": [
+              "self"
+            ],
+            "decorators": []
+          }
+        ],
+        "private_methods": [],
+        "protected_methods": [],
+        "static_methods": [],
+        "class_methods": [],
+        "property_methods": [],
+        "async_methods": []
+      }
+    },
+    "6.3": {
+      "MonitoringLevel": {
+        "instantiation_test": true,
+        "method_tests": {},
+        "errors": []
+      },
+      "AlertType": {
+        "instantiation_test": true,
+        "method_tests": {},
+        "errors": []
+      },
+      "SecurityEvent": {
+        "instantiation_test": true,
+        "method_tests": {},
+        "errors": []
+      },
+      "MonitoringConfig": {
+        "instantiation_test": true,
+        "method_tests": {},
+        "errors": []
+      },
+      "IMonitoringStrategy": {
+        "instantiation_test": true,
+        "method_tests": {
+          "get_strategy_name": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      },
+      "BaseSecurityStrategy": {
+        "instantiation_test": true,
+        "method_tests": {
+          "__init__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_is_enabled": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_create_event": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      },
+      "ThreatDetectionStrategy": {
+        "instantiation_test": true,
+        "method_tests": {
+          "get_strategy_name": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      },
+      "AnomalyDetectionStrategy": {
+        "instantiation_test": true,
+        "method_tests": {
+          "get_strategy_name": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      },
+      "MonitoringDataManager": {
+        "instantiation_test": true,
+        "method_tests": {
+          "__init__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "add_event": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_events": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_events_by_level": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "_cleanup_old_events": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      },
+      "AlertManager": {
+        "instantiation_test": true,
+        "method_tests": {
+          "__init__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      },
+      "SecurityMonitoringManager": {
+        "instantiation_test": true,
+        "method_tests": {
+          "__init__": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "get_security_status": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "add_monitoring_strategy": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "remove_monitoring_strategy": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "update_config": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          },
+          "stop_monitoring": {
+            "accessible": true,
+            "signature_valid": true,
+            "error_handling": false
+          }
+        },
+        "errors": []
+      }
+    },
+    "6.4": {},
+    "6.5": {
+      "standard": [
+        "logging",
+        "asyncio",
+        "typing",
+        "datetime",
+        "dataclasses",
+        "enum"
+      ],
+      "third_party": [
+        "abc",
+        "core.base"
+      ],
+      "local": [],
+      "unused": [
+        "abc",
+        "enum",
+        "typing",
+        "dataclasses",
+        "core.base"
+      ],
+      "circular": []
+    },
+    "6.6": {
+      "MonitoringLevel": {
+        "class_attributes": [
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "CRITICAL"
+        ],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "AlertType": {
+        "class_attributes": [
+          "THREAT_DETECTED",
+          "ANOMALY_FOUND",
+          "SYSTEM_BREACH",
+          "DATA_LEAK",
+          "UNAUTHORIZED_ACCESS"
+        ],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "SecurityEvent": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "MonitoringConfig": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "IMonitoringStrategy": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "BaseSecurityStrategy": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "ThreatDetectionStrategy": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "AnomalyDetectionStrategy": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "MonitoringDataManager": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "AlertManager": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      },
+      "SecurityMonitoringManager": {
+        "class_attributes": [],
+        "instance_attributes": [],
+        "init_attributes": [],
+        "missing_init": []
+      }
+    },
+    "6.7": {
+      "MonitoringLevel": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "AlertType": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "SecurityEvent": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "MonitoringConfig": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "IMonitoringStrategy": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "BaseSecurityStrategy": {
+        "present": [
+          "init"
+        ],
+        "missing": [
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "ThreatDetectionStrategy": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "AnomalyDetectionStrategy": {
+        "present": [],
+        "missing": [
+          "init",
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__init__",
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "MonitoringDataManager": {
+        "present": [
+          "init"
+        ],
+        "missing": [
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "AlertManager": {
+        "present": [
+          "init"
+        ],
+        "missing": [
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__str__",
+          "__repr__"
+        ]
+      },
+      "SecurityMonitoringManager": {
+        "present": [
+          "init"
+        ],
+        "missing": [
+          "str",
+          "repr",
+          "eq",
+          "lt",
+          "le",
+          "gt",
+          "ge",
+          "ne",
+          "iter",
+          "next",
+          "enter",
+          "exit"
+        ],
+        "recommended": [
+          "__str__",
+          "__repr__"
+        ]
+      }
+    },
+    "6.8": {
+      "classes_with_docstring": 11,
+      "classes_without_docstring": 0,
+      "methods_with_docstring": 14,
+      "methods_without_docstring": 4,
+      "functions_with_docstring": 0,
+      "functions_without_docstring": 0,
+      "missing_docstrings": [
+        "Метод BaseSecurityStrategy.__init__",
+        "Метод MonitoringDataManager.__init__",
+        "Метод AlertManager.__init__",
+        "Метод SecurityMonitoringManager.__init__"
+      ]
+    },
+    "6.9": {
+      "methods_with_try_except": 0,
+      "methods_without_try_except": 18,
+      "logging_usage": 0,
+      "error_return_handling": 0
+    },
+    "6.10": {
+      "syntax_valid": true,
+      "imports_valid": true,
+      "classes_instantiable": true,
+      "methods_callable": true,
+      "integration_ok": true,
+      "errors": []
+    },
+    "6.11": {
+      "file_exists": true,
+      "file_readable": true,
+      "file_size": 9680,
+      "last_modified": "2025-09-11T03:04:49.464826",
+      "backup_available": false
+    }
+  },
+  "etapa7": {
+    "7.1": {
+      "added_methods": [
+        "MonitoringLevel.__init__",
+        "MonitoringLevel.__str__",
+        "MonitoringLevel.__repr__",
+        "AlertType.__init__",
+        "AlertType.__str__",
+        "AlertType.__repr__",
+        "SecurityEvent.__init__",
+        "SecurityEvent.__str__",
+        "SecurityEvent.__repr__",
+        "MonitoringConfig.__init__",
+        "MonitoringConfig.__str__",
+        "MonitoringConfig.__repr__",
+        "IMonitoringStrategy.__init__",
+        "IMonitoringStrategy.__str__",
+        "IMonitoringStrategy.__repr__",
+        "BaseSecurityStrategy.__str__",
+        "BaseSecurityStrategy.__repr__",
+        "ThreatDetectionStrategy.__init__",
+        "ThreatDetectionStrategy.__str__",
+        "ThreatDetectionStrategy.__repr__",
+        "AnomalyDetectionStrategy.__init__",
+        "AnomalyDetectionStrategy.__str__",
+        "AnomalyDetectionStrategy.__repr__",
+        "MonitoringDataManager.__str__",
+        "MonitoringDataManager.__repr__",
+        "AlertManager.__str__",
+        "AlertManager.__repr__",
+        "SecurityMonitoringManager.__str__",
+        "SecurityMonitoringManager.__repr__"
+      ],
+      "count": 29
+    },
+    "7.2": {
+      "fixed_signatures": [],
+      "count": 0
+    },
+    "7.3": {
+      "added_attributes": [],
+      "count": 0
+    },
+    "7.4": {
+      "syntax_tests": 1,
+      "functionality_tests": 0,
+      "import_tests": 0,
+      "enhanced_version_created": true
+    }
+  },
+  "etapa8": {
+    "8.1": {
+      "classes_tested": 11,
+      "methods_tested": 0,
+      "functions_tested": 0,
+      "errors_found": 0,
+      "success_rate": 100.0
+    },
+    "8.2": {
+      "class_interactions": 0,
+      "data_flow_ok": true,
+      "shared_resources_ok": true,
+      "execution_flow_ok": true
+    },
+    "8.3": {
+      "timestamp": "2025-09-27T03:14:40.414128",
+      "file_analyzed": "security/security_monitoring_ultimate_a_plus.py",
+      "total_classes": 11,
+      "total_functions": 0,
+      "total_methods": 18,
+      "errors_found": 0,
+      "warnings_found": 0,
+      "fixes_applied": 0,
+      "quality_score": 100.0
+    },
+    "8.4": {
+      "original_file_valid": true,
+      "improvements_needed": true,
+      "improvements_applied": false,
+      "backup_created": true,
+      "documentation_updated": false
+    }
+  }
+}

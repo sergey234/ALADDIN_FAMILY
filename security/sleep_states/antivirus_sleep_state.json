@@ -1,0 +1,25 @@
+{
+  "function_id": "antivirus_security",
+  "name": "Antivirus Security System",
+  "status": "sleeping",
+  "sleep_mode": true,
+  "sleep_reason": "Интеграция завершена, перевод в спящий режим",
+  "sleep_time": "2025-09-07T19:31:32.565512",
+  "wake_conditions": [
+    "Пользователь запрашивает сканирование файлов",
+    "Система обнаруживает подозрительную активность",
+    "Мобильное приложение активирует антивирус"
+  ],
+  "sleep_features": {
+    "clamav_engine": "Интегрирован с ClamAV",
+    "malware_scanner": "11 паттернов вредоносного ПО",
+    "threat_signatures": "4 сигнатуры угроз",
+    "quarantine": "Система карантина активна"
+  },
+  "integration_status": {
+    "safe_function_manager": "Интегрирован",
+    "mobile_api": "Готов для мобильного приложения",
+    "real_time_protection": "Активен",
+    "monitoring": "Активен"
+  }
+}

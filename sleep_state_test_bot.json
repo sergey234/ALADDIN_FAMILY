@@ -1,0 +1,11 @@
+{
+  "bot_name": "test_bot",
+  "timestamp": "2025-09-21T13:56:51.027268",
+  "config": {
+    "test": true
+  },
+  "stats": {
+    "test_count": 0
+  },
+  "running": true
+}

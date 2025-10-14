@@ -1,0 +1,1080 @@
+{
+  "stage": "all",
+  "timestamp": "2025-09-13T15:57:30.305241",
+  "tests": {
+    "syntax_validation": {
+      "test_name": "syntax_validation",
+      "total_files": 608,
+      "valid_files": 594,
+      "invalid_files": 14,
+      "errors": [
+        {
+          "file": "security/microservices/user_interface_manager_extra.py",
+          "error": "unmatched ')' (<unknown>, line 6)",
+          "line": 6
+        },
+        {
+          "file": "security/microservices/circuit_breaker_extra.py",
+          "error": "unmatched ')' (<unknown>, line 14)",
+          "line": 14
+        },
+        {
+          "file": "security/bots/notification_bot_extra.py",
+          "error": "invalid syntax (<unknown>, line 10)",
+          "line": 10
+        },
+        {
+          "file": "security/privacy/universal_privacy_manager_part2.py",
+          "error": "unexpected indent (<unknown>, line 1)",
+          "line": 1
+        },
+        {
+          "file": "security/ai_agents/mobile_security_agent_extra.py",
+          "error": "invalid syntax (<unknown>, line 7)",
+          "line": 7
+        },
+        {
+          "file": "security/ai_agents/behavioral_analytics_engine_main.py",
+          "error": "expected an indented block (<unknown>, line 18)",
+          "line": 18
+        },
+        {
+          "file": "security/ai_agents/smart_notification_manager_main.py",
+          "error": "expected an indented block (<unknown>, line 22)",
+          "line": 22
+        },
+        {
+          "file": "security/ai_agents/mobile_security_agent_main.py",
+          "error": "expected an indented block (<unknown>, line 18)",
+          "line": 18
+        },
+        {
+          "file": "security/ai_agents/circuit_breaker_main.py",
+          "error": "expected an indented block (<unknown>, line 22)",
+          "line": 22
+        },
+        {
+          "file": "security/ai_agents/user_interface_manager_main.py",
+          "error": "expected an indented block (<unknown>, line 25)",
+          "line": 25
+        },
+        {
+          "file": "security/ai_agents/notification_bot_main.py",
+          "error": "expected an indented block (<unknown>, line 22)",
+          "line": 22
+        },
+        {
+          "file": "security/ai_agents/behavioral_analytics_engine_extra.py",
+          "error": "invalid syntax (<unknown>, line 7)",
+          "line": 7
+        },
+        {
+          "file": "security/ai_agents/smart_notification_manager_extra.py",
+          "error": "invalid syntax (<unknown>, line 6)",
+          "line": 6
+        },
+        {
+          "file": "scripts/test_child_protection_integration.py",
+          "error": "EOL while scanning string literal (<unknown>, line 54)",
+          "line": 54
+        }
+      ],
+      "score": 97.69736842105263
+    },
+    "import_validation": {
+      "test_name": "import_validation",
+      "total_files": 608,
+      "valid_imports": 608,
+      "invalid_imports": 0,
+      "errors": [],
+      "score": 100.0
+    },
+    "security_validation": {
+      "test_name": "security_validation",
+      "total_files": 608,
+      "secure_files": 591,
+      "vulnerable_files": 17,
+      "vulnerabilities": [
+        {
+          "file": "security/advanced_alerting_system.py",
+          "patterns": [
+            "eval("
+          ]
+        },
+        {
+          "file": "security/safe_function_manager.py",
+          "patterns": [
+            "exec(",
+            "eval(",
+            "input("
+          ]
+        },
+        {
+          "file": "security/ai_agents/voice_response_generator.py",
+          "patterns": [
+            "input("
+          ]
+        },
+        {
+          "file": "security/ai_agents/speech_recognition_engine.py",
+          "patterns": [
+            "input("
+          ]
+        },
+        {
+          "file": "security/ai_agents/natural_language_processor.py",
+          "patterns": [
+            "input("
+          ]
+        },
+        {
+          "file": "security/ai_agents/voice_control_manager.py",
+          "patterns": [
+            "input("
+          ]
+        },
+        {
+          "file": "security/ai_agents/voice_security_validator.py",
+          "patterns": [
+            "input("
+          ]
+        },
+        {
+          "file": "security/ai_agents/parent_control_panel.py",
+          "patterns": [
+            "input("
+          ]
+        },
+        {
+          "file": "security/ai_agents/elderly_interface_manager.py",
+          "patterns": [
+            "input("
+          ]
+        },
+        {
+          "file": "tests/test_data_protection_agent.py",
+          "patterns": [
+            "eval("
+          ]
+        },
+        {
+          "file": "scripts/quality_test_after_each_stage.py",
+          "patterns": [
+            "exec(",
+            "eval(",
+            "os.system(",
+            "subprocess.call(",
+            "pickle.loads(",
+            "yaml.load(",
+            "input(",
+            "raw_input("
+          ]
+        },
+        {
+          "file": "scripts/a_plus_safe_diagnostic.py",
+          "patterns": [
+            "exec(",
+            "input("
+          ]
+        },
+        {
+          "file": "scripts/setup_russian_apis.py",
+          "patterns": [
+            "input("
+          ]
+        },
+        {
+          "file": "scripts/auto_initialize_security.py",
+          "patterns": [
+            "exec("
+          ]
+        },
+        {
+          "file": "scripts/a_plus_master_implementer.py",
+          "patterns": [
+            "exec("
+          ]
+        },
+        {
+          "file": "scripts/setup_wizard.py",
+          "patterns": [
+            "input("
+          ]
+        },
+        {
+          "file": "scripts/test_elderly_interface_integration.py",
+          "patterns": [
+            "input("
+          ]
+        }
+      ],
+      "score": 97.20394736842105
+    },
+    "code_quality": {
+      "test_name": "code_quality",
+      "total_files": 608,
+      "high_quality_files": -32406,
+      "low_quality_files": 33014,
+      "issues": [
+        "./alerts_api.py:12:1: F401 'json' imported but unused",
+        "./alerts_api.py:19:5: F401 'security.advanced_alerting_system.AlertRule' imported but unused",
+        "./alerts_api.py:19:5: F401 'security.advanced_alerting_system.AlertType' imported but unused",
+        "./alerts_api.py:19:5: F401 'security.advanced_alerting_system.AlertSeverity' imported but unused",
+        "./alerts_api.py:19:5: F401 'security.advanced_alerting_system.AlertChannel' imported but unused",
+        "./alerts_api.py:19:80: E501 line too long (116 > 79 characters)",
+        "./alerts_api.py:27:1: E302 expected 2 blank lines, found 1",
+        "./alerts_api.py:37:1: E302 expected 2 blank lines, found 1",
+        "./alerts_api.py:43:1: W293 blank line contains whitespace",
+        "./alerts_api.py:45:1: W293 blank line contains whitespace"
+      ],
+      "score": 3.125
+    },
+    "performance_test": {
+      "test_name": "performance_test",
+      "total_files": 608,
+      "fast_files": 493,
+      "slow_files": 115,
+      "issues": [
+        {
+          "file": "backup_old_components_20250905_235049/emergency_response_interface.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "backup_old_components_20250905_235049/family_communication_hub.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np",
+            "import pandas as pd"
+          ]
+        },
+        {
+          "file": "backup_old_components_20250905_235049/notification_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/security_reporting.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/security_monitoring.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/ransomware_protection.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/smart_monitoring.py",
+          "issues": [
+            "time.sleep(",
+            "while True:"
+          ]
+        },
+        {
+          "file": "security/safe_security_monitoring.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/malware_protection.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/authentication.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/advanced_monitoring_manager.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/enhanced_alerting.py",
+          "issues": [
+            "time.sleep(",
+            "while True:"
+          ]
+        },
+        {
+          "file": "security/security_monitoring_backup.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/audit_system.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/microservices/user_interface_manager_extra.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/microservices/safe_function_manager_integration.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/microservices/user_interface_manager.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/microservices/load_balancer.py",
+          "issues": [
+            "while True:"
+          ]
+        },
+        {
+          "file": "security/microservices/circuit_breaker_extra.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/microservices/rate_limiter.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/microservices/redis_cache_manager.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/microservices/service_mesh_manager.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/microservices/circuit_breaker.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/telegram_security_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/network_security_bot.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/bots/max_messenger_security_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/emergency_response_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/incognito_protection_bot.py",
+          "issues": [
+            "while True:"
+          ]
+        },
+        {
+          "file": "security/bots/notification_bot_extra.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/gaming_security_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/analytics_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/mobile_navigation_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/parental_control_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/notification_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/instagram_security_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/device_security_bot.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/bots/website_navigation_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/bots/whatsapp_security_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ci_cd/ci_pipeline_manager.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/vpn/encryption/modern_encryption.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/vpn/core/vpn_core.py",
+          "issues": [
+            "time.sleep(",
+            "while True:"
+          ]
+        },
+        {
+          "file": "security/vpn/web/vpn_web_interface.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/vpn/protection/ipv6_dns_protection.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/reactive/performance_optimizer.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/managers/analytics_manager.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/managers/report_manager.py",
+          "issues": [
+            "import pandas as pd"
+          ]
+        },
+        {
+          "file": "security/managers/dashboard_manager.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/antivirus/core/antivirus_core.py",
+          "issues": [
+            "time.sleep(",
+            "while True:"
+          ]
+        },
+        {
+          "file": "security/scaling/auto_scaling_engine.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/preliminary/behavioral_analysis_new.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/preliminary/behavioral_analysis.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/orchestration/kubernetes_orchestrator.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/ai_agents/mobile_security_agent.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/ai_agents/analytics_manager.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/family_communication_hub_a_plus.py",
+          "issues": [
+            "import numpy as np",
+            "import pandas as pd"
+          ]
+        },
+        {
+          "file": "security/ai_agents/performance_optimization_agent.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/ai_agents/analytics_manager_new.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/threat_detection_agent.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/ai_agents/voice_analysis_engine.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/emergency_ml_models.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/monitor_manager.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/mobile_security_agent_extra.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/ai_agents/alert_manager.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np",
+            "import pandas as pd"
+          ]
+        },
+        {
+          "file": "security/ai_agents/monitor_manager_new.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/behavioral_analytics_engine_main.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/smart_notification_manager_main.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/dashboard_manager_new.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/network_security_agent.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/ai_agents/voice_response_generator.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/anti_fraud_master_ai.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/report_manager.py",
+          "issues": [
+            "import numpy as np",
+            "import pandas as pd"
+          ]
+        },
+        {
+          "file": "security/ai_agents/financial_protection_hub.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/dashboard_manager.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/speech_recognition_engine.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/emergency_performance_analyzer.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/ai_agents/notification_bot.py",
+          "issues": [
+            "time.sleep(",
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/behavioral_analysis_agent.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "security/ai_agents/notification_bot_main.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/emergency_risk_analyzer.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/behavioral_analytics_engine_extra.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/smart_notification_manager_extra.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/behavioral_analytics_engine.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/deepfake_protection_system.py",
+          "issues": [
+            "import numpy as np"
+          ]
+        },
+        {
+          "file": "security/ai_agents/report_manager_new.py",
+          "issues": [
+            "import numpy as np",
+            "import pandas as pd"
+          ]
+        },
+        {
+          "file": "tests/test_incident_response_agent.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "tests/test_compliance_agent.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "tests/test_russian_apis.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "tests/test_password_security_agent.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "tests/test_threat_detection_agent.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "tests/test_auto_scaling_engine.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "tests/test_redis_cache_manager.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "tests/test_threat_intelligence_agent.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "tests/test_advanced_monitoring.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "mobile/mobile_api.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/MASTER_INTEGRATION_EXECUTOR.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/real_vpn_api_server.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/test_advanced_alerting.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/test_auto_sfm.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/put_russian_child_protection_to_sleep.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/enhance_logs.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/fix_critical_errors.py",
+          "issues": [
+            "import numpy as np",
+            "import pandas as pd"
+          ]
+        },
+        {
+          "file": "scripts/quality_test_after_each_stage.py",
+          "issues": [
+            "time.sleep(",
+            "while True:",
+            "for i in range(1000000):",
+            "import numpy as np",
+            "import pandas as pd"
+          ]
+        },
+        {
+          "file": "scripts/test_enhanced_alerting.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/deep_test_managers.py",
+          "issues": [
+            "import numpy as np",
+            "import pandas as pd"
+          ]
+        },
+        {
+          "file": "scripts/integrate_enhanced_alerting.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/setup_wizard.py",
+          "issues": [
+            "while True:"
+          ]
+        },
+        {
+          "file": "scripts/simple_vpn_server.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/PHASE1_CRITICAL_COMPONENTS_PLAN.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/put_super_ai_to_sleep.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/put_universal_privacy_to_sleep.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/fix_analytics_manager.py",
+          "issues": [
+            "import pandas as pd"
+          ]
+        },
+        {
+          "file": "scripts/a_plus_integration_algorithm_v2.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/ultra_simple_server.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/fixed_vpn_server.py",
+          "issues": [
+            "time.sleep("
+          ]
+        },
+        {
+          "file": "scripts/init_sfm.py",
+          "issues": [
+            "time.sleep("
+          ]
+        }
+      ],
+      "score": 81.08552631578947
+    },
+    "integration_test": {
+      "test_name": "integration_test",
+      "total_modules": 5,
+      "integrated_modules": 4,
+      "failed_modules": 1,
+      "errors": [
+        {
+          "module": "core/system_manager.py",
+          "error": "File not found"
+        }
+      ],
+      "score": 80.0
+    },
+    "functionality_test": {
+      "test_name": "functionality_test",
+      "total_functions": 6706,
+      "working_functions": 6706,
+      "broken_functions": 0,
+      "errors": [
+        {
+          "file": "security/microservices/user_interface_manager_extra.py",
+          "error": "unmatched ')' (<unknown>, line 6)"
+        },
+        {
+          "file": "security/microservices/circuit_breaker_extra.py",
+          "error": "unmatched ')' (<unknown>, line 14)"
+        },
+        {
+          "file": "security/bots/notification_bot_extra.py",
+          "error": "invalid syntax (<unknown>, line 10)"
+        },
+        {
+          "file": "security/privacy/universal_privacy_manager_part2.py",
+          "error": "unexpected indent (<unknown>, line 1)"
+        },
+        {
+          "file": "security/ai_agents/mobile_security_agent_extra.py",
+          "error": "invalid syntax (<unknown>, line 7)"
+        },
+        {
+          "file": "security/ai_agents/behavioral_analytics_engine_main.py",
+          "error": "expected an indented block (<unknown>, line 18)"
+        },
+        {
+          "file": "security/ai_agents/smart_notification_manager_main.py",
+          "error": "expected an indented block (<unknown>, line 22)"
+        },
+        {
+          "file": "security/ai_agents/mobile_security_agent_main.py",
+          "error": "expected an indented block (<unknown>, line 18)"
+        },
+        {
+          "file": "security/ai_agents/circuit_breaker_main.py",
+          "error": "expected an indented block (<unknown>, line 22)"
+        },
+        {
+          "file": "security/ai_agents/user_interface_manager_main.py",
+          "error": "expected an indented block (<unknown>, line 25)"
+        },
+        {
+          "file": "security/ai_agents/notification_bot_main.py",
+          "error": "expected an indented block (<unknown>, line 22)"
+        },
+        {
+          "file": "security/ai_agents/behavioral_analytics_engine_extra.py",
+          "error": "invalid syntax (<unknown>, line 7)"
+        },
+        {
+          "file": "security/ai_agents/smart_notification_manager_extra.py",
+          "error": "invalid syntax (<unknown>, line 6)"
+        },
+        {
+          "file": "scripts/test_child_protection_integration.py",
+          "error": "EOL while scanning string literal (<unknown>, line 54)"
+        }
+      ],
+      "score": 100.0
+    },
+    "production_readiness": {
+      "test_name": "production_readiness",
+      "total_checks": 8,
+      "passed_checks": 4,
+      "failed_checks": 4,
+      "issues": [
+        {
+          "check": "requirements",
+          "path": "requirements.txt",
+          "status": "missing"
+        },
+        {
+          "check": "readme",
+          "path": "README.md",
+          "status": "missing"
+        },
+        {
+          "check": "gitignore",
+          "path": ".gitignore",
+          "status": "missing"
+        },
+        {
+          "check": "main_entry",
+          "path": "main.py",
+          "status": "missing"
+        }
+      ],
+      "score": 50.0
+    }
+  },
+  "overall_score": 76.13898026315789,
+  "summary": {
+    "total_tests": 8,
+    "passed_tests": 6,
+    "failed_tests": 2,
+    "average_score": 76.13898026315789
+  }
+}

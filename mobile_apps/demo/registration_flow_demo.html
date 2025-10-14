@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 ALADDIN - Progressive Registration Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 30%, #3B82F6 70%, #1E40AF 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        .header {
+            padding: 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            color: #FCD34D;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Navigation */
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(96, 165, 250, 0.3);
+            border-color: #60A5FA;
+            transform: translateY(-2px);
+        }
+        
+        .nav-btn.active {
+            background: #60A5FA;
+            border-color: #60A5FA;
+        }
+        
+        /* Main Container */
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        /* Modal Base */
+        .modal {
+            display: none;
+            width: 340px;
+            background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 30%, #3B82F6 70%, #1E40AF 100%);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        .modal.active {
+            display: block;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .modal-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FCD34D;
+            margin-bottom: 8px;
+        }
+        
+        .modal-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Role Cards */
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .role-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            width: 140px;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .role-card:hover {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: #BAE6FD;
+        }
+        
+        .role-card.selected {
+            background: rgba(96, 165, 250, 0.3);
+            border-color: #BAE6FD;
+        }
+        
+        .role-card-icon {
+            font-size: 60px;
+            margin-bottom: 12px;
+        }
+        
+        .role-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 8px;
+        }
+        
+        .role-card-desc {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.4;
+        }
+        
+        /* Age Group Options */
+        .age-group-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .age-group-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .age-group-item:hover {
+            background: rgba(96, 165, 250, 0.1);
+            border-color: #BAE6FD;
+        }
+        
+        .age-group-item.selected {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: #BAE6FD;
+        }
+        
+        .radio {
+            width: 24px;
+            height: 24px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: relative;
+        }
+        
+        .age-group-item.selected .radio {
+            border-color: #60A5FA;
+        }
+        
+        .age-group-item.selected .radio::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #60A5FA;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .age-group-text {
+            flex: 1;
+        }
+        
+        .age-range {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .age-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 4px;
+        }
+        
+        /* Letter Grid */
+        .letter-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 3px;
+            margin-bottom: 24px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .letter-btn {
+            width: 25px;
+            height: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .letter-btn:hover {
+            background: rgba(96, 165, 250, 0.3);
+        }
+        
+        .letter-btn.selected {
+            background: #60A5FA;
+            box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
+            transform: scale(1.1);
+        }
+        
+        .selected-letter-display {
+            background: rgba(96, 165, 250, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .selected-letter-display .letter {
+            font-size: 20px;
+            font-weight: bold;
+            color: #60A5FA;
+        }
+        
+        /* QR Code */
+        .qr-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: #f0f0f0;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 80px;
+        }
+        
+        .recovery-code {
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+            color: #FCD34D;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            letter-spacing: 2px;
+            margin-top: 16px;
+        }
+        
+        /* Save Options */
+        .save-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .save-option {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .save-option:hover {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: #60A5FA;
+        }
+        
+        .save-option.saved {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10B981;
+        }
+        
+        .save-option-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .save-option-text {
+            font-size: 11px;
+            color: white;
+        }
+        
+        /* Recovery Options */
+        .recovery-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        
+        .recovery-option {
+            background: rgba(96, 165, 250, 0.15);
+            border: 1px solid #60A5FA;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .recovery-option:hover {
+            background: rgba(96, 165, 250, 0.25);
+            transform: translateX(5px);
+        }
+        
+        .recovery-option-icon {
+            font-size: 32px;
+        }
+        
+        .recovery-option-text {
+            flex: 1;
+        }
+        
+        .recovery-option-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .recovery-option-subtitle {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 8px;
+        }
+        
+        .btn-primary {
+            background: #60A5FA;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #3B82F6;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(96, 165, 250, 0.4);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        /* Success Animation */
+        .celebration {
+            font-size: 80px;
+            margin-bottom: 16px;
+            animation: bounce 0.6s infinite alternate;
+        }
+        
+        @keyframes bounce {
+            from { transform: scale(1); }
+            to { transform: scale(1.2); }
+        }
+        
+        /* Family Members List */
+        .family-members {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .family-member {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .family-member:last-child {
+            border-bottom: none;
+        }
+        
+        .member-icon {
+            font-size: 24px;
+        }
+        
+        .member-info {
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .member-letter {
+            color: #FCD34D;
+            font-weight: bold;
+        }
+        
+        .member-badge {
+            background: rgba(252, 211, 77, 0.2);
+            color: #FCD34D;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+        
+        /* Flow Indicator */
+        .flow-indicator {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            text-align: center;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .warning-box {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid #EF4444;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌟 ALADDIN - Прогрессивная Регистрация</h1>
+        <p>Демонстрация нового flow регистрации с космическими цветами из icon_variant_05.svg</p>
+    </div>
+    
+    <div class="nav">
+        <button class="nav-btn active" onclick="showModal('role')">1️⃣ Роль</button>
+        <button class="nav-btn" onclick="showModal('age')">2️⃣ Возраст</button>
+        <button class="nav-btn" onclick="showModal('letter')">3️⃣ Буква</button>
+        <button class="nav-btn" onclick="showModal('created')">4️⃣ Семья создана</button>
+        <button class="nav-btn" onclick="showModal('qr-scan')">5️⃣ QR Scanner</button>
+        <button class="nav-btn" onclick="showModal('recovery')">6️⃣ Восстановление</button>
+        <button class="nav-btn" onclick="showModal('success')">7️⃣ Успех</button>
+        <button class="nav-btn" onclick="showModal('onboarding')">8️⃣ Onboarding</button>
+    </div>
+    
+    <div class="container">
+        <!-- Modal 1: Role Selection -->
+        <div id="modal-role" class="modal active">
+            <div class="modal-header">
+                <div class="modal-icon">👋</div>
+                <div class="modal-title">Добро пожаловать!</div>
+                <div class="modal-subtitle">Кто вы в семье?</div>
+            </div>
+            
+            <div class="role-grid">
+                <div class="role-card" onclick="selectRole(this, 'parent')">
+                    <div class="role-card-icon">👨‍👩‍👧‍👦</div>
+                    <div class="role-card-title">РОДИТЕЛЬ</div>
+                    <div class="role-card-desc">• Полный доступ<br>• Контроль семьи</div>
+                </div>
+                
+                <div class="role-card" onclick="selectRole(this, 'child')">
+                    <div class="role-card-icon">👶</div>
+                    <div class="role-card-title">РЕБЁНОК</div>
+                    <div class="role-card-desc">• Детский режим<br>• Безопасность</div>
+                </div>
+                
+                <div class="role-card" onclick="selectRole(this, 'elderly')">
+                    <div class="role-card-icon">👴</div>
+                    <div class="role-card-title">ЛЮДИ 60+</div>
+                    <div class="role-card-desc">• Упрощённый UI<br>• Большие кнопки</div>
+                </div>
+                
+                <div class="role-card" onclick="selectRole(this, 'other')">
+                    <div class="role-card-icon">👤</div>
+                    <div class="role-card-title">ЧЕЛОВЕК</div>
+                    <div class="role-card-desc">• Стандартный<br>• Полный доступ</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="showModal('age')">ПРОДОЛЖИТЬ</button>
+        </div>
+        
+        <!-- Modal 2: Age Group Selection -->
+        <div id="modal-age" class="modal">
+            <div class="modal-header">
+                <div class="modal-icon">🎂</div>
+                <div class="modal-title">Ваша возрастная группа?</div>
+                <div class="modal-subtitle">(Для подбора защиты)</div>
+            </div>
+            
+            <div class="age-group-list">
+                <div class="age-group-item" onclick="selectAgeGroup(this, '1-6')">
+                    <div class="radio"></div>
+                    <div class="age-group-text">
+                        <div class="age-range">1-6 лет</div>
+                        <div class="age-desc">Дошкольный возраст</div>
+                    </div>
+                </div>
+                
+                <div class="age-group-item" onclick="selectAgeGroup(this, '7-12')">
+                    <div class="radio"></div>
+                    <div class="age-group-text">
+                        <div class="age-range">7-12 лет</div>
+                        <div class="age-desc">Младший школьный</div>
+                    </div>
+                </div>
+                
+                <div class="age-group-item" onclick="selectAgeGroup(this, '13-17')">
+                    <div class="radio"></div>
+                    <div class="age-group-text">
+                        <div class="age-range">13-17 лет</div>
+                        <div class="age-desc">Подростковый возраст</div>
+                    </div>
+                </div>
+                
+                <div class="age-group-item" onclick="selectAgeGroup(this, '18-23')">
+                    <div class="radio"></div>
+                    <div class="age-group-text">
+                        <div class="age-range">18-23 лет</div>
+                        <div class="age-desc">Молодой взрослый</div>
+                    </div>
+                </div>
+                
+                <div class="age-group-item" onclick="selectAgeGroup(this, '24-55')">
+                    <div class="radio"></div>
+                    <div class="age-group-text">
+                        <div class="age-range">24-55 лет</div>
+                        <div class="age-desc">Взрослый</div>
+                    </div>
+                </div>
+                
+                <div class="age-group-item" onclick="selectAgeGroup(this, '56+')">
+                    <div class="radio"></div>
+                    <div class="age-group-text">
+                        <div class="age-range">56+ лет</div>
+                        <div class="age-desc">Старший возраст</div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="showModal('letter')">ПРОДОЛЖИТЬ</button>
+            <button class="btn btn-secondary" onclick="showModal('role')">НАЗАД</button>
+        </div>
+        
+        <!-- Modal 3: Letter Selection -->
+        <div id="modal-letter" class="modal">
+            <div class="modal-header">
+                <div class="modal-icon">🔤</div>
+                <div class="modal-title">Ваша персональная буква</div>
+                <div class="modal-subtitle">(Вместо имени, для анонимности)</div>
+            </div>
+            
+            <div class="letter-grid" id="letterGrid"></div>
+            
+            <div class="selected-letter-display" id="selectedLetterDisplay" style="display: none;">
+                <span style="color: rgba(255,255,255,0.7); font-size: 14px;">Выбрана буква: </span>
+                <span class="letter" id="selectedLetter">А</span>
+            </div>
+            
+            <button class="btn btn-primary" onclick="showModal('created')">СОЗДАТЬ СЕМЬЮ</button>
+            <button class="btn btn-secondary" onclick="showModal('age')">НАЗАД</button>
+        </div>
+        
+        <!-- Modal 4: Family Created -->
+        <div id="modal-created" class="modal">
+            <div class="modal-header">
+                <div class="modal-icon">🎉</div>
+                <div class="modal-title" style="color: #10B981;">СЕМЬЯ СОЗДАНА!</div>
+                <div class="modal-subtitle">Сохраните код восстановления</div>
+            </div>
+            
+            <div class="warning-box">
+                ⚠️ <strong>ВАЖНО!</strong> Сохраните QR-код для восстановления доступа при потере телефона
+            </div>
+            
+            <div class="qr-container">
+                <div class="qr-code">📷</div>
+                <div style="color: #333; font-size: 12px;">QR #2 (для восстановления)</div>
+            </div>
+            
+            <div class="recovery-code">FAM-A1B2-C3D4-E5F6</div>
+            
+            <div style="margin: 16px 0; font-size: 14px; font-weight: 600;">Сохранить код:</div>
+            
+            <div class="save-options">
+                <div class="save-option" onclick="saveCode(this, 'copy')">
+                    <div class="save-option-icon">📋</div>
+                    <div class="save-option-text">Копировать</div>
+                </div>
+                
+                <div class="save-option" onclick="saveCode(this, 'screenshot')">
+                    <div class="save-option-icon">📸</div>
+                    <div class="save-option-text">Скриншот</div>
+                </div>
+                
+                <div class="save-option" onclick="saveCode(this, 'icloud')">
+                    <div class="save-option-icon">💾</div>
+                    <div class="save-option-text">iCloud</div>
+                </div>
+                
+                <div class="save-option" onclick="saveCode(this, 'email')">
+                    <div class="save-option-icon">📧</div>
+                    <div class="save-option-text">Email</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="continueToSuccess()" id="continueBtn" disabled style="opacity: 0.5;">ПРОДОЛЖИТЬ (выберите 1+ вариант)</button>
+        </div>
+        
+        <!-- Modal 5: QR Scanner -->
+        <div id="modal-qr-scan" class="modal">
+            <div class="modal-header">
+                <div class="modal-icon">📷</div>
+                <div class="modal-title">СКАНИРОВАТЬ QR-КОД</div>
+                <div class="modal-subtitle">Присоединиться к семье</div>
+            </div>
+            
+            <div style="background: #000; border-radius: 16px; width: 280px; height: 280px; margin: 0 auto 24px; position: relative; display: flex; align-items: center; justify-content: center;">
+                <div style="font-size: 80px;">📹</div>
+                <div style="position: absolute; width: 180px; height: 180px; border: 3px solid #FCD34D; border-radius: 12px;"></div>
+            </div>
+            
+            <div style="background: rgba(252, 211, 77, 0.15); border: 1px solid #FCD34D; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                <div style="text-align: center; font-size: 13px; color: #FCD34D; font-weight: 600;">
+                    💡 Что сканировать?
+                </div>
+                <div style="text-align: center; font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 8px; line-height: 1.5;">
+                    <strong>QR #1:</strong> Для присоединения к семье<br>
+                    (Попросите члена семьи: Настройки → Добавить члена)<br><br>
+                    <strong>QR #2:</strong> Для восстановления доступа<br>
+                    (Ваш сохранённый код из iCloud/Email/Скриншота)
+                </div>
+            </div>
+            
+            <div style="text-align: center; font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 16px;">
+                Наведите камеру на QR-код
+            </div>
+            
+            <button class="btn btn-secondary" onclick="showModal('recovery')">🔤 ВВЕСТИ КОД ВРУЧНУЮ</button>
+            <button class="btn btn-secondary" onclick="showModal('onboarding')">НАЗАД</button>
+        </div>
+        
+        <!-- Modal 6: Recovery Options -->
+        <div id="modal-recovery" class="modal">
+            <div class="modal-header">
+                <div class="modal-icon">🔑</div>
+                <div class="modal-title">ВОССТАНОВИТЬ ДОСТУП</div>
+                <div class="modal-subtitle">Как вы хотите восстановить?</div>
+            </div>
+            
+            <div class="recovery-options">
+                <div class="recovery-option" onclick="recoveryThroughFamily()" style="border-color: #10B981; background: rgba(16, 185, 129, 0.15);">
+                    <div class="recovery-option-icon">👨‍👩‍👧‍👦</div>
+                    <div class="recovery-option-text">
+                        <div class="recovery-option-title">ЧЕРЕЗ ЧЛЕНА СЕМЬИ</div>
+                        <div class="recovery-option-subtitle">(если у кого-то есть доступ)</div>
+                    </div>
+                    <div style="font-size: 24px;">›</div>
+                </div>
+                
+                <div class="recovery-option" onclick="recoveryThroughQR()">
+                    <div class="recovery-option-icon">📷</div>
+                    <div class="recovery-option-text">
+                        <div class="recovery-option-title">СКАНИРОВАТЬ QR #2</div>
+                        <div class="recovery-option-subtitle">(сохранённый код восстановления)</div>
+                    </div>
+                    <div style="font-size: 24px;">›</div>
+                </div>
+                
+                <div class="recovery-option" onclick="recoveryManualCode()" style="border-color: #FCD34D; background: rgba(252, 211, 77, 0.15);">
+                    <div class="recovery-option-icon">🔤</div>
+                    <div class="recovery-option-text">
+                        <div class="recovery-option-title">ВВЕСТИ КОД ВРУЧНУЮ</div>
+                        <div class="recovery-option-subtitle">(FAM-A1B2-C3D4-E5F6)</div>
+                    </div>
+                    <div style="font-size: 24px;">›</div>
+                </div>
+                
+                <div class="recovery-option" onclick="recoverySupport()" style="border-color: #EF4444; background: rgba(239, 68, 68, 0.15);">
+                    <div class="recovery-option-icon">📧</div>
+                    <div class="recovery-option-text">
+                        <div class="recovery-option-title">ОБРАТИТЬСЯ В ПОДДЕРЖКУ</div>
+                        <div class="recovery-option-subtitle">(если всё потеряно)</div>
+                    </div>
+                    <div style="font-size: 24px;">›</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="showModal('onboarding')">НАЗАД</button>
+        </div>
+        
+        <!-- Modal 7: Success -->
+        <div id="modal-success" class="modal">
+            <div class="modal-header">
+                <div class="celebration">🎉</div>
+                <div class="modal-title" style="color: #10B981; font-size: 24px;" id="successTitle">СЕМЬЯ СОЗДАНА!</div>
+            </div>
+            
+            <div style="font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                👥 Ваша семья:
+            </div>
+            
+            <div class="family-members" id="familyMembersList">
+                <!-- Динамически заполняется -->
+            </div>
+            
+            <button class="btn btn-primary" onclick="alert('🚀 Переход в приложение! Открывается MainScreen с доступом ко всем функциям.')">НАЧАТЬ ИСПОЛЬЗОВАНИЕ 🚀</button>
+        </div>
+        
+        <!-- Modal 8: Onboarding Last Slide -->
+        <div id="modal-onboarding" class="modal">
+            <div class="modal-header">
+                <div class="modal-icon" style="font-size: 80px;">📊</div>
+                <div class="modal-title" style="color: white; font-size: 24px;">АНАЛИТИКА</div>
+                <div class="modal-subtitle">Подробная статистика угроз</div>
+            </div>
+            
+            <div style="text-align: center; margin: 32px 0;">
+                <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 24px;">
+                    <div style="width: 8px; height: 8px; background: rgba(255,255,255,0.3); border-radius: 50%;"></div>
+                    <div style="width: 8px; height: 8px; background: rgba(255,255,255,0.3); border-radius: 50%;"></div>
+                    <div style="width: 8px; height: 8px; background: rgba(255,255,255,0.3); border-radius: 50%;"></div>
+                    <div style="width: 12px; height: 12px; background: #60A5FA; border-radius: 50%;"></div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="showModal('role')" style="margin-bottom: 12px;">НАЧАТЬ</button>
+            
+            <div style="display: flex; gap: 12px;">
+                <button class="btn btn-secondary" onclick="showModal('qr-scan')" style="flex: 1; background: rgba(252, 211, 77, 0.15); color: #FCD34D; border-color: #FCD34D; font-size: 11px;">У МЕНЯ ЕСТЬ КОД</button>
+                <button class="btn btn-secondary" onclick="showModal('recovery')" style="flex: 1; background: rgba(96, 165, 250, 0.15); color: #60A5FA; border-color: #60A5FA; font-size: 11px;">ВОССТАНОВИТЬ</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="flow-indicator" id="flowIndicator">
+        💡 Сейчас: <strong>Окно #1 - Выбор роли</strong> | Следующее: Окно #2 (Возраст) после выбора роли
+    </div>
+    
+    <script>
+        // Generate Russian alphabet for letter grid
+        const russianAlphabet = 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
+        const letterGrid = document.getElementById('letterGrid');
+        
+        russianAlphabet.forEach(letter => {
+            const btn = document.createElement('button');
+            btn.className = 'letter-btn';
+            btn.textContent = letter;
+            btn.onclick = () => selectLetter(btn, letter);
+            letterGrid.appendChild(btn);
+        });
+        
+        // Navigation
+        function showModal(modalId) {
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            const modal = document.getElementById('modal-' + modalId);
+            if (modal) {
+                modal.classList.add('active');
+                updateFlowIndicator(modalId);
+            }
+            
+            // Update nav button
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const modalMap = {
+                'role': 0, 'age': 1, 'letter': 2, 'created': 3,
+                'qr-scan': 4, 'recovery': 5, 'success': 6, 'onboarding': 7
+            };
+            if (modalMap[modalId] !== undefined) {
+                navButtons[modalMap[modalId]].classList.add('active');
+            }
+        }
+        
+        // Flow indicator
+        function updateFlowIndicator(modalId) {
+            const indicators = {
+                'role': '💡 Сейчас: <strong>Окно #1 - Выбор роли</strong> | Следующее: Окно #2 (Возраст)',
+                'age': '💡 Сейчас: <strong>Окно #2 - Возраст</strong> | Следующее: Окно #3 (Буква)',
+                'letter': '💡 Сейчас: <strong>Окно #3 - Буква</strong> | Следующее: Окно #4 (Семья создана) + API: POST /family/create',
+                'created': '💡 Сейчас: <strong>Окно #4 - Семья создана</strong> | ВАЖНО: Сохраните QR #2!',
+                'qr-scan': '💡 Сейчас: <strong>Окно #5 - QR Scanner</strong> | Сканирование QR #1 или #2',
+                'recovery': '💡 Сейчас: <strong>Окно #6 - Восстановление</strong> | 4 способа восстановить доступ',
+                'success': '💡 Сейчас: <strong>Окно #7 - Успех!</strong> | Регистрация завершена! 🎉',
+                'onboarding': '💡 Сейчас: <strong>Onboarding - Последний слайд</strong> | 3 кнопки: НАЧАТЬ / КОД / ВОССТАНОВИТЬ'
+            };
+            
+            document.getElementById('flowIndicator').innerHTML = indicators[modalId] || '';
+        }
+        
+        // State for registration
+        let selectedRole = null;
+        let selectedAgeGroup = null;
+        let selectedLetter = null;
+        
+        // Interactions
+        function selectRole(element, role) {
+            document.querySelectorAll('.role-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedRole = role;
+        }
+        
+        function selectAgeGroup(element, ageGroup) {
+            document.querySelectorAll('.age-group-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            selectedAgeGroup = ageGroup;
+        }
+        
+        function selectLetter(btn, letter) {
+            document.querySelectorAll('.letter-btn').forEach(b => {
+                b.classList.remove('selected');
+            });
+            btn.classList.add('selected');
+            
+            document.getElementById('selectedLetterDisplay').style.display = 'block';
+            document.getElementById('selectedLetter').textContent = letter;
+        }
+        
+        let savedOptions = new Set();
+        
+        function saveCode(element, method) {
+            // Если уже сохранено, не считаем повторно
+            if (element.classList.contains('saved')) {
+                alert('✅ Уже сохранено через ' + method + '!');
+                return;
+            }
+            
+            element.classList.add('saved');
+            savedOptions.add(method);
+            
+            // Симуляция действия
+            switch(method) {
+                case 'copy':
+                    alert('📋 Код скопирован в буфер обмена!\n\nFAM-A1B2-C3D4-E5F6');
+                    break;
+                case 'screenshot':
+                    alert('📸 Скриншот сохранён в галерею!\n\nМожете найти его в Фото → Скриншоты');
+                    break;
+                case 'icloud':
+                    alert('💾 Код сохранён в iCloud Drive!\n\nПуть: iCloud Drive/ALADDIN/recovery_codes/');
+                    break;
+                case 'email':
+                    alert('📧 Письмо отправлено на вашу почту!\n\nТема: "Код восстановления ALADDIN"');
+                    break;
+            }
+            
+            const continueBtn = document.getElementById('continueBtn');
+            continueBtn.disabled = false;
+            continueBtn.style.opacity = '1';
+            continueBtn.textContent = `ПРОДОЛЖИТЬ (✅ ${savedOptions.size} ${savedOptions.size === 1 ? 'способ' : 'способа'})`;
+        }
+        
+        // Continue to Success with dynamic family
+        function continueToSuccess() {
+            // Определяем иконку и название роли
+            const roleIcons = {
+                'parent': '👨‍👩‍👧‍👦',
+                'child': '👶',
+                'elderly': '👴',
+                'other': '👤'
+            };
+            
+            const roleNames = {
+                'parent': 'Родитель',
+                'child': 'Ребёнок',
+                'elderly': 'Пожилой',
+                'other': 'Человек'
+            };
+            
+            const currentRole = selectedRole || 'parent';
+            const currentAge = selectedAgeGroup || '24-55';
+            const currentLetter = selectedLetter || 'А';
+            
+            // Обновляем заголовок
+            document.getElementById('successTitle').textContent = 'СЕМЬЯ СОЗДАНА!';
+            
+            // Создаём список семьи с ОДНИМ членом (вы!)
+            const familyList = document.getElementById('familyMembersList');
+            familyList.innerHTML = `
+                <div class="family-member">
+                    <div class="member-icon">${roleIcons[currentRole]}</div>
+                    <div class="member-info">
+                        <span class="member-letter">${currentLetter}</span> - ${roleNames[currentRole]} (${currentAge})
+                    </div>
+                    <div class="member-badge">⭐ Вы!</div>
+                </div>
+                <div style="margin-top: 16px; padding: 12px; background: rgba(96, 165, 250, 0.15); border-radius: 8px;">
+                    <div style="font-size: 13px; color: rgba(255,255,255,0.9); text-align: center;">
+                        💡 Чтобы добавить членов семьи:<br>
+                        Настройки → Семья → "Добавить члена" → QR-код
+                    </div>
+                </div>
+            `;
+            
+            showModal('success');
+        }
+        
+        // Recovery functions
+        function recoveryThroughFamily() {
+            alert('🔄 ВОССТАНОВЛЕНИЕ ЧЕРЕЗ ЧЛЕНА СЕМЬИ\n\n' +
+                  '1. Попросите члена семьи открыть ALADDIN\n' +
+                  '2. Настройки → Семья → "Добавить члена"\n' +
+                  '3. Попросите показать QR-код\n' +
+                  '4. Отсканируйте его\n\n' +
+                  '✅ После сканирования вы мгновенно восстановите доступ!');
+            showModal('qr-scan');
+        }
+        
+        function recoveryThroughQR() {
+            alert('📷 СКАНИРОВАНИЕ QR #2\n\n' +
+                  'Найдите сохранённый QR-код восстановления:\n' +
+                  '• В iCloud Drive/ALADDIN/\n' +
+                  '• В Фото (скриншоты)\n' +
+                  '• В письме на email\n' +
+                  '• Распечатанную копию\n\n' +
+                  'Отсканируйте его камерой →');
+            showModal('qr-scan');
+        }
+        
+        function recoveryManualCode() {
+            const code = prompt('🔤 ВВЕДИТЕ КОД ВОССТАНОВЛЕНИЯ\n\nФормат: FAM-A1B2-C3D4-E5F6\n\n(Найдите его в iCloud/Email/Скриншоте)');
+            
+            if (code) {
+                if (code.toUpperCase().startsWith('FAM-')) {
+                    alert('✅ Код принят!\n\nAPI: GET /api/family/recover/' + code + '\n\nВосстанавливаем доступ...');
+                    
+                    // Показываем Success окно
+                    document.getElementById('successTitle').textContent = 'ДОСТУП ВОССТАНОВЛЕН!';
+                    document.getElementById('familyMembersList').innerHTML = `
+                        <div class="family-member">
+                            <div class="member-icon">👨‍👩‍👧‍👦</div>
+                            <div class="member-info"><span class="member-letter">А</span> - Родитель (24-55)</div>
+                        </div>
+                        <div class="family-member">
+                            <div class="member-icon">👶</div>
+                            <div class="member-info"><span class="member-letter">Б</span> - Ребёнок (7-12)</div>
+                        </div>
+                        <div class="family-member">
+                            <div class="member-icon">👴</div>
+                            <div class="member-info"><span class="member-letter">В</span> - Пожилой (56+)</div>
+                        </div>
+                        <div style="margin-top: 16px; padding: 12px; background: rgba(16, 185, 129, 0.15); border-radius: 8px;">
+                            <div style="font-size: 13px; color: #10B981; text-align: center; font-weight: 600;">
+                                ✅ Все члены семьи восстановлены!
+                            </div>
+                        </div>
+                    `;
+                    showModal('success');
+                } else {
+                    alert('❌ Неверный формат кода!\n\nКод должен начинаться с "FAM-"');
+                }
+            }
+        }
+        
+        function recoverySupport() {
+            alert('📧 ОБРАЩЕНИЕ В ПОДДЕРЖКУ\n\n' +
+                  'Открывается email клиент:\n' +
+                  'support@aladdin.family\n\n' +
+                  'Тема: "Восстановление доступа к семье"\n\n' +
+                  'Наша команда поддержки ответит в течение 24 часов и поможет восстановить доступ к вашей семье.');
+            
+            // В реальном приложении здесь будет:
+            // window.location.href = 'mailto:support@aladdin.family?subject=Восстановление доступа к семье';
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,12 @@
+{
+  "total_requests": 0,
+  "resolved_requests": 0,
+  "avg_resolution_time": 0.0,
+  "satisfaction_score": 0.0,
+  "automation_rate": 0.0,
+  "escalation_rate": 0.0,
+  "language_distribution": {},
+  "category_distribution": {},
+  "emotional_analysis_count": 0,
+  "learning_improvements": 0
+}

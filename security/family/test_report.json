@@ -1,0 +1,178 @@
+{
+  "summary": {
+    "total_tests": 21,
+    "passed_tests": 18,
+    "failed_tests": 3,
+    "success_rate": 85.71,
+    "execution_time": 0.05
+  },
+  "test_results": [
+    {
+      "name": "Создание анонимной семьи",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.109746"
+    },
+    {
+      "name": "Присоединение участника к семье",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.110040"
+    },
+    {
+      "name": "Регистрация через QR-код",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.110955"
+    },
+    {
+      "name": "Регистрация через короткий код",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.111312"
+    },
+    {
+      "name": "Получение статистики семьи",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.111457"
+    },
+    {
+      "name": "Очистка истекших кодов",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.111538"
+    },
+    {
+      "name": "Регистрация каналов уведомлений",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.113689"
+    },
+    {
+      "name": "Отправка анонимных уведомлений",
+      "passed": false,
+      "error": "asyncio.run() cannot be called from a running event loop",
+      "timestamp": "2025-09-29T19:30:40.113745"
+    },
+    {
+      "name": "Получение истории уведомлений",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.124222"
+    },
+    {
+      "name": "Отметка уведомлений как прочитанных",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.124299"
+    },
+    {
+      "name": "Очистка старых уведомлений",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.124573"
+    },
+    {
+      "name": "Отсутствие персональных данных",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.125532"
+    },
+    {
+      "name": "Анонимность идентификаторов",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.126603"
+    },
+    {
+      "name": "Безопасное хеширование данных",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.126929"
+    },
+    {
+      "name": "Невозможность восстановления персональных данных",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.127272"
+    },
+    {
+      "name": "Полный цикл: регистрация + уведомления",
+      "passed": false,
+      "error": "asyncio.run() cannot be called from a running event loop",
+      "timestamp": "2025-09-29T19:30:40.127537"
+    },
+    {
+      "name": "Интеграция с существующими ботами",
+      "passed": false,
+      "error": "asyncio.run() cannot be called from a running event loop",
+      "timestamp": "2025-09-29T19:30:40.127653"
+    },
+    {
+      "name": "Масштабирование системы",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.130297"
+    },
+    {
+      "name": "Скорость создания семей",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.132142"
+    },
+    {
+      "name": "Скорость отправки уведомлений",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.134670"
+    },
+    {
+      "name": "Использование памяти и ресурсов",
+      "passed": true,
+      "timestamp": "2025-09-29T19:30:40.154515"
+    }
+  ],
+  "system_statistics": {
+    "registration_system": {
+      "total_families": 45,
+      "total_members": 48,
+      "active_registration_codes": 45,
+      "role_distribution": {
+        "parent": 44,
+        "child": 2,
+        "elderly": 1,
+        "other": 1
+      },
+      "age_group_distribution": {
+        "1-6": 1,
+        "7-12": 1,
+        "13-17": 0,
+        "18-23": 1,
+        "24-55": 44,
+        "55+": 1
+      },
+      "average_family_size": 1.0666666666666667,
+      "system_uptime": "active",
+      "compliance_152_fz": true
+    },
+    "notification_system": {
+      "total_notifications": 5,
+      "unread_notifications": 5,
+      "families_with_channels": 2,
+      "notification_types": {
+        "security_alert": 5,
+        "family_status": 0,
+        "threat_detected": 0,
+        "daily_report": 0,
+        "emergency": 0,
+        "system_update": 0
+      },
+      "channel_usage": {
+        "push": 5,
+        "in_app": 5,
+        "telegram": 0,
+        "whatsapp": 0,
+        "email": 0,
+        "sms": 0
+      },
+      "system_uptime": "active",
+      "compliance_152_fz": true
+    }
+  },
+  "compliance_check": {
+    "152_fz_compliant": true,
+    "no_personal_data": true,
+    "anonymous_ids": true,
+    "secure_hashing": true
+  },
+  "performance_metrics": {
+    "family_creation_speed": "fast",
+    "notification_speed": "fast",
+    "memory_usage": "efficient",
+    "scalability": "good"
+  }
+}

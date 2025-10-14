@@ -1,0 +1,36 @@
+{
+  "crypto_fraud_protection": {
+    "enabled": true,
+    "strict_mode": true,
+    "auto_block_fraud": true,
+    "monitor_wallets": true,
+    "monitor_exchanges": true,
+    "monitor_defi": true,
+    "fraud_detection_threshold": 0.7,
+    "supported_cryptocurrencies": [
+      "BTC",
+      "ETH",
+      "USDT",
+      "USDC",
+      "BNB",
+      "ADA",
+      "SOL",
+      "DOT",
+      "MATIC",
+      "AVAX"
+    ]
+  },
+  "protection_features": {
+    "ponzi_scheme_detection": true,
+    "fake_exchange_detection": true,
+    "phishing_wallet_detection": true,
+    "rug_pull_detection": true,
+    "scam_token_detection": true,
+    "suspicious_transaction_monitoring": true
+  },
+  "integration": {
+    "security_analytics": true,
+    "threat_intelligence": true,
+    "real_time_alerts": true
+  }
+}

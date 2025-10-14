@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Родительский контроль - ALADDIN</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(245, 158, 11, 0.9);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+            color: white;
+            border: none;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 0 20px 20px 20px;
+            overflow-y: auto;
+        }
+        
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .category-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+            box-sizing: border-box;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .category-card.red {
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+        
+        .category-card.red:hover {
+            border-color: #EF4444;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.4);
+        }
+        
+        .category-card.blue {
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+        
+        .category-card.blue:hover {
+            border-color: #3B82F6;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+        
+        .category-card.purple {
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        
+        .category-card.purple:hover {
+            border-color: #8B5CF6;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        }
+        
+        .category-card.green {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        
+        .category-card.green:hover {
+            border-color: #10B981;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+        }
+        
+        .category-card.orange {
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+        
+        .category-card.orange:hover {
+            border-color: #F59E0B;
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+        }
+        
+        .category-card.gray {
+            border-color: rgba(107, 114, 128, 0.3);
+        }
+        
+        .category-card.gray:hover {
+            border-color: #6B7280;
+            box-shadow: 0 10px 30px rgba(107, 114, 128, 0.4);
+        }
+        
+        .category-icon {
+            font-size: 30px;
+            margin-bottom: 8px;
+        }
+        
+        .category-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+        
+        .category-status {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 4px;
+        }
+        
+        .category-metric {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid #10B981;
+        }
+        
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+            border: 1px solid #F59E0B;
+        }
+        
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+            border: 1px solid #EF4444;
+        }
+        
+        /* MODAL STYLES */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal {
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 100%);
+            border-radius: 30px;
+            width: 375px;
+            max-height: 700px;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: slideUp 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            padding: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        
+        .modal-close {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 24px;
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: rotate(90deg);
+        }
+        
+        .modal-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 25px;
+        }
+        
+        .control-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 18px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+        
+        .control-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .control-icon {
+            font-size: 28px;
+        }
+        
+        .control-info {
+            flex: 1;
+        }
+        
+        .control-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .control-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .control-switch {
+            width: 50px;
+            height: 28px;
+            background: #10B981;
+            border-radius: 14px;
+            position: relative;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .control-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 11px;
+            top: 3px;
+            right: 3px;
+            transition: all 0.3s;
+        }
+        
+        .control-switch.off {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-switch.off::after {
+            right: 25px;
+        }
+        
+        .config-btn {
+            padding: 8px 16px;
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid #F59E0B;
+            border-radius: 10px;
+            color: #F59E0B;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .config-btn:hover {
+            background: rgba(245, 158, 11, 0.3);
+            transform: scale(1.05);
+        }
+        
+        .modal-stats {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .modal-stats-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 10px;
+        }
+        
+        .modal-stats-item {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 6px 2px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 4px 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            min-width: 0;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Родительский контроль (MODAL)</div>
+        <div class="screen">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="goBackSmart()" style="cursor: pointer;">←</div>
+                    <div class="title">Родительский контроль</div>
+                </div>
+            </div>
+            
+            <!-- Main Content: 6 Categories -->
+            <div class="main-content" role="main">
+                <div class="categories-grid">
+                    <!-- 1. Блокировка контента -->
+                    <div class="category-card red" onclick="openModal('content')">
+                        <span class="status-badge badge-success">3/4</span>
+                        <div class="category-icon">🔒</div>
+                        <div class="category-title">Блокировка<br>контента</div>
+                        <div class="category-status">✅ 3 активно</div>
+                        <div class="category-metric">1,245 заблокировано</div>
+                    </div>
+                    
+                    <!-- 2. Управление временем -->
+                    <div class="category-card blue" onclick="openModal('time')">
+                        <span class="status-badge badge-warning">⏳</span>
+                        <div class="category-icon">⏱️</div>
+                        <div class="category-title">Управление<br>временем</div>
+                        <div class="category-status">⏳ 1ч 24мин</div>
+                        <div class="category-metric">3 расписания</div>
+                    </div>
+                    
+                    <!-- 3. Мониторинг -->
+                    <div class="category-card purple" onclick="openModal('monitoring')">
+                        <span class="status-badge badge-success">4/5</span>
+                        <div class="category-icon">👀</div>
+                        <div class="category-title">Мониторинг</div>
+                        <div class="category-status">📊 342 сайта</div>
+                        <div class="category-metric">28 приложений</div>
+                    </div>
+                    
+                    <!-- 4. Геолокация -->
+                    <div class="category-card green" onclick="openModal('location')">
+                        <span class="status-badge badge-success">🏠</span>
+                        <div class="category-icon">📍</div>
+                        <div class="category-title">Геолокация</div>
+                        <div class="category-status">🏠 Дома</div>
+                        <div class="category-metric">2 мин назад</div>
+                    </div>
+                    
+                    <!-- 5. Отчёты -->
+                    <div class="category-card orange" onclick="openModal('reports')">
+                        <span class="status-badge badge-danger">⚠️ 2</span>
+                        <div class="category-icon">📊</div>
+                        <div class="category-title">Отчёты</div>
+                        <div class="category-status">📅 Сегодня</div>
+                        <div class="category-metric">2 тревоги</div>
+                    </div>
+                    
+                    <!-- 6. Дополнительно -->
+                    <div class="category-card gray" onclick="openModal('additional')">
+                        <span class="status-badge badge-warning">✋ 2</span>
+                        <div class="category-icon">⚙️</div>
+                        <div class="category-title">Дополнительно</div>
+                        <div class="category-status">✋ 2 запроса</div>
+                        <div class="category-metric">🛡️ Защита ON</div>
+                    </div>
+                    
+                    <!-- 7. Вознаграждение ребёнка (НОВОЕ!) -->
+                    <div class="category-card" onclick="openModal('rewards')" style="border-color: rgba(168, 85, 247, 0.4); background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(236, 72, 153, 0.12) 100%);">
+                        <span class="status-badge" style="background: rgba(168, 85, 247, 0.2); color: #C084FC; border: 1px solid #C084FC; font-size: 10px; padding: 3px 8px;">🦄 245</span>
+                        <div class="category-icon" style="animation: pulse 2s infinite;">🦄</div>
+                        <div class="category-title">Вознаграждение<br>ребёнка<br><small style="font-size: 9px; opacity: 0.8;">НОВОЕ!</small></div>
+                        <div class="category-status">💰 245 единорогов</div>
+                        <div class="category-metric">🎁 3 награды</div>
+                    </div>
+                </div>
+                
+                <style>
+                    @keyframes pulse {
+                        0%, 100% { transform: scale(1); }
+                        50% { transform: scale(1.1); }
+                    }
+                </style>
+            </div>
+            
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация" style="display: flex; justify-content: space-around; background: rgba(0, 0, 0, 0.4); border-radius: 20px; padding: 6px 2px; margin-top: 10px;">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🏠</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🛡️</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🔔</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Уведомления</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">👤</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">📱</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- MODAL: Блокировка контента -->
+    <div class="modal-overlay" id="modal-content">
+        <div class="modal" role="dialog" aria-labelledby="modal-content-title" aria-modal="true">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-content-title">🔒 Блокировка контента</div>
+                <div class="modal-close" onclick="closeModal('content')" role="button" aria-label="Закрыть модальное окно">✕</div>
+            </div>
+            <div class="modal-content">
+                <div class="control-item" onclick="toggleSwitch(event)">
+                    <div class="control-left">
+                        <div class="control-icon">🚫</div>
+                        <div class="control-info">
+                            <div class="control-name">Блокировка сайтов</div>
+                            <div class="control-desc">Порно, насилие, наркотики, азартные игры</div>
+                        </div>
+                    </div>
+                    <div class="control-switch"></div>
+                </div>
+                
+                <div class="control-item" onclick="toggleSwitch(event)">
+                    <div class="control-left">
+                        <div class="control-icon">📱</div>
+                        <div class="control-info">
+                            <div class="control-name">Блокировка приложений</div>
+                            <div class="control-desc">WhatsApp, TikTok, игры, соц. сети</div>
+                        </div>
+                    </div>
+                    <div class="control-switch"></div>
+                </div>
+                
+                <div class="control-item" onclick="toggleSwitch(event)">
+                    <div class="control-left">
+                        <div class="control-icon">🔍</div>
+                        <div class="control-info">
+                            <div class="control-name">Блокировка поисковых запросов</div>
+                            <div class="control-desc">Опасные слова и фразы</div>
+                        </div>
+                    </div>
+                    <div class="control-switch"></div>
+                </div>
+                
+                <div class="control-item" onclick="toggleSwitch(event)">
+                    <div class="control-left">
+                        <div class="control-icon">🛡️</div>
+                        <div class="control-info">
+                            <div class="control-name">SafeSearch (Google/YouTube)</div>
+                            <div class="control-desc">Безопасный поиск + YouTube Kids</div>
+                        </div>
+                    </div>
+                    <div class="control-switch off"></div>
+                </div>
+                
+                <div class="modal-stats">
+                    <div class="modal-stats-title">📊 Статистика за неделю:</div>
+                    <div class="modal-stats-item">• Заблокировано сайтов: 1,245</div>
+                    <div class="modal-stats-item">• Заблокировано приложений: 8</div>
+                    <div class="modal-stats-item">• Опасных запросов: 34</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL: Управление временем -->
+    <div class="modal-overlay" id="modal-time">
+        <div class="modal" role="dialog" aria-labelledby="modal-time-title" aria-modal="true">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-time-title">⏱️ Управление временем</div>
+                <div class="modal-close" onclick="closeModal('time')" role="button" aria-label="Закрыть">✕</div>
+            </div>
+            <div class="modal-content">
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">📱</div>
+                        <div class="control-info">
+                            <div class="control-name">Экранное время</div>
+                            <div class="control-desc">Сейчас: 3 часа/день (осталось 1 час 24 мин)</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openDetailedSettings('screen-time')">Настроить</button>
+                </div>
+                
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">📅</div>
+                        <div class="control-info">
+                            <div class="control-name">Расписание доступа</div>
+                            <div class="control-desc">Будни: 15:00-18:00, Выходные: 10:00-20:00</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openDetailedSettings('schedule')">Настроить</button>
+                </div>
+                
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">🌙</div>
+                        <div class="control-info">
+                            <div class="control-name">Время сна</div>
+                            <div class="control-desc">Блокировка: 22:00 - 07:00</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openDetailedSettings('sleep-time')">Настроить</button>
+                </div>
+                
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">⏰</div>
+                        <div class="control-info">
+                            <div class="control-name">Лимиты по приложениям</div>
+                            <div class="control-desc">Instagram: 30 мин, TikTok: 20 мин</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openDetailedSettings('app-limits')">Настроить</button>
+                </div>
+                
+                <div class="modal-stats">
+                    <div class="modal-stats-title">📊 Сегодня использовано:</div>
+                    <div class="modal-stats-item">• Общее время: 1ч 36мин / 3ч</div>
+                    <div class="modal-stats-item">• Instagram: 18мин / 30мин</div>
+                    <div class="modal-stats-item">• TikTok: 12мин / 20мин</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL: Мониторинг -->
+    <div class="modal-overlay" id="modal-monitoring">
+        <div class="modal" role="dialog" aria-labelledby="modal-monitoring-title" aria-modal="true">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-monitoring-title">👀 Мониторинг</div>
+                <div class="modal-close" onclick="closeModal('monitoring')" role="button" aria-label="Закрыть">✕</div>
+            </div>
+            <div class="modal-content">
+                <div class="control-item" onclick="openMonitoringDetails('browser-history')" style="cursor: pointer;">
+                    <div class="control-left">
+                        <div class="control-icon">🌐</div>
+                        <div class="control-info">
+                            <div class="control-name">История браузера</div>
+                            <div class="control-desc">342 сайта за неделю</div>
+                        </div>
+                    </div>
+                    <span class="status-badge badge-success">Активно</span>
+                </div>
+                
+                <div class="control-item" onclick="openMonitoringDetails('app-history')" style="cursor: pointer;">
+                    <div class="control-left">
+                        <div class="control-icon">📲</div>
+                        <div class="control-info">
+                            <div class="control-name">История приложений</div>
+                            <div class="control-desc">28 приложений использовано</div>
+                        </div>
+                    </div>
+                    <span class="status-badge badge-success">Активно</span>
+                </div>
+                
+                <div class="control-item" onclick="toggleSwitch(event)">
+                    <div class="control-left">
+                        <div class="control-icon">💬</div>
+                        <div class="control-info">
+                            <div class="control-name">Мониторинг сообщений</div>
+                            <div class="control-desc">WhatsApp, Telegram, SMS (НОВОЕ!)</div>
+                        </div>
+                    </div>
+                    <div class="control-switch off"></div>
+                </div>
+                
+                <div class="control-item" onclick="openMonitoringDetails('contacts')" style="cursor: pointer;">
+                    <div class="control-left">
+                        <div class="control-icon">👥</div>
+                        <div class="control-info">
+                            <div class="control-name">Просмотр контактов</div>
+                            <div class="control-desc">С кем общается ребёнок</div>
+                        </div>
+                    </div>
+                    <span class="status-badge badge-success">Активно</span>
+                </div>
+                
+                <div class="control-item" onclick="toggleSwitch(event)">
+                    <div class="control-left">
+                        <div class="control-icon">📸</div>
+                        <div class="control-info">
+                            <div class="control-name">Скриншоты экрана</div>
+                            <div class="control-desc">Снимки активности (НОВОЕ!)</div>
+                        </div>
+                    </div>
+                    <div class="control-switch off"></div>
+                </div>
+                
+                <div class="modal-stats">
+                    <div class="modal-stats-title">📊 За неделю:</div>
+                    <div class="modal-stats-item">• Top-сайт: YouTube.com (142 визита)</div>
+                    <div class="modal-stats-item">• Top-приложение: Instagram (8ч 24мин)</div>
+                    <div class="modal-stats-item">• Контактов: 47 активных</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL: Геолокация -->
+    <div class="modal-overlay" id="modal-location">
+        <div class="modal" role="dialog" aria-labelledby="modal-location-title" aria-modal="true">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-location-title">📍 Геолокация</div>
+                <div class="modal-close" onclick="closeModal('location')" role="button" aria-label="Закрыть">✕</div>
+            </div>
+            <div class="modal-content">
+                <div class="control-item" onclick="toggleSwitch(event)">
+                    <div class="control-left">
+                        <div class="control-icon">📍</div>
+                        <div class="control-info">
+                            <div class="control-name">Местоположение</div>
+                            <div class="control-desc">🏠 Дома (ул. Ленина, 42) • 2 мин назад</div>
+                        </div>
+                    </div>
+                    <div class="control-switch"></div>
+                </div>
+                
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">🗺️</div>
+                        <div class="control-info">
+                            <div class="control-name">Геозоны</div>
+                            <div class="control-desc">2 активны: Дом, Школа</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openDetailedSettings('geofences')">Настроить</button>
+                </div>
+                
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">📜</div>
+                        <div class="control-info">
+                            <div class="control-name">История перемещений</div>
+                            <div class="control-desc">Последние 30 дней</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openReportDetails('location-history')">Смотреть</button>
+                </div>
+                
+                <div class="control-item" onclick="toggleSwitch(event)">
+                    <div class="control-left">
+                        <div class="control-icon">🆘</div>
+                        <div class="control-info">
+                            <div class="control-name">Кнопка SOS</div>
+                            <div class="control-desc">Экстренный вызов родителям</div>
+                        </div>
+                    </div>
+                    <div class="control-switch"></div>
+                </div>
+                
+                <div class="modal-stats">
+                    <div class="modal-stats-title">📊 Сегодня:</div>
+                    <div class="modal-stats-item">• 08:30 - Вышел из дома</div>
+                    <div class="modal-stats-item">• 09:15 - Прибыл в школу ✅</div>
+                    <div class="modal-stats-item">• 15:45 - Вернулся домой ✅</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL: Отчёты -->
+    <div class="modal-overlay" id="modal-reports">
+        <div class="modal" role="dialog" aria-labelledby="modal-reports-title" aria-modal="true">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-reports-title">📊 Отчёты</div>
+                <div class="modal-close" onclick="closeModal('reports')" role="button" aria-label="Закрыть">✕</div>
+            </div>
+            <div class="modal-content">
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">📅</div>
+                        <div class="control-info">
+                            <div class="control-name">Еженедельный отчёт</div>
+                            <div class="control-desc">Активность ребёнка за неделю</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openReportDetails('weekly-report')">Смотреть</button>
+                </div>
+                
+                <div class="control-item" onclick="openReportDetails('suspicious-activity')" style="cursor: pointer;">
+                    <div class="control-left">
+                        <div class="control-icon">⚠️</div>
+                        <div class="control-info">
+                            <div class="control-name">Подозрительная активность</div>
+                            <div class="control-desc">2 новых предупреждения</div>
+                        </div>
+                    </div>
+                    <span class="status-badge badge-danger">2</span>
+                </div>
+                
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">🌐</div>
+                        <div class="control-info">
+                            <div class="control-name">Top-5 сайтов</div>
+                            <div class="control-desc">Самые посещаемые за неделю</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openReportDetails('top-websites')">Смотреть</button>
+                </div>
+                
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">📱</div>
+                        <div class="control-info">
+                            <div class="control-name">Top-5 приложений</div>
+                            <div class="control-desc">По времени использования</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openReportDetails('top-apps')">Смотреть</button>
+                </div>
+                
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">📊</div>
+                        <div class="control-info">
+                            <div class="control-name">Графики использования</div>
+                            <div class="control-desc">Детальная аналитика по часам</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openReportDetails('usage-charts')">Смотреть</button>
+                </div>
+                
+                <div class="control-item" onclick="openReportDetails('bypass-attempts')" style="cursor: pointer;">
+                    <div class="control-left">
+                        <div class="control-icon">🛡️</div>
+                        <div class="control-info">
+                            <div class="control-name">Попытки обхода блокировок</div>
+                            <div class="control-desc">VPN/Tor/Incognito попытки</div>
+                        </div>
+                    </div>
+                    <span class="status-badge badge-success">0</span>
+                </div>
+                
+                <div class="modal-stats">
+                    <div class="modal-stats-title">⚠️ Подозрительная активность:</div>
+                    <div class="modal-stats-item" style="color: #EF4444;">• Попытка доступа к заблокированному сайту</div>
+                    <div class="modal-stats-item" style="color: #F59E0B;">• Превышено экранное время на 15 минут</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL: Дополнительно -->
+    <div class="modal-overlay" id="modal-additional">
+        <div class="modal" role="dialog" aria-labelledby="modal-additional-title" aria-modal="true">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-additional-title">⚙️ Дополнительно</div>
+                <div class="modal-close" onclick="closeModal('additional')" role="button" aria-label="Закрыть">✕</div>
+            </div>
+            <div class="modal-content">
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">🔒</div>
+                        <div class="control-info">
+                            <div class="control-name">Удалённая блокировка</div>
+                            <div class="control-desc">Заблокировать телефон ребёнка</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" style="background: rgba(239, 68, 68, 0.2); border-color: #EF4444; color: #EF4444;" onclick="remoteDeviceLock()">Блокировать</button>
+                </div>
+                
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">🗑️</div>
+                        <div class="control-info">
+                            <div class="control-name">Удаление данных</div>
+                            <div class="control-desc">Стереть все данные (НОВОЕ!)</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" style="background: rgba(239, 68, 68, 0.2); border-color: #EF4444; color: #EF4444;" onclick="remoteDataWipe()">Удалить</button>
+                </div>
+                
+                <div class="control-item" onclick="openAccessRequests()" style="cursor: pointer;">
+                    <div class="control-left">
+                        <div class="control-icon">✋</div>
+                        <div class="control-info">
+                            <div class="control-name">Запросы доступа</div>
+                            <div class="control-desc">2 новых запроса на разблокировку</div>
+                        </div>
+                    </div>
+                    <span class="status-badge badge-warning">2</span>
+                </div>
+                
+                <div class="control-item">
+                    <div class="control-left">
+                        <div class="control-icon">📺</div>
+                        <div class="control-info">
+                            <div class="control-name">YouTube фильтрация</div>
+                            <div class="control-desc">Возрастные ограничения 12+</div>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openDetailedSettings('youtube-filter')">Настроить</button>
+                </div>
+                
+                <div class="control-item" onclick="toggleSwitch(event)">
+                    <div class="control-left">
+                        <div class="control-icon">📚</div>
+                        <div class="control-info">
+                            <div class="control-name">Режим "Домашнее задание"</div>
+                            <div class="control-desc">Только образовательные приложения</div>
+                        </div>
+                    </div>
+                    <div class="control-switch off"></div>
+                </div>
+                
+                <div class="modal-stats">
+                    <div class="modal-stats-title">✋ Запросы доступа:</div>
+                    <div class="modal-stats-item">• Разблокировать Instagram (10 мин назад)</div>
+                    <div class="modal-stats-item">• Разблокировать YouTube (5 мин назад)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODAL: Вознаграждение ребёнка (НОВОЕ!) -->
+    <div class="modal-overlay" id="modal-rewards">
+        <div class="modal" role="dialog" aria-labelledby="modal-rewards-title" aria-modal="true">
+            <div class="modal-header" style="background: linear-gradient(90deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2)); border-bottom: 2px solid rgba(168, 85, 247, 0.4);">
+                <div class="modal-title" id="modal-rewards-title" style="color: #C084FC;">🦄 Вознаграждение ребёнка</div>
+                <div class="modal-close" onclick="closeModal('rewards')" role="button" aria-label="Закрыть">✕</div>
+            </div>
+            <div class="modal-content">
+                <!-- Баланс единорогов -->
+                <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(236, 72, 153, 0.18) 100%); border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 2px solid rgba(168, 85, 247, 0.4); text-align: center;">
+                    <div style="font-size: 56px; margin-bottom: 10px;">🦄</div>
+                    <div style="font-size: 36px; font-weight: bold; color: #C084FC; margin-bottom: 5px;">245</div>
+                    <div style="font-size: 14px; color: rgba(255, 255, 255, 0.7);">Единорогов на счету</div>
+                    <div style="display: flex; justify-content: space-around; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                        <div style="text-align: center;">
+                            <div style="font-size: 20px; font-weight: bold; color: #10B981;">+128</div>
+                            <div style="font-size: 11px; color: rgba(255, 255, 255, 0.6);">Вознаграждено<br>за неделю</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 20px; font-weight: bold; color: #EF4444;">-45</div>
+                            <div style="font-size: 11px; color: rgba(255, 255, 255, 0.6);">Наказано<br>за неделю</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Быстрые действия -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                    <button class="config-btn" onclick="giveUnicorns()" style="background: rgba(16, 185, 129, 0.2); border-color: #10B981; color: #10B981; padding: 12px; width: 100%;">
+                        ✅ Вознаградить
+                    </button>
+                    <button class="config-btn" onclick="punishChild()" style="background: rgba(239, 68, 68, 0.2); border-color: #EF4444; color: #EF4444; padding: 12px; width: 100%;">
+                        ❌ Наказать
+                    </button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px;">
+                    <button class="config-btn" onclick="openRewardsShop()" style="background: rgba(168, 85, 247, 0.2); border-color: #C084FC; color: #C084FC; padding: 12px; width: 100%;">
+                        🏪 Магазин наград
+                    </button>
+                </div>
+                
+                <!-- Как ребёнок может заработать -->
+                <div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 18px; margin-bottom: 15px;">
+                    <div style="font-size: 16px; font-weight: bold; color: #10B981; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span>✅</span>
+                        <span>Как заработать:</span>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">📚</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Домашнее задание</div>
+                                <div class="control-desc">+10 единорогов за задание</div>
+                            </div>
+                        </div>
+                        <div style="color: #10B981; font-weight: bold;">+10 🦄</div>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">🧹</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Домашние обязанности</div>
+                                <div class="control-desc">+5 единорогов за дело</div>
+                            </div>
+                        </div>
+                        <div style="color: #10B981; font-weight: bold;">+5 🦄</div>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">😊</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Хорошее поведение</div>
+                                <div class="control-desc">+15 единорогов за день</div>
+                            </div>
+                        </div>
+                        <div style="color: #10B981; font-weight: bold;">+15 🦄</div>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">📖</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Чтение книг</div>
+                                <div class="control-desc">+20 единорогов за книгу</div>
+                            </div>
+                        </div>
+                        <div style="color: #10B981; font-weight: bold;">+20 🦄</div>
+                    </div>
+                    <div class="control-item" style="padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">🏆</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Достижения в учёбе</div>
+                                <div class="control-desc">+50 единорогов за 5</div>
+                            </div>
+                        </div>
+                        <div style="color: #10B981; font-weight: bold;">+50 🦄</div>
+                    </div>
+                </div>
+                
+                <!-- За что можно наказать (НОВОЕ!) -->
+                <div style="background: rgba(239, 68, 68, 0.08); border-radius: 15px; padding: 18px; margin-bottom: 15px; border: 1px solid rgba(239, 68, 68, 0.3);">
+                    <div style="font-size: 16px; font-weight: bold; color: #EF4444; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span>❌</span>
+                        <span>За что можно наказать:</span>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">📚</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Не сделал ДЗ</div>
+                                <div class="control-desc">Забыл или отказался делать</div>
+                            </div>
+                        </div>
+                        <div style="color: #EF4444; font-weight: bold;">-10 🦄</div>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">😡</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Плохое поведение</div>
+                                <div class="control-desc">Грубость, ссоры, непослушание</div>
+                            </div>
+                        </div>
+                        <div style="color: #EF4444; font-weight: bold;">-15 🦄</div>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">⏰</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Нарушение лимитов</div>
+                                <div class="control-desc">Превышение экранного времени</div>
+                            </div>
+                        </div>
+                        <div style="color: #EF4444; font-weight: bold;">-5 🦄</div>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">🚫</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Обход блокировок</div>
+                                <div class="control-desc">Попытка обойти родительский контроль</div>
+                            </div>
+                        </div>
+                        <div style="color: #EF4444; font-weight: bold;">-20 🦄</div>
+                    </div>
+                    <div class="control-item" style="padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">😤</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Своя причина</div>
+                                <div class="control-desc">Родители указывают сами</div>
+                            </div>
+                        </div>
+                        <div style="color: #EF4444; font-weight: bold;">-1 до -50 🦄</div>
+                    </div>
+                    <div style="margin-top: 15px; padding: 12px; background: rgba(245, 158, 11, 0.1); border-radius: 10px; border: 1px solid rgba(245, 158, 11, 0.3);">
+                        <div style="font-size: 12px; color: rgba(255, 255, 255, 0.8); line-height: 1.6;">
+                            <strong style="color: #F59E0B;">💡 Важно:</strong> Наказание должно быть справедливым! Всегда объясняйте ребёнку, за что списали единорогов. Ребёнок увидит причину в своей истории.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Магазин наград -->
+                <div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 18px; margin-bottom: 15px;">
+                    <div style="font-size: 16px; font-weight: bold; color: #C084FC; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span>🏪</span>
+                        <span>Магазин наград:</span>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">🎮</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">+30 минут игр</div>
+                                <div class="control-desc">Дополнительное время</div>
+                            </div>
+                        </div>
+                        <div style="color: #C084FC; font-weight: bold;">50 🦄</div>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">📱</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">+1 час экранного времени</div>
+                                <div class="control-desc">На любой день</div>
+                            </div>
+                        </div>
+                        <div style="color: #C084FC; font-weight: bold;">80 🦄</div>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">🌙</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">+30 минут перед сном</div>
+                                <div class="control-desc">Сдвинуть время сна</div>
+                            </div>
+                        </div>
+                        <div style="color: #C084FC; font-weight: bold;">100 🦄</div>
+                    </div>
+                    <div class="control-item" style="margin-bottom: 8px; padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">🍕</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Заказ пиццы</div>
+                                <div class="control-desc">Любимая еда</div>
+                            </div>
+                        </div>
+                        <div style="color: #C084FC; font-weight: bold;">150 🦄</div>
+                    </div>
+                    <div class="control-item" style="padding: 12px;">
+                        <div class="control-left" style="flex: 1;">
+                            <div class="control-icon" style="font-size: 24px;">🎁</div>
+                            <div class="control-info">
+                                <div class="control-name" style="font-size: 14px;">Подарок по выбору</div>
+                                <div class="control-desc">До 1000₽</div>
+                            </div>
+                        </div>
+                        <div style="color: #C084FC; font-weight: bold;">500 🦄</div>
+                    </div>
+                    <button class="config-btn" onclick="manageRewards()" style="width: 100%; margin-top: 10px; background: rgba(245, 158, 11, 0.2); border-color: #F59E0B; color: #F59E0B;">
+                        ⚙️ Управление наградами
+                    </button>
+                </div>
+                
+                <!-- История -->
+                <div style="background: rgba(255, 255, 255, 0.05); border-radius: 15px; padding: 18px;">
+                    <div style="font-size: 16px; font-weight: bold; color: #3B82F6; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span>📊</span>
+                        <span>История (последние 6):</span>
+                    </div>
+                    <div style="font-size: 13px; color: rgba(255, 255, 255, 0.8); line-height: 1.8;">
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                            <span>📚 Домашнее задание</span>
+                            <span style="color: #10B981; font-weight: bold;">+10 🦄</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                            <span>😊 Хорошее поведение</span>
+                            <span style="color: #10B981; font-weight: bold;">+15 🦄</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                            <span>❌ Грубость с бабушкой</span>
+                            <span style="color: #EF4444; font-weight: bold;">-15 🦄</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                            <span>🎮 Куплено: +30 мин игр</span>
+                            <span style="color: #8B5CF6; font-weight: bold;">-50 🦄</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                            <span>🧹 Домашние обязанности</span>
+                            <span style="color: #10B981; font-weight: bold;">+5 🦄</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                            <span>🏆 Отличная оценка!</span>
+                            <span style="color: #10B981; font-weight: bold;">+50 🦄</span>
+                        </div>
+                    </div>
+                    <button class="config-btn" onclick="openFullHistory()" style="width: 100%; margin-top: 15px; background: rgba(59, 130, 246, 0.2); border-color: #3B82F6; color: #3B82F6;">
+                        📜 Полная история
+                    </button>
+                </div>
+                
+                <div class="modal-stats" style="margin-top: 15px;">
+                    <div class="modal-stats-title">💡 Советы для родителей:</div>
+                    <div class="modal-stats-item">• Будьте последовательны в начислении и списании</div>
+                    <div class="modal-stats-item">• Обсуждайте цели с ребёнком</div>
+                    <div class="modal-stats-item">• Больше вознаграждайте, чем наказывайте (70%/30%)</div>
+                    <div class="modal-stats-item">• Всегда объясняйте причину наказания</div>
+                    <div class="modal-stats-item">• Ребёнок видит всё в своей истории!</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    function openModal(modalName) {
+        const modal = document.getElementById('modal-' + modalName);
+        modal.classList.add('active');
+    }
+    
+    function closeModal(modalName) {
+        const modal = document.getElementById('modal-' + modalName);
+        modal.classList.remove('active');
+    }
+    
+    function getModalTitle(modalName) {
+        const titles = {
+            'content': 'Блокировка контента',
+            'time': 'Управление временем',
+            'monitoring': 'Мониторинг',
+            'location': 'Геолокация',
+            'reports': 'Отчёты',
+            'additional': 'Дополнительно'
+        };
+        return titles[modalName] || modalName;
+    }
+    
+    // Открытие детальных настроек
+    function openDetailedSettings(settingType) {
+        const settingsTitles = {
+            'screen-time': '⏱️ Настройка экранного времени',
+            'schedule': '📅 Настройка расписания',
+            'sleep-time': '🌙 Настройка времени сна',
+            'app-limits': '⏰ Лимиты по приложениям',
+            'geofences': '🗺️ Настройка геозон',
+            'youtube-filter': '📺 Настройка YouTube фильтрации'
+        };
+        
+        const settingsDescriptions = {
+            'screen-time': 'Установите ежедневный лимит использования устройства:\n\n' +
+                          '📱 Текущий лимит: 3 часа/день\n' +
+                          '⏱️ Осталось сегодня: 1 час 24 мин\n\n' +
+                          '• Будние дни: 3 часа\n' +
+                          '• Выходные: 5 часов\n\n' +
+                          '💡 Рекомендация: 2-4 часа для детей 12 лет',
+            
+            'schedule': 'Настройте часы доступа к устройству:\n\n' +
+                       '📅 Будние дни:\n' +
+                       '   15:00 - 18:00 (после школы)\n' +
+                       '   19:00 - 21:00 (вечер)\n\n' +
+                       '🎉 Выходные:\n' +
+                       '   10:00 - 20:00\n\n' +
+                       '⏰ За пределами расписания устройство блокируется',
+            
+            'sleep-time': 'Настройте время сна ребенка:\n\n' +
+                         '🌙 Период блокировки:\n' +
+                         '   22:00 - 07:00\n\n' +
+                         '📞 Экстренные вызовы: Разрешены\n' +
+                         '⏰ Будильник: Разрешён\n\n' +
+                         '💡 В это время все функции кроме экстренных будут заблокированы',
+            
+            'app-limits': 'Установите лимиты времени для приложений:\n\n' +
+                         '📱 Instagram: 30 мин/день (осталось 12 мин)\n' +
+                         '🎵 TikTok: 20 мин/день (осталось 8 мин)\n' +
+                         '🎮 YouTube: 45 мин/день\n' +
+                         '💬 WhatsApp: 60 мин/день\n' +
+                         '✈️ Telegram: 60 мин/день\n\n' +
+                         '⚙️ Добавить новое приложение\n' +
+                         '📊 Статистика использования',
+            
+            'geofences': 'Настройте безопасные зоны:\n\n' +
+                        '✅ Активные геозоны:\n\n' +
+                        '🏠 Дом (ул. Ленина, 25)\n' +
+                        '   Радиус: 200 м\n\n' +
+                        '🏫 Школа №15\n' +
+                        '   Радиус: 300 м\n\n' +
+                        '➕ Добавить новую геозону\n' +
+                        '🔔 Уведомления при входе/выходе',
+            
+            'youtube-filter': 'Настройка фильтрации YouTube:\n\n' +
+                             '🔒 Возрастные ограничения: 12+\n\n' +
+                             '✅ Безопасный режим: Включен\n' +
+                             '🚫 Блокировать 18+: Включено\n' +
+                             '⏱️ Лимит времени: 45 мин/день\n\n' +
+                             '📝 Список заблокированных каналов: 3\n' +
+                             '✅ История просмотров: Отслеживается'
+        };
+        
+        const title = settingsTitles[settingType] || 'Настройки';
+        const description = settingsDescriptions[settingType] || 'Настройки для этой функции.';
+        
+        showNotification(title + '\n\n' + description, 'info');
+    }
+    
+    // Открытие деталей мониторинга
+    function openMonitoringDetails(monitoringType) {
+        const monitoringTitles = {
+            'browser-history': '🌐 История браузера',
+            'app-history': '📲 История приложений',
+            'contacts': '👥 Просмотр контактов'
+        };
+        
+        const monitoringDetails = {
+            'browser-history': 'Детальная история посещений за неделю:\n\n' +
+                              '📊 Всего сайтов: 342\n' +
+                              '⏱️ Общее время: 18ч 35мин\n\n' +
+                              'ТОП-5 сайтов:\n\n' +
+                              '1. 🎥 YouTube.com\n' +
+                              '   142 визита, 8ч 24мин\n\n' +
+                              '2. 📱 Instagram.com\n' +
+                              '   87 визитов, 4ч 12мин\n\n' +
+                              '3. 🎓 School-platform.ru\n' +
+                              '   34 визита, 2ч 45мин\n\n' +
+                              '4. 🎮 TikTok.com\n' +
+                              '   45 визитов, 1ч 58мин\n\n' +
+                              '5. 📧 Gmail.com\n' +
+                              '   28 визитов, 45мин\n\n' +
+                              '⚠️ Заблокировано попыток: 12\n' +
+                              '🔒 Небезопасных сайтов: 3',
+            
+            'app-history': 'Детальная история использования приложений:\n\n' +
+                          '📊 Всего приложений: 28\n' +
+                          '⏱️ Общее время: 24ч 18мин\n\n' +
+                          'ТОП-5 приложений:\n\n' +
+                          '1. 📱 Instagram\n' +
+                          '   8ч 24мин (35%)\n' +
+                          '   Лимит: 30 мин/день (превышен!)\n\n' +
+                          '2. 🎮 TikTok\n' +
+                          '   5ч 12мин (21%)\n' +
+                          '   Лимит: 20 мин/день (превышен!)\n\n' +
+                          '3. 💬 WhatsApp\n' +
+                          '   4ч 35мин (19%)\n' +
+                          '   Лимит: 60 мин/день\n\n' +
+                          '4. ✈️ Telegram\n' +
+                          '   3ч 28мин (14%)\n' +
+                          '   Лимит: 60 мин/день\n\n' +
+                          '5. 🎯 Игры\n' +
+                          '   2ч 39мин (11%)\n\n' +
+                          '⚠️ Превышений лимита: 2\n' +
+                          '📊 Продуктивные приложения: 15%',
+            
+            'contacts': 'Список контактов и общение:\n\n' +
+                       '👥 Всего контактов: 47\n' +
+                       '💬 Активные общения: 23\n\n' +
+                       'ТОП-5 контактов по общению:\n\n' +
+                       '1. 👧 Аня (одноклассница)\n' +
+                       '   287 сообщений, 12 звонков\n' +
+                       '   WhatsApp, Instagram\n\n' +
+                       '2. 👦 Максим (друг)\n' +
+                       '   156 сообщений, 5 звонков\n' +
+                       '   Telegram, WhatsApp\n\n' +
+                       '3. 👩 Мама\n' +
+                       '   134 сообщения, 23 звонка\n' +
+                       '   WhatsApp, SMS\n\n' +
+                       '4. 👧 Лена (подруга)\n' +
+                       '   98 сообщений\n' +
+                       '   Instagram, TikTok\n\n' +
+                       '5. 👨 Папа\n' +
+                       '   67 сообщений, 8 звонков\n' +
+                       '   WhatsApp\n\n' +
+                       '⚠️ Новых контактов: 3\n' +
+                       '🔒 Заблокированных: 0'
+        };
+        
+        const title = monitoringTitles[monitoringType] || 'Детали мониторинга';
+        const details = monitoringDetails[monitoringType] || 'Информация о мониторинге.';
+        
+        showNotification(title + '\n\n' + details, 'info');
+    }
+    
+    // Открытие деталей отчётов
+    function openReportDetails(reportType) {
+        const reportTitles = {
+            'location-history': '📍 История перемещений',
+            'weekly-report': '📅 Еженедельный отчёт',
+            'suspicious-activity': '⚠️ Подозрительная активность',
+            'top-websites': '🌐 Top-5 сайтов',
+            'top-apps': '📱 Top-5 приложений',
+            'usage-charts': '📊 Графики использования',
+            'bypass-attempts': '🛡️ Попытки обхода блокировок'
+        };
+        
+        const reportDetails = {
+            'location-history': 'История перемещений за последние 30 дней:\n\n' +
+                               '📍 Всего точек: 847\n' +
+                               '🗺️ Посещено мест: 42\n\n' +
+                               'Частые локации:\n\n' +
+                               '1. 🏠 Дом (ул. Ленина, 25)\n' +
+                               '   486 раз, 67% времени\n\n' +
+                               '2. 🏫 Школа №15\n' +
+                               '   178 раз, 21% времени\n\n' +
+                               '3. 🏀 Спортзал "Динамо"\n' +
+                               '   34 раза, 4% времени\n\n' +
+                               '4. 🎭 Развлекательный центр\n' +
+                               '   28 раз, 3% времени\n\n' +
+                               '5. 🛒 Торговый центр\n' +
+                               '   23 раза, 2% времени\n\n' +
+                               '⚠️ Выходов за геозоны: 0\n' +
+                               '🔔 Уведомлений отправлено: 45',
+            
+            'weekly-report': 'Недельный отчёт активности ребёнка:\n\n' +
+                            '📊 Период: 04.10 - 10.10.2025\n\n' +
+                            'Экранное время:\n' +
+                            '📱 Общее: 18ч 24мин\n' +
+                            '📈 Средне в день: 2ч 37мин\n' +
+                            '⏱️ Лимит: 3ч/день\n' +
+                            '✅ Соблюдение: 87%\n\n' +
+                            'Top активности:\n' +
+                            '1. Instagram - 8ч 24мин (46%)\n' +
+                            '2. TikTok - 5ч 12мин (28%)\n' +
+                            '3. WhatsApp - 4ч 35мин (25%)\n\n' +
+                            'Посещённые сайты:\n' +
+                            '🌐 Всего: 342 сайта\n' +
+                            '⚠️ Заблокировано: 12\n\n' +
+                            'Общение:\n' +
+                            '💬 Сообщений: 847\n' +
+                            '📞 Звонков: 23\n\n' +
+                            '🏆 Общая оценка: Хорошо',
+            
+            'suspicious-activity': 'Подозрительная активность:\n\n' +
+                                  '⚠️ Всего предупреждений: 2\n\n' +
+                                  '1. 🔴 КРИТИЧНО\n' +
+                                  '   Попытка доступа к заблокированному сайту\n' +
+                                  '   Сайт: adult-content.com\n' +
+                                  '   Время: 10.10.2025, 16:45\n' +
+                                  '   Действие: Заблокировано\n\n' +
+                                  '2. 🟡 ВНИМАНИЕ\n' +
+                                  '   Превышено экранное время на 15 минут\n' +
+                                  '   Дата: 09.10.2025\n' +
+                                  '   Лимит: 3 часа\n' +
+                                  '   Использовано: 3ч 15мин\n' +
+                                  '   Действие: Уведомление отправлено\n\n' +
+                                  '📊 За последний месяц:\n' +
+                                  '• Заблокировано сайтов: 12\n' +
+                                  '• Превышений лимита: 3\n' +
+                                  '• Попыток VPN: 0\n\n' +
+                                  '✅ Общий уровень безопасности: Высокий',
+            
+            'top-websites': 'Top-5 самых посещаемых сайтов за неделю:\n\n' +
+                           '1. 🎥 YouTube.com\n' +
+                           '   Визитов: 142 раза\n' +
+                           '   Время: 8ч 24мин (46%)\n' +
+                           '   Категория: Развлечения\n\n' +
+                           '2. 📱 Instagram.com\n' +
+                           '   Визитов: 87 раз\n' +
+                           '   Время: 4ч 12мин (23%)\n' +
+                           '   Категория: Соцсети\n\n' +
+                           '3. 🎓 School-platform.ru\n' +
+                           '   Визитов: 34 раза\n' +
+                           '   Время: 2ч 45мин (15%)\n' +
+                           '   Категория: Образование\n\n' +
+                           '4. 🎮 TikTok.com\n' +
+                           '   Визитов: 45 раз\n' +
+                           '   Время: 1ч 58мин (11%)\n' +
+                           '   Категория: Развлечения\n\n' +
+                           '5. 📧 Gmail.com\n' +
+                           '   Визитов: 28 раз\n' +
+                           '   Время: 45мин (5%)\n' +
+                           '   Категория: Почта\n\n' +
+                           '📊 Всего сайтов: 342\n' +
+                           '⏱️ Общее время: 18ч 35мин',
+            
+            'top-apps': 'Top-5 приложений по времени использования:\n\n' +
+                       '1. 📱 Instagram\n' +
+                       '   Время: 8ч 24мин (35%)\n' +
+                       '   Лимит: 30 мин/день\n' +
+                       '   ⚠️ ПРЕВЫШЕН на 7ч 54мин!\n\n' +
+                       '2. 🎮 TikTok\n' +
+                       '   Время: 5ч 12мин (21%)\n' +
+                       '   Лимит: 20 мин/день\n' +
+                       '   ⚠️ ПРЕВЫШЕН на 4ч 52мин!\n\n' +
+                       '3. 💬 WhatsApp\n' +
+                       '   Время: 4ч 35мин (19%)\n' +
+                       '   Лимит: 60 мин/день\n' +
+                       '   ⚠️ ПРЕВЫШЕН на 3ч 35мин\n\n' +
+                       '4. ✈️ Telegram\n' +
+                       '   Время: 3ч 28мин (14%)\n' +
+                       '   Лимит: 60 мин/день\n' +
+                       '   ⚠️ ПРЕВЫШЕН на 2ч 28мин\n\n' +
+                       '5. 🎯 Игры (разные)\n' +
+                       '   Время: 2ч 39мин (11%)\n' +
+                       '   Лимит: Не установлен\n\n' +
+                       '📊 Всего приложений: 28\n' +
+                       '⏱️ Общее время: 24ч 18мин\n' +
+                       '💡 Рекомендация: Ужесточить лимиты',
+            
+            'usage-charts': 'Детальная аналитика по часам:\n\n' +
+                           '📊 Пиковые часы активности:\n\n' +
+                           '🌅 Утро (06:00-12:00)\n' +
+                           '   Активность: 15%\n' +
+                           '   Основное: Школьные приложения\n\n' +
+                           '☀️ День (12:00-18:00)\n' +
+                           '   Активность: 45%\n' +
+                           '   Основное: Instagram, YouTube\n\n' +
+                           '🌆 Вечер (18:00-22:00)\n' +
+                           '   Активность: 35%\n' +
+                           '   Основное: TikTok, WhatsApp\n\n' +
+                           '🌙 Ночь (22:00-06:00)\n' +
+                           '   Активность: 5%\n' +
+                           '   ⚠️ Нарушения режима сна\n\n' +
+                           'Динамика по дням:\n' +
+                           '• Пн: 2ч 15мин ✅\n' +
+                           '• Вт: 2ч 45мин ✅\n' +
+                           '• Ср: 3ч 15мин ⚠️\n' +
+                           '• Чт: 2ч 30мин ✅\n' +
+                           '• Пт: 3ч 05мин ⚠️\n' +
+                           '• Сб: 4ч 20мин ⚠️\n' +
+                           '• Вс: 3ч 54мин ⚠️\n\n' +
+                           '📈 Тренд: Увеличение к выходным',
+            
+            'bypass-attempts': 'Попытки обхода блокировок:\n\n' +
+                              '🛡️ За последние 30 дней:\n\n' +
+                              '✅ VPN-подключения: 0 попыток\n' +
+                              '   Статус: Не обнаружено\n\n' +
+                              '✅ Tor Browser: 0 попыток\n' +
+                              '   Статус: Не обнаружено\n\n' +
+                              '✅ Режим Инкогнито: 0 попыток\n' +
+                              '   Статус: Блокируется автоматически\n\n' +
+                              '✅ Proxy серверы: 0 попыток\n' +
+                              '   Статус: Не обнаружено\n\n' +
+                              '✅ DNS туннелирование: 0 попыток\n' +
+                              '   Статус: Не обнаружено\n\n' +
+                              '📊 Общая защита:\n' +
+                              '🛡️ Уровень защиты: МАКСИМАЛЬНЫЙ\n' +
+                              '✅ Обход невозможен\n' +
+                              '🔒 Все методы блокируются\n' +
+                              '👀 Постоянный мониторинг\n\n' +
+                              '💡 Система работает идеально!\n' +
+                              '✨ Ребёнок не пытается обойти защиту'
+        };
+        
+        const title = reportTitles[reportType] || 'Отчёт';
+        const details = reportDetails[reportType] || 'Информация об отчёте.';
+        
+        showNotification(title + '\n\n' + details, 'info');
+    }
+    
+    // Удалённая блокировка устройства
+    function remoteDeviceLock() {
+        showNotification(
+            '🔒 Удалённая блокировка устройства\n\n' +
+            '⚠️ ВНИМАНИЕ! Вы собираетесь заблокировать устройство ребёнка.\n\n' +
+            'Что произойдёт:\n\n' +
+            '🔒 Устройство полностью заблокируется\n' +
+            '📱 Доступ только к экстренным вызовам\n' +
+            '⏰ Будильник продолжит работать\n' +
+            '📞 Можно позвонить 112, родителям\n\n' +
+            'Текущий статус:\n' +
+            '📱 Устройство: iPhone 12 (Алексей)\n' +
+            '🟢 Статус: Онлайн\n' +
+            '🔋 Батарея: 67%\n\n' +
+            '⚙️ Для разблокировки потребуется:\n' +
+            '• Ваше подтверждение\n' +
+            '• Или код разблокировки\n\n' +
+            '💡 Используйте эту функцию в крайних случаях!',
+            'warning'
+        );
+    }
+    
+    // Удалённое удаление данных
+    function remoteDataWipe() {
+        showNotification(
+            '🗑️ Удаление всех данных с устройства\n\n' +
+            '⚠️ КРИТИЧНО! Это необратимая операция!\n\n' +
+            'Что будет удалено:\n\n' +
+            '📸 Все фотографии и видео\n' +
+            '💬 Все сообщения и чаты\n' +
+            '📱 Все установленные приложения\n' +
+            '🎵 Вся музыка и медиа\n' +
+            '📧 Все email и контакты\n' +
+            '🔐 Все сохранённые пароли\n\n' +
+            'Что НЕ удаляется:\n\n' +
+            '✅ Резервная копия в iCloud (если была)\n' +
+            '✅ Данные ALADDIN на сервере\n' +
+            '✅ История активности (у родителей)\n\n' +
+            'Когда использовать:\n' +
+            '• Устройство украдено\n' +
+            '• Устройство потеряно\n' +
+            '• Критическая угроза безопасности\n\n' +
+            '💡 ВНИМАНИЕ: Восстановление данных возможно только из резервной копии!',
+            'warning'
+        );
+    }
+    
+    // Просмотр запросов доступа
+    function openAccessRequests() {
+        showNotification(
+            '✋ Запросы на разблокировку\n\n' +
+            '📊 Всего запросов: 2 новых\n\n' +
+            '1. 📱 Instagram\n' +
+            '   От: Алексей (12 лет)\n' +
+            '   Время: 10 мин назад\n' +
+            '   Причина: "Хочу посмотреть сообщения"\n' +
+            '   Текущий лимит: 30 мин/день (использовано)\n\n' +
+            '   ✅ Одобрить (+15 мин)\n' +
+            '   ❌ Отклонить\n\n' +
+            '2. 🎥 YouTube\n' +
+            '   От: Алексей (12 лет)\n' +
+            '   Время: 5 мин назад\n' +
+            '   Причина: "Нужно посмотреть урок"\n' +
+            '   Текущий лимит: 45 мин/день (осталось 12 мин)\n\n' +
+            '   ✅ Одобрить\n' +
+            '   ❌ Отклонить\n\n' +
+            'История запросов:\n' +
+            '• Сегодня: 2 запроса\n' +
+            '• На неделе: 8 запросов\n' +
+            '• Одобрено: 5 (62%)\n' +
+            '• Отклонено: 3 (38%)\n\n' +
+            '💡 Совет: Обсудите с ребёнком правила использования приложений',
+            'info'
+        );
+    }
+    
+    function toggleSwitch(event) {
+        event.stopPropagation();
+        const switchEl = event.currentTarget.querySelector('.control-switch');
+        if (switchEl) {
+            switchEl.classList.toggle('off');
+            const isOn = !switchEl.classList.contains('off');
+            const controlName = event.currentTarget.querySelector('.control-name').textContent;
+            showNotification(controlName + ': ' + (isOn ? 'Включено ✅' : 'Отключено ⭕'), isOn ? 'success' : 'warning');
+        }
+    }
+    
+    // Закрытие модального окна при клике вне его
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+    });
+    
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.innerHTML = message.replace(/\n/g, '<br>');
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: ${type === 'success' ? '#10B981' : type === 'warning' ? '#F59E0B' : 'linear-gradient(135deg, #1e3a5f 0%, #2e5090 100%)'};
+            color: white;
+            padding: 20px 25px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 2000;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            max-width: 320px;
+            max-height: 500px;
+            overflow-y: auto;
+            text-align: left;
+            line-height: 1.6;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Закрытие по клику на уведомление
+        notification.addEventListener('click', () => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s';
+            setTimeout(() => notification.remove(), 300);
+        });
+        
+        // Автоматическое закрытие через 8 секунд для детальных настроек
+        const autoCloseTime = type === 'info' ? 8000 : 2000;
+        
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s';
+            setTimeout(() => notification.remove(), 300);
+        }, autoCloseTime);
+    }
+    
+    // Умная навигация назад
+    function goBackSmart() {
+        const previousPage = sessionStorage.getItem('previousPage');
+        console.log('🔍 Previous page:', previousPage);
+        
+        if (previousPage && previousPage !== '14_parental_control_screen.html') {
+            console.log('✅ Возврат на:', previousPage);
+            window.location.href = previousPage;
+        } else {
+            console.log('✅ Возврат на главную (default)');
+            window.location.href = '01_main_screen.html';
+        }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // СИСТЕМА ВОЗНАГРАЖДЕНИЙ И НАКАЗАНИЙ (НОВОЕ!)
+    // ═══════════════════════════════════════════════════════════════
+    
+    // Вознаграждение ребёнка (начисление единорогов)
+    function giveUnicorns() {
+        showNotification(
+            '✅ ВОЗНАГРАДИТЬ РЕБЁНКА\n\n' +
+            'Выберите причину начисления:\n\n' +
+            '📚 Домашнее задание: +10 🦄\n' +
+            '🧹 Домашние обязанности: +5 🦄\n' +
+            '😊 Хорошее поведение: +15 🦄\n' +
+            '📖 Прочитал книгу: +20 🦄\n' +
+            '🏆 Отличная оценка (5): +50 🦄\n' +
+            '🎯 Своя причина: от +1 до +100 🦄\n\n' +
+            '💡 Текущий баланс: 245 🦄\n\n' +
+            '─────────────────────────────────\n\n' +
+            '📊 Статистика за месяц:\n' +
+            '• Всего вознаграждено: 487 🦄\n' +
+            '• Среднее в день: +16 🦄\n' +
+            '• Самый продуктивный день: Среда (+78 🦄)\n\n' +
+            '🎯 Рекомендация:\n' +
+            'Начисляйте единорогов сразу после выполнения задания!\n' +
+            'Так ребёнок лучше понимает связь между действием и наградой.\n\n' +
+            '⚠️ Ребёнок получит Push-уведомление о начислении!',
+            'info'
+        );
+    }
+    
+    // Наказание ребёнка (списание единорогов)
+    function punishChild() {
+        showNotification(
+            '❌ НАКАЗАТЬ РЕБЁНКА\n\n' +
+            'Выберите причину наказания:\n\n' +
+            '📚 Не сделал ДЗ: -10 🦄\n' +
+            '😡 Плохое поведение: -15 🦄\n' +
+            '⏰ Нарушение лимитов: -5 🦄\n' +
+            '🚫 Обход блокировок: -20 🦄\n' +
+            '😤 Своя причина: от -1 до -50 🦄\n\n' +
+            '💡 Текущий баланс: 245 🦄\n\n' +
+            '─────────────────────────────────\n\n' +
+            '⚠️ ВАЖНО:\n\n' +
+            '1. ВСЕГДА объясняйте причину наказания!\n' +
+            '   Ребёнок увидит её в своей истории.\n\n' +
+            '2. Наказание должно быть справедливым!\n' +
+            '   Не списывайте единорогов в гневе.\n\n' +
+            '3. Соблюдайте баланс:\n' +
+            '   70% вознаграждения / 30% наказания\n\n' +
+            '4. Ребёнок получит Push-уведомление:\n' +
+            '   "❌ Списано 15 🦄 за плохое поведение"\n' +
+            '   + детальное объяснение причины\n\n' +
+            '💡 Психологи рекомендуют:\n' +
+            'Фокусируйтесь на вознаграждении за хорошее,\n' +
+            'а не на наказании за плохое!',
+            'warning'
+        );
+    }
+    
+    // Магазин наград
+    function openRewardsShop() {
+        showNotification(
+            '🏪 МАГАЗИН НАГРАД\n\n' +
+            '💰 Баланс: 245 🦄\n\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+            'ВИРТУАЛЬНЫЕ НАГРАДЫ:\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+            '🎮 +30 минут игр: 50 🦄\n' +
+            '   ✅ Можно купить (достаточно единорогов)\n\n' +
+            '📱 +1 час экранного времени: 80 🦄\n' +
+            '   ✅ Можно купить\n\n' +
+            '🌙 +30 минут перед сном: 100 🦄\n' +
+            '   ✅ Можно купить\n\n' +
+            '🎬 Разблокировка YouTube (1 день): 60 🦄\n' +
+            '   ✅ Можно купить\n\n' +
+            '📺 Разблокировка Instagram (1 день): 70 🦄\n' +
+            '   ✅ Можно купить\n\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+            'РЕАЛЬНЫЕ НАГРАДЫ:\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+            '🍕 Заказ пиццы: 150 🦄\n' +
+            '   ✅ Можно купить\n\n' +
+            '🎬 Поход в кино: 200 🦄\n' +
+            '   ❌ Не хватает 45 🦄\n\n' +
+            '🍦 Мороженое: 30 🦄\n' +
+            '   ✅ Можно купить\n\n' +
+            '🎁 Подарок до 1000₽: 500 🦄\n' +
+            '   ❌ Не хватает 255 🦄\n\n' +
+            '🎮 Новая игра: 800 🦄\n' +
+            '   ❌ Не хватает 555 🦄\n\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+            '⚙️ НАСТРОЙКА НАГРАД:\n' +
+            'Родители могут добавлять свои награды с ценой в единорогах!\n\n' +
+            '💡 Популярные награды:\n' +
+            '• Выходные без домашних дел: 300 🦄\n' +
+            '• Дополнительный час сна в субботу: 120 🦄\n' +
+            '• Выбор фильма для семейного просмотра: 80 🦄',
+            'info'
+        );
+    }
+    
+    // Управление наградами
+    function manageRewards() {
+        showNotification(
+            '⚙️ УПРАВЛЕНИЕ НАГРАДАМИ\n\n' +
+            '📋 Настройте собственные награды:\n\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+            'ТЕКУЩИЕ НАГРАДЫ (9 шт):\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+            'Виртуальные (5):\n' +
+            '• 🎮 +30 мин игр (50 🦄)\n' +
+            '• 📱 +1 час экрана (80 🦄)\n' +
+            '• 🌙 +30 мин перед сном (100 🦄)\n' +
+            '• 🎬 YouTube (60 🦄)\n' +
+            '• 📺 Instagram (70 🦄)\n\n' +
+            'Реальные (4):\n' +
+            '• 🍕 Пицца (150 🦄)\n' +
+            '• 🎬 Кино (200 🦄)\n' +
+            '• 🍦 Мороженое (30 🦄)\n' +
+            '• 🎁 Подарок (500 🦄)\n\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+            '➕ ДОБАВИТЬ СВОЮ НАГРАДУ:\n\n' +
+            'Примеры:\n' +
+            '• 🏊 Поход в бассейн: 100 🦄\n' +
+            '• 🎨 Художественные принадлежности: 250 🦄\n' +
+            '• 🚲 Прокат велосипеда: 120 🦄\n' +
+            '• 🎪 Парк развлечений: 400 🦄\n' +
+            '• 📚 Новая книга: 150 🦄\n\n' +
+            '💡 Совет:\n' +
+            'Создавайте награды вместе с ребёнком!\n' +
+            'Так они будут более мотивирующими.',
+            'info'
+        );
+    }
+    
+    // Полная история
+    function openFullHistory() {
+        showNotification(
+            '📜 ПОЛНАЯ ИСТОРИЯ\n\n' +
+            '📊 Период: Последние 30 дней\n\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+            'СЕГОДНЯ (12 октября):\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+            '10:30 | 📚 Домашнее задание | +10 🦄\n' +
+            '14:15 | 😊 Хорошее поведение | +15 🦄\n' +
+            '16:20 | ❌ Грубость с бабушкой | -15 🦄\n' +
+            '18:45 | 🎮 Купил: +30 мин игр | -50 🦄\n\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+            'ВЧЕРА (11 октября):\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+            '09:00 | 🧹 Убрал в комнате | +5 🦄\n' +
+            '15:30 | 🏆 Получил "5" по математике | +50 🦄\n' +
+            '19:00 | 📱 Купил: +1 час экрана | -80 🦄\n\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n' +
+            '10 октября:\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+            '10:00 | 📖 Прочитал книгу | +20 🦄\n' +
+            '16:45 | 😊 Помог бабушке | +15 🦄\n' +
+            '20:00 | 🍕 Купил: Пицца | -150 🦄\n\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+            '📊 СТАТИСТИКА ЗА МЕСЯЦ:\n\n' +
+            '💰 Всего заработано: 487 🦄\n' +
+            '🛍️ Всего потрачено: 242 🦄\n' +
+            '❌ Всего наказано: -58 🦄\n' +
+            '💎 Текущий баланс: 245 🦄\n\n' +
+            '📈 Средне в день: +13 🦄\n' +
+            '🏆 Лучший день: Среда 09.10 (+78 🦄)\n' +
+            '⚠️ Худший день: Пятница 10.10 (-23 🦄)\n' +
+            '🎯 Самая частая покупка: +30 мин игр (7 раз)\n\n' +
+            '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n' +
+            '🎯 РЕЙТИНГ В СЕМЬЕ:\n\n' +
+            '1. 🥇 Алексей (12 лет) - 245 🦄\n' +
+            '2. 🥈 Маша (8 лет) - 187 🦄\n' +
+            '3. 🥉 Петя (15 лет) - 156 🦄',
+            'info'
+        );
+    }
+</script>
+</body>
+</html>

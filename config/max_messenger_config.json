@@ -1,0 +1,24 @@
+{
+  "max_messenger": {
+    "enabled": true,
+    "api_endpoint": "https://api.max-messenger.ru/v1",
+    "api_key": "",
+    "real_time_monitoring": true,
+    "message_analysis": true,
+    "bot_detection": true,
+    "government_bot_verification": true
+  },
+  "protection_features": {
+    "fake_bot_detection": true,
+    "phishing_protection": true,
+    "spam_filtering": true,
+    "content_moderation": true,
+    "user_verification": true
+  },
+  "integration": {
+    "family_hub": true,
+    "security_analytics": true,
+    "threat_intelligence": true,
+    "real_time_alerts": true
+  }
+}

@@ -1,0 +1,453 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+AI Optimization Engine - Движок AI-оптимизации
+Машинное обучение для предсказательной оптимизации системы безопасности
+
+Автор: ALADDIN Security Team
+Версия: 1.0
+Дата: 2025-01-28
+"""
+
+import asyncio
+import json
+import logging
+import numpy as np
+import time
+from dataclasses import dataclass, asdict
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
+from collections import deque
+
+from core.base import ComponentStatus, SecurityBase
+
+
+@dataclass
+class PerformanceDataPoint:
+    """Точка данных о производительности"""
+    timestamp: datetime
+    function_id: str
+    execution_time: float
+    success: bool
+    cpu_usage: float
+    memory_usage: float
+    concurrent_functions: int
+    cache_hit_rate: float
+    error_rate: float
+
+
+@dataclass
+class PredictionResult:
+    """Результат предсказания"""
+    function_id: str
+    predicted_execution_time: float
+    confidence: float
+    recommended_concurrency: int
+    recommended_cache_size: int
+    risk_score: float
+    optimization_suggestions: List[str]
+
+
+class SimpleMLPredictor:
+    """Простой предиктор на основе статистики"""
+    
+    def __init__(self, window_size: int = 100):
+        self.window_size = window_size
+        self.data_history = deque(maxlen=window_size)
+        self.function_stats = {}
+    
+    def add_data_point(self, data_point: PerformanceDataPoint):
+        """Добавление точки данных"""
+        self.data_history.append(data_point)
+        
+        # Обновление статистики по функциям
+        func_id = data_point.function_id
+        if func_id not in self.function_stats:
+            self.function_stats[func_id] = {
+                "execution_times": deque(maxlen=50),
+                "success_rates": deque(maxlen=50),
+                "cpu_usage": deque(maxlen=50),
+                "memory_usage": deque(maxlen=50)
+            }
+        
+        stats = self.function_stats[func_id]
+        stats["execution_times"].append(data_point.execution_time)
+        stats["success_rates"].append(1.0 if data_point.success else 0.0)
+        stats["cpu_usage"].append(data_point.cpu_usage)
+        stats["memory_usage"].append(data_point.memory_usage)
+    
+    def predict_performance(self, function_id: str, 
+                          current_cpu: float, 
+                          current_memory: float,
+                          current_concurrency: int) -> PredictionResult:
+        """Предсказание производительности функции"""
+        
+        if function_id not in self.function_stats:
+            return self._get_default_prediction(function_id)
+        
+        stats = self.function_stats[function_id]
+        
+        if not stats["execution_times"]:
+            return self._get_default_prediction(function_id)
+        
+        # Простые статистические предсказания
+        avg_execution_time = np.mean(list(stats["execution_times"]))
+        std_execution_time = np.std(list(stats["execution_times"]))
+        success_rate = np.mean(list(stats["success_rates"]))
+        avg_cpu = np.mean(list(stats["cpu_usage"]))
+        avg_memory = np.mean(list(stats["memory_usage"]))
+        
+        # Предсказание времени выполнения с учетом текущей нагрузки
+        cpu_factor = current_cpu / max(avg_cpu, 1.0)
+        memory_factor = current_memory / max(avg_memory, 1.0)
+        concurrency_factor = current_concurrency / 50.0  # Нормализация
+        
+        predicted_time = avg_execution_time * (1 + cpu_factor * 0.3 + memory_factor * 0.2 + concurrency_factor * 0.1)
+        
+        # Расчет уверенности (чем больше данных, тем выше уверенность)
+        confidence = min(1.0, len(stats["execution_times"]) / 50.0)
+        
+        # Рекомендации по оптимизации
+        recommended_concurrency = self._calculate_optimal_concurrency(
+            avg_execution_time, success_rate, current_cpu, current_memory
+        )
+        
+        recommended_cache_size = self._calculate_optimal_cache_size(
+            avg_execution_time, current_memory
+        )
+        
+        # Расчет риска
+        risk_score = self._calculate_risk_score(
+            success_rate, std_execution_time, current_cpu, current_memory
+        )
+        
+        # Предложения по оптимизации
+        suggestions = self._generate_optimization_suggestions(
+            success_rate, avg_execution_time, current_cpu, current_memory, risk_score
+        )
+        
+        return PredictionResult(
+            function_id=function_id,
+            predicted_execution_time=predicted_time,
+            confidence=confidence,
+            recommended_concurrency=recommended_concurrency,
+            recommended_cache_size=recommended_cache_size,
+            risk_score=risk_score,
+            optimization_suggestions=suggestions
+        )
+    
+    def _get_default_prediction(self, function_id: str) -> PredictionResult:
+        """Получение предсказания по умолчанию"""
+        return PredictionResult(
+            function_id=function_id,
+            predicted_execution_time=1.0,
+            confidence=0.1,
+            recommended_concurrency=10,
+            recommended_cache_size=100,
+            risk_score=0.5,
+            optimization_suggestions=["Недостаточно данных для предсказания"]
+        )
+    
+    def _calculate_optimal_concurrency(self, avg_time: float, success_rate: float, 
+                                     cpu: float, memory: float) -> int:
+        """Расчет оптимальной конкурентности"""
+        base_concurrency = 20
+        
+        # Корректировка на основе времени выполнения
+        if avg_time < 0.1:  # Быстрые функции
+            concurrency_multiplier = 2.0
+        elif avg_time < 1.0:  # Средние функции
+            concurrency_multiplier = 1.5
+        else:  # Медленные функции
+            concurrency_multiplier = 1.0
+        
+        # Корректировка на основе успешности
+        success_multiplier = success_rate if success_rate > 0.5 else 0.5
+        
+        # Корректировка на основе ресурсов
+        resource_multiplier = 1.0
+        if cpu > 80:
+            resource_multiplier *= 0.5
+        if memory > 80:
+            resource_multiplier *= 0.7
+        
+        optimal = int(base_concurrency * concurrency_multiplier * success_multiplier * resource_multiplier)
+        return max(1, min(optimal, 100))
+    
+    def _calculate_optimal_cache_size(self, avg_time: float, memory: float) -> int:
+        """Расчет оптимального размера кэша"""
+        base_cache = 100
+        
+        # Корректировка на основе времени выполнения
+        if avg_time > 1.0:  # Медленные функции - больше кэша
+            time_multiplier = 2.0
+        else:
+            time_multiplier = 1.0
+        
+        # Корректировка на основе доступной памяти
+        memory_multiplier = 1.0
+        if memory < 50:
+            memory_multiplier = 0.5
+        elif memory > 80:
+            memory_multiplier = 1.5
+        
+        optimal = int(base_cache * time_multiplier * memory_multiplier)
+        return max(50, min(optimal, 1000))
+    
+    def _calculate_risk_score(self, success_rate: float, std_time: float, 
+                            cpu: float, memory: float) -> float:
+        """Расчет оценки риска"""
+        risk = 0.0
+        
+        # Риск от низкой успешности
+        risk += (1.0 - success_rate) * 0.4
+        
+        # Риск от высокой вариативности времени выполнения
+        if std_time > 0:
+            risk += min(1.0, std_time / 2.0) * 0.3
+        
+        # Риск от высокой загрузки ресурсов
+        risk += (cpu / 100.0) * 0.15
+        risk += (memory / 100.0) * 0.15
+        
+        return min(1.0, risk)
+    
+    def _generate_optimization_suggestions(self, success_rate: float, avg_time: float,
+                                         cpu: float, memory: float, risk_score: float) -> List[str]:
+        """Генерация предложений по оптимизации"""
+        suggestions = []
+        
+        if success_rate < 0.8:
+            suggestions.append("Низкая успешность выполнения - проверить логику функции")
+        
+        if avg_time > 2.0:
+            suggestions.append("Медленное выполнение - оптимизировать алгоритм")
+        
+        if cpu > 80:
+            suggestions.append("Высокая загрузка CPU - уменьшить конкурентность")
+        
+        if memory > 80:
+            suggestions.append("Высокая загрузка памяти - уменьшить размер кэша")
+        
+        if risk_score > 0.7:
+            suggestions.append("Высокий риск сбоев - добавить circuit breaker")
+        
+        if not suggestions:
+            suggestions.append("Система работает оптимально")
+        
+        return suggestions
+
+
+class AIOptimizationEngine(SecurityBase):
+    """
+    Движок AI-оптимизации для ALADDIN Security System
+    Использует машинное обучение для предсказательной оптимизации
+    """
+    
+    def __init__(self, name: str = "AIOptimizationEngine", 
+                 config: Optional[Dict[str, Any]] = None):
+        super().__init__(name, config)
+        
+        self.predictor = SimpleMLPredictor()
+        self.optimization_history = []
+        self.active_predictions = {}
+        
+        # Конфигурация
+        self.prediction_interval = 60  # секунд
+        self.optimization_threshold = 0.1  # Минимальное улучшение для применения
+        self.max_history_size = 1000
+        
+        # Статистика
+        self.total_predictions = 0
+        self.successful_predictions = 0
+        self.optimizations_applied = 0
+        
+    async def add_performance_data(self, data_point: PerformanceDataPoint):
+        """Добавление данных о производительности"""
+        try:
+            self.predictor.add_data_point(data_point)
+            self.log_activity(f"Добавлены данные производительности для {data_point.function_id}", "debug")
+        except Exception as e:
+            self.log_activity(f"Ошибка добавления данных: {e}", "error")
+    
+    async def predict_function_performance(self, function_id: str) -> Optional[PredictionResult]:
+        """Предсказание производительности функции"""
+        try:
+            # Получение текущих метрик системы
+            import psutil
+            current_cpu = psutil.cpu_percent()
+            current_memory = psutil.virtual_memory().percent
+            
+            # Получение текущей конкурентности (упрощенно)
+            current_concurrency = 50  # Должно получаться из SFM
+            
+            # Предсказание
+            prediction = self.predictor.predict_performance(
+                function_id, current_cpu, current_memory, current_concurrency
+            )
+            
+            self.total_predictions += 1
+            self.active_predictions[function_id] = prediction
+            
+            self.log_activity(f"Предсказание для {function_id}: время={prediction.predicted_execution_time:.2f}s, "
+                            f"уверенность={prediction.confidence:.2f}", "debug")
+            
+            return prediction
+            
+        except Exception as e:
+            self.log_activity(f"Ошибка предсказания для {function_id}: {e}", "error")
+            return None
+    
+    async def optimize_system_parameters(self) -> Dict[str, Any]:
+        """Оптимизация параметров системы на основе AI предсказаний"""
+        try:
+            if not self.active_predictions:
+                return {"status": "no_predictions", "message": "Нет активных предсказаний"}
+            
+            optimizations = {}
+            total_confidence = 0
+            valid_predictions = 0
+            
+            for func_id, prediction in self.active_predictions.items():
+                if prediction.confidence > 0.3:  # Минимальная уверенность
+                    optimizations[func_id] = {
+                        "recommended_concurrency": prediction.recommended_concurrency,
+                        "recommended_cache_size": prediction.recommended_cache_size,
+                        "risk_score": prediction.risk_score,
+                        "suggestions": prediction.optimization_suggestions
+                    }
+                    total_confidence += prediction.confidence
+                    valid_predictions += 1
+            
+            if valid_predictions == 0:
+                return {"status": "low_confidence", "message": "Недостаточно уверенных предсказаний"}
+            
+            # Расчет средних рекомендаций
+            avg_concurrency = sum(opt["recommended_concurrency"] for opt in optimizations.values()) / valid_predictions
+            avg_cache_size = sum(opt["recommended_cache_size"] for opt in optimizations.values()) / valid_predictions
+            avg_risk = sum(opt["risk_score"] for opt in optimizations.values()) / valid_predictions
+            avg_confidence = total_confidence / valid_predictions
+            
+            # Генерация рекомендаций
+            system_optimizations = {
+                "timestamp": datetime.now().isoformat(),
+                "avg_confidence": avg_confidence,
+                "avg_risk_score": avg_risk,
+                "recommended_concurrency": int(avg_concurrency),
+                "recommended_cache_size": int(avg_cache_size),
+                "function_optimizations": optimizations,
+                "system_recommendations": self._generate_system_recommendations(avg_risk, avg_confidence)
+            }
+            
+            # Сохранение оптимизации
+            self.optimization_history.append(system_optimizations)
+            if len(self.optimization_history) > self.max_history_size:
+                self.optimization_history = self.optimization_history[-self.max_history_size:]
+            
+            self.optimizations_applied += 1
+            self.log_activity(f"Сгенерированы AI-оптимизации: concurrency={int(avg_concurrency)}, "
+                            f"cache={int(avg_cache_size)}, confidence={avg_confidence:.2f}")
+            
+            return system_optimizations
+            
+        except Exception as e:
+            self.log_activity(f"Ошибка оптимизации: {e}", "error")
+            return {"status": "error", "message": str(e)}
+    
+    def _generate_system_recommendations(self, avg_risk: float, avg_confidence: float) -> List[str]:
+        """Генерация системных рекомендаций"""
+        recommendations = []
+        
+        if avg_risk > 0.7:
+            recommendations.append("Высокий риск сбоев - активировать дополнительные circuit breakers")
+        
+        if avg_confidence < 0.5:
+            recommendations.append("Низкая уверенность предсказаний - собрать больше данных")
+        
+        if avg_risk < 0.3 and avg_confidence > 0.7:
+            recommendations.append("Система работает стабильно - можно увеличить нагрузку")
+        
+        recommendations.append("Рекомендуется мониторинг производительности в реальном времени")
+        
+        return recommendations
+    
+    async def start_continuous_optimization(self):
+        """Запуск непрерывной оптимизации"""
+        self.log_activity("Запуск непрерывной AI-оптимизации")
+        
+        while True:
+            try:
+                # Генерация оптимизаций
+                optimizations = await self.optimize_system_parameters()
+                
+                if optimizations.get("status") == "success":
+                    # Здесь должна быть логика применения оптимизаций
+                    await self._apply_ai_optimizations(optimizations)
+                
+                await asyncio.sleep(self.prediction_interval)
+                
+            except Exception as e:
+                self.log_activity(f"Ошибка непрерывной оптимизации: {e}", "error")
+                await asyncio.sleep(60)
+    
+    async def _apply_ai_optimizations(self, optimizations: Dict[str, Any]):
+        """Применение AI-оптимизаций к системе"""
+        try:
+            # Сохранение оптимизаций в файл
+            with open("data/ai_optimizations.json", "w", encoding="utf-8") as f:
+                json.dump(optimizations, f, indent=2, ensure_ascii=False, default=str)
+            
+            self.log_activity("AI-оптимизации сохранены и готовы к применению")
+            
+        except Exception as e:
+            self.log_activity(f"Ошибка применения AI-оптимизаций: {e}", "error")
+    
+    def get_optimization_report(self) -> Dict[str, Any]:
+        """Получение отчета об оптимизации"""
+        return {
+            "total_predictions": self.total_predictions,
+            "successful_predictions": self.successful_predictions,
+            "optimizations_applied": self.optimizations_applied,
+            "active_predictions_count": len(self.active_predictions),
+            "history_size": len(self.optimization_history),
+            "latest_optimization": self.optimization_history[-1] if self.optimization_history else None,
+            "prediction_accuracy": self.successful_predictions / max(self.total_predictions, 1)
+        }
+
+
+# Пример использования
+async def main():
+    """Пример использования AI Optimization Engine"""
+    engine = AIOptimizationEngine()
+    
+    # Добавление тестовых данных
+    for i in range(10):
+        data_point = PerformanceDataPoint(
+            timestamp=datetime.now(),
+            function_id="test_function",
+            execution_time=1.0 + np.random.normal(0, 0.2),
+            success=np.random.random() > 0.1,
+            cpu_usage=50 + np.random.normal(0, 10),
+            memory_usage=60 + np.random.normal(0, 15),
+            concurrent_functions=20 + np.random.randint(-5, 5),
+            cache_hit_rate=0.8 + np.random.normal(0, 0.1),
+            error_rate=0.05 + np.random.normal(0, 0.02)
+        )
+        await engine.add_performance_data(data_point)
+    
+    # Предсказание производительности
+    prediction = await engine.predict_function_performance("test_function")
+    if prediction:
+        print(f"✅ Предсказание: {prediction}")
+    
+    # Оптимизация системы
+    optimizations = await engine.optimize_system_parameters()
+    print(f"✅ Оптимизации: {optimizations}")
+    
+    # Отчет
+    report = engine.get_optimization_report()
+    print(f"✅ Отчет: {report}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

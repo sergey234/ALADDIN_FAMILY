@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-09-19T21:34:53.131875",
+  "registry_path": "data/sfm/function_registry.json",
+  "backup_path": "data/sfm/function_registry_backup_fix_20250919_213453.json",
+  "errors_found": [
+    "smart_monitoring_system: отсутствует поле function_type"
+  ],
+  "fixes_applied": [
+    "smart_monitoring_system: добавлено поле function_type",
+    "smart_monitoring_system: добавлено поле is_critical",
+    "smart_monitoring_system: добавлено поле auto_enable"
+  ],
+  "final_stats": {
+    "total_functions": 335,
+    "active_functions": 28,
+    "sleeping_functions": 288,
+    "critical_functions": 266,
+    "auto_enable_functions": 8
+  }
+}

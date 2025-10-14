@@ -1,0 +1,21 @@
+{
+  "monitoring_interval": 30,
+  "max_metrics": 10000,
+  "alert_retention_days": 30,
+  "health_check_timeout": 5,
+  "thresholds": {
+    "cpu_usage": 80,
+    "memory_usage": 85,
+    "disk_usage": 90,
+    "response_time": 1000,
+    "load_average": 2.0,
+    "connection_failure_rate": 0.1
+  },
+  "servers": [],
+  "enabled_checks": [
+    "server_health",
+    "connection_monitoring",
+    "user_activity",
+    "system_resources"
+  ]
+}

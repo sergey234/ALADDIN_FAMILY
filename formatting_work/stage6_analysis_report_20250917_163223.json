@@ -1,0 +1,797 @@
+{
+  "timestamp": "2025-09-17T16:32:23.293978",
+  "file_path": "security/reactive/recovery_service.py",
+  "classes": {
+    "total_classes": 8,
+    "classes": [
+      {
+        "name": "RecoveryType",
+        "line_number": 16,
+        "bases": [
+          "Enum"
+        ],
+        "docstring": "Типы восстановления",
+        "methods_count": 0,
+        "attributes_count": 6
+      },
+      {
+        "name": "RecoveryStatus",
+        "line_number": 27,
+        "bases": [
+          "Enum"
+        ],
+        "docstring": "Статусы восстановления",
+        "methods_count": 0,
+        "attributes_count": 5
+      },
+      {
+        "name": "RecoveryPriority",
+        "line_number": 37,
+        "bases": [
+          "Enum"
+        ],
+        "docstring": "Приоритеты восстановления",
+        "methods_count": 0,
+        "attributes_count": 4
+      },
+      {
+        "name": "RecoveryMethod",
+        "line_number": 46,
+        "bases": [
+          "Enum"
+        ],
+        "docstring": "Методы восстановления",
+        "methods_count": 0,
+        "attributes_count": 6
+      },
+      {
+        "name": "RecoveryTask",
+        "line_number": 58,
+        "bases": [],
+        "docstring": "Задача восстановления",
+        "methods_count": 0,
+        "attributes_count": 0
+      },
+      {
+        "name": "RecoveryPlan",
+        "line_number": 80,
+        "bases": [],
+        "docstring": "План восстановления",
+        "methods_count": 0,
+        "attributes_count": 0
+      },
+      {
+        "name": "RecoveryReport",
+        "line_number": 94,
+        "bases": [],
+        "docstring": "Отчет о восстановлении",
+        "methods_count": 0,
+        "attributes_count": 0
+      },
+      {
+        "name": "RecoveryService",
+        "line_number": 110,
+        "bases": [
+          "SecurityBase"
+        ],
+        "docstring": "Сервис автоматического восстановления после атак для семей",
+        "methods_count": 30,
+        "attributes_count": 0
+      }
+    ]
+  },
+  "methods": {
+    "total_methods": 30,
+    "methods": [
+      {
+        "name": "__init__",
+        "line_number": 113,
+        "type": "private",
+        "decorators": [],
+        "args": [
+          "self",
+          "name",
+          "config"
+        ],
+        "defaults_count": 2,
+        "docstring": null,
+        "is_async": false
+      },
+      {
+        "name": "_initialize_recovery_rules",
+        "line_number": 144,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self"
+        ],
+        "defaults_count": 0,
+        "docstring": "Инициализация правил восстановления",
+        "is_async": false
+      },
+      {
+        "name": "_setup_family_protection",
+        "line_number": 177,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self"
+        ],
+        "defaults_count": 0,
+        "docstring": "Настройка семейной защиты",
+        "is_async": false
+      },
+      {
+        "name": "_setup_backup_locations",
+        "line_number": 191,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self"
+        ],
+        "defaults_count": 0,
+        "docstring": "Настройка мест хранения резервных копий",
+        "is_async": false
+      },
+      {
+        "name": "create_recovery_plan",
+        "line_number": 203,
+        "type": "public",
+        "decorators": [],
+        "args": [
+          "self",
+          "incident_id",
+          "incident_data",
+          "user_id",
+          "family_role"
+        ],
+        "defaults_count": 2,
+        "docstring": "Создание плана восстановления",
+        "is_async": false
+      },
+      {
+        "name": "_generate_recovery_tasks",
+        "line_number": 266,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "incident_data",
+          "user_id",
+          "family_role"
+        ],
+        "defaults_count": 2,
+        "docstring": "Генерация задач восстановления",
+        "is_async": false
+      },
+      {
+        "name": "_evaluate_recovery_rule",
+        "line_number": 297,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "incident_data",
+          "rule",
+          "user_id",
+          "family_role"
+        ],
+        "defaults_count": 2,
+        "docstring": "Оценка правила восстановления",
+        "is_async": false
+      },
+      {
+        "name": "_create_recovery_task",
+        "line_number": 334,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "rule",
+          "incident_data",
+          "user_id",
+          "family_role"
+        ],
+        "defaults_count": 2,
+        "docstring": "Создание задачи восстановления",
+        "is_async": false
+      },
+      {
+        "name": "_create_family_recovery_tasks",
+        "line_number": 366,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "incident_data",
+          "user_id",
+          "family_role"
+        ],
+        "defaults_count": 2,
+        "docstring": "Создание семейных задач восстановления",
+        "is_async": false
+      },
+      {
+        "name": "execute_recovery_plan",
+        "line_number": 420,
+        "type": "public",
+        "decorators": [],
+        "args": [
+          "self",
+          "plan_id"
+        ],
+        "defaults_count": 0,
+        "docstring": "Выполнение плана восстановления",
+        "is_async": false
+      },
+      {
+        "name": "_execute_recovery_task",
+        "line_number": 498,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "task"
+        ],
+        "defaults_count": 0,
+        "docstring": "Выполнение задачи восстановления",
+        "is_async": false
+      },
+      {
+        "name": "_recover_data",
+        "line_number": 538,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "task"
+        ],
+        "defaults_count": 0,
+        "docstring": "Восстановление данных",
+        "is_async": false
+      },
+      {
+        "name": "_recover_system",
+        "line_number": 555,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "task"
+        ],
+        "defaults_count": 0,
+        "docstring": "Восстановление системы",
+        "is_async": false
+      },
+      {
+        "name": "_recover_network",
+        "line_number": 572,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "task"
+        ],
+        "defaults_count": 0,
+        "docstring": "Восстановление сети",
+        "is_async": false
+      },
+      {
+        "name": "_recover_user_account",
+        "line_number": 587,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "task"
+        ],
+        "defaults_count": 0,
+        "docstring": "Восстановление пользовательского аккаунта",
+        "is_async": false
+      },
+      {
+        "name": "_recover_family_profile",
+        "line_number": 615,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "task"
+        ],
+        "defaults_count": 0,
+        "docstring": "Восстановление семейного профиля",
+        "is_async": false
+      },
+      {
+        "name": "_recover_security_settings",
+        "line_number": 638,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "task"
+        ],
+        "defaults_count": 0,
+        "docstring": "Восстановление настроек безопасности",
+        "is_async": false
+      },
+      {
+        "name": "_assess_family_impact",
+        "line_number": 663,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "incident_data",
+          "user_id",
+          "family_role"
+        ],
+        "defaults_count": 2,
+        "docstring": "Оценка семейного воздействия",
+        "is_async": false
+      },
+      {
+        "name": "_calculate_recovery_duration",
+        "line_number": 704,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "tasks"
+        ],
+        "defaults_count": 0,
+        "docstring": "Расчет времени восстановления",
+        "is_async": false
+      },
+      {
+        "name": "_create_recovery_report",
+        "line_number": 734,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "plan"
+        ],
+        "defaults_count": 0,
+        "docstring": "Создание отчета о восстановлении",
+        "is_async": false
+      },
+      {
+        "name": "_generate_recovery_recommendations",
+        "line_number": 793,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "plan"
+        ],
+        "defaults_count": 0,
+        "docstring": "Генерация рекомендаций по восстановлению",
+        "is_async": false
+      },
+      {
+        "name": "get_recovery_summary",
+        "line_number": 835,
+        "type": "public",
+        "decorators": [],
+        "args": [
+          "self",
+          "user_id"
+        ],
+        "defaults_count": 1,
+        "docstring": "Получение сводки по восстановлению",
+        "is_async": false
+      },
+      {
+        "name": "_calculate_average_recovery_time",
+        "line_number": 912,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "tasks"
+        ],
+        "defaults_count": 0,
+        "docstring": "Расчет среднего времени восстановления",
+        "is_async": false
+      },
+      {
+        "name": "_get_family_impact_summary",
+        "line_number": 940,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "plans"
+        ],
+        "defaults_count": 0,
+        "docstring": "Получение сводки семейного воздействия",
+        "is_async": false
+      },
+      {
+        "name": "_get_recent_recoveries",
+        "line_number": 970,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self",
+          "plans",
+          "limit"
+        ],
+        "defaults_count": 1,
+        "docstring": "Получение недавних восстановлений",
+        "is_async": false
+      },
+      {
+        "name": "get_family_recovery_status",
+        "line_number": 998,
+        "type": "public",
+        "decorators": [],
+        "args": [
+          "self"
+        ],
+        "defaults_count": 0,
+        "docstring": "Получение статуса семейного восстановления",
+        "is_async": false
+      },
+      {
+        "name": "get_status",
+        "line_number": 1045,
+        "type": "public",
+        "decorators": [],
+        "args": [
+          "self"
+        ],
+        "defaults_count": 0,
+        "docstring": "Получение статуса сервиса",
+        "is_async": false
+      },
+      {
+        "name": "_generate_plan_id",
+        "line_number": 1071,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self"
+        ],
+        "defaults_count": 0,
+        "docstring": "Генерация ID плана",
+        "is_async": false
+      },
+      {
+        "name": "_generate_task_id",
+        "line_number": 1077,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self"
+        ],
+        "defaults_count": 0,
+        "docstring": "Генерация ID задачи",
+        "is_async": false
+      },
+      {
+        "name": "_generate_report_id",
+        "line_number": 1083,
+        "type": "protected",
+        "decorators": [],
+        "args": [
+          "self"
+        ],
+        "defaults_count": 0,
+        "docstring": "Генерация ID отчета",
+        "is_async": false
+      }
+    ],
+    "public_methods": 5,
+    "private_methods": 1,
+    "protected_methods": 24,
+    "async_methods": 0
+  },
+  "accessibility": {
+    "classes_tested": 11,
+    "successful_instances": 1,
+    "results": [
+      {
+        "class_name": "Enum",
+        "instance_created": false,
+        "error": "__call__() missing 1 required positional argument: 'value'"
+      },
+      {
+        "class_name": "RecoveryMethod",
+        "instance_created": false,
+        "error": "__call__() missing 1 required positional argument: 'value'"
+      },
+      {
+        "class_name": "RecoveryPlan",
+        "instance_created": false,
+        "error": "__init__() missing 5 required positional arguments: 'plan_id', 'incident_id', 'recovery_tasks', 'estimated_duration', and 'family_impact'"
+      },
+      {
+        "class_name": "RecoveryPriority",
+        "instance_created": false,
+        "error": "__call__() missing 1 required positional argument: 'value'"
+      },
+      {
+        "class_name": "RecoveryReport",
+        "instance_created": false,
+        "error": "__init__() missing 10 required positional arguments: 'report_id', 'plan_id', 'total_tasks', 'completed_tasks', 'failed_tasks', 'recovery_duration', 'data_recovered', 'systems_restored', 'family_impact_assessment', and 'recommendations'"
+      },
+      {
+        "class_name": "RecoveryService",
+        "instance_created": true,
+        "total_methods": 71,
+        "working_methods": [
+          "_assess_family_impact (требует аргументы)",
+          "_calculate_average_recovery_time (требует аргументы)",
+          "_calculate_recovery_duration (требует аргументы)",
+          "_create_family_recovery_tasks (требует аргументы)",
+          "_create_recovery_report (требует аргументы)",
+          "_create_recovery_task (требует аргументы)",
+          "_evaluate_recovery_rule (требует аргументы)",
+          "_execute_recovery_task (требует аргументы)",
+          "_generate_plan_id",
+          "_generate_recovery_recommendations (требует аргументы)",
+          "_generate_recovery_tasks (требует аргументы)",
+          "_generate_report_id",
+          "_generate_task_id",
+          "_get_family_impact_summary (требует аргументы)",
+          "_get_recent_recoveries (требует аргументы)",
+          "_handle_threat (требует аргументы)",
+          "_initialize_recovery_rules",
+          "_initialize_security_rules",
+          "_recover_data (требует аргументы)",
+          "_recover_family_profile (требует аргументы)",
+          "_recover_network (требует аргументы)",
+          "_recover_security_settings (требует аргументы)",
+          "_recover_system (требует аргументы)",
+          "_recover_user_account (требует аргументы)",
+          "_setup_backup_locations",
+          "_setup_family_protection",
+          "_setup_logger",
+          "add_security_event (требует аргументы)",
+          "add_security_rule (требует аргументы)",
+          "clear_security_events",
+          "create_recovery_plan (требует аргументы)",
+          "detect_threat (требует аргументы)",
+          "execute_recovery_plan (требует аргументы)",
+          "get_family_recovery_status",
+          "get_recovery_summary",
+          "get_security_events",
+          "get_security_report",
+          "get_status",
+          "initialize",
+          "log_activity (требует аргументы)",
+          "set_security_level (требует аргументы)",
+          "start",
+          "stop",
+          "update_metrics (требует аргументы)"
+        ],
+        "broken_methods": []
+      },
+      {
+        "class_name": "RecoveryStatus",
+        "instance_created": false,
+        "error": "__call__() missing 1 required positional argument: 'value'"
+      },
+      {
+        "class_name": "RecoveryTask",
+        "instance_created": false,
+        "error": "__init__() missing 5 required positional arguments: 'task_id', 'recovery_type', 'priority', 'method', and 'target_entity'"
+      },
+      {
+        "class_name": "RecoveryType",
+        "instance_created": false,
+        "error": "__call__() missing 1 required positional argument: 'value'"
+      },
+      {
+        "class_name": "SecurityBase",
+        "instance_created": false,
+        "error": "__init__() missing 1 required positional argument: 'name'"
+      },
+      {
+        "class_name": "datetime",
+        "instance_created": false,
+        "error": "function missing required argument 'year' (pos 1)"
+      }
+    ]
+  },
+  "functions": {
+    "total_functions": 0,
+    "functions": [],
+    "async_functions": 0
+  },
+  "imports": {
+    "error": "replace() argument 1 must be str, not int"
+  },
+  "attributes": {
+    "total_attributes": 21,
+    "class_attributes": [
+      {
+        "class_name": "RecoveryType",
+        "attributes": [
+          {
+            "name": "DATA_RECOVERY",
+            "line": 19,
+            "value_type": "Constant"
+          },
+          {
+            "name": "SYSTEM_RECOVERY",
+            "line": 20,
+            "value_type": "Constant"
+          },
+          {
+            "name": "NETWORK_RECOVERY",
+            "line": 21,
+            "value_type": "Constant"
+          },
+          {
+            "name": "USER_ACCOUNT_RECOVERY",
+            "line": 22,
+            "value_type": "Constant"
+          },
+          {
+            "name": "FAMILY_PROFILE_RECOVERY",
+            "line": 23,
+            "value_type": "Constant"
+          },
+          {
+            "name": "SECURITY_SETTINGS_RECOVERY",
+            "line": 24,
+            "value_type": "Constant"
+          }
+        ]
+      },
+      {
+        "class_name": "RecoveryStatus",
+        "attributes": [
+          {
+            "name": "PENDING",
+            "line": 30,
+            "value_type": "Constant"
+          },
+          {
+            "name": "IN_PROGRESS",
+            "line": 31,
+            "value_type": "Constant"
+          },
+          {
+            "name": "COMPLETED",
+            "line": 32,
+            "value_type": "Constant"
+          },
+          {
+            "name": "FAILED",
+            "line": 33,
+            "value_type": "Constant"
+          },
+          {
+            "name": "CANCELLED",
+            "line": 34,
+            "value_type": "Constant"
+          }
+        ]
+      },
+      {
+        "class_name": "RecoveryPriority",
+        "attributes": [
+          {
+            "name": "LOW",
+            "line": 40,
+            "value_type": "Constant"
+          },
+          {
+            "name": "MEDIUM",
+            "line": 41,
+            "value_type": "Constant"
+          },
+          {
+            "name": "HIGH",
+            "line": 42,
+            "value_type": "Constant"
+          },
+          {
+            "name": "CRITICAL",
+            "line": 43,
+            "value_type": "Constant"
+          }
+        ]
+      },
+      {
+        "class_name": "RecoveryMethod",
+        "attributes": [
+          {
+            "name": "BACKUP_RESTORE",
+            "line": 49,
+            "value_type": "Constant"
+          },
+          {
+            "name": "SYSTEM_RESET",
+            "line": 50,
+            "value_type": "Constant"
+          },
+          {
+            "name": "DATA_RECOVERY",
+            "line": 51,
+            "value_type": "Constant"
+          },
+          {
+            "name": "NETWORK_RESET",
+            "line": 52,
+            "value_type": "Constant"
+          },
+          {
+            "name": "ACCOUNT_RECOVERY",
+            "line": 53,
+            "value_type": "Constant"
+          },
+          {
+            "name": "SETTINGS_RESTORE",
+            "line": 54,
+            "value_type": "Constant"
+          }
+        ]
+      }
+    ]
+  },
+  "special_methods": {
+    "found_methods": [
+      {
+        "name": "__init__",
+        "line": 113,
+        "class": "unknown"
+      }
+    ],
+    "missing_methods": [
+      "__str__",
+      "__repr__",
+      "__eq__",
+      "__lt__",
+      "__le__",
+      "__gt__",
+      "__ge__",
+      "__ne__",
+      "__iter__",
+      "__next__",
+      "__enter__",
+      "__exit__",
+      "__len__",
+      "__getitem__",
+      "__setitem__",
+      "__delitem__"
+    ],
+    "total_found": 1,
+    "total_missing": 16
+  },
+  "documentation": {
+    "classes_with_docstring": 8,
+    "methods_with_docstring": 29,
+    "functions_with_docstring": 0,
+    "total_classes": 8,
+    "total_methods": 30,
+    "total_functions": 0
+  },
+  "error_handling": {
+    "try_except_blocks": 22,
+    "raise_statements": 0,
+    "logging_statements": 24,
+    "return_error_patterns": 0
+  },
+  "integration_tests": {
+    "import_success": true,
+    "class_creation_success": 1,
+    "total_classes": 11,
+    "success_rate": 9.090909090909092
+  },
+  "file_state": {
+    "file_exists": true,
+    "file_size": 42175,
+    "last_modified": 1758108574.39736,
+    "backup_count": 0,
+    "backups": []
+  },
+  "errors": [
+    "Ошибка анализа импортов: replace() argument 1 must be str, not int"
+  ],
+  "warnings": []
+}

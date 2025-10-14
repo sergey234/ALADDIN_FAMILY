@@ -1,0 +1,92 @@
+{
+  "file": "security/managers/__init__.py",
+  "timestamp": "2025-09-20T20:38:59.869592",
+  "total_analysis_time_seconds": 0.017930984497070312,
+  "overall_quality_score": 100,
+  "analysis_details": {
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "security_classes": {
+      "status": "warning",
+      "found_classes": [],
+      "message": "Найдено 0 классов системы безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "security_keywords": {
+      "status": "info",
+      "found_keywords": [],
+      "message": "Найдено 0 ключевых слов безопасности"
+    },
+    "imports": {
+      "status": "success",
+      "message": "Импорты корректны"
+    },
+    "sfm_functions": {
+      "status": "success",
+      "total_sfm_functions": 316,
+      "active_functions": 36,
+      "critical_functions": 248,
+      "is_current_registered": false,
+      "current_function_data": {},
+      "message": "SFM реестр: 316 функций, 36 активных, 248 критических"
+    },
+    "docstrings": {
+      "status": "success",
+      "missing_docstrings": [],
+      "message": "Найдено 0 отсутствующих docstring"
+    },
+    "type_hints": {
+      "status": "success",
+      "missing_type_hints": [],
+      "message": "Найдено 0 отсутствующих type hints"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 0,
+      "num_classes": 0,
+      "message": "Функций: 0, Классов: 0"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "external_api_manager"
+      ],
+      "message": "Зависимости: 1"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 185,
+      "lines": 7,
+      "message": "Размер: 185 байт, Строк: 7"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 0,
+    "security_classes_found": 0,
+    "sfm_total_functions": 316,
+    "sfm_active_functions": 36,
+    "sfm_critical_functions": 248,
+    "is_sfm_registered": false,
+    "syntax_ok": true,
+    "imports_ok": true,
+    "docstrings_ok": true,
+    "type_hints_ok": true
+  },
+  "recommendations": [
+    "Добавьте классы системы безопасности.",
+    "Зарегистрируйте функцию в SFM реестре."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

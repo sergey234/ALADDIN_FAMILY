@@ -1,0 +1,117 @@
+{
+  "file": "security/bots/mobile_navigation_bot.py",
+  "timestamp": "2025-09-20T20:31:48.918854",
+  "total_analysis_time_seconds": 0.18973112106323242,
+  "overall_quality_score": 89.4,
+  "analysis_details": {
+    "security_keywords": {
+      "status": "success",
+      "found_keywords": [
+        "permission",
+        "security",
+        "hash",
+        "key",
+        "session",
+        "monitoring",
+        "response",
+        "log"
+      ],
+      "message": "Найдено 8 ключевых слов безопасности"
+    },
+    "syntax": {
+      "status": "success",
+      "message": "Синтаксис корректен"
+    },
+    "security_classes": {
+      "status": "success",
+      "found_classes": [
+        "MobileNavigationBot"
+      ],
+      "message": "Найдено 1 классов системы безопасности"
+    },
+    "sfm_functions": {
+      "status": "info",
+      "found_functions": [],
+      "message": "Найдено 0 функций SFM"
+    },
+    "flake8": {
+      "status": "success",
+      "errors": [],
+      "message": "Найдено 0 ошибок flake8"
+    },
+    "complexity": {
+      "status": "info",
+      "num_functions": 33,
+      "num_classes": 11,
+      "message": "Функций: 33, Классов: 11"
+    },
+    "docstrings": {
+      "status": "success",
+      "missing_docstrings": [],
+      "message": "Найдено 0 отсутствующих docstring"
+    },
+    "file_info": {
+      "status": "info",
+      "size_bytes": 42775,
+      "lines": 1128,
+      "message": "Размер: 42775 байт, Строк: 1128"
+    },
+    "dependencies": {
+      "status": "info",
+      "dependencies": [
+        "sys",
+        "redis",
+        "asyncio",
+        "hashlib",
+        "datetime",
+        "core",
+        "pydantic",
+        "sqlalchemy",
+        "time",
+        "threading",
+        "sklearn",
+        "os",
+        "enum",
+        "typing",
+        "logging",
+        "prometheus_client"
+      ],
+      "message": "Зависимости: 16"
+    },
+    "type_hints": {
+      "status": "warning",
+      "missing_type_hints": [
+        "Отсутствует тип возвращаемого значения для функции test_mobile_navigation_bot (строка 1072)",
+        "Отсутствует тип возвращаемого значения для функции __init__ (строка 283)"
+      ],
+      "message": "Найдено 2 отсутствующих type hints"
+    },
+    "imports": {
+      "status": "error",
+      "message": "Ошибка импорта: No module named 'core.base'",
+      "security_level": "critical",
+      "severity": "high"
+    }
+  },
+  "summary": {
+    "total_flake8_errors": 0,
+    "safe_to_fix_errors": 0,
+    "manual_review_errors": 0,
+    "security_keywords_found": 8,
+    "security_classes_found": 1,
+    "sfm_functions_found": 0,
+    "syntax_ok": true,
+    "imports_ok": false,
+    "docstrings_ok": true,
+    "type_hints_ok": false
+  },
+  "recommendations": [
+    "Исправьте критические ошибки импорта.",
+    "Добавьте функции SFM.",
+    "Добавьте отсутствующие type hints для улучшения читаемости и надежности."
+  ],
+  "fix_plan": {
+    "safe_auto_fixes": [],
+    "manual_fixes_required": []
+  }
+}

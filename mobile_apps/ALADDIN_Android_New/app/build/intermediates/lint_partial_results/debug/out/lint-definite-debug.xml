@@ -1,0 +1,1429 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<incidents format="6" by="lint 8.1.4" type="incidents">
+
+    <incident
+        id="RedundantLabel"
+        severity="warning"
+        message="Redundant label can be removed">
+        <fix-attribute
+            description="Delete label"
+            namespace="http://schemas.android.com/apk/res/android"
+            attribute="label"/>
+        <location
+            file="${:app*debug*sourceProvider*0*manifest*0}"
+            line="28"
+            column="13"
+            startOffset="1248"
+            endLine="28"
+            endColumn="45"
+            endOffset="1280"/>
+    </incident>
+
+    <incident
+        id="TypographyEllipsis"
+        severity="warning"
+        message="Replace &quot;...&quot; with ellipsis character (…, &amp;#8230;) ?">
+        <fix-replace
+            description="Replace with …"
+            oldString="..."
+            replacement="…"/>
+        <location
+            file="${:app*debug*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="24"
+            column="35"
+            startOffset="883"
+            endLine="24"
+            endColumn="45"
+            endOffset="893"/>
+    </incident>
+
+    <incident
+        id="PluralsCandidate"
+        severity="warning"
+        message="Formatting %d followed by words (&quot;members&quot;): This should probably be a plural rather than a string">
+        <location
+            file="${:app*debug*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="47"
+            column="5"
+            startOffset="1944"
+            endLine="47"
+            endColumn="65"
+            endOffset="2004"/>
+    </incident>
+
+    <incident
+        id="TypographyEllipsis"
+        severity="warning"
+        message="Replace &quot;...&quot; with ellipsis character (…, &amp;#8230;) ?">
+        <fix-replace
+            description="Replace with …"
+            oldString="..."
+            replacement="…"/>
+        <location
+            file="${:app*debug*sourceProvider*0*resDir*0}/values/strings.xml"
+            line="103"
+            column="35"
+            startOffset="4959"
+            endLine="103"
+            endColumn="50"
+            endOffset="4974"/>
+    </incident>
+
+    <incident
+        id="TypographyEllipsis"
+        severity="warning"
+        message="Replace &quot;...&quot; with ellipsis character (…, &amp;#8230;) ?">
+        <fix-replace
+            description="Replace with …"
+            oldString="..."
+            replacement="…"/>
+        <location
+            file="${:app*debug*sourceProvider*0*resDir*0}/values-ru/strings.xml"
+            line="24"
+            column="35"
+            startOffset="882"
+            endLine="24"
+            endColumn="46"
+            endOffset="893"/>
+    </incident>
+
+    <incident
+        id="TypographyEllipsis"
+        severity="warning"
+        message="Replace &quot;...&quot; with ellipsis character (…, &amp;#8230;) ?">
+        <fix-replace
+            description="Replace with …"
+            oldString="..."
+            replacement="…"/>
+        <location
+            file="${:app*debug*sourceProvider*0*resDir*0}/values-ru/strings.xml"
+            line="103"
+            column="35"
+            startOffset="4943"
+            endLine="103"
+            endColumn="52"
+            endOffset="4960"/>
+    </incident>
+
+    <incident
+        id="StaticFieldLeak"
+        severity="warning"
+        message="Do not place Android context classes in static fields (static reference to `AnalyticsManager` which has field `context` pointing to `Context`); this is a memory leak">
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/analytics/AnalyticsManager.kt"
+            line="19"
+            column="9"
+            startOffset="534"
+            endLine="19"
+            endColumn="55"
+            endOffset="580"/>
+    </incident>
+
+    <incident
+        id="ModifierParameter"
+        severity="warning"
+        message="Modifier parameter should be the first optional parameter">
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/components/cards/FamilyMemberCard.kt"
+            line="47"
+            column="5"
+            startOffset="1449"
+            endLine="47"
+            endColumn="13"
+            endOffset="1457"/>
+    </incident>
+
+    <incident
+        id="ModifierParameter"
+        severity="warning"
+        message="Modifier parameter should be the first optional parameter">
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/components/cards/FunctionCard.kt"
+            line="38"
+            column="5"
+            startOffset="1153"
+            endLine="38"
+            endColumn="13"
+            endOffset="1161"/>
+    </incident>
+
+    <incident
+        id="ModifierParameter"
+        severity="warning"
+        message="Modifier parameter should be the first optional parameter">
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/components/inputs/ALADDINSlider.kt"
+            line="24"
+            column="5"
+            startOffset="660"
+            endLine="24"
+            endColumn="13"
+            endOffset="668"/>
+    </incident>
+
+    <incident
+        id="ComposableModifierFactory"
+        severity="warning"
+        message="Modifier factory functions should not be marked as @Composable, and should use composed instead">
+        <fix-replace
+            description="Replace @Composable with composed call"
+            robot="true"
+            independent="true"
+            replacement="/**&#xA; * Добавить TalkBack description для кнопки&#xA; */&#xA;fun Modifier.accessibilityButton(&#xA;    label: String,&#xA;    hint: String? = null,&#xA;    onClick: () -> Unit&#xA;): Modifier = composed {&#xA;    this&#xA;        .clickable(&#xA;            onClick = onClick,&#xA;            role = Role.Button,&#xA;            interactionSource = remember { MutableInteractionSource() },&#xA;            indication = rememberRipple()&#xA;        )&#xA;        .semantics {&#xA;            contentDescription = if (hint != null) &quot;$label. $hint&quot; else label&#xA;            role = Role.Button&#xA;        }&#xA;}">
+            <range
+                file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/extensions/AccessibilityExtensions.kt"
+                startOffset="678"
+                endOffset="1224"/>
+        </fix-replace>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/extensions/AccessibilityExtensions.kt"
+            line="26"
+            column="14"
+            startOffset="755"
+            endLine="26"
+            endColumn="33"
+            endOffset="774"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ChildRewardsScreen.kt"
+                    startOffset="1149"
+                    endOffset="1163"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ChildRewardsScreen.kt"
+            line="28"
+            column="38"
+            startOffset="1149"
+            endLine="28"
+            endColumn="52"
+            endOffset="1163"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ChildRewardsScreen.kt"
+                    startOffset="1206"
+                    endOffset="1220"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ChildRewardsScreen.kt"
+            line="29"
+            column="36"
+            startOffset="1206"
+            endLine="29"
+            endColumn="50"
+            endOffset="1220"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ChildRewardsScreen.kt"
+                    startOffset="1265"
+                    endOffset="1279"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ChildRewardsScreen.kt"
+            line="30"
+            column="38"
+            startOffset="1265"
+            endLine="30"
+            endColumn="52"
+            endOffset="1279"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/DeviceDetailScreen.kt"
+                    startOffset="1551"
+                    endOffset="1565"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/DeviceDetailScreen.kt"
+            line="49"
+            column="35"
+            startOffset="1551"
+            endLine="49"
+            endColumn="49"
+            endOffset="1565"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/FamilyScreen.kt"
+                    startOffset="1554"
+                    endOffset="1568"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/FamilyScreen.kt"
+            line="40"
+            column="38"
+            startOffset="1554"
+            endLine="40"
+            endColumn="52"
+            endOffset="1568"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+                    startOffset="1139"
+                    endOffset="1153"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+            line="28"
+            column="38"
+            startOffset="1139"
+            endLine="28"
+            endColumn="52"
+            endOffset="1153"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+                    startOffset="1195"
+                    endOffset="1209"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+            line="29"
+            column="36"
+            startOffset="1195"
+            endLine="29"
+            endColumn="50"
+            endOffset="1209"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+                    startOffset="1251"
+                    endOffset="1265"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+            line="30"
+            column="36"
+            startOffset="1251"
+            endLine="30"
+            endColumn="50"
+            endOffset="1265"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+                    startOffset="1308"
+                    endOffset="1322"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+            line="31"
+            column="36"
+            startOffset="1308"
+            endLine="31"
+            endColumn="50"
+            endOffset="1322"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+                    startOffset="1365"
+                    endOffset="1379"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+            line="32"
+            column="36"
+            startOffset="1365"
+            endLine="32"
+            endColumn="50"
+            endOffset="1379"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+                    startOffset="1422"
+                    endOffset="1436"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+            line="33"
+            column="36"
+            startOffset="1422"
+            endLine="33"
+            endColumn="50"
+            endOffset="1436"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+                    startOffset="1480"
+                    endOffset="1494"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/GamesParentalControlScreen.kt"
+            line="34"
+            column="36"
+            startOffset="1480"
+            endLine="34"
+            endColumn="50"
+            endOffset="1494"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/MainScreen.kt"
+                    startOffset="1450"
+                    endOffset="1464"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/MainScreen.kt"
+            line="36"
+            column="35"
+            startOffset="1450"
+            endLine="36"
+            endColumn="49"
+            endOffset="1464"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ParentalControlScreen.kt"
+                    startOffset="1138"
+                    endOffset="1152"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ParentalControlScreen.kt"
+            line="26"
+            column="39"
+            startOffset="1138"
+            endLine="26"
+            endColumn="53"
+            endOffset="1152"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ParentalControlScreen.kt"
+                    startOffset="1310"
+                    endOffset="1324"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ParentalControlScreen.kt"
+            line="30"
+            column="38"
+            startOffset="1310"
+            endLine="30"
+            endColumn="52"
+            endOffset="1324"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ParentalControlScreen.kt"
+                    startOffset="1369"
+                    endOffset="1383"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ParentalControlScreen.kt"
+            line="31"
+            column="38"
+            startOffset="1369"
+            endLine="31"
+            endColumn="52"
+            endOffset="1383"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ParentalControlScreen.kt"
+                    startOffset="1428"
+                    endOffset="1442"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/ParentalControlScreen.kt"
+            line="32"
+            column="38"
+            startOffset="1428"
+            endLine="32"
+            endColumn="52"
+            endOffset="1442"/>
+    </incident>
+
+    <incident
+        id="SetJavaScriptEnabled"
+        severity="warning"
+        message="Using `setJavaScriptEnabled` can introduce XSS vulnerabilities into your application, review carefully">
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/PrivacyPolicyScreen.kt"
+            line="40"
+            column="25"
+            startOffset="1391"
+            endLine="40"
+            endColumn="58"
+            endOffset="1424"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/SettingsScreen.kt"
+                    startOffset="1295"
+                    endOffset="1309"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/SettingsScreen.kt"
+            line="29"
+            column="39"
+            startOffset="1295"
+            endLine="29"
+            endColumn="53"
+            endOffset="1309"/>
+    </incident>
+
+    <incident
+        id="SetJavaScriptEnabled"
+        severity="warning"
+        message="Using `setJavaScriptEnabled` can introduce XSS vulnerabilities into your application, review carefully">
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/TermsOfServiceScreen.kt"
+            line="40"
+            column="25"
+            startOffset="1383"
+            endLine="40"
+            endColumn="58"
+            endOffset="1416"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/UnicornPetScreen.kt"
+                    startOffset="659"
+                    endOffset="673"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/UnicornPetScreen.kt"
+            line="19"
+            column="28"
+            startOffset="659"
+            endLine="19"
+            endColumn="42"
+            endOffset="673"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/UnicornPetScreen.kt"
+                    startOffset="712"
+                    endOffset="726"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/UnicornPetScreen.kt"
+            line="20"
+            column="30"
+            startOffset="712"
+            endLine="20"
+            endColumn="44"
+            endOffset="726"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/UnicornPetScreen.kt"
+                    startOffset="764"
+                    endOffset="778"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/UnicornPetScreen.kt"
+            line="21"
+            column="30"
+            startOffset="764"
+            endLine="21"
+            endColumn="44"
+            endOffset="778"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/UnicornPetScreen.kt"
+                    startOffset="814"
+                    endOffset="828"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/UnicornPetScreen.kt"
+            line="22"
+            column="28"
+            startOffset="814"
+            endLine="22"
+            endColumn="42"
+            endOffset="828"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt"
+                    startOffset="1220"
+                    endOffset="1234"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt"
+            line="34"
+            column="38"
+            startOffset="1220"
+            endLine="34"
+            endColumn="52"
+            endOffset="1234"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableDoubleStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableDoubleStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableDoubleStateOf"
+                replacement="androidx.compose.runtime.mutableDoubleStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt"
+                    startOffset="1335"
+                    endOffset="1349"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt"
+            line="37"
+            column="36"
+            startOffset="1335"
+            endLine="37"
+            endColumn="50"
+            endOffset="1349"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt"
+                    startOffset="1521"
+                    endOffset="1535"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt"
+            line="40"
+            column="38"
+            startOffset="1521"
+            endLine="40"
+            endColumn="52"
+            endOffset="1535"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt"
+                    startOffset="1591"
+                    endOffset="1605"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/VPNEnergyStatsScreen.kt"
+            line="41"
+            column="42"
+            startOffset="1591"
+            endLine="41"
+            endColumn="56"
+            endOffset="1605"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableFloatStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableFloatStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableFloatStateOf"
+                replacement="androidx.compose.runtime.mutableFloatStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt"
+                    startOffset="1023"
+                    endOffset="1037"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt"
+            line="27"
+            column="32"
+            startOffset="1023"
+            endLine="27"
+            endColumn="46"
+            endOffset="1037"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt"
+                    startOffset="1132"
+                    endOffset="1146"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt"
+            line="29"
+            column="32"
+            startOffset="1132"
+            endLine="29"
+            endColumn="46"
+            endOffset="1146"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt"
+                    startOffset="1348"
+                    endOffset="1362"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt"
+            line="33"
+            column="41"
+            startOffset="1348"
+            endLine="33"
+            endColumn="55"
+            endOffset="1362"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt"
+                    startOffset="1401"
+                    endOffset="1415"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt"
+            line="34"
+            column="34"
+            startOffset="1401"
+            endLine="34"
+            endColumn="48"
+            endOffset="1415"/>
+    </incident>
+
+    <incident
+        id="AutoboxingStateCreation"
+        severity="informational"
+        message="Prefer `mutableIntStateOf` instead of `mutableStateOf`">
+        <fix-composite
+            description="Replace with mutableIntStateOf">
+            <fix-replace
+                description="Replace with androidx.compose.runtime.mutableIntStateOf"
+                replacement="androidx.compose.runtime.mutableIntStateOf"
+                shortenNames="true">
+                <range
+                    file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt"
+                    startOffset="1452"
+                    endOffset="1466"/>
+            </fix-replace>
+        </fix-composite>
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/ui/screens/WheelOfFortuneScreen.kt"
+            line="35"
+            column="32"
+            startOffset="1452"
+            endLine="35"
+            endColumn="46"
+            endOffset="1466"/>
+    </incident>
+
+    <incident
+        id="StaticFieldLeak"
+        severity="warning"
+        message="This field leaks a context object">
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/viewmodels/FamilyRegistrationViewModel.kt"
+            line="34"
+            column="5"
+            startOffset="1189"
+            endLine="34"
+            endColumn="49"
+            endOffset="1233"/>
+    </incident>
+
+    <incident
+        id="StaticFieldLeak"
+        severity="warning"
+        message="This field leaks a context object">
+        <location
+            file="${:app*debug*sourceProvider*0*javaDir*0}/family/aladdin/android/viewmodels/TariffsViewModel.kt"
+            line="32"
+            column="5"
+            startOffset="849"
+            endLine="32"
+            endColumn="33"
+            endOffset="877"/>
+    </incident>
+
+    <incident
+        id="OldTargetApi"
+        severity="warning"
+        message="Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the android.os.Build.VERSION_CODES javadoc for details.">
+        <fix-replace
+            description="Update targetSdkVersion to 36"
+            oldString="34"
+            replacement="36"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="23"
+            column="9"
+            startOffset="500"
+            endLine="23"
+            endColumn="21"
+            endOffset="512"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.core:core-ktx than 1.12.0 is available: 1.17.0">
+        <fix-replace
+            description="Change to 1.17.0"
+            family="Update versions"
+            oldString="1.12.0"
+            replacement="1.17.0"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="61"
+            column="20"
+            startOffset="1397"
+            endLine="61"
+            endColumn="51"
+            endOffset="1428"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.appcompat:appcompat than 1.6.1 is available: 1.7.1">
+        <fix-replace
+            description="Change to 1.7.1"
+            family="Update versions"
+            oldString="1.6.1"
+            replacement="1.7.1"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="62"
+            column="20"
+            startOffset="1448"
+            endLine="62"
+            endColumn="56"
+            endOffset="1484"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of com.google.android.material:material than 1.10.0 is available: 1.13.0">
+        <fix-replace
+            description="Change to 1.13.0"
+            family="Update versions"
+            oldString="1.10.0"
+            replacement="1.13.0"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="63"
+            column="20"
+            startOffset="1504"
+            endLine="63"
+            endColumn="65"
+            endOffset="1549"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-runtime-ktx than 2.7.0 is available: 2.9.4">
+        <fix-replace
+            description="Change to 2.9.4"
+            family="Update versions"
+            oldString="2.7.0"
+            replacement="2.9.4"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="64"
+            column="20"
+            startOffset="1569"
+            endLine="64"
+            endColumn="68"
+            endOffset="1617"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.activity:activity-compose than 1.8.2 is available: 1.11.0">
+        <fix-replace
+            description="Change to 1.11.0"
+            family="Update versions"
+            oldString="1.8.2"
+            replacement="1.11.0"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="65"
+            column="20"
+            startOffset="1637"
+            endLine="65"
+            endColumn="62"
+            endOffset="1679"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.compose:compose-bom than 2023.10.01 is available: 2025.10.00">
+        <fix-replace
+            description="Change to 2025.10.00"
+            family="Update versions"
+            oldString="2023.10.01"
+            replacement="2025.10.00"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="66"
+            column="29"
+            startOffset="1708"
+            endLine="66"
+            endColumn="70"
+            endOffset="1749"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.navigation:navigation-compose than 2.7.5 is available: 2.9.5">
+        <fix-replace
+            description="Change to 2.9.5"
+            family="Update versions"
+            oldString="2.7.5"
+            replacement="2.9.5"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="71"
+            column="20"
+            startOffset="1985"
+            endLine="71"
+            endColumn="66"
+            endOffset="2031"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.lifecycle:lifecycle-viewmodel-compose than 2.7.0 is available: 2.9.4">
+        <fix-replace
+            description="Change to 2.9.4"
+            family="Update versions"
+            oldString="2.7.0"
+            replacement="2.9.4"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="72"
+            column="20"
+            startOffset="2051"
+            endLine="72"
+            endColumn="74"
+            endOffset="2105"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.compose.runtime:runtime-livedata than 1.5.4 is available: 1.9.3">
+        <fix-replace
+            description="Change to 1.9.3"
+            family="Update versions"
+            oldString="1.5.4"
+            replacement="1.9.3"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="73"
+            column="20"
+            startOffset="2125"
+            endLine="73"
+            endColumn="69"
+            endOffset="2174"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.camera:camera-core than 1.3.1 is available: 1.5.1">
+        <fix-replace
+            description="Change to 1.5.1"
+            family="Update versions"
+            oldString="1.3.1"
+            replacement="1.5.1"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="78"
+            column="20"
+            startOffset="2458"
+            endLine="78"
+            endColumn="55"
+            endOffset="2493"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.camera:camera-camera2 than 1.3.1 is available: 1.5.1">
+        <fix-replace
+            description="Change to 1.5.1"
+            family="Update versions"
+            oldString="1.3.1"
+            replacement="1.5.1"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="79"
+            column="20"
+            startOffset="2513"
+            endLine="79"
+            endColumn="58"
+            endOffset="2551"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.camera:camera-lifecycle than 1.3.1 is available: 1.5.1">
+        <fix-replace
+            description="Change to 1.5.1"
+            family="Update versions"
+            oldString="1.3.1"
+            replacement="1.5.1"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="80"
+            column="20"
+            startOffset="2571"
+            endLine="80"
+            endColumn="60"
+            endOffset="2611"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.camera:camera-view than 1.3.1 is available: 1.5.1">
+        <fix-replace
+            description="Change to 1.5.1"
+            family="Update versions"
+            oldString="1.3.1"
+            replacement="1.5.1"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="81"
+            column="20"
+            startOffset="2631"
+            endLine="81"
+            endColumn="55"
+            endOffset="2666"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of com.google.mlkit:barcode-scanning than 17.2.0 is available: 17.3.0">
+        <fix-replace
+            description="Change to 17.3.0"
+            family="Update versions"
+            oldString="17.2.0"
+            replacement="17.3.0"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="82"
+            column="20"
+            startOffset="2686"
+            endLine="82"
+            endColumn="62"
+            endOffset="2728"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.compose.material:material-icons-extended than 1.5.4 is available: 1.7.8">
+        <fix-replace
+            description="Change to 1.7.8"
+            family="Update versions"
+            oldString="1.5.4"
+            replacement="1.7.8"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="83"
+            column="20"
+            startOffset="2748"
+            endLine="83"
+            endColumn="77"
+            endOffset="2805"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of com.android.billingclient:billing than 6.1.0 is available: 8.0.0">
+        <fix-replace
+            description="Change to 8.0.0"
+            family="Update versions"
+            oldString="6.1.0"
+            replacement="8.0.0"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="85"
+            column="20"
+            startOffset="2870"
+            endLine="85"
+            endColumn="61"
+            endOffset="2911"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.test.ext:junit than 1.1.5 is available: 1.3.0">
+        <fix-replace
+            description="Change to 1.3.0"
+            family="Update versions"
+            oldString="1.1.5"
+            replacement="1.3.0"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="92"
+            column="31"
+            startOffset="3296"
+            endLine="92"
+            endColumn="62"
+            endOffset="3327"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.test.espresso:espresso-core than 3.5.1 is available: 3.7.0">
+        <fix-replace
+            description="Change to 3.7.0"
+            family="Update versions"
+            oldString="3.5.1"
+            replacement="3.7.0"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="93"
+            column="31"
+            startOffset="3358"
+            endLine="93"
+            endColumn="75"
+            endOffset="3402"/>
+    </incident>
+
+    <incident
+        id="GradleDependency"
+        severity="warning"
+        message="A newer version of androidx.compose:compose-bom than 2023.10.01 is available: 2025.10.00">
+        <fix-replace
+            description="Change to 2025.10.00"
+            family="Update versions"
+            oldString="2023.10.01"
+            replacement="2025.10.00"/>
+        <location
+            file="${:app*projectDir}/build.gradle"
+            line="94"
+            column="40"
+            startOffset="3442"
+            endLine="94"
+            endColumn="81"
+            endOffset="3483"/>
+    </incident>
+
+</incidents>

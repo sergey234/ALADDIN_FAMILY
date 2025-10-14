@@ -1,0 +1,36 @@
+{
+  "banking_integration": {
+    "enabled": true,
+    "supported_banks": [
+      "sberbank",
+      "vtb",
+      "gazprombank",
+      "alfabank",
+      "tinkoff",
+      "raiffeisenbank"
+    ],
+    "api_endpoints": {
+      "sberbank": "https://api.sberbank.ru/v1",
+      "vtb": "https://api.vtb.ru/v1",
+      "gazprombank": "https://api.gazprombank.ru/v1"
+    },
+    "api_keys": {},
+    "monitoring_features": {
+      "transaction_analysis": true,
+      "fraud_detection": true,
+      "suspicious_activity": true,
+      "real_time_alerts": true
+    }
+  },
+  "security_features": {
+    "auto_block_fraud": true,
+    "transaction_verification": true,
+    "balance_monitoring": true,
+    "account_protection": true
+  },
+  "integration": {
+    "security_analytics": true,
+    "threat_intelligence": true,
+    "family_protection": true
+  }
+}

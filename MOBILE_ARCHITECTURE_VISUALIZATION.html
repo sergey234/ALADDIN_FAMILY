@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile App - Архитектура</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .architecture-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 50px;
+        }
+
+        .server-side, .mobile-side {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .side-title {
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .server-side .side-title {
+            color: #e74c3c;
+        }
+
+        .mobile-side .side-title {
+            color: #3498db;
+        }
+
+        .component-group {
+            margin-bottom: 30px;
+        }
+
+        .group-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            border-left: 4px solid #4ecdc4;
+        }
+
+        .component-list {
+            list-style: none;
+        }
+
+        .component-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .component-item:hover {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            transform: translateX(5px);
+        }
+
+        .component-name {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+
+        .component-desc {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        .component-status {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-server {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .status-mobile {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .status-adapt {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .flow-diagram {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 50px 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .flow-title {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .flow-step {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+
+        .flow-step::after {
+            content: '↔';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2em;
+            color: #4ecdc4;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .flow-step:last-child::after {
+            display: none;
+        }
+
+        .flow-step-icon {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+
+        .flow-step-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .flow-step-desc {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .tech-stack {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 50px 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .tech-title {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .tech-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+
+        .tech-card:hover {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            transform: translateY(-5px);
+        }
+
+        .tech-card-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .tech-list {
+            list-style: none;
+        }
+
+        .tech-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+            color: #495057;
+        }
+
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 50px 0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .timeline-title {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .timeline-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .timeline-step {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .timeline-step-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .timeline-step-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .timeline-step-desc {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .architecture-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .flow-container {
+                flex-direction: column;
+            }
+            
+            .flow-step::after {
+                content: '↓';
+                right: 50%;
+                top: 100%;
+                transform: translateX(50%);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .glow {
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(78, 205, 196, 0.5); }
+            to { box-shadow: 0 0 30px rgba(78, 205, 196, 0.8); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 ALADDIN Mobile App</h1>
+            <p>Архитектура мобильного приложения - Экспертное решение</p>
+            <p>Сервер ↔ Мобильное приложение - Оптимальное распределение</p>
+        </div>
+
+        <div class="architecture-container">
+            <div class="server-side glow">
+                <div class="side-title">🖥️ СЕРВЕРНАЯ ЧАСТЬ (Backend)</div>
+                
+                <div class="component-group">
+                    <div class="group-title">🧠 AI CORE (Остается на сервере)</div>
+                    <ul class="component-list">
+                        <li class="component-item">
+                            <div class="component-name">Threat Intelligence Agent</div>
+                            <div class="component-desc">2,599 строк - ТЯЖЕЛЫЕ ML МОДЕЛИ</div>
+                            <div class="component-status status-server">СЕРВЕР</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Behavioral Analysis Agent</div>
+                            <div class="component-desc">1,669 строк - АНАЛИЗ ПОВЕДЕНИЯ</div>
+                            <div class="component-status status-server">СЕРВЕР</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Network Security Agent</div>
+                            <div class="component-desc">1,002 строки - СЕТЕВОЙ АНАЛИЗ</div>
+                            <div class="component-status status-server">СЕРВЕР</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Data Protection Agent</div>
+                            <div class="component-desc">1,690 строк - ЗАЩИТА ДАННЫХ</div>
+                            <div class="component-status status-server">СЕРВЕР</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Smart Monitoring</div>
+                            <div class="component-desc">3,258 строк - УМНЫЙ МОНИТОРИНГ</div>
+                            <div class="component-status status-server">СЕРВЕР</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="component-group">
+                    <div class="group-title">🔒 VPN CORE (Остается на сервере)</div>
+                    <ul class="component-list">
+                        <li class="component-item">
+                            <div class="component-name">VPN Manager</div>
+                            <div class="component-desc">УПРАВЛЕНИЕ VPN</div>
+                            <div class="component-status status-server">СЕРВЕР</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Encryption System</div>
+                            <div class="component-desc">ШИФРОВАНИЕ</div>
+                            <div class="component-status status-server">СЕРВЕР</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">VPN Analytics</div>
+                            <div class="component-desc">АНАЛИТИКА VPN</div>
+                            <div class="component-status status-server">СЕРВЕР</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="component-group">
+                    <div class="group-title">🌐 MICROSERVICES (Остается на сервере)</div>
+                    <ul class="component-list">
+                        <li class="component-item">
+                            <div class="component-name">API Gateway Manager</div>
+                            <div class="component-desc">ЕДИНАЯ ТОЧКА ВХОДА</div>
+                            <div class="component-status status-server">СЕРВЕР</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Load Balancer</div>
+                            <div class="component-desc">БАЛАНСИРОВКА НАГРУЗКИ</div>
+                            <div class="component-status status-server">СЕРВЕР</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Redis Cache Manager</div>
+                            <div class="component-desc">КЭШИРОВАНИЕ</div>
+                            <div class="component-status status-server">СЕРВЕР</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mobile-side glow">
+                <div class="side-title">📱 МОБИЛЬНАЯ ЧАСТЬ (Frontend)</div>
+                
+                <div class="component-group">
+                    <div class="group-title">🛡️ MOBILE SECURITY CORE (Переносится в приложение)</div>
+                    <ul class="component-list">
+                        <li class="component-item">
+                            <div class="component-name">Mobile Security Agent</div>
+                            <div class="component-desc">3,093 строки - АДАПТИРОВАТЬ ДЛЯ МОБИЛЬНОГО</div>
+                            <div class="component-status status-adapt">АДАПТАЦИЯ</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Mobile Navigation Bot</div>
+                            <div class="component-desc">1,122 строки - ГОТОВ К ПЕРЕНОСУ</div>
+                            <div class="component-status status-mobile">МОБИЛЬНОЕ</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Parental Control Bot</div>
+                            <div class="component-desc">2,684 строки - АДАПТИРОВАТЬ ДЛЯ МОБИЛЬНОГО</div>
+                            <div class="component-status status-adapt">АДАПТАЦИЯ</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Emergency Response Bot</div>
+                            <div class="component-desc">3,167 строк - АДАПТИРОВАТЬ ДЛЯ МОБИЛЬНОГО</div>
+                            <div class="component-status status-adapt">АДАПТАЦИЯ</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Notification Bot</div>
+                            <div class="component-desc">1,720 строк - ГОТОВ К ПЕРЕНОСУ</div>
+                            <div class="component-status status-mobile">МОБИЛЬНОЕ</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="component-group">
+                    <div class="group-title">🔧 MOBILE MANAGERS (Переносится в приложение)</div>
+                    <ul class="component-list">
+                        <li class="component-item">
+                            <div class="component-name">Safe Function Manager</div>
+                            <div class="component-desc">4,417 строк - УПРОСТИТЬ ДЛЯ МОБИЛЬНОГО</div>
+                            <div class="component-status status-adapt">АДАПТАЦИЯ</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Monitor Manager</div>
+                            <div class="component-desc">640 строк - ГОТОВ К ПЕРЕНОСУ</div>
+                            <div class="component-status status-mobile">МОБИЛЬНОЕ</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Compliance Manager</div>
+                            <div class="component-desc">864 строки - АДАПТИРОВАТЬ ДЛЯ МОБИЛЬНОГО</div>
+                            <div class="component-status status-adapt">АДАПТАЦИЯ</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="component-group">
+                    <div class="group-title">👨‍👩‍👧‍👦 FAMILY SECURITY (Переносится в приложение)</div>
+                    <ul class="component-list">
+                        <li class="component-item">
+                            <div class="component-name">Family Profile Manager</div>
+                            <div class="component-desc">ГОТОВ К ПЕРЕНОСУ</div>
+                            <div class="component-status status-mobile">МОБИЛЬНОЕ</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Child Safety Monitor</div>
+                            <div class="component-desc">ГОТОВ К ПЕРЕНОСУ</div>
+                            <div class="component-status status-mobile">МОБИЛЬНОЕ</div>
+                        </li>
+                        <li class="component-item">
+                            <div class="component-name">Parental Controls</div>
+                            <div class="component-desc">ГОТОВ К ПЕРЕНОСУ</div>
+                            <div class="component-status status-mobile">МОБИЛЬНОЕ</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="flow-diagram">
+            <div class="flow-title">🔄 Взаимодействие Сервер ↔ Мобильное приложение</div>
+            <div class="flow-container">
+                <div class="flow-step">
+                    <div class="flow-step-icon">📱</div>
+                    <div class="flow-step-title">Мобильное приложение</div>
+                    <div class="flow-step-desc">iOS/Android</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">🌐</div>
+                    <div class="flow-step-title">REST API</div>
+                    <div class="flow-step-desc">HTTPS</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">🔗</div>
+                    <div class="flow-step-title">WebSocket</div>
+                    <div class="flow-step-desc">Реальное время</div>
+                </div>
+                <div class="flow-step">
+                    <div class="flow-step-icon">🖥️</div>
+                    <div class="flow-step-title">Сервер</div>
+                    <div class="flow-step-desc">Python Backend</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tech-stack">
+            <div class="tech-title">🛠️ Технологический стек</div>
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <div class="tech-card-title">🍎 iOS (Swift + SwiftUI)</div>
+                    <ul class="tech-list">
+                        <li class="tech-item">Swift 5.9+</li>
+                        <li class="tech-item">SwiftUI (iOS 14+)</li>
+                        <li class="tech-item">Combine (реактивность)</li>
+                        <li class="tech-item">Core Data (база данных)</li>
+                        <li class="tech-item">Keychain (безопасность)</li>
+                        <li class="tech-item">URLSession (сеть)</li>
+                        <li class="tech-item">UserNotifications (push)</li>
+                    </ul>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-card-title">🤖 Android (Kotlin + Compose)</div>
+                    <ul class="tech-list">
+                        <li class="tech-item">Kotlin 1.9+</li>
+                        <li class="tech-item">Jetpack Compose</li>
+                        <li class="tech-item">StateFlow (реактивность)</li>
+                        <li class="tech-item">Room (база данных)</li>
+                        <li class="tech-item">EncryptedSharedPreferences</li>
+                        <li class="tech-item">Retrofit (сеть)</li>
+                        <li class="tech-item">Firebase (push)</li>
+                    </ul>
+                </div>
+                <div class="tech-card">
+                    <div class="tech-card-title">🌐 Backend (Python)</div>
+                    <ul class="tech-list">
+                        <li class="tech-item">FastAPI (API)</li>
+                        <li class="tech-item">Redis (кэш)</li>
+                        <li class="tech-item">PostgreSQL (БД)</li>
+                        <li class="tech-item">WebSocket (real-time)</li>
+                        <li class="tech-item">JWT (аутентификация)</li>
+                        <li class="tech-item">Docker (контейнеризация)</li>
+                        <li class="tech-item">Nginx (прокси)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline">
+            <div class="timeline-title">📅 План разработки (7-11 недель)</div>
+            <div class="timeline-steps">
+                <div class="timeline-step">
+                    <div class="timeline-step-number">1</div>
+                    <div class="timeline-step-title">Подготовка</div>
+                    <div class="timeline-step-desc">1-2 недели<br>Mobile SDK, API Gateway</div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-step-number">2</div>
+                    <div class="timeline-step-title">Core разработка</div>
+                    <div class="timeline-step-desc">3-4 недели<br>iOS + Android</div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-step-number">3</div>
+                    <div class="timeline-step-title">Расширенные функции</div>
+                    <div class="timeline-step-desc">2-3 недели<br>Семейная безопасность</div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-step-number">4</div>
+                    <div class="timeline-step-title">Тестирование и релиз</div>
+                    <div class="timeline-step-desc">1-2 недели<br>App Store + Google Play</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Анимация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.component-item, .tech-card, .timeline-step');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(50px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+
+        // Интерактивность для карточек
+        document.querySelectorAll('.component-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(10px) scale(1.02)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0) scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPN Test - Инструкции</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        h1 { font-size: 2em; margin-bottom: 30px; }
+        .button {
+            background: #4CAF50;
+            color: white;
+            padding: 20px 40px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 20px 0;
+            width: 100%;
+            transition: background 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .button:hover { background: #45a049; }
+        .info { 
+            background: rgba(255, 255, 255, 0.2); 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            text-align: left;
+        }
+        .status { font-size: 16px; margin: 10px 0; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .loading { color: #FFC107; }
+        .demo { color: #2196F3; }
+        .url { 
+            background: rgba(0, 0, 0, 0.3); 
+            padding: 10px; 
+            border-radius: 5px; 
+            font-family: monospace; 
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 VPN Test</h1>
+        <div class="info">
+            <h3>📱 Инструкции для телефона</h3>
+            <p>Если QR-код не работает, используйте эти URL:</p>
+        </div>
+        
+        <div class="info">
+            <h3>🔗 Вариант 1: Основной URL</h3>
+            <div class="url">http://192.168.0.101:8000/vpn_test_fixed.html</div>
+            <p>Скопируйте и вставьте в браузер</p>
+        </div>
+        
+        <div class="info">
+            <h3>🔗 Вариант 2: Локальный URL</h3>
+            <div class="url">http://localhost:8000/vpn_test_fixed.html</div>
+            <p>Если на том же Wi-Fi</p>
+        </div>
+        
+        <div class="info">
+            <h3>�� Вариант 3: Простой тест</h3>
+            <div class="url">http://192.168.0.101:8000/vpn_test_simple_no_js.html</div>
+            <p>Без JavaScript</p>
+        </div>
+        
+        <a href="http://192.168.0.101:8000/vpn_test_fixed.html" class="button">🚀 Перейти к тесту</a>
+        
+        <div class="info">
+            <h3>📱 Пошаговые инструкции:</h3>
+            <p>1. Откройте браузер на телефоне</p>
+            <p>2. Введите один из URL выше</p>
+            <p>3. Нажмите "Тест Singapore"</p>
+            <p>4. Дождитесь результата</p>
+            <p>5. Проверьте IP адрес</p>
+        </div>
+        
+        <div class="info">
+            <h3>🔧 Решение проблем:</h3>
+            <p>• Если QR-код не работает - введите URL вручную</p>
+            <p>• Если не открывается - проверьте Wi-Fi</p>
+            <p>• Если ошибка - используйте localhost</p>
+        </div>
+    </div>
+</body>
+</html>

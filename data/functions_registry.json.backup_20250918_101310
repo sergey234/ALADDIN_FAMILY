@@ -1,0 +1,303 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-09-09T10:54:58.600574",
+  "functions": {
+    "anti_fraud_master_ai": {
+      "function_id": "anti_fraud_master_ai",
+      "name": "AntiFraudMasterAI",
+      "description": "Главный агент защиты от мошенничества",
+      "function_type": "ai_agent",
+      "security_level": "high",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.597878",
+      "is_critical": true,
+      "auto_enable": false
+    },
+    "threat_detection_agent": {
+      "function_id": "threat_detection_agent",
+      "name": "ThreatDetectionAgent",
+      "description": "Агент обнаружения угроз",
+      "function_type": "ai_agent",
+      "security_level": "high",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.598140",
+      "is_critical": true,
+      "auto_enable": false
+    },
+    "security_monitoring": {
+      "function_id": "security_monitoring",
+      "name": "SecurityMonitoring",
+      "description": "Мониторинг безопасности",
+      "function_type": "security",
+      "security_level": "high",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.598274",
+      "is_critical": true,
+      "auto_enable": false
+    },
+    "mobile_security_agent": {
+      "function_id": "mobile_security_agent",
+      "name": "MobileSecurityAgent",
+      "description": "Агент мобильной безопасности",
+      "function_type": "ai_agent",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.598380",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "password_security_agent": {
+      "function_id": "password_security_agent",
+      "name": "PasswordSecurityAgent",
+      "description": "Агент безопасности паролей",
+      "function_type": "ai_agent",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.598492",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "incident_response_agent": {
+      "function_id": "incident_response_agent",
+      "name": "IncidentResponseAgent",
+      "description": "Агент реагирования на инциденты",
+      "function_type": "ai_agent",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.598565",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "threat_intelligence_agent": {
+      "function_id": "threat_intelligence_agent",
+      "name": "ThreatIntelligenceAgent",
+      "description": "Агент разведки угроз",
+      "function_type": "ai_agent",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.598684",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "performance_optimization_agent": {
+      "function_id": "performance_optimization_agent",
+      "name": "PerformanceOptimizationAgent",
+      "description": "Агент оптимизации производительности",
+      "function_type": "ai_agent",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.598800",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "voice_analysis_engine": {
+      "function_id": "voice_analysis_engine",
+      "name": "VoiceAnalysisEngine",
+      "description": "Движок анализа голоса",
+      "function_type": "ai_agent",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.598873",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "telegram_security_bot": {
+      "function_id": "telegram_security_bot",
+      "name": "TelegramSecurityBot",
+      "description": "Бот безопасности Telegram",
+      "function_type": "security_bot",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.598943",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "whatsapp_security_bot": {
+      "function_id": "whatsapp_security_bot",
+      "name": "WhatsAppSecurityBot",
+      "description": "Бот безопасности WhatsApp",
+      "function_type": "security_bot",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599011",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "instagram_security_bot": {
+      "function_id": "instagram_security_bot",
+      "name": "InstagramSecurityBot",
+      "description": "Бот безопасности Instagram",
+      "function_type": "security_bot",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599080",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "gaming_security_bot": {
+      "function_id": "gaming_security_bot",
+      "name": "GamingSecurityBot",
+      "description": "Бот безопасности игр",
+      "function_type": "security_bot",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599151",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "parental_control_bot": {
+      "function_id": "parental_control_bot",
+      "name": "ParentalControlBot",
+      "description": "Бот родительского контроля",
+      "function_type": "security_bot",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599220",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "emergency_response_bot": {
+      "function_id": "emergency_response_bot",
+      "name": "EmergencyResponseBot",
+      "description": "Бот экстренного реагирования",
+      "function_type": "security_bot",
+      "security_level": "high",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599291",
+      "is_critical": true,
+      "auto_enable": false
+    },
+    "network_security_bot": {
+      "function_id": "network_security_bot",
+      "name": "NetworkSecurityBot",
+      "description": "Бот сетевой безопасности",
+      "function_type": "security_bot",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599361",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "device_security_bot": {
+      "function_id": "device_security_bot",
+      "name": "DeviceSecurityBot",
+      "description": "Бот безопасности устройств",
+      "function_type": "security_bot",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599436",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "zero_trust_manager": {
+      "function_id": "zero_trust_manager",
+      "name": "ZeroTrustManager",
+      "description": "Менеджер нулевого доверия",
+      "function_type": "security_system",
+      "security_level": "high",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599505",
+      "is_critical": true,
+      "auto_enable": false
+    },
+    "ransomware_protection": {
+      "function_id": "ransomware_protection",
+      "name": "RansomwareProtection",
+      "description": "Защита от ransomware",
+      "function_type": "security_system",
+      "security_level": "high",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599575",
+      "is_critical": true,
+      "auto_enable": false
+    },
+    "threat_intelligence": {
+      "function_id": "threat_intelligence",
+      "name": "ThreatIntelligence",
+      "description": "Разведка угроз",
+      "function_type": "security_system",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599650",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "incident_response": {
+      "function_id": "incident_response",
+      "name": "IncidentResponse",
+      "description": "Реагирование на инциденты",
+      "function_type": "security_system",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599719",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "security_analytics": {
+      "function_id": "security_analytics",
+      "name": "SecurityAnalytics",
+      "description": "Аналитика безопасности",
+      "function_type": "security_system",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599795",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "security_audit": {
+      "function_id": "security_audit",
+      "name": "SecurityAudit",
+      "description": "Аудит безопасности",
+      "function_type": "security_system",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599867",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "family_profile_manager": {
+      "function_id": "family_profile_manager",
+      "name": "FamilyProfileManager",
+      "description": "Управление семейными профилями",
+      "function_type": "family_component",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.599937",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "parental_controls": {
+      "function_id": "parental_controls",
+      "name": "ParentalControls",
+      "description": "Родительский контроль",
+      "function_type": "family_component",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.600004",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "elderly_protection": {
+      "function_id": "elderly_protection",
+      "name": "ElderlyProtection",
+      "description": "Защита пожилых",
+      "function_type": "family_component",
+      "security_level": "medium",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.600070",
+      "is_critical": false,
+      "auto_enable": false
+    },
+    "child_protection": {
+      "function_id": "child_protection",
+      "name": "ChildProtection",
+      "description": "Защита детей",
+      "function_type": "family_component",
+      "security_level": "high",
+      "status": "running",
+      "created_at": "2025-09-09T10:54:58.600138",
+      "is_critical": true,
+      "auto_enable": false
+    }
+  }
+}

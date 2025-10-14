@@ -1,0 +1,765 @@
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- 🦄 ЕДИНОРОГ-ПИТОМЕЦ - ТАМАГОЧИ КОМПОНЕНТ                                  -->
+<!-- Создано: 12.10.2025                                                       -->
+<!-- Принцип: Качество + Красота + Функциональность + Эмоции                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   СТИЛИ ЕДИНОРОГА-ПИТОМЦА
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.pet-card {
+    background: linear-gradient(135deg, #C084FC 0%, #7C3AED 50%, #C084FC 100%);
+    border: 2px solid #C084FC;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 10px 30px rgba(192, 132, 252, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.pet-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s infinite;
+}
+
+.pet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.pet-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pet-level {
+    background: rgba(255, 215, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    color: #FFD700;
+    font-weight: 600;
+    border: 1px solid #FFD700;
+}
+
+.pet-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.pet-display {
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.pet-emoji {
+    font-size: 120px;
+    animation: breathing 3s ease-in-out infinite;
+    cursor: pointer;
+    transition: transform 0.3s;
+    filter: drop-shadow(0 0 20px rgba(192, 132, 252, 0.8));
+}
+
+.pet-emoji:hover {
+    transform: scale(1.1);
+}
+
+.pet-emoji.happy {
+    animation: breathing 3s ease-in-out infinite, bounce 1s ease-in-out infinite;
+}
+
+.pet-emoji.sad {
+    opacity: 0.7;
+    filter: grayscale(30%);
+}
+
+.pet-emoji.excited {
+    animation: breathing 3s ease-in-out infinite, rotate-scale 1s ease-in-out infinite;
+}
+
+@keyframes breathing {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.05); }
+}
+
+@keyframes rotate-scale {
+    0%, 100% { transform: rotate(-5deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.1); }
+}
+
+.pet-stage-indicator {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    font-size: 32px;
+    animation: pulse 2s infinite;
+}
+
+.pet-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.pet-stats {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.stat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stat-icon {
+    font-size: 24px;
+    min-width: 30px;
+    text-align: center;
+}
+
+.stat-bar-container {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+}
+
+.stat-bar {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease, background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: bold;
+    color: white;
+}
+
+.stat-bar.love { background: linear-gradient(90deg, #EC4899, #F43F5E); }
+.stat-bar.hunger { background: linear-gradient(90deg, #10B981, #059669); }
+.stat-bar.energy { background: linear-gradient(90deg, #F59E0B, #D97706); }
+.stat-bar.mood { background: linear-gradient(90deg, #3B82F6, #2563EB); }
+
+.stat-bar.low {
+    animation: pulse-warning 1s infinite;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.stat-value {
+    font-size: 11px;
+    color: white;
+    font-weight: 600;
+    min-width: 40px;
+    text-align: right;
+}
+
+.pet-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.action-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-icon {
+    font-size: 24px;
+}
+
+.action-cost {
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+.evolution-badge {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #1e3a5f;
+    font-weight: 600;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.pet-info {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    margin-top: 10px;
+}
+
+.level-progress {
+    margin-top: 10px;
+}
+
+.level-progress-text {
+    font-size: 11px;
+    color: white;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.level-progress-bar {
+    background: rgba(0, 0, 0, 0.3);
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.level-progress-fill {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.5s ease;
+}
+
+.hearts-effect {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    animation: float-up 2s ease-out forwards;
+    pointer-events: none;
+}
+
+@keyframes float-up {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -150%) scale(1.5);
+    }
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     HTML СТРУКТУРА ЕДИНОРОГА-ПИТОМЦА
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<div class="pet-card">
+    <div class="pet-header">
+        <div class="pet-title">
+            <span style="font-size: 24px;">🦄</span>
+            <span>Мой единорог</span>
+        </div>
+        <div class="pet-level" id="pet-level">
+            💎 Уровень 8
+        </div>
+    </div>
+    
+    <div class="pet-container">
+        <!-- Единорог с анимацией -->
+        <div class="pet-display">
+            <div class="pet-emoji happy" id="pet-emoji" onclick="petInteraction()">
+                🦄
+            </div>
+            <div class="pet-stage-indicator" id="pet-stage">
+                ✨
+            </div>
+        </div>
+        
+        <div class="pet-name" id="pet-name">
+            Сияющий ✨
+        </div>
+        
+        <!-- Статистика (4 индикатора) -->
+        <div class="pet-stats">
+            <!-- Любовь -->
+            <div class="stat-row">
+                <div class="stat-icon">❤️</div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar love" id="stat-love" style="width: 85%;">85%</div>
+                </div>
+                <div class="stat-value">85/100</div>
+            </div>
+            
+            <!-- Сытость -->
+            <div class="stat-row">
+                <div class="stat-icon">🍎</div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar hunger" id="stat-hunger" style="width: 60%;">60%</div>
+                </div>
+                <div class="stat-value">60/100</div>
+            </div>
+            
+            <!-- Энергия -->
+            <div class="stat-row">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar energy" id="stat-energy" style="width: 75%;">75%</div>
+                </div>
+                <div class="stat-value">75/100</div>
+            </div>
+            
+            <!-- Настроение -->
+            <div class="stat-row">
+                <div class="stat-icon">😊</div>
+                <div class="stat-bar-container">
+                    <div class="stat-bar mood" id="stat-mood" style="width: 90%;">90%</div>
+                </div>
+                <div class="stat-value">90/100</div>
+            </div>
+        </div>
+        
+        <!-- Действия -->
+        <div class="pet-actions">
+            <button class="action-btn" onclick="feedPet()">
+                <div class="action-icon">🍎</div>
+                <div>Покормить</div>
+                <div class="action-cost">-10 🦄</div>
+            </button>
+            
+            <button class="action-btn" onclick="playWithPet()">
+                <div class="action-icon">🎮</div>
+                <div>Играть</div>
+                <div class="action-cost">-5 🦄</div>
+            </button>
+            
+            <button class="action-btn" onclick="petPet()">
+                <div class="action-icon">💕</div>
+                <div>Погладить</div>
+                <div class="action-cost">Бесплатно</div>
+            </button>
+        </div>
+        
+        <!-- Прогресс до следующего уровня -->
+        <div class="level-progress">
+            <div class="level-progress-text">До уровня 9: 450 / 800 🦄</div>
+            <div class="level-progress-bar">
+                <div class="level-progress-fill" style="width: 56.25%;"></div>
+            </div>
+        </div>
+        
+        <!-- Информация об эволюции -->
+        <div class="evolution-badge" id="evolution-info">
+            🎯 Следующая эволюция: Уровень 11 → 🌟 Взрослый
+        </div>
+        
+        <!-- Инфо о питомце -->
+        <div class="pet-info">
+            💡 Кормите единорога, играйте с ним и гладьте, чтобы он рос!
+            Каждые 100 🦄 = +1 уровень. Эволюция происходит автоматически!
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     JAVASCRIPT ЛОГИКА ЕДИНОРОГА-ПИТОМЦА
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// КОНФИГУРАЦИЯ ПИТОМЦА
+// ═══════════════════════════════════════════════════════════════════════════
+
+const PET_CONFIG = {
+    stages: [
+        { minLevel: 1,  maxLevel: 5,  emoji: '🦄', name: 'Малыш',       indicator: '' },
+        { minLevel: 6,  maxLevel: 10, emoji: '🦄', name: 'Подросток',   indicator: '✨' },
+        { minLevel: 11, maxLevel: 20, emoji: '🦄', name: 'Взрослый',    indicator: '🌟' },
+        { minLevel: 21, maxLevel: 99, emoji: '🦄', name: 'Легендарный', indicator: '💎🌈' }
+    ],
+    unicornsPerLevel: 100,  // 100 🦄 = +1 level
+    stats: {
+        love: { max: 100, decreaseRate: 2 },    // -2 каждый час
+        hunger: { max: 100, decreaseRate: 5 },  // -5 каждый час
+        energy: { max: 100, decreaseRate: 3 },  // -3 каждый час
+        mood: { max: 100, decreaseRate: 1 }     // -1 каждый час
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// СОСТОЯНИЕ ПИТОМЦА
+// ═══════════════════════════════════════════════════════════════════════════
+
+let petState = {
+    level: 8,
+    experience: 450,  // Прогресс к следующему уровню
+    stats: {
+        love: 85,
+        hunger: 60,
+        energy: 75,
+        mood: 90
+    },
+    lastUpdate: new Date().getTime()
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ПОЛУЧЕНИЕ СТАДИИ ПИТОМЦА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function getPetStage(level) {
+    for (let stage of PET_CONFIG.stages) {
+        if (level >= stage.minLevel && level <= stage.maxLevel) {
+            return stage;
+        }
+    }
+    return PET_CONFIG.stages[PET_CONFIG.stages.length - 1];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОБНОВЛЕНИЕ UI ПИТОМЦА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updatePetUI() {
+    const stage = getPetStage(petState.level);
+    
+    // Обновляем эмодзи и индикатор стадии
+    document.getElementById('pet-emoji').textContent = stage.emoji;
+    document.getElementById('pet-stage').textContent = stage.indicator;
+    document.getElementById('pet-name').textContent = stage.name + ' ' + stage.indicator;
+    document.getElementById('pet-level').textContent = `💎 Уровень ${petState.level}`;
+    
+    // Обновляем статистику
+    updateStat('love', petState.stats.love);
+    updateStat('hunger', petState.stats.hunger);
+    updateStat('energy', petState.stats.energy);
+    updateStat('mood', petState.stats.mood);
+    
+    // Обновляем эмоцию
+    updatePetEmotion();
+    
+    // Обновляем прогресс уровня
+    const nextLevelAt = PET_CONFIG.unicornsPerLevel;
+    const percentage = (petState.experience / nextLevelAt) * 100;
+    
+    document.querySelector('.level-progress-text').textContent = 
+        `До уровня ${petState.level + 1}: ${petState.experience} / ${nextLevelAt} 🦄`;
+    document.querySelector('.level-progress-fill').style.width = percentage + '%';
+    
+    // Обновляем инфо об эволюции
+    const nextStage = getPetStage(petState.level + 1);
+    if (nextStage.minLevel > stage.minLevel) {
+        document.getElementById('evolution-info').textContent = 
+            `🎯 Следующая эволюция: Уровень ${nextStage.minLevel} → ${nextStage.indicator} ${nextStage.name}`;
+    } else {
+        document.getElementById('evolution-info').textContent = 
+            `🏆 Максимальная эволюция достигнута! ${stage.indicator}`;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОБНОВЛЕНИЕ СТАТИСТИКИ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateStat(statName, value) {
+    const percentage = Math.max(0, Math.min(100, value));
+    const bar = document.getElementById(`stat-${statName}`);
+    const statRow = bar.closest('.stat-row');
+    const valueEl = statRow.querySelector('.stat-value');
+    
+    bar.style.width = percentage + '%';
+    bar.textContent = Math.round(percentage) + '%';
+    valueEl.textContent = `${Math.round(value)}/100`;
+    
+    // Добавляем класс low для низких значений
+    if (percentage < 30) {
+        bar.classList.add('low');
+    } else {
+        bar.classList.remove('low');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОБНОВЛЕНИЕ ЭМОЦИИ ПИТОМЦА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updatePetEmotion() {
+    const avgStat = (petState.stats.love + petState.stats.hunger + 
+                     petState.stats.energy + petState.stats.mood) / 4;
+    
+    const petEmoji = document.getElementById('pet-emoji');
+    petEmoji.classList.remove('happy', 'sad', 'excited');
+    
+    if (avgStat >= 80) {
+        petEmoji.classList.add('excited');  // Очень счастлив
+    } else if (avgStat >= 50) {
+        petEmoji.classList.add('happy');    // Счастлив
+    } else if (avgStat < 30) {
+        petEmoji.classList.add('sad');      // Грустит
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ПОКОРМИТЬ ПИТОМЦА
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function feedPet() {
+    const cost = 10;
+    
+    // TODO: Проверить баланс и списать единороги
+    // const balance = await getBalance();
+    // if (balance < cost) { alert('Недостаточно единорогов!'); return; }
+    
+    // Увеличиваем сытость
+    petState.stats.hunger = Math.min(100, petState.stats.hunger + 20);
+    petState.stats.mood = Math.min(100, petState.stats.mood + 5);
+    
+    // Добавляем опыт
+    addExperience(cost);
+    
+    // Обновляем UI
+    updatePetUI();
+    
+    // Показываем реакцию
+    showHearts();
+    showNotification('🍎 Ням-ням! Единорог сыт и доволен!');
+    
+    // TODO: Backend call
+    // await fetch('/api/pet/feed', { method: 'POST', body: { child_id, unicorns: cost } });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ИГРАТЬ С ПИТОМЦЕМ
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function playWithPet() {
+    const cost = 5;
+    
+    // Увеличиваем энергию и настроение
+    petState.stats.energy = Math.min(100, petState.stats.energy + 15);
+    petState.stats.mood = Math.min(100, petState.stats.mood + 15);
+    petState.stats.love = Math.min(100, petState.stats.love + 10);
+    
+    // Добавляем опыт
+    addExperience(cost);
+    
+    // Обновляем UI
+    updatePetUI();
+    
+    // Показываем реакцию
+    showHearts();
+    showNotification('🎮 Ура! Единорог полон энергии!');
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ПОГЛАДИТЬ ПИТОМЦА (БЕСПЛАТНО)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function petPet() {
+    // Небольшое увеличение любви
+    petState.stats.love = Math.min(100, petState.stats.love + 5);
+    petState.stats.mood = Math.min(100, petState.stats.mood + 3);
+    
+    // Обновляем UI
+    updatePetUI();
+    
+    // Показываем реакцию
+    showHearts();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ВЗАИМОДЕЙСТВИЕ С ПИТОМЦЕМ (КЛИК)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function petInteraction() {
+    petPet();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ДОБАВЛЕНИЕ ОПЫТА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function addExperience(unicorns) {
+    petState.experience += unicorns;
+    
+    // Проверка level up
+    while (petState.experience >= PET_CONFIG.unicornsPerLevel) {
+        petState.experience -= PET_CONFIG.unicornsPerLevel;
+        petState.level++;
+        
+        levelUp();
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ПОВЫШЕНИЕ УРОВНЯ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function levelUp() {
+    const oldStage = getPetStage(petState.level - 1);
+    const newStage = getPetStage(petState.level);
+    
+    // Проверка эволюции
+    if (oldStage.name !== newStage.name) {
+        showEvolutionModal(newStage);
+    } else {
+        showNotification(`🎉 Level Up! Уровень ${petState.level}!`);
+    }
+    
+    // Восстанавливаем все статы при level up
+    petState.stats.love = 100;
+    petState.stats.hunger = 100;
+    petState.stats.energy = 100;
+    petState.stats.mood = 100;
+    
+    updatePetUI();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: МОДАЛЬНОЕ ОКНО ЭВОЛЮЦИИ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showEvolutionModal(newStage) {
+    const modal = document.createElement('div');
+    modal.className = 'prize-modal';
+    modal.innerHTML = `
+        <div class="prize-modal-content" style="background: linear-gradient(135deg, #C084FC 0%, #7C3AED 100%);">
+            <div style="font-size: 80px; animation: rotate-scale 1s infinite;">${newStage.emoji}</div>
+            <div class="prize-title">ЭВОЛЮЦИЯ!</div>
+            <div style="font-size: 36px; margin: 15px 0;">${newStage.indicator}</div>
+            <div class="prize-message">
+                Твой единорог эволюционировал!<br>
+                Теперь он: <strong>${newStage.name}</strong>!
+            </div>
+            <button class="prize-close-btn" onclick="this.parentElement.parentElement.remove()">
+                Круто! 🎉
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Конфетти
+    if (typeof createConfetti === 'function') {
+        createConfetti();
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ПОКАЗАТЬ СЕРДЕЧКИ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showHearts() {
+    const petDisplay = document.querySelector('.pet-display');
+    const heart = document.createElement('div');
+    heart.className = 'hearts-effect';
+    heart.textContent = '💕';
+    petDisplay.appendChild(heart);
+    
+    setTimeout(() => heart.remove(), 2000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ПОКАЗАТЬ УВЕДОМЛЕНИЕ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showNotification(message) {
+    // Используем существующую систему уведомлений или создаём простую
+    console.log('🦄', message);
+    // TODO: Показать красивое уведомление
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: УХУДШЕНИЕ СТАТИСТИКИ СО ВРЕМЕНЕМ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function decreaseStats() {
+    const now = new Date().getTime();
+    const hoursPassed = (now - petState.lastUpdate) / (1000 * 60 * 60);
+    
+    if (hoursPassed >= 1) {
+        petState.stats.love = Math.max(0, petState.stats.love - PET_CONFIG.stats.love.decreaseRate);
+        petState.stats.hunger = Math.max(0, petState.stats.hunger - PET_CONFIG.stats.hunger.decreaseRate);
+        petState.stats.energy = Math.max(0, petState.stats.energy - PET_CONFIG.stats.energy.decreaseRate);
+        petState.stats.mood = Math.max(0, petState.stats.mood - PET_CONFIG.stats.mood.decreaseRate);
+        
+        petState.lastUpdate = now;
+        updatePetUI();
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ИНИЦИАЛИЗАЦИЯ
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Обновляем UI при загрузке
+updatePetUI();
+
+// Ухудшаем статистику каждую минуту
+setInterval(decreaseStats, 60000);
+
+// TODO: Загрузить состояние питомца из API
+// fetch('/api/pet/status?child_id=123')
+//   .then(res => res.json())
+//   .then(data => {
+//     petState = data;
+//     updatePetUI();
+//   });
+</script>
+
+
+
