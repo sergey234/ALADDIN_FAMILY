@@ -3,10 +3,8 @@ name: iOS Build and Test
 on:
   push:
     branches: [ main, develop ]
-    paths: [ 'mobile_apps/ALADDIN_iOS/**' ]
   pull_request:
     branches: [ main ]
-    paths: [ 'mobile_apps/ALADDIN_iOS/**' ]
 
 jobs:
   build-and-test:
