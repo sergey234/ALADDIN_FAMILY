@@ -49,5 +49,5 @@ jobs:
       if: success()
       with:
         name: ios-build
-        path: mobile_apps/ALADDIN_iOS/build/
+        path: mobile_apps/ALADDIN_iOS/build/Release-iphonesimulator/
 
