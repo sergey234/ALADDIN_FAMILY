@@ -1,9 +1,9 @@
-name: iOS Solution 4 - No Destination
+name: iOS Solution 4 - Check SDKs
 
 on:
   push:
     branches: [ main ]
-    paths: [ 'mobile_apps/ALADDIN_iOS/**' ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/trigger_solution4.txt' ]
 
 jobs:
   build-ios:
@@ -19,41 +19,29 @@ jobs:
       with:
         xcode-version: '16.0.0'
         
-    - name: Check project structure
+    - name: Check available SDKs and devices
+      run: |
+        echo "=== ПРОВЕРЯЕМ ДОСТУПНЫЕ SDK ==="
+        xcodebuild -showsdks
+        
+        echo ""
+        echo "=== ПРОВЕРЯЕМ ДОСТУПНЫЕ УСТРОЙСТВА ==="
+        xcrun simctl list devices available
+        
+        echo ""
+        echo "=== ПРОВЕРЯЕМ RUNTIMES ==="
+        xcrun simctl list runtimes
+        
+    - name: Build with available SDK
       run: |
         cd mobile_apps/ALADDIN_iOS
-        echo "=== ПРОВЕРЯЕМ СТРУКТУРУ ПРОЕКТА ==="
-        ls -la
-        echo ""
-        echo "=== ПРОВЕРЯЕМ XCODE ПРОЕКТ ==="
-        ls -la ALADDIN.xcodeproj/
-        echo ""
-        echo "=== ПРОВЕРЯЕМ SCHEMES ==="
-        xcodebuild -list -project ALADDIN.xcodeproj
+        echo "=== КОМПИЛИРУЕМ С ДОСТУПНЫМ SDK ==="
         
-    - name: Build iOS app WITHOUT destination
-      run: |
-        cd mobile_apps/ALADDIN_iOS
-        echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ БЕЗ DESTINATION ==="
-        echo "Используем только scheme, без указания destination"
+        # Получаем доступный iOS SDK
+        AVAILABLE_SDK=$(xcodebuild -showsdks | grep iOS | head -1 | awk '{print $2}')
+        echo "Используем SDK: $AVAILABLE_SDK"
         
-        # Попробуем разные варианты компиляции
-        echo "1. Попытка: xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build"
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build || echo "Попытка 1 не удалась"
-        
-        echo ""
-        echo "2. Попытка: xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -configuration Debug build"
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -configuration Debug build || echo "Попытка 2 не удалась"
-        
-        echo ""
-        echo "3. Попытка: xcodebuild -project ALADDIN.xcodeproj -target ALADDIN build"
-        xcodebuild -project ALADDIN.xcodeproj -target ALADDIN build || echo "Попытка 3 не удалась"
-        
-        echo "=== ПРОВЕРЯЕМ BUILD ПАПКУ ==="
-        ls -la build/ || echo "build папка не найдена"
-        echo ""
-        echo "=== ИЩЕМ .app ФАЙЛЫ ==="
-        find build/ -name "*.app" -type d || echo ".app файлы не найдены"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -sdk $AVAILABLE_SDK build
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
