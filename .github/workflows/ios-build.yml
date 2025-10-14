@@ -42,7 +42,7 @@ jobs:
       run: |
         cd mobile_apps/ALADDIN_iOS
         echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ==="
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 16' build
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination 'generic/platform=iOS Simulator' build
         
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
