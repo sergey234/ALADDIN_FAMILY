@@ -53,7 +53,7 @@ jobs:
         echo "Используем симулятор: ${{ steps.simulator.outputs.simulator }}"
         echo "Deployment target: iOS 11.0+ (поддержка iPhone SE (3rd generation))"
         
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator" build
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone SE (3rd generation)" build
         
         echo "=== ПРОВЕРЯЕМ BUILD ПАПКУ ==="
         ls -la build/ || echo "build папка не найдена"
