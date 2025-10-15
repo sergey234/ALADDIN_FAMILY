@@ -1,0 +1,65 @@
+name: iOS Simple Test - Error 70 Fix
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/simple_test.txt' ]
+
+jobs:
+  ios-simple-test:
+    runs-on: macos-latest
+    timeout-minutes: 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: iOS Simple Test
+      run: |
+        echo "🎯 ПРОСТОЙ ТЕСТ iOS - ИСПРАВЛЕНИЕ ERROR 70"
+        echo "=========================================="
+        
+        cd mobile_apps/ALADDIN_iOS
+        
+        echo ""
+        echo "🔍 ПРОБЛЕМА:"
+        echo "❌ xcodebuild: error: Unable to find a device matching the provided destination specifier"
+        echo "❌ { platform:iOS } - ищет РЕАЛЬНОЕ устройство"
+        
+        echo ""
+        echo "✅ РЕШЕНИЕ:"
+        echo "Используем generic/platform=iOS Simulator"
+        
+        echo ""
+        echo "🧪 ТЕСТ: Generic destination"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "generic/platform=iOS Simulator" build; then
+          echo "✅ УСПЕХ! Generic destination работает!"
+          
+          echo ""
+          echo "📱 Результат сборки:"
+          ls -la build/
+          echo ""
+          echo "📱 Ищем .app файлы:"
+          find build/ -name "*.app" -type d
+          
+          echo ""
+          echo "🎉 РЕШЕНИЕ НАЙДЕНО!"
+          echo "Используйте: -destination 'generic/platform=iOS Simulator'"
+        else
+          echo "❌ Generic destination не работает"
+          echo "Проверяем доступные симуляторы:"
+          xcrun simctl list devices available | grep iPhone | head -3
+        fi
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-simple-test-artifacts
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7
