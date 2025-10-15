@@ -1,0 +1,70 @@
+name: iOS Final Test 1 - Minimal Build
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/final_test1.txt' ]
+  workflow_dispatch:
+
+jobs:
+  minimal-build:
+    runs-on: macos-latest
+    timeout-minutes: 5
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+    
+    - name: Run Minimal iOS Build
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "🎯 ТЕСТ 1: МИНИМАЛЬНАЯ СБОРКА"
+        echo "============================="
+        echo ""
+        echo "🔍 ПРОБЛЕМА:"
+        echo "❌ Signing requires development team"
+        echo "❌ Asset catalog runtime errors"
+        echo ""
+        echo "✅ РЕШЕНИЕ:"
+        echo "1. Отключаем подпись (CODE_SIGNING_ALLOWED=NO)"
+        echo "2. Отключаем assets (ASSETCATALOG_COMPILER_APPICON_NAME='')"
+        echo "3. Используем simulator SDK"
+        echo ""
+        
+        echo "🧪 ТЕСТ: Минимальная сборка"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
+          -sdk iphonesimulator \
+          -destination "platform=iOS Simulator" \
+          CODE_SIGNING_ALLOWED=NO \
+          ASSETCATALOG_COMPILER_APPICON_NAME="" \
+          build; then
+          
+          echo "✅ УСПЕХ! Минимальная сборка работает!"
+          
+          echo ""
+          echo "📱 Результат сборки:"
+          ls -la build/ || echo "build папка не найдена"
+          echo ""
+          echo "📱 Ищем .app файлы:"
+          find build/ -name "*.app" -type d || echo ".app файлы не найдены"
+          
+          echo ""
+          echo "🎉 РЕШЕНИЕ НАЙДЕНО!"
+          echo "Команда: CODE_SIGNING_ALLOWED=NO + ASSETCATALOG_COMPILER_APPICON_NAME=''"
+          
+        else
+          echo "❌ Минимальная сборка не работает"
+          echo "Проверяем доступные SDK:"
+          xcodebuild -showsdks | grep iphonesimulator
+        fi
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: ios-minimal-build
+        path: mobile_apps/ALADDIN_iOS/build/
+        if-no-files-found: warn

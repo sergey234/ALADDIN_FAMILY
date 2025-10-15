@@ -1,0 +1,70 @@
+name: iOS Final Test 2 - SDK + Deployment Target
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/final_test2.txt' ]
+  workflow_dispatch:
+
+jobs:
+  sdk-deployment-build:
+    runs-on: macos-latest
+    timeout-minutes: 5
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+    
+    - name: Run SDK + Deployment Target Build
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "🎯 ТЕСТ 2: SDK + DEPLOYMENT TARGET"
+        echo "================================="
+        echo ""
+        echo "🔍 ПРОБЛЕМА:"
+        echo "❌ SDK 22A3362 не совместим с runtime"
+        echo "❌ Deployment target iOS 11.0 (требуется 12.0+)"
+        echo ""
+        echo "✅ РЕШЕНИЕ:"
+        echo "1. Используем правильный SDK (iphonesimulator18.0)"
+        echo "2. Устанавливаем deployment target 13.0"
+        echo "3. Отключаем подпись"
+        echo ""
+        
+        echo "🧪 ТЕСТ: SDK + Deployment Target"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
+          -sdk iphonesimulator18.0 \
+          -destination "platform=iOS Simulator" \
+          IPHONEOS_DEPLOYMENT_TARGET=13.0 \
+          CODE_SIGNING_ALLOWED=NO \
+          build; then
+          
+          echo "✅ УСПЕХ! SDK + Deployment Target работает!"
+          
+          echo ""
+          echo "📱 Результат сборки:"
+          ls -la build/ || echo "build папка не найдена"
+          echo ""
+          echo "📱 Ищем .app файлы:"
+          find build/ -name "*.app" -type d || echo ".app файлы не найдены"
+          
+          echo ""
+          echo "🎉 РЕШЕНИЕ НАЙДЕНО!"
+          echo "Команда: -sdk iphonesimulator18.0 + IPHONEOS_DEPLOYMENT_TARGET=13.0"
+          
+        else
+          echo "❌ SDK + Deployment Target не работает"
+          echo "Проверяем доступные SDK:"
+          xcodebuild -showsdks | grep iphonesimulator
+        fi
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: ios-sdk-deployment-build
+        path: mobile_apps/ALADDIN_iOS/build/
+        if-no-files-found: warn
