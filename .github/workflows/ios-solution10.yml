@@ -83,7 +83,7 @@ jobs:
         
         echo ""
         echo "5. С platform=iOS"
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS" build || echo "platform=iOS не сработал"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone 15" build || echo "platform=iOS не сработал"
         
         echo ""
         echo "6. С platform=iOS Simulator"
