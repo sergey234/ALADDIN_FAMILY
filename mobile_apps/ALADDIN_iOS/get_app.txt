@@ -1,0 +1,4 @@
+iOS APP GENERATOR - GET .app FILE - TRIGGER $(date)
+🎯 ЦЕЛЬ: Получить .app файл для App Store
+🚀 ТЕСТ: 3 уровня от простого к сложному
+📱 РЕЗУЛЬТАТ: Найти рабочий .app файл
