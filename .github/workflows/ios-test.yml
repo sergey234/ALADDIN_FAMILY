@@ -33,11 +33,11 @@ jobs:
         
         echo ""
         echo "✅ РЕШЕНИЕ:"
-        echo "Используем iPhone 16 Pro с iOS 18.0 (совместимые версии)"
+        echo "Используем iPhone 16 Pro (система сама выберет совместимую версию iOS)"
         
         echo ""
         echo "🧪 ТЕСТ: Generic destination"
-        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.0" build; then
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone 16 Pro" build; then
           echo "✅ УСПЕХ! Generic destination работает!"
           
           echo ""
