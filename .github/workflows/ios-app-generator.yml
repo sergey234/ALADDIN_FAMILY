@@ -109,6 +109,91 @@ jobs:
           exit 1
         fi
         
+        # 🏗️ АРХИТЕКТУРНАЯ ПРОВЕРКА: Проверяем ключевые компоненты iOS приложения
+        echo "🏗️ АРХИТЕКТУРНАЯ ПРОВЕРКА iOS ПРИЛОЖЕНИЯ:"
+        echo "========================================="
+        
+        # 1. Проверяем основные экраны (UI/UX)
+        echo "📍 Проверяем основные экраны:"
+        MAIN_SCREENS=("MainScreen.swift" "FamilyScreen.swift" "VPNScreen.swift" "AIAssistantScreen.swift")
+        for screen in "${MAIN_SCREENS[@]}"; do
+          if [ -f "ALADDIN/Screens/$screen" ]; then
+            echo "✅ Экран найден: $screen"
+          else
+            echo "⚠️ Экран отсутствует: $screen"
+          fi
+        done
+        
+        # 2. Проверяем ViewModels (бизнес-логика клиента)
+        echo "📍 Проверяем ViewModels (клиентская логика):"
+        VIEWMODELS=("MainViewModel.swift" "VPNViewModel.swift" "AIAssistantViewModel.swift" "FamilyViewModel.swift")
+        for vm in "${VIEWMODELS[@]}"; do
+          if [ -f "ALADDIN/ViewModels/$vm" ]; then
+            echo "✅ ViewModel найден: $vm"
+          else
+            echo "⚠️ ViewModel отсутствует: $vm"
+          fi
+        done
+        
+        # 3. Проверяем API конфигурацию (связь с сервером)
+        echo "📍 Проверяем API конфигурацию:"
+        if [ -f "ALADDIN/Core/Config/AppConfig.swift" ]; then
+          echo "✅ AppConfig.swift найден (API endpoints)"
+          # Проверяем наличие ключевых API endpoints
+          if grep -q "apiBaseURL" ALADDIN/Core/Config/AppConfig.swift; then
+            echo "✅ API Base URL настроен"
+          fi
+          if grep -q "Endpoint" ALADDIN/Core/Config/AppConfig.swift; then
+            echo "✅ API Endpoints определены"
+          fi
+        else
+          echo "⚠️ AppConfig.swift отсутствует"
+        fi
+        
+        # 4. Проверяем NetworkManager (связь с backend)
+        if [ -f "ALADDIN/Core/Network/NetworkManager.swift" ]; then
+          echo "✅ NetworkManager.swift найден (HTTP клиент)"
+        else
+          echo "⚠️ NetworkManager.swift отсутствует"
+        fi
+        
+        # 5. Проверяем Info.plist (права и разрешения)
+        echo "📍 Проверяем Info.plist (права приложения):"
+        if [ -f "ALADDIN/Info.plist" ]; then
+          echo "✅ Info.plist найден"
+          # Проверяем ключевые права для ALADDIN функций
+          if grep -q "NSCameraUsageDescription" ALADDIN/Info.plist; then
+            echo "✅ Камера разрешена (QR сканирование)"
+          fi
+          if grep -q "NSLocationWhenInUseUsageDescription" ALADDIN/Info.plist; then
+            echo "✅ Геолокация разрешена (защита семьи)"
+          fi
+          if grep -q "NSMicrophoneUsageDescription" ALADDIN/Info.plist; then
+            echo "✅ Микрофон разрешен (AI ассистент)"
+          fi
+          if grep -q "NSFaceIDUsageDescription" ALADDIN/Info.plist; then
+            echo "✅ FaceID разрешен (биометрическая аутентификация)"
+          fi
+        else
+          echo "⚠️ Info.plist отсутствует"
+        fi
+        
+        # 6. Проверяем Asset Catalog (иконки и цвета)
+        echo "📍 Проверяем Asset Catalog:"
+        if [ -d "ALADDIN/Assets.xcassets" ]; then
+          echo "✅ Assets.xcassets найден"
+          if [ -d "ALADDIN/Assets.xcassets/AppIcon.appiconset" ]; then
+            echo "✅ App Icon настроен"
+          fi
+          if [ -d "ALADDIN/Assets.xcassets/AccentColor.colorset" ]; then
+            echo "✅ Accent Color настроен"
+          fi
+        else
+          echo "⚠️ Assets.xcassets отсутствует"
+        fi
+        
+        echo "🏗️ АРХИТЕКТУРНАЯ ПРОВЕРКА ЗАВЕРШЕНА"
+        
         # 🥇 ПРИОРИТЕТ 0: САМЫЙ ПРЯМОЙ ПОДХОД - TARGET BUILD БЕЗ СХЕМЫ!
         echo "🚀🚀🚀 ЗАПУСК НОВОЙ СТРАТЕГИИ: СОХРАНЯЕМ ASSET CATALOG! 🚀🚀🚀"
         echo "🚨 КРИТИЧЕСКОЕ ЛОГИРОВАНИЕ: НОВАЯ СТРАТЕГИЯ ЗАПУСКАЕТСЯ!"
@@ -148,6 +233,9 @@ jobs:
             SYMROOT="/tmp/ALADDIN_build" \
             OBJROOT="/tmp/ALADDIN_build" \
             ONLY_ACTIVE_ARCH=NO \
+            ENABLE_BITCODE=NO \
+            DEVELOPMENT_TEAM="" \
+            PRODUCT_BUNDLE_IDENTIFIER="family.aladdin.ios" \
             build; then
             
             echo "🎉🎉🎉 УСПЕХ! BUILD С Asset Catalog СРАБОТАЛ! 🎉🎉🎉"
@@ -995,6 +1083,57 @@ jobs:
           echo "📍 Путь: $FINAL_APP_PATH"
           ls -la "$FINAL_APP_PATH"
           echo "📱 Размер: $(du -sh "$FINAL_APP_PATH" 2>/dev/null || echo "неизвестно")"
+          
+          # 🔍 ФИНАЛЬНАЯ ПРОВЕРКА: Анализируем содержимое .app файла
+          echo "🔍 ФИНАЛЬНАЯ АРХИТЕКТУРНАЯ ПРОВЕРКА .app ФАЙЛА:"
+          echo "==============================================="
+          
+          # 1. Проверяем основные компоненты в .app
+          if [ -f "$FINAL_APP_PATH/Info.plist" ]; then
+            echo "✅ Info.plist найден в .app"
+            # Проверяем bundle identifier
+            BUNDLE_ID=$(plutil -extract CFBundleIdentifier raw "$FINAL_APP_PATH/Info.plist" 2>/dev/null || echo "не найден")
+            echo "📍 Bundle ID: $BUNDLE_ID"
+          else
+            echo "⚠️ Info.plist отсутствует в .app"
+          fi
+          
+          # 2. Проверяем исполняемый файл
+          APP_NAME=$(basename "$FINAL_APP_PATH" .app)
+          if [ -f "$FINAL_APP_PATH/$APP_NAME" ]; then
+            echo "✅ Исполняемый файл найден: $APP_NAME"
+            # Проверяем архитектуру
+            ARCHS=$(file "$FINAL_APP_PATH/$APP_NAME" | grep -o "arm64\|x86_64" | tr '\n' ' ' || echo "неизвестно")
+            echo "📍 Архитектуры: $ARCHS"
+          else
+            echo "⚠️ Исполняемый файл не найден"
+          fi
+          
+          # 3. Проверяем ресурсы
+          if [ -d "$FINAL_APP_PATH/Assets.car" ]; then
+            echo "✅ Asset Catalog скомпилирован (Assets.car)"
+          elif [ -d "$FINAL_APP_PATH/Assets.xcassets" ]; then
+            echo "✅ Asset Catalog исходники присутствуют"
+          else
+            echo "⚠️ Asset Catalog может отсутствовать"
+          fi
+          
+          # 4. Проверяем Framework зависимости
+          if [ -d "$FINAL_APP_PATH/Frameworks" ]; then
+            FRAMEWORKS=$(ls "$FINAL_APP_PATH/Frameworks" 2>/dev/null | wc -l)
+            echo "✅ Frameworks найдены: $FRAMEWORKS файлов"
+          else
+            echo "📍 Frameworks не найдены (возможно статическая линковка)"
+          fi
+          
+          # 5. Проверяем размер ключевых компонентов
+          echo "📊 СТАТИСТИКА .app ФАЙЛА:"
+          echo "- Общий размер: $(du -sh "$FINAL_APP_PATH" 2>/dev/null)"
+          if [ -f "$FINAL_APP_PATH/$APP_NAME" ]; then
+            echo "- Исполняемый файл: $(du -sh "$FINAL_APP_PATH/$APP_NAME" 2>/dev/null)"
+          fi
+          
+          echo "🏗️ АРХИТЕКТУРНАЯ ПРОВЕРКА .app ЗАВЕРШЕНА"
           echo "APP_FOUND_PATH=$FINAL_APP_PATH" >> $GITHUB_ENV
         else
           echo "❌ .app ФАЙЛ НЕ НАЙДЕН!"
