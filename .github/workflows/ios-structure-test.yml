@@ -1,0 +1,65 @@
+name: iOS Structure Test - Check Project Structure
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/structure_test.txt' ]
+
+jobs:
+  structure-test:
+    runs-on: macos-latest
+    timeout-minutes: 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Structure Test - Check Project Structure
+      run: |
+        echo "🔍 СТРУКТУРА ПРОЕКТА - ПРОВЕРКА"
+        echo "==============================="
+        
+        echo "1️⃣ ПРОВЕРЯЕМ КОРНЕВУЮ СТРУКТУРУ:"
+        ls -la
+        
+        echo ""
+        echo "2️⃣ ИЩЕМ ВСЕ .xcodeproj ФАЙЛЫ:"
+        find . -name "*.xcodeproj" -type d
+        
+        echo ""
+        echo "3️⃣ ИЩЕМ ВСЕ .xcworkspace ФАЙЛЫ:"
+        find . -name "*.xcworkspace" -type d
+        
+        echo ""
+        echo "4️⃣ ПРОВЕРЯЕМ СОДЕРЖИМОЕ mobile_apps:"
+        if [ -d "mobile_apps" ]; then
+          ls -la mobile_apps/
+          
+          echo ""
+          echo "5️⃣ ПРОВЕРЯЕМ СОДЕРЖИМОЕ mobile_apps/ALADDIN_iOS:"
+          if [ -d "mobile_apps/ALADDIN_iOS" ]; then
+            ls -la mobile_apps/ALADDIN_iOS/
+            
+            echo ""
+            echo "6️⃣ ИЩЕМ iOS ФАЙЛЫ:"
+            find mobile_apps/ALADDIN_iOS/ -name "*.swift" | head -5
+            find mobile_apps/ALADDIN_iOS/ -name "Info.plist" | head -5
+            
+          else
+            echo "❌ mobile_apps/ALADDIN_iOS не найдена!"
+          fi
+        else
+          echo "❌ mobile_apps не найдена!"
+        fi
+        
+        echo ""
+        echo "7️⃣ ПРОВЕРЯЕМ ВСЕ iOS ПРОЕКТЫ В РЕПОЗИТОРИИ:"
+        find . -name "*.xcodeproj" -o -name "*.xcworkspace" | head -10
+        
+    - name: Upload Structure Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-structure-test
+        path: .
+        retention-days: 1

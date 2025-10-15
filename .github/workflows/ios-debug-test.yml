@@ -1,0 +1,90 @@
+name: iOS Debug Test - Find the Real Problem
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/debug_test.txt' ]
+
+jobs:
+  debug-test:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Debug Test - Find the Real Problem
+      run: |
+        echo "🔍 DEBUG ТЕСТ - ИЩЕМ РЕАЛЬНУЮ ПРОБЛЕМУ"
+        echo "======================================"
+        
+        echo "1️⃣ ПРОВЕРЯЕМ ОКРУЖЕНИЕ:"
+        echo "Рабочая директория: $(pwd)"
+        echo "Версия macOS: $(sw_vers)"
+        echo "Версия Xcode: $(xcodebuild -version 2>/dev/null || echo 'Xcode не найден')"
+        
+        echo ""
+        echo "2️⃣ ПРОВЕРЯЕМ ФАЙЛЫ ПРОЕКТА:"
+        ls -la mobile_apps/ALADDIN_iOS/ || echo "Папка ALADDIN_iOS не найдена"
+        
+        if [ -d "mobile_apps/ALADDIN_iOS" ]; then
+          cd mobile_apps/ALADDIN_iOS
+          echo "Перешли в папку iOS проекта"
+          echo "Содержимое папки:"
+          ls -la
+          
+          echo ""
+          echo "3️⃣ ПРОВЕРЯЕМ .xcodeproj ФАЙЛ:"
+          if [ -f "ALADDIN.xcodeproj/project.pbxproj" ]; then
+            echo "✅ ALADDIN.xcodeproj найден"
+            echo "Размер: $(du -sh ALADDIN.xcodeproj)"
+          else
+            echo "❌ ALADDIN.xcodeproj НЕ НАЙДЕН!"
+            echo "Ищем .xcodeproj файлы:"
+            find . -name "*.xcodeproj" -type d
+          fi
+          
+          echo ""
+          echo "4️⃣ ПРОВЕРЯЕМ СХЕМЫ:"
+          if [ -f "ALADDIN.xcodeproj/project.pbxproj" ]; then
+            xcodebuild -project ALADDIN.xcodeproj -list || echo "Не удалось получить список схем"
+          fi
+          
+          echo ""
+          echo "5️⃣ ПРОВЕРЯЕМ СИМУЛЯТОРЫ:"
+          xcrun simctl list devices available | grep "iPhone" | head -3 || echo "iPhone симуляторы не найдены"
+          
+          echo ""
+          echo "6️⃣ ПРОБУЕМ ПРОСТУЮ КОМПИЛЯЦИЮ:"
+          echo "Команда: xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -sdk iphonesimulator build"
+          
+          rm -rf build/
+          if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -sdk iphonesimulator build; then
+            echo "✅ ПРОСТАЯ КОМПИЛЯЦИЯ РАБОТАЕТ!"
+            ls -la build/
+            find build/ -name "*.app" -type d
+          else
+            echo "❌ ПРОСТАЯ КОМПИЛЯЦИЯ НЕ РАБОТАЕТ"
+            echo "Пробуем без схемы:"
+            if xcodebuild -project ALADDIN.xcodeproj -sdk iphonesimulator build; then
+              echo "✅ КОМПИЛЯЦИЯ БЕЗ СХЕМЫ РАБОТАЕТ!"
+              ls -la build/
+            else
+              echo "❌ КОМПИЛЯЦИЯ БЕЗ СХЕМЫ ТОЖЕ НЕ РАБОТАЕТ"
+            fi
+          fi
+          
+        else
+          echo "❌ ПРОБЛЕМА: Папка mobile_apps/ALADDIN_iOS не найдена!"
+          echo "Структура проекта:"
+          find . -name "*.xcodeproj" -type d
+        fi
+        
+    - name: Upload Debug Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-debug-test
+        path: .
+        retention-days: 1
