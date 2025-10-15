@@ -1,0 +1,114 @@
+name: iOS Universal Fix - Auto Find Simulator
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/universal_fix.txt' ]
+
+jobs:
+  universal-fix:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+      
+    - name: Universal iOS Build Fix
+      run: |
+        echo "🚀 УНИВЕРСАЛЬНОЕ ИСПРАВЛЕНИЕ iOS СБОРКИ"
+        echo "======================================="
+        
+        cd mobile_apps/ALADDIN_iOS
+        
+        echo "1️⃣ ПОИСК ДОСТУПНЫХ СИМУЛЯТОРОВ:"
+        AVAILABLE_SIMULATORS=$(xcrun simctl list devices available | grep iPhone | head -5)
+        echo "$AVAILABLE_SIMULATORS"
+        
+        echo ""
+        echo "2️⃣ ПОПЫТКА 1: БЕЗ УКАЗАНИЯ УСТРОЙСТВА"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator" build; then
+          echo "✅ УСПЕХ! Без указания устройства"
+          ls -la build/
+          find build/ -name "*.app" -type d
+          exit 0
+        else
+          echo "❌ Не удалось без указания устройства"
+        fi
+        
+        echo ""
+        echo "3️⃣ ПОПЫТКА 2: GENERIC PLATFORM"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "generic/platform=iOS Simulator" build; then
+          echo "✅ УСПЕХ! Generic platform"
+          ls -la build/
+          find build/ -name "*.app" -type d
+          exit 0
+        else
+          echo "❌ Не удалось с generic platform"
+        fi
+        
+        echo ""
+        echo "4️⃣ ПОПЫТКА 3: ПЕРВЫЙ ДОСТУПНЫЙ IPHONE"
+        FIRST_IPHONE=$(xcrun simctl list devices available | grep iPhone | head -1 | awk -F'[()]' '{print $2}' || echo "")
+        if [ -n "$FIRST_IPHONE" ]; then
+          echo "Используем iPhone ID: $FIRST_IPHONE"
+          if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,id=$FIRST_IPHONE" build; then
+            echo "✅ УСПЕХ! С ID: $FIRST_IPHONE"
+            ls -la build/
+            find build/ -name "*.app" -type d
+            exit 0
+          else
+            echo "❌ Не удалось с ID: $FIRST_IPHONE"
+          fi
+        fi
+        
+        echo ""
+        echo "5️⃣ ПОПЫТКА 4: IPHONE 14"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone 14" build; then
+          echo "✅ УСПЕХ! iPhone 14"
+          ls -la build/
+          find build/ -name "*.app" -type d
+          exit 0
+        else
+          echo "❌ iPhone 14 не найден"
+        fi
+        
+        echo ""
+        echo "6️⃣ ПОПЫТКА 5: IPHONE SE"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone SE (3rd generation)" build; then
+          echo "✅ УСПЕХ! iPhone SE"
+          ls -la build/
+          find build/ -name "*.app" -type d
+          exit 0
+        else
+          echo "❌ iPhone SE не найден"
+        fi
+        
+        echo ""
+        echo "7️⃣ ПОПЫТКА 6: БЕЗ DESTINATION"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build; then
+          echo "✅ УСПЕХ! Без destination"
+          ls -la build/
+          find build/ -name "*.app" -type d
+          exit 0
+        else
+          echo "❌ Не удалось без destination"
+        fi
+        
+        echo ""
+        echo "❌ ВСЕ ПОПЫТКИ ПРОВАЛИЛИСЬ!"
+        echo "Доступные симуляторы:"
+        xcrun simctl list devices available | grep iPhone
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-universal-fix-artifacts
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7
