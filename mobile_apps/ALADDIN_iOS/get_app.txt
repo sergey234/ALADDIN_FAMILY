@@ -1,4 +1,4 @@
-iOS APP GENERATOR - DESTINATION FIX - DEVICE DETECTION - TRIGGER $(date)
+iOS APP GENERATOR - DESTINATION FIX - DEVICE DETECTION - TRIGGER 2025-01-15 16:55:00
 🎯 ЦЕЛЬ: Получить .app файл для App Store - ПРОБЛЕМА С DESTINATION РЕШЕНА!
 🚀 ТЕСТ: Исправление destination specifier + динамическое определение устройства
 📱 НОВОЕ ИСПРАВЛЕНИЕ:
