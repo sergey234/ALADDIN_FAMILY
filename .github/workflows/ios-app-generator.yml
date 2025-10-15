@@ -60,19 +60,22 @@ jobs:
           # Проверяем есть ли уже launchAutomaticallySubstyle
           if ! grep -q "launchAutomaticallySubstyle" "$SCHEME_FILE"; then
             echo "📍 Добавляем launchAutomaticallySubstyle для поддержки симулятора..."
-            # Используем Python для безопасного редактирования XML
-            python3 -c "
+            # Используем временный Python файл для избежания YAML проблем
+            cat > /tmp/fix_scheme.py << 'PYEOF'
 import re
-with open('$SCHEME_FILE', 'r') as f:
+import sys
+with open(sys.argv[1], 'r') as f:
     content = f.read()
 # Заменяем LaunchAction для добавления launchAutomaticallySubstyle
-pattern = r'(allowLocationSimulation = \"YES\">)'
-replacement = r'\1\n      launchAutomaticallySubstyle = \"2\"'
+pattern = r'(allowLocationSimulation = "YES">)'
+replacement = r'\1\n      launchAutomaticallySubstyle = "2"'
 new_content = re.sub(pattern, replacement, content)
-with open('$SCHEME_FILE', 'w') as f:
+with open(sys.argv[1], 'w') as f:
     f.write(new_content)
 print('✅ launchAutomaticallySubstyle добавлен!')
-" 2>/dev/null || echo "📍 Не удалось добавить launchAutomaticallySubstyle, но продолжаем..."
+PYEOF
+            python3 /tmp/fix_scheme.py "$SCHEME_FILE" 2>/dev/null || echo "📍 Не удалось добавить launchAutomaticallySubstyle, но продолжаем..."
+            rm -f /tmp/fix_scheme.py
           else
             echo "📍 launchAutomaticallySubstyle уже присутствует"
           fi
