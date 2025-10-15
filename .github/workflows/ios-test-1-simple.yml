@@ -1,0 +1,52 @@
+name: iOS Test 1 - Simple (No Destination)
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/test1.txt' ]
+  workflow_dispatch:
+
+jobs:
+  ios-test-1:
+    runs-on: macos-latest
+    timeout-minutes: 5
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+    
+    - name: iOS Test 1 - Simple (No Destination)
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "🧪 ТЕСТ 1: ПРОСТОЙ - БЕЗ DESTINATION"
+        echo "===================================="
+        echo ""
+        echo "🔍 ПРОБЛЕМА:"
+        echo "❌ Runtime версии не совместимы с SDK"
+        echo "❌ SDK: 22A3362, Runtime: [22E238, 22F77, 22G86, 23A343]"
+        echo ""
+        echo "✅ РЕШЕНИЕ:"
+        echo "Попробуем компиляцию БЕЗ destination - система сама выберет"
+        echo ""
+        echo "🧪 ТЕСТ: Без destination"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build; then
+          echo "✅ УСПЕХ! Без destination работает!"
+          
+          echo ""
+          echo "📱 Результат сборки:"
+          ls -la build/ || echo "build папка не найдена"
+          echo ""
+          echo "📱 Ищем .app файлы:"
+          find build/ -name "*.app" -type d || echo ".app файлы не найдены"
+          
+          echo ""
+          echo "🎉 РЕШЕНИЕ НАЙДЕНО!"
+          echo "Используйте: xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build"
+        else
+          echo "❌ Без destination не работает"
+          echo "Проверяем доступные SDK:"
+          xcodebuild -showsdks | grep "iOS" | head -3
+        fi
