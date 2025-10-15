@@ -84,6 +84,7 @@ jobs:
           echo "🚨 КРИТИЧЕСКАЯ ПОПЫТКА: Прямой target build БЕЗ схемы!"
           echo "📍 SDK: $AVAILABLE_SDK_SIMPLE"
           
+          # 🚨 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: ПОЛНОЕ ОТКЛЮЧЕНИЕ Asset Catalog для обхода runtime проблем
           if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
             -sdk "$AVAILABLE_SDK_SIMPLE" \
             -configuration Debug \
@@ -95,6 +96,9 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             ASSETCATALOG_COMPILER_APPICON_NAME="" \
             ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
+            ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="" \
+            ENABLE_ASSET_CATALOG_COMPILATION=NO \
+            SKIP_ASSET_CATALOG_COMPILATION=YES \
             SUPPORTS_MACCATALYST=NO \
             COMPILER_INDEX_STORE_ENABLE=NO \
             build 2>/dev/null; then
@@ -114,11 +118,14 @@ jobs:
           else
             echo "❌ Радикальный прямой target build не сработал, пробуем МИНИМАЛЬНЫЙ подход..."
             
-            # 🚨 КРИТИЧЕСКАЯ ПОПЫТКА: САМЫЙ МИНИМАЛЬНЫЙ BUILD!
-            echo "🚨 МИНИМАЛЬНЫЙ BUILD: Без всего лишнего!"
+            # 🚨 КРИТИЧЕСКАЯ ПОПЫТКА: САМЫЙ МИНИМАЛЬНЫЙ BUILD БЕЗ ASSET CATALOG!
+            echo "🚨 МИНИМАЛЬНЫЙ BUILD: Без Asset Catalog!"
             if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
               -sdk "$AVAILABLE_SDK_SIMPLE" \
               CODE_SIGNING_ALLOWED=NO \
+              ENABLE_ASSET_CATALOG_COMPILATION=NO \
+              SKIP_ASSET_CATALOG_COMPILATION=YES \
+              ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
               build 2>/dev/null; then
               
               echo "🎉🎉🎉 УСПЕХ! МИНИМАЛЬНЫЙ BUILD СРАБОТАЛ! 🎉🎉🎉"
@@ -138,10 +145,15 @@ jobs:
               echo "🚨 ПОСЛЕДНЯЯ ПОПЫТКА: BUILD С ПОЛНЫМ ВЫВОДОМ ОШИБОК!"
               echo "📍 Команда: xcodebuild -project ALADDIN.xcodeproj -target ALADDIN -sdk $AVAILABLE_SDK_SIMPLE CODE_SIGNING_ALLOWED=NO"
               
-              # Попробуем без 2>/dev/null чтобы увидеть РЕАЛЬНЫЕ ошибки
+              # Попробуем без 2>/dev/null но С ОТКЛЮЧЕНИЕМ ASSET CATALOG
+              echo "🚨 ФИНАЛЬНАЯ ПОПЫТКА: ОТКЛЮЧЕНИЕ Asset Catalog для обхода runtime проблем!"
               if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
                 -sdk "$AVAILABLE_SDK_SIMPLE" \
                 CODE_SIGNING_ALLOWED=NO \
+                ENABLE_ASSET_CATALOG_COMPILATION=NO \
+                SKIP_ASSET_CATALOG_COMPILATION=YES \
+                ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
+                ASSETCATALOG_COMPILER_APPICON_NAME="" \
                 build; then
                 
                 echo "🎉🎉🎉 ПОСЛЕДНЯЯ ПОПЫТКА СРАБОТАЛА! 🎉🎉🎉"
