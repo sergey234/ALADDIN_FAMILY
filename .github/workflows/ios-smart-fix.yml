@@ -1,0 +1,147 @@
+name: iOS Smart Fix - Auto Detect Working Simulator
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/smart_fix.txt' ]
+
+jobs:
+  smart-fix:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+      
+    - name: Smart iOS Build Fix
+      run: |
+        echo "🧠 УМНОЕ ИСПРАВЛЕНИЕ iOS СБОРКИ"
+        echo "================================"
+        
+        cd mobile_apps/ALADDIN_iOS
+        
+        echo "🔍 ШАГ 1: АНАЛИЗ ДОСТУПНЫХ СИМУЛЯТОРОВ"
+        echo "====================================="
+        
+        # Получаем список всех доступных симуляторов
+        echo "Все доступные симуляторы:"
+        xcrun simctl list devices available
+        
+        echo ""
+        echo "iPhone симуляторы:"
+        IPHONE_SIMULATORS=$(xcrun simctl list devices available | grep iPhone || echo "")
+        echo "$IPHONE_SIMULATORS"
+        
+        if [ -z "$IPHONE_SIMULATORS" ]; then
+          echo "❌ КРИТИЧЕСКАЯ ОШИБКА: Ни одного iPhone симулятора не найдено!"
+          echo "Попробуем создать симулятор..."
+          
+          # Получаем доступные типы устройств
+          echo "Доступные типы устройств:"
+          xcrun simctl list devicetypes | grep iPhone
+          
+          # Получаем доступные runtime
+          echo "Доступные iOS runtime:"
+          xcrun simctl list runtimes | grep iOS
+          
+          exit 1
+        fi
+        
+        echo ""
+        echo "🔍 ШАГ 2: ПОИСК РАБОЧЕГО СИМУЛЯТОРА"
+        echo "=================================="
+        
+        # Функция для тестирования сборки
+        test_build() {
+          local destination="$1"
+          local description="$2"
+          
+          echo ""
+          echo "Тестируем: $description"
+          echo "Команда: xcodebuild -destination \"$destination\" build"
+          
+          if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "$destination" build; then
+            echo "✅ УСПЕХ! $description работает!"
+            ls -la build/
+            find build/ -name "*.app" -type d
+            return 0
+          else
+            echo "❌ Не удалось: $description"
+            return 1
+          fi
+        }
+        
+        # Тест 1: Без указания устройства (автоматический выбор)
+        echo ""
+        echo "🧪 ТЕСТ 1: Автоматический выбор симулятора"
+        if test_build "platform=iOS Simulator" "Автоматический выбор"; then
+          echo "🎉 РЕШЕНИЕ НАЙДЕНО: platform=iOS Simulator"
+          exit 0
+        fi
+        
+        # Тест 2: Generic platform
+        echo ""
+        echo "🧪 ТЕСТ 2: Generic platform"
+        if test_build "generic/platform=iOS Simulator" "Generic platform"; then
+          echo "🎉 РЕШЕНИЕ НАЙДЕНО: generic/platform=iOS Simulator"
+          exit 0
+        fi
+        
+        # Тест 3: Попробуем каждый доступный iPhone
+        echo ""
+        echo "🧪 ТЕСТ 3: Тестируем каждый доступный iPhone"
+        
+        # Извлекаем имена iPhone симуляторов
+        IPHONE_NAMES=$(echo "$IPHONE_SIMULATORS" | grep -o 'iPhone [^()]*' | sort -u)
+        
+        for iphone_name in $IPHONE_NAMES; do
+          echo "Тестируем iPhone: $iphone_name"
+          if test_build "platform=iOS Simulator,name=$iphone_name" "iPhone $iphone_name"; then
+            echo "🎉 РЕШЕНИЕ НАЙДЕНО: platform=iOS Simulator,name=$iphone_name"
+            exit 0
+          fi
+        done
+        
+        # Тест 4: Без destination вообще
+        echo ""
+        echo "🧪 ТЕСТ 4: Без destination"
+        if test_build "" "Без destination" "xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build"; then
+          echo "🎉 РЕШЕНИЕ НАЙДЕНО: Без destination"
+          exit 0
+        fi
+        
+        # Тест 5: Попробуем с SDK
+        echo ""
+        echo "🧪 ТЕСТ 5: С SDK"
+        AVAILABLE_SDK=$(xcodebuild -showsdks | grep "iOS" | head -1 | awk '{print $2}' || echo "")
+        if [ -n "$AVAILABLE_SDK" ]; then
+          echo "Используем SDK: $AVAILABLE_SDK"
+          if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -sdk "$AVAILABLE_SDK" build; then
+            echo "🎉 РЕШЕНИЕ НАЙДЕНО: SDK $AVAILABLE_SDK"
+            ls -la build/
+            find build/ -name "*.app" -type d
+            exit 0
+          fi
+        fi
+        
+        echo ""
+        echo "❌ ВСЕ ТЕСТЫ ПРОВАЛИЛИСЬ!"
+        echo "Доступные симуляторы:"
+        xcrun simctl list devices available | grep iPhone
+        echo ""
+        echo "Доступные SDK:"
+        xcodebuild -showsdks | grep iOS
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-smart-fix-artifacts
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7
