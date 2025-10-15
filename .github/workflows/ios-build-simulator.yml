@@ -1,0 +1,54 @@
+name: iOS Build (Simulator)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build on macOS (Simulator)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show runner Xcode
+        run: |
+          xcodebuild -version
+          xcrun --find simctl || true
+
+      - name: Determine latest installed iOS simulator runtime
+        id: runtimes
+        run: |
+          runtime=$(xcrun simctl list runtimes | grep -Eo 'iOS [0-9]+(\.[0-9]+)?' | awk '{print $2}' | sort -V | tail -n1 || true)
+          if [ -n "$runtime" ]; then
+            echo "Found runtime: $runtime"
+            echo "SIM_OS=$runtime" >> $GITHUB_ENV
+          else
+            echo "No iOS runtime detected on runner"
+          fi
+
+      - name: Build ALADDIN for iPhone 15 Simulator
+        working-directory: mobile_apps/ALADDIN_iOS
+        run: |
+          echo "=== КОМПИЛИРУЕМ iOS ПРИЛОЖЕНИЕ ДЛЯ IPHONE 15 ==="
+          echo "Working dir: $(pwd)"
+          if [ -n "${SIM_OS}" ]; then
+            echo "Using simulator OS: ${SIM_OS}"
+            xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone 15,OS=${SIM_OS}" clean build | tee xcodebuild.log
+          else
+            echo "Using simulator without explicit OS"
+            xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone 15" clean build | tee xcodebuild.log
+          fi
+          echo "=== Проверяем build папку ==="
+          ls -la build/ || echo "build папка не найдена"
+          echo "=== Ищем .app файлы ==="
+          find build/ -name "*.app" -type d || echo ".app файлы не найдены"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build
+          path: mobile_apps/ALADDIN_iOS/build
+          if-no-files-found: warn
