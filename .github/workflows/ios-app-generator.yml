@@ -101,9 +101,29 @@ jobs:
         
         # ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Тест компиляции только Swift файлов
         echo "📍 Проверяем Swift файлы на наличие ошибок компиляции:"
-        SWIFT_FILES=$(find ALADDIN/ -name "*.swift" 2>/dev/null | head -5)
-        if [ -n "$SWIFT_FILES" ]; then
-          echo "✅ Найдены Swift файлы: $(echo "$SWIFT_FILES" | wc -l) файлов"
+        ALL_SWIFT_FILES=$(find ALADDIN/ -name "*.swift" 2>/dev/null)
+        SWIFT_COUNT=$(echo "$ALL_SWIFT_FILES" | wc -l)
+        echo "📍 Всего Swift файлов найдено: $SWIFT_COUNT"
+        
+        if [ "$SWIFT_COUNT" -gt 0 ]; then
+          echo "✅ Найдены Swift файлы: $SWIFT_COUNT файлов"
+          echo "📍 Первые файлы:"
+          echo "$ALL_SWIFT_FILES" | head -5 | while read file; do
+            echo "  - $file"
+          done
+          
+          # 🚨 КРИТИЧЕСКАЯ ПРОВЕРКА: Проект содержит все файлы?
+          echo "🚨 ПРОВЕРЯЕМ: Все ли Swift файлы включены в проект Xcode?"
+          PROJECT_SWIFT_FILES=$(grep -c "\.swift in Sources" ALADDIN.xcodeproj/project.pbxproj || echo "0")
+          echo "📍 Swift файлов в project.pbxproj: $PROJECT_SWIFT_FILES"
+          
+          if [ "$PROJECT_SWIFT_FILES" -lt 10 ]; then
+            echo "🚨 КРИТИЧЕСКАЯ ПРОБЛЕМА: В project.pbxproj включено слишком мало Swift файлов ($PROJECT_SWIFT_FILES)!"
+            echo "📍 Это объясняет ошибки компиляции - большинство файлов не включены в сборку"
+            echo "📍 Требуется обновление Xcode проекта для включения всех файлов"
+          else
+            echo "✅ В проект включено достаточно Swift файлов"
+          fi
         else
           echo "❌ Swift файлы не найдены!"
           exit 1
@@ -220,7 +240,7 @@ jobs:
             ARCHS="arm64 x86_64" \
             VALID_ARCHS="arm64 x86_64" \
             TARGETED_DEVICE_FAMILY="1,2" \
-            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+            IPHONEOS_DEPLOYMENT_TARGET=11.0 \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             ASSETCATALOG_COMPILER_APPICON_NAME="AppIcon" \
@@ -262,7 +282,7 @@ jobs:
             ARCHS="arm64" \
             VALID_ARCHS="arm64" \
             TARGETED_DEVICE_FAMILY="1,2" \
-            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+            IPHONEOS_DEPLOYMENT_TARGET=11.0 \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="" \
             ASSETCATALOG_COMPILER_APPICON_NAME="AppIcon" \
@@ -296,7 +316,7 @@ jobs:
               ARCHS="arm64 x86_64" \
               VALID_ARCHS="arm64 x86_64" \
               TARGETED_DEVICE_FAMILY="1,2" \
-              IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+              IPHONEOS_DEPLOYMENT_TARGET=11.0 \
               CODE_SIGNING_ALLOWED=NO \
               CODE_SIGN_IDENTITY="" \
               ASSETCATALOG_COMPILER_APPICON_NAME="AppIcon" \
@@ -366,7 +386,7 @@ jobs:
               -configuration Debug \
               ARCHS="arm64" \
               VALID_ARCHS="arm64" \
-              IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+              IPHONEOS_DEPLOYMENT_TARGET=11.0 \
               CODE_SIGNING_ALLOWED=NO \
               ASSETCATALOG_COMPILER_APPICON_NAME="" \
               ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
@@ -406,7 +426,7 @@ jobs:
               -configuration Debug \
               ARCHS="arm64" \
               VALID_ARCHS="arm64" \
-              IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+              IPHONEOS_DEPLOYMENT_TARGET=11.0 \
               CODE_SIGNING_ALLOWED=NO \
               ASSETCATALOG_COMPILER_APPICON_NAME="AppIcon" \
               ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=YES \
@@ -435,7 +455,7 @@ jobs:
           echo "📍 Пробуем с SDK: $AVAILABLE_SDK_SIMPLE"
           if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
             -sdk "$AVAILABLE_SDK_SIMPLE" \
-            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+            IPHONEOS_DEPLOYMENT_TARGET=11.0 \
             CODE_SIGNING_ALLOWED=NO \
             build; then
             echo "🎉 УСПЕХ! Простейший build сработал!"
@@ -459,7 +479,7 @@ jobs:
             # Пробуем БЕЗ destination
             if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
               -sdk "$AVAILABLE_SDK_SIMPLE" \
-              IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+              IPHONEOS_DEPLOYMENT_TARGET=11.0 \
               CODE_SIGNING_ALLOWED=NO \
               build; then
               echo "🎉 УСПЕХ! Build БЕЗ destination сработал!"
@@ -626,7 +646,8 @@ jobs:
         # AVAILABLE_RUNTIME=""
         
         # Приоритет 1: Берем доступный SDK (обычно только один доступен)
-        AVAILABLE_SDK=$(echo "$ALL_SDK_VERSIONS" | head -1)
+        # Используем уже определенную переменную
+        AVAILABLE_SDK="$AVAILABLE_SDK_SIMPLE"
         echo "📍 Выбран SDK: $AVAILABLE_SDK"
         
         # Приоритет 2: Ищем runtime совместимый с выбранным SDK
@@ -636,15 +657,15 @@ jobs:
         echo "📍 Версия SDK: $SDK_VERSION (major: $SDK_MAJOR)"
         
         # Ищем runtime того же major версии что и SDK
-        COMPATIBLE_RUNTIMES=$(echo "$ALL_RUNTIME_VERSIONS" | grep "^$SDK_MAJOR\." || echo "")
+        COMPATIBLE_RUNTIMES=$(echo "$ALL_RUNTIMES" | grep "iOS $SDK_MAJOR\." || echo "")
         if [ -n "$COMPATIBLE_RUNTIMES" ]; then
           # Берем самую новую runtime той же major версии
-          AVAILABLE_RUNTIME=$(echo "$COMPATIBLE_RUNTIMES" | tail -1)
+          AVAILABLE_RUNTIME=$(echo "$COMPATIBLE_RUNTIMES" | grep -o "iOS [0-9]\+\.[0-9]\+" | head -1 | sed 's/iOS //')
           echo "📍 Найден совместимый runtime для SDK $SDK_VERSION: $AVAILABLE_RUNTIME"
         else
           # Fallback: берем любую доступную runtime, но предупреждаем
-          AVAILABLE_RUNTIME=$(echo "$ALL_RUNTIME_VERSIONS" | head -1)
-          echo "⚠️ ВНИМАНИЕ: Не найден runtime версии $SDK_MAJOR.x, используем $AVAILABLE_RUNTIME"
+          AVAILABLE_RUNTIME="18.4"
+          echo "⚠️ ВНИМАНИЕ: Не найден runtime версии $SDK_MAJOR.x, используем fallback $AVAILABLE_RUNTIME"
         fi
         
         # Приоритет 3: Если все еще ничего не выбрано - fallback
@@ -681,7 +702,7 @@ jobs:
           echo "📍 Ищем совместимый runtime для SDK $SDK_MAJOR_FINAL..."
           
           # Ищем runtime той же major версии что и SDK
-          CORRECT_RUNTIME=$(echo "$ALL_RUNTIME_VERSIONS" | grep "^$SDK_MAJOR_FINAL\." | head -1)
+          CORRECT_RUNTIME=$(echo "$ALL_RUNTIMES" | grep -o "iOS $SDK_MAJOR_FINAL\.[0-9]\+" | head -1 | sed 's/iOS //')
           if [ -n "$CORRECT_RUNTIME" ]; then
             AVAILABLE_RUNTIME="$CORRECT_RUNTIME"
             echo "✅ НАЙДЕН СОВМЕСТИМЫЙ RUNTIME: $AVAILABLE_RUNTIME"
@@ -816,7 +837,7 @@ jobs:
           echo "📍 РЕВОЛЮЦИОННОЕ РЕШЕНИЕ: Отключаем Asset Catalog для обхода runtime проблем..."
           if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
             -sdk "$AVAILABLE_SDK" \
-            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+            IPHONEOS_DEPLOYMENT_TARGET=11.0 \
             CODE_SIGNING_ALLOWED=NO \
             ASSETCATALOG_COMPILER_APPICON_NAME="" \
             ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
@@ -907,7 +928,7 @@ jobs:
             if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
               -sdk "$AVAILABLE_SDK" \
               -destination "platform=iOS Simulator,id=$DEVICE_ID" \
-              IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+              IPHONEOS_DEPLOYMENT_TARGET=11.0 \
               CODE_SIGNING_ALLOWED=NO \
               ASSETCATALOG_COMPILER_APPICON_NAME="" \
               ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
@@ -929,7 +950,7 @@ jobs:
           if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
             -sdk "$AVAILABLE_SDK" \
             -destination "generic/platform=iOS Simulator" \
-            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+            IPHONEOS_DEPLOYMENT_TARGET=11.0 \
             CODE_SIGNING_ALLOWED=NO \
             ASSETCATALOG_COMPILER_APPICON_NAME="" \
             ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
@@ -953,7 +974,7 @@ jobs:
             echo "🔧 ТЕСТ 3: БЕЗ destination - МАКСИМАЛЬНО ПРОСТОЙ"
             if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
               -sdk "$AVAILABLE_SDK" \
-              IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+              IPHONEOS_DEPLOYMENT_TARGET=11.0 \
               CODE_SIGNING_ALLOWED=NO \
               ASSETCATALOG_COMPILER_APPICON_NAME="" \
               ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
@@ -981,7 +1002,7 @@ jobs:
                 echo "📍 Тестируем iOS device SDK: $DEVICE_SDK"
                 if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
                   -sdk "$DEVICE_SDK" \
-                  IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+                  IPHONEOS_DEPLOYMENT_TARGET=11.0 \
                   CODE_SIGNING_ALLOWED=NO \
                   ASSETCATALOG_COMPILER_APPICON_NAME="" \
                   build; then
@@ -1000,7 +1021,7 @@ jobs:
               echo "🔧 ТЕСТ 5: АВАРИЙНЫЙ РЕЖИМ - ТОЛЬКО SDK"
               if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
                 -sdk "$AVAILABLE_SDK" \
-                IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+                IPHONEOS_DEPLOYMENT_TARGET=11.0 \
                 CODE_SIGNING_ALLOWED=NO \
                 ASSETCATALOG_COMPILER_APPICON_NAME="" \
                 build; then
@@ -1019,7 +1040,7 @@ jobs:
                 if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
                   -sdk "$AVAILABLE_SDK" \
                   -destination "generic/platform=iOS Simulator" \
-                  IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+                  IPHONEOS_DEPLOYMENT_TARGET=11.0 \
                   CODE_SIGNING_ALLOWED=NO \
                   ASSETCATALOG_COMPILER_APPICON_NAME="" \
                   archive -archivePath ./ALADDIN.xcarchive; then
