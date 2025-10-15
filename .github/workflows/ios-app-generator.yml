@@ -44,9 +44,54 @@ jobs:
         echo "🚨 РАДИКАЛЬНОЕ РЕШЕНИЕ: ДИАГНОСТИКА ПРОЕКТА!"
         echo "=================================================="
         
-        # Сначала определяем доступный SDK
-        AVAILABLE_SDK_SIMPLE=$(xcodebuild -showsdks | grep iphonesimulator | awk '{print $NF}' | head -1)
-        echo "📍 Простой доступный SDK: $AVAILABLE_SDK_SIMPLE"
+        # 🚨 РАДИКАЛЬНОЕ РЕШЕНИЕ: Умный выбор совместимого SDK!
+        echo "🔍 АНАЛИЗ ВСЕХ ДОСТУПНЫХ SDK ДЛЯ СОВМЕСТИМОСТИ..."
+        
+        # Получаем все доступные simulator SDK
+        ALL_SIMULATOR_SDKS=$(xcodebuild -showsdks | grep iphonesimulator | awk '{print $NF}')
+        echo "📍 Все доступные simulator SDK:"
+        echo "$ALL_SIMULATOR_SDKS"
+        
+        # Получаем все доступные runtime
+        ALL_RUNTIMES=$(xcrun simctl list runtimes | grep iOS | grep -v unavailable || echo "iOS runtime не найдены")
+        echo "📍 Все доступные runtime:"
+        echo "$ALL_RUNTIMES"
+        
+        # 🚨 ПРИОРИТЕТ: Пробуем СТАРЫЕ SDK для максимальной совместимости!
+        AVAILABLE_SDK_SIMPLE=""
+        
+        # Сначала пробуем популярные старые SDK (обратный порядок для приоритета старых)
+        REVERSE_SDKS=$(echo "$ALL_SIMULATOR_SDKS" | tac)
+        for SDK in $REVERSE_SDKS; do
+          echo "🔍 Тестируем SDK (приоритет старых): $SDK"
+          
+          # Специальная проверка для проблемных новых SDK
+          if echo "$SDK" | grep -q "18.0\|17.0\|16.0"; then
+            echo "⚠️ Проблемный новый SDK обнаружен, проверяем runtime совместимость..."
+            # Проверяем без Asset Catalog сначала
+            if timeout 15 xcodebuild -project ALADDIN.xcodeproj -target ALADDIN -sdk "$SDK" -dry-run -configuration Debug 2>&1 | grep -q "No simulator runtime version available"; then
+              echo "❌ SDK $SDK имеет проблемы с runtime совместимостью, пропускаем"
+              continue
+            fi
+          fi
+          
+          # Пробуем простейшую команду для проверки совместимости
+          if timeout 10 xcodebuild -project ALADDIN.xcodeproj -target ALADDIN -sdk "$SDK" -dry-run >/dev/null 2>&1; then
+            echo "✅ SDK $SDK прошел базовую проверку!"
+            AVAILABLE_SDK_SIMPLE="$SDK"
+            break
+          else
+            echo "❌ SDK $SDK не прошел проверку, пробуем следующий..."
+          fi
+        done
+        
+        # Fallback к первому доступному SDK
+        if [ -z "$AVAILABLE_SDK_SIMPLE" ]; then
+          AVAILABLE_SDK_SIMPLE=$(echo "$ALL_SIMULATOR_SDKS" | head -1)
+          echo "⚠️ Используем fallback SDK: $AVAILABLE_SDK_SIMPLE"
+        fi
+        
+        echo "🎯 ВЫБРАННЫЙ SDK: $AVAILABLE_SDK_SIMPLE"
         
         # КРИТИЧЕСКАЯ ДИАГНОСТИКА: Проверяем состояние проекта
         echo "🔍 ДИАГНОСТИКА ПРОЕКТА:"
@@ -230,11 +275,46 @@ jobs:
                 echo "⚠️ iOS 13.0 Build прошел, но .app не найден, переходим к схеме..."
               fi
             else
-              echo "❌ iOS 13.0 Build не сработал, переходим к схеме..."
+              echo "❌ iOS 13.0 Build не сработал, пробуем ФИНАЛЬНЫЙ МЕТОД..."
             fi
           fi
           
-          echo "❌ Все прямые target builds не сработали, переходим к схеме..."
+          # 🚨 ФИНАЛЬНЫЙ МЕТОД 4: БЕЗ Asset Catalog - ТОЛЬКО КАК ПОСЛЕДНИЙ RESORT!
+          echo "🚨 МЕТОД 4: КРИТИЧЕСКИЙ FALLBACK - БЕЗ Asset Catalog!"
+          echo "⚠️ Этот метод используется ТОЛЬКО если все остальные не сработали!"
+          
+          if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
+              -sdk "$AVAILABLE_SDK_SIMPLE" \
+              -configuration Debug \
+              ARCHS="arm64" \
+              VALID_ARCHS="arm64" \
+              IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+              CODE_SIGNING_ALLOWED=NO \
+              ASSETCATALOG_COMPILER_APPICON_NAME="" \
+              ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
+              ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="" \
+              SUPPORTS_MACCATALYST=NO \
+              COMPILER_INDEX_STORE_ENABLE=NO \
+              build; then
+              
+              echo "🎉🎉🎉 ФИНАЛЬНЫЙ УСПЕХ! BUILD БЕЗ Asset Catalog СРАБОТАЛ! 🎉🎉🎉"
+              APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
+              if [ -z "$APP_PATH" ]; then
+                APP_PATH=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "ALADDIN.app" -type d 2>/dev/null | head -1)
+              fi
+              if [ -n "$APP_PATH" ]; then
+                echo "✅✅✅ НАЙДЕН .app ФИНАЛЬНЫЙ BUILD (БЕЗ ИКОНОК): $APP_PATH ✅✅✅"
+                echo "⚠️ ВНИМАНИЕ: Приложение собрано БЕЗ Asset Catalog!"
+                echo "APP_FOUND_PATH=$APP_PATH" >> $GITHUB_ENV
+                exit 0
+              else
+                echo "⚠️ Финальный Build прошел, но .app не найден, переходим к схеме..."
+              fi
+          else
+            echo "❌ Даже финальный метод без Asset Catalog не сработал!"
+          fi
+          
+          echo "❌ ВСЕ МЕТОДЫ ПРОВАЛИЛИСЬ - переходим к схеме..."
         else
           echo "❌❌❌ КРИТИЧЕСКАЯ ОШИБКА: AVAILABLE_SDK_SIMPLE не определен! ❌❌❌"
           echo "🚨 НЕ МОЖЕМ ЗАПУСТИТЬ НОВУЮ СТРАТЕГИЮ!"
