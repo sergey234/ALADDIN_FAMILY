@@ -81,6 +81,8 @@ jobs:
         
         # 🥇 ПРИОРИТЕТ 0: САМЫЙ ПРЯМОЙ ПОДХОД - TARGET BUILD БЕЗ СХЕМЫ!
         echo "🚀🚀🚀 ЗАПУСК НОВОЙ СТРАТЕГИИ: СОХРАНЯЕМ ASSET CATALOG! 🚀🚀🚀"
+        echo "🚨 КРИТИЧЕСКОЕ ЛОГИРОВАНИЕ: НОВАЯ СТРАТЕГИЯ ЗАПУСКАЕТСЯ!"
+        echo "📍 Если вы видите старые тесты - ЭТО ОШИБКА!"
         
         # Принудительно определяем SDK если не определен
         if [ -z "$AVAILABLE_SDK_SIMPLE" ]; then
@@ -96,6 +98,7 @@ jobs:
           
           # 🚨 УЛУЧШЕННОЕ РЕШЕНИЕ: Попробуем С Asset Catalog, но с правильными runtime настройками
           echo "🚨 ПОПЫТКА 1: С Asset Catalog но с исправленными настройками!"
+          echo "📍 КОМАНДА: xcodebuild -project ALADDIN.xcodeproj -target ALADDIN -sdk $AVAILABLE_SDK_SIMPLE С Asset Catalog!"
           if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
             -sdk "$AVAILABLE_SDK_SIMPLE" \
             -configuration Debug \
@@ -110,7 +113,7 @@ jobs:
             ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="AccentColor" \
             SUPPORTS_MACCATALYST=NO \
             COMPILER_INDEX_STORE_ENABLE=NO \
-            build 2>/dev/null; then
+            build; then
             
             echo "🎉🎉🎉 УСПЕХ! BUILD С Asset Catalog СРАБОТАЛ! 🎉🎉🎉"
             APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
@@ -126,25 +129,26 @@ jobs:
             fi
           else
             echo "❌ Build с Asset Catalog не сработал, пробуем ДРУГИЕ МЕТОДЫ!"
-            
-            # 🚨 ПРИОРИТЕТ 1: Попробуем с другой архитектурой (только arm64)
-            echo "🚨 МЕТОД 1: Только ARM64 архитектура!"
-            if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
-              -sdk "$AVAILABLE_SDK_SIMPLE" \
-              -configuration Debug \
-              ARCHS="arm64" \
-              VALID_ARCHS="arm64" \
-              TARGETED_DEVICE_FAMILY="1,2" \
-              IPHONEOS_DEPLOYMENT_TARGET=12.0 \
-              CODE_SIGNING_ALLOWED=NO \
-              CODE_SIGN_IDENTITY="" \
-              ASSETCATALOG_COMPILER_APPICON_NAME="AppIcon" \
-              ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=YES \
-              ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="AccentColor" \
-              SUPPORTS_MACCATALYST=NO \
-              COMPILER_INDEX_STORE_ENABLE=NO \
-              build 2>/dev/null; then
-            
+          fi
+          
+          # 🚨 МЕТОД 1: Попробуем с другой архитектурой (только arm64)
+          echo "🚨 МЕТОД 1: Только ARM64 архитектура!"
+          if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
+            -sdk "$AVAILABLE_SDK_SIMPLE" \
+            -configuration Debug \
+            ARCHS="arm64" \
+            VALID_ARCHS="arm64" \
+            TARGETED_DEVICE_FAMILY="1,2" \
+            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            ASSETCATALOG_COMPILER_APPICON_NAME="AppIcon" \
+            ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=YES \
+            ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="AccentColor" \
+            SUPPORTS_MACCATALYST=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            build; then
+          
             echo "🎉🎉🎉 УСПЕХ! ARM64 BUILD С Asset Catalog СРАБОТАЛ! 🎉🎉🎉"
             APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
             if [ -z "$APP_PATH" ]; then
@@ -157,13 +161,13 @@ jobs:
             else
               echo "⚠️ ARM64 Build прошел, но .app не найден, пробуем МЕТОД 2..."
             fi
-            else
-              echo "❌ ARM64 Build не сработал, пробуем МЕТОД 2..."
-            fi
-            
-            # 🚨 МЕТОД 2: Попробуем с Release конфигурацией
-            echo "🚨 МЕТОД 2: Release конфигурация!"
-            if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
+          else
+            echo "❌ ARM64 Build не сработал, пробуем МЕТОД 2..."
+          fi
+          
+          # 🚨 МЕТОД 2: Попробуем с Release конфигурацией
+          echo "🚨 МЕТОД 2: Release конфигурация!"
+          if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
               -sdk "$AVAILABLE_SDK_SIMPLE" \
               -configuration Release \
               ARCHS="arm64 x86_64" \
