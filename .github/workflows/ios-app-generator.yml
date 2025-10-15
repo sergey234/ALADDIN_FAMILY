@@ -37,7 +37,12 @@ jobs:
         # Определяем доступную SDK версию динамически
         echo "📍 Анализ доступных SDK версий:"
         xcodebuild -showsdks | grep iphonesimulator
-        AVAILABLE_SDK=$(xcodebuild -showsdks | grep iphonesimulator | awk '{print $NF}' | head -1)
+        
+        # Приоритетно ищем версию 18.0, затем берем любую доступную
+        AVAILABLE_SDK=$(xcodebuild -showsdks | grep iphonesimulator | grep "18.0" | awk '{print $NF}' | head -1)
+        if [ -z "$AVAILABLE_SDK" ]; then
+          AVAILABLE_SDK=$(xcodebuild -showsdks | grep iphonesimulator | awk '{print $NF}' | head -1)
+        fi
         echo "📍 Извлеченная SDK версия: $AVAILABLE_SDK"
         
         # Определяем доступную runtime версию более точно
@@ -48,7 +53,7 @@ jobs:
         
         # Если не удалось извлечь, используем fallback значения
         if [ -z "$AVAILABLE_SDK" ]; then
-          AVAILABLE_SDK="iphonesimulator"
+          AVAILABLE_SDK="iphonesimulator18.0"
           echo "📍 Используем fallback SDK: $AVAILABLE_SDK"
         fi
         if [ -z "$AVAILABLE_RUNTIME" ]; then
@@ -56,9 +61,34 @@ jobs:
           echo "📍 Используем fallback runtime: $AVAILABLE_RUNTIME"
         fi
         
+        # Определяем доступное устройство упрощенным способом
+        echo "📍 Анализ доступных устройств:"
+        xcrun simctl list devices available | grep iPhone
+        
+        # Попробуем найти iPhone 16 Pro сначала, затем любое iPhone устройство
+        AVAILABLE_DEVICE_NAME=$(xcrun simctl list devices available | grep "iPhone 16 Pro" | head -1 | sed 's/^[[:space:]]*\([^(]*\).*/\1/' | sed 's/[[:space:]]*$//')
+        if [ -z "$AVAILABLE_DEVICE_NAME" ]; then
+          AVAILABLE_DEVICE_NAME=$(xcrun simctl list devices available | grep iPhone | head -1 | sed 's/^[[:space:]]*\([^(]*\).*/\1/' | sed 's/[[:space:]]*$//')
+        fi
+        
+        if [ -n "$AVAILABLE_DEVICE_NAME" ]; then
+          echo "📍 Найдено устройство: $AVAILABLE_DEVICE_NAME"
+        else
+          echo "📍 Устройство не найдено, будет использован generic destination"
+          AVAILABLE_DEVICE_NAME=""
+        fi
+        
+        # Формируем destination с учетом доступного устройства - пробуем без OS сначала
+        if [ -n "$AVAILABLE_DEVICE_NAME" ]; then
+          DESTINATION_SPEC="platform=iOS Simulator,name=$AVAILABLE_DEVICE_NAME"
+        else
+          DESTINATION_SPEC="generic/platform=iOS Simulator"
+        fi
+        echo "📍 Используемый destination (без OS версии): $DESTINATION_SPEC"
+        
         if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
           -sdk "$AVAILABLE_SDK" \
-          -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=$AVAILABLE_RUNTIME" \
+          -destination "$DESTINATION_SPEC" \
           IPHONEOS_DEPLOYMENT_TARGET=12.0 \
           CODE_SIGNING_ALLOWED=NO \
           ASSETCATALOG_COMPILER_APPICON_NAME="" \
