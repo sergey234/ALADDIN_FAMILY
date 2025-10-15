@@ -33,11 +33,11 @@ jobs:
         
         echo ""
         echo "✅ РЕШЕНИЕ:"
-        echo "Используем iPhone 16 (который реально существует)"
+        echo "Используем iPhone 16 Pro (который реально существует)"
         
         echo ""
         echo "🧪 ТЕСТ: Generic destination"
-        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone 16" build; then
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,name=iPhone 16 Pro" build; then
           echo "✅ УСПЕХ! Generic destination работает!"
           
           echo ""
