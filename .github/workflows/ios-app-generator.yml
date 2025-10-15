@@ -57,38 +57,23 @@ jobs:
         echo "📍 Все доступные runtime:"
         echo "$ALL_RUNTIMES"
         
-        # 🚨 ПРИОРИТЕТ: Пробуем СТАРЫЕ SDK для максимальной совместимости!
+        # 🚨 ПРИОРИТЕТ: Простой выбор SDK без сложной логики!
         AVAILABLE_SDK_SIMPLE=""
         
-        # Сначала пробуем популярные старые SDK (обратный порядок для приоритета старых)
-        REVERSE_SDKS=$(echo "$ALL_SIMULATOR_SDKS" | tac)
-        for SDK in $REVERSE_SDKS; do
-          echo "🔍 Тестируем SDK (приоритет старых): $SDK"
-          
-          # Специальная проверка для проблемных новых SDK
-          if echo "$SDK" | grep -q "18.0\|17.0\|16.0"; then
-            echo "⚠️ Проблемный новый SDK обнаружен, проверяем runtime совместимость..."
-            # Проверяем без Asset Catalog сначала
-            if timeout 15 xcodebuild -project ALADDIN.xcodeproj -target ALADDIN -sdk "$SDK" -dry-run -configuration Debug 2>&1 | grep -q "No simulator runtime version available"; then
-              echo "❌ SDK $SDK имеет проблемы с runtime совместимостью, пропускаем"
-              continue
-            fi
-          fi
-          
-          # Пробуем простейшую команду для проверки совместимости
-          if timeout 10 xcodebuild -project ALADDIN.xcodeproj -target ALADDIN -sdk "$SDK" -dry-run >/dev/null 2>&1; then
-            echo "✅ SDK $SDK прошел базовую проверку!"
-            AVAILABLE_SDK_SIMPLE="$SDK"
-            break
-          else
-            echo "❌ SDK $SDK не прошел проверку, пробуем следующий..."
-          fi
-        done
+        # Упрощенный подход - берем первый доступный SDK
+        AVAILABLE_SDK_SIMPLE=$(echo "$ALL_SIMULATOR_SDKS" | head -1)
         
-        # Fallback к первому доступному SDK
-        if [ -z "$AVAILABLE_SDK_SIMPLE" ]; then
-          AVAILABLE_SDK_SIMPLE=$(echo "$ALL_SIMULATOR_SDKS" | head -1)
-          echo "⚠️ Используем fallback SDK: $AVAILABLE_SDK_SIMPLE"
+        if [ -n "$AVAILABLE_SDK_SIMPLE" ]; then
+          echo "✅ Выбран SDK: $AVAILABLE_SDK_SIMPLE"
+          
+          # БЫСТРАЯ проверка совместимости без timeout (мог вызывать проблемы)
+          echo "🔍 Проверяем совместимость SDK с runtime..."
+          if echo "$AVAILABLE_SDK_SIMPLE" | grep -q "18.0"; then
+            echo "⚠️ Используем SDK 18.0 - может быть проблема с runtime совместимостью"
+            echo "📍 Но попробуем обойти через build settings!"
+          fi
+        else
+          echo "❌ Не удалось определить SDK"
         fi
         
         echo "🎯 ВЫБРАННЫЙ SDK: $AVAILABLE_SDK_SIMPLE"
@@ -158,6 +143,11 @@ jobs:
             ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="AccentColor" \
             SUPPORTS_MACCATALYST=NO \
             COMPILER_INDEX_STORE_ENABLE=NO \
+            SDKROOT="$AVAILABLE_SDK_SIMPLE" \
+            DSTROOT="/tmp/ALADDIN_build" \
+            SYMROOT="/tmp/ALADDIN_build" \
+            OBJROOT="/tmp/ALADDIN_build" \
+            ONLY_ACTIVE_ARCH=NO \
             build; then
             
             echo "🎉🎉🎉 УСПЕХ! BUILD С Asset Catalog СРАБОТАЛ! 🎉🎉🎉"
