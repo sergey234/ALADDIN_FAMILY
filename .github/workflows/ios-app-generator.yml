@@ -115,113 +115,116 @@ jobs:
               echo "⚠️ Build с Asset Catalog прошел, но .app не найден сразу, продолжаем поиск..."
             fi
           else
-            echo "❌ Build с Asset Catalog не сработал, пробуем БЕЗ Asset Catalog..."
+            echo "❌ Build с Asset Catalog не сработал, пробуем ДРУГИЕ МЕТОДЫ!"
             
-            # 🚨 FALLBACK: ПОЛНОЕ ОТКЛЮЧЕНИЕ Asset Catalog если первая попытка не удалась
+            # 🚨 ПРИОРИТЕТ 1: Попробуем с другой архитектурой (только arm64)
+            echo "🚨 МЕТОД 1: Только ARM64 архитектура!"
             if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
               -sdk "$AVAILABLE_SDK_SIMPLE" \
               -configuration Debug \
+              ARCHS="arm64" \
+              VALID_ARCHS="arm64" \
+              TARGETED_DEVICE_FAMILY="1,2" \
+              IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGN_IDENTITY="" \
+              ASSETCATALOG_COMPILER_APPICON_NAME="AppIcon" \
+              ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=YES \
+              ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="AccentColor" \
+              SUPPORTS_MACCATALYST=NO \
+              COMPILER_INDEX_STORE_ENABLE=NO \
+              build 2>/dev/null; then
+            
+            echo "🎉🎉🎉 УСПЕХ! ARM64 BUILD С Asset Catalog СРАБОТАЛ! 🎉🎉🎉"
+            APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
+            if [ -z "$APP_PATH" ]; then
+              APP_PATH=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "ALADDIN.app" -type d 2>/dev/null | head -1)
+            fi
+            if [ -n "$APP_PATH" ]; then
+              echo "✅✅✅ НАЙДЕН .app ARM64 BUILD: $APP_PATH ✅✅✅"
+              echo "APP_FOUND_PATH=$APP_PATH" >> $GITHUB_ENV
+              exit 0
+            else
+              echo "⚠️ ARM64 Build прошел, но .app не найден, пробуем МЕТОД 2..."
+            fi
+            else
+              echo "❌ ARM64 Build не сработал, пробуем МЕТОД 2..."
+            fi
+            
+            # 🚨 МЕТОД 2: Попробуем с Release конфигурацией
+            echo "🚨 МЕТОД 2: Release конфигурация!"
+            if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
+              -sdk "$AVAILABLE_SDK_SIMPLE" \
+              -configuration Release \
               ARCHS="arm64 x86_64" \
               VALID_ARCHS="arm64 x86_64" \
               TARGETED_DEVICE_FAMILY="1,2" \
               IPHONEOS_DEPLOYMENT_TARGET=12.0 \
               CODE_SIGNING_ALLOWED=NO \
               CODE_SIGN_IDENTITY="" \
-              ENABLE_ASSET_CATALOG_COMPILATION=NO \
-              SKIP_ASSET_CATALOG_COMPILATION=YES \
-              ASSETCATALOG_COMPILER_APPICON_NAME="" \
-              ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
-              ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="" \
+              ASSETCATALOG_COMPILER_APPICON_NAME="AppIcon" \
+              ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=YES \
+              ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="AccentColor" \
               SUPPORTS_MACCATALYST=NO \
               COMPILER_INDEX_STORE_ENABLE=NO \
               build 2>/dev/null; then
-            
-            echo "🎉🎉🎉 УСПЕХ! РАДИКАЛЬНЫЙ ПРЯМОЙ TARGET BUILD СРАБОТАЛ! 🎉🎉🎉"
-            APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
-            if [ -z "$APP_PATH" ]; then
-              APP_PATH=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "ALADDIN.app" -type d 2>/dev/null | head -1)
-            fi
-            if [ -n "$APP_PATH" ]; then
-              echo "✅✅✅ НАЙДЕН .app РАДИКАЛЬНЫМ ПОДХОДОМ: $APP_PATH ✅✅✅"
-              echo "APP_FOUND_PATH=$APP_PATH" >> $GITHUB_ENV
-              exit 0
-            else
-              echo "⚠️ Build прошел, но .app не найден сразу, продолжаем поиск..."
-            fi
-            fi  # Закрытие fallback условия
-          else
-            echo "❌ Радикальный прямой target build не сработал, пробуем МИНИМАЛЬНЫЙ подход..."
-            
-            # 🚨 КРИТИЧЕСКАЯ ПОПЫТКА: САМЫЙ МИНИМАЛЬНЫЙ BUILD БЕЗ ASSET CATALOG!
-            echo "🚨 МИНИМАЛЬНЫЙ BUILD: Без Asset Catalog!"
-            if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
-              -sdk "$AVAILABLE_SDK_SIMPLE" \
-              CODE_SIGNING_ALLOWED=NO \
-              ENABLE_ASSET_CATALOG_COMPILATION=NO \
-              SKIP_ASSET_CATALOG_COMPILATION=YES \
-              ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
-              build 2>/dev/null; then
               
-              echo "🎉🎉🎉 УСПЕХ! МИНИМАЛЬНЫЙ BUILD СРАБОТАЛ! 🎉🎉🎉"
+              echo "🎉🎉🎉 УСПЕХ! RELEASE BUILD С Asset Catalog СРАБОТАЛ! 🎉🎉🎉"
               APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
               if [ -z "$APP_PATH" ]; then
                 APP_PATH=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "ALADDIN.app" -type d 2>/dev/null | head -1)
               fi
               if [ -n "$APP_PATH" ]; then
-                echo "✅✅✅ НАЙДЕН .app МИНИМАЛЬНЫМ BUILD: $APP_PATH ✅✅✅"
+                echo "✅✅✅ НАЙДЕН .app RELEASE BUILD: $APP_PATH ✅✅✅"
                 echo "APP_FOUND_PATH=$APP_PATH" >> $GITHUB_ENV
                 exit 0
+              else
+                echo "⚠️ Release Build прошел, но .app не найден, пробуем МЕТОД 3..."
               fi
             else
-              echo "❌ Минимальный build тоже не сработал..."
+              echo "❌ Release Build не сработал, пробуем МЕТОД 3..."
+            fi
+            
+            # 🚨 МЕТОД 3: Попробуем с другим deployment target
+            echo "🚨 МЕТОД 3: Deployment Target 13.0!"
+            if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
+              -sdk "$AVAILABLE_SDK_SIMPLE" \
+              -configuration Debug \
+              ARCHS="arm64 x86_64" \
+              VALID_ARCHS="arm64 x86_64" \
+              TARGETED_DEVICE_FAMILY="1,2" \
+              IPHONEOS_DEPLOYMENT_TARGET=13.0 \
+              CODE_SIGNING_ALLOWED=NO \
+              CODE_SIGN_IDENTITY="" \
+              ASSETCATALOG_COMPILER_APPICON_NAME="AppIcon" \
+              ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=YES \
+              ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="AccentColor" \
+              SUPPORTS_MACCATALYST=NO \
+              COMPILER_INDEX_STORE_ENABLE=NO \
+              build 2>/dev/null; then
               
-              # 🚨 ПОСЛЕДНЯЯ ПОПЫТКА: СУПЕР ПРОСТОЙ BUILD С ВЫВОДОМ ОШИБОК!
-              echo "🚨 ПОСЛЕДНЯЯ ПОПЫТКА: BUILD С ПОЛНЫМ ВЫВОДОМ ОШИБОК!"
-              echo "📍 Команда: xcodebuild -project ALADDIN.xcodeproj -target ALADDIN -sdk $AVAILABLE_SDK_SIMPLE CODE_SIGNING_ALLOWED=NO"
-              
-              # Попробуем без 2>/dev/null но С ОТКЛЮЧЕНИЕМ ASSET CATALOG
-              echo "🚨 ФИНАЛЬНАЯ ПОПЫТКА: ОТКЛЮЧЕНИЕ Asset Catalog для обхода runtime проблем!"
-              if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
-                -sdk "$AVAILABLE_SDK_SIMPLE" \
-                CODE_SIGNING_ALLOWED=NO \
-                ENABLE_ASSET_CATALOG_COMPILATION=NO \
-                SKIP_ASSET_CATALOG_COMPILATION=YES \
-                ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
-                ASSETCATALOG_COMPILER_APPICON_NAME="" \
-                build; then
-                
-                echo "🎉🎉🎉 ПОСЛЕДНЯЯ ПОПЫТКА СРАБОТАЛА! 🎉🎉🎉"
-                APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
-                if [ -z "$APP_PATH" ]; then
-                  APP_PATH=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "ALADDIN.app" -type d 2>/dev/null | head -1)
-                fi
-                if [ -n "$APP_PATH" ]; then
-                  echo "✅✅✅ НАЙДЕН .app ПОСЛЕДНЕЙ ПОПЫТКОЙ: $APP_PATH ✅✅✅"
-                  echo "APP_FOUND_PATH=$APP_PATH" >> $GITHUB_ENV
-                  exit 0
-                fi
-              else
-                echo "❌❌❌ ВСЕ ПОПЫТКИ ПРОВАЛИЛИСЬ! ❌❌❌"
-                echo "📍 Анализ показывает следующее:"
-                echo "- Target ALADDIN существует"
-                echo "- SDK доступен: $AVAILABLE_SDK_SIMPLE"
-                echo "- Но build НЕ РАБОТАЕТ"
-                echo ""
-                echo "🚨 ВОЗМОЖНЫЕ ПРИЧИНЫ:"
-                echo "1. Проблемы с Swift файлами в проекте"
-                echo "2. Отсутствующие зависимости или frameworks"
-                echo "3. Ошибки компиляции в исходном коде"
-                echo "4. Проблемы с iOS version compatibility"
-                echo ""
-                echo "📍 РЕКОМЕНДАЦИИ:"
-                echo "- Проверить Swift код на ошибки компиляции"
-                echo "- Убедиться, что все зависимости доступны"
-                echo "- Проверить iOS version requirements"
-                exit 1
+              echo "🎉🎉🎉 УСПЕХ! iOS 13.0 BUILD С Asset Catalog СРАБОТАЛ! 🎉🎉🎉"
+              APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
+              if [ -z "$APP_PATH" ]; then
+                APP_PATH=$(find /Users/runner/Library/Developer/Xcode/DerivedData -name "ALADDIN.app" -type d 2>/dev/null | head -1)
               fi
+              if [ -n "$APP_PATH" ]; then
+                echo "✅✅✅ НАЙДЕН .app iOS 13.0 BUILD: $APP_PATH ✅✅✅"
+                echo "APP_FOUND_PATH=$APP_PATH" >> $GITHUB_ENV
+                exit 0
+              else
+                echo "⚠️ iOS 13.0 Build прошел, но .app не найден, переходим к схеме..."
+              fi
+            else
+              echo "❌ iOS 13.0 Build не сработал, переходим к схеме..."
             fi
           fi
+          
+          echo "❌ Все прямые target builds не сработали, переходим к схеме..."
         fi
+        
+        # Переходим к схеме если прямые builds не удались
+        echo "🚨 ПЕРЕХОДИМ К СХЕМЕ: Все target builds с Asset Catalog не сработали!"
         
         # ФИНАЛЬНОЕ РЕШЕНИЕ: Самый простой подход с правильным SDK
         echo "🚀 ФИНАЛЬНОЕ РЕШЕНИЕ: Простейший build без сложной логики"
