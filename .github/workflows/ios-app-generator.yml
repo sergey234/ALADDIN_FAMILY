@@ -230,6 +230,16 @@ jobs:
         fi
         echo "📍 ИСПОЛЬЗУЕМЫЙ DESTINATION: $DESTINATION_SPEC"
         
+        # ПРОФЕССИОНАЛЬНАЯ ПРОВЕРКА: Проверяем доступные destinations после исправления схемы
+        echo "📍 Проверяем доступные destinations для исправленной схемы..."
+        AVAILABLE_DESTINATIONS=$(xcodebuild -project ALADDIN.xcodeproj -scheme "$SCHEME_NAME" -showdestinations 2>/dev/null | grep "iOS Simulator" || echo "")
+        if [ -n "$AVAILABLE_DESTINATIONS" ]; then
+          echo "✅ Схема поддерживает iOS Simulator destinations!"
+          echo "$AVAILABLE_DESTINATIONS" | head -3
+        else
+          echo "⚠️ Схема все еще может не поддерживать симулятор, но пробуем..."
+        fi
+        
         if xcodebuild -project ALADDIN.xcodeproj -scheme "$SCHEME_NAME" \
           -sdk "$AVAILABLE_SDK" \
           -destination "$DESTINATION_SPEC" \

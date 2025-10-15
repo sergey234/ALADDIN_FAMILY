@@ -29,6 +29,15 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "A0FFFFFD"
+            BuildableName = "ALADDIN.app"
+            BlueprintName = "ALADDIN"
+            ReferencedContainer = "container:ALADDIN.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
@@ -76,12 +85,39 @@
             ReferencedContainer = "container:ALADDIN.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "A0FFFFFD"
+            BuildableName = "ALADDIN.app"
+            BlueprintName = "ALADDIN"
+            ReferencedContainer = "container:ALADDIN.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "A0FFFFFD"
+            BuildableName = "ALADDIN.app"
+            BlueprintName = "ALADDIN"
+            ReferencedContainer = "container:ALADDIN.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </AnalyzeAction>
    <ArchiveAction
       buildConfiguration = "Release"
       revealArchiveInOrganizer = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "A0FFFFFD"
+            BuildableName = "ALADDIN.app"
+            BlueprintName = "ALADDIN"
+            ReferencedContainer = "container:ALADDIN.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ArchiveAction>
 </Scheme>
