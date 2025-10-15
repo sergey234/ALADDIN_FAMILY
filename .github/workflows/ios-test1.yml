@@ -1,0 +1,35 @@
+name: iOS Test 1 - iOS Simulator
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/trigger_test1.txt' ]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Test 1 - iOS Simulator
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "=== ТЕСТ 1: platform=iOS Simulator ==="
+        echo "Используем СИМУЛЯТОР вместо реального устройства"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator" build
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-test1-simulator
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7
