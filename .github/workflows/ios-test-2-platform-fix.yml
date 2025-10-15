@@ -1,0 +1,49 @@
+name: iOS Test 2 - Platform Fix
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/trigger_test2.txt' ]
+
+jobs:
+  test-2-platform-fix:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Test 2 - Fix Platform Specification
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "=== ТЕСТ 2: ИСПРАВЛЕНИЕ ПЛАТФОРМЫ ==="
+        echo "Используем platform=iOS Simulator (не platform=iOS)"
+        
+        # Очищаем предыдущие сборки
+        rm -rf build/
+        
+        # Тест с правильной платформой
+        echo "Компилируем с platform=iOS Simulator:"
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator" build
+        
+        echo ""
+        echo "=== ПРОВЕРЯЕМ BUILD ПАПКУ ==="
+        ls -la build/ || echo "build папка не найдена"
+        
+        echo ""
+        echo "=== ИЩЕМ .app ФАЙЛЫ ==="
+        find build/ -name "*.app" -type d || echo ".app файлы не найдены"
+        
+    - name: Upload Test 2 Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-test2-platform-fix
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7

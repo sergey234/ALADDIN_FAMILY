@@ -1,0 +1,81 @@
+name: iOS Test 10 - .app Verification
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/trigger_test10.txt' ]
+
+jobs:
+  test-10-verification:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Test 10 - Verify .app Creation
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "=== ТЕСТ 10: ПРОВЕРКА СОЗДАНИЯ .app ФАЙЛА ==="
+        
+        # Сначала компилируем
+        rm -rf build/
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -configuration Release -destination "platform=iOS Simulator,name=iPhone 15" build
+        
+        echo ""
+        echo "Ищем .app файлы в build папке:"
+        find build/ -name "*.app" -type d -exec echo "✅ Найден: {}" \;
+        
+        # Проверяем содержимое .app файла
+        APP_FILE=$(find build/ -name "*.app" -type d | head -1)
+        if [ -n "$APP_FILE" ]; then
+          echo ""
+          echo "📱 АНАЛИЗ .app ФАЙЛА:"
+          echo "Путь: $APP_FILE"
+          echo "Размер: $(du -sh "$APP_FILE" | cut -f1)"
+          echo ""
+          echo "Содержимое .app файла:"
+          ls -la "$APP_FILE"
+          
+          # Проверяем Info.plist
+          if [ -f "$APP_FILE/Info.plist" ]; then
+            echo ""
+            echo "📄 Info.plist найден:"
+            plutil -p "$APP_FILE/Info.plist" | head -15
+          else
+            echo ""
+            echo "❌ Info.plist не найден"
+          fi
+          
+          # Проверяем исполняемый файл
+          EXECUTABLE=$(find "$APP_FILE" -name "ALADDIN" -type f | head -1)
+          if [ -n "$EXECUTABLE" ]; then
+            echo ""
+            echo "✅ Исполняемый файл найден: $EXECUTABLE"
+            echo "Размер исполняемого файла: $(du -sh "$EXECUTABLE" | cut -f1)"
+          else
+            echo ""
+            echo "❌ Исполняемый файл не найден"
+          fi
+          
+          echo ""
+          echo "🎉 УСПЕХ! .app ФАЙЛ ГОТОВ ДЛЯ APP STORE!"
+        else
+          echo ""
+          echo "❌ ОШИБКА: .app ФАЙЛ НЕ НАЙДЕН"
+          echo "Проверьте логи выше для диагностики"
+        fi
+        
+    - name: Upload Test 10 Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-test10-verification
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7

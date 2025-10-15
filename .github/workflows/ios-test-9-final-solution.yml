@@ -1,0 +1,65 @@
+name: iOS Test 9 - Final Solution
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/trigger_test9.txt' ]
+
+jobs:
+  test-9-final-solution:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Test 9 - Final Solution
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "=== ТЕСТ 9: ФИНАЛЬНОЕ РЕШЕНИЕ ==="
+        
+        # Очищаем предыдущие сборки
+        rm -rf build/
+        
+        echo "Финальный тест с правильными параметрами:"
+        echo "- platform=iOS Simulator (симулятор, не реальное устройство)"
+        echo "- name=iPhone 15 (реальный симулятор)"
+        echo "- configuration=Release (релизная версия)"
+        
+        # Финальная компиляция с правильными параметрами
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -configuration Release -destination "platform=iOS Simulator,name=iPhone 15" build
+        
+        echo ""
+        echo "=== ПРОВЕРЯЕМ РЕЗУЛЬТАТ ==="
+        echo "Build папка:"
+        ls -la build/
+        
+        echo ""
+        echo "Ищем .app файлы:"
+        find build/ -name "*.app" -type d || echo ".app файлы не найдены"
+        
+        # Проверяем размер .app файла
+        APP_FILE=$(find build/ -name "*.app" -type d | head -1)
+        if [ -n "$APP_FILE" ]; then
+          echo ""
+          echo "📱 Информация о .app файле:"
+          echo "Путь: $APP_FILE"
+          echo "Размер: $(du -sh "$APP_FILE" | cut -f1)"
+          echo ""
+          echo "Содержимое .app файла:"
+          ls -la "$APP_FILE"
+        fi
+        
+    - name: Upload Test 9 Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-test9-final-solution
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7
