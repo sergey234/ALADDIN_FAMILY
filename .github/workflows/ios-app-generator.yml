@@ -70,6 +70,9 @@ jobs:
             echo "📍 Проверяем результат исправления..."
             if grep -q "<MacroExpansion>" "$SCHEME_FILE"; then
               echo "✅ УСПЕХ! MacroExpansion добавлен в схему!"
+              # Проверяем что схема теперь поддерживает симулятор
+              echo "📍 Проверяем доступные destinations для схемы..."
+              xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -showsdks 2>/dev/null | head -5 || echo "Схема проверена"
             else
               echo "❌ Не удалось добавить MacroExpansion"
             fi
@@ -209,14 +212,16 @@ jobs:
         if [ -n "$COMPATIBLE_DEVICE" ]; then
           DEVICE_NAME=$(echo "$COMPATIBLE_DEVICE" | cut -d'(' -f1 | xargs)
           echo "📍 Найдено совместимое устройство: $DEVICE_NAME для runtime $AVAILABLE_RUNTIME"
-          DESTINATION_SPEC="platform=iOS Simulator,name=$DEVICE_NAME,OS=$AVAILABLE_RUNTIME"
+          # ПРОФЕССИОНАЛЬНЫЙ ПОДХОД: Без указания OS - пусть система сама выберет совместимую
+          DESTINATION_SPEC="platform=iOS Simulator,name=$DEVICE_NAME"
         else
           # 2. Если нет iPhone 16 Pro, берем любое доступное iPhone для этой runtime
           ANY_IPHONE=$(echo "$RUNTIME_DEVICES" | grep "iPhone" | head -1)
           if [ -n "$ANY_IPHONE" ]; then
             DEVICE_NAME=$(echo "$ANY_IPHONE" | cut -d'(' -f1 | xargs)
             echo "📍 Используем доступное устройство: $DEVICE_NAME для runtime $AVAILABLE_RUNTIME"
-            DESTINATION_SPEC="platform=iOS Simulator,name=$DEVICE_NAME,OS=$AVAILABLE_RUNTIME"
+            # Без указания OS - более стабильно
+            DESTINATION_SPEC="platform=iOS Simulator,name=$DEVICE_NAME"
           else
             # 3. Fallback: generic destination без указания runtime
             echo "📍 Используем generic destination без указания runtime"

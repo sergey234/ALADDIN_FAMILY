@@ -50,6 +50,15 @@
             ReferencedContainer = "container:ALADDIN.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "A0FFFFFD"
+            BuildableName = "ALADDIN.app"
+            BlueprintName = "ALADDIN"
+            ReferencedContainer = "container:ALADDIN.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
