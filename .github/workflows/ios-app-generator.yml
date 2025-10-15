@@ -181,7 +181,7 @@ jobs:
               ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="AccentColor" \
               SUPPORTS_MACCATALYST=NO \
               COMPILER_INDEX_STORE_ENABLE=NO \
-              build 2>/dev/null; then
+              build; then
               
               echo "🎉🎉🎉 УСПЕХ! RELEASE BUILD С Asset Catalog СРАБОТАЛ! 🎉🎉🎉"
               APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
@@ -215,7 +215,7 @@ jobs:
               ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="AccentColor" \
               SUPPORTS_MACCATALYST=NO \
               COMPILER_INDEX_STORE_ENABLE=NO \
-              build 2>/dev/null; then
+              build; then
               
               echo "🎉🎉🎉 УСПЕХ! iOS 13.0 BUILD С Asset Catalog СРАБОТАЛ! 🎉🎉🎉"
               APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
@@ -253,7 +253,7 @@ jobs:
               ASSETCATALOG_COMPILER_APPICON_NAME="AppIcon" \
               ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=YES \
               ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="AccentColor" \
-              build 2>/dev/null; then
+              build; then
               echo "🎉 ПОСЛЕДНЯЯ ПОПЫТКА СРАБОТАЛА!"
               APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
               if [ -n "$APP_PATH" ]; then
@@ -303,7 +303,7 @@ jobs:
               -sdk "$AVAILABLE_SDK_SIMPLE" \
               IPHONEOS_DEPLOYMENT_TARGET=12.0 \
               CODE_SIGNING_ALLOWED=NO \
-              build 2>/dev/null; then
+              build; then
               echo "🎉 УСПЕХ! Build БЕЗ destination сработал!"
               APP_PATH=$(find . -name "*.app" -type d 2>/dev/null | head -1)
               if [ -z "$APP_PATH" ]; then
@@ -642,7 +642,7 @@ jobs:
           SUPPORTS_MACCATALYST=NO \
           TARGETED_DEVICE_FAMILY="1,2" \
           VALID_ARCHS="arm64 x86_64" \
-          build 2>/dev/null; then
+          build; then
           echo "✅ ПРЯМОЙ BUILD УСПЕШЕН!"
           DIRECT_BUILD_SUCCESS=true
           # Поиск .app сразу после успешного build
@@ -667,7 +667,7 @@ jobs:
             SUPPORTS_MACCATALYST=NO \
             TARGETED_DEVICE_FAMILY="1,2" \
             VALID_ARCHS="arm64 x86_64" \
-            build 2>/dev/null; then
+            build; then
             echo "✅ РЕВОЛЮЦИОННОЕ РЕШЕНИЕ УСПЕШНО!"
             DIRECT_BUILD_SUCCESS=true
             APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
@@ -680,8 +680,9 @@ jobs:
           fi
         fi
         
-        # ПРИОРИТЕТ 3: СХЕМА ПОДХОД (если прямой build не сработал)
-        if [ "$DIRECT_BUILD_SUCCESS" != "true" ]; then
+        # 🚨 ПРИОРИТЕТ 3 ОТКЛЮЧЕН - ИСПОЛЬЗУЕМ ТОЛЬКО НОВУЮ СТРАТЕГИЮ!
+        # ПРИОРИТЕТ 3: СХЕМА ПОДХОД (если прямой build не сработал) - ОТКЛЮЧЕН ДЛЯ СОХРАНЕНИЯ ASSET CATALOG
+        if false; then  # ЗАБЛОКИРОВАНО - НОВАЯ СТРАТЕГИЯ ИМЕЕТ ПРИОРИТЕТ!
         echo "🚨 ПРИОРИТЕТ 3: СХЕМА ПОДХОД!"
         echo "=================================================="
         
@@ -891,6 +892,10 @@ jobs:
             fi
           fi
         fi
+        
+        # 🚨 ПРИОРИТЕТ 3 ЗАБЛОКИРОВАН! Переходим к финальному поиску .app файла
+        echo "🚨 ПРИОРИТЕТ 3 ЗАБЛОКИРОВАН! НОВАЯ СТРАТЕГИЯ СОХРАНЕНИЯ ASSET CATALOG УЖЕ ВЫПОЛНЕНА!"
+        echo "📍 Переходим к финальному поиску .app файла от новой стратегии..."
         
         echo ""
         echo "📱 ФИНАЛЬНЫЙ ПОИСК .app ФАЙЛА:"
