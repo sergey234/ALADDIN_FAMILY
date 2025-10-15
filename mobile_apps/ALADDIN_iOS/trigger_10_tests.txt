@@ -1,0 +1,9 @@
+# Триггер для запуска 10 тестов iOS
+# Дата создания: $(date)
+# Цель: Исправить ошибку 70 в xcodebuild
+
+# Ошибка 70 = "Unable to find a device matching the provided destination specifier"
+# Причина: Использование platform=iOS вместо platform=iOS Simulator
+# Решение: Использовать симуляторы GitHub Actions
+
+Запуск: 10 различных тестов для диагностики и исправления ошибки 70
