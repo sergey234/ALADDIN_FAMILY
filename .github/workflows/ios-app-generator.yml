@@ -34,20 +34,30 @@ jobs:
         echo "🔧 ТЕСТ 1: FIXED BUILD - iPhone 16 Pro (100% SUCCESS)"
         echo "🚨 ИСПРАВЛЕНИЯ: Deployment Target 12.0, Runtime совместимость, Asset Catalog"
         
+        # Определяем доступную SDK версию динамически
+        echo "📍 Анализ доступных SDK версий:"
+        xcodebuild -showsdks | grep iphonesimulator
+        AVAILABLE_SDK=$(xcodebuild -showsdks | grep iphonesimulator | awk '{print $NF}' | head -1)
+        echo "📍 Извлеченная SDK версия: $AVAILABLE_SDK"
+        
         # Определяем доступную runtime версию более точно
         echo "📍 Анализ доступных runtime версий:"
         xcrun simctl list runtimes | grep iOS
         AVAILABLE_RUNTIME=$(xcrun simctl list runtimes | grep iOS | grep "com.apple.CoreSimulator.SimRuntime.iOS" | head -1 | sed 's/.*iOS \([0-9][0-9]*\.[0-9][0-9]*\).*/\1/')
         echo "📍 Извлеченная runtime версия: $AVAILABLE_RUNTIME"
         
-        # Если не удалось извлечь, используем последнюю доступную версию
+        # Если не удалось извлечь, используем fallback значения
+        if [ -z "$AVAILABLE_SDK" ]; then
+          AVAILABLE_SDK="iphonesimulator"
+          echo "📍 Используем fallback SDK: $AVAILABLE_SDK"
+        fi
         if [ -z "$AVAILABLE_RUNTIME" ]; then
           AVAILABLE_RUNTIME="18.4"
           echo "📍 Используем fallback runtime: $AVAILABLE_RUNTIME"
         fi
         
         if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
-          -sdk iphonesimulator18.4 \
+          -sdk "$AVAILABLE_SDK" \
           -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=$AVAILABLE_RUNTIME" \
           IPHONEOS_DEPLOYMENT_TARGET=12.0 \
           CODE_SIGNING_ALLOWED=NO \
@@ -101,7 +111,7 @@ jobs:
           echo "❌ ТЕСТ 1 НЕ РАБОТАЕТ"
           echo "🔧 ТЕСТ 2: Generic Simulator with Fixes"
           if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
-            -sdk iphonesimulator18.4 \
+            -sdk "$AVAILABLE_SDK" \
             -destination "generic/platform=iOS Simulator" \
             IPHONEOS_DEPLOYMENT_TARGET=12.0 \
             CODE_SIGNING_ALLOWED=NO \
@@ -119,7 +129,7 @@ jobs:
             echo "❌ ТЕСТ 2 НЕ РАБОТАЕТ"
             echo "🔧 ТЕСТ 3: БЕЗ destination - МАКСИМАЛЬНО ПРОСТОЙ"
             if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
-              -sdk iphonesimulator18.4 \
+              -sdk "$AVAILABLE_SDK" \
               IPHONEOS_DEPLOYMENT_TARGET=12.0 \
               CODE_SIGNING_ALLOWED=NO \
               ASSETCATALOG_COMPILER_APPICON_NAME="" \
@@ -142,7 +152,7 @@ jobs:
               echo "❌ ТЕСТ 3 НЕ РАБОТАЕТ"
               echo "🔧 ТЕСТ 4: АВАРИЙНЫЙ РЕЖИМ - ТОЛЬКО SDK"
               if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
-                -sdk iphonesimulator18.4 \
+                -sdk "$AVAILABLE_SDK" \
                 IPHONEOS_DEPLOYMENT_TARGET=12.0 \
                 CODE_SIGNING_ALLOWED=NO \
                 ASSETCATALOG_COMPILER_APPICON_NAME="" \

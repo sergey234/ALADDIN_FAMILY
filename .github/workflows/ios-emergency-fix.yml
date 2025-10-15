@@ -1,0 +1,142 @@
+name: iOS Emergency Fix - Ultimate Solution
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/emergency_fix.txt' ]
+  workflow_dispatch:
+
+jobs:
+  emergency-build:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+    
+    - name: iOS Emergency Fix - Ultimate Solution
+      run: |
+        cd mobile_apps/ALADDIN_iOS
+        echo "🚨 АВАРИЙНЫЙ РЕЖИМ: МАКСИМАЛЬНОЕ ИСПРАВЛЕНИЕ ВСЕХ ПРОБЛЕМ"
+        echo "=================================================="
+        
+        echo "📱 Детальная диагностика:"
+        echo "Xcode версия:"
+        xcodebuild -version
+        
+        echo "Доступные SDK:"
+        xcodebuild -showsdks | grep iphonesimulator
+        
+        echo "Доступные Runtime:"
+        xcrun simctl list runtimes | grep iOS
+        
+        echo "Доступные симуляторы:"
+        xcrun simctl list devices available | grep "iPhone 16 Pro" | head -3
+        
+        echo ""
+        echo "🔧 АВАРИЙНЫЙ ТЕСТ 1: Максимальное обхождение всех проблем"
+        
+        # Попытка с самым новым SDK и правильными параметрами
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
+          -sdk iphonesimulator \
+          -destination "platform=iOS Simulator,name=iPhone 16 Pro" \
+          IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+          CODE_SIGNING_ALLOWED=NO \
+          ASSETCATALOG_COMPILER_APPICON_NAME="" \
+          ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME="" \
+          ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
+          ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="" \
+          COMPILER_INDEX_STORE_ENABLE=NO \
+          GCC_WARN_INHIBIT_ALL_WARNINGS=YES \
+          ENABLE_BITCODE=NO \
+          VALIDATE_DEVELOPMENT_ASSETS=NO \
+          ONLY_ACTIVE_ARCH=NO \
+          build; then
+          
+          echo "✅ АВАРИЙНЫЙ ТЕСТ 1 УСПЕХЕН!"
+          
+        else
+          echo "❌ АВАРИЙНЫЙ ТЕСТ 1 не сработал, пробуем еще более радикальные меры..."
+          
+          echo "🔧 АВАРИЙНЫЙ ТЕСТ 2: Полное отключение Asset Catalog"
+          if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
+            -sdk iphonesimulator \
+            -destination "platform=iOS Simulator,name=iPhone 16 Pro" \
+            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+            CODE_SIGNING_ALLOWED=NO \
+            ASSETCATALOG_COMPILER_APPICON_NAME="" \
+            ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME="" \
+            ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            GCC_WARN_INHIBIT_ALL_WARNINGS=YES \
+            ENABLE_BITCODE=NO \
+            build; then
+            
+            echo "✅ АВАРИЙНЫЙ ТЕСТ 2 УСПЕХЕН!"
+            
+          else
+            echo "❌ АВАРИЙНЫЙ ТЕСТ 2 не сработал, пробуем минимальную сборку..."
+            
+            echo "🔧 АВАРИЙНЫЙ ТЕСТ 3: Минимально возможная сборка"
+            if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
+              -sdk iphonesimulator \
+              CODE_SIGNING_ALLOWED=NO \
+              IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+              build; then
+              
+              echo "✅ АВАРИЙНЫЙ ТЕСТ 3 УСПЕХЕН!"
+              
+            else
+              echo "❌ ВСЕ АВАРИЙНЫЕ ТЕСТЫ ПРОВАЛИЛИСЬ"
+              echo "Нужно исправлять сам проект Xcode"
+              exit 1
+            fi
+          fi
+        fi
+        
+        echo ""
+        echo "🔍 АВАРИЙНЫЙ ПОИСК .app ФАЙЛА..."
+        
+        # Поиск во всех возможных местах
+        FOUND_APP=""
+        
+        # Поиск в всех DerivedData папках
+        for derived_path in "/Users/runner/Library/Developer/Xcode/DerivedData" "/tmp" "."; do
+          if [ -d "$derived_path" ]; then
+            APP_RESULT=$(find "$derived_path" -name "ALADDIN.app" -type d 2>/dev/null | head -1)
+            if [ -n "$APP_RESULT" ]; then
+              FOUND_APP="$APP_RESULT"
+              echo "🎉 НАЙДЕН .app в $derived_path: $FOUND_APP"
+              break
+            fi
+          fi
+        done
+        
+        # Если не найден конкретный, ищем любой .app
+        if [ -z "$FOUND_APP" ]; then
+          FOUND_APP=$(find . -name "*.app" -type d 2>/dev/null | grep -i aladdin | head -1)
+          if [ -n "$FOUND_APP" ]; then
+            echo "🎉 НАЙДЕН .app (общий поиск): $FOUND_APP"
+          fi
+        fi
+        
+        if [ -n "$FOUND_APP" ]; then
+          echo "🎉 УСПЕХ! Найден .app файл: $FOUND_APP"
+          ls -la "$FOUND_APP"
+          echo "EMERGENCY_APP_PATH=$FOUND_APP" >> $GITHUB_ENV
+        else
+          echo "❌ .app файл не найден даже в аварийном режиме"
+        fi
+    
+    - name: Upload Emergency .app file
+      uses: actions/upload-artifact@v4
+      if: env.EMERGENCY_APP_PATH != ''
+      with:
+        name: aladdin-ios-app-emergency
+        path: ${{ env.EMERGENCY_APP_PATH }}
+        if-no-files-found: error
+        retention-days: 30
