@@ -1,0 +1,65 @@
+name: iOS Quick Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/quick_test.txt' ]
+
+jobs:
+  quick-test:
+    runs-on: macos-latest
+    timeout-minutes: 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Quick iOS Test
+      run: |
+        echo "🚀 БЫСТРЫЙ ТЕСТ iOS КОМПИЛЯЦИИ"
+        echo "================================"
+        
+        echo ""
+        echo "📱 1. Версия Xcode:"
+        xcodebuild -version
+        
+        echo ""
+        echo "📱 2. Доступные симуляторы:"
+        xcrun simctl list devices available | grep iPhone | head -3
+        
+        echo ""
+        echo "📱 3. Переходим в папку проекта:"
+        cd mobile_apps/ALADDIN_iOS
+        pwd
+        ls -la
+        
+        echo ""
+        echo "📱 4. Проверяем схему:"
+        xcodebuild -project ALADDIN.xcodeproj -list | head -10
+        
+        echo ""
+        echo "📱 5. ТЕСТ 1: Без destination"
+        if timeout 60 xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build; then
+          echo "✅ ТЕСТ 1 УСПЕХ: Без destination работает!"
+        else
+          echo "❌ ТЕСТ 1 ПРОВАЛ: Без destination не работает"
+        fi
+        
+        echo ""
+        echo "📱 6. ТЕСТ 2: С generic destination"
+        if timeout 60 xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "generic/platform=iOS Simulator" build; then
+          echo "✅ ТЕСТ 2 УСПЕХ: generic/platform=iOS Simulator работает!"
+        else
+          echo "❌ ТЕСТ 2 ПРОВАЛ: generic/platform=iOS Simulator не работает"
+        fi
+        
+        echo ""
+        echo "📱 7. Проверяем результат:"
+        ls -la build/ || echo "build папка не найдена"
+        find build/ -name "*.app" -type d || echo ".app файлы не найдены"
