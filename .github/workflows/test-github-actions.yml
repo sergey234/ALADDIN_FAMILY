@@ -1,0 +1,31 @@
+name: Test GitHub Actions Connection
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/test_connection.txt' ]
+
+jobs:
+  test-connection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Test GitHub Actions
+      run: |
+        echo "✅ GitHub Actions работает!"
+        echo "Дата: $(date)"
+        echo "Версия Node.js: $(node --version)"
+        echo "Версия npm: $(npm --version)"
+        echo "Тест завершен успешно"
+        
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: github-actions-test
+        path: .
+        retention-days: 1
