@@ -1,0 +1,70 @@
+name: iOS Debug Simple
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/debug_simple.txt' ]
+
+jobs:
+  debug-ios:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Debug iOS Environment
+      run: |
+        echo "🔍 ДИАГНОСТИКА iOS ОКРУЖЕНИЯ"
+        echo "============================="
+        
+        echo ""
+        echo "📱 1. Версия Xcode:"
+        xcodebuild -version
+        
+        echo ""
+        echo "📱 2. Доступные SDK:"
+        xcodebuild -showsdks | grep iOS
+        
+        echo ""
+        echo "📱 3. Доступные симуляторы:"
+        xcrun simctl list devices available | grep iPhone | head -5
+        
+        echo ""
+        echo "📱 4. Структура проекта:"
+        cd mobile_apps/ALADDIN_iOS
+        ls -la
+        
+        echo ""
+        echo "📱 5. Проверка схемы:"
+        xcodebuild -project ALADDIN.xcodeproj -list
+        
+        echo ""
+        echo "📱 6. Тест простой компиляции (без destination):"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build; then
+          echo "✅ УСПЕХ: Компиляция без destination работает!"
+        else
+          echo "❌ ОШИБКА: Компиляция без destination не работает"
+        fi
+        
+        echo ""
+        echo "📱 7. Тест с generic destination:"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "generic/platform=iOS Simulator" build; then
+          echo "✅ УСПЕХ: generic/platform=iOS Simulator работает!"
+        else
+          echo "❌ ОШИБКА: generic/platform=iOS Simulator не работает"
+        fi
+        
+        echo ""
+        echo "📱 8. Проверка build папки:"
+        ls -la build/ || echo "build папка не найдена"
+        
+        echo ""
+        echo "📱 9. Поиск .app файлов:"
+        find build/ -name "*.app" -type d || echo ".app файлы не найдены"
