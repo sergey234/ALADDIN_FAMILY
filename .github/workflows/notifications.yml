@@ -64,7 +64,7 @@ jobs:
         # Формируем сообщение
         workflow_name = '${{ github.event.workflow_run.name || github.workflow }}'
         commit_sha = '${{ github.event.workflow_run.head_sha || github.sha }}'
-        commit_message = '${{ github.event.workflow_run.head_commit.message || \"Manual trigger\" }}'
+        commit_message = '${{ github.event.workflow_run.head_commit.message || "Manual trigger" }}'
         run_url = '${{ github.event.workflow_run.html_url || github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
         
         message = {
@@ -133,7 +133,7 @@ jobs:
         # Формируем сообщение
         workflow_name = '${{ github.event.workflow_run.name || github.workflow }}'
         commit_sha = '${{ github.event.workflow_run.head_sha || github.sha }}'
-        commit_message = '${{ github.event.workflow_run.head_commit.message || \"Manual trigger\" }}'
+        commit_message = '${{ github.event.workflow_run.head_commit.message || "Manual trigger" }}'
         run_url = '${{ github.event.workflow_run.html_url || github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
         
         message = f"{emoji} *ALADDIN {workflow_name}*\n\n*Status:* {status.upper()}\n*Commit:* `{commit_sha[:8]}`\n*Message:* {commit_message[:100]}{'...' if len(commit_message) > 100 else ''}\n\n[View Details]({run_url})"
@@ -171,7 +171,7 @@ jobs:
             'workflow': '${{ github.event.workflow_run.name || github.workflow }}',
             'status': '${{ github.event.workflow_run.conclusion || github.event.inputs.status }}',
             'commit_sha': '${{ github.event.workflow_run.head_sha || github.sha }}',
-            'commit_message': '${{ github.event.workflow_run.head_commit.message || \"Manual trigger\" }}',
+            'commit_message': '${{ github.event.workflow_run.head_commit.message || "Manual trigger" }}',
             'run_url': '${{ github.event.workflow_run.html_url || github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}',
             'timestamp': '$(date -u +%Y-%m-%dT%H:%M:%SZ)',
             'repository': '${{ github.repository }}',
