@@ -1,0 +1,36 @@
+name: iOS Simple Test 1 - Basic Connection
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/simple_test_1.txt' ]
+
+jobs:
+  basic-test:
+    runs-on: macos-latest
+    timeout-minutes: 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Basic Test - Connection
+      run: |
+        echo "🧪 ТЕСТ 1: БАЗОВОЕ ПОДКЛЮЧЕНИЕ"
+        echo "================================"
+        echo "✅ GitHub Actions работает"
+        echo "✅ MacOS runner доступен"
+        echo "✅ Код загружен"
+        echo "Дата: $(date)"
+        echo "Рабочая директория: $(pwd)"
+        echo "Список файлов:"
+        ls -la
+        echo "✅ Тест 1 завершен успешно"
+        
+    - name: Upload Test 1 Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-simple-test-1
+        path: .
+        retention-days: 1

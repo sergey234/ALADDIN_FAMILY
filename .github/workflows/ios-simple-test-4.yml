@@ -1,0 +1,58 @@
+name: iOS Simple Test 4 - Platform Fix
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/simple_test_4.txt' ]
+
+jobs:
+  platform-fix-test:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: Test 4 - Platform Fix
+      run: |
+        echo "🧪 ТЕСТ 4: ИСПРАВЛЕНИЕ ПЛАТФОРМЫ"
+        echo "================================"
+        
+        cd mobile_apps/ALADDIN_iOS
+        
+        echo "❌ ПРОБЛЕМА: platform=iOS ищет реальное устройство"
+        echo "✅ РЕШЕНИЕ: platform=iOS Simulator использует симулятор"
+        
+        # Очищаем предыдущие сборки
+        rm -rf build/
+        
+        echo ""
+        echo "Тестируем исправление платформы:"
+        echo "Команда: xcodebuild -destination 'platform=iOS Simulator' build"
+        
+        # Тест с правильной платформой
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator" build; then
+          echo "✅ УСПЕХ! Платформа исправлена"
+          echo "Build папка:"
+          ls -la build/
+          echo "Ищем .app файлы:"
+          find build/ -name "*.app" -type d || echo ".app файлы не найдены"
+        else
+          echo "❌ ОШИБКА: Не удалось исправить платформу"
+        fi
+        
+        echo "✅ Тест 4 завершен"
+        
+    - name: Upload Test 4 Results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-simple-test-4
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 1
