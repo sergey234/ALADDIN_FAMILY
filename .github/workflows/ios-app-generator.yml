@@ -101,54 +101,87 @@ jobs:
         echo "🔧 ТЕСТ 1: FIXED BUILD - iPhone 16 Pro (100% SUCCESS)"
         echo "🚨 ИСПРАВЛЕНИЯ: Deployment Target 12.0, Runtime совместимость, Asset Catalog, Scheme Fix"
         
-        # Определяем доступную SDK версию динамически
+        # Определяем доступную SDK версию динамически - КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ
         echo "📍 Анализ доступных SDK версий:"
         xcodebuild -showsdks | grep iphonesimulator
         
-        # Приоритетно ищем версию 18.0, затем берем любую доступную
-        AVAILABLE_SDK=$(xcodebuild -showsdks | grep iphonesimulator | grep "18.0" | awk '{print $NF}' | head -1)
-        if [ -z "$AVAILABLE_SDK" ]; then
-          AVAILABLE_SDK=$(xcodebuild -showsdks | grep iphonesimulator | awk '{print $NF}' | head -1)
-        fi
-        echo "📍 Извлеченная SDK версия: $AVAILABLE_SDK"
-        
-        # Определяем доступную runtime версию более точно
+        # Определяем доступную runtime версию сначала - это приоритет!
         echo "📍 Анализ доступных runtime версий:"
         xcrun simctl list runtimes | grep iOS
-        AVAILABLE_RUNTIME=$(xcrun simctl list runtimes | grep iOS | grep "com.apple.CoreSimulator.SimRuntime.iOS" | head -1 | sed 's/.*iOS \([0-9][0-9]*\.[0-9][0-9]*\).*/\1/')
-        echo "📍 Извлеченная runtime версия: $AVAILABLE_RUNTIME"
         
-        # Если не удалось извлечь, используем fallback значения
+        # Получаем список всех доступных SDK версий
+        ALL_SDK_VERSIONS=$(xcodebuild -showsdks | grep iphonesimulator | awk '{print $NF}')
+        echo "📍 Все доступные SDK: $ALL_SDK_VERSIONS"
+        
+        # Получаем список всех доступных runtime версий
+        ALL_RUNTIME_VERSIONS=$(xcrun simctl list runtimes | grep iOS | sed 's/.*iOS \([0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | sort -V)
+        echo "📍 Все доступные runtime: $ALL_RUNTIME_VERSIONS"
+        
+        # УМНАЯ ЛОГИКА: ищем совместимую пару SDK/Runtime
+        AVAILABLE_SDK=""
+        AVAILABLE_RUNTIME=""
+        
+        # Приоритет 1: Попробуем найти совпадение major.minor версий
+        for runtime in $ALL_RUNTIME_VERSIONS; do
+          major_minor=$(echo $runtime | cut -d. -f1-2)
+          matching_sdk=$(echo "$ALL_SDK_VERSIONS" | grep "$major_minor" | head -1)
+          if [ -n "$matching_sdk" ]; then
+            AVAILABLE_SDK="$matching_sdk"
+            AVAILABLE_RUNTIME="$runtime"
+            echo "📍 Найдена совместимая пара: SDK=$AVAILABLE_SDK, Runtime=$AVAILABLE_RUNTIME"
+            break
+          fi
+        done
+        
+        # Приоритет 2: Если не нашли точного совпадения, берем последнюю доступную runtime
+        if [ -z "$AVAILABLE_SDK" ] || [ -z "$AVAILABLE_RUNTIME" ]; then
+          AVAILABLE_RUNTIME=$(echo "$ALL_RUNTIME_VERSIONS" | tail -1)
+          echo "📍 Используем последнюю runtime версию: $AVAILABLE_RUNTIME"
+          
+          # Ищем SDK того же major версии или новее
+          runtime_major=$(echo $AVAILABLE_RUNTIME | cut -d. -f1)
+          AVAILABLE_SDK=$(echo "$ALL_SDK_VERSIONS" | grep "$runtime_major" | tail -1 || echo "$(echo "$ALL_SDK_VERSIONS" | tail -1)")
+        fi
+        
+        # Приоритет 3: Fallback - берем самые новые доступные
         if [ -z "$AVAILABLE_SDK" ]; then
-          AVAILABLE_SDK="iphonesimulator18.0"
-          echo "📍 Используем fallback SDK: $AVAILABLE_SDK"
+          AVAILABLE_SDK=$(echo "$ALL_SDK_VERSIONS" | tail -1)
         fi
         if [ -z "$AVAILABLE_RUNTIME" ]; then
-          AVAILABLE_RUNTIME="18.4"
-          echo "📍 Используем fallback runtime: $AVAILABLE_RUNTIME"
+          AVAILABLE_RUNTIME=$(echo "$ALL_RUNTIME_VERSIONS" | tail -1)
         fi
         
-        # Умная логика определения destination - от простого к сложному
+        echo "📍 ФИНАЛЬНЫЙ ВЫБОР: SDK=$AVAILABLE_SDK, Runtime=$AVAILABLE_RUNTIME"
+        
+        # Умная логика определения destination - КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ
         echo "📍 Анализ доступных устройств и runtime совместимости:"
         xcrun simctl list devices available | grep iPhone | head -5
         
-        # 1. Пробуем найти устройство с правильным runtime
+        # 1. Ищем устройство конкретно для выбранной runtime версии
         echo "📍 Поиск совместимого устройства с runtime $AVAILABLE_RUNTIME..."
         
-        # Сначала проверим, какие устройства доступны для данной runtime
-        COMPATIBLE_DEVICE=$(xcrun simctl list devices | grep "$AVAILABLE_RUNTIME" -A 20 | grep "iPhone 16 Pro" | head -1)
+        # Получаем устройства для конкретной runtime
+        RUNTIME_DEVICES=$(xcrun simctl list devices | grep -A 50 "$AVAILABLE_RUNTIME" | grep "iPhone" | head -5)
+        echo "📍 Устройства для runtime $AVAILABLE_RUNTIME:"
+        echo "$RUNTIME_DEVICES"
+        
+        # Ищем iPhone 16 Pro для данной runtime
+        COMPATIBLE_DEVICE=$(echo "$RUNTIME_DEVICES" | grep "iPhone 16 Pro" | head -1)
+        
         if [ -n "$COMPATIBLE_DEVICE" ]; then
           DEVICE_NAME=$(echo "$COMPATIBLE_DEVICE" | cut -d'(' -f1 | xargs)
           echo "📍 Найдено совместимое устройство: $DEVICE_NAME для runtime $AVAILABLE_RUNTIME"
           DESTINATION_SPEC="platform=iOS Simulator,name=$DEVICE_NAME,OS=$AVAILABLE_RUNTIME"
         else
-          # 2. Попробуем без указания runtime - пусть система сама выберет
-          AVAILABLE_DEVICE_NAME=$(xcrun simctl list devices available | grep "iPhone 16 Pro" | head -1 | cut -d'(' -f1 | xargs)
-          if [ -n "$AVAILABLE_DEVICE_NAME" ]; then
-            echo "📍 Используем устройство без указания runtime: $AVAILABLE_DEVICE_NAME"
-            DESTINATION_SPEC="platform=iOS Simulator,name=$AVAILABLE_DEVICE_NAME"
+          # 2. Если нет iPhone 16 Pro, берем любое доступное iPhone для этой runtime
+          ANY_IPHONE=$(echo "$RUNTIME_DEVICES" | grep "iPhone" | head -1)
+          if [ -n "$ANY_IPHONE" ]; then
+            DEVICE_NAME=$(echo "$ANY_IPHONE" | cut -d'(' -f1 | xargs)
+            echo "📍 Используем доступное устройство: $DEVICE_NAME для runtime $AVAILABLE_RUNTIME"
+            DESTINATION_SPEC="platform=iOS Simulator,name=$DEVICE_NAME,OS=$AVAILABLE_RUNTIME"
           else
-            echo "📍 Используем generic destination"
+            # 3. Fallback: generic destination с правильным SDK
+            echo "📍 Используем generic destination без указания runtime"
             DESTINATION_SPEC="generic/platform=iOS Simulator"
           fi
         fi
@@ -162,6 +195,13 @@ jobs:
         fi
         echo "📍 Используемая схема: $SCHEME_NAME"
         
+        # Дополнительные флаги для решения проблем с Asset Catalog
+        ASSET_FLAGS=""
+        if [ "$AVAILABLE_SDK" = "iphonesimulator18.0" ]; then
+          # Для SDK 18.0 добавляем дополнительные флаги для совместимости
+          ASSET_FLAGS="ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME= ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME=AccentColor"
+        fi
+        
         if xcodebuild -project ALADDIN.xcodeproj -scheme "$SCHEME_NAME" \
           -sdk "$AVAILABLE_SDK" \
           -destination "$DESTINATION_SPEC" \
@@ -172,6 +212,7 @@ jobs:
           ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
           COMPILER_INDEX_STORE_ENABLE=NO \
           GCC_WARN_INHIBIT_ALL_WARNINGS=YES \
+          $ASSET_FLAGS \
           build; then
           
           echo "✅ ТЕСТ 1 УСПЕХЕН!"
