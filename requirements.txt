@@ -36,8 +36,8 @@ google-cloud-compute==1.14.1
 # google-cloud-sql==0.1.0  # Package not available, commented out
 
 # Data processing
-pandas==2.1.4
-numpy==1.25.2
+pandas>=2.1.4
+numpy>=1.26.0
 
 # Visualization
 networkx==3.2.1
