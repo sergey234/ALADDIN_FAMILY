@@ -96,7 +96,7 @@ jobs:
         destinations=(
           "platform=iOS Simulator"
           "platform=iOS Simulator,name=iPhone 15"
-          "platform=iOS Simulator,id=iPhone 15"
+          "generic/platform=iOS Simulator"
           "platform=iOS Simulator,OS=latest"
           "generic/platform=iOS Simulator"
         )

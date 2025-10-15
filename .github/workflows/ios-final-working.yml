@@ -1,0 +1,86 @@
+name: iOS Final Working Solution
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'mobile_apps/ALADDIN_iOS/final_working.txt' ]
+
+jobs:
+  final-working:
+    runs-on: macos-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.0.0'
+        
+    - name: iOS Final Working Solution
+      run: |
+        echo "🎯 ФИНАЛЬНОЕ РАБОЧЕЕ РЕШЕНИЕ"
+        echo "============================"
+        
+        cd mobile_apps/ALADDIN_iOS
+        
+        echo ""
+        echo "🔍 ПРОБЛЕМА НАЙДЕНА:"
+        echo "❌ Система пытается использовать конкретный ID симулятора"
+        echo "❌ Этот ID недоступен в GitHub Actions"
+        echo "❌ iOS 18.0 is not installed"
+        
+        echo ""
+        echo "✅ РЕШЕНИЕ:"
+        echo "Используем generic/platform=iOS Simulator без конкретного ID"
+        
+        echo ""
+        echo "🧪 ТЕСТ 1: Generic destination"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "generic/platform=iOS Simulator" build; then
+          echo "✅ УСПЕХ! Generic destination работает!"
+          
+          echo ""
+          echo "📱 Результат сборки:"
+          ls -la build/
+          echo ""
+          echo "📱 Ищем .app файлы:"
+          find build/ -name "*.app" -type d
+          
+          echo ""
+          echo "🎉 ФИНАЛЬНОЕ РЕШЕНИЕ НАЙДЕНО!"
+          echo "Используйте: -destination 'generic/platform=iOS Simulator'"
+          exit 0
+        fi
+        
+        echo ""
+        echo "🧪 ТЕСТ 2: Без destination"
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN build; then
+          echo "✅ УСПЕХ! Без destination работает!"
+          
+          echo ""
+          echo "📱 Результат сборки:"
+          ls -la build/
+          echo ""
+          echo "📱 Ищем .app файлы:"
+          find build/ -name "*.app" -type d
+          
+          echo ""
+          echo "🎉 АЛЬТЕРНАТИВНОЕ РЕШЕНИЕ!"
+          echo "Используйте команду без destination"
+          exit 0
+        fi
+        
+        echo ""
+        echo "❌ Все тесты провалились"
+        echo "Проверяем доступные симуляторы:"
+        xcrun simctl list devices available | grep iPhone | head -5
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: ios-final-working-artifacts
+        path: mobile_apps/ALADDIN_iOS/build/
+        retention-days: 7

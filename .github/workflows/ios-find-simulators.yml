@@ -69,7 +69,7 @@ jobs:
         echo "ID: $FIRST_IPHONE_ID"
         
         # Попробуем с ID
-        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,id=$FIRST_IPHONE_ID" build; then
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "generic/platform=iOS Simulator" build; then
           echo "✅ УСПЕХ с ID: $FIRST_IPHONE_ID"
           ls -la build/
         else

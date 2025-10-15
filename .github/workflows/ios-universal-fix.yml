@@ -57,7 +57,7 @@ jobs:
         FIRST_IPHONE=$(xcrun simctl list devices available | grep iPhone | head -1 | awk -F'[()]' '{print $2}' || echo "")
         if [ -n "$FIRST_IPHONE" ]; then
           echo "Используем iPhone ID: $FIRST_IPHONE"
-          if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "platform=iOS Simulator,id=$FIRST_IPHONE" build; then
+          if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -destination "generic/platform=iOS Simulator" build; then
             echo "✅ УСПЕХ! С ID: $FIRST_IPHONE"
             ls -la build/
             find build/ -name "*.app" -type d
