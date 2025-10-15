@@ -1,1 +1,1 @@
-debug simple test
+debug simple test - trigger $(date)
