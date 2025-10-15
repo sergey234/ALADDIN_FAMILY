@@ -117,43 +117,81 @@ jobs:
         ALL_RUNTIME_VERSIONS=$(xcrun simctl list runtimes | grep iOS | sed 's/.*iOS \([0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | sort -V)
         echo "📍 Все доступные runtime: $ALL_RUNTIME_VERSIONS"
         
-        # УМНАЯ ЛОГИКА: ищем совместимую пару SDK/Runtime
+        # УМНАЯ ЛОГИКА: сначала выбираем SDK, потом ищем совместимый runtime - ИСПРАВЛЕНИЕ!
         AVAILABLE_SDK=""
         AVAILABLE_RUNTIME=""
         
-        # Приоритет 1: Попробуем найти совпадение major.minor версий
-        for runtime in $ALL_RUNTIME_VERSIONS; do
-          major_minor=$(echo $runtime | cut -d. -f1-2)
-          matching_sdk=$(echo "$ALL_SDK_VERSIONS" | grep "$major_minor" | head -1)
-          if [ -n "$matching_sdk" ]; then
-            AVAILABLE_SDK="$matching_sdk"
-            AVAILABLE_RUNTIME="$runtime"
-            echo "📍 Найдена совместимая пара: SDK=$AVAILABLE_SDK, Runtime=$AVAILABLE_RUNTIME"
-            break
-          fi
-        done
+        # Приоритет 1: Берем доступный SDK (обычно только один доступен)
+        AVAILABLE_SDK=$(echo "$ALL_SDK_VERSIONS" | head -1)
+        echo "📍 Выбран SDK: $AVAILABLE_SDK"
         
-        # Приоритет 2: Если не нашли точного совпадения, берем последнюю доступную runtime
-        if [ -z "$AVAILABLE_SDK" ] || [ -z "$AVAILABLE_RUNTIME" ]; then
-          AVAILABLE_RUNTIME=$(echo "$ALL_RUNTIME_VERSIONS" | tail -1)
-          echo "📍 Используем последнюю runtime версию: $AVAILABLE_RUNTIME"
-          
-          # Ищем SDK того же major версии или новее
-          runtime_major=$(echo $AVAILABLE_RUNTIME | cut -d. -f1)
-          AVAILABLE_SDK=$(echo "$ALL_SDK_VERSIONS" | grep "$runtime_major" | tail -1 || echo "$(echo "$ALL_SDK_VERSIONS" | tail -1)")
+        # Приоритет 2: Ищем runtime совместимый с выбранным SDK
+        # Извлекаем major.minor версию SDK
+        SDK_VERSION=$(echo "$AVAILABLE_SDK" | sed 's/iphonesimulator\([0-9][0-9]*\.[0-9][0-9]*\).*/\1/')
+        SDK_MAJOR=$(echo "$SDK_VERSION" | cut -d. -f1)
+        echo "📍 Версия SDK: $SDK_VERSION (major: $SDK_MAJOR)"
+        
+        # Ищем runtime того же major версии что и SDK
+        COMPATIBLE_RUNTIMES=$(echo "$ALL_RUNTIME_VERSIONS" | grep "^$SDK_MAJOR\." || echo "")
+        if [ -n "$COMPATIBLE_RUNTIMES" ]; then
+          # Берем самую новую runtime той же major версии
+          AVAILABLE_RUNTIME=$(echo "$COMPATIBLE_RUNTIMES" | tail -1)
+          echo "📍 Найден совместимый runtime для SDK $SDK_VERSION: $AVAILABLE_RUNTIME"
+        else
+          # Fallback: берем любую доступную runtime, но предупреждаем
+          AVAILABLE_RUNTIME=$(echo "$ALL_RUNTIME_VERSIONS" | head -1)
+          echo "⚠️ ВНИМАНИЕ: Не найден runtime версии $SDK_MAJOR.x, используем $AVAILABLE_RUNTIME"
         fi
         
-        # Приоритет 3: Fallback - берем самые новые доступные
+        # Приоритет 3: Если все еще ничего не выбрано - fallback
         if [ -z "$AVAILABLE_SDK" ]; then
-          AVAILABLE_SDK=$(echo "$ALL_SDK_VERSIONS" | tail -1)
+          AVAILABLE_SDK="iphonesimulator18.0"
+          echo "📍 Fallback SDK: $AVAILABLE_SDK"
         fi
         if [ -z "$AVAILABLE_RUNTIME" ]; then
-          AVAILABLE_RUNTIME=$(echo "$ALL_RUNTIME_VERSIONS" | tail -1)
+          AVAILABLE_RUNTIME="18.4"
+          echo "📍 Fallback Runtime: $AVAILABLE_RUNTIME"
         fi
         
         echo "📍 ФИНАЛЬНЫЙ ВЫБОР: SDK=$AVAILABLE_SDK, Runtime=$AVAILABLE_RUNTIME"
         
-        # Умная логика определения destination - КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ
+        # Определяем какую схему использовать
+        if [ -n "$NEW_SCHEME" ]; then
+          SCHEME_NAME="$NEW_SCHEME"
+        else
+          SCHEME_NAME="ALADDIN"
+        fi
+        echo "📍 Используемая схема: $SCHEME_NAME"
+        
+        # Дополнительные флаги для решения проблем с Asset Catalog - КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ
+        ASSET_FLAGS=""
+        
+        # Проверяем совместимость SDK и Runtime перед сборкой
+        SDK_MAJOR_FINAL=$(echo "$AVAILABLE_SDK" | sed 's/iphonesimulator\([0-9][0-9]*\).*/\1/')
+        RUNTIME_MAJOR_FINAL=$(echo "$AVAILABLE_RUNTIME" | cut -d. -f1)
+        
+        echo "📍 ПРОВЕРКА СОВМЕСТИМОСТИ: SDK major=$SDK_MAJOR_FINAL, Runtime major=$RUNTIME_MAJOR_FINAL"
+        
+        if [ "$SDK_MAJOR_FINAL" != "$RUNTIME_MAJOR_FINAL" ]; then
+          echo "⚠️ ПРОБЛЕМА СОВМЕСТИМОСТИ: SDK $SDK_MAJOR_FINAL не совместим с Runtime $RUNTIME_MAJOR_FINAL"
+          echo "📍 Ищем совместимый runtime для SDK $SDK_MAJOR_FINAL..."
+          
+          # Ищем runtime той же major версии что и SDK
+          CORRECT_RUNTIME=$(echo "$ALL_RUNTIME_VERSIONS" | grep "^$SDK_MAJOR_FINAL\." | head -1)
+          if [ -n "$CORRECT_RUNTIME" ]; then
+            AVAILABLE_RUNTIME="$CORRECT_RUNTIME"
+            echo "✅ НАЙДЕН СОВМЕСТИМЫЙ RUNTIME: $AVAILABLE_RUNTIME"
+          else
+            echo "❌ Не найден совместимый runtime для SDK $SDK_MAJOR_FINAL"
+          fi
+        fi
+        
+        # Дополнительные флаги для Asset Catalog
+        if [ "$AVAILABLE_SDK" = "iphonesimulator18.0" ]; then
+          ASSET_FLAGS="ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME= ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME=AccentColor"
+        fi
+        
+        # УМНАЯ ЛОГИКА DESTINATION - после исправления runtime
         echo "📍 Анализ доступных устройств и runtime совместимости:"
         xcrun simctl list devices available | grep iPhone | head -5
         
@@ -180,27 +218,12 @@ jobs:
             echo "📍 Используем доступное устройство: $DEVICE_NAME для runtime $AVAILABLE_RUNTIME"
             DESTINATION_SPEC="platform=iOS Simulator,name=$DEVICE_NAME,OS=$AVAILABLE_RUNTIME"
           else
-            # 3. Fallback: generic destination с правильным SDK
+            # 3. Fallback: generic destination без указания runtime
             echo "📍 Используем generic destination без указания runtime"
             DESTINATION_SPEC="generic/platform=iOS Simulator"
           fi
         fi
-        echo "📍 Используемый destination: $DESTINATION_SPEC"
-        
-        # Определяем какую схему использовать
-        if [ -n "$NEW_SCHEME" ]; then
-          SCHEME_NAME="$NEW_SCHEME"
-        else
-          SCHEME_NAME="ALADDIN"
-        fi
-        echo "📍 Используемая схема: $SCHEME_NAME"
-        
-        # Дополнительные флаги для решения проблем с Asset Catalog
-        ASSET_FLAGS=""
-        if [ "$AVAILABLE_SDK" = "iphonesimulator18.0" ]; then
-          # Для SDK 18.0 добавляем дополнительные флаги для совместимости
-          ASSET_FLAGS="ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME= ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME=AccentColor"
-        fi
+        echo "📍 ИСПОЛЬЗУЕМЫЙ DESTINATION: $DESTINATION_SPEC"
         
         if xcodebuild -project ALADDIN.xcodeproj -scheme "$SCHEME_NAME" \
           -sdk "$AVAILABLE_SDK" \
@@ -488,3 +511,4 @@ jobs:
         path: mobile_apps/ALADDIN_iOS/
         if-no-files-found: warn
         retention-days: 7
+
