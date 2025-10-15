@@ -61,30 +61,21 @@ jobs:
           echo "📍 Используем fallback runtime: $AVAILABLE_RUNTIME"
         fi
         
-        # Определяем доступное устройство упрощенным способом
+        # Используем простой подход - пробуем несколько вариантов destination
         echo "📍 Анализ доступных устройств:"
-        xcrun simctl list devices available | grep iPhone
+        xcrun simctl list devices available | grep iPhone | head -3
         
-        # Попробуем найти iPhone 16 Pro сначала, затем любое iPhone устройство
-        AVAILABLE_DEVICE_NAME=$(xcrun simctl list devices available | grep "iPhone 16 Pro" | head -1 | sed 's/^[[:space:]]*\([^(]*\).*/\1/' | sed 's/[[:space:]]*$//')
-        if [ -z "$AVAILABLE_DEVICE_NAME" ]; then
-          AVAILABLE_DEVICE_NAME=$(xcrun simctl list devices available | grep iPhone | head -1 | sed 's/^[[:space:]]*\([^(]*\).*/\1/' | sed 's/[[:space:]]*$//')
-        fi
-        
+        # Пробуем сначала с конкретным устройством и runtime
+        AVAILABLE_DEVICE_NAME=$(xcrun simctl list devices available | grep "iPhone 16 Pro" | head -1 | cut -d'(' -f1 | xargs)
         if [ -n "$AVAILABLE_DEVICE_NAME" ]; then
           echo "📍 Найдено устройство: $AVAILABLE_DEVICE_NAME"
+          DESTINATION_SPEC="platform=iOS Simulator,name=$AVAILABLE_DEVICE_NAME,OS=$AVAILABLE_RUNTIME"
         else
-          echo "📍 Устройство не найдено, будет использован generic destination"
-          AVAILABLE_DEVICE_NAME=""
-        fi
-        
-        # Формируем destination с учетом доступного устройства - пробуем без OS сначала
-        if [ -n "$AVAILABLE_DEVICE_NAME" ]; then
-          DESTINATION_SPEC="platform=iOS Simulator,name=$AVAILABLE_DEVICE_NAME"
-        else
+          # Если нет iPhone 16 Pro, пробуем generic destination
+          echo "📍 Используем generic destination"
           DESTINATION_SPEC="generic/platform=iOS Simulator"
         fi
-        echo "📍 Используемый destination (без OS версии): $DESTINATION_SPEC"
+        echo "📍 Используемый destination: $DESTINATION_SPEC"
         
         if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
           -sdk "$AVAILABLE_SDK" \
