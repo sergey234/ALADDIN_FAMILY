@@ -1,0 +1,5 @@
+# Ручной запуск iOS Simulator workflow
+# Дата: 2025-01-15
+# Цель: Тестировать workflow_dispatch триггер
+
+РУЧНОЙ ЗАПУСК WORKFLOW - ТЕСТ
