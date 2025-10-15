@@ -210,6 +210,18 @@ jobs:
           fi
         fi
         
+        # РАДИКАЛЬНОЕ РЕШЕНИЕ: Исправляем проблему с runtime совместимостью
+        echo "📍 РАДИКАЛЬНОЕ РЕШЕНИЕ: Исправляем runtime совместимость..."
+        
+        # Если есть проблемы с совместимостью, используем БЕЗ destination spec
+        if [ "$SDK_MAJOR_FINAL" != "$RUNTIME_MAJOR_FINAL" ]; then
+          echo "🚨 КРИТИЧЕСКАЯ ПРОБЛЕМА: Несовместимость SDK и Runtime!"
+          echo "📍 Используем БЕЗ destination для обхода проблемы..."
+          DESTINATION_OVERRIDE="NO_DESTINATION"
+        else
+          DESTINATION_OVERRIDE="USE_DESTINATION"
+        fi
+        
         # Дополнительные флаги для Asset Catalog
         if [ "$AVAILABLE_SDK" = "iphonesimulator18.0" ]; then
           ASSET_FLAGS="ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME= ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME=AccentColor"
@@ -289,13 +301,13 @@ jobs:
           echo "⚠️ Будем пробовать сборку несмотря на отсутствие явной поддержки симулятора..."
         fi
         
-        # ПРИОРИТЕТ 2: АЛЬТЕРНАТИВНЫЙ ПОДХОД - Сначала пробуем без схемы
-        echo "🚨 ПРИОРИТЕТ 2: АЛЬТЕРНАТИВНЫЙ ПОДХОД - BUILD БЕЗ СХЕМЫ!"
+        # ПРИОРИТЕТ 2: РЕВОЛЮЦИОННОЕ РЕШЕНИЕ - ОБХОД RUNTIME ПРОБЛЕМ!
+        echo "🚨 ПРИОРИТЕТ 2: РЕВОЛЮЦИОННОЕ РЕШЕНИЕ - ОБХОД RUNTIME ПРОБЛЕМ!"
         echo "=================================================="
         
-        # Пробуем собрать напрямую target без схемы
+        # РЕШЕНИЕ 1: Пробуем с явным указанием build settings для обхода runtime проблем
         DIRECT_BUILD_SUCCESS=false
-        echo "📍 Пробуем прямой build target ALADDIN..."
+        echo "📍 Пробуем прямой build target ALADDIN с исправлением runtime проблем..."
         if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
           -sdk "$AVAILABLE_SDK" \
           IPHONEOS_DEPLOYMENT_TARGET=12.0 \
@@ -303,6 +315,11 @@ jobs:
           ASSETCATALOG_COMPILER_APPICON_NAME="" \
           COMPILER_INDEX_STORE_ENABLE=NO \
           GCC_WARN_INHIBIT_ALL_WARNINGS=YES \
+          ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME="" \
+          ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
+          SUPPORTS_MACCATALYST=NO \
+          TARGETED_DEVICE_FAMILY="1,2" \
+          VALID_ARCHS="arm64 x86_64" \
           build 2>/dev/null; then
           echo "✅ ПРЯМОЙ BUILD УСПЕШЕН!"
           DIRECT_BUILD_SUCCESS=true
@@ -313,7 +330,32 @@ jobs:
             echo "APP_FOUND_PATH=$APP_PATH" >> $GITHUB_ENV
           fi
         else
-          echo "❌ Прямой build не удался, пробуем через схему..."
+          echo "❌ Прямой build не удался, пробуем РЕВОЛЮЦИОННОЕ РЕШЕНИЕ..."
+          
+          # РЕВОЛЮЦИОННОЕ РЕШЕНИЕ: Пробуем с отключением Asset Catalog для обхода runtime проблем
+          echo "📍 РЕВОЛЮЦИОННОЕ РЕШЕНИЕ: Отключаем Asset Catalog для обхода runtime проблем..."
+          if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
+            -sdk "$AVAILABLE_SDK" \
+            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+            CODE_SIGNING_ALLOWED=NO \
+            ASSETCATALOG_COMPILER_APPICON_NAME="" \
+            ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO \
+            GCC_WARN_INHIBIT_ALL_WARNINGS=YES \
+            SUPPORTS_MACCATALYST=NO \
+            TARGETED_DEVICE_FAMILY="1,2" \
+            VALID_ARCHS="arm64 x86_64" \
+            build 2>/dev/null; then
+            echo "✅ РЕВОЛЮЦИОННОЕ РЕШЕНИЕ УСПЕШНО!"
+            DIRECT_BUILD_SUCCESS=true
+            APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
+            if [ -n "$APP_PATH" ]; then
+              echo "🎉 НАЙДЕН .app ФАЙЛ: $APP_PATH"
+              echo "APP_FOUND_PATH=$APP_PATH" >> $GITHUB_ENV
+            fi
+          else
+            echo "❌ Революционное решение не помогло, пробуем через схему..."
+          fi
         fi
         
         # ПРИОРИТЕТ 3: СХЕМА ПОДХОД (если прямой build не сработал)
@@ -321,18 +363,16 @@ jobs:
         echo "🚨 ПРИОРИТЕТ 3: СХЕМА ПОДХОД!"
         echo "=================================================="
         
-        if xcodebuild -project ALADDIN.xcodeproj -scheme "$SCHEME_NAME" \
-          -sdk "$AVAILABLE_SDK" \
-          -destination "$DESTINATION_SPEC" \
-          IPHONEOS_DEPLOYMENT_TARGET=12.0 \
-          CODE_SIGNING_ALLOWED=NO \
-          ASSETCATALOG_COMPILER_APPICON_NAME="" \
-          ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME="" \
-          ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
-          COMPILER_INDEX_STORE_ENABLE=NO \
-          GCC_WARN_INHIBIT_ALL_WARNINGS=YES \
-          $ASSET_FLAGS \
-          build; then
+        # Используем destination в зависимости от совместимости
+        if [ "$DESTINATION_OVERRIDE" = "NO_DESTINATION" ]; then
+          echo "📍 Используем сборку БЕЗ destination для обхода runtime проблем..."
+          BUILD_CMD="xcodebuild -project ALADDIN.xcodeproj -scheme $SCHEME_NAME -sdk $AVAILABLE_SDK IPHONEOS_DEPLOYMENT_TARGET=12.0 CODE_SIGNING_ALLOWED=NO ASSETCATALOG_COMPILER_APPICON_NAME=\"\" ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME=\"\" ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO COMPILER_INDEX_STORE_ENABLE=NO GCC_WARN_INHIBIT_ALL_WARNINGS=YES $ASSET_FLAGS build"
+        else
+          echo "📍 Используем сборку С destination: $DESTINATION_SPEC"
+          BUILD_CMD="xcodebuild -project ALADDIN.xcodeproj -scheme $SCHEME_NAME -sdk $AVAILABLE_SDK -destination \"$DESTINATION_SPEC\" IPHONEOS_DEPLOYMENT_TARGET=12.0 CODE_SIGNING_ALLOWED=NO ASSETCATALOG_COMPILER_APPICON_NAME=\"\" ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME=\"\" ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO COMPILER_INDEX_STORE_ENABLE=NO GCC_WARN_INHIBIT_ALL_WARNINGS=YES $ASSET_FLAGS build"
+        fi
+        
+        if eval "$BUILD_CMD"; then
           
           echo "✅ ТЕСТ 1 УСПЕХЕН!"
           
