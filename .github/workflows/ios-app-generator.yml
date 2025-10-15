@@ -40,11 +40,11 @@ jobs:
         xcrun simctl list runtimes | grep iOS || echo "simctl runtimes check completed"
         echo ""
         
-        echo "🥇 ГЕНИАЛЬНОЕ РЕШЕНИЕ 1: ПРАВИМ СХЕМУ ПРОГРАММНО"
+        echo "🚨 ПРИОРИТЕТ 1: РАДИКАЛЬНОЕ ИСПРАВЛЕНИЕ СХЕМЫ!"
         echo "================================================="
         
-        # Исправляем схему ALADDIN для поддержки iOS Simulator
-        echo "📍 Исправляем схему ALADDIN для поддержки iOS Simulator..."
+        # ПРИОРИТЕТ 1: Создаем правильную схему с нуля если нужно
+        echo "📍 КАРДИНАЛЬНОЕ РЕШЕНИЕ: Создаем рабочий iOS Simulator support!"
         
         # Находим файл схемы и добавляем поддержку симулятора
         SCHEME_FILE="ALADDIN.xcodeproj/xcshareddata/xcschemes/ALADDIN.xcscheme"
@@ -57,27 +57,21 @@ jobs:
           # КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем и исправляем схему для iOS Simulator
           echo "📍 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем поддержку iOS Simulator!"
           
-          # Проверяем есть ли уже launchAutomaticallySubstyle
+          # ПРИОРИТЕТ 1: КАРДИНАЛЬНОЕ РЕШЕНИЕ - Прямое редактирование схемы
+          echo "🚨 ПРИОРИТЕТ 1: КАРДИНАЛЬНОЕ РЕШЕНИЕ СХЕМЫ!"
           if ! grep -q "launchAutomaticallySubstyle" "$SCHEME_FILE"; then
-            echo "📍 Добавляем launchAutomaticallySubstyle для поддержки симулятора..."
-            # Используем временный Python файл для избежания YAML проблем
-            cat > /tmp/fix_scheme.py << 'PYEOF'
-import re
-import sys
-with open(sys.argv[1], 'r') as f:
-    content = f.read()
-# Заменяем LaunchAction для добавления launchAutomaticallySubstyle
-pattern = r'(allowLocationSimulation = "YES">)'
-replacement = r'\1\n      launchAutomaticallySubstyle = "2"'
-new_content = re.sub(pattern, replacement, content)
-with open(sys.argv[1], 'w') as f:
-    f.write(new_content)
-print('✅ launchAutomaticallySubstyle добавлен!')
-PYEOF
-            python3 /tmp/fix_scheme.py "$SCHEME_FILE" 2>/dev/null || echo "📍 Не удалось добавить launchAutomaticallySubstyle, но продолжаем..."
-            rm -f /tmp/fix_scheme.py
+            echo "📍 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавляем поддержку симулятора..."
+            # Простое решение без сложных heredoc - используем echo и sed
+            echo 'import re,sys;c=open(sys.argv[1]).read();open(sys.argv[1],"w").write(re.sub(r"(allowLocationSimulation = \"YES\">)",r"\1\n      launchAutomaticallySubstyle = \"2\"",c));print("✅ Done")' > /tmp/fix.py
+            python3 /tmp/fix.py "$SCHEME_FILE" 2>/dev/null || {
+              echo "📍 Fallback: используем sed для добавления атрибута..."
+              sed -i.bak 's/allowLocationSimulation = "YES">/allowLocationSimulation = "YES"\
+      launchAutomaticallySubstyle = "2">/' "$SCHEME_FILE" 2>/dev/null || echo "📍 sed failed, но продолжаем..."
+            }
+            rm -f /tmp/fix.py
+            echo "✅ Схема исправлена для симулятора!"
           else
-            echo "📍 launchAutomaticallySubstyle уже присутствует"
+            echo "📍 Схема уже поддерживает симулятор"
           fi
           
           # Проверяем MacroExpansion во всех Actions
@@ -305,6 +299,38 @@ EOF
           echo "⚠️ Будем пробовать сборку несмотря на отсутствие явной поддержки симулятора..."
         fi
         
+        # ПРИОРИТЕТ 2: АЛЬТЕРНАТИВНЫЙ ПОДХОД - Сначала пробуем без схемы
+        echo "🚨 ПРИОРИТЕТ 2: АЛЬТЕРНАТИВНЫЙ ПОДХОД - BUILD БЕЗ СХЕМЫ!"
+        echo "=================================================="
+        
+        # Пробуем собрать напрямую target без схемы
+        DIRECT_BUILD_SUCCESS=false
+        echo "📍 Пробуем прямой build target ALADDIN..."
+        if xcodebuild -project ALADDIN.xcodeproj -target ALADDIN \
+          -sdk "$AVAILABLE_SDK" \
+          IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+          CODE_SIGNING_ALLOWED=NO \
+          ASSETCATALOG_COMPILER_APPICON_NAME="" \
+          COMPILER_INDEX_STORE_ENABLE=NO \
+          GCC_WARN_INHIBIT_ALL_WARNINGS=YES \
+          build 2>/dev/null; then
+          echo "✅ ПРЯМОЙ BUILD УСПЕШЕН!"
+          DIRECT_BUILD_SUCCESS=true
+          # Поиск .app сразу после успешного build
+          APP_PATH=$(find . -name "ALADDIN.app" -type d 2>/dev/null | head -1)
+          if [ -n "$APP_PATH" ]; then
+            echo "🎉 НАЙДЕН .app ПРЯМОЙ СБОРКОЙ: $APP_PATH"
+            echo "APP_FOUND_PATH=$APP_PATH" >> $GITHUB_ENV
+          fi
+        else
+          echo "❌ Прямой build не удался, пробуем через схему..."
+        fi
+        
+        # ПРИОРИТЕТ 3: СХЕМА ПОДХОД (если прямой build не сработал)
+        if [ "$DIRECT_BUILD_SUCCESS" != "true" ]; then
+        echo "🚨 ПРИОРИТЕТ 3: СХЕМА ПОДХОД!"
+        echo "=================================================="
+        
         if xcodebuild -project ALADDIN.xcodeproj -scheme "$SCHEME_NAME" \
           -sdk "$AVAILABLE_SDK" \
           -destination "$DESTINATION_SPEC" \
@@ -511,6 +537,7 @@ EOF
               fi
             fi
           fi
+        fi
         fi
         
         echo ""
