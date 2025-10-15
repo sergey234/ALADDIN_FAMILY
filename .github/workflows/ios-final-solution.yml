@@ -49,7 +49,7 @@ jobs:
         echo ""
         
         # Финальная компиляция с правильными параметрами
-        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -configuration Release -destination "platform=iOS Simulator,name=iPhone 15" build
+        xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -configuration Release -destination "platform=iOS Simulator" build
         
         echo ""
         echo "📱 ПРОВЕРЯЕМ РЕЗУЛЬТАТ:"
