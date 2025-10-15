@@ -22,7 +22,7 @@ jobs:
       run: |
         echo "🚨 КРИТИЧЕСКАЯ НАСТРОЙКА XCODE"
         # Устанавливаем правильный developer directory
-        sudo xcode-select --switch /Applications/Xcode_16.0.app/Contents/Developer
+        sudo xcode-select --switch /Applications/Xcode_16.0.0.app/Contents/Developer
         # Проверяем установку
         xcode-select -p
         echo "✅ Xcode настроен правильно"
@@ -39,6 +39,25 @@ jobs:
         xcrun simctl list devices available | grep iPhone || echo "simctl devices check completed"
         xcrun simctl list runtimes | grep iOS || echo "simctl runtimes check completed"
         echo ""
+        
+        # ФИНАЛЬНОЕ РЕШЕНИЕ: Самый простой подход
+        echo "🚀 ФИНАЛЬНОЕ РЕШЕНИЕ: Простейший build без сложной логики"
+        echo "=================================================="
+        if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
+          -sdk iphonesimulator \
+          IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+          CODE_SIGNING_ALLOWED=NO \
+          build; then
+          echo "🎉 УСПЕХ! Простейший build сработал!"
+          APP_PATH=$(find . -name "*.app" -type d 2>/dev/null | head -1)
+          if [ -n "$APP_PATH" ]; then
+            echo "✅ НАЙДЕН .app: $APP_PATH"
+            echo "APP_FOUND_PATH=$APP_PATH" >> $GITHUB_ENV
+            exit 0
+          fi
+        else
+          echo "❌ Простейший build не сработал, продолжаем сложную логику..."
+        fi
         
         echo "🚨 ПРИОРИТЕТ 1: РАДИКАЛЬНОЕ ИСПРАВЛЕНИЕ СХЕМЫ!"
         echo "================================================="
