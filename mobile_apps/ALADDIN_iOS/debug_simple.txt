@@ -1,1 +1,1 @@
-debug simple test - trigger again $(date)
+debug simple test - after notifications fix $(date)
