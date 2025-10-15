@@ -32,13 +32,28 @@ jobs:
         echo ""
         
         echo "🔧 ТЕСТ 1: FIXED BUILD - iPhone 16 Pro (100% SUCCESS)"
+        echo "🚨 ИСПРАВЛЕНИЯ: Deployment Target 12.0, Runtime совместимость, Asset Catalog"
+        
+        # Определяем доступную runtime версию более точно
+        echo "📍 Анализ доступных runtime версий:"
+        xcrun simctl list runtimes | grep iOS
+        AVAILABLE_RUNTIME=$(xcrun simctl list runtimes | grep iOS | grep "com.apple.CoreSimulator.SimRuntime.iOS" | head -1 | sed 's/.*iOS \([0-9][0-9]*\.[0-9][0-9]*\).*/\1/')
+        echo "📍 Извлеченная runtime версия: $AVAILABLE_RUNTIME"
+        
+        # Если не удалось извлечь, используем последнюю доступную версию
+        if [ -z "$AVAILABLE_RUNTIME" ]; then
+          AVAILABLE_RUNTIME="18.4"
+          echo "📍 Используем fallback runtime: $AVAILABLE_RUNTIME"
+        fi
+        
         if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
-          -sdk iphonesimulator \
-          -destination "platform=iOS Simulator,name=iPhone 16 Pro" \
-          IPHONEOS_DEPLOYMENT_TARGET=13.0 \
+          -sdk iphonesimulator18.4 \
+          -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=$AVAILABLE_RUNTIME" \
+          IPHONEOS_DEPLOYMENT_TARGET=12.0 \
           CODE_SIGNING_ALLOWED=NO \
           ASSETCATALOG_COMPILER_APPICON_NAME="" \
           ASSETCATALOG_COMPILER_ACCENT_COLOR_NAME="" \
+          ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
           COMPILER_INDEX_STORE_ENABLE=NO \
           GCC_WARN_INHIBIT_ALL_WARNINGS=YES \
           build; then
@@ -86,10 +101,12 @@ jobs:
           echo "❌ ТЕСТ 1 НЕ РАБОТАЕТ"
           echo "🔧 ТЕСТ 2: Generic Simulator with Fixes"
           if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
+            -sdk iphonesimulator18.4 \
             -destination "generic/platform=iOS Simulator" \
-            IPHONEOS_DEPLOYMENT_TARGET=13.0 \
+            IPHONEOS_DEPLOYMENT_TARGET=12.0 \
             CODE_SIGNING_ALLOWED=NO \
             ASSETCATALOG_COMPILER_APPICON_NAME="" \
+            ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
             build; then
             
             echo "✅ ТЕСТ 2 УСПЕХЕН!"
@@ -102,10 +119,11 @@ jobs:
             echo "❌ ТЕСТ 2 НЕ РАБОТАЕТ"
             echo "🔧 ТЕСТ 3: БЕЗ destination - МАКСИМАЛЬНО ПРОСТОЙ"
             if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
-              -sdk iphonesimulator \
-              IPHONEOS_DEPLOYMENT_TARGET=13.0 \
+              -sdk iphonesimulator18.4 \
+              IPHONEOS_DEPLOYMENT_TARGET=12.0 \
               CODE_SIGNING_ALLOWED=NO \
               ASSETCATALOG_COMPILER_APPICON_NAME="" \
+              ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS=NO \
               build; then
               
               echo "✅ ТЕСТ 3 УСПЕХЕН!"
@@ -123,7 +141,12 @@ jobs:
             else
               echo "❌ ТЕСТ 3 НЕ РАБОТАЕТ"
               echo "🔧 ТЕСТ 4: АВАРИЙНЫЙ РЕЖИМ - ТОЛЬКО SDK"
-              if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build; then
+              if xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
+                -sdk iphonesimulator18.4 \
+                IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+                CODE_SIGNING_ALLOWED=NO \
+                ASSETCATALOG_COMPILER_APPICON_NAME="" \
+                build; then
                 echo "✅ ТЕСТ 4 УСПЕХЕН!"
                 # Аварийный поиск
                 APP_PATH=$(find . -name "*.app" -type d 2>/dev/null | head -1)
