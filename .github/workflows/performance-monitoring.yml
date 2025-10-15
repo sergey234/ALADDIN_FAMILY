@@ -19,7 +19,7 @@ on:
         - sfm
 
 env:
-  PYTHON_VERSION: '3.9'
+  PYTHON_VERSION: '3.11'
   DASHBOARD_PORT: 8080
   SFM_PORT: 8011
   MONITORING_DURATION: 300  # 5 минут
