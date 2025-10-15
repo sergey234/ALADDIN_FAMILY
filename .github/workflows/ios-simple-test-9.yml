@@ -30,7 +30,7 @@ jobs:
         echo "=================================="
         echo ""
         echo "❌ ПРОБЛЕМА:"
-        echo "   xcodebuild -destination 'platform=iOS' build"
+        echo "   xcodebuild -destination 'platform=iOS Simulator,name=iPhone 15' build"
         echo "   ↑ Ищет РЕАЛЬНОЕ устройство (которого нет в GitHub Actions)"
         echo ""
         echo "✅ РЕШЕНИЕ:"
