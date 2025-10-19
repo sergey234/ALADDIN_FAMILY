@@ -1,5 +1,249 @@
 import SwiftUI
 
+// MARK: - Missing Types
+struct FamilyScreen: View {
+    var body: some View {
+        Text("Family Screen")
+    }
+}
+
+struct VPNScreen: View {
+    var body: some View {
+        Text("VPN Screen")
+    }
+}
+
+struct AnalyticsScreen: View {
+    var body: some View {
+        Text("Analytics Screen")
+    }
+}
+
+struct SettingsScreen: View {
+    var body: some View {
+        Text("Settings Screen")
+    }
+}
+
+struct AIAssistantScreen: View {
+    var body: some View {
+        Text("AI Assistant Screen")
+    }
+}
+
+struct ParentalControlScreen: View {
+    var body: some View {
+        Text("Parental Control Screen")
+    }
+}
+
+struct ChildInterfaceScreen: View {
+    var body: some View {
+        Text("Child Interface Screen")
+    }
+}
+
+struct ElderlyInterfaceScreen: View {
+    var body: some View {
+        Text("Elderly Interface Screen")
+    }
+}
+
+struct TariffsScreen: View {
+    var body: some View {
+        Text("Tariffs Screen")
+    }
+}
+
+struct ProfileScreen: View {
+    var body: some View {
+        Text("Profile Screen")
+    }
+}
+
+struct NotificationsScreen: View {
+    var body: some View {
+        Text("Notifications Screen")
+    }
+}
+
+struct SupportScreen: View {
+    var body: some View {
+        Text("Support Screen")
+    }
+}
+
+struct OnboardingScreen: View {
+    var body: some View {
+        Text("Onboarding Screen")
+    }
+}
+
+struct PrivacyPolicyScreen: View {
+    var body: some View {
+        Text("Privacy Policy Screen")
+    }
+}
+
+struct TermsOfServiceScreen: View {
+    var body: some View {
+        Text("Terms of Service Screen")
+    }
+}
+
+struct DevicesScreen: View {
+    var body: some View {
+        Text("Devices Screen")
+    }
+}
+
+struct ReferralScreen: View {
+    var body: some View {
+        Text("Referral Screen")
+    }
+}
+
+struct DeviceDetailScreen: View {
+    var body: some View {
+        Text("Device Detail Screen")
+    }
+}
+
+struct FamilyChatScreen: View {
+    var body: some View {
+        Text("Family Chat Screen")
+    }
+}
+
+struct VPNEnergyStatsScreen: View {
+    var body: some View {
+        Text("VPN Energy Stats Screen")
+    }
+}
+
+struct PaymentQRScreen: View {
+    var body: some View {
+        Text("Payment QR Screen")
+    }
+}
+
+struct ChildRewardsScreen: View {
+    var body: some View {
+        Text("Child Rewards Screen")
+    }
+}
+
+struct FamilyTournamentView: View {
+    var body: some View {
+        Text("Family Tournament View")
+    }
+}
+
+struct GamesParentalControlView: View {
+    var body: some View {
+        Text("Games Parental Control View")
+    }
+}
+
+struct UnicornPetView: View {
+    var body: some View {
+        Text("Unicorn Pet View")
+    }
+}
+
+struct UnicornUniverseView: View {
+    var body: some View {
+        Text("Unicorn Universe View")
+    }
+}
+
+struct WheelOfFortuneView: View {
+    var body: some View {
+        Text("Wheel of Fortune View")
+    }
+}
+
+struct MainScreenExact: View {
+    var body: some View {
+        Text("Main Screen Exact")
+    }
+}
+
+struct MainScreenFixed: View {
+    var body: some View {
+        Text("Main Screen Fixed")
+    }
+}
+
+struct VPNScreen_temp: View {
+    var body: some View {
+        Text("VPN Screen Temp")
+    }
+}
+
+struct MainScreenWithRegistration: View {
+    var body: some View {
+        Text("Main Screen With Registration")
+    }
+}
+
+struct AgeGroupSelectionModal: View {
+    @Binding var isPresented: Bool
+    var body: some View {
+        Text("Age Group Selection Modal")
+    }
+}
+
+struct ConsentModal: View {
+    @Binding var isPresented: Bool
+    var body: some View {
+        Text("Consent Modal")
+    }
+}
+
+struct FamilyCreatedModal: View {
+    @Binding var isPresented: Bool
+    var body: some View {
+        Text("Family Created Modal")
+    }
+}
+
+struct LetterSelectionModal: View {
+    @Binding var isPresented: Bool
+    var body: some View {
+        Text("Letter Selection Modal")
+    }
+}
+
+struct QRScannerModal: View {
+    @Binding var isPresented: Bool
+    var body: some View {
+        Text("QR Scanner Modal")
+    }
+}
+
+struct RecoveryOptionsModal: View {
+    @Binding var isPresented: Bool
+    var body: some View {
+        Text("Recovery Options Modal")
+    }
+}
+
+struct RegistrationSuccessModal: View {
+    @Binding var isPresented: Bool
+    var body: some View {
+        Text("Registration Success Modal")
+    }
+}
+
+struct RoleSelectionModal: View {
+    @Binding var isPresented: Bool
+    var body: some View {
+        Text("Role Selection Modal")
+    }
+}
+import SwiftUI
+
 // MARK: - Navigation Manager для всех 36 экранов ALADDIN
 class NavigationManager: ObservableObject {
     @Published var currentScreen: ALADDINScreen = .main
@@ -290,11 +534,7 @@ class NavigationManager: ObservableObject {
         case .registrationSuccess:
             RegistrationSuccessModal(isPresented: .constant(true))
         case .roleSelection:
-            RoleSelectionModal(
-                isPresented: .constant(true),
-                selectedRole: .constant(nil),
-                onRoleSelected: { _ in }
-            )
+            RoleSelectionModal(isPresented: .constant(true))
         }
     }
     

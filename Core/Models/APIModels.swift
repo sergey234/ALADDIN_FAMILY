@@ -30,6 +30,21 @@ struct VPNServer: Codable, Identifiable {
 
 // MARK: - Family Models
 
+struct CreateFamilyResponse: Codable {
+    let success: Bool
+    let family_id: String
+    let recovery_code: String
+    let members: [FamilyMemberResponse]
+    let your_member_id: String
+}
+
+struct JoinFamilyResponse: Codable {
+    let success: Bool
+    let family_id: String
+    let members: [FamilyMemberResponse]
+    let your_member_id: String
+}
+
 struct FamilyMemberResponse: Codable, Identifiable {
     let id: String
     let name: String

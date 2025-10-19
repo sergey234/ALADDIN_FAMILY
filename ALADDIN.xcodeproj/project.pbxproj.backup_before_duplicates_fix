@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -18,6 +18,7 @@
 		A3000009 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000008 /* APIService.swift */; };
 		A3000011 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000010 /* NetworkManager.swift */; };
 		A3000013 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000012 /* AppConfig.swift */; };
+		A3000015 /* SecurityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000014 /* SecurityManager.swift */; };
 		A3000017 /* FamilyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000016 /* FamilyViewModel.swift */; };
 		A3000019 /* AIAssistantViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000018 /* AIAssistantViewModel.swift */; };
 		A3000021 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000020 /* SettingsViewModel.swift */; };
@@ -37,7 +38,10 @@
 		A3000049 /* AnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000048 /* AnalyticsManager.swift */; };
 		A3000051 /* FamilyRegistrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000050 /* FamilyRegistrationViewModel.swift */; };
 		A3000053 /* TariffsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000052 /* TariffsViewModel.swift */; };
-                A3000061 /* 01_MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000060 /* 01_MainScreen.swift */; };/* End PBXBuildFile section */
+		A3000055 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000054 /* AppConfig.swift */; };
+		A3000057 /* APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000056 /* APIModels.swift */; };
+		A3000059 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000058 /* APIService.swift */; };
+/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		A0FFFFFE /* ALADDIN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ALADDIN.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -52,6 +56,7 @@
 		A3000008 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Network/APIService.swift"; sourceTree = "<group>"; };
 		A3000010 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Network/NetworkManager.swift"; sourceTree = "<group>"; };
 		A3000012 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Config/AppConfig.swift"; sourceTree = "<group>"; };
+		A3000014 /* SecurityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Security/SecurityManager.swift"; sourceTree = "<group>"; };
 		A3000016 /* FamilyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/FamilyViewModel.swift"; sourceTree = "<group>"; };
 		A3000018 /* AIAssistantViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/AIAssistantViewModel.swift"; sourceTree = "<group>"; };
 		A3000020 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/SettingsViewModel.swift"; sourceTree = "<group>"; };
@@ -71,7 +76,10 @@
 		A3000048 /* AnalyticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Analytics/AnalyticsManager.swift"; sourceTree = "<group>"; };
 		A3000050 /* FamilyRegistrationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/FamilyRegistrationViewModel.swift"; sourceTree = "<group>"; };
 		A3000052 /* TariffsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/TariffsViewModel.swift"; sourceTree = "<group>"; };
-                A3000060 /* 01_MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/01_MainScreen.swift"; sourceTree = "<group>"; };/* End PBXFileReference section */
+		A3000054 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Config/AppConfig.swift"; sourceTree = "<group>"; };
+		A3000056 /* APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Models/APIModels.swift"; sourceTree = "<group>"; };
+		A3000058 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Network/APIService.swift"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A0FFFFFB /* Frameworks */ = {
@@ -93,23 +101,12 @@
 			sourceTree = "<group>";
 		};
 		A0FFFFFF /* ALADDIN */ = {
-                        children = (
-                                A1000000 /* ALADDINApp.swift */,
-                                A1000002 /* ContentView.swift */,
-                                A1000004 /* Assets.xcassets */,
-                                A1000006 /* Preview Content */,
-                                A3000060 /* 01_MainScreen.swift */,
-                                A3000062 /* Screens */,
-                                A3000063 /* ViewModels */,
-                                A3000064 /* Core */,
-                        );
-                A3000064 /* Core */ = {isa = PBXGroup; children = (A3000004 /* APIModels.swift */, A3000006 /* VPNManager.swift */, A3000008 /* APIService.swift */, A3000010 /* NetworkManager.swift */, A3000012 /* AppConfig.swift */, A3000040 /* NavigationManager.swift */, A3000042 /* AccessibilityManager.swift */, A3000044 /* StoreManager.swift */, A3000046 /* LocalizationManager.swift */, A3000048 /* AnalyticsManager.swift */,); path = Core; sourceTree = "<group>"; };			isa = PBXGroup;
+			isa = PBXGroup;
 			children = (
 				A1000000 /* ALADDINApp.swift */,
 				A1000002 /* ContentView.swift */,
 				A1000004 /* Assets.xcassets */,
 				A1000006 /* Preview Content */,
-                                A3000060 /* 01_MainScreen.swift */,
 				A3000000 /* MainViewModel.swift */,
 				A3000002 /* VPNViewModel.swift */,
 				A3000004 /* APIModels.swift */,
@@ -117,6 +114,7 @@
 				A3000008 /* APIService.swift */,
 				A3000010 /* NetworkManager.swift */,
 				A3000012 /* AppConfig.swift */,
+				A3000014 /* SecurityManager.swift */,
 				A3000016 /* FamilyViewModel.swift */,
 				A3000018 /* AIAssistantViewModel.swift */,
 				A3000020 /* SettingsViewModel.swift */,
@@ -136,8 +134,10 @@
 				A3000048 /* AnalyticsManager.swift */,
 				A3000050 /* FamilyRegistrationViewModel.swift */,
 				A3000052 /* TariffsViewModel.swift */,
-			);
-			
+				A3000054 /* AppConfig.swift */,
+				A3000056 /* APIModels.swift */,
+				A3000058 /* APIService.swift */,			);
+			path = ALADDIN;
 			sourceTree = "<group>";
 		};
 		A1000006 /* Preview Content */ = {
@@ -227,6 +227,7 @@
 				A3000009 /* APIService.swift in Sources */,
 				A3000011 /* NetworkManager.swift in Sources */,
 				A3000013 /* AppConfig.swift in Sources */,
+				A3000015 /* SecurityManager.swift in Sources */,
 				A3000017 /* FamilyViewModel.swift in Sources */,
 				A3000019 /* AIAssistantViewModel.swift in Sources */,
 				A3000021 /* SettingsViewModel.swift in Sources */,
@@ -246,7 +247,9 @@
 				A3000049 /* AnalyticsManager.swift in Sources */,
 				A3000051 /* FamilyRegistrationViewModel.swift in Sources */,
 				A3000053 /* TariffsViewModel.swift in Sources */,
-			);
+				A3000055 /* AppConfig.swift in Sources */,
+				A3000057 /* APIModels.swift in Sources */,
+				A3000059 /* APIService.swift in Sources */,			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
@@ -381,7 +384,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-                                DEVELOPMENT_TEAM = "";				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -409,7 +412,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-                                DEVELOPMENT_TEAM = "";				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;

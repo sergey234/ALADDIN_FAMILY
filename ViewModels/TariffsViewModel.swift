@@ -8,6 +8,7 @@ import StoreKit
  * ИНТЕГРИРОВАН СО STOREKIT 2!
  */
 
+@MainActor
 class TariffsViewModel: ObservableObject {
     
     // MARK: - Published Properties
@@ -25,7 +26,8 @@ class TariffsViewModel: ObservableObject {
     
     // MARK: - Init
     
-    init(storeManager: StoreManager = StoreManager()) {
+    @MainActor
+    init(storeManager: StoreManager) {
         self.storeManager = storeManager
         
         // Подписка на изменения продуктов

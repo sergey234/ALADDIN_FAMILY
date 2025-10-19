@@ -1,4 +1,9 @@
 import SwiftUI
+struct MainScreen: View {
+    var body: some View {
+        Text("Main Screen Placeholder")
+    }
+}
 
 struct ContentView: View {
     var body: some View {

@@ -6,7 +6,7 @@ class StorageManager: ObservableObject {
     static let shared = StorageManager()
     
     private let userDefaults = UserDefaults.standard
-    private let keychain = KeychainManager()
+    private let keychain = KeychainManager.shared
     
     // MARK: - User Defaults Keys
     private enum Keys {
@@ -43,16 +43,24 @@ class StorageManager: ObservableObject {
     }
     
     // MARK: - Secure Storage (Keychain)
-    func saveSecureData(_ data: Data, forKey key: String) {
+    func saveSecureData(_ data: Data, forKey key: KeychainManager.Key) {
         keychain.save(data, forKey: key)
     }
     
-    func getSecureData(forKey key: String) -> Data? {
-        return keychain.load(forKey: key)
+    func getSecureData(forKey key: KeychainManager.Key) -> Data? {
+        return keychain.loadData(forKey: key)
     }
     
-    func deleteSecureData(forKey key: String) {
+    func deleteSecureData(forKey key: KeychainManager.Key) {
         keychain.delete(forKey: key)
+    }
+    
+    func saveSecureString(_ string: String, forKey key: KeychainManager.Key) {
+        keychain.save(string, forKey: key)
+    }
+    
+    func getSecureString(forKey key: KeychainManager.Key) -> String? {
+        return keychain.loadString(forKey: key)
     }
     
     // MARK: - Cleanup
@@ -63,47 +71,3 @@ class StorageManager: ObservableObject {
     }
 }
 
-// MARK: - Keychain Manager
-private class KeychainManager {
-    func save(_ data: Data, forKey key: String) {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecValueData as String: data
-        ]
-        
-        SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
-    }
-    
-    func load(forKey key: String) -> Data? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-        
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        
-        return status == errSecSuccess ? result as? Data : nil
-    }
-    
-    func delete(forKey key: String) {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key
-        ]
-        
-        SecItemDelete(query as CFDictionary)
-    }
-    
-    func clearAll() {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword
-        ]
-        
-        SecItemDelete(query as CFDictionary)
-    }
-}

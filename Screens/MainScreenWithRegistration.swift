@@ -111,8 +111,9 @@ struct MainScreenWithRegistration: View {
     // MARK: - Helper Methods
     
     private func hasFamilyRegistration() -> Bool {
-        // Check UserDefaults or Keychain
-        return UserDefaults.standard.string(forKey: "family_id") != nil
+        // Check UserDefaults for family_id
+        // TODO: В будущем заменить на Keychain для безопасности
+        return UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.familyId) != nil
     }
 }
 

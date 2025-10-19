@@ -13,7 +13,7 @@ class AccessibilityManager: ObservableObject {
     
     @Published var isVoiceOverEnabled: Bool = false
     @Published var isReduceMotionEnabled: Bool = false
-    @Published var contentSizeCategory: ContentSizeCategory = .large
+    @Published var contentSizeCategory: UIContentSizeCategory = .large
     @Published var colorBlindMode: ColorBlindMode = .none
     
     // MARK: - Color Blind Mode
@@ -134,9 +134,9 @@ class AccessibilityManager: ObservableObject {
     
     private func adjustForProtanopia(_ color: Color) -> Color {
         // Упрощённая коррекция для протанопии (красный → синий)
-        if color == .dangerRed {
+        if color == .red {
             return Color.blue
-        } else if color == .successGreen {
+        } else if color == .green {
             return Color.cyan
         }
         return color
@@ -144,9 +144,9 @@ class AccessibilityManager: ObservableObject {
     
     private func adjustForDeuteranopia(_ color: Color) -> Color {
         // Коррекция для дейтеранопии
-        if color == .successGreen {
+        if color == .green {
             return Color.blue
-        } else if color == .dangerRed {
+        } else if color == .red {
             return Color.orange
         }
         return color
@@ -154,7 +154,7 @@ class AccessibilityManager: ObservableObject {
     
     private func adjustForTritanopia(_ color: Color) -> Color {
         // Коррекция для тританопии (синий → красный)
-        if color == .infoBlue {
+        if color == .blue {
             return Color.red
         }
         return color

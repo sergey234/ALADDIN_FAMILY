@@ -115,7 +115,7 @@ class VPNManager: ObservableObject {
     
     func getDataUsage() -> (today: Int64, thisMonth: Int64, total: Int64) {
         // В реальном приложении здесь будут реальные данные об использовании
-        return (today: 50 * 1024 * 1024, thisMonth: 1.5 * 1024 * 1024 * 1024, total: 10 * 1024 * 1024 * 1024)
+        return (today: 50 * 1024 * 1024, thisMonth: Int64(1.5 * 1024 * 1024 * 1024), total: 10 * 1024 * 1024 * 1024)
     }
     
     // MARK: - Security Features

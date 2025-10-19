@@ -37,6 +37,7 @@
 		A3000049 /* AnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000048 /* AnalyticsManager.swift */; };
 		A3000051 /* FamilyRegistrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000050 /* FamilyRegistrationViewModel.swift */; };
 		A3000053 /* TariffsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000052 /* TariffsViewModel.swift */; };
+		A3000059 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000058 /* APIService.swift */; };
                 A3000061 /* 01_MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000060 /* 01_MainScreen.swift */; };/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -71,6 +72,7 @@
 		A3000048 /* AnalyticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Analytics/AnalyticsManager.swift"; sourceTree = "<group>"; };
 		A3000050 /* FamilyRegistrationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/FamilyRegistrationViewModel.swift"; sourceTree = "<group>"; };
 		A3000052 /* TariffsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/TariffsViewModel.swift"; sourceTree = "<group>"; };
+		A3000058 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Network/APIService.swift"; sourceTree = "<group>"; };
                 A3000060 /* 01_MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/01_MainScreen.swift"; sourceTree = "<group>"; };/* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,7 +138,7 @@
 				A3000048 /* AnalyticsManager.swift */,
 				A3000050 /* FamilyRegistrationViewModel.swift */,
 				A3000052 /* TariffsViewModel.swift */,
-			);
+				A3000058 /* APIService.swift */,			);
 			
 			sourceTree = "<group>";
 		};
@@ -246,7 +248,7 @@
 				A3000049 /* AnalyticsManager.swift in Sources */,
 				A3000051 /* FamilyRegistrationViewModel.swift in Sources */,
 				A3000053 /* TariffsViewModel.swift in Sources */,
-			);
+				A3000059 /* APIService.swift in Sources */,			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */

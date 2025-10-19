@@ -1,5 +1,39 @@
 import SwiftUI
 import Combine
+import Security
+
+// MARK: - Missing Types (Added by Assistant)
+enum FamilyRole: String, Codable, CaseIterable, Identifiable {
+    case parent = "Parent"
+    case child = "Child"
+    case grandparent = "Grandparent"
+    case guardian = "Guardian"
+    var id: String { self.rawValue }
+}
+
+enum AgeGroup: String, Codable, CaseIterable, Identifiable {
+    case toddler = "Toddler (0-3)"
+    case child = "Child (4-12)"
+    case teen = "Teen (13-17)"
+    case adult = "Adult (18-64)"
+    case senior = "Senior (65+)"
+    var id: String { self.rawValue }
+}
+
+struct FamilyMember: Codable, Identifiable {
+    let id: String
+    var name: String
+    var role: FamilyRole
+    var ageGroup: AgeGroup
+    var isActive: Bool
+}
+
+struct RecoverFamilyResponse: Codable {
+    let success: Bool
+    let message: String
+    let familyId: String?
+    let members: [FamilyMemberResponse]
+}
 
 /**
  * 🏠 Family Registration ViewModel
@@ -13,6 +47,10 @@ import Combine
  */
 
 class FamilyRegistrationViewModel: ObservableObject {
+    
+    // MARK: - Dependencies
+    
+    private let networkManager = NetworkManager()
     
     // MARK: - Published Properties
     
@@ -56,7 +94,8 @@ class FamilyRegistrationViewModel: ObservableObject {
      */
     func startRegistration() {
         // Проверяем, было ли согласие дано ранее
-        if UserDefaults.standard.bool(forKey: "consent_accepted") {
+        // TODO: В будущем заменить на Keychain для безопасности
+        if UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.consentAccepted) {
             // Согласие уже дано - пропускаем
             consentAccepted = true
             showRoleSelection()
@@ -72,9 +111,13 @@ class FamilyRegistrationViewModel: ObservableObject {
      */
     func acceptConsent() {
         consentAccepted = true
-        UserDefaults.standard.set(true, forKey: "consent_accepted")
-        UserDefaults.standard.set(Date(), forKey: "consent_date")
-        UserDefaults.standard.set("2.0", forKey: "consent_version")
+        
+        // Сохраняем согласие
+        // TODO: В будущем заменить на Keychain для безопасности
+        UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.consentAccepted)
+        UserDefaults.standard.set(Date(), forKey: AppConfig.UserDefaultsKeys.consentDate)
+        UserDefaults.standard.set(AppConfig.Consent.currentVersion, forKey: AppConfig.UserDefaultsKeys.consentVersion)
+        
         showConsentModal = false
         
         // Переходим к выбору роли
@@ -138,7 +181,7 @@ class FamilyRegistrationViewModel: ObservableObject {
             device_type: getDeviceType()
         )
         
-        NetworkManager.shared.createFamily(request: request) { [weak self] result in
+        networkManager.createFamily(request: request) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
                 
@@ -183,7 +226,7 @@ class FamilyRegistrationViewModel: ObservableObject {
             device_type: getDeviceType()
         )
         
-        NetworkManager.shared.joinFamily(request: request) { [weak self] result in
+        networkManager.joinFamily(request: request) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
                 
@@ -192,11 +235,11 @@ class FamilyRegistrationViewModel: ObservableObject {
                     self?.familyID = response.family_id
                     self?.familyMembers = response.members.map { member in
                         FamilyMember(
-                            id: member.member_id,
-                            letter: member.personal_letter,
-                            role: FamilyRole(rawValue: member.role) ?? .other,
-                            ageGroup: AgeGroup(rawValue: member.age_group) ?? .adult_24_55,
-                            isYou: member.member_id == response.your_member_id
+                            id: member.id,
+                            name: member.name,
+                            role: FamilyRole(rawValue: member.role) ?? .parent,
+                            ageGroup: AgeGroup(rawValue: member.role) ?? .adult,
+                            isActive: member.status == "protected"
                         )
                     }
                     
@@ -216,20 +259,20 @@ class FamilyRegistrationViewModel: ObservableObject {
     func recoverAccess(withCode code: String) {
         isLoading = true
         
-        NetworkManager.shared.recoverFamily(familyID: extractFamilyID(from: code)) { [weak self] result in
+        networkManager.recoverFamily(familyID: extractFamilyID(from: code)) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
                 
                 switch result {
                 case .success(let response):
-                    self?.familyID = response.family_id
+                    self?.familyID = response.familyId
                     self?.familyMembers = response.members.map { member in
                         FamilyMember(
-                            id: member.member_id,
-                            letter: member.personal_letter,
-                            role: FamilyRole(rawValue: member.role) ?? .other,
-                            ageGroup: AgeGroup(rawValue: member.age_group) ?? .adult_24_55,
-                            isYou: false
+                            id: member.id,
+                            name: member.name,
+                            role: FamilyRole(rawValue: member.role) ?? .parent,
+                            ageGroup: AgeGroup(rawValue: member.role) ?? .adult,
+                            isActive: member.status == "protected"
                         )
                     }
                     
@@ -291,12 +334,6 @@ struct CreateFamilyRequest: Codable {
     let device_type: String
 }
 
-struct CreateFamilyResponse: Codable {
-    let family_id: String
-    let recovery_code: String
-    let qr_code_data: String
-    let short_code: String
-}
 
 struct JoinFamilyRequest: Codable {
     let family_id: String
@@ -306,23 +343,7 @@ struct JoinFamilyRequest: Codable {
     let device_type: String
 }
 
-struct JoinFamilyResponse: Codable {
-    let family_id: String
-    let your_member_id: String
-    let members: [FamilyMemberResponse]
-}
 
-struct FamilyMemberResponse: Codable {
-    let member_id: String
-    let role: String
-    let age_group: String
-    let personal_letter: String
-}
-
-struct RecoverFamilyResponse: Codable {
-    let family_id: String
-    let members: [FamilyMemberResponse]
-}
 
 // MARK: - Network Manager Extension
 

@@ -122,6 +122,16 @@ class APIService {
         struct EmptyBody: Codable {}
         networkManager.post(endpoint: AppConfig.Endpoint.logout, body: EmptyBody(), completion: completion)
     }
+    
+    // MARK: - Payment API
+    
+    func createQRPayment(request: CreateQRPaymentRequest, completion: @escaping (Result<CreateQRPaymentResponse, Error>) -> Void) {
+        networkManager.post(endpoint: "/api/payments/qr/create", body: request, completion: completion)
+    }
+    
+    func checkQRPaymentStatus(paymentId: String, completion: @escaping (Result<CheckQRPaymentStatusResponse, Error>) -> Void) {
+        networkManager.get(endpoint: "/api/payments/qr/status/\(paymentId)", completion: completion)
+    }
 }
 
 

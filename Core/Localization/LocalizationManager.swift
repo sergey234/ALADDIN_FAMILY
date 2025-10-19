@@ -1,4 +1,5 @@
 import Foundation
+import Security
 import SwiftUI
 
 /**
@@ -38,7 +39,8 @@ class LocalizationManager: ObservableObject {
     
     init() {
         // Определить язык системы
-        if let systemLanguage = Locale.current.language.languageCode?.identifier,
+        // TODO: В будущем заменить на Keychain для безопасности
+        if let systemLanguage = Locale.current.languageCode,
            let language = Language(rawValue: systemLanguage) {
             currentLanguage = language
         } else {
@@ -53,7 +55,9 @@ class LocalizationManager: ObservableObject {
      */
     func changeLanguage(to language: Language) {
         currentLanguage = language
-        UserDefaults.standard.set(language.rawValue, forKey: "appLanguage")
+        // Сохраняем язык
+        // TODO: В будущем заменить на Keychain для безопасности
+        UserDefaults.standard.set(language.rawValue, forKey: AppConfig.UserDefaultsKeys.appLanguage)
         
         // В production здесь нужно перезапустить UI
         print("✅ Language changed to: \(language.displayName)")

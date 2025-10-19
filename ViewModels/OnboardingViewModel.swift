@@ -1,4 +1,5 @@
 import SwiftUI
+import Security
 
 /// 👋 Onboarding View Model
 /// Логика для экрана онбординга
@@ -23,7 +24,9 @@ class OnboardingViewModel: ObservableObject {
     
     private func completeOnboarding() {
         isCompleted = true
-        UserDefaults.standard.set(true, forKey: "hasCompletedOnboarding")
+        // Сохраняем статус онбординга
+        // TODO: В будущем заменить на Keychain для безопасности
+        UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
     }
 }
 

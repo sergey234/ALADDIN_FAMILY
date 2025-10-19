@@ -1,4 +1,5 @@
 import Foundation
+import Security
 
 /**
  * ⚙️ App Config
@@ -16,10 +17,8 @@ struct AppConfig {
      */
     static let apiBaseURL: String = {
         #if DEBUG
-        // Для разработки (локальный сервер)
         return "http://localhost:8000/api"
         #else
-        // Для production (реальный сервер)
         return "https://api.aladdin.family/api"
         #endif
     }()
@@ -28,13 +27,14 @@ struct AppConfig {
     
     /**
      * Токен авторизации (если есть)
+     * TODO: В будущем заменить на Keychain для безопасности
      */
     static var authToken: String? {
         get {
-            UserDefaults.standard.string(forKey: "authToken")
+            UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.authToken)
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "authToken")
+            UserDefaults.standard.set(newValue, forKey: AppConfig.UserDefaultsKeys.authToken)
         }
     }
     
@@ -155,5 +155,40 @@ struct AppConfig {
     enum LogLevel {
         case verbose, info, warning, error, none
     }
+}
+
+// MARK: - Constants Extension
+
+extension AppConfig {
+    
+    // MARK: - UserDefaults Keys
+    
+    /// Ключи для UserDefaults
+    struct UserDefaultsKeys {
+        static let authToken = "authToken"
+        static let familyId = "family_id"
+        static let consentAccepted = "consent_accepted"
+        static let consentDate = "consent_date"
+        static let consentVersion = "consent_version"
+        static let appLanguage = "appLanguage"
+        static let hasCompletedOnboarding = "hasCompletedOnboarding"
+    }
+    
+    // MARK: - Network Configuration
+    
+    /// Настройки сети
+    struct Network {
+        static let requestTimeout: TimeInterval = 30.0
+        static let resourceTimeout: TimeInterval = 60.0
+        static let waitsForConnectivity = true
+    }
+    
+    // MARK: - Consent & Privacy
+    
+    /// Настройки согласий и приватности
+    struct Consent {
+        static let currentVersion = "2.0"
+    }
+    
 }
 
