@@ -1,0 +1,355 @@
+/* 
+ * Localizable.strings (English)
+ * ALADDIN - AI Family Protection
+ * English localization
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+ * COMMON
+ * ═══════════════════════════════════════════════════════════════ */
+
+"app.name" = "ALADDIN";
+"app.tagline" = "AI Family Protection";
+"common.ok" = "OK";
+"common.cancel" = "Cancel";
+"common.done" = "Done";
+"common.save" = "Save";
+"common.delete" = "Delete";
+"common.edit" = "Edit";
+"common.close" = "Close";
+"common.back" = "Back";
+"common.next" = "Next";
+"common.loading" = "Loading...";
+"common.error" = "Error";
+"common.success" = "Success";
+"common.warning" = "Warning";
+
+/* ═══════════════════════════════════════════════════════════════
+ * MAIN SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"main.title" = "ALADDIN";
+"main.subtitle" = "AI Family Protection";
+"main.vpn.title" = "VPN PROTECTION";
+"main.functions.title" = "MAIN FUNCTIONS";
+"main.quick.actions" = "QUICK ACTIONS";
+"main.emergency" = "Emergency Help";
+"main.parental.control" = "Parental Control";
+"main.device.security" = "Device Security";
+
+/* ═══════════════════════════════════════════════════════════════
+ * FAMILY
+ * ═══════════════════════════════════════════════════════════════ */
+
+"family.title" = "FAMILY";
+"family.subtitle" = "%d members protected";
+"family.members" = "FAMILY MEMBERS";
+"family.add.member" = "Add Family Member";
+"family.add.description" = "Invite your loved ones to your secure network";
+"family.stats.threats" = "Threats";
+"family.stats.protection" = "Protection";
+"family.stats.devices" = "Devices";
+"family.role.parent" = "Parent";
+"family.role.child" = "Child";
+"family.role.teenager" = "Teenager";
+"family.role.elderly" = "Elderly";
+
+/* ═══════════════════════════════════════════════════════════════
+ * VPN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"vpn.title" = "VPN PROTECTION";
+"vpn.connected" = "Connected";
+"vpn.disconnected" = "Disconnected";
+"vpn.protected" = "PROTECTED";
+"vpn.not.protected" = "NOT PROTECTED";
+"vpn.connection.encrypted" = "Your connection is encrypted";
+"vpn.connection.not.encrypted" = "Your connection is not protected";
+"vpn.server" = "SERVER";
+"vpn.statistics" = "STATISTICS";
+"vpn.downloaded" = "Downloaded";
+"vpn.uploaded" = "Uploaded";
+"vpn.session.time" = "Session Time";
+"vpn.threats.blocked" = "Blocked";
+"vpn.connect" = "Connect VPN";
+"vpn.disconnect" = "Disconnect VPN";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ANALYTICS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"analytics.title" = "ANALYTICS";
+"analytics.subtitle" = "Protection Statistics";
+"analytics.overall" = "OVERALL STATISTICS";
+"analytics.threats" = "Threats";
+"analytics.blocked" = "Blocked";
+"analytics.scanned" = "Scanned";
+"analytics.protection.level" = "PROTECTION LEVEL";
+"analytics.efficiency" = "Protection Efficiency";
+"analytics.top.threats" = "TOP THREATS";
+"analytics.threat.types" = "THREAT TYPES";
+"analytics.period.day" = "Day";
+"analytics.period.week" = "Week";
+"analytics.period.month" = "Month";
+
+/* ═══════════════════════════════════════════════════════════════
+ * AI ASSISTANT
+ * ═══════════════════════════════════════════════════════════════ */
+
+"ai.title" = "AI ASSISTANT";
+"ai.subtitle" = "Always ready to help";
+"ai.placeholder" = "Your message...";
+"ai.welcome" = "Hello! I'm your AI assistant. How can I help you?";
+
+/* ═══════════════════════════════════════════════════════════════
+ * PARENTAL CONTROL
+ * ═══════════════════════════════════════════════════════════════ */
+
+"parental.title" = "PARENTAL CONTROL";
+"parental.subtitle" = "Management for %@";
+"parental.select.child" = "SELECT CHILD";
+"parental.content.filters" = "CONTENT FILTERS";
+"parental.screen.time" = "SCREEN TIME LIMITS";
+"parental.location" = "LOCATION TRACKING";
+"parental.allowed.sites" = "Allowed Websites";
+"parental.blocked.apps" = "Blocked Apps";
+"parental.schedule" = "Access Schedule";
+"parental.location.history" = "Location History";
+"parental.geofences" = "Geofences";
+
+/* ═══════════════════════════════════════════════════════════════
+ * SETTINGS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"settings.title" = "SETTINGS";
+"settings.subtitle" = "App Management";
+"settings.profile" = "PROFILE";
+"settings.security" = "SECURITY";
+"settings.application" = "APPLICATION";
+"settings.notifications" = "Notifications";
+"settings.dark.mode" = "Dark Mode";
+"settings.cache.size" = "Cache Size";
+"settings.clear.cache" = "Clear Cache";
+"settings.about" = "About App";
+"settings.logout" = "Log Out";
+"settings.change.password" = "Change Password";
+"settings.two.factor" = "Two-Factor Authentication";
+"settings.active.sessions" = "Active Sessions";
+"settings.login.history" = "Login History";
+"settings.delete.account" = "Delete Account";
+
+/* ═══════════════════════════════════════════════════════════════
+ * PROFILE
+ * ═══════════════════════════════════════════════════════════════ */
+
+"profile.title" = "PROFILE";
+"profile.subtitle" = "Personal Data and Security";
+"profile.personal.data" = "PERSONAL DATA";
+"profile.name.placeholder" = "Name";
+"profile.email.placeholder" = "Email";
+"profile.phone.placeholder" = "Phone";
+
+/* ═══════════════════════════════════════════════════════════════
+ * NOTIFICATIONS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"notifications.title" = "NOTIFICATIONS";
+"notifications.subtitle" = "Your Event History";
+"notifications.filter.all" = "All";
+"notifications.filter.threats" = "Threats";
+"notifications.filter.warnings" = "Warnings";
+"notifications.filter.info" = "Information";
+
+/* ═══════════════════════════════════════════════════════════════
+ * TARIFFS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"tariffs.title" = "PLANS";
+"tariffs.subtitle" = "Choose Your Plan";
+"tariffs.subscribe" = "Subscribe to %@";
+"tariffs.restore" = "Restore Purchases";
+"tariffs.basic" = "Basic";
+"tariffs.individual" = "Individual";
+"tariffs.family" = "Family";
+"tariffs.premium" = "Premium";
+
+/* ═══════════════════════════════════════════════════════════════
+ * SUPPORT
+ * ═══════════════════════════════════════════════════════════════ */
+
+"support.title" = "SUPPORT";
+"support.subtitle" = "We're always here to help";
+"support.search.placeholder" = "Search questions...";
+"support.quick.links" = "QUICK LINKS";
+"support.chat" = "Chat with Support";
+"support.faq" = "Frequently Asked Questions";
+"support.contact" = "Contact Us";
+"support.guides" = "GUIDES AND TUTORIALS";
+
+/* ═══════════════════════════════════════════════════════════════
+ * AUTH
+ * ═══════════════════════════════════════════════════════════════ */
+
+"auth.login" = "Log In";
+"auth.register" = "Sign Up";
+"auth.forgot.password" = "Forgot Password?";
+"auth.email.placeholder" = "Email";
+"auth.password.placeholder" = "Password";
+"auth.confirm.password" = "Confirm Password";
+"auth.name.placeholder" = "Full Name";
+"auth.phone.placeholder" = "Phone (optional)";
+"auth.or" = "or";
+"auth.apple" = "Sign in with Apple";
+"auth.google" = "Sign in with Google";
+"auth.vk" = "Sign in with VK";
+"auth.no.account" = "No account?";
+"auth.have.account" = "Already have an account?";
+"auth.agree.terms" = "I agree to";
+"auth.privacy.policy" = "Privacy Policy";
+"auth.terms.of.service" = "Terms of Service";
+"auth.and" = "and";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ONBOARDING
+ * ═══════════════════════════════════════════════════════════════ */
+
+"onboarding.title.1" = "AI FAMILY PROTECTION";
+"onboarding.description.1" = "Comprehensive protection for your entire family from all online threats.";
+"onboarding.title.2" = "SECURE INTERNET";
+"onboarding.description.2" = "VPN, antivirus, and ad blocking for all your devices.";
+"onboarding.title.3" = "PARENTAL CONTROL";
+"onboarding.description.3" = "Manage screen time and content for children and teenagers.";
+"onboarding.title.4" = "SMART ANALYTICS";
+"onboarding.description.4" = "Detailed reports and AI assistant for your security.";
+"onboarding.next" = "Next";
+"onboarding.start" = "Get Started";
+
+/* ═══════════════════════════════════════════════════════════════
+ * DEVICES
+ * ═══════════════════════════════════════════════════════════════ */
+
+"devices.title" = "DEVICES";
+"devices.subtitle" = "%d devices protected";
+"devices.statistics" = "STATISTICS";
+"devices.list" = "DEVICE LIST";
+"devices.add" = "Add Device";
+"devices.add.description" = "Connect a new device to protection";
+"devices.protected" = "Protected";
+"devices.attention" = "Needs Attention";
+"devices.total" = "Total";
+"devices.status.protected" = "Protected";
+"devices.status.warning" = "Needs Attention";
+"devices.status.danger" = "Danger";
+"devices.status.inactive" = "Inactive";
+
+/* ═══════════════════════════════════════════════════════════════
+ * DEVICE DETAIL
+ * ═══════════════════════════════════════════════════════════════ */
+
+"device.detail.info" = "Info";
+"device.detail.stats" = "Statistics";
+"device.detail.threats" = "Threats";
+"device.detail.settings" = "Settings";
+"device.detail.block" = "Block Device";
+"device.detail.remove" = "Remove Device";
+"device.detail.owner" = "Owner";
+"device.detail.type" = "Type";
+"device.detail.model" = "Model";
+"device.detail.system" = "System";
+"device.detail.ip" = "IP Address";
+"device.detail.mac" = "MAC Address";
+
+/* ═══════════════════════════════════════════════════════════════
+ * REFERRAL PROGRAM
+ * ═══════════════════════════════════════════════════════════════ */
+
+"referral.title" = "REFERRAL PROGRAM";
+"referral.subtitle" = "Invite friends - get bonuses";
+"referral.invite" = "Invite Friends";
+"referral.earn" = "Earn ₽500 for each friend";
+"referral.invited" = "Invited";
+"referral.earned" = "Earned";
+"referral.your.code" = "YOUR REFERRAL CODE";
+"referral.copy" = "Copy";
+"referral.share" = "SHARE";
+"referral.share.friends" = "Share with Friends";
+"referral.whatsapp" = "Send to WhatsApp";
+"referral.telegram" = "Send to Telegram";
+"referral.vk" = "Send to VK";
+"referral.how.it.works" = "HOW IT WORKS";
+"referral.step.1" = "Share Your Code";
+"referral.step.1.desc" = "Send your code to friends";
+"referral.step.2" = "Friend Signs Up";
+"referral.step.2.desc" = "Friend uses your code during registration";
+"referral.step.3" = "Get Bonus";
+"referral.step.3.desc" = "You get ₽500, friend gets 20% discount";
+"referral.your.referrals" = "YOUR REFERRALS";
+"referral.status.completed" = "Received";
+"referral.status.pending" = "Pending";
+
+/* ═══════════════════════════════════════════════════════════════
+ * FAMILY CHAT
+ * ═══════════════════════════════════════════════════════════════ */
+
+"chat.title" = "FAMILY CHAT";
+"chat.subtitle" = "%d participants online";
+"chat.placeholder" = "Your message...";
+"chat.send" = "Send";
+
+/* ═══════════════════════════════════════════════════════════════
+ * VPN ENERGY STATS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"energy.title" = "VPN ENERGY CONSUMPTION";
+"energy.subtitle" = "Usage Statistics";
+"energy.battery.usage" = "Battery usage today";
+"energy.efficient" = "Below average! VPN is working efficiently";
+"energy.statistics" = "STATISTICS";
+"energy.consumed" = "Energy Consumed";
+"energy.vpn.time" = "VPN Runtime";
+"energy.average" = "Average Consumption";
+"energy.traffic" = "Traffic Processed";
+"energy.comparison" = "COMPARISON WITH OTHER VPNs";
+"energy.tips" = "ENERGY SAVING TIPS";
+"energy.tip.1" = "Use Wi-Fi instead of cellular";
+"energy.tip.2" = "Disconnect VPN when not needed";
+"energy.tip.3" = "Choose nearest server";
+
+/* ═══════════════════════════════════════════════════════════════
+ * CHILD INTERFACE
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child.title" = "HI, %@!";
+"child.subtitle" = "Your Safe World";
+"child.time.remaining" = "Time Remaining:";
+"child.request.more.time" = "Request More Time";
+"child.achievements" = "My Achievements";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ELDERLY INTERFACE
+ * ═══════════════════════════════════════════════════════════════ */
+
+"elderly.title" = "HI, %@!";
+"elderly.subtitle" = "Your Protection is Active";
+"elderly.all.ok" = "Everything is OK!";
+"elderly.need.help" = "Need Help!";
+"elderly.protected" = "Your protection is active";
+"elderly.contact.family" = "Contact your family";
+"elderly.sos" = "SOS - Call for Help";
+"elderly.call" = "Contact %@";
+"elderly.settings" = "My Settings";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ERRORS AND MESSAGES
+ * ═══════════════════════════════════════════════════════════════ */
+
+"error.network" = "Network error. Please check your internet connection.";
+"error.unknown" = "An unknown error occurred.";
+"error.invalid.credentials" = "Invalid email or password.";
+"error.password.mismatch" = "Passwords do not match.";
+"success.saved" = "Data saved successfully!";
+"success.purchase" = "Subscription purchased successfully!";
+"success.email.sent" = "Email sent to your address.";
+
+
+
