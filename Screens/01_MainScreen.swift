@@ -369,7 +369,9 @@ struct MainScreen: View {
                             
                             // Кнопки действий
                             HStack(spacing: 8) {
-                                NavigationLink(destination: FamilyScreen()) {
+                                Button(action: {
+                                    navigationManager.navigateTo(.family)
+                                }) {
                                     Text("Управление семьей")
                                         .font(.system(size: 11, weight: .bold))
                                         .foregroundColor(.orange)
@@ -381,7 +383,9 @@ struct MainScreen: View {
                                         )
                                 }
                                 
-                                NavigationLink(destination: FamilyScreen()) {
+                                Button(action: {
+                                    navigationManager.navigateTo(.family)
+                                }) {
                                     Text("Добавить члена семьи")
                                         .font(.system(size: 11, weight: .bold))
                                         .foregroundColor(.black)
@@ -417,7 +421,9 @@ struct MainScreen: View {
                         .padding(.horizontal, 20)
                         
                         // AI помощник
-                        NavigationLink(destination: AIAssistantScreen()) {
+                        Button(action: {
+                            navigationManager.navigateTo(.aiAssistant)
+                        }) {
                             VStack(alignment: .leading, spacing: 8) {
                                 Text("🤖 AI Помощник ALADDIN")
                                     .font(.system(size: 12, weight: .bold))
