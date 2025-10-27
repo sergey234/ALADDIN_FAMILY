@@ -86,8 +86,9 @@ class VPNViewModel: ObservableObject {
         }
     }
     
-    func selectServer() {
-        print("Show server selection")
+    func selectServer(_ server: VPNServer) {
+        selectedServer = server
+        print("Server selected: \(server.name)")
     }
     
     func copyIP() {

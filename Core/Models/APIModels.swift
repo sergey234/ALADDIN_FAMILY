@@ -29,11 +29,11 @@ struct VPNServer: Codable, Identifiable {
     let status: ServerStatus
     
     var name: String {
-        "\(country) • \(city)"
+        country // Только страна
     }
     
     var location: String {
-        "\(country), \(city)"
+        "\(city)" // Только город
     }
 }
 
