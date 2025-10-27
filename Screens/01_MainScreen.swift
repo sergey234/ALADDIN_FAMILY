@@ -51,26 +51,26 @@ struct MainScreen: View {
                 HStack {
                     // Логотип и контент - ЛЕВЫЙ УГОЛ
                     HStack(spacing: 10) {
-                        // Логотип единорога - синий
+                        // Логотип единорога - золотой
                         Circle()
-                            .fill(Color.blue.opacity(0.2))
+                            .fill(Color.yellow.opacity(0.2))
                             .frame(width: 36, height: 36)
                             .overlay(
                                 Text("🦄")
                                     .font(.system(size: 22))
                             )
-                            .shadow(color: Color.blue.opacity(0.5), radius: 10)
+                            .shadow(color: Color.yellow.opacity(0.5), radius: 10)
                             .overlay(
                                 Circle()
-                                    .stroke(Color.blue.opacity(0.3), lineWidth: 2)
+                                    .stroke(Color.yellow.opacity(0.3), lineWidth: 2)
                             )
                             .accessibilityLabel("Логотип ALADDIN - Единорог")
                         
                         VStack(alignment: .leading, spacing: 2) {
                             Text("ALADDIN")
                                 .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(.blue)
-                                .shadow(color: Color.blue.opacity(0.3), radius: 10)
+                                .foregroundColor(.yellow)
+                                .shadow(color: Color.yellow.opacity(0.5), radius: 10)
                                 .dynamicTypeSize(.medium ... .large)
                                 .accessibilityLabel("Название приложения ALADDIN")
                             
@@ -384,7 +384,7 @@ struct MainScreen: View {
                                 }
                                 
                                 Button(action: {
-                                    navigationManager.navigateTo(.family)
+                                    navigationManager.navigateTo(.mainWithRegistration)
                                 }) {
                                     Text("Добавить члена семьи")
                                         .font(.system(size: 11, weight: .bold))

@@ -7,7 +7,7 @@ struct AIAssistantScreen: View {
     
     // MARK: - State
     
-    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var navigationManager: NavigationManager
     @State private var messageText: String = ""
     @State private var messages: [ChatMessage] = [
         ChatMessage(
@@ -48,10 +48,36 @@ struct AIAssistantScreen: View {
                 .accessibilityLabel("Фон экрана AI помощника")
             
             VStack(spacing: 0) {
-                // Навигационная панель
-                ALADDINNavigationBar()
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("Навигационная панель AI помощника")
+                // Заголовок с кнопкой назад
+                HStack(spacing: 16) {
+                    Button(action: {
+                        navigationManager.goBack()
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.white)
+                            .frame(width: 44, height: 44)
+                            .background(
+                                Circle()
+                                    .fill(Color.white.opacity(0.2))
+                            )
+                    }
+                    .accessibilityLabel("Назад")
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("AI Помощник")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.white)
+                        Text("Чем могу помочь?")
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(.white.opacity(0.8))
+                    }
+                    
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
                 
                 // Чат
                 ScrollView(.vertical, showsIndicators: false) {
