@@ -7,7 +7,7 @@ struct ParentalControlScreen: View {
     
     // MARK: - State
     
-    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var navigationManager: NavigationManager
     @State private var isContentFilterEnabled: Bool = true
     @State private var isAppBlockingEnabled: Bool = true
     @State private var screenTimeLimit: Double = 3
@@ -73,7 +73,9 @@ struct ParentalControlScreen: View {
             subtitle: "Управление для детей",
             showBackButton: true,
             onBack: {
-                dismiss()
+                print("🔍 DEBUG: Кнопка 'Назад' нажата в ParentalControlScreen")
+                navigationManager.goBack()
+                print("🔍 DEBUG: NavigationManager.goBack() вызван")
             }
         )
         .accessibilityElement(children: .combine)

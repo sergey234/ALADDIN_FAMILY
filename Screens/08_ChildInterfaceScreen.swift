@@ -79,7 +79,9 @@ struct ChildInterfaceScreen: View {
         HStack(spacing: 12) {
             // Кнопка назад
             Button(action: {
+                print("🔍 DEBUG: Кнопка 'Назад' нажата в ChildInterfaceScreen")
                 navigationManager.goBack()
+                print("🔍 DEBUG: NavigationManager.goBack() вызван")
             }) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 18, weight: .semibold))

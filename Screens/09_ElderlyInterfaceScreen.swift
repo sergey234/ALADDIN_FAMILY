@@ -50,7 +50,9 @@ struct ElderlyInterfaceScreen: View {
         HStack(spacing: Spacing.m) {
             // Кнопка назад
             Button(action: {
+                print("🔍 DEBUG: Кнопка 'Назад' нажата в ElderlyInterfaceScreen")
                 navigationManager.goBack()
+                print("🔍 DEBUG: NavigationManager.goBack() вызван")
             }) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 20, weight: .semibold))

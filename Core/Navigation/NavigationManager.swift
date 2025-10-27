@@ -169,8 +169,23 @@ class NavigationManager: ObservableObject {
     
     /// Возврат к предыдущему экрану
     func goBack() {
-        guard !navigationStack.isEmpty else { return }
-        currentScreen = navigationStack.removeLast()
+        print("🔍 DEBUG NavigationManager.goBack: Начало функции")
+        print("🔍 DEBUG NavigationManager.goBack: Стек навигации = \(navigationStack)")
+        
+        guard !navigationStack.isEmpty else {
+            print("❌ DEBUG NavigationManager.goBack: Стек пуст, возврат на .main")
+            currentScreen = .main
+            return
+        }
+        
+        let previousScreen = navigationStack.removeLast()
+        print("🔍 DEBUG NavigationManager.goBack: Было \(currentScreen), Возвращаемся к \(previousScreen)")
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.currentScreen = previousScreen
+            print("🔍 DEBUG NavigationManager.goBack: currentScreen изменен на \(self.currentScreen)")
+        }
     }
     
     /// Возврат к корневому экрану
