@@ -558,6 +558,8 @@ struct VPNScreen: View {
     
     // MARK: - Antivirus Card
     
+    @State private var antivirusEnabled = true
+    
     private var antivirusCard: some View {
         VStack(spacing: Spacing.m) {
             // Header
@@ -568,14 +570,18 @@ struct VPNScreen: View {
                 
                 Spacer()
                 
-                Text("Активен")
+                // Toggle для включения/выключения антивируса
+                Toggle("", isOn: $antivirusEnabled)
+                    .toggleStyle(SwitchToggleStyle(tint: .successGreen))
+                
+                Text(antivirusEnabled ? "Активен" : "Отключен")
                     .font(.caption)
-                    .foregroundColor(.successGreen)
+                    .foregroundColor(antivirusEnabled ? .successGreen : .textSecondary)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(
                         Capsule()
-                            .fill(Color.successGreen.opacity(0.2))
+                            .fill((antivirusEnabled ? Color.successGreen : Color.textSecondary).opacity(0.2))
                     )
             }
             
@@ -608,9 +614,11 @@ struct VPNScreen: View {
                 .frame(height: 44)
                 .background(
                     RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .fill(Color.primaryBlue)
+                        .fill(antivirusEnabled ? Color.primaryBlue : Color.textSecondary)
                 )
             }
+            .disabled(!antivirusEnabled)
+            .opacity(antivirusEnabled ? 1.0 : 0.5)
         }
         .padding(Spacing.cardPadding)
         .background(backgroundShape)
