@@ -7,6 +7,7 @@ struct ElderlyInterfaceScreen: View {
     
     // MARK: - State
     
+    @EnvironmentObject private var navigationManager: NavigationManager
     @State private var selectedTab: Int = 0
     
     // MARK: - Body
@@ -47,6 +48,21 @@ struct ElderlyInterfaceScreen: View {
     
     private var elderlyHeader: some View {
         HStack(spacing: Spacing.m) {
+            // Кнопка назад
+            Button(action: {
+                navigationManager.goBack()
+            }) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        Circle()
+                            .fill(Color.orange.opacity(0.2))
+                    )
+            }
+            .accessibilityLabel("Назад")
+            
             // Аватар
             Text("👴")
                 .font(.system(size: 50))

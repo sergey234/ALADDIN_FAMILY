@@ -7,6 +7,7 @@ struct ChildInterfaceScreen: View {
     
     // MARK: - State
     
+    @EnvironmentObject private var navigationManager: NavigationManager
     @State private var selectedTab: Int = 0
     @State private var selectedAge: AgeGroup = .school
     @State private var showChildRewards: Bool = false
@@ -76,6 +77,21 @@ struct ChildInterfaceScreen: View {
     
     private var childHeader: some View {
         HStack(spacing: 12) {
+            // Кнопка назад
+            Button(action: {
+                navigationManager.goBack()
+            }) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        Circle()
+                            .fill(Color.blue.opacity(0.2))
+                    )
+            }
+            .accessibilityLabel("Назад")
+            
             // Аватар (НОВОЕ: клик открывает награды)
             Button(action: {
                 showChildRewards = true
