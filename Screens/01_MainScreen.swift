@@ -4,16 +4,14 @@ struct MainScreen: View {
     @State private var isFamilyProtectionEnabled: Bool = true
     @State private var aiQuestion: String = ""
     @State private var vpnConnected: Bool = false
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     
     var body: some View {
         ZStack {
-            // Фон - точно как в HTML
+            // Фон - красивый градиент как на заставке
             LinearGradient(
-                colors: [
-                    Color(red: 0.04, green: 0.07, blue: 0.16), // #0a1128
-                    Color(red: 0.12, green: 0.23, blue: 0.37), // #1e3a5f
-                    Color(red: 0.18, green: 0.31, blue: 0.56)  // #2e5090
-                ],
+                colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -23,17 +21,23 @@ struct MainScreen: View {
                 // Статус бар
                 HStack {
                     Text("9:41")
-                        .font(.system(size: 12))
+                        .font(.system(size: 12, weight: .medium, design: .default))
                         .foregroundColor(.white)
+                        .dynamicTypeSize(.small ... .medium)
+                        .accessibilityLabel("Время: 9:41")
                     
                     Spacer()
                     
                     HStack(spacing: 5) {
                         Text("📶")
                             .font(.system(size: 12))
+                            .accessibilityLabel("Сигнал сети")
                         Text("🔋")
                             .font(.system(size: 12))
+                            .accessibilityLabel("Заряд батареи")
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Статус устройства")
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 10)
@@ -56,25 +60,30 @@ struct MainScreen: View {
                                 Circle()
                                     .stroke(Color.orange.opacity(0.3), lineWidth: 2)
                             )
+                            .accessibilityLabel("Логотип ALADDIN")
                         
                         VStack(alignment: .leading, spacing: 2) {
                             Text("ALADDIN")
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.orange)
                                 .shadow(color: Color.orange.opacity(0.3), radius: 10)
+                                .dynamicTypeSize(.medium ... .large)
+                                .accessibilityLabel("Название приложения ALADDIN")
                             
                             Text("AI Защита семьи")
-                                .font(.system(size: 8))
+                                .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(.white.opacity(0.7))
+                                .dynamicTypeSize(.small ... .medium)
+                                .accessibilityLabel("Описание: AI Защита семьи")
                         }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("ALADDIN - AI Защита семьи")
                     }
                     
                     Spacer()
                     
                     // Кнопка профиля - ПРАВЫЙ УГОЛ
-                    Button(action: {
-                        print("Открыть профиль")
-                    }) {
+                    NavigationLink(destination: ProfileScreen()) {
                         Circle()
                             .fill(Color.orange)
                             .frame(width: 44, height: 44)
@@ -84,37 +93,131 @@ struct MainScreen: View {
                                     .foregroundColor(.black)
                             )
                     }
+                    .accessibilityLabel("Открыть профиль")
+                    .accessibilityHint("Нажмите для перехода в профиль пользователя")
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
                 
-                // Основной контент
-                ScrollView {
-                    VStack(spacing: 20) {
+                // Основной контент - главная страница
+                homeContent
+                
+                // Нижняя навигация - красивое меню с эмодзи
+                HStack(spacing: 0) {
+                    // 🏠 Главная
+                    Button(action: {
+                        // Остаемся на главной странице
+                        print("Главная страница уже активна")
+                    }) {
+                        VStack(spacing: 4) {
+                            Text("🏠")
+                                .font(.system(size: 20))
+                            Text("Главная")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.white)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                    }
+                    
+                    // 🛡️ Защита (VPN)
+                    NavigationLink(destination: VPNScreen()) {
+                        VStack(spacing: 4) {
+                            Text("🛡️")
+                                .font(.system(size: 20))
+                            Text("Защита")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                    }
+                    
+                    // 🔔 Уведомления
+                    NavigationLink(destination: NotificationsScreen()) {
+                        VStack(spacing: 4) {
+                            Text("🔔")
+                                .font(.system(size: 20))
+                            Text("Уведомления")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                    }
+                    
+                    // 👤 Профиль
+                    NavigationLink(destination: ProfileScreen()) {
+                        VStack(spacing: 4) {
+                            Text("👤")
+                                .font(.system(size: 20))
+                            Text("Профиль")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                    }
+                    
+                    // 📱 Устройства
+                    NavigationLink(destination: DevicesScreen()) {
+                        VStack(spacing: 4) {
+                            Text("📱")
+                                .font(.system(size: 20))
+                            Text("Устройства")
+                                .font(.system(size: 9, weight: .bold))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                    }
+                }
+                .padding(.vertical, 6)
+                .padding(.horizontal, 2)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color.black.opacity(0.4))
+                )
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+            }
+        }
+        .task {
+            print("🚨 MainScreen загружен! Точная копия HTML!")
+        }
+    }
+    
+    // MARK: - Home Content
+    
+    private var homeContent: some View {
+        ScrollView {
+            VStack(spacing: 20) {
                         // Карточки функций - сетка 2x2
                         LazyVGrid(columns: [
                             GridItem(.flexible()),
                             GridItem(.flexible())
                         ], spacing: 15) {
                             // VPN карточка
-                            Button(action: {
-                                print("Открыть VPN")
-                            }) {
+                            NavigationLink(destination: VPNScreen()) {
                                 VStack(spacing: 8) {
                                     HStack(spacing: 8) {
                                         Text("🛡️")
                                             .font(.system(size: 20))
+                                            .accessibilityLabel("Иконка защиты")
                                         Text(vpnConnected ? "🟢" : "🔴")
                                             .font(.system(size: 24))
+                                            .accessibilityLabel(vpnConnected ? "Статус: Подключено" : "Статус: Отключено")
                                     }
                                     
                                     Text("ALADDIN VPN")
                                         .font(.system(size: 12, weight: .semibold))
                                         .foregroundColor(.white)
+                                        .accessibilityLabel("Название: ALADDIN VPN")
                                     
                                     Text("VPN • Защита")
                                         .font(.system(size: 10))
                                         .foregroundColor(.white.opacity(0.8))
+                                        .accessibilityLabel("Описание: VPN защита")
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 80)
@@ -127,22 +230,25 @@ struct MainScreen: View {
                                         )
                                 )
                             }
+                            .accessibilityLabel("ALADDIN VPN - \(vpnConnected ? "Подключено" : "Отключено")")
+                            .accessibilityHint("Нажмите для открытия VPN экрана")
                             
                             // Тарифы карточка
-                            Button(action: {
-                                print("Открыть тарифы")
-                            }) {
+                            NavigationLink(destination: TariffsScreen()) {
                                 VStack(spacing: 8) {
                                     Text("💎")
                                         .font(.system(size: 20))
+                                        .accessibilityLabel("Иконка тарифов")
                                     
                                     Text("Тарифы")
                                         .font(.system(size: 12, weight: .semibold))
                                         .foregroundColor(.white)
+                                        .accessibilityLabel("Название: Тарифы")
                                     
                                     Text("Выбор плана")
                                         .font(.system(size: 10))
                                         .foregroundColor(.white.opacity(0.8))
+                                        .accessibilityLabel("Описание: Выбор плана")
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 80)
@@ -155,11 +261,11 @@ struct MainScreen: View {
                                         )
                                 )
                             }
+                            .accessibilityLabel("Тарифы - Выбор плана")
+                            .accessibilityHint("Нажмите для открытия экрана тарифов")
                             
                             // Аналитика карточка
-                            Button(action: {
-                                print("Открыть аналитику")
-                            }) {
+                            NavigationLink(destination: AnalyticsScreen()) {
                                 VStack(spacing: 8) {
                                     Text("📊")
                                         .font(.system(size: 20))
@@ -185,9 +291,7 @@ struct MainScreen: View {
                             }
                             
                             // Настройки карточка
-                            Button(action: {
-                                print("Открыть настройки")
-                            }) {
+                            NavigationLink(destination: SettingsScreen()) {
                                 VStack(spacing: 8) {
                                     Text("⚙️")
                                         .font(.system(size: 20))
@@ -261,9 +365,7 @@ struct MainScreen: View {
                             
                             // Кнопки действий
                             HStack(spacing: 8) {
-                                Button(action: {
-                                    print("Управление семьей")
-                                }) {
+                                NavigationLink(destination: FamilyScreen()) {
                                     Text("Управление семьей")
                                         .font(.system(size: 11, weight: .bold))
                                         .foregroundColor(.orange)
@@ -275,9 +377,7 @@ struct MainScreen: View {
                                         )
                                 }
                                 
-                                Button(action: {
-                                    print("Добавить члена семьи")
-                                }) {
+                                NavigationLink(destination: FamilyScreen()) {
                                     Text("Добавить члена семьи")
                                         .font(.system(size: 11, weight: .bold))
                                         .foregroundColor(.black)
@@ -313,85 +413,63 @@ struct MainScreen: View {
                         .padding(.horizontal, 20)
                         
                         // AI помощник
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("🤖 AI Помощник ALADDIN")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(.orange)
-                            
-                            Text("\"Привет! Я помогу настроить защиту для вашей семьи. Чем могу помочь?\"")
-                                .font(.system(size: 10))
-                                .foregroundColor(.white.opacity(0.9))
-                            
-                            TextField("Задайте вопрос...", text: $aiQuestion)
-                                .font(.system(size: 11))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.white.opacity(0.1))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                                        )
-                                )
+                        NavigationLink(destination: AIAssistantScreen()) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("🤖 AI Помощник ALADDIN")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.orange)
+                                
+                                Text("\"Привет! Я помогу настроить защиту для вашей семьи. Чем могу помочь?\"")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.white.opacity(0.9))
+                                
+                                TextField("Задайте вопрос...", text: $aiQuestion)
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .fill(Color.white.opacity(0.1))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                                            )
+                                    )
+                            }
+                            .padding(10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color.orange.opacity(0.1))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(Color.orange, lineWidth: 2)
+                                    )
+                            )
                         }
-                        .padding(10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.orange.opacity(0.1))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.orange, lineWidth: 2)
-                                )
-                        )
                         .padding(.horizontal, 20)
                     }
                 }
-                
-                // Нижняя навигация - ПРИЖАТА К НИЗУ
-                HStack(spacing: 0) {
-                    navButton(icon: "house.fill", label: "Главная", index: 0, isActive: true)
-                    navButton(icon: "shield.fill", label: "Защита", index: 1)
-                    navButton(icon: "bell.fill", label: "Уведомления", index: 2)
-                    navButton(icon: "person.fill", label: "Профиль", index: 3)
-                    navButton(icon: "iphone", label: "Устройства", index: 4)
-                }
-                .padding(.vertical, 6)
-                .padding(.horizontal, 2)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.black.opacity(0.4))
-                )
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
-            }
-        }
-        .onAppear {
-            print("🚨 MainScreen загружен! Точная копия HTML!")
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Основной контент приложения")
         }
     }
     
-    // MARK: - Navigation Button
+    // MARK: - Navigation Button Content
     
-    private func navButton(icon: String, label: String, index: Int, isActive: Bool = false) -> some View {
-        Button(action: {
-            print("Навигация: \(label)")
-        }) {
-            VStack(spacing: 2) {
-                Image(systemName: icon)
-                    .font(.system(size: 14))
-                    .foregroundColor(isActive ? .white : .white.opacity(0.7))
-                
-                Text(label)
-                    .font(.system(size: 8, weight: .bold))
-                    .foregroundColor(isActive ? .white : .white.opacity(0.7))
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 4)
+    private func navButtonContent(icon: String, label: String, isActive: Bool = false) -> some View {
+        VStack(spacing: 2) {
+            Image(systemName: icon)
+                .font(.system(size: 14))
+                .foregroundColor(isActive ? .white : .white.opacity(0.7))
+            
+            Text(label)
+                .font(.system(size: 8, weight: .bold))
+                .foregroundColor(isActive ? .white : .white.opacity(0.7))
         }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 4)
     }
-}
 
 struct MainScreen_Previews: PreviewProvider {
     static var previews: some View {

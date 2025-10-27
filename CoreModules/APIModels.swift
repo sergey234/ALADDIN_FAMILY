@@ -26,6 +26,20 @@ struct VPNServer: Codable, Identifiable {
     let flag: String
     let ping: Int
     let load: Int // 0-100%
+    let status: ServerStatus
+    
+    var name: String {
+        "\(country) • \(city)"
+    }
+    
+    var location: String {
+        "\(country), \(city)"
+    }
+}
+
+enum ServerStatus: String, Codable, CaseIterable {
+    case optimal = "optimal"
+    case loaded = "loaded"
 }
 
 // MARK: - Family Models

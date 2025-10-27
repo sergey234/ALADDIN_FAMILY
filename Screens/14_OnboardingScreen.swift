@@ -55,6 +55,8 @@ struct OnboardingScreen: View {
             // Фон
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Фон экрана онбординга")
             
             VStack(spacing: 0) {
                 // Кнопка пропустить
@@ -68,6 +70,7 @@ struct OnboardingScreen: View {
                             .font(.body)
                             .foregroundColor(.textSecondary)
                     }
+                    .accessibilityElement(label: "Пропустить онбординг", hint: "Нажмите для пропуска введения и перехода к главному экрану")
                 }
                 .padding(Spacing.m)
                 
@@ -79,6 +82,8 @@ struct OnboardingScreen: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Страница \(currentPage + 1) из \(pages.count)")
                 
                 // Индикаторы страниц
                 HStack(spacing: Spacing.sm) {
@@ -87,9 +92,12 @@ struct OnboardingScreen: View {
                             .fill(currentPage == index ? Color.primaryBlue : Color.textSecondary.opacity(0.3))
                             .frame(width: currentPage == index ? 12 : 8, height: currentPage == index ? 12 : 8)
                             .animation(.spring(), value: currentPage)
+                            .accessibilityLabel(currentPage == index ? "Текущая страница \(index + 1)" : "Страница \(index + 1)")
                     }
                 }
-                .padding(.vertical, Spacing.lg)
+                .padding(.vertical, Spacing.l)
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Индикаторы страниц")
                 
                 // Кнопки (на последнем слайде показываем дополнительные)
                 VStack(spacing: Spacing.m) {
@@ -118,6 +126,10 @@ struct OnboardingScreen: View {
                             )
                             .cornerRadius(CornerRadius.large)
                     }
+                    .accessibilityElement(
+                        label: currentPage < pages.count - 1 ? "Продолжить" : "Начать",
+                        hint: currentPage < pages.count - 1 ? "Нажмите для перехода к следующей странице" : "Нажмите для начала использования приложения"
+                    )
                     
                     // Дополнительные кнопки на последнем слайде
                     if currentPage == pages.count - 1 {
@@ -136,6 +148,7 @@ struct OnboardingScreen: View {
                                     .background(Color.secondaryGold.opacity(0.15))
                                     .cornerRadius(CornerRadius.medium)
                             }
+                            .accessibilityElement(label: "У меня есть код", hint: "Нажмите для ввода кода семьи")
                             
                             // Восстановить доступ
                             Button(action: {
@@ -151,13 +164,20 @@ struct OnboardingScreen: View {
                                     .background(Color.primaryBlue.opacity(0.15))
                                     .cornerRadius(CornerRadius.medium)
                             }
+                            .accessibilityElement(label: "Восстановить доступ", hint: "Нажмите для восстановления доступа к аккаунту")
                         }
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
                 }
                 .padding(.horizontal, Spacing.screenPadding)
-                .padding(.bottom, Spacing.xl)
+                .padding(.bottom, Spacing.l)
             }
+        }
+        .safeAreaInset(edge: .top) {
+            Color.clear.frame(height: Spacing.m)
+        }
+        .task {
+            print("🚨 OnboardingScreen загружен!")
         }
         .fullScreenCover(isPresented: $isCompleted) {
             MainScreen()
@@ -193,6 +213,8 @@ struct OnboardingScreen: View {
                 Text(page.icon)
                     .font(.system(size: 80))
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Иконка: \(page.icon)")
             
             // Текст
             VStack(spacing: Spacing.m) {
@@ -200,17 +222,24 @@ struct OnboardingScreen: View {
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
+                    .accessibilityLabel("Заголовок: \(page.title)")
+                    .accessibilityAddTraits(.isHeader)
                 
                 Text(page.description)
                     .font(.system(size: 18))
                     .foregroundColor(.textSecondary)
                     .multilineTextAlignment(.center)
                     .lineSpacing(6)
+                    .accessibilityLabel("Описание: \(page.description)")
             }
-            .padding(.horizontal, Spacing.xl)
+            .padding(.horizontal, Spacing.l)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(page.title). \(page.description)")
             
             Spacer()
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Страница онбординга: \(page.title)")
     }
 }
 
