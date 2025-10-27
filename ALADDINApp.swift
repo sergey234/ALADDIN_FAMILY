@@ -5,6 +5,11 @@ struct ALADDINApp: App {
     // КРИТИЧНО: Инициализация NavigationManager
     @StateObject private var navigationManager = NavigationManager()
     
+    init() {
+        // ✅ ПРОВЕРЯЕМ РОЛЬ ПРИ ЗАПУСКЕ
+        checkAndNavigateToUserInterface()
+    }
+    
     var body: some Scene {
         WindowGroup {
             // КРИТИЧНО: NavigationView для работы навигации
@@ -67,4 +72,49 @@ struct ALADDINApp: App {
             .id(navigationManager.currentScreen.rawValue)
         }
     }
+    
+    // MARK: - Проверка роли при запуске
+    
+    private func checkAndNavigateToUserInterface() {
+        guard let roleString = UserDefaults.standard.string(forKey: "current_user_role") else {
+            // Роли нет - остаёмся на главной
+            print("ℹ️ Роль пользователя не найдена, остаёмся на Main")
+            return
+        }
+        
+        // Проверяем, что роль валидна
+        guard let role = FamilyRole(rawValue: roleString) else {
+            print("⚠️ Неизвестная роль: \(roleString)")
+            return
+        }
+        
+        print("✅ Найдена роль: \(role.rawValue)")
+        
+        // Автопереход на соответствующий интерфейс
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            switch role {
+            case .parent:
+                self.navigationManager.navigateTo(.parentalControl)
+                print("👨‍👩‍👧 Переход к ParentalControlScreen")
+            case .child:
+                self.navigationManager.navigateTo(.childInterface)
+                print("👶 Переход к ChildInterfaceScreen")
+            case .grandparent:
+                self.navigationManager.navigateTo(.elderlyInterface)
+                print("👵 Переход к ElderlyInterfaceScreen")
+            case .guardian:
+                self.navigationManager.navigateTo(.parentalControl)
+                print("👨‍👩‍👧 Переход к ParentalControlScreen (Guardian)")
+            }
+        }
+    }
+}
+
+// MARK: - FamilyRole enum (для проверки в App)
+
+enum FamilyRole: String {
+    case parent = "Parent"
+    case child = "Child"
+    case grandparent = "Grandparent"
+    case guardian = "Guardian"
 }

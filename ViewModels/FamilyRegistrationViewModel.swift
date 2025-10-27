@@ -87,6 +87,42 @@ class FamilyRegistrationViewModel: ObservableObject {
         case completed
     }
     
+    // MARK: - User Role Management
+    
+    /**
+     * Сохранить роль пользователя
+     */
+    func saveUserRole(_ role: FamilyRole) {
+        UserDefaults.standard.set(role.rawValue, forKey: "current_user_role")
+        print("✅ Роль сохранена: \(role.rawValue)")
+    }
+    
+    /**
+     * Получить текущую роль пользователя
+     */
+    func getCurrentUserRole() -> FamilyRole? {
+        guard let roleString = UserDefaults.standard.string(forKey: "current_user_role"),
+              let role = FamilyRole(rawValue: roleString) else {
+            return nil
+        }
+        return role
+    }
+    
+    /**
+     * Проверить, есть ли сохранённая роль
+     */
+    func hasUserRole() -> Bool {
+        return getCurrentUserRole() != nil
+    }
+    
+    /**
+     * Удалить сохранённую роль (для выхода)
+     */
+    func clearUserRole() {
+        UserDefaults.standard.removeObject(forKey: "current_user_role")
+        print("✅ Роль удалена")
+    }
+    
     // MARK: - Public Methods
     
     /**
@@ -169,6 +205,9 @@ class FamilyRegistrationViewModel: ObservableObject {
               let letter = selectedLetter else {
             return
         }
+        
+        // ✅ СОХРАНЯЕМ РОЛЬ ПОЛЬЗОВАТЕЛЯ
+        saveUserRole(role)
         
         currentStep = .creatingFamily
         isLoading = true
