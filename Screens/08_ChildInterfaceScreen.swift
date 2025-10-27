@@ -13,13 +13,14 @@ struct ChildInterfaceScreen: View {
     @State private var showChildRewards: Bool = false
     
     enum AgeGroup {
-        case kids, school, teen
+        case kids, school, teen, youngAdult
         
         var title: String {
             switch self {
             case .kids: return "👶 1-6 лет"
             case .school: return "🎒 7-12 лет"
             case .teen: return "🎓 13-17 лет"
+            case .youngAdult: return "🎓 18-22 лет"
             }
         }
     }
@@ -164,7 +165,7 @@ struct ChildInterfaceScreen: View {
                 .foregroundColor(.white)
             
             HStack(spacing: 8) {
-                ForEach([AgeGroup.kids, .school, .teen], id: \.self) { age in
+                ForEach([AgeGroup.kids, .school, .teen, .youngAdult], id: \.self) { age in
                     Button(action: {
                         selectedAge = age
                     }) {
