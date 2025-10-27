@@ -192,24 +192,106 @@ struct ChildInterfaceScreen: View {
     
     private var bigButtonsGrid: some View {
         VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                bigChildButton(icon: "🎮", title: "ИГРЫ", color: Color.green)
-                bigChildButton(icon: "📚", title: "УЧЁБА", color: Color.blue)
-            }
-            
-            HStack(spacing: 12) {
-                bigChildButton(icon: "🎨", title: "ТВОРЧЕСТВО", color: Color.orange)
-                bigChildButton(icon: "📺", title: "ВИДЕО", color: Color.red)
+            // Адаптивный контент в зависимости от возраста
+            switch selectedAge {
+            case .kids:
+                // Для малышей 1-6 лет: простые игры
+                HStack(spacing: 12) {
+                    bigChildButton(icon: "🧸", title: "ИГРУШКИ", color: Color.pink) {
+                        print("🎯 Действие: Игрушки для 1-6 лет")
+                        // TODO: Переход на экран игрушек
+                    }
+                    bigChildButton(icon: "🎨", title: "РИСОВАНИЕ", color: Color.orange) {
+                        print("🎯 Действие: Рисование для 1-6 лет")
+                        // TODO: Переход на экран рисования
+                    }
+                }
+                HStack(spacing: 12) {
+                    bigChildButton(icon: "🎵", title: "ПЕСЕНКИ", color: Color.purple) {
+                        print("🎯 Действие: Песенки для 1-6 лет")
+                        // TODO: Переход на экран песен
+                    }
+                    bigChildButton(icon: "📖", title: "СКАЗКИ", color: Color.blue) {
+                        print("🎯 Действие: Сказки для 1-6 лет")
+                        // TODO: Переход на экран сказок
+                    }
+                }
+            case .school:
+                // Для школьников 7-12 лет: учёба и развлечения
+                HStack(spacing: 12) {
+                    bigChildButton(icon: "🎮", title: "ИГРЫ", color: Color.green) {
+                        print("🎯 Действие: Игры для 7-12 лет")
+                        // TODO: Переход на экран игр
+                    }
+                    bigChildButton(icon: "📚", title: "УЧЁБА", color: Color.blue) {
+                        print("🎯 Действие: Учёба для 7-12 лет")
+                        // TODO: Переход на экран учёбы
+                    }
+                }
+                HStack(spacing: 12) {
+                    bigChildButton(icon: "🎨", title: "ТВОРЧЕСТВО", color: Color.orange) {
+                        print("🎯 Действие: Творчество для 7-12 лет")
+                        // TODO: Переход на экран творчества
+                    }
+                    bigChildButton(icon: "📺", title: "МУЛЬТИКИ", color: Color.red) {
+                        print("🎯 Действие: Мультики для 7-12 лет")
+                        // TODO: Переход на экран мультиков
+                    }
+                }
+            case .teen:
+                // Для подростков 13-17 лет: развитие и развлечения
+                HStack(spacing: 12) {
+                    bigChildButton(icon: "💻", title: "ПРОГРАММИРОВАНИЕ", color: Color.blue) {
+                        print("🎯 Действие: Программирование для 13-17 лет")
+                        // TODO: Переход на экран программирования
+                    }
+                    bigChildButton(icon: "📱", title: "СОЦИАЛЬНЫЕ СЕТИ", color: Color.purple) {
+                        print("🎯 Действие: Социальные сети для 13-17 лет")
+                        // TODO: Переход на экран социальных сетей
+                    }
+                }
+                HStack(spacing: 12) {
+                    bigChildButton(icon: "🎵", title: "МУЗЫКА", color: Color.orange) {
+                        print("🎯 Действие: Музыка для 13-17 лет")
+                        // TODO: Переход на экран музыки
+                    }
+                    bigChildButton(icon: "📺", title: "ВИДЕО", color: Color.red) {
+                        print("🎯 Действие: Видео для 13-17 лет")
+                        // TODO: Переход на экран видео
+                    }
+                }
+            case .youngAdult:
+                // Для молодых взрослых 18-22 лет: образование и карьера
+                HStack(spacing: 12) {
+                    bigChildButton(icon: "🎓", title: "ОБРАЗОВАНИЕ", color: Color.blue) {
+                        print("🎯 Действие: Образование для 18-22 лет")
+                        // TODO: Переход на экран образования
+                    }
+                    bigChildButton(icon: "💼", title: "КАРЬЕРА", color: Color.green) {
+                        print("🎯 Действие: Карьера для 18-22 лет")
+                        // TODO: Переход на экран карьеры
+                    }
+                }
+                HStack(spacing: 12) {
+                    bigChildButton(icon: "🌐", title: "ИНТЕРНЕТ", color: Color.purple) {
+                        print("🎯 Действие: Интернет для 18-22 лет")
+                        // TODO: Переход на экран интернета
+                    }
+                    bigChildButton(icon: "🎬", title: "КИНО", color: Color.orange) {
+                        print("🎯 Действие: Кино для 18-22 лет")
+                        // TODO: Переход на экран кино
+                    }
+                }
             }
         }
         .padding(.horizontal, 20)
     }
     
-    private func bigChildButton(icon: String, title: String, color: Color) -> some View {
+    private func bigChildButton(icon: String, title: String, color: Color, action: @escaping () -> Void = {}) -> some View {
         Button(action: {
             let generator = UIImpactFeedbackGenerator(style: .heavy)
             generator.impactOccurred()
-            print(title)
+            action()
         }) {
             VStack(spacing: 12) {
                 Text(icon)
