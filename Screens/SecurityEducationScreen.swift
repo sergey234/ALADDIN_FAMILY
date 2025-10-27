@@ -7,7 +7,6 @@ struct SecurityEducationScreen: View {
     
     // MARK: - State
     
-    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     
     @State private var selectedLesson: SecurityLesson? = nil
@@ -89,7 +88,9 @@ struct SecurityEducationScreen: View {
     private var header: some View {
         HStack(spacing: 16) {
             Button(action: {
-                dismiss()
+                print("🔍 DEBUG: Кнопка 'Назад' нажата в SecurityEducationScreen")
+                navigationManager.goBack()
+                print("🔍 DEBUG: NavigationManager.goBack() вызван")
             }) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 20, weight: .semibold))
