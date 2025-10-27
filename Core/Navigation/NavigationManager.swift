@@ -158,9 +158,13 @@ class NavigationManager: ObservableObject {
     /// Переход к экрану
     func navigateTo(_ screen: ALADDINScreen) {
         print("🔍 DEBUG NavigationManager.navigateTo: Было \(currentScreen), Стало \(screen)")
-        navigationStack.append(currentScreen)
-        currentScreen = screen
-        print("🔍 DEBUG NavigationManager: currentScreen изменен на \(currentScreen)")
+        
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.navigationStack.append(self.currentScreen)
+            self.currentScreen = screen
+            print("🔍 DEBUG NavigationManager: currentScreen изменен на \(self.currentScreen)")
+        }
     }
     
     /// Возврат к предыдущему экрану
