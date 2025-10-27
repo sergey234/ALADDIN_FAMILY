@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		5E0C30B22EAE71D100FD6647 /* RoleSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */; };
 		5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */; };
+		5E0C30B82EAFAD0B00FD6647 /* 02_FamilyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */; };
 		5E3200012EAD2692000574C4 /* AgeGroupSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */; };
 		5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200022EAD26CE000574C4 /* ConsentModal.swift */; };
 		5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */; };
@@ -26,7 +27,6 @@
 		5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */; };
 		5E32FFFF2EAD25F5000574C4 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */; };
 		5EC309092EA6B5F600C7D34B /* 01_MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */; };
-		5EC3090A2EA6B5FA00C7D34B /* FamilyScreenNew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309072EA6AB8C00C7D34B /* FamilyScreenNew.swift */; };
 		5EC3090B2EA6B60500C7D34B /* 03_VPNScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F52EA6AB8C00C7D34B /* 03_VPNScreen.swift */; };
 		5EC3090C2EA6B60900C7D34B /* 04_AnalyticsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */; };
 		5EC3090D2EA6B60F00C7D34B /* 06_AIAssistantScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */; };
@@ -48,7 +48,6 @@
 		5EC3091D2EA6B64200C7D34B /* 24_VPNEnergyStatsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308FA2EA6AB8C00C7D34B /* 24_VPNEnergyStatsScreen.swift */; };
 		5EC3091E2EA6B64500C7D34B /* 25_PaymentQRScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308ED2EA6AB8C00C7D34B /* 25_PaymentQRScreen.swift */; };
 		5EC3091F2EA6B64800C7D34B /* ChildRewardsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308EC2EA6AB8C00C7D34B /* ChildRewardsScreen.swift */; };
-		5EC309202EA6B65600C7D34B /* FamilyScreenNew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308E32EA6AB8B00C7D34B /* FamilyScreenNew.swift */; };
 		5EC309212EA6B65A00C7D34B /* FamilyTournamentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F32EA6AB8C00C7D34B /* FamilyTournamentView.swift */; };
 		5EC309222EA6B65D00C7D34B /* GamesParentalControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308FF2EA6AB8C00C7D34B /* GamesParentalControlView.swift */; };
 		5EC309232EA6B66100C7D34B /* LanguageSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */; };
@@ -107,6 +106,7 @@
 		5E0C30AF2EAE71A100FD6647 /* MemberSettingsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberSettingsModalView.swift; path = Shared/Components/Modals/MemberSettingsModalView.swift; sourceTree = "<group>"; };
 		5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RoleSelectionModal.swift; path = Shared/Components/Modals/RoleSelectionModal.swift; sourceTree = "<group>"; };
 		5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberStatsModalView.swift; path = Shared/Components/Modals/MemberStatsModalView.swift; sourceTree = "<group>"; };
+		5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = 02_FamilyScreen.swift; sourceTree = "<group>"; };
 		5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AgeGroupSelectionModal.swift; path = Components/Modals/AgeGroupSelectionModal.swift; sourceTree = "<group>"; };
 		5E3200022EAD26CE000574C4 /* ConsentModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConsentModal.swift; path = Components/Modals/ConsentModal.swift; sourceTree = "<group>"; };
 		5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyCreatedModal.swift; path = Components/Modals/FamilyCreatedModal.swift; sourceTree = "<group>"; };
@@ -124,7 +124,6 @@
 		5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KeychainManager.swift; path = Core/Security/KeychainManager.swift; sourceTree = "<group>"; };
 		5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CacheManager.swift; path = Core/Cache/CacheManager.swift; sourceTree = "<group>"; };
 		5EC308E22EA6AB8B00C7D34B /* 22_DeviceDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 22_DeviceDetailScreen.swift; sourceTree = "<group>"; };
-		5EC308E32EA6AB8B00C7D34B /* FamilyScreenNew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyScreenNew.swift; sourceTree = "<group>"; };
 		5EC308E42EA6AB8B00C7D34B /* RewardsQuickModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsQuickModal.swift; sourceTree = "<group>"; };
 		5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 06_AIAssistantScreen.swift; sourceTree = "<group>"; };
 		5EC308E62EA6AB8B00C7D34B /* MainScreenWithRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainScreenWithRegistration.swift; sourceTree = "<group>"; };
@@ -158,7 +157,6 @@
 		5EC309042EA6AB8C00C7D34B /* 05_SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 05_SettingsScreen.swift; sourceTree = "<group>"; };
 		5EC309052EA6AB8C00C7D34B /* 23_FamilyChatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 23_FamilyChatScreen.swift; sourceTree = "<group>"; };
 		5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSettingsScreen.swift; sourceTree = "<group>"; };
-		5EC309072EA6AB8C00C7D34B /* FamilyScreenNew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyScreenNew.swift; sourceTree = "<group>"; };
 		5EC309082EA6B33200C7D34B /* 03_VPNScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 03_VPNScreen.swift; sourceTree = "<group>"; };
 		5EC309312EA6CCBD00C7D34B /* Spacing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
 		5EC309322EA6CCBD00C7D34B /* Fonts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Fonts.swift; sourceTree = "<group>"; };
@@ -217,8 +215,8 @@
 		5EC308E12EA6AB8B00C7D34B /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */,
 				5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */,
-				5EC309072EA6AB8C00C7D34B /* FamilyScreenNew.swift */,
 				5EC308F52EA6AB8C00C7D34B /* 03_VPNScreen.swift */,
 				5EC309082EA6B33200C7D34B /* 03_VPNScreen.swift */,
 				5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */,
@@ -241,7 +239,6 @@
 				5EC308FA2EA6AB8C00C7D34B /* 24_VPNEnergyStatsScreen.swift */,
 				5EC308ED2EA6AB8C00C7D34B /* 25_PaymentQRScreen.swift */,
 				5EC308EC2EA6AB8C00C7D34B /* ChildRewardsScreen.swift */,
-				5EC308E32EA6AB8B00C7D34B /* FamilyScreenNew.swift */,
 				5EC308F32EA6AB8C00C7D34B /* FamilyTournamentView.swift */,
 				5EC308FF2EA6AB8C00C7D34B /* GamesParentalControlView.swift */,
 				5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */,
@@ -483,13 +480,13 @@
 				5EC3092B2EA6B67D00C7D34B /* WheelOfFortuneView.swift in Sources */,
 				5EC3092A2EA6B67B00C7D34B /* UnicornUniverseView.swift in Sources */,
 				A3000047 /* Core/Localization/LocalizationManager.swift in Sources */,
-				5EC3090A2EA6B5FA00C7D34B /* FamilyScreenNew.swift in Sources */,
 				5EC309152EA6B62800C7D34B /* 13_SupportScreen.swift in Sources */,
 				A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */,
 				5EC3090E2EA6B60F00C7D34B /* 07_ParentalControlScreen.swift in Sources */,
 				5EC3090F2EA6B60F00C7D34B /* 05_SettingsScreen.swift in Sources */,
 				5EC309272EA6B66F00C7D34B /* RewardsModalView.swift in Sources */,
 				5EC3091C2EA6B63F00C7D34B /* 23_FamilyChatScreen.swift in Sources */,
+				5E0C30B82EAFAD0B00FD6647 /* 02_FamilyScreen.swift in Sources */,
 				5EC309192EA6B63400C7D34B /* 20_DevicesScreen.swift in Sources */,
 				5E32FFD72EACFAA9000574C4 /* ViewModifiers.swift in Sources */,
 				5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */,
@@ -508,7 +505,6 @@
 				5E32FFEF2EAD18B2000574C4 /* ProfileEditView.swift in Sources */,
 				A3000053 /* ViewModels/TariffsViewModel.swift in Sources */,
 				5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */,
-				5EC309202EA6B65600C7D34B /* FamilyScreenNew.swift in Sources */,
 				5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

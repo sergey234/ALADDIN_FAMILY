@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E0C30B22EAE71D100FD6647 /* RoleSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */; };
+		5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */; };
 		5E3200012EAD2692000574C4 /* AgeGroupSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */; };
 		5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200022EAD26CE000574C4 /* ConsentModal.swift */; };
 		5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */; };
@@ -102,6 +104,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		5E0C30AF2EAE71A100FD6647 /* MemberSettingsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberSettingsModalView.swift; path = Shared/Components/Modals/MemberSettingsModalView.swift; sourceTree = "<group>"; };
+		5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RoleSelectionModal.swift; path = Shared/Components/Modals/RoleSelectionModal.swift; sourceTree = "<group>"; };
+		5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberStatsModalView.swift; path = Shared/Components/Modals/MemberStatsModalView.swift; sourceTree = "<group>"; };
 		5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AgeGroupSelectionModal.swift; path = Components/Modals/AgeGroupSelectionModal.swift; sourceTree = "<group>"; };
 		5E3200022EAD26CE000574C4 /* ConsentModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConsentModal.swift; path = Components/Modals/ConsentModal.swift; sourceTree = "<group>"; };
 		5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyCreatedModal.swift; path = Components/Modals/FamilyCreatedModal.swift; sourceTree = "<group>"; };
@@ -147,11 +152,13 @@
 		5EC308FE2EA6AB8C00C7D34B /* UnicornPetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnicornPetView.swift; sourceTree = "<group>"; };
 		5EC308FF2EA6AB8C00C7D34B /* GamesParentalControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesParentalControlView.swift; sourceTree = "<group>"; };
 		5EC309002EA6AB8C00C7D34B /* 19_TermsOfServiceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 19_TermsOfServiceScreen.swift; sourceTree = "<group>"; };
+		5EC309012EA6AB8C00C7D34B /* 14_OnboardingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 14_OnboardingScreen.swift; sourceTree = "<group>"; };
 		5EC309022EA6AB8C00C7D34B /* 21_ReferralScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 21_ReferralScreen.swift; sourceTree = "<group>"; };
 		5EC309032EA6AB8C00C7D34B /* NotificationSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsScreen.swift; sourceTree = "<group>"; };
 		5EC309042EA6AB8C00C7D34B /* 05_SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 05_SettingsScreen.swift; sourceTree = "<group>"; };
 		5EC309052EA6AB8C00C7D34B /* 23_FamilyChatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 23_FamilyChatScreen.swift; sourceTree = "<group>"; };
 		5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSettingsScreen.swift; sourceTree = "<group>"; };
+		5EC309072EA6AB8C00C7D34B /* FamilyScreenNew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyScreenNew.swift; sourceTree = "<group>"; };
 		5EC309082EA6B33200C7D34B /* 03_VPNScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 03_VPNScreen.swift; sourceTree = "<group>"; };
 		5EC309312EA6CCBD00C7D34B /* Spacing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
 		5EC309322EA6CCBD00C7D34B /* Fonts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Fonts.swift; sourceTree = "<group>"; };
@@ -266,6 +273,9 @@
 		A0FFFFF5 = {
 			isa = PBXGroup;
 			children = (
+				5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */,
+				5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */,
+				5E0C30AF2EAE71A100FD6647 /* MemberSettingsModalView.swift */,
 				5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */,
 				5E3200022EAD26CE000574C4 /* ConsentModal.swift */,
 				5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */,
@@ -439,11 +449,13 @@
 				5EC3091B2EA6B63C00C7D34B /* 22_DeviceDetailScreen.swift in Sources */,
 				5EC3092C2EA6B68000C7D34B /* WidgetConfigurationScreen.swift in Sources */,
 				5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */,
+				5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */,
 				5EC309352EA6CCBD00C7D34B /* Spacing.swift in Sources */,
 				5E32FFF32EAD1915000574C4 /* RecoveryOptionsModal.swift in Sources */,
 				A3000021 /* ViewModels/SettingsViewModel.swift in Sources */,
 				5E32FFF92EAD24D2000574C4 /* InfoRow.swift in Sources */,
 				5EC3091E2EA6B64500C7D34B /* 25_PaymentQRScreen.swift in Sources */,
+				5E0C30B22EAE71D100FD6647 /* RoleSelectionModal.swift in Sources */,
 				A3000023 /* ViewModels/SupportViewModel.swift in Sources */,
 				A3000025 /* ViewModels/ChildInterfaceViewModel.swift in Sources */,
 				5EC309142EA6B62500C7D34B /* 12_NotificationsScreen.swift in Sources */,
@@ -461,6 +473,7 @@
 				5EC3091A2EA6B63700C7D34B /* 21_ReferralScreen.swift in Sources */,
 				5E32FFF52EAD199B000574C4 /* AvatarSelector.swift in Sources */,
 				5EC309392EA6CF0600C7D34B /* ALADDINNavigationBar.swift in Sources */,
+				5EC309162EA6B62B00C7D34B /* 14_OnboardingScreen.swift in Sources */,
 				5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */,
 				A3000039 /* ViewModels/PaymentQRViewModel.swift in Sources */,
 				A3000041 /* Core/Navigation/NavigationManager.swift in Sources */,
@@ -470,6 +483,7 @@
 				5EC3092B2EA6B67D00C7D34B /* WheelOfFortuneView.swift in Sources */,
 				5EC3092A2EA6B67B00C7D34B /* UnicornUniverseView.swift in Sources */,
 				A3000047 /* Core/Localization/LocalizationManager.swift in Sources */,
+				5EC3090A2EA6B5FA00C7D34B /* FamilyScreenNew.swift in Sources */,
 				5EC309152EA6B62800C7D34B /* 13_SupportScreen.swift in Sources */,
 				A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */,
 				5EC3090E2EA6B60F00C7D34B /* 07_ParentalControlScreen.swift in Sources */,
