@@ -37,6 +37,7 @@ class NavigationManager: ObservableObject {
         // Игровые экраны
         case childRewards = "ChildRewardsScreen"
         case familyTournament = "FamilyTournamentView"
+        case securityEducation = "SecurityEducationScreen"
         case gamesParentalControl = "GamesParentalControlView"
         case unicornPet = "UnicornPetView"
         case unicornUniverse = "UnicornUniverseView"
@@ -77,6 +78,7 @@ class NavigationManager: ObservableObject {
             case .paymentQR: return "Оплата QR"
             case .childRewards: return "Детские награды"
             case .familyTournament: return "Семейный турнир"
+            case .securityEducation: return "Безопасность"
             case .gamesParentalControl: return "Игры и контроль"
             case .unicornPet: return "Единорог-питомец"
             case .unicornUniverse: return "Вселенная единорогов"
@@ -117,6 +119,7 @@ class NavigationManager: ObservableObject {
             case .paymentQR: return "qrcode"
             case .childRewards: return "star.fill"
             case .familyTournament: return "trophy.fill"
+            case .securityEducation: return "shield.lefthalf.filled"
             case .gamesParentalControl: return "gamecontroller.fill"
             case .unicornPet: return "pawprint.fill"
             case .unicornUniverse: return "sparkles"

@@ -45,6 +45,10 @@ struct ALADDINApp: App {
                         ChildInterfaceScreen()
                             .id("childInterface")
                             .onAppear { print("🔍 DEBUG: ChildInterfaceScreen отображён") }
+                    case .securityEducation:
+                        SecurityEducationScreen()
+                            .id("securityEducation")
+                            .onAppear { print("🔍 DEBUG: SecurityEducationScreen отображён") }
                     case .elderlyInterface:
                         ElderlyInterfaceScreen()
                             .id("elderlyInterface")

@@ -244,48 +244,66 @@ struct ChildInterfaceScreen: View {
                     }
                 }
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🎨", title: "ТВОРЧЕСТВО", color: Color.orange) {
-                        navigateToContent(category: "ТВОРЧЕСТВО")
+                    bigChildButton(icon: "🛡️", title: "БЕЗОПАСНОСТЬ", color: Color.cyan) {
+                        navigationManager.navigateTo(.securityEducation)
                     }
                     bigChildButton(icon: "📺", title: "МУЛЬТИКИ", color: Color.red) {
                         navigateToContent(category: "МУЛЬТИКИ")
                     }
                 }
+                HStack(spacing: 12) {
+                    bigChildButton(icon: "🎨", title: "ТВОРЧЕСТВО", color: Color.orange) {
+                        navigateToContent(category: "ТВОРЧЕСТВО")
+                    }
+                    Spacer()
+                }
             case .teen:
                 // Для подростков 13-17 лет: развитие и развлечения
                 HStack(spacing: 12) {
+                    bigChildButton(icon: "🛡️", title: "БЕЗОПАСНОСТЬ", color: Color.cyan) {
+                        navigationManager.navigateTo(.securityEducation)
+                    }
                     bigChildButton(icon: "💻", title: "ПРОГРАММИРОВАНИЕ", color: Color.blue) {
                         navigateToContent(category: "ПРОГРАММИРОВАНИЕ")
                     }
+                }
+                HStack(spacing: 12) {
                     bigChildButton(icon: "📱", title: "СОЦИАЛЬНЫЕ СЕТИ", color: Color.purple) {
                         navigateToContent(category: "СОЦИАЛЬНЫЕ СЕТИ")
                     }
-                }
-                HStack(spacing: 12) {
                     bigChildButton(icon: "🎵", title: "МУЗЫКА", color: Color.orange) {
                         navigateToContent(category: "МУЗЫКА")
                     }
+                }
+                HStack(spacing: 12) {
                     bigChildButton(icon: "📺", title: "ВИДЕО", color: Color.red) {
                         navigateToContent(category: "ВИДЕО")
                     }
+                    Spacer()
                 }
             case .youngAdult:
                 // Для молодых взрослых 18-22 лет: образование и карьера
                 HStack(spacing: 12) {
+                    bigChildButton(icon: "🛡️", title: "БЕЗОПАСНОСТЬ", color: Color.cyan) {
+                        navigationManager.navigateTo(.securityEducation)
+                    }
                     bigChildButton(icon: "🎓", title: "ОБРАЗОВАНИЕ", color: Color.blue) {
                         navigateToContent(category: "ОБРАЗОВАНИЕ")
                     }
+                }
+                HStack(spacing: 12) {
                     bigChildButton(icon: "💼", title: "КАРЬЕРА", color: Color.green) {
                         navigateToContent(category: "КАРЬЕРА")
                     }
-                }
-                HStack(spacing: 12) {
                     bigChildButton(icon: "🌐", title: "ИНТЕРНЕТ", color: Color.purple) {
                         navigateToContent(category: "ИНТЕРНЕТ")
                     }
+                }
+                HStack(spacing: 12) {
                     bigChildButton(icon: "🎬", title: "КИНО", color: Color.orange) {
                         navigateToContent(category: "КИНО")
                     }
+                    Spacer()
                 }
             }
         }
