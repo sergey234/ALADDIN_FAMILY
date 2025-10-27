@@ -11,6 +11,18 @@ struct ChildInterfaceScreen: View {
     @State private var selectedTab: Int = 0
     @State private var selectedAge: AgeGroup = .school
     @State private var showChildRewards: Bool = false
+    @State private var selectedCategory: String = ""
+    @State private var showingContent: Bool = false
+    
+    // MARK: - Navigation Function
+    
+    private func navigateToContent(category: String) {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+        
+        selectedCategory = category
+        showingContent = true
+    }
     
     enum AgeGroup {
         case kids, school, teen, youngAdult
@@ -198,92 +210,85 @@ struct ChildInterfaceScreen: View {
                 // Для малышей 1-6 лет: простые игры
                 HStack(spacing: 12) {
                     bigChildButton(icon: "🧸", title: "ИГРУШКИ", color: Color.pink) {
-                        print("🎯 Действие: Игрушки для 1-6 лет")
-                        // TODO: Переход на экран игрушек
+                        navigateToContent(category: "ИГРУШКИ")
                     }
                     bigChildButton(icon: "🎨", title: "РИСОВАНИЕ", color: Color.orange) {
-                        print("🎯 Действие: Рисование для 1-6 лет")
-                        // TODO: Переход на экран рисования
+                        navigateToContent(category: "РИСОВАНИЕ")
                     }
                 }
                 HStack(spacing: 12) {
                     bigChildButton(icon: "🎵", title: "ПЕСЕНКИ", color: Color.purple) {
-                        print("🎯 Действие: Песенки для 1-6 лет")
-                        // TODO: Переход на экран песен
+                        navigateToContent(category: "ПЕСЕНКИ")
                     }
                     bigChildButton(icon: "📖", title: "СКАЗКИ", color: Color.blue) {
-                        print("🎯 Действие: Сказки для 1-6 лет")
-                        // TODO: Переход на экран сказок
+                        navigateToContent(category: "СКАЗКИ")
                     }
                 }
             case .school:
                 // Для школьников 7-12 лет: учёба и развлечения
                 HStack(spacing: 12) {
                     bigChildButton(icon: "🎮", title: "ИГРЫ", color: Color.green) {
-                        print("🎯 Действие: Игры для 7-12 лет")
-                        // TODO: Переход на экран игр
+                        navigateToContent(category: "ИГРЫ")
                     }
                     bigChildButton(icon: "📚", title: "УЧЁБА", color: Color.blue) {
-                        print("🎯 Действие: Учёба для 7-12 лет")
-                        // TODO: Переход на экран учёбы
+                        navigateToContent(category: "УЧЁБА")
                     }
                 }
                 HStack(spacing: 12) {
                     bigChildButton(icon: "🎨", title: "ТВОРЧЕСТВО", color: Color.orange) {
-                        print("🎯 Действие: Творчество для 7-12 лет")
-                        // TODO: Переход на экран творчества
+                        navigateToContent(category: "ТВОРЧЕСТВО")
                     }
                     bigChildButton(icon: "📺", title: "МУЛЬТИКИ", color: Color.red) {
-                        print("🎯 Действие: Мультики для 7-12 лет")
-                        // TODO: Переход на экран мультиков
+                        navigateToContent(category: "МУЛЬТИКИ")
                     }
                 }
             case .teen:
                 // Для подростков 13-17 лет: развитие и развлечения
                 HStack(spacing: 12) {
                     bigChildButton(icon: "💻", title: "ПРОГРАММИРОВАНИЕ", color: Color.blue) {
-                        print("🎯 Действие: Программирование для 13-17 лет")
-                        // TODO: Переход на экран программирования
+                        navigateToContent(category: "ПРОГРАММИРОВАНИЕ")
                     }
                     bigChildButton(icon: "📱", title: "СОЦИАЛЬНЫЕ СЕТИ", color: Color.purple) {
-                        print("🎯 Действие: Социальные сети для 13-17 лет")
-                        // TODO: Переход на экран социальных сетей
+                        navigateToContent(category: "СОЦИАЛЬНЫЕ СЕТИ")
                     }
                 }
                 HStack(spacing: 12) {
                     bigChildButton(icon: "🎵", title: "МУЗЫКА", color: Color.orange) {
-                        print("🎯 Действие: Музыка для 13-17 лет")
-                        // TODO: Переход на экран музыки
+                        navigateToContent(category: "МУЗЫКА")
                     }
                     bigChildButton(icon: "📺", title: "ВИДЕО", color: Color.red) {
-                        print("🎯 Действие: Видео для 13-17 лет")
-                        // TODO: Переход на экран видео
+                        navigateToContent(category: "ВИДЕО")
                     }
                 }
             case .youngAdult:
                 // Для молодых взрослых 18-22 лет: образование и карьера
                 HStack(spacing: 12) {
                     bigChildButton(icon: "🎓", title: "ОБРАЗОВАНИЕ", color: Color.blue) {
-                        print("🎯 Действие: Образование для 18-22 лет")
-                        // TODO: Переход на экран образования
+                        navigateToContent(category: "ОБРАЗОВАНИЕ")
                     }
                     bigChildButton(icon: "💼", title: "КАРЬЕРА", color: Color.green) {
-                        print("🎯 Действие: Карьера для 18-22 лет")
-                        // TODO: Переход на экран карьеры
+                        navigateToContent(category: "КАРЬЕРА")
                     }
                 }
                 HStack(spacing: 12) {
                     bigChildButton(icon: "🌐", title: "ИНТЕРНЕТ", color: Color.purple) {
-                        print("🎯 Действие: Интернет для 18-22 лет")
-                        // TODO: Переход на экран интернета
+                        navigateToContent(category: "ИНТЕРНЕТ")
                     }
                     bigChildButton(icon: "🎬", title: "КИНО", color: Color.orange) {
-                        print("🎯 Действие: Кино для 18-22 лет")
-                        // TODO: Переход на экран кино
-                    }
-                }
+                        navigateToContent(category: "КИНО")
+                                    }
             }
         }
+        .sheet(isPresented: $showingContent) {
+            if !selectedCategory.isEmpty {
+                ChildContentScreen(
+                    category: selectedCategory,
+                    ageGroup: selectedAge
+                )
+                .environmentObject(navigationManager)
+            }
+        }
+    }
         .padding(.horizontal, 20)
     }
     
