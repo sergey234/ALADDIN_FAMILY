@@ -104,9 +104,9 @@ struct FamilyScreen: View {
                                     .accessibilityElement(children: .combine)
                                     .accessibilityLabel("Участников: 4")
                                 
-                                StatItem(icon: "👶", value: "3", label: "Детей")
+                                StatItem(icon: "👶", value: "1", label: "Ребёнок")
                                     .accessibilityElement(children: .combine)
-                                    .accessibilityLabel("Детей: 3")
+                                    .accessibilityLabel("Ребёнок: 1")
                                 
                                 StatItem(icon: "🛡️", value: "100%", label: "Защита")
                                     .accessibilityElement(children: .combine)
@@ -176,19 +176,7 @@ struct FamilyScreen: View {
                                 )
                                 
                                 FamilyMemberCard(
-                                    name: "Алексей",
-                                    role: .child,
-                                    avatar: "👦",
-                                    status: .warning,
-                                    threatsBlocked: 8,
-                                    lastActive: "1 час назад",
-                                    action: {
-                                        navigateToMemberScreen(role: .child)
-                                    }
-                                )
-                                
-                                FamilyMemberCard(
-                                    name: "Мария",
+                                    name: "Маша",
                                     role: .child,
                                     avatar: "👧",
                                     status: .protected,
@@ -196,6 +184,18 @@ struct FamilyScreen: View {
                                     lastActive: "30 мин назад",
                                     action: {
                                         navigateToMemberScreen(role: .child)
+                                    }
+                                )
+                                
+                                FamilyMemberCard(
+                                    name: "Бабушка",
+                                    role: .elderly,
+                                    avatar: "👵",
+                                    status: .protected,
+                                    threatsBlocked: 3,
+                                    lastActive: "1 час назад",
+                                    action: {
+                                        navigateToMemberScreen(role: .elderly)
                                     }
                                 )
                             }
