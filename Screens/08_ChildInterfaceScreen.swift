@@ -84,6 +84,15 @@ struct ChildInterfaceScreen: View {
                 .accessibilityLabel("Содержимое детского интерфейса")
             }
         }
+        .sheet(isPresented: $showingContent) {
+            if !selectedCategory.isEmpty {
+                ChildContentScreen(
+                    category: selectedCategory,
+                    ageGroup: selectedAge
+                )
+                .environmentObject(navigationManager)
+            }
+        }
     }
     
     // MARK: - Child Header
@@ -276,21 +285,11 @@ struct ChildInterfaceScreen: View {
                     }
                     bigChildButton(icon: "🎬", title: "КИНО", color: Color.orange) {
                         navigateToContent(category: "КИНО")
-                                    }
+                    }
+                }
             }
         }
-        .sheet(isPresented: $showingContent) {
-            if !selectedCategory.isEmpty {
-                ChildContentScreen(
-                    category: selectedCategory,
-                    ageGroup: selectedAge
-                )
-                .environmentObject(navigationManager)
-            }
-        }
-    }
         .padding(.horizontal, 20)
-    }
     
     private func bigChildButton(icon: String, title: String, color: Color, action: @escaping () -> Void = {}) -> some View {
         Button(action: {

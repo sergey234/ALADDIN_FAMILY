@@ -10,6 +10,7 @@
 		5E0C30B22EAE71D100FD6647 /* RoleSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */; };
 		5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */; };
 		5E0C30B82EAFAD0B00FD6647 /* 02_FamilyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */; };
+		5E0C30BA2EAFC81D00FD6647 /* ChildContentScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B92EAFC81D00FD6647 /* ChildContentScreen.swift */; };
 		5E3200012EAD2692000574C4 /* AgeGroupSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */; };
 		5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200022EAD26CE000574C4 /* ConsentModal.swift */; };
 		5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */; };
@@ -107,6 +108,7 @@
 		5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RoleSelectionModal.swift; path = Shared/Components/Modals/RoleSelectionModal.swift; sourceTree = "<group>"; };
 		5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberStatsModalView.swift; path = Shared/Components/Modals/MemberStatsModalView.swift; sourceTree = "<group>"; };
 		5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = 02_FamilyScreen.swift; sourceTree = "<group>"; };
+		5E0C30B92EAFC81D00FD6647 /* ChildContentScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChildContentScreen.swift; sourceTree = "<group>"; };
 		5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AgeGroupSelectionModal.swift; path = Components/Modals/AgeGroupSelectionModal.swift; sourceTree = "<group>"; };
 		5E3200022EAD26CE000574C4 /* ConsentModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConsentModal.swift; path = Components/Modals/ConsentModal.swift; sourceTree = "<group>"; };
 		5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyCreatedModal.swift; path = Components/Modals/FamilyCreatedModal.swift; sourceTree = "<group>"; };
@@ -215,6 +217,7 @@
 		5EC308E12EA6AB8B00C7D34B /* Screens */ = {
 			isa = PBXGroup;
 			children = (
+				5E0C30B92EAFC81D00FD6647 /* ChildContentScreen.swift */,
 				5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */,
 				5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */,
 				5EC308F52EA6AB8C00C7D34B /* 03_VPNScreen.swift */,
@@ -425,6 +428,7 @@
 				A3000001 /* ViewModels/MainViewModel.swift in Sources */,
 				5E32FFF72EAD23BB000574C4 /* PrimaryButton.swift in Sources */,
 				5EC309252EA6B66900C7D34B /* NotificationSettingsScreen.swift in Sources */,
+				5E0C30BA2EAFC81D00FD6647 /* ChildContentScreen.swift in Sources */,
 				5E32FFE92EAD1836000574C4 /* StatItem.swift in Sources */,
 				5E32FFED2EAD1876000574C4 /* FamilyMemberCard.swift in Sources */,
 				A3000003 /* ViewModels/VPNViewModel.swift in Sources */,
