@@ -20,7 +20,6 @@ struct RoleSelectionModal: View {
         case .parent: return "person.2.fill"
         case .child: return "person.fill"
         case .grandparent: return "person.badge.shield.checkmark.fill"
-        case .guardian: return "person.badge.shield.checkmark.fill"
         }
     }
     
@@ -29,7 +28,6 @@ struct RoleSelectionModal: View {
         case .parent: return "Полный доступ к настройкам и контролю"
         case .child: return "Ограниченный доступ под контролем родителей"
         case .grandparent: return "Расширенные права для опеки"
-        case .guardian: return "Расширенные права для опеки"
         }
     }
     
@@ -91,7 +89,6 @@ struct RoleSelectionCard: View {
         case .parent: return "person.2.fill"
         case .child: return "person.fill"
         case .grandparent: return "person.badge.shield.checkmark.fill"
-        case .guardian: return "person.badge.shield.checkmark.fill"
         }
     }
     
@@ -100,7 +97,6 @@ struct RoleSelectionCard: View {
         case .parent: return "Полный доступ к настройкам и контролю"
         case .child: return "Ограниченный доступ под контролем родителей"
         case .grandparent: return "Расширенные права для опеки"
-        case .guardian: return "Расширенные права для опеки"
         }
     }
     

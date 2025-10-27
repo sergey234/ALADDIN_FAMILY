@@ -107,10 +107,3 @@ struct ALADDINApp: App {
     }
 }
 
-// MARK: - FamilyRole enum (для проверки в App)
-
-enum FamilyRole: String {
-    case parent = "Parent"
-    case child = "Child"
-    case grandparent = "Grandparent"
-}
