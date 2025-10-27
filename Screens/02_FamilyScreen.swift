@@ -13,6 +13,8 @@ struct FamilyScreen: View {
     // MARK: - Navigation Helper
     
     private func navigateToMemberScreen(role: FamilyMemberCard.FamilyRole) {
+        print("🔍 DEBUG: navigateToMemberScreen вызван с role: \(role)")
+        
         // Haptic feedback
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
@@ -20,13 +22,21 @@ struct FamilyScreen: View {
         // Navigate based on role
         switch role {
         case .parent:
+            print("🔍 DEBUG: Переход к .parentalControl")
             navigationManager.navigateTo(.parentalControl)
+            print("🔍 DEBUG: Текущий экран: \(navigationManager.currentScreen)")
         case .child:
+            print("🔍 DEBUG: Переход к .childInterface")
             navigationManager.navigateTo(.childInterface)
+            print("🔍 DEBUG: Текущий экран: \(navigationManager.currentScreen)")
         case .teenager:
+            print("🔍 DEBUG: Переход к .childInterface (teenager)")
             navigationManager.navigateTo(.childInterface) // Simplified interface
+            print("🔍 DEBUG: Текущий экран: \(navigationManager.currentScreen)")
         case .elderly:
+            print("🔍 DEBUG: Переход к .elderlyInterface")
             navigationManager.navigateTo(.elderlyInterface)
+            print("🔍 DEBUG: Текущий экран: \(navigationManager.currentScreen)")
         }
     }
     

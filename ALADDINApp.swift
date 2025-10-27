@@ -11,6 +11,8 @@ struct ALADDINApp: App {
             NavigationView {
                 // КРИТИЧНО: Отслеживаем currentScreen и показываем нужный экран
                 Group {
+                    let _ = print("🔍 DEBUG ALADDINApp: Рендер currentScreen = \(navigationManager.currentScreen)")
+                    
                     switch navigationManager.currentScreen {
                     case .main:
                         MainScreen()
@@ -26,10 +28,13 @@ struct ALADDINApp: App {
                         AIAssistantScreen()
                     case .parentalControl:
                         ParentalControlScreen()
+                            .onAppear { print("🔍 DEBUG: ParentalControlScreen отображён") }
                     case .childInterface:
                         ChildInterfaceScreen()
+                            .onAppear { print("🔍 DEBUG: ChildInterfaceScreen отображён") }
                     case .elderlyInterface:
                         ElderlyInterfaceScreen()
+                            .onAppear { print("🔍 DEBUG: ElderlyInterfaceScreen отображён") }
                     case .tariffs:
                         TariffsScreen()
                     case .profile:
