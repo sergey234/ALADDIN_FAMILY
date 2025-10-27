@@ -1,12 +1,34 @@
 import SwiftUI
 
 struct FamilyScreen: View {
+    @EnvironmentObject private var navigationManager: NavigationManager
+    
     @State private var showAddMemberModal = false
     @State private var showContentFilterModal = false
     @State private var showTimeControlModal = false
     @State private var showMonitoringModal = false
     @State private var showSafetyModal = false
     @State private var showRewardsModal = false
+    
+    // MARK: - Navigation Helper
+    
+    private func navigateToMemberScreen(role: FamilyMemberCard.FamilyRole) {
+        // Haptic feedback
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+        
+        // Navigate based on role
+        switch role {
+        case .parent:
+            navigationManager.navigateTo(.parentalControl)
+        case .child:
+            navigationManager.navigateTo(.childInterface)
+        case .teenager:
+            navigationManager.navigateTo(.childInterface) // Simplified interface
+        case .elderly:
+            navigationManager.navigateTo(.elderlyInterface)
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -126,7 +148,9 @@ struct FamilyScreen: View {
                                     status: .protected,
                                     threatsBlocked: 15,
                                     lastActive: "2 мин назад",
-                                    action: {}
+                                    action: {
+                                        navigateToMemberScreen(role: .parent)
+                                    }
                                 )
                                 
                                 FamilyMemberCard(
@@ -136,7 +160,9 @@ struct FamilyScreen: View {
                                     status: .protected,
                                     threatsBlocked: 12,
                                     lastActive: "5 мин назад",
-                                    action: {}
+                                    action: {
+                                        navigateToMemberScreen(role: .parent)
+                                    }
                                 )
                                 
                                 FamilyMemberCard(
@@ -146,7 +172,9 @@ struct FamilyScreen: View {
                                     status: .warning,
                                     threatsBlocked: 8,
                                     lastActive: "1 час назад",
-                                    action: {}
+                                    action: {
+                                        navigateToMemberScreen(role: .child)
+                                    }
                                 )
                                 
                                 FamilyMemberCard(
@@ -156,7 +184,9 @@ struct FamilyScreen: View {
                                     status: .protected,
                                     threatsBlocked: 5,
                                     lastActive: "30 мин назад",
-                                    action: {}
+                                    action: {
+                                        navigateToMemberScreen(role: .child)
+                                    }
                                 )
                             }
                         }
