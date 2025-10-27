@@ -47,26 +47,26 @@ struct MainScreen: View {
                 HStack {
                     // Логотип и контент - ЛЕВЫЙ УГОЛ
                     HStack(spacing: 10) {
-                        // Логотип изображение
+                        // Логотип единорога - синий
                         Circle()
-                            .fill(Color.orange)
+                            .fill(Color.blue.opacity(0.2))
                             .frame(width: 36, height: 36)
                             .overlay(
-                                Text("👁️")
-                                    .font(.system(size: 20))
+                                Text("🦄")
+                                    .font(.system(size: 22))
                             )
-                            .shadow(color: Color.orange.opacity(0.4), radius: 15)
+                            .shadow(color: Color.blue.opacity(0.5), radius: 10)
                             .overlay(
                                 Circle()
-                                    .stroke(Color.orange.opacity(0.3), lineWidth: 2)
+                                    .stroke(Color.blue.opacity(0.3), lineWidth: 2)
                             )
-                            .accessibilityLabel("Логотип ALADDIN")
+                            .accessibilityLabel("Логотип ALADDIN - Единорог")
                         
                         VStack(alignment: .leading, spacing: 2) {
                             Text("ALADDIN")
                                 .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(.orange)
-                                .shadow(color: Color.orange.opacity(0.3), radius: 10)
+                                .foregroundColor(.blue)
+                                .shadow(color: Color.blue.opacity(0.3), radius: 10)
                                 .dynamicTypeSize(.medium ... .large)
                                 .accessibilityLabel("Название приложения ALADDIN")
                             

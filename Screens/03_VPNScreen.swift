@@ -68,6 +68,12 @@ struct VPNScreen: View {
                         // Quick Actions
                         quickActionsCard
                         
+                        // Antivirus Section
+                        antivirusCard
+                        
+                        // Bypass Protection Section
+                        bypassProtectionCard
+                        
                         Spacer(minLength: 100)
                     }
                     .padding(.top, Spacing.m)
@@ -490,6 +496,204 @@ struct VPNScreen: View {
         .cardShadow()
         .padding(.horizontal, Spacing.screenPadding)
     }
+    
+    // MARK: - Antivirus Card
+    
+    private var antivirusCard: some View {
+        VStack(spacing: Spacing.m) {
+            // Header
+            HStack {
+                Text("🛡️ Антивирус")
+                    .font(.h3)
+                    .foregroundColor(.textPrimary)
+                
+                Spacer()
+                
+                Text("Активен")
+                    .font(.caption)
+                    .foregroundColor(.successGreen)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(Color.successGreen.opacity(0.2))
+                    )
+            }
+            
+            // Stats Grid
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: Spacing.s) {
+                AntivirusStatItem(icon: "🔍", value: "1,247", label: "Файлов проверено")
+                AntivirusStatItem(icon: "✅", value: "0", label: "Угроз найдено")
+                AntivirusStatItem(icon: "🔄", value: "2ч назад", label: "Последняя проверка")
+                AntivirusStatItem(icon: "⚡", value: "100%", label: "Защита")
+            }
+            
+            // Scan Button
+            Button(action: {
+                // Запустить проверку
+                print("Запуск антивирусной проверки")
+            }) {
+                HStack {
+                    Image(systemName: "play.circle.fill")
+                        .font(.title3)
+                    Text("Запустить проверку")
+                        .font(.headline)
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                        .fill(Color.primaryBlue)
+                )
+            }
+        }
+        .padding(Spacing.cardPadding)
+        .background(backgroundShape)
+        .cardShadow()
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+    
+    // MARK: - Bypass Protection Card
+    
+    private var bypassProtectionCard: some View {
+        VStack(spacing: Spacing.m) {
+            // Header
+            HStack {
+                Text("🚨 Защита от обхода")
+                    .font(.h3)
+                    .foregroundColor(.warningOrange)
+                
+                Spacer()
+            }
+            
+            // Stats Grid 3 columns
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: Spacing.m) {
+                VStack(spacing: 4) {
+                    Text("0")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.successGreen)
+                    Text("Попыток сегодня")
+                        .font(.system(size: 10))
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                
+                VStack(spacing: 4) {
+                    Text("47")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.warningOrange)
+                    Text("Всего за неделю")
+                        .font(.system(size: 10))
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                
+                VStack(spacing: 4) {
+                    Text("100%")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.successGreen)
+                    Text("Заблокировано")
+                        .font(.system(size: 10))
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            
+            // Detection Items (Accordion style from HTML)
+            VStack(spacing: 8) {
+                BypassDetectionItem(icon: "🌐", title: "Детекция VPN", enabled: true)
+                BypassDetectionItem(icon: "🕶️", title: "Детекция Инкогнито", enabled: true)
+                BypassDetectionItem(icon: "🧅", title: "Детекция Tor", enabled: true)
+                BypassDetectionItem(icon: "🔀", title: "Детекция Proxy", enabled: true)
+            }
+        }
+        .padding(Spacing.cardPadding)
+        .background(backgroundShape)
+        .cardShadow()
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+}
+
+// MARK: - Bypass Detection Item
+
+struct BypassDetectionItem: View {
+    let icon: String
+    let title: String
+    @State private var enabled: Bool
+    @State private var isExpanded: Bool = false
+    
+    init(icon: String, title: String, enabled: Bool = true) {
+        self.icon = icon
+        self.title = title
+        self._enabled = State(initialValue: enabled)
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header (always visible)
+            Button(action: {
+                withAnimation {
+                    isExpanded.toggle()
+                }
+            }) {
+                HStack {
+                    Text(icon)
+                        .font(.system(size: 22))
+                    Text(title)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.textPrimary)
+                    Spacer()
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .font(.system(size: 12))
+                        .foregroundColor(.textSecondary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+            }
+            
+            // Content (expandable)
+            if isExpanded {
+                VStack(spacing: 8) {
+                    Rectangle()
+                        .fill(Color.white.opacity(0.1))
+                        .frame(height: 1)
+                        .padding(.horizontal, 12)
+                    
+                    HStack {
+                        Text(enabled ? "Статус защиты: Включено" : "Статус защиты: Выключено")
+                            .font(.system(size: 12))
+                            .foregroundColor(.textSecondary)
+                        
+                        Spacer()
+                        
+                        // Toggle Switch
+                        Toggle("", isOn: $enabled)
+                            .toggleStyle(SwitchToggleStyle(tint: enabled ? .successGreen : .gray))
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 12)
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white.opacity(0.05))
+        )
+    }
 }
 
 // MARK: - Supporting Views
@@ -549,7 +753,32 @@ struct QuickActionButton: View {
                     .fill(Color.backgroundMedium.opacity(0.3))
             )
         }
-        .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// MARK: - Antivirus Stat Item
+
+struct AntivirusStatItem: View {
+    let icon: String
+    let value: String
+    let label: String
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(icon)
+                .font(.system(size: 24))
+            Text(value)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(.white)
+            Text(label)
+                .font(.system(size: 9))
+                .foregroundColor(.textSecondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(Spacing.s)
     }
 }
 
