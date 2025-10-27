@@ -871,6 +871,11 @@ struct ServerSelectionView: View {
 
 struct VPNSettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @State private var autoSelectServer = true
+    @State private var autoConnectWiFi = true
+    @State private var autoConnectMobile = false
+    @State private var killSwitch = true
+    @State private var dnsLeakProtection = true
     
     var body: some View {
         NavigationView {
@@ -879,13 +884,7 @@ struct VPNSettingsView: View {
                     HStack {
                         Text("Автовыбор сервера")
                         Spacer()
-                        Toggle("", isOn: .constant(true))
-                    }
-                    HStack {
-                        Text("Страна по умолчанию")
-                        Spacer()
-                        Text("Россия")
-                            .foregroundColor(.secondary)
+                        Toggle("", isOn: $autoSelectServer)
                     }
                 }
                 
@@ -893,12 +892,12 @@ struct VPNSettingsView: View {
                     HStack {
                         Text("Автоподключение при Wi‑Fi")
                         Spacer()
-                        Toggle("", isOn: .constant(true))
+                        Toggle("", isOn: $autoConnectWiFi)
                     }
                     HStack {
                         Text("Автоподключение при мобильной сети")
                         Spacer()
-                        Toggle("", isOn: .constant(false))
+                        Toggle("", isOn: $autoConnectMobile)
                     }
                 }
                 
@@ -906,12 +905,12 @@ struct VPNSettingsView: View {
                     HStack {
                         Text("Kill Switch")
                         Spacer()
-                        Toggle("", isOn: .constant(true))
+                        Toggle("", isOn: $killSwitch)
                     }
                     HStack {
-                        Text("DNS Леak Protection")
+                        Text("DNS Leak Protection")
                         Spacer()
-                        Toggle("", isOn: .constant(true))
+                        Toggle("", isOn: $dnsLeakProtection)
                     }
                 }
             }
@@ -1041,23 +1040,53 @@ struct VPNHelpView: View {
                     
                     VStack(spacing: 15) {
                         HelpCard(
+                            question: "🛡️ Что такое Антивирус?",
+                            answer: "Автоматическая проверка файлов на вредоносное ПО. Защищает ваш телефон от вирусов, троянов и других угроз. Сканирует все файлы в фоновом режиме."
+                        )
+                        
+                        HelpCard(
+                            question: "🚫 Что такое Блокировка рекламы?",
+                            answer: "Убирает назойливую рекламу в приложениях и браузерах. Ускоряет загрузку страниц, экономит трафик и делает интернет безопаснее."
+                        )
+                        
+                        HelpCard(
+                            question: "👁️ Что такое Антитрекинг?",
+                            answer: "Скрывает вашу активность в интернете от рекламных компаний и сборщиков данных. Они не смогут отслеживать ваши действия в сети."
+                        )
+                        
+                        HelpCard(
+                            question: "🔒 Что такое Шифрование?",
+                            answer: "Защищает ваши данные от перехвата. Вся информация превращается в код, который никто не сможет прочитать без ключа."
+                        )
+                        
+                        HelpCard(
+                            question: "⚠️ Что такое Защита от угроз?",
+                            answer: "Блокирует опасные сайты, фишинговые ссылки и вредоносное ПО до того, как они навредят вашему устройству."
+                        )
+                        
+                        HelpCard(
+                            question: "🕶️ Что такое Детекция Инкогнито?",
+                            answer: "Обнаруживает и блокирует попытки войти в режим инкогнито, чтобы ограничить доступ к контенту без родительского контроля."
+                        )
+                        
+                        HelpCard(
+                            question: "🧅 Что такое Детекция Tor?",
+                            answer: "Находит и блокирует использование анонимной сети Tor для предотвращения доступа к запрещенному контенту."
+                        )
+                        
+                        HelpCard(
+                            question: "🔀 Что такое Детекция Proxy?",
+                            answer: "Обнаруживает использование прокси-серверов, которые могут скрывать настоящий IP-адрес и обходить ограничения."
+                        )
+                        
+                        HelpCard(
                             question: "Как подключить VPN?",
                             answer: "Нажмите большую кнопку 'ПОДКЛЮЧИТЬ' в центре экрана. Соединение установится автоматически."
                         )
                         
                         HelpCard(
-                            question: "Как выбрать сервер?",
-                            answer: "Нажмите на карточку 'Выбор сервера' и выберите страну из списка."
-                        )
-                        
-                        HelpCard(
-                            question: "Что такое Kill Switch?",
-                            answer: "Функция автоматически отключает интернет, если VPN соединение прерывается."
-                        )
-                        
-                        HelpCard(
-                            question: "Влияет ли VPN на скорость?",
-                            answer: "Минимальное влияние. Мы используем быстрые серверы для оптимальной скорости."
+                            question: "🔴 Что такое Kill Switch?",
+                            answer: "Если VPN соединение разрывается, эта функция автоматически блокирует весь интернет-трафик, чтобы защитить ваши данные."
                         )
                     }
                     .padding(.horizontal)
