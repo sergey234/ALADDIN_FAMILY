@@ -19,6 +19,24 @@ struct FamilyScreen: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
+                // Status bar
+                HStack {
+                    Text("9:41")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white)
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 5) {
+                        Image(systemName: "wifi")
+                        Image(systemName: "battery.100")
+                    }
+                    .font(.system(size: 12))
+                    .foregroundColor(.white)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+                
                 // Header
                 HStack {
                     Button(action: {}) {
@@ -29,16 +47,12 @@ struct FamilyScreen: View {
                             .background(Color.white.opacity(0.1))
                             .clipShape(Circle())
                     }
-                    .accessibilityLabel("Назад")
-                    .accessibilityHint("Нажмите для возврата к предыдущему экрану")
                     
                     Spacer()
                     
                     Text("👨‍👩‍👧‍👦 ALADDIN Family")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(Color(red: 0.96, green: 0.62, blue: 0.04))
-                        .accessibilityLabel("ALADDIN Family - Семейная защита")
-                        .accessibilityAddTraits(.isHeader)
                     
                     Spacer()
                     
@@ -50,8 +64,6 @@ struct FamilyScreen: View {
                             .background(Color(red: 0.96, green: 0.62, blue: 0.04))
                             .clipShape(Circle())
                     }
-                    .accessibilityLabel("Добавить участника")
-                    .accessibilityHint("Нажмите для добавления нового участника семьи")
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
@@ -63,25 +75,13 @@ struct FamilyScreen: View {
                             Text("Семейная защита")
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(Color(red: 0.96, green: 0.62, blue: 0.04))
-                                .accessibilityLabel("Семейная защита")
-                                .accessibilityAddTraits(.isHeader)
                             
                             // Stats
                             HStack(spacing: 15) {
-                                StatItem(icon: "👥", value: "4", label: "Участников")
-                                    .accessibilityElement(children: .combine)
-                                    .accessibilityLabel("Участников: 4")
-                                
-                                StatItem(icon: "👶", value: "3", label: "Детей")
-                                    .accessibilityElement(children: .combine)
-                                    .accessibilityLabel("Детей: 3")
-                                
-                                StatItem(icon: "🛡️", value: "100%", label: "Защита")
-                                    .accessibilityElement(children: .combine)
-                                    .accessibilityLabel("Защита: 100%")
+                                StatItem(value: "4", label: "Участников")
+                                StatItem(value: "3", label: "Детей")
+                                StatItem(value: "100%", label: "Защита")
                             }
-                            .accessibilityElement(children: .contain)
-                            .accessibilityLabel("Статистика семьи")
                             
                             Button(action: { showAddMemberModal = true }) {
                                 Text("Добавить участника")
@@ -98,8 +98,6 @@ struct FamilyScreen: View {
                                     )
                                     .clipShape(Capsule())
                             }
-                            .accessibilityLabel("Добавить участника")
-                            .accessibilityHint("Нажмите для добавления нового участника в семью")
                         }
                         .padding(25)
                         .background(Color.white.opacity(0.1))
@@ -115,48 +113,38 @@ struct FamilyScreen: View {
                             Text("Участники семьи")
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(Color(red: 0.96, green: 0.62, blue: 0.04))
-                                .accessibilityLabel("Участники семьи")
-                                .accessibilityAddTraits(.isHeader)
                             
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
+                            VStack(spacing: 12) {
                                 FamilyMemberCard(
-                                    name: "Папа",
-                                    role: .parent,
                                     avatar: "👨",
-                                    status: .protected,
-                                    threatsBlocked: 15,
-                                    lastActive: "2 мин назад",
-                                    action: {}
+                                    name: "Папа",
+                                    role: "Администратор",
+                                    status: "🟢 Онлайн",
+                                    age: nil
                                 )
                                 
                                 FamilyMemberCard(
-                                    name: "Мама",
-                                    role: .parent,
                                     avatar: "👩",
-                                    status: .protected,
-                                    threatsBlocked: 12,
-                                    lastActive: "5 мин назад",
-                                    action: {}
+                                    name: "Мама",
+                                    role: "Родитель",
+                                    status: "🟢 Онлайн",
+                                    age: nil
                                 )
                                 
                                 FamilyMemberCard(
-                                    name: "Алексей",
-                                    role: .child,
                                     avatar: "👦",
-                                    status: .warning,
-                                    threatsBlocked: 8,
-                                    lastActive: "1 час назад",
-                                    action: {}
+                                    name: "Алексей",
+                                    role: "Ребенок",
+                                    status: "🟡 В школе",
+                                    age: "12 лет"
                                 )
                                 
                                 FamilyMemberCard(
-                                    name: "Мария",
-                                    role: .child,
                                     avatar: "👧",
-                                    status: .protected,
-                                    threatsBlocked: 5,
-                                    lastActive: "30 мин назад",
-                                    action: {}
+                                    name: "Мария",
+                                    role: "Ребенок",
+                                    status: "🟢 Дома",
+                                    age: "8 лет"
                                 )
                             }
                         }
@@ -280,8 +268,6 @@ struct FamilyScreen: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 100)
                 }
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel("Семейный контент")
                 
                 Spacer()
             }
@@ -309,7 +295,91 @@ struct FamilyScreen: View {
 
 // MARK: - Supporting Views
 
+struct StatItem: View {
+    let value: String
+    let label: String
+    
+    var body: some View {
+        VStack(spacing: 5) {
+            Text(value)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(.white)
+            
+            Text(label)
+                .font(.system(size: 12))
+                .foregroundColor(.white.opacity(0.7))
+        }
+    }
+}
 
+struct FamilyMemberCard: View {
+    let avatar: String
+    let name: String
+    let role: String
+    let status: String
+    let age: String?
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Text(avatar)
+                .font(.system(size: 20))
+                .frame(width: 45, height: 45)
+                .background(
+                    LinearGradient(
+                        colors: [Color(red: 0.96, green: 0.62, blue: 0.04), Color(red: 0.85, green: 0.47, blue: 0.02)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .clipShape(Circle())
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.white)
+                
+                if let age = age {
+                    Text(age)
+                        .font(.system(size: 11))
+                        .foregroundColor(.white.opacity(0.8))
+                }
+                
+                Text(role)
+                    .font(.system(size: 11))
+                    .foregroundColor(.white.opacity(0.7))
+                
+                Text(status)
+                    .font(.system(size: 11))
+                    .foregroundColor(Color(red: 0.06, green: 0.73, blue: 0.51))
+            }
+            
+            Spacer()
+            
+            HStack(spacing: 10) {
+                Button(action: {}) {
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 14))
+                        .foregroundColor(.white)
+                        .frame(width: 35, height: 35)
+                        .background(Color.white.opacity(0.1))
+                        .clipShape(Circle())
+                }
+                
+                Button(action: {}) {
+                    Image(systemName: "chart.bar")
+                        .font(.system(size: 14))
+                        .foregroundColor(.white)
+                        .frame(width: 35, height: 35)
+                        .background(Color.white.opacity(0.1))
+                        .clipShape(Circle())
+                }
+            }
+        }
+        .padding(12)
+        .background(Color.black.opacity(0.2))
+        .clipShape(RoundedRectangle(cornerRadius: 15))
+    }
+}
 
 struct ControlCard: View {
     let icon: String
