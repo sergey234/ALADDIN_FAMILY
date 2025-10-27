@@ -11,9 +11,14 @@ struct FamilyTournamentView: View {
         ("Катя", 195, "👧")
     ]
     
-    @State private var tournamentType = "📚 Отличники"
+    @State private var tournamentTypes = ["📚 Отличники", "🛡️ Защитники", "🧹 Помощники"]
+    @State private var selectedTournamentIndex = 0
     @State private var questProgress: Double = 0.6
     @State private var daysLeft = 3
+    
+    private var tournamentType: String {
+        tournamentTypes[selectedTournamentIndex]
+    }
     
     var body: some View {
         ZStack {
@@ -27,10 +32,34 @@ struct FamilyTournamentView: View {
                         .font(.h1)
                         .foregroundColor(.textPrimary)
                     
-                    // Тип турнира
-                    Text(tournamentType)
-                        .font(.h3)
-                        .foregroundColor(.primaryBlue)
+                    // Переключатель типов турнира
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: Spacing.m) {
+                            ForEach(Array(tournamentTypes.enumerated()), id: \.offset) { index, type in
+                                Button(action: {
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        selectedTournamentIndex = index
+                                    }
+                                }) {
+                                    Text(type)
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(selectedTournamentIndex == index ? .white : .textSecondary)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 8)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: CornerRadius.large)
+                                                .fill(selectedTournamentIndex == index ? Color.primaryBlue : Color.clear)
+                                        )
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: CornerRadius.large)
+                                                .stroke(Color.primaryBlue, lineWidth: selectedTournamentIndex == index ? 0 : 1)
+                                        )
+                                }
+                            }
+                        }
+                        .padding(.horizontal, Spacing.screenPadding)
+                    }
+                    .padding(.vertical, Spacing.s)
                     
                     // Таймер
                     timerView

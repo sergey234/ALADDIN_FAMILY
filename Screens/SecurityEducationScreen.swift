@@ -14,6 +14,8 @@ struct SecurityEducationScreen: View {
     @State private var securityLevel: Int = 5
     @State private var securityXP: Int = 1247
     @State private var totalLessonsCompleted: Int = 12
+    @State private var unicornsEarned: Int = 0
+    @State private var showRewardAlert: Bool = false
     
     // MARK: - Security Lessons
     
@@ -360,6 +362,7 @@ struct TipRow: View {
 struct LessonDetailView: View {
     let lesson: SecurityEducationScreen.SecurityLesson
     @Environment(\.dismiss) private var dismiss
+    @State private var hasLearned: Bool = false
     
     var body: some View {
         ZStack {
@@ -391,19 +394,69 @@ struct LessonDetailView: View {
                 
                 Spacer()
                 
-                Button(action: {
-                    dismiss()
-                }) {
-                    Text("Закрыть")
-                        .font(.system(size: 16, weight: .semibold))
+                if !hasLearned {
+                    Button(action: {
+                        // Изучаем урок
+                        hasLearned = true
+                        
+                        // Haptic feedback
+                        let generator = UIImpactFeedbackGenerator(style: .heavy)
+                        generator.impactOccurred()
+                        
+                        // Сохраняем в UserDefaults
+                        UserDefaults.standard.set(true, forKey: "lesson_\(lesson.id.uuidString)_completed")
+                        
+                        // Закрываем через 1 секунду
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            dismiss()
+                        }
+                    }) {
+                        VStack(spacing: 8) {
+                            Text("🎓 Изучить урок")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("+\(lesson.xpReward) XP +10 🦄")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.green)
+                        }
                         .foregroundColor(.blue)
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                         .background(Color.white)
                         .cornerRadius(12)
+                    }
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 40)
+                } else {
+                    VStack(spacing: 12) {
+                        Text("✅ Урок изучен!")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                        
+                        Text("+\(lesson.xpReward) XP • +10 🦄")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.green)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.white.opacity(0.2))
+                            )
+                    }
+                    
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Text("Продолжить")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.blue)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .background(Color.white)
+                            .cornerRadius(12)
+                    }
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, 40)
-                .padding(.bottom, 40)
             }
         }
     }

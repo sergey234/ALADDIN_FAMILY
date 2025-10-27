@@ -316,16 +316,20 @@ struct ChildInterfaceScreen: View {
             generator.impactOccurred()
             action()
         }) {
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
                 Text(icon)
-                    .font(.system(size: 56))
+                    .font(.system(size: 40))
                 
                 Text(title)
-                    .font(.title2)
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.white)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity)
-            .frame(height: 140)
+            .frame(height: 130)
             .background(
                 RoundedRectangle(cornerRadius: 12)
                     .fill(color.opacity(0.3))
