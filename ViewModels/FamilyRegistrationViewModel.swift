@@ -7,7 +7,6 @@ enum FamilyRole: String, Codable, CaseIterable, Identifiable {
     case parent = "Parent"
     case child = "Child"
     case grandparent = "Grandparent"
-    case guardian = "Guardian"
     var id: String { self.rawValue }
 }
 

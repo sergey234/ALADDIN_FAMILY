@@ -102,9 +102,6 @@ struct ALADDINApp: App {
             case .grandparent:
                 self.navigationManager.navigateTo(.elderlyInterface)
                 print("👵 Переход к ElderlyInterfaceScreen")
-            case .guardian:
-                self.navigationManager.navigateTo(.parentalControl)
-                print("👨‍👩‍👧 Переход к ParentalControlScreen (Guardian)")
             }
         }
     }
@@ -116,5 +113,4 @@ enum FamilyRole: String {
     case parent = "Parent"
     case child = "Child"
     case grandparent = "Grandparent"
-    case guardian = "Guardian"
 }

@@ -53,7 +53,11 @@ struct FamilyScreen: View {
             VStack(spacing: 0) {
                 // Header
                 HStack {
-                    Button(action: {}) {
+                    Button(action: {
+                        print("🔍 DEBUG: Кнопка 'Назад' нажата в FamilyScreen")
+                        navigationManager.goBack()
+                        print("🔍 DEBUG: NavigationManager.goBack() вызван")
+                    }) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20, weight: .medium))
                             .foregroundColor(.white)
