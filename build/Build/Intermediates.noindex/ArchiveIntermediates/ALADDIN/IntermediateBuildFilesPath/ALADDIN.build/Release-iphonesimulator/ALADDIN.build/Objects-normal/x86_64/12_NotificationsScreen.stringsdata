@@ -1,0 +1,56 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/12_NotificationsScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Фон экрана уведомлений"
+      },
+      {
+        "comment": "",
+        "key": "Список уведомлений"
+      },
+      {
+        "comment": "",
+        "key": "Навигационная панель уведомлений"
+      },
+      {
+        "comment": "",
+        "key": "📊 СТАТИСТИКА"
+      },
+      {
+        "comment": "",
+        "key": "%@: %@"
+      },
+      {
+        "comment": "",
+        "key": "ФИЛЬТРЫ"
+      },
+      {
+        "comment": "",
+        "key": "Фильтр: %@"
+      },
+      {
+        "comment": "",
+        "key": "УВЕДОМЛЕНИЯ"
+      },
+      {
+        "comment": "",
+        "key": "%lld из %lld"
+      },
+      {
+        "comment": "",
+        "key": "%@: %@, время: %@"
+      },
+      {
+        "comment": "",
+        "key": "Тип уведомления: %@"
+      },
+      {
+        "comment": "",
+        "key": "Непрочитанное уведомление"
+      }
+    ]
+  },
+  "version": 1
+}

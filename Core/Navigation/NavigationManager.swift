@@ -1,250 +1,6 @@
 import SwiftUI
 
-// MARK: - Missing Types
-struct FamilyScreen: View {
-    var body: some View {
-        Text("Family Screen")
-    }
-}
-
-struct VPNScreen: View {
-    var body: some View {
-        Text("VPN Screen")
-    }
-}
-
-struct AnalyticsScreen: View {
-    var body: some View {
-        Text("Analytics Screen")
-    }
-}
-
-struct SettingsScreen: View {
-    var body: some View {
-        Text("Settings Screen")
-    }
-}
-
-struct AIAssistantScreen: View {
-    var body: some View {
-        Text("AI Assistant Screen")
-    }
-}
-
-struct ParentalControlScreen: View {
-    var body: some View {
-        Text("Parental Control Screen")
-    }
-}
-
-struct ChildInterfaceScreen: View {
-    var body: some View {
-        Text("Child Interface Screen")
-    }
-}
-
-struct ElderlyInterfaceScreen: View {
-    var body: some View {
-        Text("Elderly Interface Screen")
-    }
-}
-
-struct TariffsScreen: View {
-    var body: some View {
-        Text("Tariffs Screen")
-    }
-}
-
-struct ProfileScreen: View {
-    var body: some View {
-        Text("Profile Screen")
-    }
-}
-
-struct NotificationsScreen: View {
-    var body: some View {
-        Text("Notifications Screen")
-    }
-}
-
-struct SupportScreen: View {
-    var body: some View {
-        Text("Support Screen")
-    }
-}
-
-struct OnboardingScreen: View {
-    var body: some View {
-        Text("Onboarding Screen")
-    }
-}
-
-struct PrivacyPolicyScreen: View {
-    var body: some View {
-        Text("Privacy Policy Screen")
-    }
-}
-
-struct TermsOfServiceScreen: View {
-    var body: some View {
-        Text("Terms of Service Screen")
-    }
-}
-
-struct DevicesScreen: View {
-    var body: some View {
-        Text("Devices Screen")
-    }
-}
-
-struct ReferralScreen: View {
-    var body: some View {
-        Text("Referral Screen")
-    }
-}
-
-struct DeviceDetailScreen: View {
-    var body: some View {
-        Text("Device Detail Screen")
-    }
-}
-
-struct FamilyChatScreen: View {
-    var body: some View {
-        Text("Family Chat Screen")
-    }
-}
-
-struct VPNEnergyStatsScreen: View {
-    var body: some View {
-        Text("VPN Energy Stats Screen")
-    }
-}
-
-struct PaymentQRScreen: View {
-    var body: some View {
-        Text("Payment QR Screen")
-    }
-}
-
-struct ChildRewardsScreen: View {
-    var body: some View {
-        Text("Child Rewards Screen")
-    }
-}
-
-struct FamilyTournamentView: View {
-    var body: some View {
-        Text("Family Tournament View")
-    }
-}
-
-struct GamesParentalControlView: View {
-    var body: some View {
-        Text("Games Parental Control View")
-    }
-}
-
-struct UnicornPetView: View {
-    var body: some View {
-        Text("Unicorn Pet View")
-    }
-}
-
-struct UnicornUniverseView: View {
-    var body: some View {
-        Text("Unicorn Universe View")
-    }
-}
-
-struct WheelOfFortuneView: View {
-    var body: some View {
-        Text("Wheel of Fortune View")
-    }
-}
-
-struct MainScreenExact: View {
-    var body: some View {
-        Text("Main Screen Exact")
-    }
-}
-
-struct MainScreenFixed: View {
-    var body: some View {
-        Text("Main Screen Fixed")
-    }
-}
-
-struct VPNScreen_temp: View {
-    var body: some View {
-        Text("VPN Screen Temp")
-    }
-}
-
-struct MainScreenWithRegistration: View {
-    var body: some View {
-        Text("Main Screen With Registration")
-    }
-}
-
-struct AgeGroupSelectionModal: View {
-    @Binding var isPresented: Bool
-    var body: some View {
-        Text("Age Group Selection Modal")
-    }
-}
-
-struct ConsentModal: View {
-    @Binding var isPresented: Bool
-    var body: some View {
-        Text("Consent Modal")
-    }
-}
-
-struct FamilyCreatedModal: View {
-    @Binding var isPresented: Bool
-    var body: some View {
-        Text("Family Created Modal")
-    }
-}
-
-struct LetterSelectionModal: View {
-    @Binding var isPresented: Bool
-    var body: some View {
-        Text("Letter Selection Modal")
-    }
-}
-
-struct QRScannerModal: View {
-    @Binding var isPresented: Bool
-    var body: some View {
-        Text("QR Scanner Modal")
-    }
-}
-
-struct RecoveryOptionsModal: View {
-    @Binding var isPresented: Bool
-    var body: some View {
-        Text("Recovery Options Modal")
-    }
-}
-
-struct RegistrationSuccessModal: View {
-    @Binding var isPresented: Bool
-    var body: some View {
-        Text("Registration Success Modal")
-    }
-}
-
-struct RoleSelectionModal: View {
-    @Binding var isPresented: Bool
-    var body: some View {
-        Text("Role Selection Modal")
-    }
-}
-import SwiftUI
-
-// MARK: - Navigation Manager для всех 36 экранов ALADDIN
+// MARK: - Navigation Manager для всех экранов ALADDIN - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
 class NavigationManager: ObservableObject {
     @Published var currentScreen: ALADDINScreen = .main
     @Published var navigationStack: [ALADDINScreen] = []
@@ -285,12 +41,13 @@ class NavigationManager: ObservableObject {
         case unicornUniverse = "UnicornUniverseView"
         case wheelOfFortune = "WheelOfFortuneView"
         
-        // Дубликаты (используем основные версии)
-        case mainExact = "01_MainScreen_Exact"
-        case mainFixed = "01_MainScreen_Fixed"
-        case vpnTemp = "03_VPNScreen_temp"
-        case familyDuplicate = "FamilyScreen"
+        // Дополнительные экраны
         case mainWithRegistration = "MainScreenWithRegistration"
+        case languageSettings = "LanguageSettingsScreen"
+        case notificationSettings = "NotificationSettingsScreen"
+        case widgetConfiguration = "WidgetConfigurationScreen"
+        case rewardsModal = "RewardsModalView"
+        case rewardsQuickModal = "RewardsQuickModal"
         
         var displayName: String {
             switch self {
@@ -302,31 +59,32 @@ class NavigationManager: ObservableObject {
             case .aiAssistant: return "AI Помощник"
             case .parentalControl: return "Родительский контроль"
             case .childInterface: return "Детский интерфейс"
-            case .elderlyInterface: return "Интерфейс для пожилых"
+            case .elderlyInterface: return "Пожилой интерфейс"
             case .tariffs: return "Тарифы"
             case .profile: return "Профиль"
             case .notifications: return "Уведомления"
             case .support: return "Поддержка"
-            case .onboarding: return "Онбординг"
+            case .onboarding: return "Обучение"
             case .privacyPolicy: return "Политика конфиденциальности"
             case .termsOfService: return "Условия использования"
             case .devices: return "Устройства"
-            case .referral: return "Рефералы"
+            case .referral: return "Реферальная программа"
             case .deviceDetail: return "Детали устройства"
             case .familyChat: return "Семейный чат"
             case .vpnEnergyStats: return "Статистика VPN"
-            case .paymentQR: return "QR Оплата"
+            case .paymentQR: return "Оплата QR"
             case .childRewards: return "Детские награды"
             case .familyTournament: return "Семейный турнир"
-            case .gamesParentalControl: return "Игровой контроль"
-            case .unicornPet: return "Единорог питомец"
+            case .gamesParentalControl: return "Игры и контроль"
+            case .unicornPet: return "Единорог-питомец"
             case .unicornUniverse: return "Вселенная единорогов"
             case .wheelOfFortune: return "Колесо фортуны"
-            case .mainExact: return "Главная (точная)"
-            case .mainFixed: return "Главная (исправленная)"
-            case .vpnTemp: return "VPN (временная)"
-            case .familyDuplicate: return "Семья (дубликат)"
             case .mainWithRegistration: return "Главная с регистрацией"
+            case .languageSettings: return "Настройки языка"
+            case .notificationSettings: return "Настройки уведомлений"
+            case .widgetConfiguration: return "Настройка виджетов"
+            case .rewardsModal: return "Модальное окно наград"
+            case .rewardsQuickModal: return "Быстрое окно наград"
             }
         }
         
@@ -336,232 +94,259 @@ class NavigationManager: ObservableObject {
             case .family: return "person.3.fill"
             case .vpn: return "shield.fill"
             case .analytics: return "chart.bar.fill"
-            case .settings: return "gear"
+            case .settings: return "gearshape.fill"
             case .aiAssistant: return "brain.head.profile"
-            case .parentalControl: return "lock.shield.fill"
+            case .parentalControl: return "person.crop.circle.badge.checkmark"
             case .childInterface: return "child"
             case .elderlyInterface: return "person.crop.circle"
             case .tariffs: return "creditcard.fill"
             case .profile: return "person.fill"
             case .notifications: return "bell.fill"
             case .support: return "questionmark.circle.fill"
-            case .onboarding: return "arrow.right.circle.fill"
+            case .onboarding: return "book.fill"
             case .privacyPolicy: return "doc.text.fill"
-            case .termsOfService: return "doc.text.fill"
+            case .termsOfService: return "doc.plaintext.fill"
             case .devices: return "iphone"
-            case .referral: return "person.2.fill"
-            case .deviceDetail: return "iphone.gen3"
+            case .referral: return "gift.fill"
+            case .deviceDetail: return "info.circle.fill"
             case .familyChat: return "message.fill"
-            case .vpnEnergyStats: return "battery.100"
+            case .vpnEnergyStats: return "battery.100percent"
             case .paymentQR: return "qrcode"
-            case .childRewards: return "gift.fill"
+            case .childRewards: return "star.fill"
             case .familyTournament: return "trophy.fill"
             case .gamesParentalControl: return "gamecontroller.fill"
             case .unicornPet: return "pawprint.fill"
             case .unicornUniverse: return "sparkles"
             case .wheelOfFortune: return "circle.grid.3x3.fill"
-            case .mainExact: return "house.fill"
-            case .mainFixed: return "house.fill"
-            case .vpnTemp: return "shield.fill"
-            case .familyDuplicate: return "person.3.fill"
             case .mainWithRegistration: return "house.fill"
-            }
-        }
-        
-        var category: ScreenCategory {
-            switch self {
-            case .main, .family, .vpn, .analytics, .settings, .aiAssistant, .parentalControl, .childInterface, .elderlyInterface, .tariffs, .profile, .notifications, .support, .onboarding, .privacyPolicy, .termsOfService, .devices, .referral, .deviceDetail, .familyChat, .vpnEnergyStats, .paymentQR:
-                return .main
-            case .childRewards, .familyTournament, .gamesParentalControl, .unicornPet, .unicornUniverse, .wheelOfFortune:
-                return .games
-            case .mainExact, .mainFixed, .vpnTemp, .familyDuplicate, .mainWithRegistration:
-                return .duplicates
+            case .languageSettings: return "globe"
+            case .notificationSettings: return "bell.badge.fill"
+            case .widgetConfiguration: return "square.grid.3x3.fill"
+            case .rewardsModal: return "gift.fill"
+            case .rewardsQuickModal: return "gift.fill"
             }
         }
     }
     
-    // MARK: - Модальные окна (8)
+    // MARK: - Модальные окна
     enum ALADDINModal: String, CaseIterable {
-        case ageGroupSelection = "AgeGroupSelectionModal"
-        case consent = "ConsentModal"
-        case familyCreated = "FamilyCreatedModal"
-        case letterSelection = "LetterSelectionModal"
-        case qrScanner = "QRScannerModal"
-        case recoveryOptions = "RecoveryOptionsModal"
-        case registrationSuccess = "RegistrationSuccessModal"
-        case roleSelection = "RoleSelectionModal"
+        case addDevice = "AddDeviceModal"
+        case editProfile = "EditProfileModal"
+        case shareReferral = "ShareReferralModal"
+        case qrCode = "QRCodeModal"
+        case rewards = "RewardsModal"
+        case settings = "SettingsModal"
+        case help = "HelpModal"
+        case about = "AboutModal"
         
         var displayName: String {
             switch self {
-            case .ageGroupSelection: return "Выбор возрастной группы"
-            case .consent: return "Согласие"
-            case .familyCreated: return "Семья создана"
-            case .letterSelection: return "Выбор буквы"
-            case .qrScanner: return "QR Сканер"
-            case .recoveryOptions: return "Опции восстановления"
-            case .registrationSuccess: return "Успешная регистрация"
-            case .roleSelection: return "Выбор роли"
+            case .addDevice: return "Добавить устройство"
+            case .editProfile: return "Редактировать профиль"
+            case .shareReferral: return "Поделиться реферальным кодом"
+            case .qrCode: return "QR код"
+            case .rewards: return "Награды"
+            case .settings: return "Настройки"
+            case .help: return "Помощь"
+            case .about: return "О приложении"
             }
         }
-    }
-    
-    // MARK: - Категории экранов
-    enum ScreenCategory {
-        case main
-        case games
-        case duplicates
     }
     
     // MARK: - Навигационные методы
     
+    /// Переход к экрану
     func navigateTo(_ screen: ALADDINScreen) {
         navigationStack.append(currentScreen)
         currentScreen = screen
     }
     
-    func navigateBack() {
-        if !navigationStack.isEmpty {
-            currentScreen = navigationStack.removeLast()
-        }
+    /// Возврат к предыдущему экрану
+    func goBack() {
+        guard !navigationStack.isEmpty else { return }
+        currentScreen = navigationStack.removeLast()
     }
     
-    func navigateToRoot() {
+    /// Возврат к корневому экрану
+    func goToRoot() {
         navigationStack.removeAll()
         currentScreen = .main
     }
     
+    /// Переход к экрану с очисткой стека
+    func navigateToRoot(_ screen: ALADDINScreen) {
+        navigationStack.removeAll()
+        currentScreen = screen
+    }
+    
+    /// Показать модальное окно
     func presentModal(_ modal: ALADDINModal) {
         currentModal = modal
         isPresentingModal = true
     }
     
+    /// Скрыть модальное окно
     func dismissModal() {
         currentModal = nil
         isPresentingModal = false
     }
     
-    // MARK: - Получение View для экрана
-    
-    @ViewBuilder
-    func getView(for screen: ALADDINScreen) -> some View {
-        switch screen {
-        case .main:
-            MainScreen()
-        case .family:
-            FamilyScreen()
-        case .vpn:
-            VPNScreen()
-        case .analytics:
-            AnalyticsScreen()
-        case .settings:
-            SettingsScreen()
-        case .aiAssistant:
-            AIAssistantScreen()
-        case .parentalControl:
-            ParentalControlScreen()
-        case .childInterface:
-            ChildInterfaceScreen()
-        case .elderlyInterface:
-            ElderlyInterfaceScreen()
-        case .tariffs:
-            TariffsScreen()
-        case .profile:
-            ProfileScreen()
-        case .notifications:
-            NotificationsScreen()
-        case .support:
-            SupportScreen()
-        case .onboarding:
-            OnboardingScreen()
-        case .privacyPolicy:
-            PrivacyPolicyScreen()
-        case .termsOfService:
-            TermsOfServiceScreen()
-        case .devices:
-            DevicesScreen()
-        case .referral:
-            ReferralScreen()
-        case .deviceDetail:
-            DeviceDetailScreen()
-        case .familyChat:
-            FamilyChatScreen()
-        case .vpnEnergyStats:
-            VPNEnergyStatsScreen()
-        case .paymentQR:
-            PaymentQRScreen()
-        case .childRewards:
-            ChildRewardsScreen()
-        case .familyTournament:
-            FamilyTournamentView()
-        case .gamesParentalControl:
-            GamesParentalControlView()
-        case .unicornPet:
-            UnicornPetView()
-        case .unicornUniverse:
-            UnicornUniverseView()
-        case .wheelOfFortune:
-            WheelOfFortuneView()
-        case .mainExact:
-            MainScreenExact()
-        case .mainFixed:
-            MainScreenFixed()
-        case .vpnTemp:
-            VPNScreen_temp()
-        case .familyDuplicate:
-            FamilyScreen()
-        case .mainWithRegistration:
-            MainScreenWithRegistration()
-        }
+    /// Переключение между основными экранами
+    func switchToMainScreen() {
+        navigateToRoot(.main)
     }
     
-    // MARK: - Получение View для модального окна
-    
-    @ViewBuilder
-    func getModalView(for modal: ALADDINModal) -> some View {
-        switch modal {
-        case .ageGroupSelection:
-            AgeGroupSelectionModal(isPresented: .constant(true))
-        case .consent:
-            ConsentModal(isPresented: .constant(true))
-        case .familyCreated:
-            FamilyCreatedModal(isPresented: .constant(true))
-        case .letterSelection:
-            LetterSelectionModal(isPresented: .constant(true))
-        case .qrScanner:
-            QRScannerModal(isPresented: .constant(true))
-        case .recoveryOptions:
-            RecoveryOptionsModal(isPresented: .constant(true))
-        case .registrationSuccess:
-            RegistrationSuccessModal(isPresented: .constant(true))
-        case .roleSelection:
-            RoleSelectionModal(isPresented: .constant(true))
-        }
+    func switchToFamilyScreen() {
+        navigateToRoot(.family)
     }
     
-    // MARK: - Статистика
-    
-    var totalScreens: Int {
-        ALADDINScreen.allCases.count
+    func switchToVPNScreen() {
+        navigateToRoot(.vpn)
     }
     
-    var mainScreensCount: Int {
-        ALADDINScreen.allCases.filter { $0.category == .main }.count
+    func switchToAnalyticsScreen() {
+        navigateToRoot(.analytics)
     }
     
-    var gameScreensCount: Int {
-        ALADDINScreen.allCases.filter { $0.category == .games }.count
+    func switchToSettingsScreen() {
+        navigateToRoot(.settings)
     }
     
-    var duplicateScreensCount: Int {
-        ALADDINScreen.allCases.filter { $0.category == .duplicates }.count
+    // MARK: - Специальные переходы
+    
+    /// Переход к экрану устройства
+    func navigateToDevice(_ deviceId: String) {
+        navigateTo(.deviceDetail)
+        // Здесь можно передать deviceId в ViewModel
     }
     
-    var modalsCount: Int {
-        ALADDINModal.allCases.count
+    /// Переход к профилю пользователя
+    func navigateToProfile(_ userId: String) {
+        navigateTo(.profile)
+        // Здесь можно передать userId в ViewModel
+    }
+    
+    /// Переход к настройкам уведомлений
+    func navigateToNotificationSettings() {
+        navigateTo(.notificationSettings)
+    }
+    
+    /// Переход к языковым настройкам
+    func navigateToLanguageSettings() {
+        navigateTo(.languageSettings)
+    }
+    
+    // MARK: - Проверки состояния
+    
+    /// Проверка, можно ли вернуться назад
+    var canGoBack: Bool {
+        !navigationStack.isEmpty
+    }
+    
+    /// Проверка, является ли экран корневым
+    var isAtRoot: Bool {
+        navigationStack.isEmpty
+    }
+    
+    /// Получение предыдущего экрана
+    var previousScreen: ALADDINScreen? {
+        navigationStack.last
+    }
+    
+    /// Получение глубины навигации
+    var navigationDepth: Int {
+        navigationStack.count
+    }
+    
+    // MARK: - Сброс состояния
+    
+    /// Полный сброс навигации
+    func reset() {
+        currentScreen = .main
+        navigationStack.removeAll()
+        isPresentingModal = false
+        currentModal = nil
+    }
+    
+    /// Сброс только модальных окон
+    func resetModals() {
+        isPresentingModal = false
+        currentModal = nil
+    }
+    
+    // MARK: - Отладочные методы
+    
+    /// Печать текущего состояния навигации
+    func printNavigationState() {
+        print("=== Navigation State ===")
+        print("Current Screen: \(currentScreen.displayName)")
+        print("Navigation Stack: \(navigationStack.map { $0.displayName })")
+        print("Is Presenting Modal: \(isPresentingModal)")
+        print("Current Modal: \(currentModal?.displayName ?? "None")")
+        print("========================")
+    }
+    
+    /// Получение истории навигации
+    var navigationHistory: [String] {
+        var history = navigationStack.map { $0.displayName }
+        history.append(currentScreen.displayName)
+        return history
     }
 }
 
-// MARK: - Singleton для глобального доступа
-extension NavigationManager {
-    static let shared = NavigationManager()
+// MARK: - Extensions
+
+extension NavigationManager.ALADDINScreen {
+    /// Проверка, является ли экран игровым
+    var isGameScreen: Bool {
+        switch self {
+        case .childRewards, .familyTournament, .gamesParentalControl, 
+             .unicornPet, .unicornUniverse, .wheelOfFortune:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    /// Проверка, является ли экран настройками
+    var isSettingsScreen: Bool {
+        switch self {
+        case .settings, .languageSettings, .notificationSettings, .widgetConfiguration:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    /// Проверка, требует ли экран авторизации
+    var requiresAuthentication: Bool {
+        switch self {
+        case .profile, .devices, .referral, .familyChat, .paymentQR:
+            return true
+        default:
+            return false
+        }
+    }
+}
+
+extension NavigationManager.ALADDINModal {
+    /// Проверка, является ли модальное окно критическим
+    var isCritical: Bool {
+        switch self {
+        case .addDevice, .editProfile, .qrCode:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    /// Проверка, можно ли закрыть модальное окно свайпом
+    var isDismissible: Bool {
+        switch self {
+        case .help, .about, .rewards:
+            return true
+        default:
+            return false
+        }
+    }
 }

@@ -13,8 +13,10 @@ struct PrivacyPolicyScreen: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
+            LinearGradient(colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)], startPoint: .topLeading, endPoint: .bottomTrailing)
                 .ignoresSafeArea()
+                .accessibilityElement()
+                .accessibilityLabel("Фон экрана политики конфиденциальности")
             
             VStack(spacing: 0) {
                 // Navigation Bar
@@ -23,6 +25,8 @@ struct PrivacyPolicyScreen: View {
                         Image(systemName: "chevron.left")
                             .foregroundColor(.white)
                     }
+                    .accessibilityLabel("Назад")
+                    .accessibilityHint("Нажмите для возврата к предыдущему экрану")
                     
                     Spacer()
                     
@@ -30,11 +34,16 @@ struct PrivacyPolicyScreen: View {
                         Text("Политика конфиденциальности")
                             .font(.headline)
                             .foregroundColor(.white)
+                            .accessibilityLabel("Политика конфиденциальности")
+                            .accessibilityAddTraits(.isHeader)
                         
                         Text("Как мы защищаем ваши данные")
                             .font(.caption)
-                            .foregroundColor(.textSecondary)
+                            .foregroundColor(.secondary)
+                            .accessibilityLabel("Как мы защищаем ваши данные")
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Заголовок политики конфиденциальности")
                     
                     Spacer()
                     
@@ -43,14 +52,24 @@ struct PrivacyPolicyScreen: View {
                 }
                 .padding()
                 .background(Color.black.opacity(0.5))
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Навигационная панель политики конфиденциальности")
                 
                 // Web View
                 WebView(url: URL(string: "https://aladdin.family/privacy")!)
-                    .cornerRadius(CornerRadius.large)
-                    .padding(Spacing.screenPadding)
+                    .cornerRadius(12)
+                    .padding(20)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel("Веб-страница политики конфиденциальности")
             }
         }
         .navigationBarHidden(true)
+        .safeAreaInset(edge: .top) {
+            Color.clear.frame(height: 12)
+        }
+        .task {
+            print("🚨 PrivacyPolicyScreen загружен!")
+        }
     }
 }
 
@@ -67,6 +86,8 @@ struct WebView: UIViewRepresentable {
         let webView = WKWebView()
         webView.backgroundColor = .clear
         webView.isOpaque = false
+        webView.accessibilityLabel = "Веб-страница политики конфиденциальности"
+        webView.accessibilityHint = "Прокрутите для просмотра содержимого политики конфиденциальности"
         webView.load(URLRequest(url: url))
         return webView
     }

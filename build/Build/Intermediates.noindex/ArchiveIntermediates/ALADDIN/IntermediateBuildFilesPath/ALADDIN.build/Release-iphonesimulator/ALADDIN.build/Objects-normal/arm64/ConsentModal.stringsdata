@@ -1,0 +1,20 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Components/Modals/ConsentModal.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Consent Required"
+      },
+      {
+        "comment": "",
+        "key": "Please provide your consent to continue"
+      },
+      {
+        "comment": "",
+        "key": "I Agree"
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,60 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Shared/Components/Modals/ProfileEditView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Редактировать профиль"
+      },
+      {
+        "comment": "",
+        "key": "Фон редактирования профиля"
+      },
+      {
+        "comment": "",
+        "key": "Форма редактирования профиля"
+      },
+      {
+        "comment": "",
+        "key": "Отмена"
+      },
+      {
+        "comment": "",
+        "key": "Сохранить"
+      },
+      {
+        "comment": "",
+        "key": "ФОТО ПРОФИЛЯ"
+      },
+      {
+        "comment": "",
+        "key": "Нажмите, чтобы изменить фото"
+      },
+      {
+        "comment": "",
+        "key": "Изменить фото профиля"
+      },
+      {
+        "comment": "",
+        "key": "С"
+      },
+      {
+        "comment": "",
+        "key": "ИНФОРМАЦИЯ"
+      },
+      {
+        "comment": "",
+        "key": "%@: %@"
+      },
+      {
+        "comment": "",
+        "key": "Сохранить изменения"
+      },
+      {
+        "comment": "",
+        "key": "Сбросить пароль"
+      }
+    ]
+  },
+  "version": 1
+}

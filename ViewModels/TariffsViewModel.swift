@@ -26,19 +26,18 @@ class TariffsViewModel: ObservableObject {
     
     // MARK: - Init
     
-    @MainActor
-    init(storeManager: StoreManager) {
-        self.storeManager = storeManager
+    init(storeManager: StoreManager? = nil) {
+        self.storeManager = storeManager ?? StoreManager()
         
         // Подписка на изменения продуктов
-        storeManager.$products
+        self.storeManager.$products
             .sink { [weak self] products in
                 self?.updateTariffs(from: products)
             }
             .store(in: &cancellables)
         
         // Подписка на изменения купленных продуктов
-        storeManager.$purchasedProductIDs
+        self.storeManager.$purchasedProductIDs
             .sink { [weak self] _ in
                 self?.updatePurchaseStatus()
             }
@@ -156,7 +155,8 @@ class TariffsViewModel: ObservableObject {
         isPurchaseSuccessful = false
         
         do {
-            let transaction = try await storeManager.purchase(selectedTariff.product)
+            guard let product = selectedTariff.product else { return }
+            let transaction = try await storeManager.purchase(product)
             
             if transaction != nil {
                 isPurchaseSuccessful = true
@@ -211,7 +211,7 @@ struct Tariff: Identifiable {
     let price: String
     let period: String
     let features: [String]
-    let product: Product
+    let product: Product?
     var isPurchased: Bool
 }
 

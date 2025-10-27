@@ -1,0 +1,92 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/05_SettingsScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Фон экрана настроек"
+      },
+      {
+        "comment": "",
+        "key": "Список настроек приложения"
+      },
+      {
+        "comment": "",
+        "key": "Навигационная панель настроек"
+      },
+      {
+        "comment": "",
+        "key": "ПРОФИЛЬ"
+      },
+      {
+        "comment": "",
+        "key": "С"
+      },
+      {
+        "comment": "",
+        "key": "Аватар пользователя"
+      },
+      {
+        "comment": "",
+        "key": "Редактировать профиль"
+      },
+      {
+        "comment": "",
+        "key": "Сергей Хлыстов"
+      },
+      {
+        "comment": "",
+        "key": "sergey@aladdin.app"
+      },
+      {
+        "comment": "",
+        "key": "Premium подписка"
+      },
+      {
+        "comment": "",
+        "key": "Имя пользователя: Сергей Хлыстов"
+      },
+      {
+        "comment": "",
+        "key": "Email: sergey@aladdin.app"
+      },
+      {
+        "comment": "",
+        "key": "Статус: Premium подписка"
+      },
+      {
+        "comment": "",
+        "key": "ЗАЩИТА И БЕЗОПАСНОСТЬ"
+      },
+      {
+        "comment": "",
+        "key": "%@: %@"
+      },
+      {
+        "comment": "",
+        "key": "Уровень защиты"
+      },
+      {
+        "comment": "",
+        "key": "0%"
+      },
+      {
+        "comment": "",
+        "key": "100%"
+      },
+      {
+        "comment": "",
+        "key": "УВЕДОМЛЕНИЯ"
+      },
+      {
+        "comment": "",
+        "key": "ПРИЛОЖЕНИЕ"
+      },
+      {
+        "comment": "",
+        "key": "ДОПОЛНИТЕЛЬНО"
+      }
+    ]
+  },
+  "version": 1
+}

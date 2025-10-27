@@ -123,6 +123,19 @@ class APIService {
         networkManager.post(endpoint: AppConfig.Endpoint.logout, body: EmptyBody(), completion: completion)
     }
     
+    // MARK: - Device API
+    
+    struct DeviceTokenRequest: Codable {
+        let deviceToken: String
+        let platform: String
+        let appVersion: String
+    }
+    
+    func registerDeviceToken(_ token: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        let body = DeviceTokenRequest(deviceToken: token, platform: "iOS", appVersion: AppConfig.appVersion)
+        networkManager.post(endpoint: AppConfig.Endpoint.deviceRegister, body: body, completion: completion)
+    }
+
     // MARK: - Payment API
     
     func createQRPayment(request: CreateQRPaymentRequest, completion: @escaping (Result<CreateQRPaymentResponse, Error>) -> Void) {

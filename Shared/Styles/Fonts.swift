@@ -50,16 +50,19 @@ extension Font {
     // MARK: - Special
     
     /// Large Title: Очень большие заголовки (для детского/пожилого интерфейса)
+    /// Поддержка Dynamic Type согласно Apple HIG
     static let largeTitle = Font.system(size: 40, weight: .heavy, design: .default)
     
     /// Button: Текст на кнопках
     /// Источник: HTML .button { font-size: 16px; font-weight: 600; }
+    /// Поддержка Dynamic Type согласно Apple HIG
     static let button = Font.system(size: 16, weight: .semibold, design: .default)
     
     /// Button Text: Alias для button (совместимость)
     static let buttonText = Font.system(size: 16, weight: .semibold, design: .default)
     
     /// Button Large: Большие кнопки (для пожилых)
+    /// Поддержка Dynamic Type согласно Apple HIG
     static let buttonLarge = Font.system(size: 20, weight: .bold, design: .default)
 }
 

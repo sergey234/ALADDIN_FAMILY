@@ -64,38 +64,14 @@ struct PaymentMethodInfo {
     let type: String
 }
 
-// MARK: - API Models
-struct CreateQRPaymentRequest: Codable {
-    let family_id: String
-    let tariff: String
-    let amount: Double
-    let payment_method: String
-}
-
-struct CreateQRPaymentResponse: Codable {
-    enum CodingKeys: String, CodingKey {
-        case payment_id, qr_codes, expires_at, merchant_info
-    }
-    let payment_id: String
-    let qr_codes: QRCodeData?
-    let expires_at: String?
-    let merchant_info: MerchantInfo?
-}
+// MARK: - API Models (используем из APIModels.swift)
+// CreateQRPaymentRequest, CreateQRPaymentResponse, CheckQRPaymentStatusResponse 
+// определены в CoreModules/APIModels.swift
 
 struct QRCodeData: Codable {
     let sbp: String?
     let sberpay: String?
     let universal: String?
-}
-
-struct CheckQRPaymentStatusResponse: Codable {
-    let payment_id: String
-    let status: String
-    let amount: Double?
-    let currency: String?
-    let merchant_info: MerchantInfoAPI?
-    let expires_at: String?
-    let error: String?
 }
 
 struct MerchantInfoAPI: Codable {
@@ -185,10 +161,10 @@ class PaymentQRViewModel: ObservableObject {
         
         // Создаем запрос
         let request = CreateQRPaymentRequest(
-            family_id: getFamilyId(),
-            tariff: tariff.title,
             amount: amount,
-            payment_method: "sbp"
+            currency: "RUB",
+            description: tariff.title,
+            tariffId: tariff.id
         )
         
         // Отправляем запрос на backend
@@ -199,25 +175,14 @@ class PaymentQRViewModel: ObservableObject {
                 switch result {
                 case .success(let response):
                     // Сохраняем данные платежа
-                    self?.paymentId = response.payment_id
-                    self?.qrCodeImageSBP = response.qr_codes?.sbp
-                    self?.qrCodeImageSberPay = response.qr_codes?.sberpay
-                    self?.qrCodeImageUniversal = response.qr_codes?.universal
+                    self?.paymentId = response.paymentId
+                    self?.qrCodeImageSBP = response.qrCode
+                    self?.qrCodeImageSberPay = response.qrCode
+                    self?.qrCodeImageUniversal = response.qrCode
                     
-                    if let expiresAtString = response.expires_at {
-                        self?.expiresAt = ISO8601DateFormatter().date(from: expiresAtString)
-                    }
+                    self?.expiresAt = response.expiresAt
                     
-                    if let merchantData = response.merchant_info {
-                        self?.merchantInfo = MerchantInfo(
-                            id: merchantData.id,
-                            name: merchantData.name,
-                            address: "",
-                            phone: merchantData.phone
-                        )
-                    }
-                    
-                    print("✅ QR-коды получены: payment_id=\(response.payment_id)")
+                    print("✅ QR-коды получены: payment_id=\(response.paymentId)")
                     
                 case .failure(let error):
                     self?.errorMessage = error.localizedDescription
@@ -257,7 +222,7 @@ class PaymentQRViewModel: ObservableObject {
                         self?.stopAutoCheck()
                         
                         // Отправляем Firebase Analytics событие
-                        print("✅ Purchase completed: \(self?.tariff.title ?? "Unknown") - \(response.amount ?? 0.0) \(response.currency ?? "RUB") via qr_code")
+                        print("✅ Purchase completed: \(self?.tariff.title ?? "Unknown") - \(response.amount) \(response.currency) via qr_code")
                     } else if response.status == "expired" {
                         self?.errorMessage = "Срок действия платежа истек"
                         self?.showErrorAlert = true

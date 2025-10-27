@@ -11,9 +11,11 @@ struct VPNScreen: View {
     // MARK: - State
     
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel = VPNViewModel()
+    @StateObject private var viewModel = VPNViewModel.shared
     @State private var showingServerSelection = false
     @State private var showingSettings = false
+    @State private var showingStatistics = false
+    @State private var showingHelp = false
     
     // MARK: - Helper Views
     
@@ -415,12 +417,16 @@ struct VPNScreen: View {
                     Text("🛡️")
                         .font(.system(size: 24))
                     Text("\(viewModel.threatsBlocked)")
-                        .font(.system(size: 24, weight: .bold))
+                        .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
-                    Text("Угроз блокировано")
-                        .font(.system(size: 12))
+                    Text("Угроз\nблокировано")
+                        .font(.system(size: 10))
                         .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
                 }
+                .frame(maxWidth: .infinity)
                 
                 Rectangle()
                     .fill(Color.white.opacity(0.2))
@@ -430,12 +436,16 @@ struct VPNScreen: View {
                     Text("📊")
                         .font(.system(size: 24))
                     Text("2.4 GB")
-                        .font(.system(size: 24, weight: .bold))
+                        .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
-                    Text("Данных сэкономлено")
-                        .font(.system(size: 12))
+                    Text("Данных\nсэкономлено")
+                        .font(.system(size: 10))
                         .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
                 }
+                .frame(maxWidth: .infinity)
                 
                 Rectangle()
                     .fill(Color.white.opacity(0.2))
@@ -444,13 +454,17 @@ struct VPNScreen: View {
                 VStack(spacing: 5) {
                     Text("⏰")
                         .font(.system(size: 24))
-                    Text("24:00:00")
-                        .font(.system(size: 24, weight: .bold))
+                    Text("24:00")
+                        .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.white)
-                    Text("Время защиты")
-                        .font(.system(size: 12))
+                    Text("Время\nзащиты")
+                        .font(.system(size: 10))
                         .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
                 }
+                .frame(maxWidth: .infinity)
             }
         }
         .padding(Spacing.cardPadding)
@@ -471,30 +485,75 @@ struct VPNScreen: View {
                 Spacer()
             }
             
-            HStack(spacing: Spacing.m) {
-                QuickActionButton(
-                    icon: "gearshape.fill",
-                    title: "Настройки",
-                    action: { showingSettings = true }
-                )
+            HStack(spacing: Spacing.s) {
+                Button(action: { showingSettings = true }) {
+                    VStack(spacing: 8) {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title3)
+                            .foregroundColor(.primaryBlue)
+                        Text("Настройки")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.textPrimary)
+                            .lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 80)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .fill(Color.backgroundMedium.opacity(0.3))
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
                 
-                QuickActionButton(
-                    icon: "chart.bar.fill",
-                    title: "Статистика",
-                    action: { /* Navigate to stats */ }
-                )
+                Button(action: { showingStatistics = true }) {
+                    VStack(spacing: 8) {
+                        Image(systemName: "chart.bar.fill")
+                            .font(.title3)
+                            .foregroundColor(.primaryBlue)
+                        Text("Статистика")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.textPrimary)
+                            .lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 80)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .fill(Color.backgroundMedium.opacity(0.3))
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
                 
-                QuickActionButton(
-                    icon: "questionmark.circle.fill",
-                    title: "Помощь",
-                    action: { /* Navigate to help */ }
-                )
+                Button(action: { showingHelp = true }) {
+                    VStack(spacing: 8) {
+                        Image(systemName: "questionmark.circle.fill")
+                            .font(.title3)
+                            .foregroundColor(.primaryBlue)
+                        Text("Помощь")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.textPrimary)
+                            .lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 80)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .fill(Color.backgroundMedium.opacity(0.3))
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
             }
         }
         .padding(Spacing.cardPadding)
         .background(backgroundShape)
         .cardShadow()
         .padding(.horizontal, Spacing.screenPadding)
+        .sheet(isPresented: $showingStatistics) {
+            VPNStatisticsView()
+        }
+        .sheet(isPresented: $showingHelp) {
+            VPNHelpView()
+        }
     }
     
     // MARK: - Antivirus Card
@@ -815,14 +874,48 @@ struct VPNSettingsView: View {
     
     var body: some View {
         NavigationView {
-            VStack {
-                Text("Настройки VPN")
-                    .font(.title)
-                Text("Здесь будут настройки")
-                    .foregroundColor(.secondary)
-                Spacer()
+            List {
+                Section("Сервер") {
+                    HStack {
+                        Text("Автовыбор сервера")
+                        Spacer()
+                        Toggle("", isOn: .constant(true))
+                    }
+                    HStack {
+                        Text("Страна по умолчанию")
+                        Spacer()
+                        Text("Россия")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Section("Подключение") {
+                    HStack {
+                        Text("Автоподключение при Wi‑Fi")
+                        Spacer()
+                        Toggle("", isOn: .constant(true))
+                    }
+                    HStack {
+                        Text("Автоподключение при мобильной сети")
+                        Spacer()
+                        Toggle("", isOn: .constant(false))
+                    }
+                }
+                
+                Section("Безопасность") {
+                    HStack {
+                        Text("Kill Switch")
+                        Spacer()
+                        Toggle("", isOn: .constant(true))
+                    }
+                    HStack {
+                        Text("DNS Леak Protection")
+                        Spacer()
+                        Toggle("", isOn: .constant(true))
+                    }
+                }
             }
-            .navigationTitle("Настройки")
+            .navigationTitle("Настройки VPN")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -832,6 +925,178 @@ struct VPNSettingsView: View {
                 }
             }
         }
+    }
+}
+
+struct VPNStatisticsView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Stats Cards
+                    HStack(spacing: 15) {
+                        VStack(spacing: 8) {
+                            Text("🛡️")
+                                .font(.system(size: 40))
+                            Text("47")
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundColor(.white)
+                            Text("Угроз\nблокировано")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.8))
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(Color.blue.opacity(0.3))
+                        )
+                        
+                        VStack(spacing: 8) {
+                            Text("⏰")
+                                .font(.system(size: 40))
+                            Text("24:00:00")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.white)
+                            Text("Время\nзащиты")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.8))
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(Color.green.opacity(0.3))
+                        )
+                    }
+                    
+                    HStack(spacing: 15) {
+                        VStack(spacing: 8) {
+                            Text("⬇️")
+                                .font(.system(size: 40))
+                            Text("2.4 GB")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.white)
+                            Text("Загружено\nсегодня")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.8))
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(Color.purple.opacity(0.3))
+                        )
+                        
+                        VStack(spacing: 8) {
+                            Text("⬆️")
+                                .font(.system(size: 40))
+                            Text("1.2 GB")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(.white)
+                            Text("Отправлено\nсегодня")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.8))
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(Color.orange.opacity(0.3))
+                        )
+                    }
+                }
+                .padding()
+            }
+            .navigationTitle("Статистика")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Готово") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct VPNHelpView: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text("Часто задаваемые вопросы")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .padding(.horizontal)
+                    
+                    VStack(spacing: 15) {
+                        HelpCard(
+                            question: "Как подключить VPN?",
+                            answer: "Нажмите большую кнопку 'ПОДКЛЮЧИТЬ' в центре экрана. Соединение установится автоматически."
+                        )
+                        
+                        HelpCard(
+                            question: "Как выбрать сервер?",
+                            answer: "Нажмите на карточку 'Выбор сервера' и выберите страну из списка."
+                        )
+                        
+                        HelpCard(
+                            question: "Что такое Kill Switch?",
+                            answer: "Функция автоматически отключает интернет, если VPN соединение прерывается."
+                        )
+                        
+                        HelpCard(
+                            question: "Влияет ли VPN на скорость?",
+                            answer: "Минимальное влияние. Мы используем быстрые серверы для оптимальной скорости."
+                        )
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.vertical)
+            }
+            .navigationTitle("Помощь")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Готово") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct HelpCard: View {
+    let question: String
+    let answer: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(question)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
+            
+            Text(answer)
+                .font(.system(size: 14))
+                .foregroundColor(.white.opacity(0.8))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white.opacity(0.1))
+        )
     }
 }
 

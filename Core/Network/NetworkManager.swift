@@ -131,21 +131,43 @@ class NetworkManager: NSObject, ObservableObject {
     private func loadPinnedCertificates() -> [Data] {
         var certificates: [Data] = []
         
-        // В реальном приложении загружаем сертификаты из Bundle
-        // Пока создаем тестовые сертификаты для демонстрации
-        if let certificatePath = Bundle.main.path(forResource: "aladdin_cert", ofType: "cer") {
-            if let certificateData = NSData(contentsOfFile: certificatePath) as Data? {
-                certificates.append(certificateData)
-            }
+        // Загружаем основной сертификат
+        if let mainCert = loadCertificate(named: "aladdin_cert") {
+            certificates.append(mainCert)
         }
         
-        // Fallback: создаем тестовый сертификат для разработки
+        // Загружаем резервный сертификат
+        if let backupCert = loadCertificate(named: "aladdin_cert_backup") {
+            certificates.append(backupCert)
+        }
+        
+        // Проверяем наличие сертификатов
         if certificates.isEmpty {
-            print("⚠️ SSL Pinning: Сертификаты не найдены, используем тестовый режим")
-            // В реальном приложении здесь должно быть исключение или отключение SSL Pinning
+            print("❌ SSL Pinning: Сертификаты не найдены!")
+            // В продакшене здесь должно быть исключение
+        } else {
+            print("✅ SSL Pinning: Загружено \(certificates.count) сертификатов")
         }
         
         return certificates
+    }
+    
+    /**
+     * Загружает конкретный сертификат по имени
+     */
+    private func loadCertificate(named name: String) -> Data? {
+        guard let path = Bundle.main.path(forResource: name, ofType: "cer") else {
+            print("⚠️ SSL Pinning: Сертификат \(name) не найден")
+            return nil
+        }
+        
+        guard let data = NSData(contentsOfFile: path) as Data? else {
+            print("⚠️ SSL Pinning: Ошибка чтения сертификата \(name)")
+            return nil
+        }
+        
+        print("✅ SSL Pinning: Сертификат \(name) загружен")
+        return data
     }
     
     /**
@@ -165,28 +187,51 @@ class NetworkManager: NSObject, ObservableObject {
             return true
         }
         
-        // Получаем сертификат сервера
-        guard let serverCertificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
-            print("❌ SSL Pinning: Не удалось получить сертификат сервера")
+        // Проверяем, что у нас есть закрепленные сертификаты
+        guard !pinnedCertificates.isEmpty else {
+            print("⚠️ SSL Pinning: Нет закрепленных сертификатов для проверки")
             return false
         }
         
-        // Получаем данные сертификата сервера
-        let serverCertificateDataRef = SecCertificateCopyData(serverCertificate)
-        let serverCertificateDataBytes = CFDataGetBytePtr(serverCertificateDataRef)
-        let serverCertificateDataSize = CFDataGetLength(serverCertificateDataRef)
+        // Получаем цепочку сертификатов сервера (современная версия)
+        guard let certificateChain = SecTrustCopyCertificateChain(serverTrust) else {
+            print("❌ SSL Pinning: Не удалось получить цепочку сертификатов")
+            return false
+        }
         
-        let serverCertificateData = Data(bytes: serverCertificateDataBytes!, count: serverCertificateDataSize)
+        let chainCount = CFArrayGetCount(certificateChain)
+        guard chainCount > 0 else {
+            print("❌ SSL Pinning: Пустая цепочка сертификатов")
+            return false
+        }
         
-        // Сравниваем с закрепленными сертификатами
-        for pinnedCertificate in pinnedCertificates {
-            if serverCertificateData == pinnedCertificate {
-                print("✅ SSL Pinning: Сертификат для \(host) прошел проверку")
-                return true
+        print("🔍 SSL Pinning: Проверяем цепочку из \(chainCount) сертификатов для \(host)")
+        
+        // Проверяем каждый сертификат в цепочке
+        for i in 0..<chainCount {
+            guard let certificate = CFArrayGetValueAtIndex(certificateChain, i) else {
+                print("⚠️ SSL Pinning: Не удалось получить сертификат \(i)")
+                continue
+            }
+            
+            let serverCert = Unmanaged<SecCertificate>.fromOpaque(certificate).takeUnretainedValue()
+            
+            // Получаем данные сертификата
+            let serverCertData = SecCertificateCopyData(serverCert)
+            let serverCertDataPtr = CFDataGetBytePtr(serverCertData)
+            let serverCertDataSize = CFDataGetLength(serverCertData)
+            let serverCertBytes = Data(bytes: serverCertDataPtr!, count: serverCertDataSize)
+            
+            // Сравниваем с закрепленными сертификатами
+            for (index, pinnedCertificate) in pinnedCertificates.enumerated() {
+                if serverCertBytes == pinnedCertificate {
+                    print("✅ SSL Pinning: Сертификат \(i) для \(host) совпадает с закрепленным \(index)")
+                    return true
+                }
             }
         }
         
-        print("❌ SSL Pinning: Сертификат для \(host) не прошел проверку")
+        print("❌ SSL Pinning: Ни один сертификат для \(host) не прошел проверку")
         return false
     }
     
@@ -294,35 +339,7 @@ extension NetworkManager: URLSessionDelegate {
 }
 
 // MARK: - Network Error
-
-enum NetworkError: LocalizedError {
-    case invalidURL
-    case invalidResponse
-    case noData
-    case httpError(Int)
-    case sslPinningFailed
-    case certificateValidationFailed
-    case untrustedCertificate
-    
-    var errorDescription: String? {
-        switch self {
-        case .invalidURL:
-            return "Неверный URL"
-        case .invalidResponse:
-            return "Неверный ответ сервера"
-        case .noData:
-            return "Нет данных от сервера"
-        case .httpError(let code):
-            return "HTTP ошибка: \(code)"
-        case .sslPinningFailed:
-            return "SSL Pinning не удался - возможна атака Man-in-the-Middle"
-        case .certificateValidationFailed:
-            return "Проверка сертификата не удалась"
-        case .untrustedCertificate:
-            return "Недоверенный сертификат сервера"
-        }
-    }
-}
+// NetworkError теперь определен в отдельном файле NetworkError.swift
 
 
 

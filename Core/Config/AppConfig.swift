@@ -83,6 +83,7 @@ struct AppConfig {
         // Notifications
         static let notifications = "/notifications"
         static let markRead = "/notifications/read"
+        static let deviceRegister = "/devices/register-ios"
         
         // Auth
         static let login = "/auth/login"

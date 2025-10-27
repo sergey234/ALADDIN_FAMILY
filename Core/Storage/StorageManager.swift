@@ -6,7 +6,7 @@ class StorageManager: ObservableObject {
     static let shared = StorageManager()
     
     private let userDefaults = UserDefaults.standard
-    private let keychain = KeychainManager.shared
+    // private let keychain = KeychainManager.shared // Временно отключено
     
     // MARK: - User Defaults Keys
     private enum Keys {

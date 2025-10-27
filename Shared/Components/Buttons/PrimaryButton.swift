@@ -41,7 +41,7 @@ struct PrimaryButton: View {
                 action()
             }
         }) {
-            HStack(spacing: Spacing.xs) {
+            HStack(spacing: 8) {
                 if isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
@@ -52,23 +52,23 @@ struct PrimaryButton: View {
                     }
                     
                     Text(title)
-                        .font(.button)
+                        .font(.system(size: 16, weight: .semibold))
                 }
             }
             .frame(maxWidth: .infinity)
-            .frame(height: Size.buttonHeight)
+            .frame(height: 50)
             .foregroundColor(.white)
             .background(
                 // Градиент как в HTML
                 LinearGradient(
                     colors: isDisabled
                         ? [Color.gray, Color.gray.opacity(0.8)]
-                        : [Color.primaryBlue, Color.primaryBlue.opacity(0.8)],
+                        : [Color.blue, Color.blue.opacity(0.8)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
             )
-            .cornerRadius(CornerRadius.medium)
+            .cornerRadius(12)
             .cardShadow()
             .opacity(isDisabled ? 0.6 : 1.0)
         }
@@ -81,8 +81,9 @@ struct PrimaryButton: View {
 
 // MARK: - Preview
 
-#Preview {
-    VStack(spacing: Spacing.m) {
+struct PrimaryButton_Previews: PreviewProvider {
+    static var previews: some View {
+        VStack(spacing: 16) {
         // Обычная кнопка
         PrimaryButton("Продолжить") {
             print("Нажато!")
@@ -102,9 +103,10 @@ struct PrimaryButton: View {
         PrimaryButton("Недоступно", isDisabled: true) {
             // Не выполнится
         }
+        }
+        .padding()
+        .background(Color.black.opacity(0.1))
     }
-    .padding()
-    .background(Color.backgroundDark)
 }
 
 

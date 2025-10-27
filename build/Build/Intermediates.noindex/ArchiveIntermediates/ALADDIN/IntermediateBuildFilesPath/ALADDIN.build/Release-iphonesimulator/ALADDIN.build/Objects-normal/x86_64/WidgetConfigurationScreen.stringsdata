@@ -1,0 +1,92 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/WidgetConfigurationScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Фон экрана настройки виджетов"
+      },
+      {
+        "comment": "",
+        "key": "Навигационная панель настроек виджетов"
+      },
+      {
+        "comment": "",
+        "key": "Содержимое экрана настройки виджетов"
+      },
+      {
+        "comment": "",
+        "key": "Заголовок настроек виджетов"
+      },
+      {
+        "comment": "",
+        "key": "Карточка с инструкциями по добавлению виджетов"
+      },
+      {
+        "comment": "",
+        "key": "Секция доступных виджетов"
+      },
+      {
+        "comment": "",
+        "key": "Widget Configuration"
+      },
+      {
+        "comment": "",
+        "key": "Configure your home screen widgets"
+      },
+      {
+        "comment": "",
+        "key": "Иконка виджетов"
+      },
+      {
+        "comment": "",
+        "key": "Настройка виджетов"
+      },
+      {
+        "comment": "",
+        "key": "Настройте виджеты для главного экрана"
+      },
+      {
+        "comment": "",
+        "key": "How to Add Widgets"
+      },
+      {
+        "comment": "",
+        "key": "Как добавить виджеты"
+      },
+      {
+        "comment": "",
+        "key": "Пошаговые инструкции по добавлению виджетов"
+      },
+      {
+        "comment": "",
+        "key": "Available Widgets"
+      },
+      {
+        "comment": "",
+        "key": "Доступные виджеты"
+      },
+      {
+        "comment": "",
+        "key": "Список доступных виджетов"
+      },
+      {
+        "comment": "",
+        "key": "Шаг %@: %@"
+      },
+      {
+        "comment": "",
+        "key": "Шаг %@"
+      },
+      {
+        "comment": "",
+        "key": "%@: %@"
+      },
+      {
+        "comment": "",
+        "key": "Иконка: %@"
+      }
+    ]
+  },
+  "version": 1
+}

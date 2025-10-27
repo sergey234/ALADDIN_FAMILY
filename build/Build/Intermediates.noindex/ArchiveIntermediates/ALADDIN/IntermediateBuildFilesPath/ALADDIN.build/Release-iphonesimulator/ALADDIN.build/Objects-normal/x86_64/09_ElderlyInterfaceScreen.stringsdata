@@ -1,0 +1,44 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/09_ElderlyInterfaceScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "👴"
+      },
+      {
+        "comment": "",
+        "key": "Здравствуйте!"
+      },
+      {
+        "comment": "",
+        "key": "Вы под защитой"
+      },
+      {
+        "comment": "",
+        "key": "✅"
+      },
+      {
+        "comment": "",
+        "key": "ВСЁ ХОРОШО"
+      },
+      {
+        "comment": "",
+        "key": "Угроз не обнаружено"
+      },
+      {
+        "comment": "",
+        "key": "🚨"
+      },
+      {
+        "comment": "",
+        "key": "КНОПКА SOS"
+      },
+      {
+        "comment": "",
+        "key": "Экстренная помощь"
+      }
+    ]
+  },
+  "version": 1
+}

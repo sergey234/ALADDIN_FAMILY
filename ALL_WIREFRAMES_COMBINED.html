@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Все Wireframe Страницы</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #F59E0B;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+        
+        .wireframe-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .wireframe-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .phone-preview {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            margin: 20px auto;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .iframe-wrapper {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            overflow: hidden;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .description {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 ALADDIN Mobile - Все Wireframe Страницы</h1>
+        
+        <!-- WIREFRAME 1: VPNScreen -->
+        <div class="wireframe-item">
+            <div class="wireframe-title">🛡️ 1. VPN Screen (Экран VPN защиты)</div>
+            <div class="phone-preview">
+                <div class="iframe-wrapper">
+                    <iframe src="wireframe_analysis/VPNScreen.html" title="VPNScreen"></iframe>
+                </div>
+            </div>
+            <div class="description">
+                <strong>Описание:</strong> Экран VPN защиты с кнопкой подключения/отключения, статусом сервера, статистикой трафика, 
+                антивирусной защитой и защитой от обхода блокировок (VPN детекция, инкогнито, Tor, Proxy).
+            </div>
+        </div>
+        
+        <!-- WIREFRAME 2: ChildInterface -->
+        <div class="wireframe-item">
+            <div class="wireframe-title">👶 2. Child Interface (Детский интерфейс)</div>
+            <div class="phone-preview">
+                <div class="iframe-wrapper">
+                    <iframe src="06_child_interface.html" title="ChildInterface"></iframe>
+                </div>
+            </div>
+            <div class="description">
+                <strong>Описание:</strong> Детский интерфейс с яркими цветами, крупными кнопками, обучающими играми, 
+                статусом защиты и простой навигацией для детей.
+            </div>
+        </div>
+        
+        <!-- ИНФОРМАЦИЯ О НАЙДЕННЫХ WIREFRAMES -->
+        <div class="wireframe-item">
+            <div class="wireframe-title">📋 Все найденные HTML Wireframes в проекте:</div>
+            <div class="description">
+                <strong>Найдено 2 HTML файла:</strong><br><br>
+                ✅ 1. <code>wireframe_analysis/VPNScreen.html</code> (809 строк)<br>
+                ✅ 2. <code>06_child_interface.html</code> (346 строк)<br><br>
+                
+                <strong>Другие экраны реализованы в SwiftUI:</strong><br><br>
+                
+                📱 <strong>Screens/</strong> (34 экрана в SwiftUI):<br>
+                • 01_MainScreen.swift - Главный экран<br>
+                • 02_FamilyScreen.swift - Управление семьёй<br>
+                • 03_VPNScreen.swift - VPN защита<br>
+                • 04_AnalyticsScreen.swift - Аналитика<br>
+                • 05_SettingsScreen.swift - Настройки<br>
+                • 06_AIAssistantScreen.swift - AI Помощник<br>
+                • 07_ParentalControlScreen.swift - Родительский контроль<br>
+                • 08_ChildInterfaceScreen.swift - Детский интерфейс<br>
+                • 09_ElderlyInterfaceScreen.swift - Интерфейс для пожилых<br>
+                • 10_TariffsScreen.swift - Тарифы<br>
+                • 11_ProfileScreen.swift - Профиль<br>
+                • 12_NotificationsScreen.swift - Уведомления<br>
+                • 13_SupportScreen.swift - Поддержка<br>
+                • 14_OnboardingScreen.swift - Онбординг<br>
+                • 18_PrivacyPolicyScreen.swift - Политика конфиденциальности<br>
+                • 19_TermsOfServiceScreen.swift - Условия использования<br>
+                • 20_DevicesScreen.swift - Устройства<br>
+                • 21_ReferralScreen.swift - Реферальная программа<br>
+                • 22_DeviceDetailScreen.swift - Детали устройства<br>
+                • 23_FamilyChatScreen.swift - Семейный чат<br>
+                • 24_VPNEnergyStatsScreen.swift - Статистика VPN<br>
+                • 25_PaymentQRScreen.swift - Оплата QR<br>
+                • ChildRewardsScreen.swift - Детские награды<br>
+                • FamilyTournamentView.swift - Семейный турнир<br>
+                • GamesParentalControlView.swift - Игры и контроль<br>
+                • UnicornPetView.swift - Единорог-питомец<br>
+                • UnicornUniverseView.swift - Вселенная единорогов<br>
+                • WheelOfFortuneView.swift - Колесо фортуны<br>
+                • MainScreenWithRegistration.swift - Главная с регистрацией<br>
+                • LanguageSettingsScreen.swift - Настройки языка<br>
+                • NotificationSettingsScreen.swift - Настройки уведомлений<br>
+                • WidgetConfigurationScreen.swift - Настройка виджетов<br>
+                • RewardsModalView.swift - Модальное окно наград<br>
+                • RewardsQuickModal.swift - Быстрое окно наград<br>
+                • FamilyScreenNew.swift - Новая версия семейного экрана<br><br>
+                
+                <strong>Всего: 34 экрана реализованы в SwiftUI!</strong>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>ALADDIN Mobile - AI Защита Семьи</p>
+            <p>Generated: $(date)</p>
+        </div>
+    </div>
+</body>
+</html>

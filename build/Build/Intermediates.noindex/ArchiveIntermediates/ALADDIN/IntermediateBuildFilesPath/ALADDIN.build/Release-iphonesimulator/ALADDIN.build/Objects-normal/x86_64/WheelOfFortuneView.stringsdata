@@ -1,0 +1,64 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/WheelOfFortuneView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "🎉 ПРИЗ!"
+      },
+      {
+        "comment": "",
+        "key": "🎰 КОЛЕСО УДАЧИ"
+      },
+      {
+        "comment": "",
+        "key": "OK"
+      },
+      {
+        "comment": "",
+        "key": "Ты выиграл %lld 🦄!"
+      },
+      {
+        "comment": "",
+        "key": "🦄"
+      },
+      {
+        "comment": "",
+        "key": "%lld️⃣"
+      },
+      {
+        "comment": "",
+        "key": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "🎰 КРУТИТЬ!"
+      },
+      {
+        "comment": "",
+        "key": "⏰ Подожди..."
+      },
+      {
+        "comment": "",
+        "key": "⏰ Следующее вращение через:"
+      },
+      {
+        "comment": "",
+        "key": "%lld ч"
+      },
+      {
+        "comment": "",
+        "key": "Вращений"
+      },
+      {
+        "comment": "",
+        "key": "%lld 🦄"
+      },
+      {
+        "comment": "",
+        "key": "Выиграно"
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,70 @@
+import SwiftUI
+
+@main
+struct ALADDINApp: App {
+    
+    // MARK: - State Objects
+    
+    @StateObject private var localizationManager = LocalizationManager()
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    
+    // MARK: - Body
+    
+    var body: some Scene {
+        WindowGroup {
+            ZStack {
+                // Фон приложения
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.04, green: 0.07, blue: 0.16),
+                        Color(red: 0.12, green: 0.23, blue: 0.37),
+                        Color(red: 0.18, green: 0.31, blue: 0.56)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+                
+                // Главный контент
+                if hasCompletedOnboarding {
+                    // Основное приложение
+                    MainScreen()
+                        .environmentObject(localizationManager)
+                } else {
+                    // Онбординг
+                    VStack {
+                        Text("🚀 ALADDIN")
+                            .font(.largeTitle)
+                            .foregroundColor(.white)
+                        
+                        Text("AI Защита Семьи")
+                            .font(.headline)
+                            .foregroundColor(.white.opacity(0.8))
+                        
+                        Button("Начать") {
+                            hasCompletedOnboarding = true
+                        }
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
+                }
+            }
+            .environment(\.layoutDirection, localizationManager.currentLanguage.isRTL ? .rightToLeft : .leftToRight)
+            .onAppear {
+                setupApp()
+            }
+        }
+    }
+    
+    // MARK: - Setup
+    
+    private func setupApp() {
+        // Настройка аналитики
+        AnalyticsManager.shared.trackScreen("app_launch")
+        
+        print("🚀 ALADDIN App запущен!")
+    }
+}
+

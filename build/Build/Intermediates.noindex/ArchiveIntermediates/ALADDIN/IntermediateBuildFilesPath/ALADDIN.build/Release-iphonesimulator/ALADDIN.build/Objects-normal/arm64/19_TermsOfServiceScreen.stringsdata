@@ -1,0 +1,16 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/19_TermsOfServiceScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Фон экрана условий использования"
+      },
+      {
+        "comment": "",
+        "key": "Веб-страница условий использования"
+      }
+    ]
+  },
+  "version": 1
+}

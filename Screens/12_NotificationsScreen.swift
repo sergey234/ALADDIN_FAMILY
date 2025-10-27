@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 🔔 Notifications Screen
+/// 🔔 Notifications Screen - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
 /// Экран уведомлений - список всех уведомлений
 /// Источник дизайна: /mobile/wireframes/08_notifications_screen.html
 struct NotificationsScreen: View {
@@ -8,178 +8,356 @@ struct NotificationsScreen: View {
     // MARK: - State
     
     @Environment(\.dismiss) private var dismiss
-    
-    struct Notification: Identifiable {
-        let id = UUID()
-        let icon: String
-        let title: String
-        let message: String
-        let time: String
-        let isRead: Bool
-        let type: NotificationType
-    }
-    
-    enum NotificationType {
-        case threat, success, info, warning
-        
-        var color: Color {
-            switch self {
-            case .threat: return .red
-            case .success: return .green
-            case .info: return .primaryBlue
-            case .warning: return .orange
-            }
-        }
-    }
-    
+    @State private var selectedFilter: NotificationFilter = .all
     @State private var notifications: [Notification] = [
         Notification(icon: "🛡️", title: "Угроза заблокирована", message: "Заблокирован вредоносный сайт", time: "5 мин назад", isRead: false, type: .threat),
         Notification(icon: "✅", title: "VPN подключён", message: "Ваше соединение защищено", time: "1 час назад", isRead: true, type: .success),
         Notification(icon: "⚠️", title: "Подозрительная активность", message: "Обнаружена попытка доступа", time: "2 часа назад", isRead: true, type: .warning),
-        Notification(icon: "ℹ️", title: "Обновление доступно", message: "Доступна новая версия ALADDIN", time: "Вчера", isRead: true, type: .info)
+        Notification(icon: "ℹ️", title: "Обновление доступно", message: "Доступна новая версия ALADDIN", time: "Вчера", isRead: true, type: .info),
+        Notification(icon: "🔒", title: "Устройство заблокировано", message: "iPhone 12 заблокирован родителем", time: "2 дня назад", isRead: true, type: .info),
+        Notification(icon: "🎉", title: "Достижение получено", message: "Вы получили награду за безопасность", time: "3 дня назад", isRead: true, type: .success),
+        Notification(icon: "📱", title: "Новое устройство", message: "MacBook Pro добавлен в семью", time: "1 неделя назад", isRead: true, type: .info)
     ]
+    
+    enum NotificationFilter: String, CaseIterable {
+        case all = "Все"
+        case unread = "Непрочитанные"
+        case threats = "Угрозы"
+        case success = "Успех"
+        case info = "Информация"
+        case warning = "Предупреждения"
+    }
     
     // MARK: - Body
     
     var body: some View {
         ZStack {
             // Фон
-            LinearGradient.backgroundGradient
+            LinearGradient(colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)], startPoint: .topLeading, endPoint: .bottomTrailing)
                 .ignoresSafeArea()
+                .accessibilityElement()
+                .accessibilityLabel("Фон экрана уведомлений")
             
             VStack(spacing: 0) {
                 // Навигационная панель
-                HStack {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.white)
-                    }
-                    
-                    Spacer()
-                    
-                    VStack {
-                        Text("УВЕДОМЛЕНИЯ")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                        
-                        Text("\(notifications.filter { !$0.isRead }.count) непрочитанных")
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                    }
-                    
-                    Spacer()
-                    
-                    Button(action: { print("Отметить всё прочитанным") }) {
-                        Image(systemName: "checkmark.circle")
-                            .foregroundColor(.white)
-                    }
-                }
-                .padding()
-                .background(Color.black.opacity(0.5))
+                navigationHeader
                 
-                // Список уведомлений
-                if notifications.isEmpty {
-                    emptyState
-                } else {
-                    ScrollView(.vertical, showsIndicators: false) {
-                        VStack(spacing: Spacing.m) {
-                            ForEach(notifications) { notification in
-                                notificationCard(notification)
-                            }
-                            
-                            Spacer()
-                                .frame(height: Spacing.xxl)
-                        }
-                        .padding(.top, Spacing.m)
+                // Основной контент
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        // Статистика уведомлений
+                        notificationStats
+                        
+                        // Фильтры
+                        notificationFilters
+                        
+                        // Список уведомлений
+                        notificationList
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 32)
                 }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Список уведомлений")
             }
         }
         .navigationBarHidden(true)
     }
     
-    // MARK: - Notification Card
+    // MARK: - Navigation Header
     
-    private func notificationCard(_ notification: Notification) -> some View {
-        Button(action: {
-            print("Открыть уведомление")
-        }) {
-            HStack(spacing: Spacing.m) {
-                // Иконка типа
+    private var navigationHeader: some View {
+        ALADDINNavigationBar(
+            title: "УВЕДОМЛЕНИЯ",
+            subtitle: "\(unreadCount) непрочитанных",
+            showBackButton: true,
+            rightButtons: [
+                .init(icon: "trash", accessibilityLabel: "Очистить все уведомления") {
+                    clearAllNotifications()
+                }
+            ],
+            onBack: {
+                dismiss()
+            }
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Навигационная панель уведомлений")
+    }
+    
+    // MARK: - Notification Stats
+    
+    private var notificationStats: some View {
+        VStack(spacing: 12) {
+            Text("📊 СТАТИСТИКА")
+                .font(.title2)
+                .foregroundColor(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
+            
+            HStack(spacing: 12) {
+                statCard(
+                    icon: "bell.fill",
+                    title: "Всего",
+                    value: "\(notifications.count)",
+                    color: .blue
+                )
+                
+                statCard(
+                    icon: "bell.badge.fill",
+                    title: "Непрочитанных",
+                    value: "\(unreadCount)",
+                    color: .orange
+                )
+                
+                statCard(
+                    icon: "shield.fill",
+                    title: "Угроз",
+                    value: "\(threatCount)",
+                    color: .red
+                )
+            }
+        }
+        .padding(16)
+        .background(cardBackground)
+        .cardShadow()
+    }
+    
+    // MARK: - Notification Filters
+    
+    private var notificationFilters: some View {
+        VStack(spacing: 12) {
+            Text("ФИЛЬТРЫ")
+                .font(.title2)
+                .foregroundColor(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(NotificationFilter.allCases, id: \.self) { filter in
+                        Button(action: {
+                            selectedFilter = filter
+                        }) {
+                            Text(filter.rawValue)
+                                .font(.body)
+                                .foregroundColor(selectedFilter == filter ? .white : .primary)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(selectedFilter == filter ? Color.blue : Color.gray.opacity(0.3))
+                                )
+                        }
+                        .accessibilityLabel("Фильтр: \(filter.rawValue)")
+                        .accessibilityAddTraits(selectedFilter == filter ? .isSelected : [])
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+            .padding(.horizontal, -20)
+        }
+        .padding(16)
+        .background(cardBackground)
+        .cardShadow()
+    }
+    
+    // MARK: - Notification List
+    
+    private var notificationList: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("УВЕДОМЛЕНИЯ")
+                    .font(.title2)
+                    .foregroundColor(.primary)
+                    .accessibilityAddTraits(.isHeader)
+                
+                Spacer()
+                
+                Text("\(filteredNotifications.count) из \(notifications.count)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            LazyVStack(spacing: 8) {
+                ForEach(filteredNotifications) { notification in
+                    NotificationCard(notification: notification) {
+                        markAsRead(notification)
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .background(cardBackground)
+        .cardShadow()
+    }
+    
+    // MARK: - Helper Views
+    
+    private func statCard(icon: String, title: String, value: String, color: Color) -> some View {
+        VStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 24))
+                .foregroundColor(color)
+            
+            Text(value)
+                .font(.title)
+                .foregroundColor(.primary)
+            
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 8)
+                .fill(color.opacity(0.1))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(value)")
+    }
+    
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(Color.gray.opacity(0.3).opacity(0.5))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+            )
+    }
+    
+    // MARK: - Computed Properties
+    
+    private var unreadCount: Int {
+        notifications.filter { !$0.isRead }.count
+    }
+    
+    private var threatCount: Int {
+        notifications.filter { $0.type == .threat }.count
+    }
+    
+    private var filteredNotifications: [Notification] {
+        switch selectedFilter {
+        case .all:
+            return notifications
+        case .unread:
+            return notifications.filter { !$0.isRead }
+        case .threats:
+            return notifications.filter { $0.type == .threat }
+        case .success:
+            return notifications.filter { $0.type == .success }
+        case .info:
+            return notifications.filter { $0.type == .info }
+        case .warning:
+            return notifications.filter { $0.type == .warning }
+        }
+    }
+    
+    // MARK: - Actions
+    
+    private func markAsRead(_ notification: Notification) {
+        if let index = notifications.firstIndex(where: { $0.id == notification.id }) {
+            notifications[index].isRead = true
+        }
+    }
+    
+    private func clearAllNotifications() {
+        notifications.removeAll()
+    }
+}
+
+// MARK: - Notification Card
+
+struct NotificationCard: View {
+    let notification: Notification
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                // Иконка уведомления
                 Text(notification.icon)
-                    .font(.system(size: 32))
-                    .frame(width: 50, height: 50)
+                    .font(.system(size: 24))
+                    .frame(width: 40, height: 40)
                     .background(
                         Circle()
-                            .fill(notification.type.color.opacity(0.2))
+                            .fill(notification.type.color.opacity(0.1))
                     )
+                    .accessibilityLabel("Тип уведомления: \(notification.type.rawValue)")
                 
-                // Текст
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(notification.title)
-                        .font(notification.isRead ? .body : .body.bold())
-                        .foregroundColor(.textPrimary)
+                // Содержимое уведомления
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(notification.title)
+                            .font(.body.weight(.bold))
+                            .foregroundColor(.primary)
+                            .multilineTextAlignment(.leading)
+                        
+                        if !notification.isRead {
+                            Circle()
+                                .fill(Color.blue)
+                                .frame(width: 8, height: 8)
+                                .accessibilityLabel("Непрочитанное уведомление")
+                        }
+                        
+                        Spacer()
+                    }
                     
                     Text(notification.message)
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
                         .lineLimit(2)
                     
                     Text(notification.time)
                         .font(.caption)
-                        .foregroundColor(.textSecondary)
+                        .foregroundColor(.secondary)
                 }
                 
                 Spacer()
                 
-                // Индикатор непрочитанного
-                if !notification.isRead {
-                    Circle()
-                        .fill(notification.type.color)
-                        .frame(width: 10, height: 10)
-                }
+                // Стрелка
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
             }
-            .padding(Spacing.m)
+            .padding(12)
             .background(
-                RoundedRectangle(cornerRadius: CornerRadius.md)
-                    .fill(
-                        notification.isRead ?
-                        Color.backgroundMedium.opacity(0.3) :
-                        Color.backgroundMedium.opacity(0.5)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.md)
-                            .stroke(
-                                notification.isRead ?
-                                Color.clear :
-                                notification.type.color.opacity(0.3),
-                                lineWidth: 1
-                            )
-                    )
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(notification.isRead ? Color.gray.opacity(0.3).opacity(0.3) : Color.blue.opacity(0.05))
             )
         }
-        .buttonStyle(PlainButtonStyle())
-        .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(notification.title): \(notification.message), время: \(notification.time)")
+        .accessibilityAddTraits(notification.isRead ? [] : .isSelected)
     }
+}
+
+// MARK: - Notification Model
+
+struct Notification: Identifiable {
+    let id = UUID()
+    let icon: String
+    let title: String
+    let message: String
+    let time: String
+    var isRead: Bool
+    let type: NotificationType
+}
+
+enum NotificationType: String, CaseIterable {
+    case threat = "Угроза"
+    case success = "Успех"
+    case info = "Информация"
+    case warning = "Предупреждение"
     
-    // MARK: - Empty State
-    
-    private var emptyState: some View {
-        VStack(spacing: Spacing.lg) {
-            Spacer()
-            
-            Text("🔔")
-                .font(.system(size: 80))
-            
-            Text("Нет уведомлений")
-                .font(.title2)
-                .foregroundColor(.textPrimary)
-            
-            Text("Все уведомления появятся здесь")
-                .font(.body)
-                .foregroundColor(.textSecondary)
-            
-            Spacer()
+    var color: Color {
+        switch self {
+        case .threat: return .red
+        case .success: return .green
+        case .info: return .blue
+        case .warning: return .orange
         }
     }
 }
@@ -191,6 +369,3 @@ struct NotificationsScreen_Previews: PreviewProvider {
         NotificationsScreen()
     }
 }
-
-
-

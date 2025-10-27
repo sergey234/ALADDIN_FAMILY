@@ -1,12 +1,11 @@
 import SwiftUI
 
-/**
- * 📱 Devices Screen
- * Экран управления устройствами семьи
- * 12_devices_screen из HTML
- */
-
+/// 📱 Devices Screen - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
+/// Экран управления устройствами семьи
+/// Источник дизайна: /mobile/wireframes/12_devices_screen.html
 struct DevicesScreen: View {
+    
+    // MARK: - State
     
     @Environment(\.dismiss) var dismiss
     @State private var devices: [Device] = [
@@ -20,121 +19,296 @@ struct DevicesScreen: View {
         Device(name: "iPhone SE", owner: "Петя", type: .iphone, status: .warning, lastActive: "1 день назад")
     ]
     @State private var showAddDevice: Bool = false
+    @State private var selectedFilter: DeviceFilter = .all
+    
+    enum DeviceFilter: String, CaseIterable {
+        case all = "Все"
+        case protected = "Защищённые"
+        case warning = "Предупреждения"
+        case danger = "Опасность"
+        case inactive = "Неактивные"
+    }
+    
+    // MARK: - Body
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: Spacing.l) {
-                ALADDINNavigationBar(
-                    title: "УСТРОЙСТВА",
-                    subtitle: "\(devices.count) устройств под защитой",
-                    showBackButton: true,
-                    showAddButton: true,
-                    onBack: { dismiss() },
-                    onAdd: { showAddDevice = true }
-                )
-                .padding(.bottom, Spacing.m)
+        ZStack {
+            // Фон
+            LinearGradient.backgroundGradient
+                .ignoresSafeArea()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Фон экрана устройств")
+            
+            VStack(spacing: 0) {
+                // Навигационная панель
+                navigationHeader
                 
-                // Device Stats
-                VStack(spacing: Spacing.m) {
-                    Text("📊 СТАТИСТИКА")
-                        .font(.h3)
-                        .foregroundColor(.textPrimary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    HStack {
-                        Spacer()
-                        VStack {
-                            Text("🛡️ \(devices.filter { $0.status == .protected }.count)")
-                                .font(.h2)
-                                .foregroundColor(.successGreen)
-                            Text("Защищено")
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                        }
-                        Spacer()
-                        VStack {
-                            Text("⚠️ \(devices.filter { $0.status == .warning || $0.status == .danger }.count)")
-                                .font(.h2)
-                                .foregroundColor(.warningOrange)
-                            Text("Требует внимания")
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                        }
-                        Spacer()
-                        VStack {
-                            Text("📱 \(devices.count)")
-                                .font(.h2)
-                                .foregroundColor(.infoBlue)
-                            Text("Всего")
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                        }
-                        Spacer()
+                // Основной контент
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: Spacing.l) {
+                        // Статистика устройств
+                        deviceStats
+                        
+                        // Фильтры
+                        deviceFilters
+                        
+                        // Список устройств
+                        deviceList
                     }
-                    .padding(Spacing.cardPadding)
-                    .background(
-                        LinearGradient.cardGradient
-                            .appGlassmorphism()
-                    )
-                    .cornerRadius(CornerRadius.large)
-                    .cardShadow()
-                }
-                .padding(.horizontal, Spacing.screenPadding)
-                
-                // Devices List
-                Text("СПИСОК УСТРОЙСТВ")
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, Spacing.screenPadding)
-                
-                VStack(spacing: Spacing.m) {
-                    ForEach(devices) { device in
-                        DeviceRow(device: device) {
-                            print("Device details: \(device.name)")
-                        }
-                    }
+                    .padding(.bottom, Spacing.xxl)
                 }
-                .padding(.horizontal, Spacing.screenPadding)
-                
-                // Add Device Button
-                Button(action: {
-                    showAddDevice = true
-                    HapticFeedback.lightImpact()
-                }) {
-                    HStack(spacing: Spacing.m) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: Size.iconMedium))
-                            .foregroundColor(.secondaryGold)
-                        VStack(alignment: .leading) {
-                            Text("Добавить устройство")
-                                .font(.h3)
-                                .foregroundColor(.textPrimary)
-                            Text("Подключите новое устройство к защите")
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.textSecondary)
-                    }
-                    .padding(Spacing.cardPadding)
-                    .frame(maxWidth: .infinity)
-                    .background(
-                        LinearGradient.cardGradient
-                            .appGlassmorphism()
-                    )
-                    .cornerRadius(CornerRadius.large)
-                    .cardShadow()
-                }
-                .padding(.horizontal, Spacing.screenPadding)
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Список устройств семьи")
             }
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showAddDevice) {
             AddDeviceView()
         }
+    }
+    
+    // MARK: - Navigation Header
+    
+    private var navigationHeader: some View {
+        ALADDINNavigationBar(
+            title: "УСТРОЙСТВА",
+            subtitle: "\(devices.count) устройств под защитой",
+            showBackButton: true,
+            showAddButton: true,
+            onBack: { 
+                dismiss() 
+            },
+            onAdd: { 
+                showAddDevice = true 
+            }
+        )
+        .padding(.bottom, Spacing.m)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Навигационная панель устройств")
+    }
+    
+    // MARK: - Device Stats
+    
+    private var deviceStats: some View {
+        VStack(spacing: Spacing.m) {
+            Text("📊 СТАТИСТИКА")
+                .font(.h3)
+                .foregroundColor(.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
+            
+            HStack {
+                Spacer()
+                
+                VStack {
+                    Text("🛡️ \(devices.filter { $0.status == .protected }.count)")
+                        .font(.h1)
+                        .foregroundColor(.successGreen)
+                    
+                    Text("Защищённые")
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Защищённых устройств: \(devices.filter { $0.status == .protected }.count)")
+                
+                VStack {
+                    Text("⚠️ \(devices.filter { $0.status == .warning }.count)")
+                        .font(.h1)
+                        .foregroundColor(.warningOrange)
+                    
+                    Text("Предупреждения")
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Устройств с предупреждениями: \(devices.filter { $0.status == .warning }.count)")
+                
+                VStack {
+                    Text("🔴 \(devices.filter { $0.status == .danger }.count)")
+                        .font(.h1)
+                        .foregroundColor(.dangerRed)
+                    
+                    Text("Опасность")
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Устройств в опасности: \(devices.filter { $0.status == .danger }.count)")
+                
+                Spacer()
+            }
+        }
+        .padding(Spacing.cardPadding)
+        .background(cardBackground)
+        .cardShadow()
+    }
+    
+    // MARK: - Device Filters
+    
+    private var deviceFilters: some View {
+        VStack(spacing: Spacing.m) {
+            Text("ФИЛЬТРЫ")
+                .font(.h3)
+                .foregroundColor(.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.s) {
+                    ForEach(DeviceFilter.allCases, id: \.self) { filter in
+                        Button(action: {
+                            selectedFilter = filter
+                        }) {
+                            Text(filter.rawValue)
+                                .font(.body)
+                                .foregroundColor(selectedFilter == filter ? .white : .textPrimary)
+                                .padding(.horizontal, Spacing.m)
+                                .padding(.vertical, Spacing.s)
+                                .background(
+                                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                        .fill(selectedFilter == filter ? Color.primaryBlue : Color.backgroundMedium)
+                                )
+                        }
+                        .accessibilityLabel("Фильтр: \(filter.rawValue)")
+                        .accessibilityAddTraits(selectedFilter == filter ? .isSelected : [])
+                    }
+                }
+                .padding(.horizontal, Spacing.screenPadding)
+            }
+            .padding(.horizontal, -Spacing.screenPadding)
+        }
+        .padding(Spacing.cardPadding)
+        .background(cardBackground)
+        .cardShadow()
+    }
+    
+    // MARK: - Device List
+    
+    private var deviceList: some View {
+        VStack(spacing: Spacing.m) {
+            HStack {
+                Text("УСТРОЙСТВА")
+                    .font(.h3)
+                    .foregroundColor(.textPrimary)
+                    .accessibilityAddTraits(.isHeader)
+                
+                Spacer()
+                
+                Text("\(filteredDevices.count) из \(devices.count)")
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+            }
+            
+            LazyVStack(spacing: Spacing.s) {
+                ForEach(filteredDevices) { device in
+                    DeviceCard(device: device)
+                }
+            }
+        }
+        .padding(Spacing.cardPadding)
+        .background(cardBackground)
+        .cardShadow()
+    }
+    
+    // MARK: - Computed Properties
+    
+    private var filteredDevices: [Device] {
+        switch selectedFilter {
+        case .all:
+            return devices
+        case .protected:
+            return devices.filter { $0.status == .protected }
+        case .warning:
+            return devices.filter { $0.status == .warning }
+        case .danger:
+            return devices.filter { $0.status == .danger }
+        case .inactive:
+            return devices.filter { $0.status == .inactive }
+        }
+    }
+    
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: CornerRadius.large)
+            .fill(Color.backgroundMedium.opacity(0.5))
+            .overlay(
+                RoundedRectangle(cornerRadius: CornerRadius.large)
+                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+            )
+    }
+}
+
+// MARK: - Device Card
+
+struct DeviceCard: View {
+    let device: Device
+    
+    var body: some View {
+        HStack(spacing: Spacing.m) {
+            // Иконка устройства
+            deviceIcon
+            
+            // Информация об устройстве
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(device.name)
+                    .font(.bodyBold)
+                    .foregroundColor(.textPrimary)
+                    .accessibilityLabel("Название устройства: \(device.name)")
+                
+                Text(device.owner)
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .accessibilityLabel("Владелец: \(device.owner)")
+                
+                Text(device.lastActive)
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .accessibilityLabel("Последняя активность: \(device.lastActive)")
+            }
+            
+            Spacer()
+            
+            // Статус
+            VStack(alignment: .trailing, spacing: Spacing.xs) {
+                statusIndicator
+                
+                Text(device.status.rawValue)
+                    .font(.caption)
+                    .foregroundColor(device.status.color)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Статус: \(device.status.rawValue)")
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.3))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Устройство \(device.name), владелец \(device.owner), статус \(device.status.rawValue)")
+    }
+    
+    private var deviceIcon: some View {
+        Image(systemName: device.type.icon)
+            .font(.system(size: 24))
+            .foregroundColor(device.type.color)
+            .frame(width: 40, height: 40)
+            .background(
+                Circle()
+                    .fill(device.type.color.opacity(0.1))
+            )
+            .accessibilityLabel("Тип устройства: \(device.type.rawValue)")
+    }
+    
+    private var statusIndicator: some View {
+        Circle()
+            .fill(device.status.color)
+            .frame(width: 12, height: 12)
+            .accessibilityLabel("Индикатор статуса: \(device.status.rawValue)")
     }
 }
 
@@ -145,176 +319,56 @@ struct Device: Identifiable {
     let name: String
     let owner: String
     let type: DeviceType
-    var status: FunctionStatus
+    let status: DeviceStatus
     let lastActive: String
 }
 
-enum DeviceType {
-    case iphone, ipad, mac, android, windows
+enum DeviceType: String, CaseIterable {
+    case iphone = "iPhone"
+    case ipad = "iPad"
+    case mac = "Mac"
+    case android = "Android"
     
     var icon: String {
         switch self {
-        case .iphone: return "📱"
-        case .ipad: return "📱"
-        case .mac: return "💻"
-        case .android: return "📱"
-        case .windows: return "💻"
+        case .iphone: return "iphone"
+        case .ipad: return "ipad"
+        case .mac: return "laptopcomputer"
+        case .android: return "phone"
         }
     }
     
-    var name: String {
+    var color: Color {
         switch self {
-        case .iphone: return "iPhone"
-        case .ipad: return "iPad"
-        case .mac: return "Mac"
-        case .android: return "Android"
-        case .windows: return "Windows"
+        case .iphone: return .primaryBlue
+        case .ipad: return .secondaryBlue
+        case .mac: return .textPrimary
+        case .android: return .successGreen
         }
     }
 }
 
-// MARK: - Device Row
-
-struct DeviceRow: View {
-    let device: Device
-    let action: () -> Void
+enum DeviceStatus: String, CaseIterable {
+    case protected = "Защищён"
+    case warning = "Предупреждение"
+    case danger = "Опасность"
+    case inactive = "Неактивен"
     
-    var body: some View {
-        Button(action: {
-            action()
-            HapticFeedback.lightImpact()
-        }) {
-            HStack(spacing: Spacing.m) {
-                // Device Icon
-                ZStack {
-                    Circle()
-                        .fill(Color.surfaceDark)
-                        .frame(width: Size.avatarSize, height: Size.avatarSize)
-                    Text(device.type.icon)
-                        .font(.system(size: Size.iconMedium))
-                    Circle()
-                        .stroke(device.status.color, lineWidth: 2)
-                        .frame(width: Size.avatarSize + 4, height: Size.avatarSize + 4)
-                }
-                
-                // Device Info
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text(device.name)
-                        .font(.h3)
-                        .foregroundColor(.textPrimary)
-                    HStack(spacing: Spacing.xs) {
-                        Text("👤 \(device.owner)")
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                        Text("•")
-                            .font(.caption)
-                            .foregroundColor(.textTertiary)
-                        Text(device.type.name)
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                    }
-                    Text("⏰ \(device.lastActive)")
-                        .font(.captionSmall)
-                        .foregroundColor(.textTertiary)
-                }
-                
-                Spacer()
-                
-                // Status
-                VStack(alignment: .trailing, spacing: Spacing.xxs) {
-                    Text(device.status.icon)
-                        .font(.system(size: Size.statusIndicatorLarge))
-                        .shadow(color: device.status.color.opacity(0.5), radius: 5)
-                    Text(statusText(device.status))
-                        .font(.captionSmall)
-                        .foregroundColor(device.status.color)
-                }
-            }
-            .padding(Spacing.cardPadding)
-            .frame(maxWidth: .infinity)
-            .background(
-                LinearGradient.cardGradient
-                    .appGlassmorphism()
-            )
-            .cornerRadius(CornerRadius.large)
-            .cardShadow()
-        }
-    }
-    
-    private func statusText(_ status: FunctionStatus) -> String {
-        switch status {
-        case .active: return "Защищено"
-        case .warning: return "Внимание"
-        case .danger: return "Опасность"
-        case .inactive: return "Неактивно"
+    var color: Color {
+        switch self {
+        case .protected: return .successGreen
+        case .warning: return .warningOrange
+        case .danger: return .dangerRed
+        case .inactive: return .textSecondary
         }
     }
 }
 
-// MARK: - Add Device View
+// MARK: - Placeholder Views
 
 struct AddDeviceView: View {
-    @Environment(\.dismiss) var dismiss
-    @State private var deviceName: String = ""
-    @State private var selectedOwner: String = "Выберите владельца"
-    
     var body: some View {
-        ZStack {
-            LinearGradient.backgroundGradient.ignoresSafeArea()
-            
-            VStack(spacing: Spacing.l) {
-                HStack {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark")
-                            .font(.bodyBold)
-                            .foregroundColor(.textPrimary)
-                            .frame(width: Size.navButtonSize, height: Size.navButtonSize)
-                            .background(Color.surfaceDark.opacity(0.6))
-                            .cornerRadius(CornerRadius.medium)
-                    }
-                    Spacer()
-                    Text("Добавить устройство")
-                        .font(.h2)
-                        .foregroundColor(.secondaryGold)
-                    Spacer()
-                    Color.clear.frame(width: Size.navButtonSize, height: Size.navButtonSize)
-                }
-                .padding(.horizontal, Spacing.screenPadding)
-                
-                Spacer()
-                
-                VStack(spacing: Spacing.xl) {
-                    Text("📱")
-                        .font(.system(size: Size.iconXLarge * 1.5))
-                    
-                    Text("Отсканируйте QR код")
-                        .font(.h1)
-                        .foregroundColor(.textPrimary)
-                    
-                    Text("На новом устройстве откройте ALADDIN и отсканируйте QR код")
-                        .font(.body)
-                        .foregroundColor(.textSecondary)
-                        .multilineTextAlignment(.center)
-                    
-                    // QR Code Placeholder
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .fill(Color.white)
-                        .frame(width: 200, height: 200)
-                        .overlay(
-                            Text("QR CODE")
-                                .font(.h3)
-                                .foregroundColor(.backgroundDark)
-                        )
-                    
-                    PrimaryButton(title: "Добавить вручную") {
-                        print("Manual add")
-                    }
-                }
-                .padding(.horizontal, Spacing.screenPadding)
-                
-                Spacer()
-            }
-        }
+        Text("Добавление устройства")
     }
 }
 
@@ -325,6 +379,3 @@ struct DevicesScreen_Previews: PreviewProvider {
         DevicesScreen()
     }
 }
-
-
-

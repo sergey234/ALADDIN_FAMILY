@@ -1,5 +1,8 @@
 import SwiftUI
 
+// Импортируем FamilyRole из ViewModels
+typealias FamilyRole = FamilyRegistrationViewModel.FamilyRole
+
 /**
  * 👋 Role Selection Modal
  * Модальное окно выбора роли в семье (для прогрессивной регистрации)
@@ -23,7 +26,7 @@ struct RoleSelectionModal: View {
                 .blur(radius: 20)
             
             // Modal content
-            VStack(spacing: Spacing.xl) {
+            VStack(spacing: Spacing.l) {
                 // Header
                 VStack(spacing: Spacing.m) {
                     Text("👋")
@@ -85,7 +88,7 @@ struct RoleSelectionModal: View {
                     }
                 }
             }
-            .padding(Spacing.xl)
+            .padding(Spacing.l)
             .frame(width: 340)
             .background(
                 LinearGradient(
@@ -182,13 +185,7 @@ struct RoleCard: View {
 }
 
 // MARK: - Family Role Enum
-
-enum FamilyRole: String, Codable {
-    case parent = "parent"
-    case child = "child"
-    case elderly = "elderly"
-    case other = "other"
-}
+// FamilyRole определен в ViewModels/FamilyRegistrationViewModel.swift
 
 // MARK: - Preview
 

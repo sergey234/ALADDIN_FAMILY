@@ -33,14 +33,9 @@ struct PaymentQRScreen: View {
                 .ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: Spacing.xl) {
+                VStack(spacing: Spacing.l) {
                     // Navigation Bar
-                    ALADDINNavigationBar(
-                        title: "ОПЛАТА ПОДПИСКИ",
-                        subtitle: tariff.title,
-                        showBackButton: true,
-                        onBack: { dismiss() }
-                    )
+                    ALADDINNavigationBar()
                     
                     // Timer
                     if let expiresAt = viewModel.expiresAt {
@@ -136,9 +131,9 @@ struct PaymentQRScreen: View {
                         HapticFeedback.selection()
                     }) {
                         VStack(spacing: Spacing.xxs) {
-                            Text(method.icon)
+                            Text("💳")
                                 .font(.system(size: 24))
-                            Text(method.shortTitle)
+                            Text(method.displayName)
                                 .font(.captionBold)
                                 .foregroundColor(viewModel.selectedMethod == method ? .secondaryGold : .textSecondary)
                         }
@@ -157,7 +152,7 @@ struct PaymentQRScreen: View {
             // QR Code Display
             if let qrImage = viewModel.currentQRImage {
                 VStack(spacing: Spacing.m) {
-                    Text(viewModel.selectedMethod.fullTitle)
+                    Text(viewModel.selectedMethod.displayName)
                         .font(.h3)
                         .foregroundColor(.textPrimary)
                     
@@ -180,7 +175,7 @@ struct PaymentQRScreen: View {
                         }
                     }
                     
-                    Text(viewModel.selectedMethod.instructions)
+                    Text("Отсканируйте QR-код в приложении вашего банка для оплаты")
                         .font(.body)
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
@@ -251,8 +246,16 @@ struct PaymentQRScreen: View {
     // MARK: - Check Payment Button
     
     private var checkPaymentButton: some View {
-        PrimaryButton(title: "Проверить оплату") {
+        Button(action: {
             viewModel.checkPaymentStatus()
+        }) {
+            Text("Проверить оплату")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .background(Color.primaryBlue)
+                .cornerRadius(8)
         }
         .disabled(viewModel.isLoading)
     }
@@ -275,8 +278,8 @@ struct PaymentQRScreen: View {
                         .background(Color.textTertiary)
                     
                     infoRow(label: "Получатель", value: merchantInfo.name)
-                    infoRow(label: "Карта", value: merchantInfo.card)
-                    infoRow(label: "Телефон СБП", value: merchantInfo.phone)
+                    infoRow(label: "Адрес", value: merchantInfo.address)
+                    infoRow(label: "Телефон СБП", value: merchantInfo.phone ?? "Не указан")
                 }
             }
         }
@@ -318,76 +321,9 @@ struct PaymentQRScreen: View {
     }
 }
 
-// MARK: - Payment Method Enum
-
-enum PaymentMethod: String, CaseIterable {
-    case sbp = "sbp"
-    case sberpay = "sberpay"
-    case universal = "universal"
-    
-    var icon: String {
-        switch self {
-        case .sbp: return "💳"
-        case .sberpay: return "🏦"
-        case .universal: return "📱"
-        }
-    }
-    
-    var shortTitle: String {
-        switch self {
-        case .sbp: return "СБП"
-        case .sberpay: return "СберPay"
-        case .universal: return "Универсальный"
-        }
-    }
-    
-    var fullTitle: String {
-        switch self {
-        case .sbp: return "Система Быстрых Платежей"
-        case .sberpay: return "SberPay QR-код"
-        case .universal: return "Универсальный QR-код"
-        }
-    }
-    
-    var instructions: String {
-        switch self {
-        case .sbp:
-            return """
-            Отсканируйте в приложении любого банка:
-            • Сбербанк Онлайн
-            • ВТБ Онлайн
-            • Тинькофф
-            • Альфа-Мобайл
-            • Райффайзен Онлайн
-            • Газпромбанк
-            • Россельхозбанк
-            • ВТБ24
-            • ЮниКредит
-            • Русский Стандарт
-            • МКБ Онлайн
-            • Открытие
-            и другие
-            """
-        case .sberpay:
-            return "Отсканируйте в приложении\nСберБанк Онлайн"
-        case .universal:
-            return """
-            Универсальный способ для всех банков.
-            Откройте приложение вашего банка,
-            найдите раздел переводов и используйте
-            данные из QR-кода.
-            """
-        }
-    }
-}
 
 // MARK: - Merchant Info
 
-struct MerchantInfo {
-    let name: String
-    let card: String
-    let phone: String
-}
 
 // MARK: - Preview
 

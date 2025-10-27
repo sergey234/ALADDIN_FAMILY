@@ -1,0 +1,220 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/01_MainScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "9:41"
+      },
+      {
+        "comment": "",
+        "key": "Время: 9:41"
+      },
+      {
+        "comment": "",
+        "key": "Статус устройства"
+      },
+      {
+        "comment": "",
+        "key": "📶"
+      },
+      {
+        "comment": "",
+        "key": "🔋"
+      },
+      {
+        "comment": "",
+        "key": "Сигнал сети"
+      },
+      {
+        "comment": "",
+        "key": "Заряд батареи"
+      },
+      {
+        "comment": "",
+        "key": "Открыть профиль"
+      },
+      {
+        "comment": "",
+        "key": "Нажмите для перехода в профиль пользователя"
+      },
+      {
+        "comment": "",
+        "key": "👁️"
+      },
+      {
+        "comment": "",
+        "key": "Логотип ALADDIN"
+      },
+      {
+        "comment": "",
+        "key": "ALADDIN - AI Защита семьи"
+      },
+      {
+        "comment": "",
+        "key": "ALADDIN"
+      },
+      {
+        "comment": "",
+        "key": "AI Защита семьи"
+      },
+      {
+        "comment": "",
+        "key": "Название приложения ALADDIN"
+      },
+      {
+        "comment": "",
+        "key": "Описание: AI Защита семьи"
+      },
+      {
+        "comment": "",
+        "key": "👤"
+      },
+      {
+        "comment": "",
+        "key": "ALADDIN VPN - %@"
+      },
+      {
+        "comment": "",
+        "key": "Нажмите для открытия VPN экрана"
+      },
+      {
+        "comment": "",
+        "key": "Тарифы - Выбор плана"
+      },
+      {
+        "comment": "",
+        "key": "Нажмите для открытия экрана тарифов"
+      },
+      {
+        "comment": "",
+        "key": "ALADDIN VPN"
+      },
+      {
+        "comment": "",
+        "key": "VPN • Защита"
+      },
+      {
+        "comment": "",
+        "key": "Название: ALADDIN VPN"
+      },
+      {
+        "comment": "",
+        "key": "Описание: VPN защита"
+      },
+      {
+        "comment": "",
+        "key": "🛡️"
+      },
+      {
+        "comment": "",
+        "key": "Иконка защиты"
+      },
+      {
+        "comment": "",
+        "key": "🟢"
+      },
+      {
+        "comment": "",
+        "key": "🔴"
+      },
+      {
+        "comment": "",
+        "key": "Статус: Подключено"
+      },
+      {
+        "comment": "",
+        "key": "Статус: Отключено"
+      },
+      {
+        "comment": "",
+        "key": "💎"
+      },
+      {
+        "comment": "",
+        "key": "Тарифы"
+      },
+      {
+        "comment": "",
+        "key": "Выбор плана"
+      },
+      {
+        "comment": "",
+        "key": "Иконка тарифов"
+      },
+      {
+        "comment": "",
+        "key": "Название: Тарифы"
+      },
+      {
+        "comment": "",
+        "key": "Описание: Выбор плана"
+      },
+      {
+        "comment": "",
+        "key": "📊"
+      },
+      {
+        "comment": "",
+        "key": "Аналитика"
+      },
+      {
+        "comment": "",
+        "key": "Статистика"
+      },
+      {
+        "comment": "",
+        "key": "⚙️"
+      },
+      {
+        "comment": "",
+        "key": "Настройки"
+      },
+      {
+        "comment": "",
+        "key": "Параметры"
+      },
+      {
+        "comment": "",
+        "key": "👨‍👩‍👧‍👦"
+      },
+      {
+        "comment": "",
+        "key": "ALADDIN FAMILY"
+      },
+      {
+        "comment": "",
+        "key": "👤 6 членов семьи • 4 устройства"
+      },
+      {
+        "comment": "",
+        "key": "🛡️ Защита 98% • Все возрасты"
+      },
+      {
+        "comment": "",
+        "key": "🟢 VPN 100 Мбит/с • Защищено от 2,847 угроз"
+      },
+      {
+        "comment": "",
+        "key": "Управление семьей"
+      },
+      {
+        "comment": "",
+        "key": "Добавить члена семьи"
+      },
+      {
+        "comment": "",
+        "key": "🤖 AI Помощник ALADDIN"
+      },
+      {
+        "comment": "",
+        "key": "\"Привет! Я помогу настроить защиту для вашей семьи. Чем могу помочь?\""
+      },
+      {
+        "comment": "",
+        "key": "Задайте вопрос..."
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,96 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/07_ParentalControlScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Фон экрана родительского контроля"
+      },
+      {
+        "comment": "",
+        "key": "Список настроек родительского контроля"
+      },
+      {
+        "comment": "",
+        "key": "Навигационная панель родительского контроля"
+      },
+      {
+        "comment": "",
+        "key": "ВЫБЕРИТЕ РЕБЁНКА"
+      },
+      {
+        "comment": "",
+        "key": "Выбрать ребёнка: %@"
+      },
+      {
+        "comment": "",
+        "key": "👶"
+      },
+      {
+        "comment": "",
+        "key": "🦄 СИСТЕМА ВОЗНАГРАЖДЕНИЙ"
+      },
+      {
+        "comment": "",
+        "key": "Подробнее о системе вознаграждений"
+      },
+      {
+        "comment": "",
+        "key": "Подробнее"
+      },
+      {
+        "comment": "",
+        "key": "Баланс единорогов: %lld"
+      },
+      {
+        "comment": "",
+        "key": "Наград за неделю: %lld"
+      },
+      {
+        "comment": "",
+        "key": "Наказаний за неделю: %lld"
+      },
+      {
+        "comment": "",
+        "key": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "Единорогов"
+      },
+      {
+        "comment": "",
+        "key": "Наград"
+      },
+      {
+        "comment": "",
+        "key": "Наказаний"
+      },
+      {
+        "comment": "",
+        "key": "НАСТРОЙКИ КОНТРОЛЯ"
+      },
+      {
+        "comment": "",
+        "key": "%@: %@"
+      },
+      {
+        "comment": "",
+        "key": "Ограничение времени экрана"
+      },
+      {
+        "comment": "",
+        "key": "1ч"
+      },
+      {
+        "comment": "",
+        "key": "8ч"
+      },
+      {
+        "comment": "",
+        "key": "СТАТИСТИКА ЗА НЕДЕЛЮ"
+      }
+    ]
+  },
+  "version": 1
+}

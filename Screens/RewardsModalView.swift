@@ -27,6 +27,8 @@ struct RewardsModalView: View {
                 // Фон
                 LinearGradient.backgroundGradient
                     .ignoresSafeArea()
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("Фон модального окна вознаграждений")
                 
                 ScrollView {
                     VStack(spacing: Spacing.l) {
@@ -47,17 +49,28 @@ struct RewardsModalView: View {
                     }
                     .padding(.top, Spacing.m)
                 }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Содержимое модального окна вознаграждений")
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .safeAreaInset(edge: .top) {
+            Color.clear.frame(height: Spacing.m)
+        }
+        .task {
+            print("🚨 RewardsModalView загружен!")
+        }
+        .toolbar {
                 ToolbarItem(placement: .principal) {
                     HStack(spacing: Spacing.xs) {
                         Text("🦄")
                             .font(.system(size: 20))
+                            .accessibilityLabel("Единорог")
                         Text("Вознаграждение ребёнка")
                             .font(.h3)
                             .foregroundColor(Color(hex: "C084FC"))
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("Вознаграждение ребёнка")
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -68,6 +81,8 @@ struct RewardsModalView: View {
                             .font(.system(size: 24))
                             .foregroundColor(.textSecondary)
                     }
+                    .accessibilityLabel("Закрыть")
+                    .accessibilityHint("Нажмите для закрытия модального окна")
                 }
             }
         }
@@ -80,20 +95,24 @@ struct RewardsModalView: View {
             // Иконка
             Text("🦄")
                 .font(.system(size: 56))
+                .accessibilityLabel("Единорог")
             
             // Баланс
             Text("\(unicornBalance)")
                 .font(.system(size: 36, weight: .bold))
                 .foregroundColor(Color(hex: "C084FC"))
+                .accessibilityLabel("Баланс: \(unicornBalance) единорогов")
             
             Text("Единорогов на счету")
                 .font(.caption)
                 .foregroundColor(.textSecondary)
+                .accessibilityLabel("Единорогов на счету")
             
             // Статистика за неделю
             Divider()
                 .background(Color.textSecondary.opacity(0.3))
                 .padding(.vertical, Spacing.s)
+                .accessibilityElement(children: .ignore)
             
             HStack(spacing: Spacing.xxl) {
                 VStack(spacing: Spacing.xs) {
@@ -105,6 +124,8 @@ struct RewardsModalView: View {
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Вознаграждено за неделю: \(weeklyRewarded) единорогов")
                 
                 VStack(spacing: Spacing.xs) {
                     Text("-\(weeklyPunished)")
@@ -115,6 +136,8 @@ struct RewardsModalView: View {
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Наказано за неделю: \(weeklyPunished) единорогов")
             }
         }
         .frame(maxWidth: .infinity)
@@ -136,7 +159,11 @@ struct RewardsModalView: View {
                         .stroke(Color(hex: "A855F7").opacity(0.4), lineWidth: 2)
                 )
         )
+        .cardShadow()
+        .appGlassmorphism()
         .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Карточка баланса единорогов")
     }
     
     // MARK: - Quick Actions
@@ -150,6 +177,7 @@ struct RewardsModalView: View {
                 VStack(spacing: Spacing.xs) {
                     Text("✅")
                         .font(.system(size: 24))
+                        .accessibilityLabel("Галочка")
                     Text("Вознаградить")
                         .font(.caption)
                         .foregroundColor(.successGreen)
@@ -166,6 +194,8 @@ struct RewardsModalView: View {
                 )
             }
             .buttonStyle(PlainButtonStyle())
+            .accessibilityLabel("Вознаградить ребёнка")
+            .accessibilityHint("Нажмите для вознаграждения ребёнка единорогами")
             
             // Кнопка "Наказать"
             Button(action: {
@@ -174,6 +204,7 @@ struct RewardsModalView: View {
                 VStack(spacing: Spacing.xs) {
                     Text("❌")
                         .font(.system(size: 24))
+                        .accessibilityLabel("Крестик")
                     Text("Наказать")
                         .font(.caption)
                         .foregroundColor(.dangerRed)
@@ -190,6 +221,8 @@ struct RewardsModalView: View {
                 )
             }
             .buttonStyle(PlainButtonStyle())
+            .accessibilityLabel("Наказать ребёнка")
+            .accessibilityHint("Нажмите для наказания ребёнка единорогами")
         }
         .padding(.horizontal, Spacing.screenPadding)
     }
@@ -201,11 +234,15 @@ struct RewardsModalView: View {
             HStack {
                 Text("✅")
                     .font(.system(size: 18))
+                    .accessibilityLabel("Галочка")
                 Text("Как заработать:")
                     .font(.h3)
                     .foregroundColor(.successGreen)
             }
             .padding(.horizontal, Spacing.screenPadding)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Как заработать единорогов")
+            .accessibilityAddTraits(.isHeader)
             
             VStack(spacing: Spacing.s) {
                 earningWayRow(icon: "📚", title: "Домашнее задание", subtitle: "+10 единорогов за задание", amount: "+10 🦄")
@@ -228,6 +265,7 @@ struct RewardsModalView: View {
         HStack(spacing: Spacing.m) {
             Text(icon)
                 .font(.system(size: 24))
+                .accessibilityLabel("Иконка: \(icon)")
             
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(title)
@@ -237,6 +275,8 @@ struct RewardsModalView: View {
                     .font(.captionSmall)
                     .foregroundColor(.textSecondary)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(title): \(subtitle)")
             
             Spacer()
             
@@ -244,12 +284,16 @@ struct RewardsModalView: View {
                 .font(.body)
                 .fontWeight(.bold)
                 .foregroundColor(.successGreen)
+                .accessibilityLabel("Награда: \(amount)")
         }
         .padding(Spacing.m)
         .background(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
                 .fill(Color.backgroundMedium.opacity(0.5))
         )
+        .cardShadow()
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(subtitle), награда \(amount)")
     }
     
     // MARK: - Punishment Reasons Section
@@ -259,11 +303,15 @@ struct RewardsModalView: View {
             HStack {
                 Text("❌")
                     .font(.system(size: 18))
+                    .accessibilityLabel("Крестик")
                 Text("За что можно наказать:")
                     .font(.h3)
                     .foregroundColor(.dangerRed)
             }
             .padding(.horizontal, Spacing.screenPadding)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("За что можно наказать единорогами")
+            .accessibilityAddTraits(.isHeader)
             
             VStack(spacing: Spacing.s) {
                 punishmentReasonRow(icon: "📚", title: "Не сделал ДЗ", subtitle: "Забыл или отказался делать", amount: "-10 🦄")
@@ -290,6 +338,7 @@ struct RewardsModalView: View {
         HStack(spacing: Spacing.m) {
             Text(icon)
                 .font(.system(size: 24))
+                .accessibilityLabel("Иконка: \(icon)")
             
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(title)
@@ -299,6 +348,8 @@ struct RewardsModalView: View {
                     .font(.captionSmall)
                     .foregroundColor(.textSecondary)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(title): \(subtitle)")
             
             Spacer()
             
@@ -306,12 +357,16 @@ struct RewardsModalView: View {
                 .font(.body)
                 .fontWeight(.bold)
                 .foregroundColor(.dangerRed)
+                .accessibilityLabel("Штраф: \(amount)")
         }
         .padding(Spacing.m)
         .background(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
                 .fill(Color.backgroundMedium.opacity(0.5))
         )
+        .cardShadow()
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(subtitle), штраф \(amount)")
     }
     
     // MARK: - Actions
@@ -339,13 +394,17 @@ struct RewardsModalView: View {
 
 // MARK: - Preview
 
-#Preview {
-    RewardsModalView(
-        unicornBalance: .constant(245),
-        weeklyRewarded: .constant(128),
-        weeklyPunished: .constant(45)
-    )
+#if DEBUG
+struct RewardsModalView_Previews: PreviewProvider {
+    static var previews: some View {
+        RewardsModalView(
+            unicornBalance: .constant(245),
+            weeklyRewarded: .constant(128),
+            weeklyPunished: .constant(45)
+        )
+    }
 }
+#endif
 
 
 

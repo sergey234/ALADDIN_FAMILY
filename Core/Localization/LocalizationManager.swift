@@ -19,11 +19,15 @@ class LocalizationManager: ObservableObject {
     enum Language: String, CaseIterable {
         case russian = "ru"
         case english = "en"
+        case chinese = "zh-Hans"
+        case arabic = "ar"
         
         var displayName: String {
             switch self {
             case .russian: return "Русский"
             case .english: return "English"
+            case .chinese: return "中文"
+            case .arabic: return "العربية"
             }
         }
         
@@ -31,6 +35,15 @@ class LocalizationManager: ObservableObject {
             switch self {
             case .russian: return "🇷🇺"
             case .english: return "🇬🇧"
+            case .chinese: return "🇨🇳"
+            case .arabic: return "🇦🇪"
+            }
+        }
+        
+        var isRTL: Bool {
+            switch self {
+            case .arabic: return true
+            default: return false
             }
         }
     }

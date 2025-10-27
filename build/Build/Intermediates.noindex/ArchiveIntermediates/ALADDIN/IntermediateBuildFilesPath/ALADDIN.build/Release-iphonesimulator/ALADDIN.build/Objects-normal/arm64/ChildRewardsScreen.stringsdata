@@ -1,0 +1,140 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/ChildRewardsScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Мои единороги"
+      },
+      {
+        "comment": "",
+        "key": "💎"
+      },
+      {
+        "comment": "",
+        "key": "Уровень 2"
+      },
+      {
+        "comment": "",
+        "key": "🦄"
+      },
+      {
+        "comment": "",
+        "key": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "Единорогов на счету"
+      },
+      {
+        "comment": "",
+        "key": "+%lld"
+      },
+      {
+        "comment": "",
+        "key": "Заработано\nза неделю"
+      },
+      {
+        "comment": "",
+        "key": "-%lld"
+      },
+      {
+        "comment": "",
+        "key": "Наказано\nза неделю"
+      },
+      {
+        "comment": "",
+        "key": "✅ Осталось: %lld 🦄 (примерно 35 дней)"
+      },
+      {
+        "comment": "",
+        "key": "🎯"
+      },
+      {
+        "comment": "",
+        "key": "Моя цель: %@"
+      },
+      {
+        "comment": "",
+        "key": "%lld 🦄 накоплено"
+      },
+      {
+        "comment": "",
+        "key": "Нужно: %lld 🦄"
+      },
+      {
+        "comment": "",
+        "key": "📣"
+      },
+      {
+        "comment": "",
+        "key": "Сообщить родителям о достижении"
+      },
+      {
+        "comment": "",
+        "key": "🏪"
+      },
+      {
+        "comment": "",
+        "key": "Доступные награды:"
+      },
+      {
+        "comment": "",
+        "key": "%lld 🦄"
+      },
+      {
+        "comment": "",
+        "key": "Купить!"
+      },
+      {
+        "comment": "",
+        "key": "Копи еще"
+      },
+      {
+        "comment": "",
+        "key": "📊"
+      },
+      {
+        "comment": "",
+        "key": "История:"
+      },
+      {
+        "comment": "",
+        "key": "🏆"
+      },
+      {
+        "comment": "",
+        "key": "Мои успехи:"
+      },
+      {
+        "comment": "",
+        "key": "%lld%%"
+      },
+      {
+        "comment": "",
+        "key": "Выбери, о чём хочешь сообщить:"
+      },
+      {
+        "comment": "",
+        "key": "📣 Сообщить родителям"
+      },
+      {
+        "comment": "",
+        "key": "Расскажи, что сделал..."
+      },
+      {
+        "comment": "",
+        "key": "✍️"
+      },
+      {
+        "comment": "",
+        "key": "Написать своё"
+      },
+      {
+        "comment": "",
+        "key": "📤 Отправить запрос"
+      }
+    ]
+  },
+  "version": 1
+}

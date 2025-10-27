@@ -32,7 +32,8 @@ struct GamesParentalControlView: View {
                 ALADDINNavigationBar(
                     title: "УПРАВЛЕНИЕ ИГРАМИ",
                     subtitle: "Родительский контроль",
-                    leftButton: .init(icon: "chevron.left") {
+                    showBackButton: true,
+                    onBack: {
                         dismiss()
                     }
                 )
@@ -455,9 +456,13 @@ struct GamesParentalControlView: View {
 
 // MARK: - Preview
 
-#Preview {
-    GamesParentalControlView()
+#if DEBUG
+struct GamesParentalControlView_Previews: PreviewProvider {
+    static var previews: some View {
+        GamesParentalControlView()
+    }
 }
+#endif
 
 
 

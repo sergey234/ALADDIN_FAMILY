@@ -27,6 +27,8 @@ struct FamilyChatScreen: View {
                 showBackButton: true,
                 onBack: { dismiss() }
             )
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Навигационная панель семейного чата")
             
             // Messages List
             ScrollView {
@@ -37,18 +39,23 @@ struct FamilyChatScreen: View {
                 }
                 .padding(Spacing.screenPadding)
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Список сообщений семейного чата")
             
             // Input Field
             HStack(spacing: Spacing.s) {
-                ALADDINTextField(
-                    placeholder: "Ваше сообщение...",
-                    text: $messageText,
-                    icon: "💬"
-                )
+                TextField("Ваше сообщение...", text: $messageText)
+                    .padding(Spacing.m)
+                    .background(Color.backgroundMedium)
+                    .cornerRadius(CornerRadius.md)
+                    .foregroundColor(.textPrimary)
+                    .font(.body)
+                .accessibilityLabel("Поле ввода сообщения")
+                .accessibilityHint("Введите текст сообщения для отправки в семейный чат")
                 
                 Button(action: {
                     sendMessage()
-                    HapticFeedback.lightImpact()
+                    // HapticFeedback.lightImpact()
                 }) {
                     Image(systemName: "paperplane.fill")
                         .font(.body)
@@ -57,10 +64,12 @@ struct FamilyChatScreen: View {
                         .background(Color.secondaryGold)
                         .cornerRadius(CornerRadius.medium)
                 }
+                .accessibilityLabel("Отправить сообщение")
+                .accessibilityHint("Нажмите для отправки сообщения в чат")
                 
                 Button(action: {
                     // Voice message
-                    HapticFeedback.lightImpact()
+                    // HapticFeedback.lightImpact()
                 }) {
                     Image(systemName: "mic.fill")
                         .font(.body)
@@ -69,6 +78,8 @@ struct FamilyChatScreen: View {
                         .background(Color.surfaceDark.opacity(0.6))
                         .cornerRadius(CornerRadius.medium)
                 }
+                .accessibilityLabel("Голосовое сообщение")
+                .accessibilityHint("Нажмите для записи голосового сообщения")
             }
             .padding(Spacing.screenPadding)
             .background(
@@ -77,7 +88,15 @@ struct FamilyChatScreen: View {
             )
         }
         .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Семейный чат")
         .navigationBarHidden(true)
+        .safeAreaInset(edge: .top) {
+            Color.clear.frame(height: Spacing.m)
+        }
+        .task {
+            print("🚨 FamilyChatScreen загружен!")
+        }
     }
     
     // MARK: - Actions
@@ -148,11 +167,15 @@ struct ChatBubbleView: View {
                     .foregroundColor(.textTertiary)
             }
             .frame(maxWidth: UIScreen.main.bounds.width * 0.7, alignment: message.isCurrentUser ? .trailing : .leading)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(message.isCurrentUser ? "Вы" : message.sender): \(message.text), время \(message.time)")
             
             if !message.isCurrentUser {
                 Spacer()
             }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Сообщение от \(message.isCurrentUser ? "вас" : message.sender)")
     }
 }
 

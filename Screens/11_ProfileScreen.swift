@@ -43,7 +43,7 @@ struct ProfileScreen: View {
                 
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: Spacing.lg) {
+                    VStack(spacing: Spacing.l) {
                         // Шапка профиля
                         profileHeader
                         
@@ -60,7 +60,7 @@ struct ProfileScreen: View {
                         Spacer()
                             .frame(height: Spacing.xxl)
                     }
-                    .padding(.top, Spacing.lg)
+                    .padding(.top, Spacing.l)
                 }
             }
         }
@@ -70,7 +70,7 @@ struct ProfileScreen: View {
     // MARK: - Profile Header
     
     private var profileHeader: some View {
-        VStack(spacing: Spacing.lg) {
+        VStack(spacing: Spacing.l) {
             // Большой аватар
             ZStack {
                 Circle()
@@ -99,7 +99,7 @@ struct ProfileScreen: View {
             }
             
             // Статус подписки
-            HStack(spacing: Spacing.sm) {
+            HStack(spacing: Spacing.s) {
                 Text("⭐")
                     .font(.system(size: 20))
                 
@@ -111,8 +111,8 @@ struct ProfileScreen: View {
                     .font(.caption)
                     .foregroundColor(.textSecondary)
             }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.vertical, Spacing.sm)
+            .padding(.horizontal, Spacing.l)
+            .padding(.vertical, Spacing.s)
             .background(
                 Capsule()
                     .fill(Color.yellow.opacity(0.2))
@@ -136,7 +136,7 @@ struct ProfileScreen: View {
     }
     
     private func statCard(icon: String, value: String, label: String) -> some View {
-        VStack(spacing: Spacing.sm) {
+        VStack(spacing: Spacing.s) {
             Text(icon)
                 .font(.system(size: 28))
             
@@ -153,7 +153,7 @@ struct ProfileScreen: View {
         .frame(maxWidth: .infinity)
         .padding(Spacing.m)
         .background(
-            RoundedRectangle(cornerRadius: CornerRadius.md)
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
                 .fill(Color.backgroundMedium.opacity(0.3))
         )
     }
@@ -161,10 +161,10 @@ struct ProfileScreen: View {
     // MARK: - Profile Info
     
     private var profileInfo: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
+        VStack(alignment: .leading, spacing: Spacing.s) {
             sectionTitle("ЛИЧНАЯ ИНФОРМАЦИЯ")
             
-            VStack(spacing: Spacing.sm) {
+            VStack(spacing: Spacing.s) {
                 infoRow(icon: "person", label: "Имя", value: "Сергей Хлыстов")
                 infoRow(icon: "envelope", label: "Email", value: "sergey@aladdin.family")
                 infoRow(icon: "phone", label: "Телефон", value: "+7 (999) 123-45-67")
@@ -177,10 +177,10 @@ struct ProfileScreen: View {
     // MARK: - Security Section
     
     private var securitySection: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
+        VStack(alignment: .leading, spacing: Spacing.s) {
             sectionTitle("БЕЗОПАСНОСТЬ")
             
-            VStack(spacing: Spacing.sm) {
+            VStack(spacing: Spacing.s) {
                 securityButton(icon: "🔐", title: "Изменить пароль")
                 securityButton(icon: "📱", title: "Двухфакторная аутентификация")
                 securityButton(icon: "🔑", title: "Активные сеансы")
@@ -220,7 +220,7 @@ struct ProfileScreen: View {
         }
         .padding(Spacing.m)
         .background(
-            RoundedRectangle(cornerRadius: CornerRadius.md)
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
                 .fill(Color.backgroundMedium.opacity(0.3))
         )
     }
@@ -245,7 +245,7 @@ struct ProfileScreen: View {
             }
             .padding(Spacing.m)
             .background(
-                RoundedRectangle(cornerRadius: CornerRadius.md)
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
                     .fill(Color.backgroundMedium.opacity(0.3))
             )
         }

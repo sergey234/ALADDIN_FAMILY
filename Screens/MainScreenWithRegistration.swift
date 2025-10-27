@@ -14,7 +14,7 @@ import SwiftUI
 
 struct MainScreenWithRegistration: View {
     
-    @ObservedObject var registrationVM: FamilyRegistrationViewModel
+    @StateObject var registrationVM: FamilyRegistrationViewModel
     @State private var showTip: Bool = false
     
     var body: some View {
@@ -24,63 +24,115 @@ struct MainScreenWithRegistration: View {
             
             // Progressive registration modals
             if registrationVM.showRoleModal {
-                RoleSelectionModal(
-                    isPresented: $registrationVM.showRoleModal,
-                    selectedRole: $registrationVM.selectedRole,
-                    onRoleSelected: registrationVM.onRoleSelected
-                )
+                VStack {
+                    Text("Выберите роль")
+                        .font(.title)
+                        .foregroundColor(.white)
+                    
+                    Button("Родитель") {
+                        registrationVM.selectedRole = .parent
+                        registrationVM.showRoleModal = false
+                    }
+                    .buttonStyle(.borderedProminent)
+                    
+                    Button("Отмена") {
+                        registrationVM.showRoleModal = false
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(10)
             }
             
             if registrationVM.showAgeGroupModal {
-                AgeGroupSelectionModal(
-                    isPresented: $registrationVM.showAgeGroupModal,
-                    selectedAgeGroup: $registrationVM.selectedAgeGroup,
-                    onAgeGroupSelected: registrationVM.onAgeGroupSelected
-                )
+                VStack {
+                    Text("Выберите возрастную группу")
+                        .font(.title)
+                        .foregroundColor(.white)
+                    
+                    Button("Взрослый") {
+                        registrationVM.selectedAgeGroup = .adult
+                        registrationVM.showAgeGroupModal = false
+                    }
+                    .buttonStyle(.borderedProminent)
+                    
+                    Button("Отмена") {
+                        registrationVM.showAgeGroupModal = false
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding()
+                .background(Color.green)
+                .cornerRadius(10)
             }
             
             if registrationVM.showLetterModal {
-                LetterSelectionModal(
-                    isPresented: $registrationVM.showLetterModal,
-                    selectedLetter: $registrationVM.selectedLetter,
-                    onLetterSelected: registrationVM.onLetterSelected
-                )
+                VStack {
+                    Text("Выберите букву")
+                        .font(.title)
+                        .foregroundColor(.white)
+                    
+                    Button("A") {
+                        registrationVM.selectedLetter = "A"
+                        registrationVM.showLetterModal = false
+                    }
+                    .buttonStyle(.borderedProminent)
+                    
+                    Button("Отмена") {
+                        registrationVM.showLetterModal = false
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding()
+                .background(Color.orange)
+                .cornerRadius(10)
             }
             
             if registrationVM.showFamilyCreatedModal,
                let familyID = registrationVM.familyID,
                let recoveryCode = registrationVM.recoveryCode {
-                FamilyCreatedModal(
-                    isPresented: $registrationVM.showFamilyCreatedModal,
-                    familyID: familyID,
-                    recoveryCode: recoveryCode,
-                    onContinue: {
+                VStack {
+                    Text("Семья создана!")
+                        .font(.title)
+                        .foregroundColor(.white)
+                    
+                    Text("ID: \(familyID)")
+                        .font(.body)
+                        .foregroundColor(.white)
+                    
+                    Text("Код: \(recoveryCode)")
+                        .font(.body)
+                        .foregroundColor(.white)
+                    
+                    Button("Закрыть") {
                         registrationVM.showFamilyCreatedModal = false
-                        
-                        // Show tip after 5 seconds
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                            showTip = true
-                            
-                            // Auto-dismiss tip after 10 seconds
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) {
-                                withAnimation {
-                                    showTip = false
-                                }
-                            }
-                        }
                     }
-                )
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding()
+                .background(Color.purple)
+                .cornerRadius(10)
             }
             
             if registrationVM.showSuccessModal {
-                RegistrationSuccessModal(
-                    isPresented: $registrationVM.showSuccessModal,
-                    mode: .joined,
-                    familyMembers: registrationVM.familyMembers,
-                    onContinue: {
+                VStack {
+                    Text("Регистрация успешна!")
+                        .font(.title)
+                        .foregroundColor(.white)
+                    
+                    Text("Добро пожаловать в семью!")
+                        .font(.body)
+                        .foregroundColor(.white)
+                    
+                    Button("Продолжить") {
                         registrationVM.showSuccessModal = false
                     }
-                )
+                    .buttonStyle(.borderedProminent)
+                }
+                .padding()
+                .background(Color.green)
+                .cornerRadius(10)
             }
             
             // Tip notification
@@ -97,13 +149,18 @@ struct MainScreenWithRegistration: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        .onAppear {
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Главный экран с регистрацией семьи")
+        .safeAreaInset(edge: .top) {
+            Color.clear.frame(height: Spacing.m)
+        }
+        .task {
+            print("🚨 MainScreenWithRegistration загружен!")
             // Check if family already exists
             if !hasFamilyRegistration() {
                 // Start progressive registration after 0.5 seconds
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    registrationVM.startRegistration()
-                }
+                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                registrationVM.startRegistration()
             }
         }
     }
@@ -131,6 +188,7 @@ struct TipNotification: View {
                     Text("💡 Совет")
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.white)
+                        .accessibilityLabel("Совет")
                     
                     Spacer()
                     
@@ -143,12 +201,15 @@ struct TipNotification: View {
                             .font(.system(size: 12))
                             .foregroundColor(.white)
                     }
+                    .accessibilityLabel("Закрыть совет")
+                    .accessibilityHint("Нажмите для закрытия уведомления")
                 }
                 
                 Text(message)
                     .font(.system(size: 13))
                     .foregroundColor(.white)
                     .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityLabel("Совет: \(message)")
                 
                 HStack(spacing: Spacing.m) {
                     Button(action: {
@@ -163,6 +224,8 @@ struct TipNotification: View {
                             .background(Color.white.opacity(0.2))
                             .cornerRadius(8)
                     }
+                    .accessibilityLabel("Покажите как")
+                    .accessibilityHint("Нажмите для перехода к настройкам семьи")
                     
                     Button(action: {
                         withAnimation {
@@ -173,6 +236,8 @@ struct TipNotification: View {
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.7))
                     }
+                    .accessibilityLabel("Позже")
+                    .accessibilityHint("Нажмите для отложения совета")
                 }
             }
         }
@@ -185,6 +250,8 @@ struct TipNotification: View {
         .cornerRadius(16)
         .shadow(color: Color.secondaryGold.opacity(0.3), radius: 10)
         .padding(.horizontal, Spacing.m)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Уведомление с советом")
     }
 }
 

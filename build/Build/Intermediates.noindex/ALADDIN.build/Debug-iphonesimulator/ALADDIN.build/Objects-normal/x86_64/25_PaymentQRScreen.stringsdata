@@ -1,0 +1,64 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/25_PaymentQRScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Оплата успешна!"
+      },
+      {
+        "comment": "",
+        "key": "Ошибка"
+      },
+      {
+        "comment": "",
+        "key": "Отлично!"
+      },
+      {
+        "comment": "",
+        "key": "Подписка %@ активирована!\n\nСпасибо за покупку!"
+      },
+      {
+        "comment": "",
+        "key": "OK"
+      },
+      {
+        "comment": "",
+        "key": "⏰"
+      },
+      {
+        "comment": "",
+        "key": "до окончания срока оплаты"
+      },
+      {
+        "comment": "",
+        "key": "💳"
+      },
+      {
+        "comment": "",
+        "key": "Отсканируйте QR-код в приложении вашего банка для оплаты"
+      },
+      {
+        "comment": "",
+        "key": "QR-код недоступен"
+      },
+      {
+        "comment": "",
+        "key": "КАК ОПЛАТИТЬ"
+      },
+      {
+        "comment": "",
+        "key": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "Проверить оплату"
+      },
+      {
+        "comment": "",
+        "key": "ИНФОРМАЦИЯ О ПЛАТЕЖЕ"
+      }
+    ]
+  },
+  "version": 1
+}

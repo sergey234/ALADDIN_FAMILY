@@ -1,0 +1,42 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 15" build CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO
+
+User defaults from command line:
+    IDEPackageSupportUseBuiltinSCM = YES
+
+Build settings from command line:
+    CODE_SIGN_IDENTITY = 
+    CODE_SIGNING_REQUIRED = NO
+    SDKROOT = iphonesimulator15.2
+
+xcodebuild: error: Unable to find a destination matching the provided destination specifier:
+		{ platform:iOS Simulator, OS:latest, name:iPhone 15 }
+
+	The requested device could not be found because no available devices matched the request.
+
+	Available destinations for the "ALADDIN" scheme:
+		{ platform:iOS Simulator, id:DF2AC4D2-F462-47A8-BA7A-92A593156162, OS:15.2, name:iPad (9th generation) }
+		{ platform:iOS Simulator, id:A76E0B71-E886-492D-AC5C-3555E3C346DB, OS:15.2, name:iPad Air (4th generation) }
+		{ platform:iOS Simulator, id:20B4B2A3-D17B-4625-9ECC-6E0C50E9AC5B, OS:15.2, name:iPad Pro (9.7-inch) }
+		{ platform:iOS Simulator, id:F3A91C37-6F72-41FD-BDBD-EA9867AE655D, OS:15.2, name:iPad Pro (11-inch) (3rd generation) }
+		{ platform:iOS Simulator, id:4313A7D9-B3A9-494D-A71F-BBF25DD89BD3, OS:15.2, name:iPad Pro (12.9-inch) (5th generation) }
+		{ platform:iOS Simulator, id:71A09E30-7386-4FCF-A029-F78579A5F2A9, OS:15.2, name:iPad mini (6th generation) }
+		{ platform:iOS Simulator, id:FA88B058-EE7F-4371-9668-74EEEBADD280, OS:15.2, name:iPhone 8 }
+		{ platform:iOS Simulator, id:D6F31DD2-9156-4A70-BD6D-5259B8E1C703, OS:15.2, name:iPhone 8 Plus }
+		{ platform:iOS Simulator, id:D78B8561-CF19-41E4-BAC6-82A1D391614C, OS:15.2, name:iPhone 11 }
+		{ platform:iOS Simulator, id:5D942103-EA2D-48CD-AC1D-9462D6906021, OS:15.2, name:iPhone 11 Pro }
+		{ platform:iOS Simulator, id:DE1808F2-6FBD-4254-831C-68C1B8C70EBA, OS:15.2, name:iPhone 11 Pro Max }
+		{ platform:iOS Simulator, id:B888E7F1-CFFD-449B-9476-7C7C9D454C8E, OS:15.2, name:iPhone 12 }
+		{ platform:iOS Simulator, id:693D14D0-6435-4667-9111-EE3C937A8BC8, OS:15.2, name:iPhone 12 Pro }
+		{ platform:iOS Simulator, id:0DC1E7B5-C357-417D-8CCB-897C0D794F41, OS:15.2, name:iPhone 12 Pro Max }
+		{ platform:iOS Simulator, id:F64834BF-FEDB-4A6C-A28D-084F67B5E067, OS:15.2, name:iPhone 12 mini }
+		{ platform:iOS Simulator, id:A45A91AB-838D-4C72-9EAA-B6707D1DB851, OS:15.2, name:iPhone 13 }
+		{ platform:iOS Simulator, id:9F37D502-2E1D-42A5-88BD-2E4C5428A262, OS:15.2, name:iPhone 13 Pro }
+		{ platform:iOS Simulator, id:5931FA61-D52D-4A38-B97F-32505BDE516C, OS:15.2, name:iPhone 13 Pro Max }
+		{ platform:iOS Simulator, id:64741B21-43F2-4F00-AF0B-95621D87C9D0, OS:15.2, name:iPhone 13 mini }
+		{ platform:iOS Simulator, id:5BD8449B-1215-4A23-950B-6F024C79C3A1, OS:15.2, name:iPhone SE (2nd generation) }
+		{ platform:iOS Simulator, id:BEEECDE4-EA60-4282-BCBA-F0DA0AB72472, OS:15.2, name:iPod touch (7th generation) }
+
+	Ineligible destinations for the "ALADDIN" scheme:
+		{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device }
+		{ platform:iOS Simulator, id:dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder, name:Any iOS Simulator Device }

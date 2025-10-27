@@ -3,9 +3,13 @@ import SwiftUI
 struct MainScreen: View {
     @State private var isFamilyProtectionEnabled: Bool = true
     @State private var aiQuestion: String = ""
-    @State private var vpnConnected: Bool = false
+    @StateObject private var vpnViewModel = VPNViewModel.shared
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
+    
+    private var vpnConnected: Bool {
+        vpnViewModel.isVPNEnabled
+    }
     
     var body: some View {
         ZStack {

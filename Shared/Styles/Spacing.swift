@@ -18,6 +18,9 @@ enum Spacing {
     /// Источник: HTML .gap-sm, padding-sm
     static let s: CGFloat = 12
     
+    /// Small-Medium: 14pt (для уведомлений)
+    static let sm: CGFloat = 14
+    
     /// Medium: 16pt (базовый отступ)
     /// Источник: HTML .gap-md, padding-md
     static let m: CGFloat = 16
@@ -43,40 +46,38 @@ enum Spacing {
     /// Источник: HTML .card { padding: 20px }
     static let cardPadding: CGFloat = 20
     
-    /// Отступ по краям экрана
+    /// Отступ по краям экрана (адаптивный)
     /// Источник: HTML .screen { padding: 20px }
-    static let screenPadding: CGFloat = 20
+    static let screenPadding: CGFloat = {
+        switch UIScreen.main.bounds.width {
+        case 0..<375: return 16  // iPhone SE
+        case 375..<414: return 20  // iPhone стандартный
+        case 414...: return 24    // iPhone Plus/Max
+        default: return 20
+        }
+    }()
     
     /// Отступ между секциями
     static let sectionSpacing: CGFloat = 32
+    
+    // MARK: - Adaptive Spacing (Apple HIG)
+    
+    /// Адаптивные отступы для разных размеров экранов
+    static func adaptive(_ base: CGFloat) -> CGFloat {
+        base * UIScreen.main.scale
+    }
+    
+    /// Адаптивный отступ для контента
+    static let contentPadding: CGFloat = {
+        switch UIScreen.main.bounds.width {
+        case 0..<375: return 12  // iPhone SE
+        case 375..<414: return 16  // iPhone стандартный
+        case 414...: return 20    // iPhone Plus/Max
+        default: return 16
+        }
+    }()
 }
 
-/// 🔲 ALADDIN Corner Radius System
-/// Все скругления взяты из HTML wireframes (CSS border-radius)
-enum CornerRadius {
-    
-    /// Маленькое скругление: 8pt
-    /// Источник: HTML .rounded-sm { border-radius: 8px }
-    static let small: CGFloat = 8
-    
-    /// Среднее скругление: 12pt
-    /// Источник: HTML .rounded-md { border-radius: 12px }
-    static let medium: CGFloat = 12
-    
-    /// Большое скругление: 16pt
-    /// Источник: HTML .card { border-radius: 16px }
-    static let large: CGFloat = 16
-    
-    /// Очень большое: 24pt
-    /// Источник: HTML .rounded-xl { border-radius: 24px }
-    static let xlarge: CGFloat = 24
-    
-    /// Полное скругление (для ползунков)
-    static let full: CGFloat = 999
-    
-    /// Круг: 50%
-    static let circle: CGFloat = 999
-}
 
 /// ☁️ ALADDIN Shadow System
 /// Все тени взяты из HTML wireframes (CSS box-shadow)
@@ -100,11 +101,6 @@ extension View {
         self.shadow(color: Color.black.opacity(0.3), radius: 12, x: 0, y: 8)
     }
     
-    /// Тень для карточек (стандартная)
-    /// Источник: HTML .card { box-shadow: 0 4px 12px rgba(0,0,0,0.2) }
-    func cardShadow() -> some View {
-        self.shadowMedium()
-    }
 }
 
 /// 📏 ALADDIN Size System
@@ -194,5 +190,53 @@ enum Size {
     
     /// Размер кнопки навигации
     static let navButtonSize: CGFloat = 40
+}
+
+// MARK: - Adaptive Layout Modifiers (Apple HIG)
+
+/// Адаптивные модификаторы для layout согласно Apple HIG
+extension View {
+    
+    /// Адаптивные отступы по горизонтали
+    func adaptivePadding() -> some View {
+        self.padding(.horizontal, Spacing.screenPadding)
+    }
+    
+    /// Адаптивные отступы для контента
+    func contentPadding() -> some View {
+        self.padding(.horizontal, Spacing.contentPadding)
+    }
+    
+    /// Адаптивный шрифт с поддержкой Dynamic Type
+    func adaptiveFont(_ style: Font.TextStyle) -> some View {
+        self.font(.system(style, design: .default))
+            .dynamicTypeSize(.small ... .accessibility3)
+    }
+    
+    /// Адаптивная рамка с минимальной и максимальной высотой
+    func adaptiveFrame(minHeight: CGFloat? = nil, maxHeight: CGFloat? = nil) -> some View {
+        self.frame(
+            minHeight: minHeight,
+            maxHeight: maxHeight,
+            alignment: .center
+        )
+    }
+    
+    /// Адаптивная кнопка согласно Apple HIG
+    func adaptiveButton() -> some View {
+        self
+            .frame(minHeight: Size.buttonMinHeight)
+            .frame(maxWidth: .infinity)
+            .font(.system(size: 16, weight: .semibold))
+            .dynamicTypeSize(.medium ... .accessibility2)
+    }
+    
+    /// Оптимизированный ZStack для фона
+    func optimizedBackground() -> some View {
+        self.background(
+            LinearGradient.backgroundGradient
+                .ignoresSafeArea(.all, edges: .all)
+        )
+    }
 }
 

@@ -25,6 +25,67 @@
 "common.warning" = "Внимание";
 
 /* ═══════════════════════════════════════════════════════════════
+ * ЯЗЫКОВЫЕ НАСТРОЙКИ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"language.settings" = "Язык";
+"language.choose" = "Выберите язык";
+"language.current" = "Текущий язык";
+
+/* ═══════════════════════════════════════════════════════════════
+ * УВЕДОМЛЕНИЯ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"notification.settings" = "Уведомления";
+"notification.manage" = "Управление уведомлениями";
+"notification.types" = "Типы уведомлений";
+"notification.security" = "Безопасность";
+"notification.security.subtitle" = "Угрозы и подозрительная активность";
+"notification.family" = "Семья";
+"notification.family.subtitle" = "Добавление членов семьи";
+"notification.vpn" = "VPN";
+"notification.vpn.subtitle" = "Подключение и отключение VPN";
+"notification.ai" = "AI Помощник";
+"notification.ai.subtitle" = "Сообщения от AI помощника";
+"notification.sound.badge" = "Звук и значок";
+"notification.sound" = "Звук";
+"notification.sound.subtitle" = "Звуковые уведомления";
+"notification.badge" = "Значок";
+"notification.badge.subtitle" = "Красный значок на иконке";
+"notification.quiet.hours" = "Тихие часы";
+"notification.quiet.enabled" = "Включить тихие часы";
+"notification.quiet.subtitle" = "Не беспокоить в указанное время";
+"notification.quiet.start" = "Начало";
+"notification.quiet.end" = "Конец";
+"notification.test" = "Тестовые уведомления";
+"notification.test.security" = "Тест безопасности";
+"notification.test.family" = "Тест семьи";
+"notification.test.vpn" = "Тест VPN";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ВИДЖЕТЫ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"widget.settings" = "Виджеты";
+"widget.configure" = "Настройка виджетов";
+"widget.available" = "Доступные виджеты";
+"widget.family.title" = "Защита семьи";
+"widget.family.description" = "Статус защиты и дети онлайн";
+"widget.vpn.title" = "VPN Статус";
+"widget.vpn.description" = "Подключение и сервер";
+"widget.analytics.title" = "Аналитика";
+"widget.analytics.description" = "Статистика блокировок";
+"widget.instructions" = "Как добавить виджеты";
+"widget.instruction.1" = "Нажмите и удерживайте пустое место на главном экране";
+"widget.instruction.2" = "Нажмите кнопку + в левом верхнем углу";
+"widget.instruction.3" = "Найдите ALADDIN в списке приложений";
+"widget.instruction.4" = "Выберите размер виджета и нажмите Добавить";
+"widget.test.data" = "Тестовые данные";
+"widget.test.set.mock" = "Установить тестовые данные";
+"widget.test.clear" = "Очистить данные";
+"widget.test.reload" = "Обновить виджеты";
+
+/* ═══════════════════════════════════════════════════════════════
  * ГЛАВНЫЙ ЭКРАН
  * ═══════════════════════════════════════════════════════════════ */
 

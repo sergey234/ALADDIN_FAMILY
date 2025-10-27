@@ -1,0 +1,16 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Components/Modals/AgeGroupSelectionModal.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Select Age Group"
+      },
+      {
+        "comment": "",
+        "key": "Confirm"
+      }
+    ]
+  },
+  "version": 1
+}

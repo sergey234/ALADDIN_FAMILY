@@ -1,0 +1,92 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/UnicornPetView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Фон экрана питомца-единорога"
+      },
+      {
+        "comment": "",
+        "key": "Содержимое экрана питомца-единорога"
+      },
+      {
+        "comment": "",
+        "key": "🦄 МОЙ ПИТОМЕЦ"
+      },
+      {
+        "comment": "",
+        "key": "Мой питомец единорог"
+      },
+      {
+        "comment": "",
+        "key": "Карточка питомца единорога"
+      },
+      {
+        "comment": "",
+        "key": "Индикаторы состояния питомца"
+      },
+      {
+        "comment": "",
+        "key": "Действия с питомцем"
+      },
+      {
+        "comment": "",
+        "key": "🦄"
+      },
+      {
+        "comment": "",
+        "key": "Уровень %lld"
+      },
+      {
+        "comment": "",
+        "key": "Стадия: %@"
+      },
+      {
+        "comment": "",
+        "key": "Единорог питомец"
+      },
+      {
+        "comment": "",
+        "key": "Уровень питомца: %lld"
+      },
+      {
+        "comment": "",
+        "key": "Стадия развития: %@"
+      },
+      {
+        "comment": "",
+        "key": "%@: %lld процентов"
+      },
+      {
+        "comment": "",
+        "key": "%lld%%"
+      },
+      {
+        "comment": "",
+        "key": "Иконка: %@"
+      },
+      {
+        "comment": "",
+        "key": "%@"
+      },
+      {
+        "comment": "",
+        "key": "Прогресс-бар %@: %lld процентов"
+      },
+      {
+        "comment": "",
+        "key": "%lld процентов"
+      },
+      {
+        "comment": "",
+        "key": "%@ - %@"
+      },
+      {
+        "comment": "",
+        "key": "Нажмите для %@ питомца"
+      }
+    ]
+  },
+  "version": 1
+}

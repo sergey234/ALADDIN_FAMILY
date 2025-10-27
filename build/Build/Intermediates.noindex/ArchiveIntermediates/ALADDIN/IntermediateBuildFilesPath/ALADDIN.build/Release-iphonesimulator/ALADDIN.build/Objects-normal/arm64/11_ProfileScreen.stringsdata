@@ -1,0 +1,36 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/11_ProfileScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "ПРОФИЛЬ"
+      },
+      {
+        "comment": "",
+        "key": "👨"
+      },
+      {
+        "comment": "",
+        "key": "Сергей Хлыстов"
+      },
+      {
+        "comment": "",
+        "key": "sergey@aladdin.family"
+      },
+      {
+        "comment": "",
+        "key": "⭐"
+      },
+      {
+        "comment": "",
+        "key": "Premium"
+      },
+      {
+        "comment": "",
+        "key": "до 31.12.2025"
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,24 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/06_AIAssistantScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Фон экрана AI помощника"
+      },
+      {
+        "comment": "",
+        "key": "Навигационная панель AI помощника"
+      },
+      {
+        "comment": "",
+        "key": "Чат с AI помощником"
+      },
+      {
+        "comment": "",
+        "key": "Спросите AI помощника..."
+      }
+    ]
+  },
+  "version": 1
+}

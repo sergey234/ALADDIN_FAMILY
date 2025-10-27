@@ -137,7 +137,7 @@ struct WheelOfFortuneView: View {
                 .frame(maxWidth: .infinity)
                 .padding(Spacing.l)
                 .background(
-                    RoundedRectangle(cornerRadius: CornerRadius.xlarge)
+                    RoundedRectangle(cornerRadius: CornerRadius.xl)
                         .fill(
                             canSpin ?
                             LinearGradient(colors: [.successGreen, .successGreen.opacity(0.8)], startPoint: .leading, endPoint: .trailing) :
@@ -251,9 +251,13 @@ struct WheelOfFortuneView: View {
 
 // MARK: - Preview
 
-#Preview {
-    WheelOfFortuneView()
+#if DEBUG
+struct WheelOfFortuneView_Previews: PreviewProvider {
+    static var previews: some View {
+        WheelOfFortuneView()
+    }
 }
+#endif
 
 
 

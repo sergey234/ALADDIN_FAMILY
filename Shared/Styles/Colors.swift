@@ -130,5 +130,14 @@ extension LinearGradient {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+    
+    static let appGlassmorphism = LinearGradient(
+        colors: [
+            Color.white.opacity(0.1),
+            Color.white.opacity(0.05)
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
 }
 

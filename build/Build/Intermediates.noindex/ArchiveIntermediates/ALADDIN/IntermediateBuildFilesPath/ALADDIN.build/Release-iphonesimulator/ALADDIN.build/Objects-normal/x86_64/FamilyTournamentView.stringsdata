@@ -1,0 +1,40 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/FamilyTournamentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "🏆 СЕМЕЙНЫЙ ТУРНИР"
+      },
+      {
+        "comment": "",
+        "key": "⏰ До завершения: %lld дня"
+      },
+      {
+        "comment": "",
+        "key": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "👨‍👩‍👧‍👦 СЕМЕЙНЫЙ КВЕСТ"
+      },
+      {
+        "comment": "",
+        "key": "Вместе заработайте 500 🦄 за неделю"
+      },
+      {
+        "comment": "",
+        "key": "🎁 Награда: каждому по +50 🦄"
+      },
+      {
+        "comment": "",
+        "key": "300 🦄 / 500 🦄"
+      },
+      {
+        "comment": "",
+        "key": "60%"
+      }
+    ]
+  },
+  "version": 1
+}

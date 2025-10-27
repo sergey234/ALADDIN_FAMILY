@@ -19,12 +19,16 @@ struct UnicornUniverseView: View {
         ZStack {
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Фон экрана единорог-вселенной")
             
             ScrollView {
                 VStack(spacing: Spacing.l) {
                     Text("🌳 ЕДИНОРОГ-ВСЕЛЕННАЯ")
                         .font(.h1)
                         .foregroundColor(.textPrimary)
+                        .accessibilityAddTraits(.isHeader)
+                        .accessibilityLabel("Единорог-вселенная")
                     
                     // Сад единорогов
                     gardenView
@@ -36,6 +40,14 @@ struct UnicornUniverseView: View {
                 }
                 .padding(.top, Spacing.xxl)
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Содержимое экрана единорог-вселенной")
+        }
+        .safeAreaInset(edge: .top) {
+            Color.clear.frame(height: Spacing.m)
+        }
+        .task {
+            print("🚨 UnicornUniverseView загружен!")
         }
     }
     
@@ -44,16 +56,20 @@ struct UnicornUniverseView: View {
             Text("🌳 МОЙ САД")
                 .font(.h2)
                 .foregroundColor(.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityLabel("Мой сад единорогов")
             
             Text("\(gardenCount) единорогов")
                 .font(.h3)
                 .foregroundColor(.successGreen)
+                .accessibilityLabel("Количество единорогов в саду: \(gardenCount)")
             
             // Визуализация сада (упрощённая)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 8) {
                 ForEach(0..<gardenCount, id: \.self) { _ in
                     Text("🦄")
                         .font(.system(size: 24))
+                        .accessibilityLabel("Единорог")
                 }
             }
             .padding(Spacing.m)
@@ -61,8 +77,14 @@ struct UnicornUniverseView: View {
                 RoundedRectangle(cornerRadius: CornerRadius.large)
                     .fill(Color.successGreen.opacity(0.1))
             )
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Сад с \(gardenCount) единорогами")
         }
         .padding(.horizontal, Spacing.screenPadding)
+        .cardShadow()
+        .appGlassmorphism()
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Карточка сада единорогов")
     }
     
     private var collectionView: some View {
@@ -70,20 +92,27 @@ struct UnicornUniverseView: View {
             Text("📚 КОЛЛЕКЦИЯ")
                 .font(.h2)
                 .foregroundColor(.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityLabel("Коллекция видов единорогов")
             
             VStack(spacing: Spacing.s) {
                 ForEach(unicornSpecies, id: \.0) { species in
                     speciesCard(icon: species.0, name: species.1, desc: species.2)
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Список видов единорогов")
         }
         .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Секция коллекции единорогов")
     }
     
     private func speciesCard(icon: String, name: String, desc: String) -> some View {
         HStack(spacing: Spacing.m) {
             Text(icon)
                 .font(.system(size: 40))
+                .accessibilityLabel("Иконка: \(icon)")
             
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(name)
@@ -94,6 +123,8 @@ struct UnicornUniverseView: View {
                     .font(.caption)
                     .foregroundColor(.textSecondary)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(name): \(desc)")
             
             Spacer()
         }
@@ -102,12 +133,19 @@ struct UnicornUniverseView: View {
             RoundedRectangle(cornerRadius: CornerRadius.medium)
                 .fill(Color.backgroundMedium.opacity(0.5))
         )
+        .cardShadow()
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Вид единорога: \(name) - \(desc)")
     }
 }
 
-#Preview {
-    UnicornUniverseView()
+#if DEBUG
+struct UnicornUniverseView_Previews: PreviewProvider {
+    static var previews: some View {
+        UnicornUniverseView()
+    }
 }
+#endif
 
 
 

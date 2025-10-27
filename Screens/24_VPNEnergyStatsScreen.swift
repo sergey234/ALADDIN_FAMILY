@@ -24,28 +24,35 @@ struct VPNEnergyStatsScreen: View {
                     onBack: { dismiss() }
                 )
                 .padding(.bottom, Spacing.m)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Навигационная панель статистики энергопотребления VPN")
                 
                 // Battery Impact Card
                 VStack(spacing: Spacing.m) {
                     Text("🔋")
                         .font(.system(size: Size.iconXLarge * 1.5))
+                        .accessibilityLabel("Батарея")
                     
                     Text("\(batteryUsage, specifier: "%.1f")%")
                         .font(.largeTitle)
                         .foregroundColor(.secondaryGold)
+                        .accessibilityLabel("Расход батареи: \(batteryUsage, specifier: "%.1f") процентов")
                     
                     Text("Расход батареи за сегодня")
                         .font(.body)
                         .foregroundColor(.textSecondary)
+                        .accessibilityLabel("Расход батареи за сегодня")
                     
                     ProgressView(value: batteryUsage / 100)
                         .progressViewStyle(LinearProgressViewStyle(tint: .secondaryGold))
                         .scaleEffect(x: 1, y: 2, anchor: .center)
-                        .padding(.horizontal, Spacing.xl)
+                        .padding(.horizontal, Spacing.l)
+                        .accessibilityLabel("Прогресс расхода батареи: \(batteryUsage, specifier: "%.1f") процентов")
                     
                     Text("Это ниже среднего! VPN работает эффективно")
                         .font(.caption)
                         .foregroundColor(.successGreen)
+                        .accessibilityLabel("Это ниже среднего! VPN работает эффективно")
                 }
                 .padding(Spacing.cardPadding)
                 .background(
@@ -69,12 +76,15 @@ struct VPNEnergyStatsScreen: View {
                     }
                 }
                 .padding(.horizontal, Spacing.screenPadding)
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Выбор периода: \(selectedPeriod)")
                 
                 // Energy Stats
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text("СТАТИСТИКА")
                         .font(.h3)
                         .foregroundColor(.textPrimary)
+                        .accessibilityAddTraits(.isHeader)
                     
                     EnergyStatRow(icon: "⚡", label: "Потреблено энергии", value: "245 mAh", color: .warningOrange)
                     EnergyStatRow(icon: "⏱️", label: "Время работы VPN", value: sessionTime, color: .infoBlue)
@@ -88,6 +98,7 @@ struct VPNEnergyStatsScreen: View {
                     Text("СРАВНЕНИЕ С ДРУГИМИ VPN")
                         .font(.h3)
                         .foregroundColor(.textPrimary)
+                        .accessibilityAddTraits(.isHeader)
                     
                     VStack(spacing: Spacing.s) {
                         ComparisonRow(name: "ALADDIN VPN", usage: 12.5, color: .successGreen)
@@ -108,6 +119,7 @@ struct VPNEnergyStatsScreen: View {
                     Text("💡 СОВЕТЫ ПО ЭКОНОМИИ")
                         .font(.h3)
                         .foregroundColor(.textPrimary)
+                        .accessibilityAddTraits(.isHeader)
                     
                     TipCard(tip: "Используйте Wi-Fi вместо сотовой сети")
                     TipCard(tip: "Отключайте VPN когда не нужен")
@@ -117,7 +129,15 @@ struct VPNEnergyStatsScreen: View {
             }
             .background(LinearGradient.backgroundGradient.ignoresSafeArea())
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Статистика энергопотребления VPN")
         .navigationBarHidden(true)
+        .safeAreaInset(edge: .top) {
+            Color.clear.frame(height: Spacing.m)
+        }
+        .task {
+            print("🚨 VPNEnergyStatsScreen загружен!")
+        }
     }
 }
 
@@ -133,6 +153,7 @@ struct EnergyStatRow: View {
         HStack {
             Text(icon)
                 .font(.system(size: Size.iconMedium))
+                .accessibilityLabel(icon)
             Text(label)
                 .font(.body)
                 .foregroundColor(.textSecondary)
@@ -146,6 +167,8 @@ struct EnergyStatRow: View {
             LinearGradient.cardGradient.appGlassmorphism()
         )
         .cornerRadius(CornerRadius.medium)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label): \(value)")
     }
 }
 
@@ -167,6 +190,8 @@ struct ComparisonRow: View {
                     .font(.bodyBold)
                     .foregroundColor(color)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(name): \(usage, specifier: "%.1f") процентов")
             
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
@@ -180,7 +205,10 @@ struct ComparisonRow: View {
                 }
             }
             .frame(height: 8)
+            .accessibilityLabel("График расхода энергии: \(usage, specifier: "%.1f") процентов")
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(name): \(usage, specifier: "%.1f") процентов расхода энергии")
     }
 }
 
@@ -193,6 +221,7 @@ struct TipCard: View {
         HStack(spacing: Spacing.m) {
             Image(systemName: "lightbulb.fill")
                 .foregroundColor(.secondaryGold)
+                .accessibilityLabel("Совет")
             Text(tip)
                 .font(.body)
                 .foregroundColor(.textPrimary)
@@ -203,6 +232,8 @@ struct TipCard: View {
             LinearGradient.cardGradient.appGlassmorphism()
         )
         .cornerRadius(CornerRadius.medium)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Совет: \(tip)")
     }
 }
 
@@ -227,6 +258,8 @@ struct PeriodButton: View {
                 .background(isSelected ? Color.secondaryGold : Color.surfaceDark.opacity(0.6))
                 .cornerRadius(CornerRadius.medium)
         }
+        .accessibilityLabel("Период \(title)")
+        .accessibilityHint(isSelected ? "Выбранный период \(title)" : "Нажмите для выбора периода \(title)")
     }
 }
 
