@@ -6,6 +6,7 @@ struct ChildContentScreen: View {
     
     // MARK: - State
     
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     let category: String
     let ageGroup: ChildInterfaceScreen.AgeGroup
@@ -70,7 +71,7 @@ struct ChildContentScreen: View {
         HStack(spacing: 16) {
             // Кнопка назад
             Button(action: {
-                navigationManager.goBack()
+                dismiss() // Закрываем модальное окно
             }) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 20, weight: .semibold))
