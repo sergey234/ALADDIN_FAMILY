@@ -290,6 +290,7 @@ struct ChildInterfaceScreen: View {
             }
         }
         .padding(.horizontal, 20)
+    }
     
     private func bigChildButton(icon: String, title: String, color: Color, action: @escaping () -> Void = {}) -> some View {
         Button(action: {
