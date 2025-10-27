@@ -588,7 +588,7 @@ struct VPNScreen: View {
             ], spacing: Spacing.s) {
                 AntivirusStatItem(icon: "🔍", value: "1,247", label: "Файлов проверено")
                 AntivirusStatItem(icon: "✅", value: "0", label: "Угроз найдено")
-                AntivirusStatItem(icon: "🔄", value: "2ч назад", label: "Последняя проверка")
+                AntivirusStatItem(icon: "🔄", value: "2ч", label: "Назад")
                 AntivirusStatItem(icon: "⚡", value: "100%", label: "Защита")
             }
             
@@ -871,6 +871,7 @@ struct ServerSelectionView: View {
 
 struct VPNSettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var viewModel = VPNViewModel.shared
     @State private var autoSelectServer = true
     @State private var autoConnectWiFi = true
     @State private var autoConnectMobile = false
@@ -911,6 +912,20 @@ struct VPNSettingsView: View {
                         Text("DNS Leak Protection")
                         Spacer()
                         Toggle("", isOn: $dnsLeakProtection)
+                    }
+                }
+                
+                Section("Экономия батареи") {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Автоотключение")
+                                .font(.body)
+                            Text("Через 5 мин неактивности")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Toggle("", isOn: $viewModel.autoDisconnectEnabled)
                     }
                 }
             }
@@ -1036,57 +1051,63 @@ struct VPNHelpView: View {
                     Text("Часто задаваемые вопросы")
                         .font(.title2)
                         .fontWeight(.bold)
+                        .foregroundColor(.white)
                         .padding(.horizontal)
                     
                     VStack(spacing: 15) {
                         HelpCard(
-                            question: "🛡️ Что такое Антивирус?",
-                            answer: "Автоматическая проверка файлов на вредоносное ПО. Защищает ваш телефон от вирусов, троянов и других угроз. Сканирует все файлы в фоновом режиме."
+                            question: "Что такое Антивирус?",
+                            answer: "Автоматическая проверка файлов на вирусы. Защищает телефон от вредоносного ПО. Можно выключить в настройках."
                         )
                         
                         HelpCard(
-                            question: "🚫 Что такое Блокировка рекламы?",
-                            answer: "Убирает назойливую рекламу в приложениях и браузерах. Ускоряет загрузку страниц, экономит трафик и делает интернет безопаснее."
+                            question: "Что такое Блокировка рекламы?",
+                            answer: "Убирает рекламу в приложениях и браузерах. Ускоряет загрузку страниц и экономит трафик."
                         )
                         
                         HelpCard(
-                            question: "👁️ Что такое Антитрекинг?",
-                            answer: "Скрывает вашу активность в интернете от рекламных компаний и сборщиков данных. Они не смогут отслеживать ваши действия в сети."
+                            question: "Что такое Антитрекинг?",
+                            answer: "Скрывает вашу активность от рекламных компаний. Они не смогут отслеживать ваши действия."
                         )
                         
                         HelpCard(
-                            question: "🔒 Что такое Шифрование?",
-                            answer: "Защищает ваши данные от перехвата. Вся информация превращается в код, который никто не сможет прочитать без ключа."
+                            question: "Что такое Шифрование?",
+                            answer: "Защищает данные от перехвата. Вся информация превращается в код, который никто не прочитает."
                         )
                         
                         HelpCard(
-                            question: "⚠️ Что такое Защита от угроз?",
-                            answer: "Блокирует опасные сайты, фишинговые ссылки и вредоносное ПО до того, как они навредят вашему устройству."
+                            question: "Что такое Защита от угроз?",
+                            answer: "Блокирует опасные сайты и вредоносное ПО до того, как они навредят вашему устройству."
                         )
                         
                         HelpCard(
-                            question: "🕶️ Что такое Детекция Инкогнито?",
-                            answer: "Обнаруживает и блокирует попытки войти в режим инкогнито, чтобы ограничить доступ к контенту без родительского контроля."
+                            question: "Что такое Детекция Инкогнито?",
+                            answer: "Обнаруживает попытки войти в режим инкогнито для ограничения доступа к контенту."
                         )
                         
                         HelpCard(
-                            question: "🧅 Что такое Детекция Tor?",
-                            answer: "Находит и блокирует использование анонимной сети Tor для предотвращения доступа к запрещенному контенту."
+                            question: "Что такое Детекция Tor?",
+                            answer: "Блокирует использование анонимной сети Tor для предотвращения доступа к запрещенному контенту."
                         )
                         
                         HelpCard(
-                            question: "🔀 Что такое Детекция Proxy?",
-                            answer: "Обнаруживает использование прокси-серверов, которые могут скрывать настоящий IP-адрес и обходить ограничения."
+                            question: "Что такое Детекция Proxy?",
+                            answer: "Обнаруживает использование прокси-серверов для скрытия реального IP-адреса."
+                        )
+                        
+                        HelpCard(
+                            question: "Что такое Kill Switch?",
+                            answer: "Если VPN соединение разрывается, эта функция блокирует весь интернет-трафик для защиты данных."
+                        )
+                        
+                        HelpCard(
+                            question: "Что такое DNS Leak Protection?",
+                            answer: "Защищает от утечки DNS запросов. Все запросы идут через VPN сервер, провайдер не видит сайты."
                         )
                         
                         HelpCard(
                             question: "Как подключить VPN?",
                             answer: "Нажмите большую кнопку 'ПОДКЛЮЧИТЬ' в центре экрана. Соединение установится автоматически."
-                        )
-                        
-                        HelpCard(
-                            question: "🔴 Что такое Kill Switch?",
-                            answer: "Если VPN соединение разрывается, эта функция автоматически блокирует весь интернет-трафик, чтобы защитить ваши данные."
                         )
                     }
                     .padding(.horizontal)
@@ -1114,18 +1135,19 @@ struct HelpCard: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(question)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(.black)
             
             Text(answer)
                 .font(.system(size: 14))
-                .foregroundColor(.white.opacity(0.8))
+                .foregroundColor(.black.opacity(0.8))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.1))
+                .fill(Color.white)
         )
+        .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
     }
 }
 
