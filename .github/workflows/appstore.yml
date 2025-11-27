@@ -41,6 +41,7 @@ jobs:
           -archivePath ALADDIN.xcarchive \
           -destination 'generic/platform=iOS' \
           -allowProvisioningUpdates \
+          CODE_SIGN_STYLE=Automatic \
           DEVELOPMENT_TEAM="$APPLE_TEAM_ID"
         
     - name: List Archive Contents
