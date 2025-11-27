@@ -30,28 +30,26 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-xcode-
           
-    - name: Authenticate with Apple
+    - name: Build Archive
       env:
         APPLE_ID: ${{ secrets.APPLE_ID }}
         APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       run: |
-        echo "Authenticating with Apple Developer..."
-        # Добавляем Apple ID в Xcode через командную строку
-        # Используем xcodebuild для авторизации
-        xcrun altool --store-password-in-keychain-item "AC_PASSWORD" \
-          -u "$APPLE_ID" \
-          -p "$APPLE_APP_SPECIFIC_PASSWORD" || true
-        
-        # Пытаемся добавить Apple ID в Xcode Accounts
-        # Это требует интерактивного ввода, поэтому используем другой подход
-        # Вместо этого используем переменные окружения для авторизации
-        echo "Apple ID configured for automatic signing"
-        
-    - name: Build Archive
-      env:
-        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      run: |
+        echo "Building archive with automatic signing..."
+        # Передаём Apple ID и пароль через переменные окружения
+        # Xcode использует их для автоматической подписи с -allowProvisioningUpdates
+        xcodebuild archive \
+          -project ALADDIN.xcodeproj \
+          -scheme ALADDIN \
+          -configuration Release \
+          -archivePath ALADDIN.xcarchive \
+          -destination 'generic/platform=iOS' \
+          -allowProvisioningUpdates \
+          CODE_SIGN_STYLE=Automatic \
+          DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+          -authenticationKeyID "$APPLE_ID" \
+          -authenticationKeyPath "$APPLE_APP_SPECIFIC_PASSWORD" || \
         xcodebuild archive \
           -project ALADDIN.xcodeproj \
           -scheme ALADDIN \
