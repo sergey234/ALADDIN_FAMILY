@@ -21,7 +21,7 @@ jobs:
         xcode-version: latest-stable
         
     - name: Cache dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/Library/Developer/Xcode/DerivedData
@@ -62,7 +62,7 @@ jobs:
           --password "$APPLE_APP_SPECIFIC_PASSWORD"
         
     - name: Upload IPA as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: ALADDIN-IPA
