@@ -31,6 +31,8 @@ jobs:
           ${{ runner.os }}-xcode-
           
     - name: Build Archive
+      env:
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       run: |
         xcodebuild archive \
           -project ALADDIN.xcodeproj \
@@ -38,17 +40,26 @@ jobs:
           -configuration Release \
           -archivePath ALADDIN.xcarchive \
           -destination 'generic/platform=iOS' \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGNING_ALLOWED=NO
+          -allowProvisioningUpdates \
+          DEVELOPMENT_TEAM="$APPLE_TEAM_ID"
+        
+    - name: List Archive Contents
+      run: |
+        echo "Checking archive..."
+        ls -la ALADDIN.xcarchive/Products/Applications/ 2>&1 || echo "Archive not found or empty"
         
     - name: Export IPA
+      env:
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       run: |
+        echo "Exporting IPA..."
         xcodebuild -exportArchive \
           -archivePath ALADDIN.xcarchive \
           -exportPath Export \
           -exportOptionsPlist ExportOptions.plist \
           -allowProvisioningUpdates
+        echo "Checking exported files..."
+        ls -la Export/ 2>&1 || echo "Export directory not found"
         
     - name: Upload to App Store Connect
       env:
