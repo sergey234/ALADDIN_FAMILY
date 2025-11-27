@@ -20,6 +20,34 @@
                ReferencedContainer = "container:ALADDIN.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B5001000"
+               BuildableName = "ALADDINUnitTests.xctest"
+               BlueprintName = "ALADDINUnitTests"
+               ReferencedContainer = "container:ALADDIN.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B5002000"
+               BuildableName = "ALADDINUITests.xctest"
+               BlueprintName = "ALADDINUITests"
+               ReferencedContainer = "container:ALADDIN.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -28,6 +56,26 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B5001000"
+               BuildableName = "ALADDINUnitTests.xctest"
+               BlueprintName = "ALADDINUnitTests"
+               ReferencedContainer = "container:ALADDIN.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "B5002000"
+               BuildableName = "ALADDINUITests.xctest"
+               BlueprintName = "ALADDINUITests"
+               ReferencedContainer = "container:ALADDIN.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
