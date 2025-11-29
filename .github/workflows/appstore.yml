@@ -275,20 +275,35 @@ jobs:
           export FASTLANE_USER=""
           export FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD=""
           
-          # Используем xcodebuild напрямую, но с правильными параметрами
-          # Fastlane будет использоваться только для загрузки
-          echo "✅ Building with xcodebuild (Fastlane will handle signing via API)"
+          # Проблема: Provisioning profiles являются "Xcode managed", а для Manual signing нужны "manually managed"
+          # Решение: Используем Manual signing, но БЕЗ указания CODE_SIGN_IDENTITY
+          # Xcode попытается найти сертификат автоматически или использовать Cloud Managed Certificate
+          echo "✅ Using Manual signing with provisioning profiles (Xcode will find certificate)"
+          echo "⚠️  Note: Provisioning profiles must be manually managed (not Xcode managed)"
+          
+          # Проверить что UUID профилей извлечены
+          if [ -z "$APP_PROFILE_UUID" ] || [ -z "$EXT_PROFILE_UUID" ]; then
+            echo "❌ Failed to extract provisioning profile UUIDs!"
+            echo "APP_PROFILE_UUID: $APP_PROFILE_UUID"
+            echo "EXT_PROFILE_UUID: $EXT_PROFILE_UUID"
+            exit 1
+          fi
+          
+          # Используем Manual signing БЕЗ CODE_SIGN_IDENTITY
+          # Xcode попытается найти сертификат автоматически
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
             -configuration Release \
             -archivePath ./build/ALADDIN.xcarchive \
             -destination 'generic/platform=iOS' \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            -allowProvisioningUpdates || \
-          # Если не сработало, попробуем с provisioning profiles
-          (echo "⚠️  Automatic signing failed, trying with provisioning profiles..." && \
+            PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
+            ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
+            ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID" || \
+          # Если не сработало, попробуем с Apple Distribution
+          (echo "⚠️  First attempt failed, trying with Apple Distribution..." && \
            xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
@@ -297,6 +312,7 @@ jobs:
             -destination 'generic/platform=iOS' \
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
             ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
             ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID")
