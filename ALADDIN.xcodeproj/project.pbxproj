@@ -51,6 +51,7 @@
 		5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */; };
 		5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */; };
 		5E32FFFF2EAD25F5000574C4 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */; };
+		5E709CE62ED8E6010046FFD5 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E709CE52ED8E6010046FFD5 /* NetworkExtension.framework */; };
 		5EB01F3A2EC8721300168BE9 /* MockAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F392EC8721300168BE9 /* MockAPIService.swift */; };
 		5EB01F3C2EC8723600168BE9 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F3B2EC8723600168BE9 /* StorageManager.swift */; };
 		5EB01F3E2EC9B74E00168BE9 /* RecoveryCodeStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */; };
@@ -98,6 +99,7 @@
 		5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309422EA793A000C7D34B /* HapticFeedback.swift */; };
 		5EC309472EA793D900C7D34B /* CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309462EA793D900C7D34B /* CornerRadius.swift */; };
 		5EC3094B2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC3094A2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift */; };
+		5EE081872ED9C63B009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision in Resources */ = {isa = PBXBuildFile; fileRef = 5EE081862ED9C63A009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision */; };
 		62A51F3024E64580A0C842B2 /* aladdin_cert.cer in Resources */ = {isa = PBXBuildFile; fileRef = 9136C4EF975B4172830C175D /* aladdin_cert.cer */; };
 		A1000001 /* ALADDINApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000 /* ALADDINApp.swift */; };
 		A1000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002 /* ContentView.swift */; };
@@ -179,7 +181,6 @@
 		B6000003 /* IoTSecurityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000002 /* IoTSecurityModule.swift */; };
 		B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000200 /* ALADDINWidgets/SharedDataManager.swift */; };
 		C0F300180000000000000001 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F300110000000000000001 /* PacketTunnelProvider.swift */; };
-		C0F3001E0000000000000001 /* ALADDINPacketTunnel.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = C0F300140000000000000001 /* ALADDINPacketTunnel.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -213,7 +214,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				C0F3001E0000000000000001 /* ALADDINPacketTunnel.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -267,6 +267,9 @@
 		5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityManager.swift; path = Core/Security/SecurityManager.swift; sourceTree = "<group>"; };
 		5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KeychainManager.swift; path = Core/Security/KeychainManager.swift; sourceTree = "<group>"; };
 		5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CacheManager.swift; path = Core/Cache/CacheManager.swift; sourceTree = "<group>"; };
+		5E46BE832ED9B6ED003FE7C9 /* ALADDINPacketTunnel_Dev.mobileprovision */ = {isa = PBXFileReference; lastKnownFileType = file; name = ALADDINPacketTunnel_Dev.mobileprovision; path = ../../../../Downloads/ALADDINPacketTunnel_Dev.mobileprovision; sourceTree = "<group>"; };
+		5E709CE32ED8E5FF0046FFD5 /* ALADDINPacketTunnelDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINPacketTunnelDebug.entitlements; sourceTree = "<group>"; };
+		5E709CE52ED8E6010046FFD5 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		5EB01F392EC8721300168BE9 /* MockAPIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MockAPIService.swift; path = Core/Network/MockAPIService.swift; sourceTree = "<group>"; };
 		5EB01F3B2EC8723600168BE9 /* StorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StorageManager.swift; path = Core/Storage/StorageManager.swift; sourceTree = "<group>"; };
 		5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecoveryCodeStorageManager.swift; path = Core/Security/RecoveryCodeStorageManager.swift; sourceTree = "<group>"; };
@@ -319,6 +322,7 @@
 		5EC309462EA793D900C7D34B /* CornerRadius.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CornerRadius.swift; sourceTree = "<group>"; };
 		5EC309482EA793FE00C7D34B /* Shared/Components/SecondaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Components/SecondaryButton.swift; sourceTree = "<group>"; };
 		5EC3094A2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Models/FunctionStatus.swift; sourceTree = "<group>"; };
+		5EE081862ED9C63A009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision */ = {isa = PBXFileReference; lastKnownFileType = file; name = ALADDINPacketTunnel_Dev_New.mobileprovision; path = ../../../../Downloads/ALADDINPacketTunnel_Dev_New.mobileprovision; sourceTree = "<group>"; };
 		9136C4EF975B4172830C175D /* aladdin_cert.cer */ = {isa = PBXFileReference; lastKnownFileType = text; path = aladdin_cert.cer; sourceTree = "<group>"; };
 		A0FFFFFE /* ALADDIN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ALADDIN.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1000000 /* ALADDINApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINApp.swift; sourceTree = "<group>"; };
@@ -435,6 +439,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E709CE62ED8E6010046FFD5 /* NetworkExtension.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -456,6 +461,14 @@
 				A4AAA215 /* JWTTokenManager.swift */,
 			);
 			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		5E709CE42ED8E6010046FFD5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5E709CE52ED8E6010046FFD5 /* NetworkExtension.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		5EC308E12EA6AB8B00C7D34B /* Screens */ = {
@@ -535,8 +548,11 @@
 		A0FFFFF5 = {
 			isa = PBXGroup;
 			children = (
+				5E709CE32ED8E5FF0046FFD5 /* ALADDINPacketTunnelDebug.entitlements */,
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5EE081862ED9C63A009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision */,
+				5E46BE832ED9B6ED003FE7C9 /* ALADDINPacketTunnel_Dev.mobileprovision */,
 				5EB01F432ECB097500168BE9 /* ActivationCodeViewModel.swift */,
 				5EB01F3F2EC9B7CD00168BE9 /* BackupRecoveryModal.swift */,
 				5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */,
@@ -601,6 +617,7 @@
 				A0FFFFFF,
 				B5003000 /* Products */,
 				5E0057FF2EC3B4DC00024F7E /* Recovered References */,
+				5E709CE42ED8E6010046FFD5 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -826,7 +843,6 @@
 					};
 					C0F300190000000000000001 = {
 						CreatedOnToolsVersion = 16.0;
-						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -867,6 +883,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5EE081872ED9C63B009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1218,6 +1235,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
@@ -1237,6 +1255,7 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1248,6 +1267,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
@@ -1267,6 +1287,7 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1306,7 +1327,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1350,9 +1371,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1372,8 +1394,9 @@
 		C0F3001B0000000000000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = ALADDINPacketTunnel.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = ALADDINPacketTunnelDebug.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				INFOPLIST_FILE = ALADDIN/ALADDINPacketTunnel/Info.plist;
@@ -1386,6 +1409,7 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "ALADDINPacketTunnel Dev.";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -1397,7 +1421,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINPacketTunnel.entitlements;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				INFOPLIST_FILE = ALADDIN/ALADDINPacketTunnel/Info.plist;
@@ -1408,8 +1433,10 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.0.0;
+				"MTL_ENABLE_DEBUG_INFO[arch=*]" = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "ALADDINPacketTunnel Dev.";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;

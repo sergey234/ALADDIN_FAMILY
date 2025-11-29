@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>ALADDIN Family</string>
+	<string>ALADDIN X AI</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -33,8 +33,6 @@
 				<dict>
 					<key>UISceneConfigurationName</key>
 					<string>Default Configuration</string>
-					<key>UISceneDelegateClassName</key>
-					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
 				</dict>
 			</array>
 		</dict>
@@ -112,6 +110,12 @@
 	<string>ALADDIN Family uses Siri for voice-activated family safety and security features.</string>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>ALADDIN Family needs notification access for family safety and security alerts.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+		<string>telegram</string>
+		<string>vk</string>
+	</array>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>family.aladdin.ios.activity.security</string>
@@ -147,12 +151,5 @@
 	<true/>
 	<key>UIApplicationSupportsMultipleScenes</key>
 	<true/>
-	<key>UISceneDelegate</key>
-	<dict>
-		<key>UISceneConfigurationName</key>
-		<string>Default Configuration</string>
-		<key>UISceneDelegateClassName</key>
-		<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
-	</dict>
 </dict>
 </plist>
