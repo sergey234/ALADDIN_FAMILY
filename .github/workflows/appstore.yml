@@ -452,11 +452,12 @@ jobs:
         
     - name: Upload IPA as artifact
       uses: actions/upload-artifact@v4
-      if: always()
+      if: always() && env.IPA_FILE_PATH != ''
       with:
         name: ALADDIN-IPA
         path: ${{ env.IPA_FILE_PATH }}
         retention-days: 30
+        if-no-files-found: warn
         
     - name: Cleanup Keychain
       if: always() && env.CERTIFICATE_AVAILABLE == 'true'
