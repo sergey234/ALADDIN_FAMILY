@@ -106,10 +106,27 @@ jobs:
         
         echo "Decoding app provisioning profile..."
         echo "${{ secrets.PROVISIONING_PROFILE_APP }}" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision 2>&1
-        if [ $? -ne 0 ]; then
+        DECODE_EXIT_CODE=$?
+        if [ $DECODE_EXIT_CODE -ne 0 ]; then
           echo "❌ Failed to decode PROVISIONING_PROFILE_APP (invalid base64)"
+          echo "Exit code: $DECODE_EXIT_CODE"
+          echo "First 100 chars of secret: $(echo "${{ secrets.PROVISIONING_PROFILE_APP }}" | head -c 100)"
           exit 1
         fi
+        
+        # Проверить что файл создан и не пустой
+        if [ ! -f ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision ]; then
+          echo "❌ Profile file was not created after decoding"
+          exit 1
+        fi
+        
+        FILE_SIZE=$(wc -c < ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision | tr -d ' ')
+        if [ "$FILE_SIZE" -lt 1000 ]; then
+          echo "❌ Profile file is too small ($FILE_SIZE bytes), decoding may have failed"
+          exit 1
+        fi
+        
+        echo "✅ Profile decoded successfully ($FILE_SIZE bytes)"
         
         # Извлечь UUID из профиля для использования в xcodebuild
         APP_PROFILE_UUID=$(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision 2>/dev/null | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
@@ -135,11 +152,27 @@ jobs:
         
         echo "Decoding extension provisioning profile..."
         echo "${{ secrets.PROVISIONING_PROFILE_EXTENSION }}" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision 2>&1
-        if [ $? -ne 0 ]; then
+        DECODE_EXIT_CODE=$?
+        if [ $DECODE_EXIT_CODE -ne 0 ]; then
           echo "❌ Failed to decode PROVISIONING_PROFILE_EXTENSION (invalid base64)"
+          echo "Exit code: $DECODE_EXIT_CODE"
           echo "⚠️  Проверьте, что секрет содержит валидный base64"
           exit 1
         fi
+        
+        # Проверить что файл создан и не пустой
+        if [ ! -f ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision ]; then
+          echo "❌ Extension profile file was not created after decoding"
+          exit 1
+        fi
+        
+        FILE_SIZE=$(wc -c < ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision | tr -d ' ')
+        if [ "$FILE_SIZE" -lt 1000 ]; then
+          echo "❌ Extension profile file is too small ($FILE_SIZE bytes), decoding may have failed"
+          exit 1
+        fi
+        
+        echo "✅ Extension profile decoded successfully ($FILE_SIZE bytes)"
         
         # Извлечь UUID из профиля extension
         EXT_PROFILE_UUID=$(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision 2>/dev/null | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
