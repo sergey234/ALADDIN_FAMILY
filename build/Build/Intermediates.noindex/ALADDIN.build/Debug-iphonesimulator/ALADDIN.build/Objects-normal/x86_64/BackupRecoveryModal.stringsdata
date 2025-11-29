@@ -1,0 +1,40 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Shared/Components/Modals/BackupRecoveryModal.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Восстановление"
+      },
+      {
+        "comment": "",
+        "key": "Восстановление из сохранения"
+      },
+      {
+        "comment": "",
+        "key": "Восстановить доступ используя сохраненный код"
+      },
+      {
+        "comment": "",
+        "key": "Доступ восстановлен!"
+      },
+      {
+        "comment": "",
+        "key": "Нажмите кнопку ниже для восстановления доступа из локального сохранения"
+      },
+      {
+        "comment": "",
+        "key": "Восстановить"
+      },
+      {
+        "comment": "",
+        "key": "Готово"
+      },
+      {
+        "comment": "",
+        "key": "Отмена"
+      }
+    ]
+  },
+  "version": 1
+}

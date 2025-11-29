@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Оплата успешна — ALADDIN AI</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero__content">
+      <h1 style="color: var(--gold);">✅ Оплата успешна!</h1>
+      <p>Ваш код активации готов</p>
+    </div>
+  </header>
+
+  <main style="max-width: 800px; margin: 0 auto; padding: 80px clamp(24px, 5vw, 80px);">
+    <!-- Состояние: код загружается -->
+    <div id="loadingState" class="success-card">
+      <div style="text-align: center; padding: 40px;">
+        <div style="margin-bottom: 24px;">
+          <a href="index.html" class="cta ghost" style="display: inline-block; margin-bottom: 16px;">← Вернуться на сайт</a>
+        </div>
+        <div style="font-size: 48px; margin-bottom: 16px;">⏳</div>
+        <h2>Ожидаем подтверждение оплаты...</h2>
+        <p>Проверяем статус платежа. Это займёт несколько секунд.</p>
+        <div id="loadingStatus" style="margin-top: 16px; font-size: 14px; color: rgba(255, 255, 255, 0.6);"></div>
+        <div class="loading-spinner" style="margin: 24px auto; width: 40px; height: 40px; border: 4px solid rgba(76, 111, 255, 0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        
+        <!-- Алгоритм шагов (для состояния загрузки) -->
+        <div style="margin-top: 40px; padding: 24px; background: rgba(76, 111, 255, 0.05); border-radius: var(--radius-md); border: 1px solid rgba(76, 111, 255, 0.2);">
+          <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 20px; font-size: 16px; font-weight: 600;">📋 Как это работает:</h3>
+          <div style="text-align: left; font-size: 13px; line-height: 1.8; color: rgba(255, 255, 255, 0.8);">
+            <div style="margin-bottom: 8px;">1. Вы нажали "Оплатить" ✅</div>
+            <div style="margin-bottom: 8px; margin-left: 20px; font-size: 11px;">↓</div>
+            <div style="margin-bottom: 8px;">2. Платеж обрабатывается (1-3 минуты) ⏳</div>
+            <div style="margin-bottom: 8px; margin-left: 20px; font-size: 11px;">↓</div>
+            <div style="margin-bottom: 8px;">3. Банк подтверждает платеж ✅</div>
+            <div style="margin-bottom: 8px; margin-left: 20px; font-size: 11px;">↓</div>
+            <div style="margin-bottom: 8px;">4. Сервер генерирует код: ALDN-XXXX-XXXX-XXXX ✅</div>
+            <div style="margin-bottom: 8px; margin-left: 20px; font-size: 11px;">↓</div>
+            <div style="margin-bottom: 8px;">5. Код появляется на сайте автоматически ✅</div>
+            <div style="margin-bottom: 8px; margin-left: 20px; font-size: 11px;">↓</div>
+            <div style="margin-bottom: 8px;">6. Вы копируете код 📋</div>
+            <div style="margin-bottom: 8px; margin-left: 20px; font-size: 11px;">↓</div>
+            <div style="margin-bottom: 8px;">7. Открываете приложение → ТАРИФЫ - "Ввести код активации" 📱</div>
+            <div style="margin-bottom: 8px; margin-left: 20px; font-size: 11px;">↓</div>
+            <div style="margin-bottom: 0;">8. Вводите код → Подписка активирована! 🎉</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Состояние: код получен -->
+    <div id="codeState" class="success-card" style="display: none;">
+      <!-- Баннер реферальной скидки (показывается только если была применена) -->
+      <div id="referralSuccessBanner" style="display: none; margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%); border: 2px solid var(--gold); border-radius: var(--radius-md); text-align: center;">
+        <div style="font-size: 32px; margin-bottom: 12px;">🎁</div>
+        <h3 style="color: var(--gold); margin: 0 0 8px 0; font-size: 20px;">Скидка -20% применена!</h3>
+        <p style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 14px;">
+          Ваш друг тоже получит скидку -20% на 1 месяц после тестового периода!
+        </p>
+      </div>
+      
+      <div style="text-align: center; padding: 40px;">
+        <div style="font-size: 64px; margin-bottom: 24px;">🎉</div>
+        <h2 style="color: var(--gold); margin-bottom: 16px;">Ваш код активации</h2>
+        <div id="activationCode" class="activation-code-box" style="font-size: 28px; font-weight: 700; letter-spacing: 2px; padding: 24px; background: rgba(76, 111, 255, 0.1); border: 2px solid var(--accent); border-radius: var(--radius-md); margin: 24px 0; font-family: 'Courier New', monospace;">
+          ALDN-XXXX-XXXX-XXXX
+        </div>
+        <p style="margin-bottom: 24px; color: rgba(255, 255, 255, 0.7);">Скопируйте код и активируйте его в приложении</p>
+        <button id="copyCodeBtn" class="cta secondary" style="margin-right: 12px;">📋 Копировать код</button>
+        <button id="openAppBtn" class="cta primary">📱 Открыть приложение</button>
+      </div>
+      
+      <div style="margin-top: 32px; padding: 24px; background: rgba(245, 200, 110, 0.1); border-left: 4px solid var(--gold); border-radius: var(--radius-sm);">
+        <h3 style="color: var(--gold); margin-top: 0;">📋 Что дальше?</h3>
+        <ol style="text-align: left; line-height: 1.8;">
+          <li>Откройте приложение <strong>ALADDIN AI</strong></li>
+          <li>Перейдите в раздел <strong>ТАРИФЫ</strong></li>
+          <li>Нажмите <strong>"Ввести код активации"</strong></li>
+          <li>Вставьте скопированный код</li>
+          <li>Готово! Ваша подписка активирована 🎉</li>
+        </ol>
+      </div>
+      
+      <!-- Алгоритм шагов (для страницы с кодом) -->
+      <div style="margin-top: 24px; padding: 20px; background: rgba(76, 111, 255, 0.05); border-radius: var(--radius-sm); border: 1px solid rgba(76, 111, 255, 0.2);">
+        <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 16px; font-size: 14px; font-weight: 600;">📋 Как это работает:</h3>
+        <div style="text-align: left; font-size: 12px; line-height: 1.8; color: rgba(255, 255, 255, 0.8);">
+          <div style="margin-bottom: 6px;">1. Вы нажали "Оплатить" ✅</div>
+          <div style="margin-bottom: 6px; margin-left: 16px; font-size: 11px;">↓</div>
+          <div style="margin-bottom: 6px;">2. Платеж обрабатывается (1-3 минуты) ⏳</div>
+          <div style="margin-bottom: 6px; margin-left: 16px; font-size: 11px;">↓</div>
+          <div style="margin-bottom: 6px;">3. Банк подтверждает платеж ✅</div>
+          <div style="margin-bottom: 6px; margin-left: 16px; font-size: 11px;">↓</div>
+          <div style="margin-bottom: 6px;">4. Сервер генерирует код: ALDN-XXXX-XXXX-XXXX ✅</div>
+          <div style="margin-bottom: 6px; margin-left: 16px; font-size: 11px;">↓</div>
+          <div style="margin-bottom: 6px;">5. Код появляется на сайте автоматически ✅</div>
+          <div style="margin-bottom: 6px; margin-left: 16px; font-size: 11px;">↓</div>
+          <div style="margin-bottom: 6px;">6. Вы копируете код 📋</div>
+          <div style="margin-bottom: 6px; margin-left: 16px; font-size: 11px;">↓</div>
+            <div style="margin-bottom: 6px;">7. Открываете приложение → ТАРИФЫ - "Ввести код активации" 📱</div>
+          <div style="margin-bottom: 6px; margin-left: 16px; font-size: 11px;">↓</div>
+          <div style="margin-bottom: 0;">8. Вводите код → Подписка активирована! 🎉</div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; padding: 20px; background: rgba(255, 255, 255, 0.03); border-radius: var(--radius-sm);">
+        <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.6);">
+          <strong>💡 Важно:</strong> Сохраните этот код! Это единственный способ активировать подписку после оплаты.
+        </p>
+      </div>
+    </div>
+
+    <!-- Состояние: оплата на карту через СБП (manual_transfer) -->
+    <div id="manualTransferState" class="success-card" style="display: none;">
+      <div style="text-align: center; padding: 40px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">💳</div>
+        <h2 style="color: var(--gold); margin-bottom: 16px;">Оплата на карту через СБП</h2>
+        <p style="margin-bottom: 32px; color: rgba(255, 255, 255, 0.7);">Переведите деньги через СБП на номер нашей карты</p>
+        
+        <!-- Номер карты -->
+        <div style="background: rgba(76, 111, 255, 0.1); border: 2px solid var(--accent); border-radius: var(--radius-md); padding: 24px; margin: 24px 0;">
+          <p style="margin: 0 0 12px 0; font-size: 14px; color: rgba(255, 255, 255, 0.6);">Номер карты:</p>
+          <div id="cardNumberDisplay" style="font-size: 24px; font-weight: 700; letter-spacing: 2px; font-family: 'Courier New', monospace; color: var(--gold); margin-bottom: 12px;">
+            XXXX XXXX XXXX XXXX
+          </div>
+          <p id="cardHolderDisplay" style="margin: 0; font-size: 16px; color: rgba(255, 255, 255, 0.8);">
+            Получатель: ...
+          </p>
+          <button id="copyCardBtn" class="cta secondary" style="margin-top: 16px;">📋 Копировать номер карты</button>
+        </div>
+
+        <!-- Инструкция -->
+        <div style="margin-top: 32px; padding: 24px; background: rgba(245, 200, 110, 0.1); border-left: 4px solid var(--gold); border-radius: var(--radius-sm); text-align: left;">
+          <h3 style="color: var(--gold); margin-top: 0;">📋 Как перевести деньги:</h3>
+          <ol style="line-height: 1.8; margin: 0; padding-left: 20px;">
+            <li>Откройте приложение вашего банка</li>
+            <li>Выберите <strong>"Перевод по номеру карты"</strong> или <strong>"СБП"</strong></li>
+            <li>Введите номер карты (скопируйте выше)</li>
+            <li>Укажите сумму: <strong id="paymentAmount">XXX ₽</strong></li>
+            <li>Подтвердите перевод</li>
+            <li>После перевода мы проверим оплату и вышлем код активации</li>
+          </ol>
+        </div>
+
+        <div style="margin-top: 24px; padding: 20px; background: rgba(76, 111, 255, 0.1); border-radius: var(--radius-sm);">
+          <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+            <strong>💡 Важно:</strong> После перевода деньги поступят мгновенно. Мы проверим оплату в течение 5-10 минут и вышлем код активации. Если код не пришёл, обратитесь в поддержку.
+          </p>
+        </div>
+
+        <div style="margin-top: 32px;">
+          <button id="checkManualStatusBtn" class="cta primary">🔄 Проверить статус оплаты</button>
+          <a href="index.html" class="cta ghost" style="margin-left: 12px;">← Вернуться на главную</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Состояние: оплата ещё не подтверждена -->
+    <div id="pendingState" class="success-card" style="display: none;">
+      <div style="text-align: center; padding: 40px;">
+        <div style="margin-bottom: 24px;">
+          <a href="index.html" class="cta ghost" style="display: inline-block; margin-bottom: 16px;">← Вернуться на сайт</a>
+        </div>
+        <div style="font-size: 48px; margin-bottom: 16px;">⏰</div>
+        <h2>Оплата обрабатывается</h2>
+        <p>Банк обрабатывает ваш платёж. Обычно это занимает 1-3 минуты.</p>
+        <p style="margin-top: 16px; color: rgba(255, 255, 255, 0.7);">Мы автоматически проверим статус и покажем код, как только платёж будет подтверждён.</p>
+        <div id="pendingStatus" style="margin-top: 16px; font-size: 14px; color: rgba(255, 255, 255, 0.6);"></div>
+        <div class="error-msg" style="display: none; margin-top: 16px; padding: 12px; background: rgba(255, 0, 0, 0.1); border-left: 3px solid #ff4444; border-radius: var(--radius-sm); color: #ff8888; text-align: left;"></div>
+        <div style="margin-top: 32px;">
+          <button id="checkStatusBtn" class="cta secondary">🔄 Проверить статус</button>
+          <a href="index.html" class="cta ghost" style="margin-left: 12px;">← На сайт</a>
+        </div>
+        
+        <!-- Алгоритм шагов -->
+        <div style="margin-top: 40px; padding: 24px; background: rgba(76, 111, 255, 0.05); border-radius: var(--radius-md); border: 1px solid rgba(76, 111, 255, 0.2);">
+          <h3 style="color: var(--accent); margin-top: 0; margin-bottom: 20px; font-size: 16px; font-weight: 600;">📋 Как это работает:</h3>
+          <div style="text-align: left; font-size: 13px; line-height: 1.8; color: rgba(255, 255, 255, 0.8);">
+            <div style="margin-bottom: 8px;">1. Вы нажали "Оплатить" ✅</div>
+            <div style="margin-bottom: 8px; margin-left: 20px;">↓</div>
+            <div style="margin-bottom: 8px;">2. Платеж обрабатывается (1-3 минуты) ⏳</div>
+            <div style="margin-bottom: 8px; margin-left: 20px;">↓</div>
+            <div style="margin-bottom: 8px;">3. Банк подтверждает платеж ✅</div>
+            <div style="margin-bottom: 8px; margin-left: 20px;">↓</div>
+            <div style="margin-bottom: 8px;">4. Сервер генерирует код: ALDN-XXXX-XXXX-XXXX ✅</div>
+            <div style="margin-bottom: 8px; margin-left: 20px;">↓</div>
+            <div style="margin-bottom: 8px;">5. Код появляется на сайте автоматически ✅</div>
+            <div style="margin-bottom: 8px; margin-left: 20px;">↓</div>
+            <div style="margin-bottom: 8px;">6. Вы копируете код 📋</div>
+            <div style="margin-bottom: 8px; margin-left: 20px;">↓</div>
+            <div style="margin-bottom: 8px;">7. Открываете приложение → ТАРИФЫ - "Ввести код активации" 📱</div>
+            <div style="margin-bottom: 8px; margin-left: 20px;">↓</div>
+            <div style="margin-bottom: 0;">8. Вводите код → Подписка активирована! 🎉</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Состояние: ошибка -->
+    <div id="errorState" class="success-card" style="display: none;">
+      <div style="text-align: center; padding: 40px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">❌</div>
+        <h2>Ошибка</h2>
+        <p id="errorMessage" style="color: rgba(255, 255, 255, 0.7);"></p>
+        <div style="margin-top: 32px;">
+          <a href="index.html" class="cta primary">Вернуться на главную</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer style="padding: 40px clamp(24px, 5vw, 80px); text-align: center; border-top: 1px solid var(--border);">
+    <div class="footer__links">
+      <a href="index.html">Главная</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="help-faq.html">Help</a>
+    </div>
+    <p style="opacity: 0.6; margin-top: 16px;">© 2025 ALADDIN AI. Все права защищены.</p>
+    <div style="margin-top: 24px;">
+      <button onclick="const panel=document.getElementById('debugPanel'); panel.style.display=panel.style.display==='none'?'block':'none'; if(panel.style.display==='block'){panel.scrollTop=panel.scrollHeight;}" style="background: rgba(76, 111, 255, 0.3); border: 2px solid var(--accent); color: var(--accent); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s;">🔍 Показать логи отладки</button>
+      <p style="margin-top: 12px; font-size: 12px; color: rgba(255, 255, 255, 0.5);">Нажмите для просмотра детальных логов работы страницы</p>
+    </div>
+  </footer>
+
+  <!-- Экран отладки с логами -->
+  <div id="debugPanel" style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.95); border-top: 2px solid var(--accent); max-height: 400px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 11px; padding: 16px; z-index: 10000; display: none; box-shadow: 0 -4px 20px rgba(0,0,0,0.5);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; position: sticky; top: 0; background: rgba(0, 0, 0, 0.95); padding-bottom: 8px; border-bottom: 1px solid var(--accent);">
+      <strong style="color: var(--accent); font-size: 14px;">🔍 Отладка (success.html)</strong>
+      <button onclick="document.getElementById('debugPanel').style.display='none'" style="background: rgba(255,0,0,0.3); border: 1px solid #ff4444; color: #ff8888; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;">✕ Скрыть</button>
+    </div>
+    <div id="debugLogs" style="color: #00ff00; line-height: 1.6; min-height: 50px;"></div>
+  </div>
+
+  <style>
+    .success-card {
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .activation-code-box {
+      user-select: all;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .activation-code-box:hover {
+      background: rgba(76, 111, 255, 0.2) !important;
+      transform: scale(1.02);
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .footer__links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer__links a {
+      color: var(--text-light);
+      text-decoration: none;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .footer__links a:hover {
+      opacity: 1;
+      color: var(--accent);
+    }
+  </style>
+
+  <script>
+    // Инициализация: показываем, что скрипт загружен
+    console.log('🚀 success.html: JavaScript загружается...');
+    
+    // Функция для логирования в панель отладки
+    function debugLog(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString('ru-RU');
+      const logPanel = document.getElementById('debugLogs');
+      if (!logPanel) {
+        // Если панель еще не загружена, логируем только в консоль
+        console.log(`[${timestamp}] ${message}`);
+        return;
+      }
+      
+      const colors = {
+        info: '#00ff00',
+        error: '#ff4444',
+        warning: '#ffaa00',
+        success: '#00ff88'
+      };
+      
+      const icons = {
+        info: '📍',
+        error: '❌',
+        warning: '⚠️',
+        success: '✅'
+      };
+      
+      const logEntry = document.createElement('div');
+      logEntry.style.color = colors[type] || colors.info;
+      logEntry.style.marginBottom = '2px';
+      logEntry.textContent = `[${timestamp}] ${icons[type]} ${message}`;
+      logPanel.appendChild(logEntry);
+      logPanel.scrollTop = logPanel.scrollHeight;
+      
+      // Также логируем в консоль
+      console.log(`[${timestamp}] ${message}`);
+    }
+
+    // Определяем API URL автоматически (тот же домен, порт 8000 для backend)
+    let API_BASE;
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+    const port = window.location.port;
+    
+    // Сразу логируем базовую информацию (после определения функции)
+    console.log('🔧 API_BASE будет определен после проверки hostname');
+    
+    if (protocol === 'file:') {
+      // Если открыто через file://, используем localhost:8000
+      API_BASE = 'http://localhost:8000';
+      console.warn('⚠️ Страница открыта через file:// протокол. Используем http://localhost:8000');
+    } else if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '' || hostname === '0.0.0.0') {
+      API_BASE = 'http://localhost:8000';
+    } else if (hostname === 'aladdin-ai.ru' || hostname.includes('aladdin-ai.ru')) {
+      // Используем относительный путь через Nginx прокси (HTTPS)
+      API_BASE = ''; // Пустой = тот же домен и протокол
+    } else {
+      API_BASE = 'http://149.154.65.180:8000'; // По умолчанию используем продакшен
+    }
+    
+    console.log('🔧 API_BASE установлен:', API_BASE);
+    console.log('🔧 hostname:', hostname);
+    console.log('🔧 protocol:', protocol);
+    
+    const API_KEY = 'PUBLIC_CLIENT_KEY';
+    
+    // Тестовая функция для проверки доступности бэкенда
+    async function testBackendConnection() {
+      try {
+        debugLog(`🧪 Тестируем подключение к бэкенду: ${API_BASE || 'относительный путь'}`);
+        console.log('🧪 Тестируем подключение к бэкенду:', API_BASE);
+        const response = await fetch(`${API_BASE}/api/payment-methods`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        console.log('✅ Бэкенд доступен! Статус:', response.status);
+        return true;
+      } catch (error) {
+        console.error('❌ Бэкенд недоступен:', error);
+        console.error('❌ Тип ошибки:', error.name);
+        console.error('❌ Сообщение:', error.message);
+        
+        // Показываем предупреждение пользователю
+        if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+          const pendingDiv = document.getElementById('pendingState');
+          if (pendingDiv) {
+            const errorMsg = pendingDiv.querySelector('.error-msg');
+            if (errorMsg) {
+              errorMsg.innerHTML = `
+                <strong>⚠️ Бэкенд недоступен</strong><br>
+                Убедитесь, что бэкенд запущен:<br>
+                <code style="background: rgba(0,0,0,0.3); padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                  cd payment_service && python3 -m uvicorn main:app --reload --port 8000
+                </code>
+              `;
+              errorMsg.style.display = 'block';
+            }
+          }
+        }
+        return false;
+      }
+    }
+    
+    // Получаем paymentId из URL
+    const urlParams = new URLSearchParams(window.location.search);
+    let paymentId = urlParams.get('paymentId');
+    // ✅ Фильтруем undefined, null, пустые значения
+    if (paymentId === 'undefined' || paymentId === 'null' || !paymentId || paymentId.trim() === '') {
+      paymentId = null;
+    }
+    const method = urlParams.get('method');
+    const amountParam = urlParams.get('amount');
+    const referralCode = urlParams.get('referralCode') || localStorage.getItem('referral_code');
+    
+    // ✅ Сохраняем method в глобальной переменной для доступа из функций
+    window.currentPaymentMethod = method;
+    
+    // Логируем сразу после определения переменных
+    function initLogging() {
+      debugLog(`📍 Страница: ${window.location.href}`);
+      debugLog(`📍 Hostname: ${hostname}`);
+      debugLog(`📍 Port: ${port || '(default)'}`);
+      debugLog(`📍 Protocol: ${protocol}`);
+      debugLog(`🔧 API_BASE: ${API_BASE || protocol + '//' + hostname}`);
+      debugLog('✅ JavaScript загружен и работает');
+      debugLog(`🔍 Параметры URL: paymentId=${paymentId || 'не указан'}, method=${method || 'не указан'}`);
+    }
+    
+    // Вызываем логирование после загрузки DOM
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initLogging);
+    } else {
+      setTimeout(initLogging, 100);
+    }
+    
+    // Проверяем подключение при загрузке страницы
+    testBackendConnection();
+    
+    // ✅ РЕФЕРАЛЬНАЯ ПРОГРАММА: Показываем баннер, если была применена реферальная скидка
+    if (referralCode) {
+      const banner = document.getElementById('referralSuccessBanner');
+      if (banner) {
+        banner.style.display = 'block';
+      }
+      // Очищаем localStorage после использования
+      localStorage.removeItem('referral_code');
+    }
+
+    let checkInterval = null;
+    let manualTransferInitialized = false;
+
+    // Функция для показа состояния
+    function showState(stateId) {
+      ['loadingState', 'codeState', 'pendingState', 'errorState', 'manualTransferState'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById(stateId).style.display = 'block';
+    }
+
+    // Функция для показа состояния manual_transfer
+    function formatAmount(value) {
+      const numeric = Number(value);
+      if (Number.isFinite(numeric) && numeric > 0) {
+        return new Intl.NumberFormat('ru-RU').format(numeric);
+      }
+      return null;
+    }
+
+    function showManualTransfer(cardNumber, cardHolderName, amount) {
+      if (cardNumber) {
+        // Форматируем номер карты (XXXX XXXX XXXX XXXX)
+        const formattedCard = cardNumber.replace(/(\d{4})(?=\d)/g, '$1 ');
+        document.getElementById('cardNumberDisplay').textContent = formattedCard;
+      } else {
+        // Если номер карты не получен - показываем предупреждение
+        document.getElementById('cardNumberDisplay').innerHTML = '<span style="color: #ff8888;">⚠️ Номер карты не настроен. Обратитесь в поддержку.</span>';
+      }
+      
+      const cardHolderElement = document.getElementById('cardHolderDisplay');
+      if (cardHolderName) {
+        cardHolderElement.textContent = 'Получатель: ' + cardHolderName;
+        cardHolderElement.style.display = 'block';
+      } else {
+        // Скрываем строку, если ФИО не указано
+        cardHolderElement.style.display = 'none';
+      }
+      
+      const formattedAmount = formatAmount(amount);
+      document.getElementById('paymentAmount').textContent = formattedAmount ? `${formattedAmount} ₽` : 'XXX ₽';
+      
+      showState('manualTransferState');
+
+      if (!manualTransferInitialized) {
+        manualTransferInitialized = true;
+        // Кнопка копирования номера карты
+        document.getElementById('copyCardBtn').addEventListener('click', () => {
+          if (cardNumber) {
+            navigator.clipboard.writeText(cardNumber.replace(/\s/g, '')).then(() => {
+              const btn = document.getElementById('copyCardBtn');
+              const originalText = btn.textContent;
+              btn.textContent = '✅ Скопировано!';
+              btn.style.background = 'rgba(0, 255, 0, 0.2)';
+              setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = '';
+              }, 2000);
+            });
+          }
+        });
+
+        // Кнопка проверки статуса
+        document.getElementById('checkManualStatusBtn').addEventListener('click', () => {
+          if (paymentId) {
+            showState('loadingState');
+            checkPaymentStatus(paymentId);
+          }
+        });
+      }
+    }
+
+    function getStoredManualTransferData() {
+      const manualTransferData = localStorage.getItem('manualTransferData');
+      if (!manualTransferData) return null;
+      try {
+        return JSON.parse(manualTransferData);
+      } catch (error) {
+        console.warn('⚠️ Не удалось разобрать manualTransferData из localStorage', error);
+        return null;
+      }
+    }
+
+    function saveManualTransferData(data) {
+      try {
+        localStorage.setItem('manualTransferData', JSON.stringify(data));
+      } catch (error) {
+        console.warn('⚠️ Не удалось сохранить manualTransferData в localStorage', error);
+      }
+    }
+
+    function startManualTransferPolling(paymentId) {
+      // ✅ Останавливаем существующий polling
+      if (checkInterval) {
+        clearInterval(checkInterval);
+        checkInterval = null;
+      }
+      
+      // ✅ СТРОГАЯ ПРОВЕРКА валидности paymentId ПЕРЕД запуском
+      if (!paymentId || paymentId === 'undefined' || paymentId === 'null' || paymentId === null || (typeof paymentId === 'string' && paymentId.trim() === '')) {
+        debugLog('💳 Manual transfer: paymentId невалидный, polling НЕ запускается', 'warning');
+        return; // НЕ запускаем polling
+      }
+      
+      // ✅ Запускаем polling только с валидным paymentId
+      debugLog(`💳 Manual transfer: запускаем polling для paymentId: ${paymentId}`, 'info');
+      checkInterval = setInterval(() => {
+        checkPaymentStatus(paymentId);
+      }, 10000); // Каждые 10 секунд для manual_transfer
+    }
+
+    async function fetchManualTransferInfo(paymentId, fallbackAmount) {
+      try {
+        const response = await fetch(`${API_BASE}/api/manual-transfer/info`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const cardData = await response.json();
+        const payload = {
+          cardNumber: cardData.cardNumber || cardData.card_number || '',
+          cardHolderName: cardData.cardHolderName || cardData.card_holder_name || '',
+          amount: fallbackAmount || '',
+          paymentId: paymentId || null
+        };
+        saveManualTransferData(payload);
+        showManualTransfer(payload.cardNumber, payload.cardHolderName, payload.amount);
+        // ✅ Запускаем polling ТОЛЬКО если paymentId валидный
+        const isValidPaymentId = paymentId && paymentId !== 'undefined' && paymentId !== 'null' && paymentId !== null && (typeof paymentId === 'string' && paymentId.trim() !== '');
+        if (isValidPaymentId) {
+          startManualTransferPolling(paymentId);
+        } else {
+          debugLog('💳 Manual transfer: paymentId невалидный, polling не запускается', 'warning');
+        }
+      } catch (error) {
+        console.error('❌ Не удалось получить данные manual_transfer с сервера', error);
+        const cardNumberDisplay = document.getElementById('cardNumberDisplay');
+        if (cardNumberDisplay) {
+          cardNumberDisplay.innerHTML = '<span style="color: #ff8888;">⚠️ Номер карты временно недоступен. Обратитесь в поддержку.</span>';
+        }
+        showState('errorState');
+      }
+    }
+
+    function resolveManualTransfer(paymentId) {
+      // ✅ Проверяем валидность paymentId ДО всех операций
+      const isValidPaymentId = paymentId && paymentId !== 'undefined' && paymentId !== 'null' && paymentId !== null && (typeof paymentId === 'string' && paymentId.trim() !== '');
+      
+      const stored = getStoredManualTransferData();
+      if (stored && stored.cardNumber) {
+        // Если есть сохраненные данные, показываем их
+        showManualTransfer(stored.cardNumber, stored.cardHolderName, stored.amount);
+        
+        // ✅ Запускаем polling ТОЛЬКО если paymentId валидный
+        if (isValidPaymentId) {
+          startManualTransferPolling(paymentId);
+        } else {
+          debugLog('💳 Manual transfer: paymentId невалидный, polling не запускается', 'warning');
+        }
+        return;
+      }
+      
+      // Если сохраненных данных нет, получаем с сервера
+      const amountForFallback = stored?.amount || amountParam || '';
+      // ✅ Передаем null, если paymentId невалидный
+      fetchManualTransferInfo(isValidPaymentId ? paymentId : null, amountForFallback);
+    }
+
+    // Функция для обновления статуса загрузки
+    function updateLoadingStatus(message) {
+      const statusEl = document.getElementById('loadingStatus');
+      if (statusEl) {
+        statusEl.textContent = message;
+      }
+      debugLog(`📊 Loading Status: ${message}`);
+    }
+
+    function updatePendingStatus(message) {
+      const statusEl = document.getElementById('pendingStatus');
+      if (statusEl) {
+        statusEl.textContent = message;
+      }
+      debugLog(`📊 Pending Status: ${message}`);
+    }
+
+    // Функция для проверки статуса платежа
+    async function checkPaymentStatus(paymentId) {
+      // ✅ РАННЯЯ ПРОВЕРКА: Если paymentId невалидный, сразу выходим
+      if (!paymentId || paymentId === 'undefined' || paymentId === 'null' || paymentId === null || (typeof paymentId === 'string' && paymentId.trim() === '')) {
+        console.error('❌ paymentId не указан или невалидный:', paymentId);
+        const currentMethod = window.currentPaymentMethod || new URLSearchParams(window.location.search).get('method');
+        
+        // ✅ Для manual_transfer останавливаем polling и выходим
+        if (currentMethod === 'manual_transfer') {
+          debugLog('💳 Manual transfer: paymentId невалидный, останавливаем polling и оставляем страницу с картой', 'warning');
+          if (checkInterval) {
+            clearInterval(checkInterval);
+            checkInterval = null;
+          }
+          return; // НЕ меняем состояние страницы
+        }
+        
+        // Для других методов показываем ошибку
+        updateLoadingStatus('❌ Payment ID не указан. Введите Payment ID.');
+        setTimeout(() => {
+          const currentMethodCheck = window.currentPaymentMethod || new URLSearchParams(window.location.search).get('method');
+          if (currentMethodCheck !== 'manual_transfer') {
+            showError('Payment ID не указан. Вернитесь на сайт и повторите оплату.');
+          }
+        }, 2000);
+        return;
+      }
+      
+      try {
+        
+        const requestUrl = `${API_BASE}/api/payments/status/${paymentId}`;
+        const fullUrl = requestUrl.startsWith('http') ? requestUrl : `${protocol}//${hostname}${requestUrl}`;
+        debugLog(`🔍 Проверка статуса платежа: ${paymentId}`);
+        debugLog(`🔍 URL запроса: ${fullUrl}`);
+        console.log('🔍 Проверка статуса платежа:', paymentId);
+        console.log('🔍 URL запроса:', requestUrl);
+        console.log('🔍 API_BASE:', API_BASE);
+        
+        updateLoadingStatus('🔍 Проверяем статус платежа...');
+        updatePendingStatus('🔍 Проверяем статус платежа...');
+        
+        debugLog(`📤 Запрос: GET ${fullUrl}`);
+        const response = await fetch(requestUrl, {
+          method: 'GET',
+          headers: {
+            'X-API-Key': API_KEY,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        debugLog(`📥 Статус ответа: ${response.status} ${response.statusText}`);
+        console.log('📥 Статус ответа:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          debugLog(`❌ Ошибка HTTP: ${response.status}`, 'error');
+          
+          // ✅ Останавливаем polling при любой ошибке для manual_transfer
+          const currentMethod = window.currentPaymentMethod || new URLSearchParams(window.location.search).get('method');
+          if (currentMethod === 'manual_transfer') {
+            debugLog(`💳 Manual transfer: ошибка ${response.status}, останавливаем polling и оставляем страницу с картой`, 'warning');
+            if (checkInterval) {
+              clearInterval(checkInterval);
+              checkInterval = null;
+            }
+            return;
+          }
+          
+          // Пытаемся получить текст ошибки
+          let errorText = '';
+          try {
+            const errorData = await response.json();
+            errorText = errorData.detail || JSON.stringify(errorData);
+            console.error('❌ Ошибка от сервера:', errorText);
+          } catch (e) {
+            errorText = await response.text().catch(() => response.statusText);
+            console.error('❌ Ошибка (не JSON):', errorText);
+          }
+          
+          if (response.status === 404) {
+            console.log('❌ Платёж не найден (404)');
+            // ✅ Останавливаем polling при 404 для ВСЕХ методов
+            if (checkInterval) {
+              clearInterval(checkInterval);
+              checkInterval = null;
+              debugLog('🛑 Polling остановлен из-за 404 ошибки', 'warning');
+            }
+            
+            const currentMethod = window.currentPaymentMethod || new URLSearchParams(window.location.search).get('method');
+            
+            // ✅ Для manual_transfer НЕ меняем состояние
+            if (currentMethod === 'manual_transfer') {
+              debugLog('💳 Manual transfer: платеж не найден (404), оставляем страницу с картой', 'warning');
+              return; // Остаемся на странице с картой
+            }
+            
+            // Для других методов показываем ошибку
+            showError('Платёж не найден. Проверьте Payment ID или повторите оплату.');
+            return;
+          }
+          
+          throw new Error(`Ошибка ${response.status}: ${errorText || response.statusText}`);
+        }
+
+        const data = await response.json();
+        debugLog(`📥 Ответ от сервера: status=${data.status}, activationCode=${data.activationCode ? 'есть' : 'нет'}`);
+        console.log('📥 Ответ от сервера:', data);
+        
+        updateLoadingStatus('✅ Получен ответ от сервера');
+        updatePendingStatus('✅ Получен ответ от сервера');
+
+        // Проверяем статус платежа
+        if (data.status === 'paid' && data.activationCode) {
+          // Платёж подтверждён, код готов
+          debugLog(`✅ Платёж подтверждён, код готов: ${data.activationCode}`, 'success');
+          console.log('✅ Платёж подтверждён, код готов:', data.activationCode);
+          updateLoadingStatus('✅ Код активации получен!');
+          showCode(data.activationCode, data.codeExpiresAt);
+          if (checkInterval) {
+            clearInterval(checkInterval);
+            checkInterval = null;
+          }
+        } else if (data.status === 'paid' && !data.activationCode) {
+          // Платёж подтверждён, но код ещё не сгенерирован
+          console.log('⏳ Платёж подтверждён, но код ещё генерируется...');
+          updatePendingStatus('⏳ Генерируем код активации...');
+          // Пытаемся подтвердить платеж, чтобы сгенерировать код
+          try {
+            const confirmResponse = await fetch(`${API_BASE}/api/payments/confirm?payment_id=${paymentId}`, {
+              method: 'POST',
+              headers: {
+                'X-API-Key': API_KEY,
+                'Content-Type': 'application/json'
+              }
+            });
+            if (confirmResponse.ok) {
+              updatePendingStatus('✅ Код генерируется, проверяем через 2 секунды...');
+              // Ждем немного и проверяем снова
+              setTimeout(() => checkPaymentStatus(paymentId), 2000);
+            } else {
+              updatePendingStatus('⚠️ Ошибка генерации кода. Попробуйте позже.');
+              showState('pendingState');
+            }
+          } catch (e) {
+            console.error('Ошибка подтверждения платежа:', e);
+            updatePendingStatus('❌ Ошибка: ' + e.message);
+            showState('pendingState');
+          }
+        } else if (data.status === 'awaiting_manual_payment') {
+          console.log('⏳ Платёж ожидает ручного подтверждения');
+          const currentMethod = window.currentPaymentMethod || new URLSearchParams(window.location.search).get('method');
+          if (currentMethod === 'manual_transfer') {
+            const stored = getStoredManualTransferData();
+            const usableAmount = stored?.amount || amountParam || data.amount || '';
+            if (stored && stored.cardNumber) {
+              showManualTransfer(stored.cardNumber, stored.cardHolderName, stored.amount || usableAmount);
+              // ✅ НЕ запускаем polling, если paymentId невалидный
+              const isValidPaymentId = paymentId && paymentId !== 'undefined' && paymentId !== 'null' && paymentId !== null && (typeof paymentId === 'string' && paymentId.trim() !== '');
+              if (isValidPaymentId && !checkInterval) {
+                startManualTransferPolling(paymentId);
+              }
+            } else {
+              // ✅ Передаем null, если paymentId невалидный
+              const isValidPaymentId = paymentId && paymentId !== 'undefined' && paymentId !== 'null' && paymentId !== null && (typeof paymentId === 'string' && paymentId.trim() !== '');
+              fetchManualTransferInfo(isValidPaymentId ? paymentId : null, usableAmount);
+            }
+          } else {
+            showState('pendingState');
+          }
+        } else if (data.status === 'awaiting_payment' || data.status === 'created' || data.status === 'pending') {
+          // Платёж ещё обрабатывается
+          console.log('⏳ Платёж ещё обрабатывается, статус:', data.status);
+          // ✅ Для manual_transfer НИКОГДА не меняем состояние - оставляем manualTransferState
+          const currentMethod = window.currentPaymentMethod || new URLSearchParams(window.location.search).get('method');
+          if (currentMethod === 'manual_transfer') {
+            // Оставляем manualTransferState, не переключаем
+            debugLog('💳 Manual transfer: оставляем страницу с номером карты', 'info');
+            return;
+          }
+          updatePendingStatus(`⏳ Статус: ${data.status}. Ожидаем подтверждения от банка...`);
+          showState('pendingState');
+        } else if (data.status === 'failed' || data.status === 'cancelled') {
+          // Платёж отклонён
+          console.log('❌ Платёж отклонён, статус:', data.status);
+          showError('Платёж был отклонён. Средства вернутся на ваш счёт в течение 3 банковских дней.');
+          if (checkInterval) {
+            clearInterval(checkInterval);
+            checkInterval = null;
+          }
+        } else {
+          // Неизвестный статус
+          console.log('⚠️ Неизвестный статус:', data.status);
+          // ✅ Для manual_transfer НИКОГДА не меняем состояние
+          const currentMethod = window.currentPaymentMethod || new URLSearchParams(window.location.search).get('method');
+          if (currentMethod === 'manual_transfer') {
+            debugLog('💳 Manual transfer: неизвестный статус, но оставляем страницу с картой', 'warning');
+            return;
+          }
+          showState('pendingState');
+        }
+      } catch (error) {
+        debugLog(`❌ Ошибка проверки статуса: ${error.message}`, 'error');
+        debugLog(`❌ Тип ошибки: ${error.constructor.name}`, 'error');
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          debugLog('❌ Проблема с сетью - проверьте подключение к серверу', 'error');
+        }
+        console.error('❌ Ошибка проверки статуса:', error);
+        console.error('❌ Тип ошибки:', error.constructor.name);
+        console.error('❌ Сообщение ошибки:', error.message);
+        console.error('❌ Стек ошибки:', error.stack);
+        
+        // Если paymentId не найден или ошибка, показываем форму только если не manual_transfer
+        const currentMethod = window.currentPaymentMethod || new URLSearchParams(window.location.search).get('method');
+        
+        // ✅ Останавливаем polling при любой ошибке для manual_transfer
+        if (currentMethod === 'manual_transfer') {
+          debugLog('💳 Manual transfer: ошибка при проверке статуса, останавливаем polling и оставляем страницу с картой', 'warning');
+          if (checkInterval) {
+            clearInterval(checkInterval);
+            checkInterval = null;
+          }
+          return; // Остаемся на странице с картой
+        }
+        
+        if (error.message.includes('404') || error.message.includes('not found') || error.message.includes('Payment not found')) {
+          console.log('🔄 Показываем сообщение о недоступности платежа');
+          showError('Платёж не найден. Проверьте Payment ID или повторите оплату.');
+        } else {
+          // Показываем pendingState с сообщением об ошибке
+          // ✅ Для manual_transfer НИКОГДА не меняем состояние (уже обработано выше)
+          showState('pendingState');
+          // Добавляем временное сообщение об ошибке
+          const pendingDiv = document.getElementById('pendingState');
+          if (pendingDiv) {
+            const errorMsg = pendingDiv.querySelector('.error-msg');
+            if (errorMsg) {
+              // Показываем более детальное сообщение об ошибке
+              let errorText = 'Ошибка проверки статуса. Попробуйте ещё раз.';
+              if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.message.includes('Load failed')) {
+                errorText = 'Ошибка подключения к серверу. Проверяем статус...';
+                // Автоматически повторяем запрос через 3 секунды
+                setTimeout(() => {
+                  if (paymentId) {
+                    checkPaymentStatus(paymentId);
+                  }
+                }, 3000);
+              } else if (error.message.includes('CORS')) {
+                errorText = 'Ошибка CORS. Проверьте настройки бэкенда.';
+              } else if (error.message) {
+                errorText = `Ошибка: ${error.message}`;
+              }
+              errorMsg.textContent = errorText;
+              errorMsg.style.display = 'block';
+              setTimeout(() => {
+                errorMsg.style.display = 'none';
+              }, 10000); // Показываем 10 секунд вместо 5
+            }
+          }
+        }
+      }
+    }
+
+    // Функция для показа кода
+    function showCode(code, expiresAt) {
+      debugLog(`✅ Показываем код активации: ${code}`, 'success');
+      console.log('✅ showCode вызвана с кодом:', code);
+      
+      const codeElement = document.getElementById('activationCode');
+      if (!codeElement) {
+        debugLog('❌ Элемент activationCode не найден!', 'error');
+        console.error('❌ Элемент activationCode не найден!');
+        return;
+      }
+      
+      codeElement.textContent = code;
+      showState('codeState');
+      debugLog('✅ Состояние изменено на codeState', 'success');
+
+      // Кнопка копирования
+      document.getElementById('copyCodeBtn').addEventListener('click', () => {
+        navigator.clipboard.writeText(code).then(() => {
+          const btn = document.getElementById('copyCodeBtn');
+          const originalText = btn.textContent;
+          btn.textContent = '✅ Скопировано!';
+          btn.style.background = 'rgba(0, 255, 0, 0.2)';
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = '';
+          }, 2000);
+        });
+      });
+
+      // Кнопка открытия приложения
+      document.getElementById('openAppBtn').addEventListener('click', () => {
+        window.location.href = 'aladdinaf://activate?code=' + encodeURIComponent(code);
+      });
+    }
+
+    // Функция для показа ошибки
+    function showError(message) {
+      document.getElementById('errorMessage').textContent = message;
+      showState('errorState');
+    }
+
+    // Инициализация - вызывается после загрузки DOM
+    function initializePage() {
+      debugLog('🚀 Инициализация страницы...');
+      debugLog(`🔍 paymentId: ${paymentId || 'не указан'}`);
+      debugLog(`🔍 method: ${method || 'не указан'}`);
+      debugLog(`🔍 API_BASE: ${API_BASE || 'относительный путь'}`);
+      console.log('🚀 Инициализация страницы...');
+      console.log('🔍 paymentId:', paymentId);
+      console.log('🔍 method:', method);
+      console.log('🔍 API_BASE:', API_BASE);
+      
+      const savedPaymentId = localStorage.getItem('payment_id');
+      debugLog(`🔍 Проверка данных: paymentId=${paymentId || savedPaymentId || 'нет'}`);
+      
+      // ✅ Проверяем валидность paymentId (не undefined, не null)
+      const validPaymentId = (paymentId && paymentId !== 'undefined' && paymentId !== 'null') ? paymentId : savedPaymentId;
+      
+      if (method === 'manual_transfer') {
+        debugLog('💳 Метод оплаты: manual_transfer', 'info');
+        // ✅ Для manual_transfer показываем страницу с картой, даже если paymentId undefined
+        if (validPaymentId && validPaymentId !== 'undefined') {
+          resolveManualTransfer(validPaymentId);
+        } else {
+          // Если paymentId нет, все равно показываем manual_transfer страницу
+          debugLog('💳 Manual transfer: paymentId не найден, показываем форму с картой', 'warning');
+          const stored = getStoredManualTransferData();
+          if (stored && stored.cardNumber) {
+            showManualTransfer(stored.cardNumber, stored.cardHolderName, stored.amount || amountParam || '');
+          } else {
+            fetchManualTransferInfo(null, amountParam || '');
+          }
+        }
+      } else if (validPaymentId && validPaymentId !== 'undefined') {
+        // Есть paymentId - проверяем статус
+        const checkPaymentId = paymentId || savedPaymentId;
+        debugLog(`✅ Payment ID найден: ${checkPaymentId}, начинаем проверку...`, 'success');
+        console.log('✅ Payment ID найден, начинаем проверку...');
+        updateLoadingStatus('🔍 Проверяем статус платежа...');
+        checkPaymentStatus(checkPaymentId);
+        // Проверяем каждые 3 секунды (только если не manual_transfer)
+        if (method !== 'manual_transfer') {
+          checkInterval = setInterval(() => {
+            debugLog('🔄 Автоматическая проверка статуса...');
+            console.log('🔄 Автоматическая проверка статуса...');
+            checkPaymentStatus(checkPaymentId);
+          }, 3000);
+        }
+      } else {
+        // Нет параметров - показываем простую форму только для Payment ID
+        // ✅ Для manual_transfer НИКОГДА не показываем форму восстановления
+        if (method === 'manual_transfer') {
+          debugLog('💳 Manual transfer: параметры не найдены, но показываем страницу с картой', 'warning');
+          const stored = getStoredManualTransferData();
+          if (stored && stored.cardNumber) {
+            showManualTransfer(stored.cardNumber, stored.cardHolderName, stored.amount || amountParam || '');
+          } else {
+            fetchManualTransferInfo(null, amountParam || '');
+          }
+          return; // НЕ переходим к другим проверкам
+        }
+        debugLog('⚠️ Payment ID не найден в URL — показываем сообщение об ошибке', 'warning');
+        console.log('⚠️ Payment ID не найден в URL, показываем сообщение об ошибке');
+        showError('Payment ID не найден. Вернитесь на сайт ALADDIN AI и начните оплату заново.');
+      }
+    }
+    
+    // Вызываем инициализацию после загрузки DOM
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializePage);
+    } else {
+      setTimeout(initializePage, 200);
+    }
+    
+    // Кнопка проверки статуса
+    document.getElementById('checkStatusBtn')?.addEventListener('click', () => {
+      if (paymentId) {
+        showState('loadingState');
+        checkPaymentStatus(paymentId);
+      }
+    });
+  </script>
+</body>
+</html>
+

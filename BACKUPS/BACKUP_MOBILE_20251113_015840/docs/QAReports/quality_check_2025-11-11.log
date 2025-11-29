@@ -1,0 +1,33 @@
+🔍 ПРОДВИНУТАЯ ПРОВЕРКА КАЧЕСТВА КОДА
+======================================================================
+
+📋 FamilyCommunicationHub:
+--------------------------------------------------
+  ❌ Ошибка анализа: [Errno 2] No such file or directory: 'security/ai_agents/family_communication_hub.py'
+
+📋 EmergencyResponseInterface:
+--------------------------------------------------
+  ❌ Ошибка анализа: [Errno 2] No such file or directory: 'security/ai_agents/emergency_response_interface.py'
+
+📋 NotificationBot:
+--------------------------------------------------
+  ❌ Ошибка анализа: [Errno 2] No such file or directory: 'security/ai_agents/notification_bot.py'
+
+📋 APIGateway:
+--------------------------------------------------
+  ❌ Ошибка анализа: [Errno 2] No such file or directory: 'security/microservices/api_gateway.py'
+
+📋 LoadBalancer:
+--------------------------------------------------
+  ❌ Ошибка анализа: [Errno 2] No such file or directory: 'security/microservices/load_balancer.py'
+
+📊 ИТОГОВАЯ СТАТИСТИКА:
+======================================================================
+🎯 Средний балл: 0.0%
+📈 Общий балл: 0.0%
+🔢 Компонентов: 5
+⚠️ ОБЩЕЕ КАЧЕСТВО: C
+💬 ТРЕБУЕТ УЛУЧШЕНИЯ!
+
+🎉 ПРОВЕРКА ЗАВЕРШЕНА!
+📊 Результат: 0.0% (C)

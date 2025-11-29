@@ -1,0 +1,463 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 54;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A1234567890123456789012C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789012D /* ContentView.swift */; };
+		A1234567890123456789012E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789012F /* Assets.xcassets */; };
+		A1234567890123456789012G /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1234567890123456789012H /* Preview Assets.xcassets */; };
+		A5754353092983365042176 /* 01_MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6280369522515684360192 /* 01_MainScreen.swift */; };
+		A6803488038945943453696 /* NavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2543863788712769880064 /* NavigationManager.swift */; };
+		A5351602700073272606720 /* ALADDINApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5801771363243460132864 /* ALADDINApp.swift */; };
+		A4481819784967229014016 /* ALADDINNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6491979337064549187584 /* ALADDINNavigationBar.swift */; };
+		A6713171058334409687040 /* 02_FamilyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5177380222128703406080 /* 02_FamilyScreen.swift */; };
+		A4415408769622444867588 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867584 /* DesignSystem.swift */; };
+		A4415408769622444867589 /* VPNScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867585 /* VPNScreen.swift */; };
+		A4415408769622444867590 /* AgeGroupSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867586 /* AgeGroupSelectionModal.swift */; };
+		A4415408769622444867591 /* RewardsQuickModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867587 /* RewardsQuickModal.swift */; };
+		A4415408769622444867594 /* AnalyticsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867592 /* AnalyticsScreen.swift */; };
+		A4415408769622444867595 /* ConsentModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867593 /* ConsentModal.swift */; };
+		A4415408769622444867598 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867596 /* SettingsScreen.swift */; };
+		A4415408769622444867599 /* FamilyCreatedModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867597 /* FamilyCreatedModal.swift */; };
+		A4415408769622444867602 /* AIAssistantScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867600 /* AIAssistantScreen.swift */; };
+		A4415408769622444867603 /* LetterSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867601 /* LetterSelectionModal.swift */; };
+		A4415408769622444867606 /* ParentalControlScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867604 /* ParentalControlScreen.swift */; };
+		A4415408769622444867607 /* QRScannerModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867605 /* QRScannerModal.swift */; };
+		A4415408769622444867610 /* ChildInterfaceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867608 /* ChildInterfaceScreen.swift */; };
+		A4415408769622444867611 /* RecoveryOptionsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867609 /* RecoveryOptionsModal.swift */; };
+		A4415408769622444867614 /* ElderlyInterfaceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867612 /* ElderlyInterfaceScreen.swift */; };
+		A4415408769622444867615 /* RegistrationSuccessModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4415408769622444867613 /* RegistrationSuccessModal.swift */; };
+		5AD7FB356746496099F1DEF6 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2E9F47EDCC42F490ACF66C /* AppConfig.swift */; };
+		E946320C180C45BBA305F52B /* APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F9C6E1786F8452CB9345B9E /* APIModels.swift */; };
+		85E8A085C892483FAC1E4155 /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26840B7258594BB789AFF946 /* APIService.swift */; };
+		58F4FEBF924C4B0884B7B158 /* TariffsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF6D5A469CD146C8892B3855 /* TariffsScreen.swift */; };
+		49C1E6B13C164DB5A1B505C9 /* RoleSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0F6B2BD5CA94AE69F733F9E /* RoleSelectionModal.swift */; };
+		EC551B5E90FA4630A28D39B5 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B89FBA55AAF4CA19D0C3477 /* NetworkManager.swift */; };
+		F8ED53AB527C45D89181E3C4 /* ProfileScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABD3D273E9334CEBB25D427F /* ProfileScreen.swift */; };
+		6DABE66BA411F80AB35D08B4 /* NotificationsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B240EC0B4BC218EE24FCBBC /* NotificationsScreen.swift */; };
+		042F78D0AF626A280BC55A0D /* SupportScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 128F08C4663C6274E04297FC /* SupportScreen.swift */; };
+		640DBCAC6B5954BB8D2E18F1 /* OnboardingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEC65EE9355C478A63F02BE4 /* OnboardingScreen.swift */; };
+		9356F95BEBF901B6F989C618 /* PrivacyPolicyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 432E0B855FB872E6B3C7B36E /* PrivacyPolicyScreen.swift */; };
+		3840675907908007424 /* TermsOfServiceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4850485933478922240 /* TermsOfServiceScreen.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A1234567890123456789012I /* ALADDIN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ALADDIN.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1234567890123456789012D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A1234567890123456789012F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1234567890123456789012H /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A1234567890123456789012J /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A6280369522515684360192 /* 01_MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/01_MainScreen.swift"; sourceTree = "<group>"; };
+		A2543863788712769880064 /* NavigationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Navigation/NavigationManager.swift"; sourceTree = "<group>"; };
+		A5801771363243460132864 /* ALADDINApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ALADDINApp.swift"; sourceTree = "<group>"; };
+		A6491979337064549187584 /* ALADDINNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/Components/Navigation/ALADDINNavigationBar.swift"; sourceTree = "<group>"; };
+		A5177380222128703406080 /* 02_FamilyScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/02_FamilyScreen.swift"; sourceTree = "<group>"; };
+		A4415408769622444867584 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Shared/Styles/DesignSystem.swift"; sourceTree = "<group>"; };
+		A4415408769622444867585 /* VPNScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/03_VPNScreen.swift"; sourceTree = "<group>"; };
+		A4415408769622444867586 /* AgeGroupSelectionModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/Modals/AgeGroupSelectionModal.swift"; sourceTree = "<group>"; };
+		A4415408769622444867587 /* RewardsQuickModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/Modals/RewardsQuickModal.swift"; sourceTree = "<group>"; };
+		A4415408769622444867592 /* AnalyticsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/04_AnalyticsScreen.swift"; sourceTree = "<group>"; };
+		A4415408769622444867593 /* ConsentModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/Modals/ConsentModal.swift"; sourceTree = "<group>"; };
+		A4415408769622444867596 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/05_SettingsScreen.swift"; sourceTree = "<group>"; };
+		A4415408769622444867597 /* FamilyCreatedModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/Modals/FamilyCreatedModal.swift"; sourceTree = "<group>"; };
+		A4415408769622444867600 /* AIAssistantScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/06_AIAssistantScreen.swift"; sourceTree = "<group>"; };
+		A4415408769622444867601 /* LetterSelectionModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/Modals/LetterSelectionModal.swift"; sourceTree = "<group>"; };
+		A4415408769622444867604 /* ParentalControlScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/07_ParentalControlScreen.swift"; sourceTree = "<group>"; };
+		A4415408769622444867605 /* QRScannerModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/Modals/QRScannerModal.swift"; sourceTree = "<group>"; };
+		A4415408769622444867608 /* ChildInterfaceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/08_ChildInterfaceScreen.swift"; sourceTree = "<group>"; };
+		A4415408769622444867609 /* RecoveryOptionsModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/Modals/RecoveryOptionsModal.swift"; sourceTree = "<group>"; };
+		A4415408769622444867612 /* ElderlyInterfaceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/09_ElderlyInterfaceScreen.swift"; sourceTree = "<group>"; };
+		A4415408769622444867613 /* RegistrationSuccessModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/Modals/RegistrationSuccessModal.swift"; sourceTree = "<group>"; };
+		1D2E9F47EDCC42F490ACF66C /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Config/AppConfig.swift"; sourceTree = "<group>"; };
+		8F9C6E1786F8452CB9345B9E /* APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Models/APIModels.swift"; sourceTree = "<group>"; };
+		26840B7258594BB789AFF946 /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Network/APIService.swift"; sourceTree = "<group>"; };
+		FF6D5A469CD146C8892B3855 /* TariffsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/10_TariffsScreen.swift"; sourceTree = "<group>"; };
+		F0F6B2BD5CA94AE69F733F9E /* RoleSelectionModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Components/Modals/RoleSelectionModal.swift"; sourceTree = "<group>"; };
+		7B89FBA55AAF4CA19D0C3477 /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core/Network/NetworkManager.swift"; sourceTree = "<group>"; };
+		ABD3D273E9334CEBB25D427F /* ProfileScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/11_ProfileScreen.swift"; sourceTree = "<group>"; };
+		8B240EC0B4BC218EE24FCBBC /* NotificationsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/12_NotificationsScreen.swift"; sourceTree = "<group>"; };
+		128F08C4663C6274E04297FC /* SupportScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/13_SupportScreen.swift"; sourceTree = "<group>"; };
+		BEC65EE9355C478A63F02BE4 /* OnboardingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/14_OnboardingScreen.swift"; sourceTree = "<group>"; };
+		432E0B855FB872E6B3C7B36E /* PrivacyPolicyScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/18_PrivacyPolicyScreen.swift"; sourceTree = "<group>"; };
+		4850485933478922240 /* TermsOfServiceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Screens/19_TermsOfServiceScreen.swift"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A1234567890123456789012K /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A1234567890123456789012L /* ALADDIN */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890123456789012D /* ContentView.swift */,
+				A1234567890123456789012F /* Assets.xcassets */,
+				A1234567890123456789012J /* Info.plist */,
+				A6280369522515684360192 /* 01_MainScreen.swift */,
+				A2543863788712769880064 /* NavigationManager.swift */,
+				A5801771363243460132864 /* ALADDINApp.swift */,
+				A6491979337064549187584 /* ALADDINNavigationBar.swift */,
+				A5177380222128703406080 /* 02_FamilyScreen.swift */,
+				1D2E9F47EDCC42F490ACF66C /* AppConfig.swift */,
+				8F9C6E1786F8452CB9345B9E /* APIModels.swift */,
+				26840B7258594BB789AFF946 /* APIService.swift */,
+				FF6D5A469CD146C8892B3855 /* TariffsScreen.swift */,
+				F0F6B2BD5CA94AE69F733F9E /* RoleSelectionModal.swift */,
+				7B89FBA55AAF4CA19D0C3477 /* NetworkManager.swift */,
+				ABD3D273E9334CEBB25D427F /* ProfileScreen.swift */,
+				8B240EC0B4BC218EE24FCBBC /* NotificationsScreen.swift */,
+				128F08C4663C6274E04297FC /* SupportScreen.swift */,
+				BEC65EE9355C478A63F02BE4 /* OnboardingScreen.swift */,
+				432E0B855FB872E6B3C7B36E /* PrivacyPolicyScreen.swift */,
+				4850485933478922240 /* 19_TermsOfServiceScreen.swift */,
+				A1234567890123456789012P /* Preview Content */,
+			);
+			path = .;
+			sourceTree = "<group>";
+		};
+		A1234567890123456789012P /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890123456789012H /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		A1234567890123456789012Q /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1234567890123456789012I /* ALADDIN.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A1234567890123456789012R = {
+			isa = PBXGroup;
+			children = (
+				A1234567890123456789012L /* ALADDIN */,
+				A1234567890123456789012Q /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1234567890123456789012S /* ALADDIN */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1234567890123456789012T /* Build configuration list for PBXNativeTarget "ALADDIN" */;
+			buildPhases = (
+				A1234567890123456789012U /* Sources */,
+				A1234567890123456789012K /* Frameworks */,
+				A1234567890123456789012V /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ALADDIN;
+			productName = ALADDIN;
+			productReference = A1234567890123456789012I /* ALADDIN.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1234567890123456789012W /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					A1234567890123456789012S = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = A1234567890123456789012X /* Build configuration list for PBXProject "ALADDIN" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A1234567890123456789012R;
+			productRefGroup = A1234567890123456789012Q /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1234567890123456789012S /* ALADDIN */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A1234567890123456789012V /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1234567890123456789012G /* Preview Assets.xcassets in Resources */,
+				A1234567890123456789012E /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A1234567890123456789012U /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1234567890123456789012C /* ContentView.swift in Sources */,
+				A5754353092983365042176 /* 01_MainScreen.swift in Sources */,
+				A6803488038945943453696 /* NavigationManager.swift in Sources */,
+				A5351602700073272606720 /* ALADDINApp.swift in Sources */,
+				A4481819784967229014016 /* ALADDINNavigationBar.swift in Sources */,
+				A6713171058334409687040 /* 02_FamilyScreen.swift in Sources */,
+				A4415408769622444867588 /* DesignSystem.swift in Sources */,
+				A4415408769622444867589 /* VPNScreen.swift in Sources */,
+				A4415408769622444867590 /* AgeGroupSelectionModal.swift in Sources */,
+				A4415408769622444867591 /* RewardsQuickModal.swift in Sources */,
+				A4415408769622444867594 /* AnalyticsScreen.swift in Sources */,
+				A4415408769622444867595 /* ConsentModal.swift in Sources */,
+				A4415408769622444867598 /* SettingsScreen.swift in Sources */,
+				A4415408769622444867599 /* FamilyCreatedModal.swift in Sources */,
+				A4415408769622444867602 /* AIAssistantScreen.swift in Sources */,
+				A4415408769622444867603 /* LetterSelectionModal.swift in Sources */,
+				A4415408769622444867606 /* ParentalControlScreen.swift in Sources */,
+				A4415408769622444867607 /* QRScannerModal.swift in Sources */,
+				A4415408769622444867610 /* ChildInterfaceScreen.swift in Sources */,
+				A4415408769622444867611 /* RecoveryOptionsModal.swift in Sources */,
+				A4415408769622444867614 /* ElderlyInterfaceScreen.swift in Sources */,
+				A4415408769622444867615 /* RegistrationSuccessModal.swift in Sources */,
+				5AD7FB356746496099F1DEF6 /* AppConfig.swift in Sources */,
+				E946320C180C45BBA305F52B /* APIModels.swift in Sources */,
+				85E8A085C892483FAC1E4155 /* APIService.swift in Sources */,
+				58F4FEBF924C4B0884B7B158 /* TariffsScreen.swift in Sources */,
+				49C1E6B13C164DB5A1B505C9 /* RoleSelectionModal.swift in Sources */,
+				EC551B5E90FA4630A28D39B5 /* NetworkManager.swift in Sources */,
+				F8ED53AB527C45D89181E3C4 /* ProfileScreen.swift in Sources */,
+				6DABE66BA411F80AB35D08B4 /* NotificationsScreen.swift in Sources */,
+				042F78D0AF626A280BC55A0D /* SupportScreen.swift in Sources */,
+				640DBCAC6B5954BB8D2E18F1 /* OnboardingScreen.swift in Sources */,
+				9356F95BEBF901B6F989C618 /* PrivacyPolicyScreen.swift in Sources */,
+				3840675907908007424 /* TermsOfServiceScreen.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A1234567890123456789012Y /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A1234567890123456789012Z /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A1234567890123456789013A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ALADDIN/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ALADDIN/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1234567890123456789013B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"ALADDIN/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ALADDIN/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1234567890123456789012X /* Build configuration list for PBXProject "ALADDIN" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1234567890123456789012Y /* Debug */,
+				A1234567890123456789012Z /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1234567890123456789012T /* Build configuration list for PBXNativeTarget "ALADDIN" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1234567890123456789013A /* Debug */,
+				A1234567890123456789013B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1234567890123456789012W /* Project object */;
+}

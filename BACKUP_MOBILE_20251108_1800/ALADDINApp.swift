@@ -1,0 +1,318 @@
+import SwiftUI
+
+@main
+struct ALADDINApp: App {
+    // КРИТИЧНО: Инициализация NavigationManager
+    @StateObject private var navigationManager = NavigationManager()
+    // ✅ Добавляем LocalizationManager
+    @StateObject private var localizationManager = LocalizationManager()
+    @AppStorage("selected_theme") private var selectedTheme: String = "system"
+    // Убрали @AppStorage для онбординга
+    // private var hasCompletedOnboarding: Bool = false // больше не используется
+    
+    init() {
+        // ✅ ИСПРАВЛЕНИЕ: В init() НЕ используем @StateObject, они еще не созданы!
+        // Вся логика инициализации перенесена в .onAppear
+        if ProcessInfo.processInfo.environment["RESET_ONBOARDING"] == "1" {
+            UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            print("🌍 RESET_ONBOARDING активирован — ключ сброшен")
+        }
+    }
+    
+    var body: some Scene {
+        WindowGroup {
+            // КРИТИЧНО: NavigationView для работы навигации
+            NavigationView {
+                // ✅ КРИТИЧНО: Используем AnyView для каждого case - это заставит SwiftUI пересчитать
+                Group {
+                    switch navigationManager.currentScreen {
+                    case .main:
+                        AnyView(MainScreen().id("main").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .family:
+                        AnyView(FamilyScreen().id("family").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .vpn:
+                        AnyView(VPNScreen().id("vpn").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .analytics:
+                        AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .settings:
+                        AnyView(SettingsScreen()
+                            .id("settings")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)) // ✅ Добавляем LocalizationManager
+                    case .aiAssistant:
+                        AnyView(AIAssistantScreen().id("aiAssistant").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .parentalControl:
+                        AnyView(ParentalControlScreen()
+                            .id("parentalControl")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .onAppear { print("🔍 DEBUG: ParentalControlScreen отображён") })
+                    case .childInterface:
+                        AnyView(ChildInterfaceScreen()
+                            .id("childInterface")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .onAppear { print("🔍 DEBUG: ChildInterfaceScreen отображён") })
+                    case .securityEducation:
+                        AnyView(SecurityEducationScreen()
+                            .id("securityEducation")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .onAppear { print("🔍 DEBUG: SecurityEducationScreen отображён") })
+                    case .elderlyInterface:
+                        AnyView(ElderlyInterfaceScreen()
+                            .id("elderlyInterface")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .onAppear { print("🔍 DEBUG: ElderlyInterfaceScreen отображён") })
+                    case .tariffs:
+                        AnyView(TariffsScreen().id("tariffs").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .paymentQR:
+                        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем AnyView для отложенного создания View
+                        // Это предотвращает попытку SwiftUI вычислить body до готовности данных
+                        if let tariff = navigationManager.selectedTariffForPayment {
+                            // ✅ Дополнительная проверка валидности тарифа
+                            if !tariff.id.isEmpty && !tariff.title.isEmpty {
+                                // ✅ Обертка в AnyView для безопасности инициализации
+                                AnyView(
+                                    PaymentQRScreen(tariff: tariff) {
+                                        print("🔍 ALADDINApp: onPaymentCompleted вызван")
+                                        navigationManager.beginManualPaymentQRClose()
+                                        navigationManager.goBack(reason: "PaymentQR.onPaymentCompleted")
+                                        navigationManager.selectedTariffForPayment = nil
+                                    }
+                                    .id("paymentQR")
+                                    .environmentObject(navigationManager)
+                                    .environmentObject(localizationManager)
+                                    .onAppear { 
+                                        print("🚨 PaymentQRScreen открыт через NavigationLink!")
+                                        print("🚨 Tariff ID: \(tariff.id)")
+                                    }
+                                )
+                            } else {
+                                // ✅ Fallback если тариф невалиден
+                                AnyView(
+                                    VStack(spacing: 20) {
+                                        Text("Ошибка: тариф невалиден")
+                                            .font(.headline)
+                                        Text("ID: \(tariff.id.isEmpty ? "пусто" : tariff.id)")
+                                        Text("Title: \(tariff.title.isEmpty ? "пусто" : tariff.title)")
+                                        Button("Назад") {
+                                                navigationManager.beginManualPaymentQRClose()
+                                                navigationManager.goBack(reason: "PaymentQR.invalidTariffFallback")
+                                            navigationManager.selectedTariffForPayment = nil
+                                        }
+                                    }
+                                    .padding()
+                                    .id("paymentQR_error_invalid")
+                                    .environmentObject(navigationManager)
+                                    .environmentObject(localizationManager)
+                                )
+                            }
+                        } else {
+                            // ✅ Fallback если тариф не передан
+                            AnyView(
+                                VStack(spacing: 20) {
+                                    Text("Ошибка: тариф не выбран")
+                                        .font(.headline)
+                                    Button("Назад") {
+                                            navigationManager.beginManualPaymentQRClose()
+                                            navigationManager.goBack(reason: "PaymentQR.nilTariffFallback")
+                                    }
+                                }
+                                .padding()
+                                .id("paymentQR_error_nil")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                            )
+                        }
+                    case .profile:
+                        AnyView(ProfileScreen()
+                            .id("profile")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .onAppear { 
+                                print("🔍 DEBUG ALADDINApp: ProfileScreen отображён!")
+                                print("🔍 DEBUG ALADDINApp: currentScreen = \(navigationManager.currentScreen)")
+                            })
+                    case .notifications:
+                        AnyView(NotificationsScreen().id("notifications").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .privacyPolicy:
+                        AnyView(PrivacyPolicyScreen().id("privacyPolicy").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .termsOfService:
+                        AnyView(TermsOfServiceScreen().id("termsOfService").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .onboarding:
+                        AnyView(OnboardingScreen().id("onboarding").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .devices:
+                        AnyView(DevicesScreen().id("devices").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .referral:
+                        AnyView(ReferralScreen().id("referral").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .deviceDetail:
+                        AnyView(DeviceDetailScreen(
+                            device: Device(
+                                name: "iPhone 13",
+                                owner: "Пользователь",
+                                type: .iphone,
+                                status: .protected,
+                                lastActive: "Только что"
+                            )
+                        )
+                        .id("deviceDetail")
+                        .environmentObject(navigationManager)
+                        .environmentObject(localizationManager))
+                    case .familyChat:
+                        AnyView(FamilyChatScreen().id("familyChat").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .vpnEnergyStats:
+                        AnyView(VPNEnergyStatsScreen().id("vpnEnergyStats").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .support:
+                        AnyView(SupportScreen().id("support").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .childRewards:
+                        AnyView(ChildRewardsScreen().id("childRewards").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .familyTournament:
+                        AnyView(FamilyTournamentView().id("familyTournament").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .unicornPet:
+                        AnyView(UnicornPetView().id("unicornPet").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .unicornUniverse:
+                        AnyView(UnicornUniverseView().id("unicornUniverse").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .wheelOfFortune:
+                        AnyView(WheelOfFortuneView().id("wheelOfFortune").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .youngDefender:
+                        AnyView(YoungDefenderView().id("youngDefender").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .familyProtector:
+                        AnyView(FamilyProtectorView().id("familyProtector").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .childGoalEditor:
+                        AnyView(ChildGoalEditorView().id("childGoalEditor").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .gamesParentalControl:
+                        AnyView(GamesParentalControlView().id("gamesParentalControl").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .languageSettings:
+                        AnyView(LanguageSettingsScreen()
+                            .id("languageSettings")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .notificationSettings:
+                        AnyView(NotificationSettingsScreen().id("notificationSettings").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .widgetConfiguration:
+                        AnyView(WidgetConfigurationScreen().id("widgetConfiguration").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .mainWithRegistration:
+                        AnyView(MainScreenWithRegistration(
+                            registrationVM: FamilyRegistrationViewModel()
+                        )
+                        .id("mainWithRegistration")
+                        .environmentObject(navigationManager)
+                        .environmentObject(localizationManager))
+                    case .childContent:
+                        AnyView(ChildContentScreen(
+                            category: "Игры",
+                            ageGroup: .school
+                        )
+                        .id("childContent")
+                        .environmentObject(navigationManager)
+                        .environmentObject(localizationManager))
+                    case .rewardsModal:
+                        AnyView(RewardsModalView(
+                            unicornBalance: .constant(245),
+                            weeklyRewarded: .constant(128),
+                            weeklyPunished: .constant(45)
+                        )
+                        .id("rewardsModal")
+                        .environmentObject(navigationManager)
+                        .environmentObject(localizationManager))
+                    case .rewardsQuickModal:
+                        AnyView(RewardsQuickModal(unicornBalance: .constant(245))
+                            .id("rewardsQuickModal")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    }
+                }
+                .id("screen_\(navigationManager.currentScreen.rawValue)")  // ✅ Дополнительный ID для принудительного обновления
+                .onAppear {
+                    print("🔍 DEBUG ALADDINApp: Рендер currentScreen = \(navigationManager.currentScreen)")
+                }
+                .navigationBarHidden(true)
+            }
+            .navigationViewStyle(StackNavigationViewStyle())
+            // КРИТИЧНО: Передача NavigationManager через EnvironmentObject
+            .environmentObject(navigationManager)
+            // ✅ Передаём LocalizationManager через EnvironmentObject
+            .environmentObject(localizationManager)
+            // ✅ Применяем локализацию через environment
+            .environment(\.locale, localizationManager.locale)
+            // ✅ КРИТИЧНО: Пересоздаём NavigationView при изменении currentScreen
+            .id("nav_\(navigationManager.currentScreen.rawValue)_\(localizationManager.currentLanguage.rawValue)")
+            // ✅ КРИТИЧНО: Инициализация навигации при первом появлении
+            .onAppear {
+                // Используем замыкание с захватом для безопасного доступа к StateObject
+                let navManager = navigationManager
+                let locManager = localizationManager
+                initializeNavigation(navigationManager: navManager, localizationManager: locManager)
+            }
+            // ✅ КРИТИЧНО: Дополнительное отслеживание изменений
+            .onChange(of: navigationManager.currentScreen) { newScreen in
+                print("🚨🚨🚨 ALADDINApp.onChange: currentScreen изменился на \(newScreen)")
+                print("🚨🚨🚨 ALADDINApp: Обновляем switch statement")
+                
+                // ✅ КРИТИЧНО: Принудительное обновление через RunLoop
+                RunLoop.main.perform {
+                    print("🚨 ALADDINApp: RunLoop.perform выполнен")
+                }
+            }
+            // 🌓 ПРИМЕНЯЕМ ТЕМУ
+            .preferredColorScheme(getPreferredColorScheme())
+        }
+    }  // ✅ Закрывает body: some Scene
+    
+    // MARK: - Theme Helper
+    
+    private func getPreferredColorScheme() -> ColorScheme? {
+        switch selectedTheme {
+        case "light": return .light
+        case "dark": return .dark
+        case "system": return nil // nil = системная тема
+        default: return nil
+        }
+    }
+    
+    // MARK: - Инициализация навигации
+    
+    /// ✅ Инициализация навигации при первом запуске приложения
+    /// Вызывается в .onAppear, когда все @StateObject уже созданы
+    private static var hasInitialized = false
+    
+    private func initializeNavigation(navigationManager: NavigationManager, localizationManager: LocalizationManager) {
+        // ✅ Используем статический флаг для предотвращения повторной инициализации
+        if ALADDINApp.hasInitialized {
+            print("🛠️ [ALADDINApp.initializeNavigation] Уже инициализировано, пропускаем")
+            return
+        }
+        
+        ALADDINApp.hasInitialized = true
+        print("🛠️ [ALADDINApp.initializeNavigation] Начинаем инициализацию...")
+        
+        let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")
+        
+        // ✅ Используем небольшую задержку для гарантии готовности UI
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if !onboardingDone {
+                // Показываем онбординг
+                navigationManager.navigationStack.removeAll()
+                navigationManager.currentScreen = .onboarding
+                print("🔴 ONBOARDING: Показываю онбординг на старте")
+            } else {
+                print("🟢 ONBOARDING: Пропущен, остаёмся на главной странице")
+                // ✅ ИСПРАВЛЕНИЕ: Остаёмся на главной странице, не перенаправляем автоматически
+                navigationManager.currentScreen = .main
+            }
+        }
+    }
+    
+    // MARK: - Проверка роли при запуске
+    
+    // ✅ ОТКЛЮЧЕНО: Автоматическое перенаправление по ролям
+    // Пользователь сам выбирает экран через главное меню
+    private func checkAndNavigateToUserInterface(navigationManager: NavigationManager) {
+        // Остаёмся на главной странице
+        print("✅ Остаёмся на главной странице")
+        navigationManager.currentScreen = .main
+    }
+}

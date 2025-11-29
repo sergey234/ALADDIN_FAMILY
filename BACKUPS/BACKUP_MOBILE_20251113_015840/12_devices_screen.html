@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN - Устройства</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: white;
+            border-radius: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            border: none;
+            color: white;
+        }
+        
+        .back-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .add-btn {
+            width: 44px;
+            height: 44px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            color: #F59E0B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(245, 158, 11, 0.1);
+            border-radius: 22px;
+            border: none;
+        }
+        
+        .add-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+        
+        /* DEVICE TABS */
+        .device-tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 5px;
+            border-radius: 15px;
+        }
+        
+        .device-tab {
+            flex: 1;
+            padding: 8px 8px;
+            background: transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .device-tab:hover {
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .device-tab.active {
+            background: rgba(245, 158, 11, 0.2);
+            border: 2px solid #F59E0B;
+            color: #F59E0B;
+        }
+        
+        .device-content {
+            display: none;
+        }
+        
+        .device-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .devices-summary {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .summary-title {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 5px;
+        }
+        
+        .summary-label {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .device-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .device-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .device-card.active {
+            border: 2px solid #22c55e;
+        }
+        
+        .device-card.inactive {
+            opacity: 0.6;
+        }
+        
+        .device-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .device-icon {
+            font-size: 32px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+        
+        .device-info {
+            flex: 1;
+        }
+        
+        .device-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .device-model {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .device-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-dot.online {
+            background: #22c55e;
+            box-shadow: 0 0 10px #22c55e;
+        }
+        
+        .status-dot.offline {
+            background: #ef4444;
+        }
+        
+        .device-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .device-detail {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+        }
+        
+        .detail-icon {
+            font-size: 14px;
+        }
+        
+        .detail-value {
+            opacity: 0.9;
+        }
+        
+        .device-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .device-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            text-align: center;
+        }
+        
+        .device-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .device-btn.danger {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+        }
+        
+        .protection-badge {
+            background: #22c55e;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 10px;
+        }
+        
+        .protection-badge.warning {
+            background: #f59e0b;
+        }
+        
+        .protection-badge.danger {
+            background: #ef4444;
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 6px 2px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 4px 1px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            flex: 1;
+            min-width: 0;
+            gap: 2px;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-item:hover {
+            transform: scale(1.1);
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            min-height: 300px;
+        }
+        
+        .empty-state.show {
+            display: flex;
+        }
+        
+        .empty-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .empty-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 12px;
+        }
+        
+        .empty-description {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 28px;
+            max-width: 300px;
+            line-height: 1.6;
+        }
+        
+        .empty-action {
+            background: rgba(245, 158, 11, 0.2);
+            border: 2px solid #F59E0B;
+            color: #F59E0B;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            outline: none;
+        }
+        
+        .empty-action:hover {
+            background: rgba(245, 158, 11, 0.3);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Управление устройствами</div>
+        <div class="screen">
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="back-btn" onclick="window.location.href='01_main_screen.html'" style="cursor: pointer;">←</div>
+                <div class="title">📱 Устройства</div>
+                <div class="add-btn" onclick="addDevice()" style="cursor: pointer;">➕</div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="main-content" role="main">
+                <!-- Сводка -->
+                <div class="devices-summary">
+                    <div class="summary-title">Всего устройств в семье</div>
+                    <div class="summary-stats">
+                        <div class="summary-item">
+                            <div class="summary-value">6</div>
+                            <div class="summary-label">Всего</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value">4</div>
+                            <div class="summary-label">Онлайн</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value">2</div>
+                            <div class="summary-label">Офлайн</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value">98%</div>
+                            <div class="summary-label">Защита</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Device Type Tabs -->
+                <div class="device-tabs">
+                    <div class="device-tab active" onclick="switchDeviceTab('phones')">📱 Телефоны</div>
+                    <div class="device-tab" onclick="switchDeviceTab('computers')">💻 Компьютеры</div>
+                    <div class="device-tab" onclick="switchDeviceTab('tablets')">📲 Планшеты</div>
+                </div>
+                
+                <!-- Empty State (скрыт когда есть устройства) -->
+                <div class="empty-state" id="empty-devices">
+                    <div class="empty-icon">📱</div>
+                    <div class="empty-title">Нет устройств</div>
+                    <div class="empty-description">
+                        Добавьте первое устройство для защиты вашей семьи. Откройте ALADDIN на другом устройстве и войдите в свой аккаунт.
+                    </div>
+                    <button class="empty-action" onclick="addDevice()">
+                        ➕ Добавить устройство
+                    </button>
+                </div>
+                
+                <!-- Tab Content: Телефоны -->
+                <div id="phones-content" class="device-content active" role="region" aria-label="Список телефонов семьи">
+                <div class="section-title">📱 Телефоны (3)</div>
+                
+                <!-- Мои устройства -->
+                <div class="section">
+                    <div class="section-title">Мои устройства</div>
+                    
+                    <!-- iPhone -->
+                    <div class="device-card active">
+                        <div class="device-header">
+                            <div class="device-icon">📱</div>
+                            <div class="device-info">
+                                <div class="device-name">iPhone 13 Pro</div>
+                                <div class="device-model">iOS 17.5 • Александр (А)</div>
+                            </div>
+                            <div class="device-status">
+                                <div class="status-dot online"></div>
+                                <span>Онлайн</span>
+                            </div>
+                        </div>
+                        <div class="device-details">
+                            <div class="device-detail">
+                                <div class="detail-icon">🛡️</div>
+                                <div class="detail-value">Защита: 100%</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">🔋</div>
+                                <div class="detail-value">87%</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">📶</div>
+                                <div class="detail-value">5G</div>
+                            </div>
+                        </div>
+                        <div class="device-actions">
+                            <div class="device-btn" onclick="sessionStorage.setItem('previousPage', '12_devices_screen.html'); window.location.href='04_analytics_screen.html'" style="cursor: pointer;">📊 Статистика</div>
+                            <div class="device-btn" onclick="lockDevice('iPhone 13 Pro')" style="cursor: pointer;">🔒 Блокировать</div>
+                            <div class="device-btn" onclick="showDeviceSettings('iPhone 13 Pro')" style="cursor: pointer;">⚙️ Настройки</div>
+                        </div>
+                    </div>
+                    
+                    <!-- MacBook -->
+                    <div class="device-card active">
+                        <div class="device-header">
+                            <div class="device-icon">💻</div>
+                            <div class="device-info">
+                                <div class="device-name">MacBook Pro 16"</div>
+                                <div class="device-model">macOS 14.5 • Александр (А)</div>
+                            </div>
+                            <div class="device-status">
+                                <div class="status-dot online"></div>
+                                <span>Онлайн</span>
+                            </div>
+                        </div>
+                        <div class="device-details">
+                            <div class="device-detail">
+                                <div class="detail-icon">🛡️</div>
+                                <div class="detail-value">Защита: 95%</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">🔋</div>
+                                <div class="detail-value">Заряжается</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">📶</div>
+                                <div class="detail-value">Wi-Fi</div>
+                            </div>
+                        </div>
+                        <div class="device-actions">
+                            <div class="device-btn" onclick="sessionStorage.setItem('previousPage', '12_devices_screen.html'); window.location.href='04_analytics_screen.html'" style="cursor: pointer;">📊 Статистика</div>
+                            <div class="device-btn" onclick="lockDevice('MacBook Pro 16&quot;')" style="cursor: pointer;">🔒 Блокировать</div>
+                            <div class="device-btn" onclick="showDeviceSettings('MacBook Pro 16&quot;')" style="cursor: pointer;">⚙️ Настройки</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Устройства семьи -->
+                <div class="section">
+                    <div class="section-title">Устройства семьи</div>
+                    
+                    <!-- Ребенок Б -->
+                    <div class="device-card active">
+                        <div class="device-header">
+                            <div class="device-icon">📱</div>
+                            <div class="device-info">
+                                <div class="device-name">iPhone 12</div>
+                                <div class="device-model">iOS 17.5 • Ребенок (Б)</div>
+                            </div>
+                            <div class="device-status">
+                                <div class="status-dot online"></div>
+                                <span>Онлайн</span>
+                            </div>
+                        </div>
+                        <div class="device-details">
+                            <div class="device-detail">
+                                <div class="detail-icon">🛡️</div>
+                                <div class="detail-value">Защита: 100%</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">⏰</div>
+                                <div class="detail-value">Экран: 2ч 15м</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">🔋</div>
+                                <div class="detail-value">45%</div>
+                            </div>
+                        </div>
+                        <div class="device-actions">
+                            <div class="device-btn" onclick="showMonitoring('iPhone 12')" style="cursor: pointer;">👁️ Мониторинг</div>
+                            <div class="device-btn" onclick="showLimits('iPhone 12')" style="cursor: pointer;">⏰ Лимиты</div>
+                            <div class="device-btn" onclick="lockDevice('iPhone 12')" style="cursor: pointer;">🔒 Блокировать</div>
+                        </div>
+                    </div>
+                    
+                    <!-- iPad -->
+                    <div class="device-card active">
+                        <div class="device-header">
+                            <div class="device-icon">📱</div>
+                            <div class="device-info">
+                                <div class="device-name">iPad Air</div>
+                                <div class="device-model">iPadOS 17.5 • Семейный</div>
+                            </div>
+                            <div class="device-status">
+                                <div class="status-dot online"></div>
+                                <span>Онлайн</span>
+                            </div>
+                        </div>
+                        <div class="device-details">
+                            <div class="device-detail">
+                                <div class="detail-icon">🛡️</div>
+                                <div class="detail-value">Защита: 98%</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">👥</div>
+                                <div class="detail-value">Общий доступ</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">🔋</div>
+                                <div class="detail-value">92%</div>
+                            </div>
+                        </div>
+                        <div class="device-actions">
+                            <div class="device-btn" onclick="sessionStorage.setItem('previousPage', '12_devices_screen.html'); window.location.href='04_analytics_screen.html'" style="cursor: pointer;">📊 Статистика</div>
+                            <div class="device-btn" onclick="showDeviceSettings('iPad Air')" style="cursor: pointer;">⚙️ Настройки</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Пожилой Г -->
+                    <div class="device-card inactive">
+                        <div class="device-header">
+                            <div class="device-icon">📱</div>
+                            <div class="device-info">
+                                <div class="device-name">iPhone 11</div>
+                                <div class="device-model">iOS 17.0 • Пожилой (Г)</div>
+                            </div>
+                            <div class="device-status">
+                                <div class="status-dot offline"></div>
+                                <span>Офлайн</span>
+                            </div>
+                        </div>
+                        <div class="device-details">
+                            <div class="device-detail">
+                                <div class="detail-icon">🛡️</div>
+                                <div class="detail-value">Защита: 100%</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">⏰</div>
+                                <div class="detail-value">2 часа назад</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">📍</div>
+                                <div class="detail-value">Дом</div>
+                            </div>
+                        </div>
+                        <div class="device-actions">
+                            <div class="device-btn">📊 История</div>
+                            <div class="device-btn">📞 Позвонить</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Супруга В -->
+                    <div class="device-card inactive">
+                        <div class="device-header">
+                            <div class="device-icon">📱</div>
+                            <div class="device-info">
+                                <div class="device-name">Samsung Galaxy S23</div>
+                                <div class="device-model">Android 14 • Супруга (В)</div>
+                            </div>
+                            <div class="device-status">
+                                <div class="status-dot offline"></div>
+                                <span>Офлайн</span>
+                            </div>
+                        </div>
+                        <div class="device-details">
+                            <div class="device-detail">
+                                <div class="detail-icon">🛡️</div>
+                                <div class="detail-value">Защита: 97%</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">⏰</div>
+                                <div class="detail-value">5 часов назад</div>
+                            </div>
+                            <div class="device-detail">
+                                <div class="detail-icon">🔋</div>
+                                <div class="detail-value">23%</div>
+                            </div>
+                        </div>
+                        <div class="device-actions">
+                            <div class="device-btn">📊 Статистика</div>
+                            <div class="device-btn">⚙️ Настройки</div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <!-- END Tab: Телефоны -->
+                
+                <!-- Tab Content: Компьютеры -->
+                <div id="computers-content" class="device-content" role="region" aria-label="Список компьютеров семьи">
+                    <div class="section-title">💻 Компьютеры (2)</div>
+                    
+                    <!-- MacBook -->
+                    <div class="device-card active">
+                        <div class="device-header">
+                            <div class="device-icon">💻</div>
+                            <div class="device-info">
+                                <div class="device-name">MacBook Pro 16"</div>
+                                <div class="device-model">macOS Sonoma 14.5 • Александр</div>
+                            </div>
+                            <div class="status-indicator active"></div>
+                        </div>
+                        <div class="device-stats">
+                            <div class="stat">
+                                <div class="stat-label">Онлайн</div>
+                                <div class="stat-value">2ч 15м</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Последний вход</div>
+                                <div class="stat-value">Сейчас</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Защита</div>
+                                <div class="stat-value">100%</div>
+                            </div>
+                        </div>
+                        <div class="device-actions">
+                            <div class="device-btn" onclick="sessionStorage.setItem('previousPage', '12_devices_screen.html'); window.location.href='04_analytics_screen.html'" style="cursor: pointer;">📊 Статистика</div>
+                            <div class="device-btn" onclick="showDeviceSettings('MacBook Pro')" style="cursor: pointer;">⚙️ Настройки</div>
+                        </div>
+                    </div>
+                    
+                    <!-- iMac -->
+                    <div class="device-card active">
+                        <div class="device-header">
+                            <div class="device-icon">🖥️</div>
+                            <div class="device-info">
+                                <div class="device-name">iMac 27"</div>
+                                <div class="device-model">macOS Sonoma 14.5 • Семейный</div>
+                            </div>
+                            <div class="status-indicator active"></div>
+                        </div>
+                        <div class="device-stats">
+                            <div class="stat">
+                                <div class="stat-label">Онлайн</div>
+                                <div class="stat-value">5ч 42м</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Последний вход</div>
+                                <div class="stat-value">Сейчас</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Защита</div>
+                                <div class="stat-value">100%</div>
+                            </div>
+                        </div>
+                        <div class="device-actions">
+                            <div class="device-btn" onclick="sessionStorage.setItem('previousPage', '12_devices_screen.html'); window.location.href='04_analytics_screen.html'" style="cursor: pointer;">📊 Статистика</div>
+                            <div class="device-btn" onclick="showDeviceSettings('iMac')" style="cursor: pointer;">⚙️ Настройки</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END Tab: Компьютеры -->
+                
+                <!-- Tab Content: Планшеты -->
+                <div id="tablets-content" class="device-content" role="region" aria-label="Список планшетов семьи">
+                    <div class="section-title">📲 Планшеты (1)</div>
+                    
+                    <!-- iPad -->
+                    <div class="device-card active">
+                        <div class="device-header">
+                            <div class="device-icon">📲</div>
+                            <div class="device-info">
+                                <div class="device-name">iPad Air</div>
+                                <div class="device-model">iPadOS 17.5 • Семейный</div>
+                            </div>
+                            <div class="status-indicator active"></div>
+                        </div>
+                        <div class="device-stats">
+                            <div class="stat">
+                                <div class="stat-label">Онлайн</div>
+                                <div class="stat-value">1ч 8м</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Последний вход</div>
+                                <div class="stat-value">Сейчас</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Защита</div>
+                                <div class="stat-value">98%</div>
+                            </div>
+                        </div>
+                        <div class="device-actions">
+                            <div class="device-btn" onclick="sessionStorage.setItem('previousPage', '12_devices_screen.html'); window.location.href='04_analytics_screen.html'" style="cursor: pointer;">📊 Статистика</div>
+                            <div class="device-btn" onclick="lockDevice('iPad Air')" style="cursor: pointer;">🔒 Блокировать</div>
+                            <div class="device-btn" onclick="showDeviceSettings('iPad Air')" style="cursor: pointer;">⚙️ Настройки</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END Tab: Планшеты -->
+                
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация" style="position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); padding: 6px 2px;">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🏠</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🛡️</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🔔</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Уведомления</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">👤</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Профиль</div>
+                </button>
+                <button class="nav-item active" aria-current="page" aria-label="Устройства семьи" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">📱</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center;">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    function switchDeviceTab(deviceType) {
+        // Удаляем active класс со всех табов
+        document.querySelectorAll('.device-tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.device-content').forEach(content => content.classList.remove('active'));
+        
+        // Добавляем active класс к выбранному табу
+        event.target.classList.add('active');
+        document.getElementById(deviceType + '-content').classList.add('active');
+        
+        const titles = {
+            'phones': 'Телефоны',
+            'computers': 'Компьютеры',
+            'tablets': 'Планшеты'
+        };
+        
+        showNotification(`📂 Категория: ${titles[deviceType]}`, 'info');
+    }
+    
+    function addDevice() {
+        showNotification('➕ Добавление нового устройства\n\n1. Откройте ALADDIN на новом устройстве\n2. Отсканируйте QR-код семьи\n3. Устройство добавится автоматически', 'info');
+    }
+
+    function lockDevice(deviceName) {
+        showNotification(
+            `🔒 БЛОКИРОВКА: ${deviceName}\n\n` +
+            `✅ Устройство заблокировано!\n\n` +
+            `Что заблокировано:\n` +
+            `• 📱 Все приложения\n` +
+            `• 🌐 Интернет\n` +
+            `• 📞 Звонки (кроме экстренных)\n` +
+            `• 📧 Сообщения\n\n` +
+            `💡 Разблокировать можно в любой момент`,
+            'warning'
+        );
+    }
+
+    function showDeviceSettings(deviceName) {
+        showNotification(
+            `⚙️ НАСТРОЙКИ: ${deviceName}\n\n` +
+            `🛡️ Уровень защиты: Максимальный\n` +
+            `🔐 VPN: Включен (Автоматически)\n` +
+            `⏱️ Лимит времени: Не установлен\n` +
+            `🚫 Контент-фильтр: Включен\n` +
+            `📊 Мониторинг: 24/7\n` +
+            `🔋 Энергосбережение: Умное\n\n` +
+            `💡 Нажмите для изменения →`,
+            'info'
+        );
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.innerHTML = message.replace(/\n/g, '<br>');
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#10B981' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
+            color: white;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            max-width: 300px;
+            text-align: left;
+            line-height: 1.8;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 4000);
+    }
+    
+    // Мониторинг устройства
+    function showMonitoring(deviceName) {
+        showNotification(
+            `👁️ МОНИТОРИНГ: ${deviceName}\n\n` +
+            `📊 Активность в реальном времени:\n` +
+            `• Сейчас: Instagram (15 мин)\n` +
+            `• До этого: YouTube (32 мин)\n` +
+            `• Экранное время: 2ч 15м\n\n` +
+            `🌐 Посещённые сайты:\n` +
+            `• vk.com (8 раз)\n` +
+            `• youtube.com (5 раз)\n\n` +
+            `🛡️ Заблокировано: 12 угроз\n` +
+            `📍 Местоположение: Дом\n\n` +
+            `✅ Всё под контролем!`,
+            'info'
+        );
+    }
+    
+    // Лимиты времени
+    function showLimits(deviceName) {
+        showNotification(
+            `⏰ ЛИМИТЫ: ${deviceName}\n\n` +
+            `📱 Текущие лимиты:\n` +
+            `• Instagram: 30 мин/день\n` +
+            `  Использовано: 15 мин (50%)\n` +
+            `• TikTok: 20 мин/день\n` +
+            `  Использовано: 0 мин\n` +
+            `• YouTube: 1 час/день\n` +
+            `  Использовано: 32 мин (53%)\n\n` +
+            `⏱️ Время сна: 22:00-07:00\n` +
+            `📅 Расписание: Есть\n\n` +
+            `💡 Нажмите для изменения →`,
+            'info'
+        );
+    }
+    
+    // Проверка наличия устройств и показ empty state если нужно
+    function checkEmptyDevices() {
+        const devices = document.querySelectorAll('.device-card');
+        const emptyState = document.getElementById('empty-devices');
+        const deviceContents = document.querySelectorAll('.device-content');
+        const devicesSummary = document.querySelector('.devices-summary');
+        const deviceTabs = document.querySelector('.device-tabs');
+        
+        if (devices.length === 0) {
+            // Показываем empty state
+            if (emptyState) emptyState.classList.add('show');
+            // Скрываем весь контент с устройствами (добавляем класс, не трогаем display!)
+            deviceContents.forEach(content => content.style.visibility = 'hidden');
+            // Скрываем summary и tabs
+            if (devicesSummary) devicesSummary.style.display = 'none';
+            if (deviceTabs) deviceTabs.style.display = 'none';
+        } else {
+            // Скрываем empty state если устройства есть
+            if (emptyState) emptyState.classList.remove('show');
+            // Возвращаем видимость (НЕ трогаем display - это управляется через классы!)
+            deviceContents.forEach(content => content.style.visibility = 'visible');
+            if (devicesSummary) devicesSummary.style.display = 'block';
+            if (deviceTabs) deviceTabs.style.display = 'flex';
+        }
+    }
+    
+    // Проверяем при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        checkEmptyDevices();
+    });
+</script>
+
+</body>
+</html>

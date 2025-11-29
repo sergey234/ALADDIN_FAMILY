@@ -1,0 +1,47 @@
+✅ ВСЕ ФАЙЛЫ ДОБАВЛЕНЫ В XCODE PROJECT
+
+📦 Добавлено 7 файлов:
+
+1. ✅ NetworkError.swift
+   - Путь: Core/Network/NetworkError.swift
+   - UUID: 5E32FFEA2EAD1852000574C4
+   - В Sources: 5E32FFEB2EAD1852000574C4
+
+2. ✅ StatItem.swift
+   - Путь: Shared/Components/StatItem.swift
+   - UUID: 5E32FFE82EAD1836000574C4
+   - В Sources: 5E32FFE92EAD1836000574C4
+
+3. ✅ FamilyMemberCard.swift
+   - Путь: Shared/Components/Cards/FamilyMemberCard.swift
+   - UUID: 5E32FFEC2EAD1876000574C4
+   - В Sources: 5E32FFED2EAD1876000574C4
+
+4. ✅ ProfileEditView.swift
+   - Путь: Shared/Components/Modals/ProfileEditView.swift
+   - UUID: 5E32FFEE2EAD18B2000574C4
+   - В Sources: 5E32FFEF2EAD18B2000574C4
+
+5. ✅ QRScannerModal.swift
+   - Путь: Shared/Components/QRScannerModal.swift
+   - UUID: 5E32FFF02EAD18D4000574C4
+   - В Sources: 5E32FFF12EAD18D4000574C4
+
+6. ✅ RecoveryOptionsModal.swift
+   - Путь: Shared/Components/RecoveryOptionsModal.swift
+   - UUID: 5E32FFF22EAD1915000574C4
+   - В Sources: 5E32FFF32EAD1915000574C4
+
+7. ✅ AvatarSelector.swift
+   - Путь: Shared/Components/AvatarSelector.swift
+   - UUID: 5E32FFF42EAD199B000574C4
+   - В Sources: 5E32FFF52EAD199B000574C4
+
+---
+
+✅ ВСЕ ФАЙЛЫ СОХРАНЕНЫ В project.pbxproj
+✅ ВСЕ ФАЙЛЫ ВКЛЮЧЕНЫ В Sources Build Phase
+✅ ВСЕ ФАЙЛЫ ИМЕЮТ PBXFileReference
+✅ ВСЕ ФАЙЛЫ ИМЕЮТ PBXBuildFile
+
+📝 Файлы больше не исчезнут при компиляции проекта!

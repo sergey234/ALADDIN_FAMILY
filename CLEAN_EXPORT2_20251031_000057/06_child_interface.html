@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Wireframes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .back-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 280px;
+        }
+        
+        .profile-btn {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #0a1128;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            padding-bottom: 5px;
+        }
+        
+        .welcome-section {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 20px;
+            text-align: center;
+            border: 3px solid #FFD700;
+        }
+        
+        .welcome-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        /* AGE TABS */
+        .age-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            overflow-x: hidden;
+            width: 100%;
+        }
+        
+        .age-tab {
+            flex: 1;
+            padding: 8px 6px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            text-align: center;
+            min-width: 0;
+        }
+        
+        .age-tab:hover {
+            background: rgba(255, 215, 0, 0.2);
+        }
+        
+        .age-tab.active {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: 2px solid #FFD700;
+            color: #0a1128;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .age-content {
+            display: none;
+        }
+        
+        .age-content.active {
+            display: block;
+            animation: fadeInUp 0.3s;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .welcome-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .level-progress {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .level-text {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            height: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+            height: 100%;
+            width: 65%;
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .progress-fill::after {
+            content: '⭐';
+            position: absolute;
+            right: -10px;
+            top: -5px;
+            font-size: 20px;
+        }
+        
+        .games-section {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 25px;
+            border: 3px solid #4ECDC4;
+        }
+        
+        .games-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4ECDC4;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .game-card {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-3px);
+            border-color: #FFD700;
+            box-shadow: 0 8px 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .game-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .game-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .game-desc {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .achievements-section {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 25px;
+            border: 3px solid #45B7D1;
+        }
+        
+        .achievements-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #45B7D1;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .achievement-item:last-child {
+            border-bottom: none;
+        }
+        
+        .achievement-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .achievement-info {
+            flex: 1;
+        }
+        
+        .achievement-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .achievement-desc {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .achievement-status {
+            font-size: 20px;
+        }
+        
+        .safety-section {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 25px;
+            border: 3px solid #FF6B6B;
+        }
+        
+        .safety-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FF6B6B;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .safety-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .safety-stat {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .safety-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        .safety-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .safety-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 6px 2px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: none;
+            border: none;
+            padding: 4px 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+        
+        .status-left {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .status-right {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #FFD700;
+            color: #0a1128;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Детский интерфейс</div>
+        <div class="screen">
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Заголовок -->
+            <div class="header">
+                <button class="back-btn" onclick="goBackSmart()" aria-label="Назад" style="cursor: pointer;">←</button>
+                <div class="title">🎮 ALADDIN Kids</div>
+                <button class="profile-btn" aria-label="Открыть профиль" onclick="window.location.href='14b_child_rewards_screen.html'" style="cursor: pointer;">👦</button>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="main-content" role="main">
+                <!-- Приветствие -->
+                <div class="welcome-section" role="region" aria-label="Приветствие">
+                    <div class="welcome-title">Привет, Алексей! 👋</div>
+                    <div class="welcome-subtitle">Ты молодец! Продолжай изучать безопасность!</div>
+                    
+                    <div class="level-progress">
+                        <div class="level-text">Уровень 5 - Защитник семьи</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Age Tabs -->
+                <div class="welcome-section">
+                    <div class="welcome-title">🎯 Выбери свой возраст</div>
+                    <div class="age-tabs">
+                        <div class="age-tab active" onclick="switchAgeTab('kids')">👶 1-6 лет</div>
+                        <div class="age-tab" onclick="switchAgeTab('school')">🎒 7-12 лет</div>
+                        <div class="age-tab" onclick="switchAgeTab('teen')">🎓 13-17 лет</div>
+                    </div>
+                </div>
+                
+                <!-- Age Content: 1-6 лет (Малыши) -->
+                <div id="kids-content" class="age-content active">
+                    <!-- Игры для малышей -->
+                    <div class="games-section" role="region" aria-label="Игры для малышей">
+                        <div class="games-title">🎨 Игры для малышей</div>
+                        <div class="games-grid">
+                            <div class="game-card" onclick="playGame('Раскраска безопасности')">
+                                <div class="game-icon">🎨</div>
+                                <div class="game-name">Раскраска</div>
+                                <div class="game-desc">Раскрась героев безопасности</div>
+                            </div>
+                            <div class="game-card" onclick="playGame('Найди друга')">
+                                <div class="game-icon">🔍</div>
+                                <div class="game-name">Найди друга</div>
+                                <div class="game-desc">Помоги найти безопасных друзей</div>
+                            </div>
+                            <div class="game-card" onclick="playGame('Собери картинку')">
+                                <div class="game-icon">🧩</div>
+                                <div class="game-name">Пазл</div>
+                                <div class="game-desc">Собери простую картинку</div>
+                            </div>
+                            <div class="game-card" onclick="playGame('Угадай звук')">
+                                <div class="game-icon">🔊</div>
+                                <div class="game-name">Звуки</div>
+                                <div class="game-desc">Угадай звуки безопасности</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Простые правила -->
+                    <div class="safety-section" role="region" aria-label="Простые правила безопасности">
+                        <div class="safety-title">🛡️ Простые правила</div>
+                        <div style="font-size: 16px; line-height: 2;">
+                            <div>✅ Не разговаривай с незнакомцами</div>
+                            <div>✅ Не открывай странные письма</div>
+                            <div>✅ Позови маму или папу если страшно</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Age Content: 7-12 лет (Школьники) -->
+                <div id="school-content" class="age-content">
+                    <!-- Игры для школьников -->
+                    <div class="games-section" role="region" aria-label="Игры для школьников">
+                        <div class="games-title">🎯 Игры для школьников</div>
+                        <div class="games-grid">
+                            <div class="game-card" onclick="playGame('Защитник')">
+                                <div class="game-icon">🛡️</div>
+                                <div class="game-name">Защитник</div>
+                                <div class="game-desc">Защити семью от вирусов</div>
+                            </div>
+                            <div class="game-card" onclick="playGame('Детектив')">
+                                <div class="game-icon">🔍</div>
+                                <div class="game-name">Детектив</div>
+                                <div class="game-desc">Найди опасные сайты</div>
+                            </div>
+                            <div class="game-card" onclick="playGame('Пазл')">
+                                <div class="game-icon">🧩</div>
+                                <div class="game-name">Пазл</div>
+                                <div class="game-desc">Собери правила</div>
+                            </div>
+                            <div class="game-card" onclick="playGame('Викторина')">
+                                <div class="game-icon">🎲</div>
+                                <div class="game-name">Викторина</div>
+                                <div class="game-desc">Ответь на вопросы</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Достижения -->
+                    <div class="achievements-section">
+                        <div class="achievements-title">🏆 Мои достижения</div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">🥇</div>
+                            <div class="achievement-info">
+                                <div class="achievement-name">Первый защитник</div>
+                                <div class="achievement-desc">Заверши первую игру</div>
+                            </div>
+                            <div class="achievement-status">✅</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">🥈</div>
+                            <div class="achievement-info">
+                                <div class="achievement-name">Умный детектив</div>
+                                <div class="achievement-desc">Найди 10 опасных сайтов</div>
+                            </div>
+                            <div class="achievement-status">✅</div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">🥉</div>
+                            <div class="achievement-info">
+                                <div class="achievement-name">Мастер пазлов</div>
+                                <div class="achievement-desc">Собери 5 пазлов</div>
+                            </div>
+                            <div class="achievement-status">🔄</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Age Content: 13-17 лет (Подростки) -->
+                <div id="teen-content" class="age-content">
+                    <!-- Обучение для подростков -->
+                    <div class="games-section">
+                        <div class="games-title">📚 Обучение безопасности</div>
+                        <div class="games-grid">
+                            <div class="game-card" onclick="playGame('Киберзащита')">
+                                <div class="game-icon">🛡️</div>
+                                <div class="game-name">Киберзащита</div>
+                                <div class="game-desc">Стань экспертом по безопасности</div>
+                            </div>
+                            <div class="game-card" onclick="playGame('Фишинг тест')">
+                                <div class="game-icon">🎣</div>
+                                <div class="game-name">Фишинг</div>
+                                <div class="game-desc">Распознай опасные письма</div>
+                            </div>
+                            <div class="game-card" onclick="playGame('Социальная инженерия')">
+                                <div class="game-icon">🕵️</div>
+                                <div class="game-name">Соц. инженерия</div>
+                                <div class="game-desc">Защитись от манипуляций</div>
+                            </div>
+                            <div class="game-card" onclick="playGame('Пароли')">
+                                <div class="game-icon">🔐</div>
+                                <div class="game-name">Пароли</div>
+                                <div class="game-desc">Создай надёжный пароль</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Продвинутые советы -->
+                    <div class="safety-section">
+                        <div class="safety-title">🛡️ Продвинутые советы</div>
+                        <div style="font-size: 14px; line-height: 1.8;">
+                            <div>• Используй двухфакторную аутентификацию (2FA)</div>
+                            <div>• Проверяй URL перед переходом по ссылкам</div>
+                            <div>• Не публикуй личную информацию в соц. сетях</div>
+                            <div>• Используй VPN в общественных Wi-Fi</div>
+                            <div>• Обновляй приложения регулярно</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- СТАРОЕ СОДЕРЖИМОЕ (СКРЫТО) -->
+                <div style="display: none;">
+                <!-- Игры -->
+                <div class="games-section">
+                    <div class="games-title">🎯 Игры безопасности</div>
+                    <div class="games-grid">
+                        <div class="game-card" onclick="playGame('Защитник')">
+                            <div class="game-icon">🛡️</div>
+                            <div class="game-name">Защитник</div>
+                            <div class="game-desc">Защити семью от вирусов</div>
+                        </div>
+                        <div class="game-card" onclick="playGame('Детектив')">
+                            <div class="game-icon">🔍</div>
+                            <div class="game-name">Детектив</div>
+                            <div class="game-desc">Найди опасные сайты</div>
+                        </div>
+                        <div class="game-card" onclick="playGame('Пазл')">
+                            <div class="game-icon">🧩</div>
+                            <div class="game-name">Пазл</div>
+                            <div class="game-desc">Собери правила</div>
+                        </div>
+                        <div class="game-card" onclick="playGame('Викторина')">
+                            <div class="game-icon">🎲</div>
+                            <div class="game-name">Викторина</div>
+                            <div class="game-desc">Ответь на вопросы</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Достижения -->
+                <div class="achievements-section">
+                    <div class="achievements-title">🏆 Достижения</div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon">🥇</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">Первый защитник</div>
+                            <div class="achievement-desc">Заверши первую игру</div>
+                        </div>
+                        <div class="achievement-status">✅</div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon">🥈</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">Умный детектив</div>
+                            <div class="achievement-desc">Найди 10 опасных сайтов</div>
+                        </div>
+                        <div class="achievement-status">✅</div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon">🥉</div>
+                        <div class="achievement-info">
+                            <div class="achievement-name">Мастер пазлов</div>
+                            <div class="achievement-desc">Собери 5 пазлов</div>
+                        </div>
+                        <div class="achievement-status">🔄</div>
+                    </div>
+                </div>
+                
+                <!-- Безопасность -->
+                <div class="safety-section">
+                    <div class="safety-title">🛡️ Моя безопасность</div>
+                    <div class="safety-stats">
+                        <div class="safety-stat">
+                            <div class="safety-icon">✅</div>
+                            <div class="safety-value">15</div>
+                            <div class="safety-label">Уроков пройдено</div>
+                        </div>
+                        <div class="safety-stat">
+                            <div class="safety-icon">⭐</div>
+                            <div class="safety-value">127</div>
+                            <div class="safety-label">Звезд заработано</div>
+                        </div>
+                        <div class="safety-stat">
+                            <div class="safety-icon">🎯</div>
+                            <div class="safety-value">8</div>
+                            <div class="safety-label">Игр завершено</div>
+                        </div>
+                        <div class="safety-stat">
+                            <div class="safety-icon">🏆</div>
+                            <div class="safety-value">3</div>
+                            <div class="safety-label">Достижений</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN">
+                    <div class="nav-icon">🛡️</div>
+                    <div class="nav-label">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления">
+                    <div class="nav-icon">🔔</div>
+                    <div class="nav-label">Уведомления</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи">
+                    <div class="nav-icon">📱</div>
+                    <div class="nav-label">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    function switchAgeTab(age) {
+        // Удаляем active класс со всех табов
+        document.querySelectorAll('.age-tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.age-content').forEach(content => content.classList.remove('active'));
+        
+        // Добавляем active класс к выбранному табу
+        event.target.classList.add('active');
+        document.getElementById(age + '-content').classList.add('active');
+        
+        const titles = {
+            'kids': 'Малыши (1-6 лет)',
+            'school': 'Школьники (7-12 лет)',
+            'teen': 'Подростки (13-17 лет)'
+        };
+        
+        showNotification(`🎯 Возраст: ${titles[age]}`, 'info');
+    }
+    
+    function playGame(gameName) {
+        showNotification(`🎮 Запуск игры: ${gameName}\n\n🏆 Заработай очки и получи награды!`, 'success');
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.innerHTML = message.replace(/\n/g, '<br>');
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#10B981' : '#3B82F6'};
+            color: white;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            max-width: 300px;
+            text-align: center;
+            line-height: 1.8;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+    
+    // Умная навигация назад
+    function goBackSmart() {
+        const previousPage = sessionStorage.getItem('previousPage');
+        console.log('🔍 Previous page:', previousPage);
+        
+        if (previousPage && previousPage !== '06_child_interface.html') {
+            console.log('✅ Возврат на:', previousPage);
+            window.location.href = previousPage;
+        } else {
+            console.log('✅ Возврат на главную (default)');
+            window.location.href = '01_main_screen.html';
+        }
+    }
+</script>
+
+</body>
+</html>

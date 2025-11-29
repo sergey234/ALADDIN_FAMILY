@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Wireframes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        
+        .search-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+        
+        .profile-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 15px;
+        }
+        
+        .profile-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .profile-role {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 15px;
+        }
+        
+        .profile-status {
+            background: #10B981;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .settings-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 20px;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .setting-icon {
+            width: 35px;
+            height: 35px;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 17px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .setting-details {
+            flex: 1;
+        }
+        
+        .setting-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+        
+        .setting-desc {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .setting-value {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .setting-arrow {
+            font-size: 16px;
+            opacity: 0.5;
+        }
+        
+        .switch {
+            width: 50px;
+            height: 30px;
+            background: #10B981;
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .switch.off {
+            background: #6B7280;
+        }
+        
+        .switch::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 13px;
+            top: 2px;
+            right: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .switch.off::after {
+            right: 22px;
+        }
+        
+        .subscription-section {
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px solid #F59E0B;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        /* УБИРАЕМ ВСЕ ПОЛОСКИ внутри subscription-section */
+        .subscription-section *,
+        .subscription-section *::before,
+        .subscription-section *::after {
+            border: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
+            border-left: none !important;
+            border-right: none !important;
+            box-shadow: none;
+        }
+        
+        .subscription-section .subscription-btn {
+            border: none !important;
+        }
+        
+        .subscription-card {
+            border: none !important;
+            outline: none !important;
+        }
+        
+        .subscription-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 10px;
+        }
+        
+        .subscription-desc {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+        
+        .subscription-btn {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .subscription-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+        
+        /* Карточки внутри подписки - БЕЗ полосок + hover */
+        .subscription-card {
+            border: none !important;
+            border-bottom: none !important;
+            transition: all 0.3s ease;
+        }
+        
+        .subscription-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 6px 2px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: none;
+            border: none;
+            padding: 4px 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+        
+        .status-left {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .status-right {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #F59E0B;
+            color: #0a1128;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        /* ACCORDION STYLES */
+        .accordion-section {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+        }
+        
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .accordion-header:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .accordion-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .accordion-icon {
+            font-size: 28px;
+        }
+        
+        .accordion-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        
+        .accordion-subtitle {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 3px;
+        }
+        
+        .accordion-arrow {
+            font-size: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .accordion-section.active .accordion-arrow {
+            transform: rotate(90deg);
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .accordion-section.active .accordion-content {
+            max-height: 1000px;
+        }
+        
+        .accordion-inner {
+            padding: 0 20px 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Экран настроек</div>
+        <div class="screen">
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="back-btn" onclick="window.location.href='01_main_screen.html'" style="cursor: pointer;">←</div>
+                <div class="title">⚙️ Настройки</div>
+                <div class="search-btn" onclick="searchSettings()" style="cursor: pointer;">🔍</div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="main-content" role="main">
+                <!-- Профиль пользователя -->
+                <div class="profile-section">
+                    <div class="profile-avatar">👨</div>
+                    <div class="profile-name">Александр</div>
+                    <div class="profile-role">Администратор семьи</div>
+                    <div class="profile-status">Premium активен</div>
+                </div>
+                
+                <!-- Подписка -->
+                <div class="subscription-section">
+                    <div class="subscription-title">💎 Premium подписка</div>
+                    <div class="subscription-desc">Получите доступ ко всем функциям защиты</div>
+                    <button class="subscription-btn" onclick="sessionStorage.setItem('previousPage', '05_settings_screen.html'); window.location.href='09_tariffs_screen.html'" style="cursor: pointer;">Управлять подпиской</button>
+                    
+                    <!-- Дополнительные карточки БЕЗ полосок -->
+                    <div class="subscription-card" onclick="showWeeklyReport()" style="cursor: pointer; margin-top: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center; border: none;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size: 24px;">📊</div>
+                            <div>
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 3px;">Еженедельный отчёт</div>
+                                <div style="font-size: 11px; opacity: 0.7;">Статистика активности и защиты</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 18px; opacity: 0.5;">›</div>
+                    </div>
+                    
+                    <div class="subscription-card" onclick="showPremiumDiscount()" style="cursor: pointer; margin-top: 12px; background: rgba(245, 158, 11, 0.15); border: none !important; border-radius: 12px; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="font-size: 24px;">🎁</div>
+                            <div>
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 3px;">Скидка на Premium</div>
+                                <div style="font-size: 11px; opacity: 0.7;">Специальное предложение -30%</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 18px; opacity: 0.5;">›</div>
+                    </div>
+                </div>
+                
+                <!-- ACCORDION СЕКЦИИ -->
+                <!-- 1. Безопасность и Приватность -->
+                <div class="accordion-section active" role="region" aria-label="Безопасность и Приватность">
+                    <div class="accordion-header" onclick="toggleSettingsAccordion(this)" role="button" aria-expanded="true" aria-controls="security-content">
+                        <div class="accordion-header-left">
+                            <div class="accordion-icon">🔐</div>
+                            <div>
+                                <div class="accordion-title">Безопасность и Приватность</div>
+                                <div class="accordion-subtitle">7 настроек защиты</div>
+                            </div>
+                        </div>
+                        <div class="accordion-arrow">▶️</div>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            <div class="setting-item" onclick="toggleAutoProtection(this)" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">🛡️</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Автозащита</div>
+                                        <div class="setting-desc">Автоматическое сканирование</div>
+                                    </div>
+                                </div>
+                                <div class="switch" id="auto-protection-switch" role="switch" aria-checked="true" aria-label="Автозащита"></div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="toggleAppPassword(this)" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">🔐</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Пароль приложения</div>
+                                        <div class="setting-desc">Дополнительная защита</div>
+                                    </div>
+                                </div>
+                                <div class="switch off" id="password-switch" role="switch" aria-checked="false" aria-label="Пароль приложения"></div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="toggleBiometry(this)" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">🔒</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Биометрия</div>
+                                        <div class="setting-desc">Face ID / Touch ID</div>
+                                    </div>
+                                </div>
+                                <div class="switch" id="biometry-switch" role="switch" aria-checked="true" aria-label="Биометрия"></div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="showScreenLock()" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">📱</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Блокировка экрана</div>
+                                        <div class="setting-desc" id="screen-lock-text">5 минут</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="sessionStorage.setItem('previousPage', '05_settings_screen.html'); window.location.href='10_info_screen.html'" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">📄</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Политика конфиденциальности</div>
+                                        <div class="setting-desc">Как мы защищаем ваши данные</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="window.location.href='02_protection_screen.html'" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">🚨</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Защита от обхода</div>
+                                        <div class="setting-desc">VPN, Инкогнито, Tor, Proxy</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="window.location.href='02_protection_screen.html'" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">🦠</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Антивирус</div>
+                                        <div class="setting-desc">Сканирование и защита</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="openEnergySettings()" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">⚡</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">VPN Энергосбережение</div>
+                                        <div class="setting-desc" id="energy-status-text">Умное управление • ~35% экономии</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 2. Семья и Контроль -->
+                <div class="accordion-section" role="region" aria-label="Семья и Контроль">
+                    <div class="accordion-header" onclick="toggleSettingsAccordion(this)" role="button" aria-expanded="false" aria-controls="family-content">
+                        <div class="accordion-header-left">
+                            <div class="accordion-icon">👨‍👩‍👧‍👦</div>
+                            <div>
+                                <div class="accordion-title">Семья и Контроль</div>
+                                <div class="accordion-subtitle">5 функций управления</div>
+                            </div>
+                        </div>
+                        <div class="accordion-arrow">▶️</div>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            <div class="setting-item" onclick="sessionStorage.setItem('previousPage', '05_settings_screen.html'); window.location.href='03_family_screen.html'" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">👨‍👩‍👧‍👦</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Управление семьей</div>
+                                        <div class="setting-desc">Добавить / удалить участников</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="sessionStorage.setItem('previousPage', '05_settings_screen.html'); window.location.href='14_parental_control_screen.html'" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">👶</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Родительский контроль</div>
+                                        <div class="setting-desc">Полный контроль активности детей</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="sessionStorage.setItem('previousPage', '05_settings_screen.html'); window.location.href='07_elderly_interface.html'" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">👴</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Упрощенный режим</div>
+                                        <div class="setting-desc">Для пожилых членов семьи</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="sessionStorage.setItem('previousPage', '05_settings_screen.html'); window.location.href='06_child_interface.html'" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">🧒</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Детский режим</div>
+                                        <div class="setting-desc">Безопасный интерфейс для детей</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="window.location.href='12_devices_screen.html'" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">📱</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Устройства семьи</div>
+                                        <div class="setting-desc">Управление всеми устройствами</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3. Система и Настройки -->
+                <div class="accordion-section" role="region" aria-label="Система и Настройки">
+                    <div class="accordion-header" onclick="toggleSettingsAccordion(this)" role="button" aria-expanded="false" aria-controls="system-content">
+                        <div class="accordion-header-left">
+                            <div class="accordion-icon">⚙️</div>
+                            <div>
+                                <div class="accordion-title">Система и Настройки</div>
+                                <div class="accordion-subtitle">8 параметров</div>
+                            </div>
+                        </div>
+                        <div class="accordion-arrow">▶️</div>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-inner">
+                            <div class="setting-item" onclick="window.location.href='08_notifications_screen.html'" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">🔔</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Уведомления</div>
+                                        <div class="setting-desc">Настройка уведомлений</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="toggleTheme(this)" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">🌙</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Темная тема</div>
+                                        <div class="setting-desc">Автоматическое переключение</div>
+                                    </div>
+                                </div>
+                                <div class="switch" id="theme-switch"></div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="changeLanguage()" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">🌍</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Язык</div>
+                                        <div class="setting-desc" id="language-text">Русский</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="sessionStorage.setItem('previousPage', '05_settings_screen.html'); window.location.href='10_info_screen.html'" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">📚</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Информационный лист</div>
+                                        <div class="setting-desc">Полная информация о ALADDIN</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="sessionStorage.setItem('previousPage', '05_settings_screen.html'); window.location.href='09_tariffs_screen.html'">
+                                <div class="setting-info">
+                                    <div class="setting-icon">💎</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Тарифные планы</div>
+                                        <div class="setting-desc">Выбор подписки и функций</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="window.location.href='13_referral_screen.html'">
+                                <div class="setting-info">
+                                    <div class="setting-icon">🎁</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Реферальная система</div>
+                                        <div class="setting-desc">Приглашайте друзей</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="sessionStorage.setItem('previousPage', '05_settings_screen.html'); window.location.href='10_info_screen.html'" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">❓</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">Помощь и поддержка</div>
+                                        <div class="setting-desc">FAQ, контакты, чат</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                            
+                            <div class="setting-item" onclick="showAppInfo()" style="cursor: pointer;">
+                                <div class="setting-info">
+                                    <div class="setting-icon">ℹ️</div>
+                                    <div class="setting-details">
+                                        <div class="setting-name">О приложении</div>
+                                        <div class="setting-desc">Версия 2.0.1</div>
+                                    </div>
+                                </div>
+                                <div class="setting-arrow">›</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- КОНЕЦ ACCORDION СЕКЦИЙ -->
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN">
+                    <div class="nav-icon">🛡️</div>
+                    <div class="nav-label">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления">
+                    <div class="nav-icon">🔔</div>
+                    <div class="nav-label">Уведомления</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи">
+                    <div class="nav-icon">📱</div>
+                    <div class="nav-label">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    function searchSettings() {
+        showNotification('Поиск по настройкам: введите запрос', 'info');
+    }
+
+    function toggleTheme(element) {
+        const switchEl = element.querySelector('.switch');
+        switchEl.classList.toggle('off');
+        const isOn = !switchEl.classList.contains('off');
+        showNotification(`Темная тема: ${isOn ? 'Включена' : 'Отключена'}`, 'success');
+    }
+
+    function toggleBiometry(element) {
+        const switchEl = element.querySelector('.switch');
+        switchEl.classList.toggle('off');
+        const isOn = !switchEl.classList.contains('off');
+        showNotification(`Биометрия: ${isOn ? 'Включена' : 'Отключена'}`, 'success');
+    }
+
+    function changeLanguage() {
+        const languages = ['Русский', 'English', 'Español'];
+        const currentText = document.getElementById('language-text').textContent;
+        const currentIndex = languages.indexOf(currentText);
+        const nextIndex = (currentIndex + 1) % languages.length;
+        document.getElementById('language-text').textContent = languages[nextIndex];
+        showNotification(`Язык изменен: ${languages[nextIndex]}`, 'success');
+    }
+
+    function toggleAutoProtection(element) {
+        const switchEl = element.querySelector('.switch');
+        switchEl.classList.toggle('off');
+        const isOn = !switchEl.classList.contains('off');
+        showNotification(`Автозащита: ${isOn ? 'Включена' : 'Отключена'}`, 'success');
+    }
+
+    function toggleAppPassword(element) {
+        const switchEl = element.querySelector('.switch');
+        switchEl.classList.toggle('off');
+        const isOn = !switchEl.classList.contains('off');
+        showNotification(`Пароль приложения: ${isOn ? 'Включен' : 'Отключен'}`, isOn ? 'success' : 'warning');
+    }
+
+    function showScreenLock() {
+        const times = ['5 минут', '10 минут', '15 минут', 'Никогда'];
+        const currentText = document.getElementById('screen-lock-text').textContent;
+        const currentIndex = times.indexOf(currentText);
+        const nextIndex = (currentIndex + 1) % times.length;
+        document.getElementById('screen-lock-text').textContent = times[nextIndex];
+        showNotification(`Блокировка экрана: ${times[nextIndex]}`, 'info');
+    }
+
+    function showAppInfo() {
+        const info = [
+            '📱 ALADDIN Family Security',
+            '🔢 Версия: 2.0.1',
+            '📅 Обновлено: 08.10.2025',
+            '👨‍💻 26 модулей защиты',
+            '🛡️ 100+ типов угроз'
+        ].join('\n');
+        showNotification(info, 'info');
+    }
+
+    function showWeeklyReport() {
+        const report = [
+            '📊 ЕЖЕНЕДЕЛЬНЫЙ ОТЧЁТ',
+            '',
+            '⏱️ Экранное время: 24 часа',
+            '🛡️ Заблокировано угроз: 47',
+            '🌐 Посещено сайтов: 342',
+            '📱 Приложений использовано: 28',
+            '',
+            '👨‍👩‍👧‍👦 АКТИВНОСТЬ СЕМЬИ:',
+            '👤 Александр: 6 часов',
+            '👤 Елена: 4 часа',
+            '👤 Алексей: 8 часов',
+            '👤 Мария: 6 часов',
+            '',
+            '🏆 Топ-3 угрозы:',
+            '1. Фишинг сайты (18)',
+            '2. Вредоносные ссылки (15)',
+            '3. Небезопасный контент (14)',
+            '',
+            '💡 Рекомендация: Обновите пароли'
+        ].join('\n');
+        showNotification(report, 'info');
+    }
+
+    function showPremiumDiscount() {
+        const discount = [
+            '🎁 СКИДКА НА PREMIUM',
+            '',
+            '💎 Специальное предложение:',
+            '❌ Было: 900₽/месяц',
+            '✅ СЕЙЧАС: 630₽/месяц (-30%)',
+            '',
+            '⏰ Акция действует до 15.10.2025',
+            '',
+            '🎯 ЧТО ПОЛУЧАЕТЕ:',
+            '✅ 100% защита',
+            '✅ Безлимитный VPN',
+            '✅ Корпоративная безопасность',
+            '✅ Защита от deepfake',
+            '✅ Приоритетная поддержка',
+            '',
+            '💳 Оплата: карта, SBP, криптовалюта'
+        ].join('\n');
+        showNotification(discount, 'success');
+    }
+    
+    function toggleSettingsAccordion(header) {
+        const section = header.parentElement;
+        const wasActive = section.classList.contains('active');
+        
+        // Закрываем все секции
+        document.querySelectorAll('.accordion-section').forEach(s => {
+            s.classList.remove('active');
+        });
+        
+        // Если секция была закрыта, открываем её
+        if (!wasActive) {
+            section.classList.add('active');
+        }
+    }
+
+    function showParentalControlMenu() {
+        const menu = [
+            '👶 РОДИТЕЛЬСКИЙ КОНТРОЛЬ',
+            '',
+            '🎯 ВЫБЕРИТЕ РЕБЁНКА:',
+            '',
+            '👦 Алексей (12 лет)',
+            '   🔒 Блокировка: 18 сайтов',
+            '   ⏱️ Экранное время: 3 часа',
+            '   📍 Местоположение: Школа',
+            '   [Нажмите для настроек]',
+            '',
+            '👧 Мария (8 лет)',
+            '   🔒 Блокировка: 24 сайта',
+            '   ⏱️ Экранное время: 2 часа',
+            '   📍 Местоположение: Дом',
+            '   [Нажмите для настроек]',
+            '',
+            '💡 Совет: Используйте геозоны',
+            'для отслеживания передвижений'
+        ].join('\n');
+        
+        // После показа меню, через 3 секунды открываем Family Screen
+        showNotification(menu, 'info');
+        setTimeout(() => {
+            window.location.href='03_family_screen.html';
+        }, 3000);
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.innerHTML = message.replace(/\n/g, '<br>');
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#10B981' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-width: 280px;
+            text-align: left;
+            line-height: 1.6;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // ========== VPN ЭНЕРГОСБЕРЕЖЕНИЕ ==========
+    
+    function openEnergySettings() {
+        document.getElementById('energy-modal').style.display = 'flex';
+        loadCurrentEnergySettings();
+    }
+    
+    function closeEnergyModal() {
+        document.getElementById('energy-modal').style.display = 'none';
+    }
+    
+    function loadCurrentEnergySettings() {
+        // Загружаем текущие настройки из localStorage
+        const settings = JSON.parse(localStorage.getItem('vpn_energy_settings') || '{}');
+        
+        // Устанавливаем значения
+        const autoSwitch = document.getElementById('auto-energy-switch');
+        if (settings.auto_mode !== false) {
+            autoSwitch.classList.add('active');
+            autoSwitch.setAttribute('aria-checked', 'true');
+        }
+        
+        document.getElementById('idle-timeout').value = settings.idle_timeout || 900;
+        document.getElementById('battery-mode').value = settings.battery_mode || 'eco';
+        
+        const homeSwitch = document.getElementById('home-disable-switch');
+        if (settings.home_disable !== false) {
+            homeSwitch.classList.add('active');
+            homeSwitch.setAttribute('aria-checked', 'true');
+        }
+        
+        // Обновляем текущий статус
+        updateEnergyStatus();
+    }
+    
+    function updateEnergyStatus() {
+        // Симуляция получения статуса от VPN клиента
+        const mode = 'full'; // TODO: Получать из VPN клиента
+        const battery = 67;
+        const saved = 35;
+        
+        const modeText = {
+            'full': '🟢 Полный режим',
+            'normal': '🟡 Обычный режим',
+            'eco': '🟠 Экономный режим',
+            'minimal': '🔴 Минимальный режим',
+            'sleep': '💤 Режим сна'
+        };
+        
+        document.getElementById('current-energy-mode').textContent = modeText[mode];
+        document.getElementById('current-battery').textContent = battery + '%';
+        document.getElementById('current-saved').textContent = '~' + saved + '%';
+    }
+    
+    function toggleAutoEnergy() {
+        const switchEl = document.getElementById('auto-energy-switch');
+        const isActive = switchEl.classList.toggle('active');
+        switchEl.setAttribute('aria-checked', isActive);
+        showNotification(
+            isActive ? '✅ Умное управление включено' : '⚠️ Умное управление выключено',
+            isActive ? 'success' : 'warning'
+        );
+    }
+    
+    function toggleHomeDisable() {
+        const switchEl = document.getElementById('home-disable-switch');
+        const isActive = switchEl.classList.toggle('active');
+        switchEl.setAttribute('aria-checked', isActive);
+        showNotification(
+            isActive ? '✅ Отключение VPN дома включено' : '⚠️ Отключение VPN дома выключено',
+            isActive ? 'success' : 'warning'
+        );
+    }
+    
+    function updateIdleTimeout(event) {
+        const timeout = event.target.value;
+        const text = {
+            '300': '5 минут',
+            '900': '15 минут',
+            '1800': '30 минут',
+            '0': 'Никогда'
+        };
+        showNotification(`⏱️ Автоотключение: ${text[timeout]}`, 'info');
+    }
+    
+    function updateBatteryMode(event) {
+        const mode = event.target.value;
+        const text = {
+            'eco': 'Экономный режим',
+            'sleep': 'Отключить VPN',
+            'nothing': 'Ничего не делать'
+        };
+        showNotification(`🔋 При низком заряде: ${text[mode]}`, 'info');
+    }
+    
+    function saveEnergySettings() {
+        const settings = {
+            auto_mode: document.getElementById('auto-energy-switch').classList.contains('active'),
+            idle_timeout: parseInt(document.getElementById('idle-timeout').value),
+            battery_mode: document.getElementById('battery-mode').value,
+            home_disable: document.getElementById('home-disable-switch').classList.contains('active')
+        };
+        
+        localStorage.setItem('vpn_energy_settings', JSON.stringify(settings));
+        
+        // TODO: Отправить настройки в VPN клиент через API
+        // sendToVPNClient('update_energy_settings', settings);
+        
+        showNotification('✅ Настройки энергосбережения сохранены!', 'success');
+        
+        // Обновляем статус в главном меню
+        const statusText = settings.auto_mode ? 
+            'Умное управление • ~35% экономии' : 
+            'Ручное управление';
+        document.getElementById('energy-status-text').textContent = statusText;
+        
+        closeEnergyModal();
+    }
+</script>
+
+<!-- Модальное окно VPN Энергосбережения -->
+<div id="energy-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; justify-content: center; align-items: center;" onclick="closeEnergyModal()">
+    <div onclick="event.stopPropagation()" style="background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 100%); border-radius: 20px; padding: 20px; max-width: 320px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-size: 18px;">⚡ VPN Энергосбережение</h3>
+            <button onclick="closeEnergyModal()" style="background: none; border: none; color: white; font-size: 28px; cursor: pointer; padding: 0; width: 32px; height: 32px;">×</button>
+        </div>
+        
+        <!-- Текущий статус -->
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #F59E0B; border-radius: 12px; padding: 15px; margin-bottom: 20px;">
+            <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;" id="current-energy-mode">🟢 Полный режим</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 11px; text-align: center;">
+                <div>
+                    <div>🔋 Батарея</div>
+                    <div id="current-battery" style="font-weight: bold; color: #10B981;">67%</div>
+                </div>
+                <div>
+                    <div>⏱️ VPN</div>
+                    <div style="font-weight: bold; color: #3B82F6;">4ч 23м</div>
+                </div>
+                <div>
+                    <div>💰 Экономия</div>
+                    <div id="current-saved" style="font-weight: bold; color: #F59E0B;">~35%</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Настройки -->
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- Умное управление -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                <div style="flex: 1;">
+                    <div style="font-size: 14px; font-weight: 600;">🤖 Умное управление</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 2px;">VPN автоматически адаптируется</div>
+                </div>
+                <div class="switch active" id="auto-energy-switch" onclick="toggleAutoEnergy()" role="switch" aria-checked="true" style="cursor: pointer;"></div>
+            </div>
+            
+            <!-- Автоотключение -->
+            <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">⏱️ Автоотключение</div>
+                <select id="idle-timeout" onchange="updateIdleTimeout(event)" style="width: 100%; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 13px;">
+                    <option value="300">Через 5 минут</option>
+                    <option value="900" selected>Через 15 минут</option>
+                    <option value="1800">Через 30 минут</option>
+                    <option value="0">Никогда</option>
+                </select>
+            </div>
+            
+            <!-- При низком заряде -->
+            <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">🔋 При низком заряде (<20%)</div>
+                <select id="battery-mode" onchange="updateBatteryMode(event)" style="width: 100%; padding: 8px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 13px;">
+                    <option value="eco" selected>Экономный режим</option>
+                    <option value="sleep">Отключить VPN</option>
+                    <option value="nothing">Ничего не делать</option>
+                </select>
+            </div>
+            
+            <!-- В домашней сети -->
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                <div style="flex: 1;">
+                    <div style="font-size: 14px; font-weight: 600;">🏠 В домашней сети</div>
+                    <div style="font-size: 11px; opacity: 0.7; margin-top: 2px;">Отключать VPN дома</div>
+                </div>
+                <div class="switch active" id="home-disable-switch" onclick="toggleHomeDisable()" role="switch" aria-checked="true" style="cursor: pointer;"></div>
+            </div>
+        </div>
+        
+        <!-- Кнопка сохранить -->
+        <button onclick="saveEnergySettings()" style="width: 100%; margin-top: 20px; padding: 14px; background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 600; cursor: pointer;">
+            Сохранить настройки
+        </button>
+        
+        <!-- Подсказка -->
+        <div style="margin-top: 15px; padding: 10px; background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; border-radius: 8px; font-size: 11px; line-height: 1.5;">
+            <strong>💡 Как это работает:</strong><br>
+            • При бездействии VPN переходит в экономный режим<br>
+            • При низком заряде автоматически снижает потребление<br>
+            • Экономит 30-40% батареи в день
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

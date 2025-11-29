@@ -1,0 +1,72 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/YoungDefenderView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "🛡️ Юный защитник"
+      },
+      {
+        "comment": "",
+        "key": "🛡️"
+      },
+      {
+        "comment": "",
+        "key": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "из %lld\nуроков"
+      },
+      {
+        "comment": "",
+        "key": "очков\nнабрано"
+      },
+      {
+        "comment": "",
+        "key": "🦄\nбонусов"
+      },
+      {
+        "comment": "",
+        "key": "📚 Уроки безопасности"
+      },
+      {
+        "comment": "",
+        "key": "+%lld 🦄 получено"
+      },
+      {
+        "comment": "",
+        "key": "✅"
+      },
+      {
+        "comment": "",
+        "key": "🔒"
+      },
+      {
+        "comment": "",
+        "key": "▶️"
+      },
+      {
+        "comment": "",
+        "key": "Вопрос %lld из %lld"
+      },
+      {
+        "comment": "",
+        "key": "Выбери ответ"
+      },
+      {
+        "comment": "",
+        "key": "Завершить"
+      },
+      {
+        "comment": "",
+        "key": "Далее"
+      },
+      {
+        "comment": "",
+        "key": "Закрыть"
+      }
+    ]
+  },
+  "version": 1
+}

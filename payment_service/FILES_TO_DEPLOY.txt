@@ -1,0 +1,53 @@
+📦 СПИСОК ФАЙЛОВ ДЛЯ ЗАГРУЗКИ НА СЕРВЕР
+==========================================
+
+✅ ОСНОВНЫЕ ФАЙЛЫ:
+------------------
+main.py                    - FastAPI приложение (ГЛАВНЫЙ ФАЙЛ)
+requirements.txt           - Зависимости Python
+.env                       - Настройки (API ключи, номер карты)
+.env.example               - Пример настроек
+
+✅ ПАПКА app/ (ВСЯ ПАПКА):
+--------------------------
+app/__init__.py            - Инициализация пакета
+app/config.py              - Настройки и конфигурация
+app/database.py            - Подключение к БД
+app/models.py              - Модели БД (Payment, ActivationCode)
+app/schemas.py             - Pydantic схемы (PaymentCreateRequest)
+app/payment_methods.py     - Список методов оплаты
+app/utils.py               - Утилиты (hash_pin, generate_code)
+app/rate_limit.py          - Rate limiting
+app/providers/             - Провайдеры платежей
+  └── mock_psp.py          - Заглушка платежного провайдера
+
+✅ МИГРАЦИИ БД:
+---------------
+migrations/add_consent_fields.sql  - Добавление полей согласия ПДн
+
+✅ ДОКУМЕНТАЦИЯ (опционально):
+-------------------------------
+README.md                  - Документация
+QUICK_SETUP.md            - Быстрый старт
+SETUP_MANUAL_TRANSFER.md  - Настройка ручного перевода
+
+❌ НЕ БУДУТ ЗАГРУЖЕНЫ:
+---------------------
+.venv/                     - Виртуальное окружение (создастся на сервере)
+__pycache__/               - Кэш Python
+*.pyc                      - Скомпилированные файлы
+payments.db                - База данных (создастся автоматически)
+*.backup*                  - Backup файлы
+
+📊 СТАТИСТИКА:
+--------------
+Python файлов: ~10
+Общий размер: ~128 KB
+Время загрузки: < 1 минута
+
+🎯 ИТОГО:
+---------
+Загружается: payment_service/ (кроме .venv, __pycache__, *.db)
+На сервер: /opt/aladdin-backend/
+
+

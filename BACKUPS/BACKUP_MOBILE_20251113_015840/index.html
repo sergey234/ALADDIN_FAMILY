@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Wireframes Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .subtitle {
+            font-size: 24px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        
+        .wireframes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .wireframe-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .wireframe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+            border-color: #F59E0B;
+        }
+        
+        .wireframe-preview {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .wireframe-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .wireframe-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 10px;
+        }
+        
+        .wireframe-desc {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 15px;
+        }
+        
+        .wireframe-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .feature-tag {
+            background: rgba(245, 158, 11, 0.2);
+            color: #F59E0B;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .wireframe-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: #0a1128;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .wireframe-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+        }
+        
+        .footer-text {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        
+        .tech-stack {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .tech-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🌩️ ALADDIN Mobile Wireframes</h1>
+            <p class="subtitle">Полная коллекция wireframes для мобильного приложения безопасности</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value">31</div>
+                <div class="stat-label">Wireframes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">5</div>
+                <div class="stat-label">Специализированных интерфейса</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">100%</div>
+                <div class="stat-label">Готовность к разработке</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">iOS + Android</div>
+                <div class="stat-label">Платформы</div>
+            </div>
+        </div>
+        
+        <div class="wireframes-grid">
+            <div class="wireframe-card" onclick="window.open('01_main_screen.html', '_blank')">
+                <div class="wireframe-preview">🏠</div>
+                <h3 class="wireframe-title">Главный экран</h3>
+                <p class="wireframe-desc">Центральный хаб приложения с быстрым доступом ко всем функциям</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Навигация</span>
+                    <span class="feature-tag">AI Помощник</span>
+                    <span class="feature-tag">Быстрый доступ</span>
+                </div>
+                <a href="01_main_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('02_protection_screen.html', '_blank')">
+                <div class="wireframe-preview">🛡️</div>
+                <h3 class="wireframe-title">Экран защиты</h3>
+                <p class="wireframe-desc">VPN и антивирус в одном интерфейсе с детальной статистикой</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">VPN</span>
+                    <span class="feature-tag">Антивирус</span>
+                    <span class="feature-tag">Статистика</span>
+                </div>
+                <a href="02_protection_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('03_family_screen.html', '_blank')">
+                <div class="wireframe-preview">👨‍👩‍👧‍👦</div>
+                <h3 class="wireframe-title">Экран семьи</h3>
+                <p class="wireframe-desc">Управление семейными профилями и родительским контролем</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Семейные профили</span>
+                    <span class="feature-tag">Родительский контроль</span>
+                    <span class="feature-tag">Мониторинг</span>
+                </div>
+                <a href="03_family_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('04_analytics_screen.html', '_blank')">
+                <div class="wireframe-preview">📊</div>
+                <h3 class="wireframe-title">Экран аналитики</h3>
+                <p class="wireframe-desc">Детальная аналитика безопасности и активности семьи</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Графики</span>
+                    <span class="feature-tag">Статистика</span>
+                    <span class="feature-tag">Отчеты</span>
+                </div>
+                <a href="04_analytics_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('05_settings_screen.html', '_blank')">
+                <div class="wireframe-preview">⚙️</div>
+                <h3 class="wireframe-title">Экран настроек</h3>
+                <p class="wireframe-desc">Полная настройка приложения и управление подпиской</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Настройки</span>
+                    <span class="feature-tag">Профиль</span>
+                    <span class="feature-tag">Подписка</span>
+                </div>
+                <a href="05_settings_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('06_child_interface.html', '_blank')">
+                <div class="wireframe-preview">🎮</div>
+                <h3 class="wireframe-title">Детский интерфейс</h3>
+                <p class="wireframe-desc">Игровой интерфейс для детей с обучением безопасности</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Геймификация</span>
+                    <span class="feature-tag">Обучение</span>
+                    <span class="feature-tag">Достижения</span>
+                </div>
+                <a href="06_child_interface.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('07_elderly_interface.html', '_blank')">
+                <div class="wireframe-preview">👴</div>
+                <h3 class="wireframe-title">Интерфейс для пожилых</h3>
+                <p class="wireframe-desc">Упрощенный интерфейс с крупными элементами и простой навигацией</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Упрощенный</span>
+                    <span class="feature-tag">Крупные элементы</span>
+                    <span class="feature-tag">Экстренная помощь</span>
+                </div>
+                <a href="07_elderly_interface.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('08_ai_assistant.html', '_blank')">
+                <div class="wireframe-preview">🤖</div>
+                <h3 class="wireframe-title">AI Помощник</h3>
+                <p class="wireframe-desc">Интеллектуальный чат-бот для помощи и поддержки пользователей</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Чат-бот</span>
+                    <span class="feature-tag">Голосовое управление</span>
+                    <span class="feature-tag">Умные рекомендации</span>
+                </div>
+                <a href="08_ai_assistant.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('08_notifications_screen.html', '_blank')">
+                <div class="wireframe-preview">🔔</div>
+                <h3 class="wireframe-title">Уведомления</h3>
+                <p class="wireframe-desc">Центр всех уведомлений и алертов безопасности</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Уведомления</span>
+                    <span class="feature-tag">Алерты</span>
+                    <span class="feature-tag">История</span>
+                </div>
+                <a href="08_notifications_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('09_tariffs_screen.html', '_blank')">
+                <div class="wireframe-preview">💎</div>
+                <h3 class="wireframe-title">Тарифы</h3>
+                <p class="wireframe-desc">Выбор подписки и управление платежами</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Подписка</span>
+                    <span class="feature-tag">Оплата</span>
+                    <span class="feature-tag">Скидки</span>
+                </div>
+                <a href="09_tariffs_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('10_info_screen.html', '_blank')">
+                <div class="wireframe-preview">ℹ️</div>
+                <h3 class="wireframe-title">Информация</h3>
+                <p class="wireframe-desc">FAQ и полезная информация о приложении</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">FAQ</span>
+                    <span class="feature-tag">Справка</span>
+                    <span class="feature-tag">Контакты</span>
+                </div>
+                <a href="10_info_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('11_profile_screen.html', '_blank')">
+                <div class="wireframe-preview">👤</div>
+                <h3 class="wireframe-title">Профиль</h3>
+                <p class="wireframe-desc">Личный профиль и настройки аккаунта</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Профиль</span>
+                    <span class="feature-tag">Аккаунт</span>
+                    <span class="feature-tag">Настройки</span>
+                </div>
+                <a href="11_profile_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('12_devices_screen.html', '_blank')">
+                <div class="wireframe-preview">📱</div>
+                <h3 class="wireframe-title">Устройства</h3>
+                <p class="wireframe-desc">Управление подключенными устройствами</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Устройства</span>
+                    <span class="feature-tag">Управление</span>
+                    <span class="feature-tag">Статус</span>
+                </div>
+                <a href="12_devices_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('13_referral_screen.html', '_blank')">
+                <div class="wireframe-preview">🎁</div>
+                <h3 class="wireframe-title">Реферальная программа</h3>
+                <p class="wireframe-desc">Приглашай друзей и получай бонусы</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Рефералы</span>
+                    <span class="feature-tag">Бонусы</span>
+                    <span class="feature-tag">Промокоды</span>
+                </div>
+                <a href="13_referral_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('14_parental_control_screen.html', '_blank')">
+                <div class="wireframe-preview">🛡️</div>
+                <h3 class="wireframe-title">Родительский контроль</h3>
+                <p class="wireframe-desc">Полный контроль активности детей</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Контроль</span>
+                    <span class="feature-tag">Фильтры</span>
+                    <span class="feature-tag">Ограничения</span>
+                </div>
+                <a href="14_parental_control_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('14b_child_rewards_screen.html', '_blank')">
+                <div class="wireframe-preview">🏆</div>
+                <h3 class="wireframe-title">Достижения детей</h3>
+                <p class="wireframe-desc">Система наград и достижений для детей</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Достижения</span>
+                    <span class="feature-tag">Награды</span>
+                    <span class="feature-tag">Геймификация</span>
+                </div>
+                <a href="14b_child_rewards_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('14c_games_parental_control.html', '_blank')">
+                <div class="wireframe-preview">🎮</div>
+                <h3 class="wireframe-title">Игровой контроль</h3>
+                <p class="wireframe-desc">Управление игровым временем детей</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Игры</span>
+                    <span class="feature-tag">Время</span>
+                    <span class="feature-tag">Лимиты</span>
+                </div>
+                <a href="14c_games_parental_control.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('15_device_detail_screen.html', '_blank')">
+                <div class="wireframe-preview">🔍</div>
+                <h3 class="wireframe-title">Детали устройства</h3>
+                <p class="wireframe-desc">Подробная информация об устройстве</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Детали</span>
+                    <span class="feature-tag">Статистика</span>
+                    <span class="feature-tag">Настройки</span>
+                </div>
+                <a href="15_device_detail_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('17_family_chat_screen.html', '_blank')">
+                <div class="wireframe-preview">💬</div>
+                <h3 class="wireframe-title">Семейный чат</h3>
+                <p class="wireframe-desc">Чат для общения всей семьи</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Чат</span>
+                    <span class="feature-tag">Сообщения</span>
+                    <span class="feature-tag">Семья</span>
+                </div>
+                <a href="17_family_chat_screen.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('18_vpn_energy_stats.html', '_blank')">
+                <div class="wireframe-preview">⚡</div>
+                <h3 class="wireframe-title">VPN Статистика</h3>
+                <p class="wireframe-desc">Энергетическая статистика VPN</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">VPN</span>
+                    <span class="feature-tag">Энергия</span>
+                    <span class="feature-tag">Статистика</span>
+                </div>
+                <a href="18_vpn_energy_stats.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('19_privacy_policy.html', '_blank')">
+                <div class="wireframe-preview">📋</div>
+                <h3 class="wireframe-title">Политика конфиденциальности</h3>
+                <p class="wireframe-desc">Правовая информация и политика</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Политика</span>
+                    <span class="feature-tag">Конфиденциальность</span>
+                    <span class="feature-tag">Юридическая</span>
+                </div>
+                <a href="19_privacy_policy.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('20_full_privacy_policy.html', '_blank')">
+                <div class="wireframe-preview">📄</div>
+                <h3 class="wireframe-title">Полная политика</h3>
+                <p class="wireframe-desc">Расширенная политика конфиденциальности</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Полная</span>
+                    <span class="feature-tag">Детали</span>
+                    <span class="feature-tag">Юридическая</span>
+                </div>
+                <a href="20_full_privacy_policy.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('GAMIFICATION_DEMO.html', '_blank')">
+                <div class="wireframe-preview">🎯</div>
+                <h3 class="wireframe-title">Геймификация Demo</h3>
+                <p class="wireframe-desc">Демо игровых элементов</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Геймификация</span>
+                    <span class="feature-tag">Demo</span>
+                    <span class="feature-tag">Игры</span>
+                </div>
+                <a href="GAMIFICATION_DEMO.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('consent_variant_1_final.html', '_blank')">
+                <div class="wireframe-preview">✅</div>
+                <h3 class="wireframe-title">Согласие</h3>
+                <p class="wireframe-desc">Экран согласия и разрешений</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Согласие</span>
+                    <span class="feature-tag">Разрешения</span>
+                    <span class="feature-tag">Onboarding</span>
+                </div>
+                <a href="consent_variant_1_final.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('consent_variants_preview.html', '_blank')">
+                <div class="wireframe-preview">📋</div>
+                <h3 class="wireframe-title">Варианты согласия</h3>
+                <p class="wireframe-desc">Различные варианты экрана согласия</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Варианты</span>
+                    <span class="feature-tag">Согласие</span>
+                    <span class="feature-tag">A/B тест</span>
+                </div>
+                <a href="consent_variants_preview.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('family_tournament_component.html', '_blank')">
+                <div class="wireframe-preview">🏅</div>
+                <h3 class="wireframe-title">Семейный турнир</h3>
+                <p class="wireframe-desc">Турнир между членами семьи</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Турнир</span>
+                    <span class="feature-tag">Семья</span>
+                    <span class="feature-tag">Соревнование</span>
+                </div>
+                <a href="family_tournament_component.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('privacy_button_variants.html', '_blank')">
+                <div class="wireframe-preview">🔐</div>
+                <h3 class="wireframe-title">Варианты кнопок</h3>
+                <p class="wireframe-desc">Варианты кнопок конфиденциальности</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Кнопки</span>
+                    <span class="feature-tag">Варианты</span>
+                    <span class="feature-tag">UI</span>
+                </div>
+                <a href="privacy_button_variants.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('unicorn_pet_component.html', '_blank')">
+                <div class="wireframe-preview">🦄</div>
+                <h3 class="wireframe-title">Питомец Единорог</h3>
+                <p class="wireframe-desc">Виртуальный питомец для детей</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Питомец</span>
+                    <span class="feature-tag">Единорог</span>
+                    <span class="feature-tag">Геймификация</span>
+                </div>
+                <a href="unicorn_pet_component.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('unicorn_universe_component.html', '_blank')">
+                <div class="wireframe-preview">🌌</div>
+                <h3 class="wireframe-title">Вселенная единорогов</h3>
+                <p class="wireframe-desc">Игровой мир единорогов</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Вселенная</span>
+                    <span class="feature-tag">Игра</span>
+                    <span class="feature-tag">Мир</span>
+                </div>
+                <a href="unicorn_universe_component.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+            
+            <div class="wireframe-card" onclick="window.open('wheel_of_fortune_component.html', '_blank')">
+                <div class="wireframe-preview">🎡</div>
+                <h3 class="wireframe-title">Колесо фортуны</h3>
+                <p class="wireframe-desc">Игровое колесо фортуны</p>
+                <div class="wireframe-features">
+                    <span class="feature-tag">Колесо</span>
+                    <span class="feature-tag">Игра</span>
+                    <span class="feature-tag">Награды</span>
+                </div>
+                <a href="wheel_of_fortune_component.html" class="wireframe-link" target="_blank">Открыть →</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p class="footer-text">
+                🌩️ ALADDIN Mobile Wireframes - Полная коллекция интерфейсов для мобильного приложения безопасности семьи
+            </p>
+            <div class="tech-stack">
+                <div class="tech-item">Swift + UIKit</div>
+                <div class="tech-item">Kotlin + View System</div>
+                <div class="tech-item">Storm Sky Theme</div>
+                <div class="tech-item">Glassmorphism</div>
+                <div class="tech-item">Touch-friendly</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

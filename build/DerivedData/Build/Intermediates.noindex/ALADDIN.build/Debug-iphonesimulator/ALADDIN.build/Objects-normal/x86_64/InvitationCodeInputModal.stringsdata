@@ -1,0 +1,44 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Shared/Components/Modals/InvitationCodeInputModal.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Присоединение"
+      },
+      {
+        "comment": "",
+        "key": "Введите код приглашения"
+      },
+      {
+        "comment": "",
+        "key": "Попросите у администратора семьи код вида: FAM-XXXX-XXXX-XXXX"
+      },
+      {
+        "comment": "",
+        "key": "Код приглашения"
+      },
+      {
+        "comment": "",
+        "key": "Формат: FAM-XXXX-XXXX-XXXX"
+      },
+      {
+        "comment": "",
+        "key": "FAM-XXXX-XXXX-XXXX"
+      },
+      {
+        "comment": "",
+        "key": "Присоединиться к семье"
+      },
+      {
+        "comment": "",
+        "key": "Отмена"
+      },
+      {
+        "comment": "",
+        "key": "Выбор роли"
+      }
+    ]
+  },
+  "version": 1
+}

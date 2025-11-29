@@ -1,0 +1,5 @@
+Our iOS app only activates subscriptions purchased on https://aladdin-ai.ru (outside the app).
+Flow: Main → Tariffs → “Перейти на сайт” (opens Safari) → user pays → receives activation code (ALDN-XXXX-XXXX-XXXX) → ActivationCodeScreen → enters code → access unlocked.
+No digital goods are sold inside the app. This follows App Store Guideline 3.1.1 (restore purchases acquired elsewhere). We participate in the App Store Small Business Program.
+Test code for review: ALDN-TEST-1234 (activates Premium plan for 24h).
+

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VPN Энергостатистика</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+        
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+        
+        .tip-card {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid #10B981;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .tip-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .tip-text {
+            font-size: 12px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="screen">
+            <div class="header">
+                <div class="back-btn" onclick="window.location.href='02_protection_screen.html'">←</div>
+                <div class="title">⚡ VPN и Батарея</div>
+                <div style="width: 40px;"></div>
+            </div>
+            
+            <!-- Сегодня -->
+            <div class="section">
+                <div class="section-title">📊 Сегодня</div>
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-value">4ч 23м</div>
+                        <div class="stat-label">VPN активен</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">💤</div>
+                        <div class="stat-value">2ч 15м</div>
+                        <div class="stat-label">В режиме сна</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔋</div>
+                        <div class="stat-value">~35%</div>
+                        <div class="stat-label">Сэкономлено</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📱</div>
+                        <div class="stat-value">67%</div>
+                        <div class="stat-label">Заряд сейчас</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Режимы работы -->
+            <div class="section">
+                <div class="section-title">📈 Режимы работы</div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>🟢</span>
+                            <span style="font-size: 12px;">Полный</span>
+                        </div>
+                        <div style="font-size: 12px; font-weight: 600;">3ч 10м (47%)</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(251, 191, 36, 0.1); border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>🟡</span>
+                            <span style="font-size: 12px;">Обычный</span>
+                        </div>
+                        <div style="font-size: 12px; font-weight: 600;">1ч 13м (18%)</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>🟠</span>
+                            <span style="font-size: 12px;">Экономный</span>
+                        </div>
+                        <div style="font-size: 12px; font-weight: 600;">1ч 35м (23%)</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; background: rgba(239, 68, 68, 0.1); border-radius: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span>💤</span>
+                            <span style="font-size: 12px;">Сон</span>
+                        </div>
+                        <div style="font-size: 12px; font-weight: 600;">2ч 15м (12%)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- На этой неделе -->
+            <div class="section">
+                <div class="section-title">📅 На этой неделе</div>
+                <div class="stat-row">
+                    <span style="font-size: 12px;">⚡ Средняя активность VPN</span>
+                    <strong style="font-size: 12px;">5ч 12м/день</strong>
+                </div>
+                <div class="stat-row">
+                    <span style="font-size: 12px;">💰 Сэкономлено батареи</span>
+                    <strong style="font-size: 12px;">~2 дня автономности</strong>
+                </div>
+                <div class="stat-row">
+                    <span style="font-size: 12px;">🎯 Эффективность</span>
+                    <strong style="font-size: 12px; color: #10B981;">92%</strong>
+                </div>
+                <div class="stat-row">
+                    <span style="font-size: 12px;">🔄 Переключений режимов</span>
+                    <strong style="font-size: 12px;">47 раз</strong>
+                </div>
+            </div>
+            
+            <!-- Настройки VPN -->
+            <div class="section">
+                <div class="section-title">⚙️ Настройки энергосбережения</div>
+                
+                <!-- Умное управление -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div style="flex: 1;">
+                        <div style="font-size: 13px; font-weight: 600;">🤖 Умное управление</div>
+                        <div style="font-size: 11px; opacity: 0.7; margin-top: 2px;">VPN автоматически адаптируется</div>
+                    </div>
+                    <div class="switch active" id="auto-energy-switch" onclick="toggleAutoEnergy()" role="switch" aria-checked="true" style="cursor: pointer; width: 44px; height: 24px; background: rgba(16, 185, 129, 0.3); border-radius: 12px; position: relative; transition: 0.3s;">
+                        <div style="width: 20px; height: 20px; background: #10B981; border-radius: 10px; position: absolute; top: 2px; right: 2px; transition: 0.3s;"></div>
+                    </div>
+                </div>
+                
+                <!-- Автоотключение -->
+                <div style="padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">⏱️ Автоотключение</div>
+                    <select id="idle-timeout" onchange="updateIdleTimeout(event)" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 13px;">
+                        <option value="300">Через 5 минут</option>
+                        <option value="900" selected>Через 15 минут</option>
+                        <option value="1800">Через 30 минут</option>
+                        <option value="0">Никогда</option>
+                    </select>
+                </div>
+                
+                <!-- При низком заряде -->
+                <div style="padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">🔋 При низком заряде (<20%)</div>
+                    <select id="battery-mode" onchange="updateBatteryMode(event)" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; font-size: 13px;">
+                        <option value="eco" selected>Экономный режим</option>
+                        <option value="sleep">Отключить VPN</option>
+                        <option value="nothing">Ничего не делать</option>
+                    </select>
+                </div>
+                
+                <!-- В домашней сети -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0;">
+                    <div style="flex: 1;">
+                        <div style="font-size: 13px; font-weight: 600;">🏠 В домашней сети</div>
+                        <div style="font-size: 11px; opacity: 0.7; margin-top: 2px;">Отключать VPN дома</div>
+                    </div>
+                    <div class="switch active" id="home-disable-switch" onclick="toggleHomeDisable()" role="switch" aria-checked="true" style="cursor: pointer; width: 44px; height: 24px; background: rgba(16, 185, 129, 0.3); border-radius: 12px; position: relative; transition: 0.3s;">
+                        <div style="width: 20px; height: 20px; background: #10B981; border-radius: 10px; position: absolute; top: 2px; right: 2px; transition: 0.3s;"></div>
+                    </div>
+                </div>
+                
+                <!-- Кнопка сохранить -->
+                <button onclick="saveEnergySettings()" style="width: 100%; margin-top: 15px; padding: 14px; background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); border: none; border-radius: 12px; color: white; font-size: 14px; font-weight: 600; cursor: pointer;">
+                    Сохранить настройки
+                </button>
+            </div>
+            
+            <!-- Рекомендации -->
+            <div class="section">
+                <div class="section-title">💡 Рекомендации</div>
+                <div class="tip-card">
+                    <div class="tip-icon">✅</div>
+                    <div class="tip-text">VPN автоматически отключается когда не нужен, экономя батарею</div>
+                </div>
+                <div class="tip-card">
+                    <div class="tip-icon">⚡</div>
+                    <div class="tip-text">В среднем экономит 30-40% батареи в день при умном режиме</div>
+                </div>
+                <div class="tip-card">
+                    <div class="tip-icon">🚀</div>
+                    <div class="tip-text">Включается за 2-3 секунды при возобновлении активности</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Переключение умного управления
+        function toggleAutoEnergy() {
+            const switchEl = document.getElementById('auto-energy-switch');
+            const slider = switchEl.querySelector('div');
+            const isActive = switchEl.classList.toggle('active');
+            
+            if (isActive) {
+                switchEl.style.background = 'rgba(16, 185, 129, 0.3)';
+                slider.style.background = '#10B981';
+                slider.style.right = '2px';
+                slider.style.left = 'auto';
+                switchEl.setAttribute('aria-checked', 'true');
+                showNotification('✅ Умное управление включено', 'success');
+            } else {
+                switchEl.style.background = 'rgba(255, 255, 255, 0.2)';
+                slider.style.background = '#6B7280';
+                slider.style.left = '2px';
+                slider.style.right = 'auto';
+                switchEl.setAttribute('aria-checked', 'false');
+                showNotification('⚠️ Умное управление выключено', 'warning');
+            }
+        }
+        
+        // Переключение отключения дома
+        function toggleHomeDisable() {
+            const switchEl = document.getElementById('home-disable-switch');
+            const slider = switchEl.querySelector('div');
+            const isActive = switchEl.classList.toggle('active');
+            
+            if (isActive) {
+                switchEl.style.background = 'rgba(16, 185, 129, 0.3)';
+                slider.style.background = '#10B981';
+                slider.style.right = '2px';
+                slider.style.left = 'auto';
+                switchEl.setAttribute('aria-checked', 'true');
+                showNotification('✅ Отключение VPN дома включено', 'success');
+            } else {
+                switchEl.style.background = 'rgba(255, 255, 255, 0.2)';
+                slider.style.background = '#6B7280';
+                slider.style.left = '2px';
+                slider.style.right = 'auto';
+                switchEl.setAttribute('aria-checked', 'false');
+                showNotification('⚠️ Отключение VPN дома выключено', 'warning');
+            }
+        }
+        
+        // Обновление времени автоотключения
+        function updateIdleTimeout(event) {
+            const timeout = event.target.value;
+            const text = {
+                '300': '5 минут',
+                '900': '15 минут',
+                '1800': '30 минут',
+                '0': 'Никогда'
+            };
+            showNotification(`⏱️ Автоотключение: ${text[timeout]}`, 'info');
+        }
+        
+        // Обновление режима при низком заряде
+        function updateBatteryMode(event) {
+            const mode = event.target.value;
+            const text = {
+                'eco': 'Экономный режим',
+                'sleep': 'Отключить VPN',
+                'nothing': 'Ничего не делать'
+            };
+            showNotification(`🔋 При низком заряде: ${text[mode]}`, 'info');
+        }
+        
+        // Сохранение настроек
+        function saveEnergySettings() {
+            const settings = {
+                auto_mode: document.getElementById('auto-energy-switch').classList.contains('active'),
+                idle_timeout: parseInt(document.getElementById('idle-timeout').value),
+                battery_mode: document.getElementById('battery-mode').value,
+                home_disable: document.getElementById('home-disable-switch').classList.contains('active')
+            };
+            
+            localStorage.setItem('vpn_energy_settings', JSON.stringify(settings));
+            showNotification('✅ Настройки энергосбережения сохранены!', 'success');
+            
+            // TODO: Отправить в VPN клиент через API
+        }
+        
+        // Показ уведомлений
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            
+            const colors = {
+                'info': '#3B82F6',
+                'success': '#10B981',
+                'warning': '#F59E0B',
+                'error': '#EF4444'
+            };
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: ${colors[type] || colors.info};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 10px;
+                font-size: 12px;
+                font-weight: 500;
+                z-index: 10001;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                max-width: 280px;
+                text-align: center;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2500);
+        }
+        
+        // Загрузка настроек при загрузке страницы
+        window.addEventListener('DOMContentLoaded', () => {
+            const settings = JSON.parse(localStorage.getItem('vpn_energy_settings') || '{}');
+            
+            // Устанавливаем значения из localStorage
+            if (settings.idle_timeout) {
+                document.getElementById('idle-timeout').value = settings.idle_timeout;
+            }
+            if (settings.battery_mode) {
+                document.getElementById('battery-mode').value = settings.battery_mode;
+            }
+            if (settings.auto_mode === false) {
+                toggleAutoEnergy();
+            }
+            if (settings.home_disable === false) {
+                toggleHomeDisable();
+            }
+        });
+    </script>
+</body>
+</html>
+

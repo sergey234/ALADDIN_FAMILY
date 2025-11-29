@@ -1,0 +1,1890 @@
+import SwiftUI
+import Foundation
+
+/// 🦄 Child Rewards Screen
+/// Экран наград для детского интерфейса
+/// Источник дизайна: GAMIFICATION_NAVIGATION_ARCHITECTURE.md
+/// 
+/// ✅ RewardHistoryEntry определён в Shared/Models/RewardModels.swift
+struct ChildRewardsScreen: View {
+    
+    // MARK: - State
+    
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var viewModel = ChildRewardsViewModel()
+    @State private var selectedTab: RewardTab = .shop
+    
+    // Награды магазина (загружаются из UserDefaults)
+    @AppStorage("shop_rewards_list") private var shopRewardsData: String = ""
+    @State private var availableRewards: [ShopReward] = []
+    
+    // Сохраняем игровой прогресс в AppStorage
+    @AppStorage("child_unicorn_balance") private var storedUnicornBalance: Int = 245
+    @State private var unicornBalance: Int = 245 {
+        didSet {
+            storedUnicornBalance = unicornBalance
+        }
+    }
+    
+    @AppStorage("child_weekly_earned") private var storedWeeklyEarned: Int = 128
+    @State private var weeklyEarned: Int = 128 {
+        didSet {
+            storedWeeklyEarned = weeklyEarned
+        }
+    }
+    
+    @AppStorage("child_weekly_punished") private var storedWeeklyPunished: Int = 45
+    @State private var weeklyPunished: Int = 45 {
+        didSet {
+            storedWeeklyPunished = weeklyPunished
+        }
+    }
+    
+    @AppStorage("child_goal_progress") private var storedGoalProgress: Double = 0.306
+    @State private var goalProgress: Double = 0.306 {
+        didSet {
+            storedGoalProgress = goalProgress
+        }
+    }
+    
+    @AppStorage("child_goal_title") private var storedGoalTitle: String = "Новая игра PS5"
+    @State private var goalTitle: String = "Новая игра PS5" {
+        didSet {
+            storedGoalTitle = goalTitle
+        }
+    }
+    
+    @AppStorage("child_goal_cost") private var storedGoalCost: Int = 800
+    @State private var goalCost: Int = 800 {
+        didSet {
+            storedGoalCost = goalCost
+        }
+    }
+    
+    @State private var showRequestModal: Bool = false
+    
+    // Модальные окна для вознаграждения/наказания (ТОЛЬКО ДЛЯ РОДИТЕЛЕЙ)
+    @State private var showRewardInput: Bool = false
+    @State private var showPunishInput: Bool = false
+    @State private var rewardAmount: String = "10"
+    @State private var punishAmount: String = "10"
+    @State private var rewardReason: String = ""
+    @State private var punishReason: String = ""
+    @State private var loadErrorMessage: String?
+    @State private var isInitialLoadCompleted: Bool = false
+@State private var showSettingsSheet: Bool = false
+    
+    // MARK: - Tabs
+    
+    enum RewardTab {
+        case shop
+        case history
+        case achievements
+        
+        func localizedTitle(_ localizationManager: LocalizationManager) -> String {
+            switch self {
+            case .shop: return localizationManager.localized("child_rewards_tab_shop")
+            case .history: return localizationManager.localized("child_rewards_tab_history")
+            case .achievements: return localizationManager.localized("child_rewards_tab_achievements")
+            }
+        }
+        
+        var title: String {
+            // Deprecated: используйте localizedTitle вместо этого
+            switch self {
+            case .shop: return "🏪 Магазин"
+            case .history: return "📊 История"
+            case .achievements: return "🏆 Успехи"
+            }
+        }
+    }
+    
+    // MARK: - Body
+    
+    var body: some View {
+        ZStack {
+            // Фон
+            LinearGradient.backgroundGradient
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                // Навигационная панель
+                header
+                
+                // Основной контент
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: Spacing.l) {
+                        if viewModel.isLoading && !isInitialLoadCompleted {
+                            loadingState
+                        }
+                        if let loadErrorMessage = loadErrorMessage {
+                            errorBanner(message: loadErrorMessage)
+                        }
+                        
+                        // Баланс единорогов
+                        balanceCard
+                        
+                        // Прогресс к цели
+                        goalProgressCard
+                        
+                        // Кнопка "Сообщить родителям"
+                        requestButton
+                        
+                        // ✅ БЕЗОПАСНОСТЬ: Разделение интерфейса по ролям
+                        // Для родителей: секция "Воспитание ребенка" с кнопками "Вознаградить" и "Наказать"
+                        // Для детей: НЕ показываем "Воспитание ребенка" - они НЕ должны видеть эту секцию!
+                        // Детям показываем ТОЛЬКО историю (без заголовка "Воспитание ребенка")
+                        
+                        Group {
+                            if isCurrentUserParent() {
+                                // ТОЛЬКО ДЛЯ РОДИТЕЛЕЙ
+                                parentQuickActions
+                                    .onAppear {
+                                        print("✅ Родительский интерфейс: показана секция 'Воспитание ребенка'")
+                                    }
+                            } else {
+                                // ТОЛЬКО ДЛЯ ДЕТЕЙ - показываем историю
+                                childRewardsHistoryView
+                                    .onAppear {
+                                        print("✅ Детский интерфейс: показана история наград/наказаний (без 'Воспитание ребенка')")
+                                    }
+                            }
+                        }
+                        .onAppear {
+                            print("🔍 ChildRewardsScreen: Проверка роли - isCurrentUserParent() = \(isCurrentUserParent())")
+                        }
+                        
+                        // 🎮 Игровые карточки 2x3
+                        gamesGrid
+                        
+                        // Табы (Магазин, История)
+                        tabSelector
+                        
+                        // Контент вкладок
+                        tabContent
+                        
+                        Spacer()
+                            .frame(height: Spacing.xxl)
+                    }
+                    .padding(.top, Spacing.m)
+                }
+            }
+        }
+        .navigationBarHidden(true)
+        .id("child_rewards_lang_\(localizationManager.currentLanguage.rawValue)")
+        .sheet(isPresented: $showRequestModal) {
+            AchievementRequestModal(
+                onSendRequest: { achievement in
+                    sendRequestToParents(achievement)
+                }
+            )
+            .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showPurchaseConfirmation) {
+            PurchaseConfirmationModal(
+                title: pendingPurchaseTitle,
+                price: pendingPurchasePrice,
+                balance: unicornBalance,
+                onConfirm: {
+                    confirmPurchase()
+                },
+                onCancel: {
+                    showPurchaseConfirmation = false
+                }
+            )
+            .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showRewardInput) {
+            RewardInputModal(
+                isPresented: $showRewardInput,
+                amount: $rewardAmount,
+                reason: $rewardReason,
+                onConfirm: { amount, texts in
+                    rewardChild(amount: amount, history: texts)
+                }
+            )
+        }
+        .sheet(isPresented: $showPunishInput) {
+            PunishInputModal(
+                isPresented: $showPunishInput,
+                amount: $punishAmount,
+                reason: $punishReason,
+                onConfirm: { amount, texts in
+                    punishChild(amount: amount, history: texts)
+                }
+            )
+        }
+        .onAppear {
+            Task {
+                await viewModel.load(childId: nil)
+            }
+            RewardLocalizationMigration.performIfNeeded()
+            
+            // Синхронизируем баланс из UserDefaults (единый источник истины)
+            let currentBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+            if currentBalance > 0 {
+                unicornBalance = currentBalance
+                storedUnicornBalance = currentBalance
+            } else {
+                unicornBalance = storedUnicornBalance
+            }
+            
+            // Восстанавливаем сохранённый прогресс из AppStorage
+            weeklyEarned = storedWeeklyEarned
+            weeklyPunished = storedWeeklyPunished
+            goalProgress = storedGoalProgress
+            goalTitle = storedGoalTitle
+            goalCost = storedGoalCost
+            
+            // Загружаем награды магазина
+            loadShopRewards()
+            
+            // ✅ КРИТИЧНО: Проверка роли и логирование для диагностики
+            let isParent = isCurrentUserParent()
+            let currentRole = UserDefaults.standard.string(forKey: "current_user_role") ?? "НЕ УСТАНОВЛЕНА"
+            print("═══════════════════════════════════════════════════════════")
+            print("🔍 DEBUG ChildRewardsScreen.onAppear:")
+            print("   📋 Роль пользователя:")
+            print("      - UserDefaults: '\(currentRole)'")
+            print("      - isCurrentUserParent() = \(isParent)")
+            print("      - Интерфейс: \(isParent ? "👨‍👩‍👧 РОДИТЕЛЬСКИЙ" : "👶 ДЕТСКИЙ")")
+            print("   🦄 Баланс единорогов: \(unicornBalance) 🦄")
+            print("   🎁 Доступно наград: \(availableRewards.filter { $0.isEnabled }.count) из \(availableRewards.count)")
+            print("   🔒 Секция 'Воспитание ребенка': \(isParent ? "✅ ВИДНА" : "❌ СКРЫТА")")
+            print("   ⚙️ Кнопка настроек: \(isParent ? "✅ ВИДНА" : "❌ СКРЫТА")")
+            print("═══════════════════════════════════════════════════════════")
+            
+            // ✅ Дополнительная проверка безопасности
+            if !isParent {
+                print("✅ БЕЗОПАСНОСТЬ: Детский интерфейс - все родительские функции заблокированы")
+            }
+        }
+        .onChange(of: storedUnicornBalance) { newValue in
+            // Автообновление баланса при изменении в UserDefaults (например, из RewardsModalView)
+            unicornBalance = newValue
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
+            // Обновляем список наград при изменении в UserDefaults
+            loadShopRewards()
+            // Обновляем баланс из UserDefaults
+            let newBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+            if unicornBalance != newBalance {
+                unicornBalance = newBalance
+                print("🔄 ChildRewardsScreen: Баланс обновлён через NotificationCenter: \(newBalance) 🦄")
+            }
+        }
+        .onChange(of: storedWeeklyEarned) { newValue in
+            weeklyEarned = newValue
+        }
+        .onChange(of: storedWeeklyPunished) { newValue in
+            weeklyPunished = newValue
+        }
+        .onReceive(viewModel.$dashboard.compactMap { $0 }) { data in
+            unicornBalance = data.balance
+            weeklyEarned = data.weeklyEarned
+            weeklyPunished = data.weeklyPunished
+            goalProgress = data.goalProgress
+            if let titleKey = data.goalTitleKey {
+                goalTitle = localizationManager.localized(titleKey)
+            }
+            if data.goalCost > 0 {
+                goalCost = data.goalCost
+            }
+            if !data.rewards.isEmpty {
+                availableRewards = data.rewards
+                saveShopRewards()
+            }
+            loadErrorMessage = nil
+            isInitialLoadCompleted = true
+        }
+        .onReceive(viewModel.$errorMessage) { message in
+            loadErrorMessage = message
+        }
+    }
+    
+    // MARK: - Header
+    
+    private var header: some View {
+        HStack {
+            Button(action: {
+                HapticFeedback.impact(.light)
+                // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
+                // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
+                dismiss()
+                
+                // Дополнительно синхронизируем NavigationManager для корректной работы стека
+                DispatchQueue.main.async {
+                    if navigationManager.canGoBack {
+                        navigationManager.goBack()
+                    }
+                }
+            }) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.textPrimary)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        Circle()
+                            .fill(Color.backgroundMedium.opacity(0.5))
+                    )
+            }
+            
+            Text(localizationManager.localized("child_rewards_title"))
+                .font(.h2)
+                .foregroundColor(.textPrimary)
+            
+            Spacer()
+            
+            Button(action: {
+                HapticFeedback.impact(.light)
+                showSettingsSheet = true
+                print("🔧 Открываем настройки наград")
+            }) {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.textPrimary)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        Circle()
+                            .fill(Color.backgroundMedium.opacity(0.5))
+                    )
+            }
+            .accessibilityLabel(localizationManager.localized("child_rewards_settings_accessibility_label"))
+            .accessibilityHint(localizationManager.localized("child_rewards_settings_accessibility_hint"))
+        }
+        .padding(.horizontal, Spacing.screenPadding)
+        .padding(.vertical, Spacing.s)
+    }
+    
+    private var loadingState: some View {
+        HStack(spacing: Spacing.m) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .primaryBlue))
+            Text(localizationManager.localized("child_rewards_loading"))
+                .font(.body)
+                .foregroundColor(.textSecondary)
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.4))
+        )
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+    
+    private func errorBanner(message: String) -> some View {
+        HStack(spacing: Spacing.s) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.warningOrange)
+            Text(message)
+                .font(.caption)
+                .foregroundColor(.warningOrange)
+            Spacer()
+            Button(action: {
+                loadErrorMessage = nil
+                Task { await viewModel.load(childId: nil) }
+            }) {
+                Text(localizationManager.localized("child_rewards_retry"))
+                    .font(.captionBold)
+                    .foregroundColor(.primaryBlue)
+            }
+        }
+        .padding(Spacing.s)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.5))
+        )
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+    
+    // MARK: - Balance Card
+    
+    private var balanceCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            // Иконка единорога
+            Text("🦄")
+                .font(.system(size: 60))
+            
+            // Баланс
+            Text("\(unicornBalance)")
+                .font(.system(size: 48, weight: .bold))
+                .foregroundColor(Color(hex: "C084FC"))
+            
+            Text(localizationManager.localized("child_rewards_balance_label"))
+                .font(.body)
+                .foregroundColor(.textSecondary)
+            
+            // Разделитель
+            Rectangle()
+                .fill(Color.textSecondary.opacity(0.2))
+                .frame(height: 1)
+                .padding(.vertical, Spacing.s)
+            
+            // Статистика за неделю
+            HStack(spacing: Spacing.xxl) {
+                VStack(spacing: Spacing.xs) {
+                    Text("+\(weeklyEarned)")
+                        .font(.h2)
+                        .foregroundColor(.successGreen)
+                    Text(localizationManager.localized("child_rewards_earned_week"))
+                        .font(.captionSmall)
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                
+                VStack(spacing: Spacing.xs) {
+                    Text("-\(weeklyPunished)")
+                        .font(.h2)
+                        .foregroundColor(.dangerRed)
+                    Text(localizationManager.localized("child_rewards_punished_week"))
+                        .font(.captionSmall)
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(Spacing.l)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(hex: "A855F7").opacity(0.15),
+                            Color(hex: "EC4899").opacity(0.2)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.large)
+                        .stroke(Color(hex: "A855F7").opacity(0.4), lineWidth: 2)
+                )
+        )
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+    
+    // MARK: - Goal Progress Card
+    
+    private var goalProgressCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            HStack(spacing: Spacing.xs) {
+                Text("🎯")
+                    .font(.system(size: 20))
+                Text(String(format: localizationManager.localized("child_rewards_goal_title"), goalTitle))
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.textPrimary)
+            }
+            
+            // Прогресс-бар
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    // Фон
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.backgroundMedium.opacity(0.5))
+                        .frame(height: 20)
+                    
+                    // Прогресс
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(hex: "A855F7"),
+                                    Color(hex: "EC4899")
+                                ]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: geometry.size.width * goalProgress, height: 20)
+                }
+            }
+            .frame(height: 20)
+            
+            // Текст прогресса
+            HStack {
+                Text(String(format: localizationManager.localized("child_rewards_goal_accumulated"), unicornBalance))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                
+                Spacer()
+                
+                Text(String(format: localizationManager.localized("child_rewards_goal_need"), goalCost))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+            }
+            
+            Text(String(format: localizationManager.localized("child_rewards_goal_remaining"), goalCost - unicornBalance, 35))
+                .font(.captionSmall)
+                .foregroundColor(.successGreen)
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.3))
+        )
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+    
+    // MARK: - Games Grid (2x3)
+    
+    private var gamesGrid: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("child_rewards_games_title"))
+                .font(.h3)
+                .foregroundColor(.textPrimary)
+                .padding(.horizontal, Spacing.screenPadding)
+            
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: Spacing.s),
+                GridItem(.flexible(), spacing: Spacing.s)
+            ], spacing: Spacing.s) {
+                // Карточка 1: 🛡️ Юный защитник
+                gameCardButton(
+                    icon: "🛡️",
+                    title: localizationManager.localized("child_rewards_game_young_defender"),
+                    status: localizationManager.localized("child_rewards_game_status_available"),
+                    metric: String(format: localizationManager.localized("child_rewards_game_metric_lessons"), getCompletedLessons()),
+                    color: .primaryBlue,
+                    destination: NavigationManager.ALADDINScreen.youngDefender
+                )
+                
+                // Карточка 2: 🦄 Питомец
+                gameCardButton(
+                    icon: "🦄",
+                    title: localizationManager.localized("child_rewards_game_pet"),
+                    status: String(format: localizationManager.localized("child_rewards_game_status_level"), getPetLevel()),
+                    metric: "❤️ \(Int(getPetLove() * 100))%",
+                    color: Color(hex: "A855F7"),
+                    destination: NavigationManager.ALADDINScreen.unicornPet
+                )
+                
+                // Карточка 3: 🕵️ Я защитник
+                gameCardButton(
+                    icon: "🕵️",
+                    title: localizationManager.localized("child_rewards_game_protector"),
+                    status: localizationManager.localized("child_rewards_game_status_available"),
+                    metric: String(format: localizationManager.localized("child_rewards_game_metric_quests"), getCompletedQuests()),
+                    color: Color(hex: "EC4899"),
+                    destination: NavigationManager.ALADDINScreen.familyProtector
+                )
+                
+                // Карточка 4: 🏆 Турнир
+                gameCardButton(
+                    icon: "🏆",
+                    title: localizationManager.localized("child_rewards_game_tournament"),
+                    status: String(format: localizationManager.localized("child_rewards_game_status_days_left"), getTournamentDaysLeft()),
+                    metric: localizationManager.localized("child_rewards_game_metric_leader"),
+                    color: .warningOrange,
+                    destination: NavigationManager.ALADDINScreen.familyTournament
+                )
+                
+                // Карточка 5: 🏪 Магазин (встроенный таб)
+                gameCardButton(
+                    icon: "🏪",
+                    title: localizationManager.localized("child_rewards_game_shop"),
+                    status: localizationManager.localized("child_rewards_game_status_products"),
+                    metric: localizationManager.localized("child_rewards_game_metric_from"),
+                    color: .secondaryGold,
+                    isTab: true,
+                    tabDestination: .shop
+                )
+                
+                // Карточка 6: 📊 История (встроенный таб)
+                gameCardButton(
+                    icon: "📊",
+                    title: localizationManager.localized("child_rewards_game_history"),
+                    status: localizationManager.localized("child_rewards_game_status_days"),
+                    metric: localizationManager.localized("child_rewards_game_metric_stats"),
+                    color: Color.textSecondary,
+                    isTab: true,
+                    tabDestination: .history
+                )
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+        }
+    }
+    
+    private func gameCardButton(
+        icon: String,
+        title: String,
+        status: String,
+        metric: String,
+        color: Color,
+        destination: NavigationManager.ALADDINScreen? = nil,
+        isTab: Bool = false,
+        tabDestination: RewardTab? = nil
+    ) -> some View {
+        Button(action: {
+            HapticFeedback.impact(.medium)
+            if isTab, let tab = tabDestination {
+                selectedTab = tab
+            } else if let destination = destination {
+                navigationManager.navigateTo(destination)
+            }
+        }) {
+            VStack(spacing: 8) {
+                // Badge
+                HStack {
+                    Spacer()
+                    Text(status)
+                        .font(.captionSmall)
+                        .foregroundColor(color)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(color.opacity(0.2))
+                        .clipShape(Capsule())
+                }
+                
+                // Иконка
+                Text(icon)
+                    .font(.system(size: 36))
+                
+                // Название
+                Text(title)
+                    .font(.bodyBold)
+                    .foregroundColor(.textPrimary)
+                    .multilineTextAlignment(.center)
+                
+                // Метрика
+                Text(metric)
+                    .font(.captionSmall)
+                    .foregroundColor(.textSecondary)
+                    .multilineTextAlignment(.center)
+                
+                Spacer()
+            }
+            .frame(height: 160)
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(color.opacity(0.15))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .stroke(color.opacity(0.3), lineWidth: 2)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    // MARK: - Helper Methods
+    
+    /// Загрузка наград магазина из UserDefaults
+    private func loadShopRewards() {
+        if shopRewardsData.isEmpty {
+            // Первый запуск - используем дефолтные награды
+            availableRewards = ShopReward.defaultRewards
+            saveShopRewards()
+        } else {
+            // Загружаем из UserDefaults
+            if let data = shopRewardsData.data(using: .utf8),
+               let rewards = try? JSONDecoder().decode([ShopReward].self, from: data) {
+                availableRewards = rewards
+            } else {
+                // Ошибка декодирования - используем дефолтные
+                availableRewards = ShopReward.defaultRewards
+                saveShopRewards()
+            }
+        }
+    }
+    
+    /// Сохранение наград магазина в UserDefaults
+    private func saveShopRewards() {
+        if let data = try? JSONEncoder().encode(availableRewards),
+           let jsonString = String(data: data, encoding: .utf8) {
+            shopRewardsData = jsonString
+        }
+    }
+    
+    /// Проверка: является ли текущий пользователь родителем
+    /// ✅ КРИТИЧНО ДЛЯ БЕЗОПАСНОСТИ: Дети НЕ должны видеть родительские функции
+    private func isCurrentUserParent() -> Bool {
+        guard let roleString = UserDefaults.standard.string(forKey: "current_user_role"),
+              let role = FamilyRole(storageValue: roleString) else {
+            // Если роль не установлена или невалидна - считаем что это ребёнок (безопаснее)
+            print("🚨 ChildRewardsScreen.isCurrentUserParent: роль не найдена или невалидна -> false (безопасность)")
+            return false
+        }
+        
+        let isParent = role == .parent
+        print("🔍 ChildRewardsScreen.isCurrentUserParent:")
+        print("   - Роль в UserDefaults: '\(roleString)'")
+        print("   - FamilyRole: \(role.rawValue)")
+        print("   - Результат: \(isParent ? "РОДИТЕЛЬ" : "РЕБЁНОК")")
+        
+        // Дополнительная проверка безопасности
+        if isParent {
+            print("   ✅ Разрешён доступ к родительским функциям")
+        } else {
+            print("   🔒 Доступ к родительским функциям ЗАБЛОКИРОВАН (ребёнок)")
+        }
+        
+        return isParent
+    }
+    
+    private func getCompletedLessons() -> Int {
+        UserDefaults.standard.integer(forKey: "young_defender_completed_lessons")
+    }
+    
+    private func getPetLevel() -> Int {
+        UserDefaults.standard.integer(forKey: "pet_level")
+    }
+    
+    private func getPetLove() -> Double {
+        let love = UserDefaults.standard.double(forKey: "pet_love")
+        return love > 0 ? love : 0.85  // Значение по умолчанию
+    }
+    
+    private func getCompletedQuests() -> Int {
+        UserDefaults.standard.integer(forKey: "family_protector_completed_quests")
+    }
+    
+    private func getTournamentDaysLeft() -> Int {
+        let days = UserDefaults.standard.integer(forKey: "tournament_days_left")
+        return days > 0 ? days : 5  // Значение по умолчанию
+    }
+    
+    // MARK: - Parent Quick Actions (ТОЛЬКО ДЛЯ РОДИТЕЛЕЙ)
+    
+    private var parentQuickActions: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            // Заголовок секции
+            HStack {
+                Text("👨‍👩‍👧")
+                    .font(.system(size: 24))
+                Text(localizationManager.localized("child_rewards_parent_section"))
+                    .font(.h2)
+                    .foregroundColor(.textPrimary)
+                    .fontWeight(.bold)
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+            .padding(.bottom, Spacing.s)
+            
+            // Кнопки действий
+            HStack(spacing: Spacing.m) {
+                // Кнопка "Вознаградить"
+                Button(action: {
+                    print("🔍 DEBUG: Нажата кнопка 'Вознаградить' в ChildRewardsScreen")
+                    HapticFeedback.impact(.medium)
+                    showRewardInput = true
+                }) {
+                    VStack(spacing: Spacing.xs) {
+                        Text("✅")
+                            .font(.system(size: 36))
+                            .accessibilityLabel(localizationManager.localized("child_rewards_reward_icon_accessibility"))
+                        Text(localizationManager.localized("child_rewards_reward_button"))
+                            .font(.bodyBold)
+                            .foregroundColor(.white)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 80)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.large)
+                            .fill(Color.successGreen)
+                            .shadow(color: Color.successGreen.opacity(0.4), radius: 8, x: 0, y: 4)
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .accessibilityLabel(localizationManager.localized("child_rewards_reward_accessibility"))
+                .accessibilityHint(localizationManager.localized("child_rewards_reward_hint"))
+                
+                // Кнопка "Наказать"
+                Button(action: {
+                    print("🔍 DEBUG: Нажата кнопка 'Наказать' в ChildRewardsScreen")
+                    HapticFeedback.impact(.medium)
+                    showPunishInput = true
+                }) {
+                    VStack(spacing: Spacing.xs) {
+                        Text("❌")
+                            .font(.system(size: 36))
+                            .accessibilityLabel(localizationManager.localized("child_rewards_punish_icon_accessibility"))
+                        Text(localizationManager.localized("child_rewards_punish_button"))
+                            .font(.bodyBold)
+                            .foregroundColor(.white)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 80)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.large)
+                            .fill(Color.dangerRed)
+                            .shadow(color: Color.dangerRed.opacity(0.4), radius: 8, x: 0, y: 4)
+                    )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .accessibilityLabel(localizationManager.localized("child_rewards_punish_accessibility"))
+                .accessibilityHint(localizationManager.localized("child_rewards_punish_hint"))
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+        }
+        .padding(.vertical, Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .fill(Color.backgroundMedium.opacity(0.3))
+        )
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+    
+    // MARK: - Child Rewards History View (ТОЛЬКО ДЛЯ ДЕТЕЙ)
+    
+    /// Секция для просмотра истории наград/наказаний детьми
+    /// ДЕТИ НЕ ВИДЯТ "Воспитание ребенка" - только историю!
+    private var childRewardsHistoryView: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            // Заголовок секции - БЕЗ "Воспитание ребенка" для детей
+            HStack {
+                Text("📊")
+                    .font(.system(size: 24))
+                Text(localizationManager.localized("child_rewards_child_history_title"))
+                    .font(.h2)
+                    .foregroundColor(.textPrimary)
+                    .fontWeight(.bold)
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+            .padding(.bottom, Spacing.s)
+            
+            // История наград/наказаний (последние 5)
+            let recentOperations = getHistoryOperations().prefix(5)
+            
+            if recentOperations.isEmpty {
+                VStack(spacing: Spacing.s) {
+                    Text("📝")
+                        .font(.system(size: 32))
+                    Text(localizationManager.localized("child_rewards_history_empty"))
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                    Text(localizationManager.localized("child_rewards_history_empty_desc"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(Spacing.l)
+            } else {
+                VStack(spacing: Spacing.s) {
+                    ForEach(Array(recentOperations)) { operation in
+                        childHistoryItem(operation: operation)
+                    }
+                }
+                .padding(.horizontal, Spacing.screenPadding)
+            }
+        }
+        .padding(.vertical, Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .fill(Color.backgroundMedium.opacity(0.3))
+        )
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+    
+    /// Элемент истории для детей (с объяснением причин)
+    private func childHistoryItem(operation: RewardHistoryEntry) -> some View {
+        let title = operation.title.resolved(with: localizationManager)
+        let reason = operation.reason.resolved(with: localizationManager)
+        let icon = getHistoryIcon(
+            title: title,
+            reason: reason,
+            titleKey: operation.title.localizationKey,
+            reasonKey: operation.reason.localizationKey,
+            isReward: operation.isReward
+        )
+        
+        return HStack(spacing: Spacing.m) {
+            // Иконка
+            Text(icon)
+                .font(.system(size: 32))
+            
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                // Название действия
+                Text(title)
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.textPrimary)
+                
+                // Причина (почему наградили/наказали)
+                if !reason.isEmpty {
+                    Text(String(format: localizationManager.localized("child_rewards_reason_label"), reason))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                
+                // Дата
+                Text(formatDate(operation.date))
+                    .font(.captionSmall)
+                    .foregroundColor(.textTertiary)
+            }
+            
+            Spacer()
+            
+            // Количество единорогов (плюс или минус)
+            VStack(alignment: .trailing, spacing: Spacing.xxs) {
+                Text("\(operation.isReward ? "+" : "-")\(operation.amount)")
+                    .font(.body)
+                    .fontWeight(.bold)
+                    .foregroundColor(operation.isReward ? .successGreen : .dangerRed)
+                Text("🦄")
+                    .font(.body)
+            }
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(operation.isReward ? Color.successGreen.opacity(0.1) : Color.dangerRed.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                        .stroke(operation.isReward ? Color.successGreen.opacity(0.3) : Color.dangerRed.opacity(0.3), lineWidth: 2)
+                )
+        )
+    }
+    
+    // MARK: - Request Button
+    
+    private var requestButton: some View {
+        Button(action: {
+            showRequestModal = true
+        }) {
+            HStack(spacing: Spacing.m) {
+                Text("📣")
+                    .font(.system(size: 24))
+                Text(localizationManager.localized("child_rewards_request_button"))
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.textPrimary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.large)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color(hex: "A855F7").opacity(0.2),
+                                Color(hex: "EC4899").opacity(0.2)
+                            ]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.large)
+                            .stroke(Color(hex: "A855F7").opacity(0.4), lineWidth: 2)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+    
+    // MARK: - Tab Selector
+    
+    private var tabSelector: some View {
+        HStack(spacing: 0) {
+            ForEach([RewardTab.shop, .history, .achievements], id: \.self) { tab in
+                Button(action: {
+                    selectedTab = tab
+                }) {
+                    Text(tab.localizedTitle(localizationManager))
+                        .font(.body)
+                        .fontWeight(selectedTab == tab ? .bold : .regular)
+                        .foregroundColor(selectedTab == tab ? .textPrimary : .textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.m)
+                        .background(
+                            selectedTab == tab ?
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .fill(Color.primaryBlue.opacity(0.3)) :
+                            nil
+                        )
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+        .padding(4)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.5))
+        )
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+    
+    // MARK: - Tab Content
+    
+    @ViewBuilder
+    private var tabContent: some View {
+        switch selectedTab {
+        case .shop:
+            rewardsShop
+        case .history:
+            rewardsHistory
+        case .achievements:
+            achievementsTab
+        }
+    }
+    
+    // MARK: - Rewards Shop
+    
+    private var rewardsShop: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            HStack {
+                Text("🏪")
+                    .font(.system(size: 18))
+                Text(localizationManager.localized("child_rewards_shop_title"))
+                    .font(.h3)
+                    .foregroundColor(.textPrimary)
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+            
+            VStack(spacing: Spacing.s) {
+                // Загружаем награды из UserDefaults или используем дефолтные
+                let enabledRewards = availableRewards.filter { $0.isEnabled }
+                
+                if enabledRewards.isEmpty {
+                    // Сообщение если наград нет
+                    VStack(spacing: Spacing.m) {
+                        Text("🎁")
+                            .font(.system(size: 48))
+                        Text(localizationManager.localized("child_rewards_shop_empty"))
+                            .font(.body)
+                            .foregroundColor(.textSecondary)
+                        Text(localizationManager.localized("child_rewards_shop_empty_desc"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(Spacing.xxl)
+                } else {
+                    ForEach(enabledRewards) { reward in
+                        rewardItem(
+                            reward: reward,
+                            canAfford: unicornBalance >= reward.price
+                        )
+                    }
+                }
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+        }
+    }
+    
+    private func rewardItem(reward: ShopReward, canAfford: Bool) -> some View {
+        let title = reward.localizedTitle(localizationManager)
+        let description = reward.localizedDescription(localizationManager)
+        let price = reward.price
+        return Button(action: {
+            print("🛒 Нажата награда: \(title), цена: \(price) 🦄, баланс: \(unicornBalance) 🦄, можно купить: \(canAfford)")
+            if canAfford {
+                buyReward(price: price, title: title)
+            } else {
+                HapticFeedback.notification(.error)
+                print("❌ Недостаточно единорогов для покупки: \(title)")
+            }
+        }) {
+            HStack(spacing: Spacing.m) {
+                Text(reward.icon)
+                    .font(.system(size: 32))
+                
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(title)
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.textPrimary)
+                    Text(description)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: Spacing.xxs) {
+                    Text("\(price) 🦄")
+                        .font(.body)
+                        .fontWeight(.bold)
+                        .foregroundColor(Color(hex: "C084FC"))
+                    
+                    Text(canAfford ? localizationManager.localized("child_rewards_buy_button") : localizationManager.localized("child_rewards_save_more"))
+                        .font(.captionSmall)
+                        .foregroundColor(canAfford ? .successGreen : .dangerRed)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(canAfford ? Color.successGreen.opacity(0.2) : Color.dangerRed.opacity(0.2))
+                        )
+                }
+            }
+            .padding(Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(canAfford ? Color.backgroundMedium.opacity(0.5) : Color.backgroundMedium.opacity(0.3))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .stroke(canAfford ? Color(hex: "A855F7").opacity(0.4) : Color.textSecondary.opacity(0.2), lineWidth: canAfford ? 2 : 1)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+        .disabled(!canAfford)
+    }
+    
+    // MARK: - Rewards History
+    
+    private var rewardsHistory: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            HStack {
+                Text("📊")
+                    .font(.system(size: 18))
+                Text(localizationManager.localized("child_rewards_history_title"))
+                    .font(.h3)
+                    .foregroundColor(.textPrimary)
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+            
+            // Загружаем реальную историю из AppStorage
+            let operations = getHistoryOperations()
+            
+            if operations.isEmpty {
+                VStack(spacing: Spacing.m) {
+                    Text("📝")
+                        .font(.system(size: 48))
+                    Text(localizationManager.localized("child_rewards_history_empty"))
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                    Text(localizationManager.localized("child_rewards_history_empty_full"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(Spacing.xxl)
+            } else {
+            VStack(spacing: Spacing.s) {
+                    ForEach(operations) { operation in
+                        historyItemFromOperation(operation: operation)
+                    }
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+            }
+        }
+    }
+    
+    /// Загрузка истории из AppStorage
+    private func getHistoryOperations() -> [RewardHistoryEntry] {
+        guard let historyData = UserDefaults.standard.string(forKey: "rewards_history"),
+              let data = historyData.data(using: .utf8),
+              let operations = try? JSONDecoder().decode([RewardHistoryEntry].self, from: data) else {
+            return []
+        }
+        return operations.sorted { $0.date > $1.date } // Новые сверху
+    }
+    
+    /// Отображение элемента истории из RewardHistoryEntry
+    private func historyItemFromOperation(operation: RewardHistoryEntry) -> some View {
+        let title = operation.title.resolved(with: localizationManager)
+        let reason = operation.reason.resolved(with: localizationManager)
+        let icon = getHistoryIcon(
+            title: title,
+            reason: reason,
+            titleKey: operation.title.localizationKey,
+            reasonKey: operation.reason.localizationKey,
+            isReward: operation.isReward
+        )
+        
+        return HStack(spacing: Spacing.m) {
+            Text(icon)
+                .font(.system(size: 28))
+            
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                Text(title)
+                    .font(.body)
+                    .foregroundColor(.textPrimary)
+                
+                // Показываем причину (reason)
+                if !reason.isEmpty && reason != title {
+                    Text(reason)
+                        .font(.captionSmall)
+                        .foregroundColor(.textSecondary)
+                }
+                
+                Text(formatDate(operation.date))
+                    .font(.captionSmall)
+                    .foregroundColor(.textSecondary)
+            }
+            
+            Spacer()
+            
+            Text("\(operation.isReward ? "+" : "-")\(operation.amount) 🦄")
+                .font(.body)
+                .fontWeight(.bold)
+                .foregroundColor(operation.isReward ? .successGreen : .dangerRed)
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(operation.isReward ? Color.backgroundMedium.opacity(0.5) : Color.dangerRed.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                        .stroke(operation.isReward ? Color.textSecondary.opacity(0.2) : Color.dangerRed.opacity(0.3), lineWidth: 1)
+                )
+        )
+    }
+    
+    /// Определение иконки для истории
+    private func getHistoryIcon(title: String, reason: String, titleKey: String?, reasonKey: String?, isReward: Bool) -> String {
+        let iconByKey: [String: String] = [
+            "child_rewards_history_reward_title": "✅",
+            "child_rewards_history_reward_reason_default": "✅",
+            "child_rewards_history_punish_title": "❌",
+            "child_rewards_history_punish_reason_default": "❌",
+            "child_rewards_earning_homework_title": "📚",
+            "child_rewards_earning_chores_title": "🧹",
+            "child_rewards_earning_behavior_title": "😊",
+            "child_rewards_earning_reading_title": "📖",
+            "child_rewards_earning_achievement_title": "🏆",
+            "child_rewards_punish_homework_title": "📚",
+            "child_rewards_punish_behavior_title": "😡",
+            "child_rewards_punish_limits_title": "⏰",
+            "child_rewards_punish_bypass_title": "🚫",
+            "child_rewards_punish_custom_title": "❌",
+            "child_rewards_history_achievement_title": "🏆",
+            "child_rewards_history_goal_title": "🎯"
+        ]
+
+        if let key = titleKey, let icon = iconByKey[key] {
+            return icon
+        }
+        if let key = reasonKey, let icon = iconByKey[key] {
+            return icon
+        }
+
+        let combined = (title + " " + reason).lowercased()
+        let matches: [(phrases: [String], icon: String, rewardOverride: String?)] = [
+            (["домашнее", "дз", "homework"], "📚", nil),
+            (["уборк", "chores", "clean"], "🧹", nil),
+            (["повед", "behavior"], "😡", "😊"),
+            (["книг", "чит", "reading"], "📖", nil),
+            (["достиж", "achievement"], "🏆", nil),
+            (["лимит", "screen", "limit"], "⏰", nil),
+            (["обход", "bypass"], "🚫", nil),
+            (["цель", "goal"], "🎯", nil)
+        ]
+
+        for match in matches {
+            if match.phrases.contains(where: { combined.contains($0) }) {
+                if let rewardIcon = match.rewardOverride, isReward {
+                    return rewardIcon
+                }
+                return match.icon
+            }
+        }
+
+        return isReward ? "✅" : "❌"
+    }
+    
+    /// Форматирование даты
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = localizationManager.locale
+        
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "HH:mm"
+        timeFormatter.locale = localizationManager.locale
+        let timeString = timeFormatter.string(from: date)
+        
+        if Calendar.current.isDateInToday(date) {
+            return String(format: localizationManager.localized("child_rewards_date_today"), timeString)
+        } else if Calendar.current.isDateInYesterday(date) {
+            return String(format: localizationManager.localized("child_rewards_date_yesterday"), timeString)
+        } else {
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            return formatter.string(from: date)
+        }
+    }
+    
+    private func historyItem(icon: String, title: String, amount: String, isReward: Bool, date: String) -> some View {
+        return HStack(spacing: Spacing.m) {
+            Text(icon)
+                .font(.system(size: 28))
+            
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                Text(title)
+                    .font(.body)
+                    .foregroundColor(.textPrimary)
+                Text(date)
+                    .font(.captionSmall)
+                    .foregroundColor(.textSecondary)
+            }
+            
+            Spacer()
+            
+            Text(amount)
+                .font(.body)
+                .fontWeight(.bold)
+                .foregroundColor(isReward ? .successGreen : .dangerRed)
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(isReward ? Color.backgroundMedium.opacity(0.5) : Color.dangerRed.opacity(0.08))
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                        .stroke(isReward ? Color.textSecondary.opacity(0.2) : Color.dangerRed.opacity(0.3), lineWidth: 1)
+                )
+        )
+    }
+    
+    // MARK: - Achievements Tab
+    
+    private var achievementsTab: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            HStack {
+                Text("🏆")
+                    .font(.system(size: 18))
+                Text(localizationManager.localized("child_rewards_achievements_title"))
+                    .font(.h3)
+                    .foregroundColor(.textPrimary)
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+            
+            VStack(spacing: Spacing.s) {
+                achievementItem(icon: "📚", title: localizationManager.localized("child_rewards_achievement_excellent"), desc: localizationManager.localized("child_rewards_achievement_excellent_desc"), progress: 0.7)
+                achievementItem(icon: "🧹", title: localizationManager.localized("child_rewards_achievement_helper"), desc: localizationManager.localized("child_rewards_achievement_helper_desc"), progress: 0.5)
+                achievementItem(icon: "📖", title: localizationManager.localized("child_rewards_achievement_bookworm"), desc: localizationManager.localized("child_rewards_achievement_bookworm_desc"), progress: 0.4)
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+        }
+    }
+    
+    private func achievementItem(icon: String, title: String, desc: String, progress: Double) -> some View {
+        return VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack(spacing: Spacing.m) {
+                Text(icon)
+                    .font(.system(size: 32))
+                
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(title)
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.textPrimary)
+                    Text(desc)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                
+                Spacer()
+                
+                Text("\(Int(progress * 100))%")
+                    .font(.caption)
+                    .foregroundColor(.successGreen)
+            }
+            
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(Color.backgroundMedium.opacity(0.5))
+                        .frame(height: 8)
+                    
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(Color.successGreen)
+                        .frame(width: geometry.size.width * progress, height: 8)
+                }
+            }
+            .frame(height: 8)
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.5))
+        )
+    }
+    
+    // MARK: - Actions
+    
+    // Состояние для модального окна подтверждения покупки
+    @State private var showPurchaseConfirmation: Bool = false
+    @State private var pendingPurchaseTitle: String = ""
+    @State private var pendingPurchasePrice: Int = 0
+    
+    private func buyReward(price: Int, title: String) {
+        // ✅ БЕЗОПАСНОСТЬ: Дети могут только тратить единороги на награды, но не изменять баланс напрямую
+        // Баланс может изменять только родитель через RewardsModalView
+        
+        // Проверяем, что баланс достаточен
+        guard unicornBalance >= price else {
+            print("⚠️ Недостаточно единорогов для покупки: \(title) (нужно \(price), есть \(unicornBalance))")
+            HapticFeedback.notification(.error)
+            return
+        }
+        
+        // Показываем модальное окно подтверждения
+        pendingPurchaseTitle = title
+        pendingPurchasePrice = price
+        showPurchaseConfirmation = true
+    }
+    
+    /// Подтверждение и выполнение покупки
+    private func confirmPurchase() {
+        guard unicornBalance >= pendingPurchasePrice else {
+            HapticFeedback.notification(.error)
+            return
+        }
+        
+        // Haptic feedback
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+        
+        // Тратим единороги (это разрешено для детей)
+        unicornBalance -= pendingPurchasePrice
+        storedUnicornBalance = unicornBalance
+        
+        // ✅ БЕЗОПАСНОСТЬ: Дети могут ТОЛЬКО тратить единороги, но НЕ могут их добавлять напрямую
+        // Обновляем в UserDefaults (единый источник истины)
+        UserDefaults.standard.set(unicornBalance, forKey: "child_unicorn_balance")
+        
+        // Синхронизируем @AppStorage
+        storedUnicornBalance = unicornBalance
+        
+        // Применяем награду в зависимости от типа
+        applyReward(pendingPurchaseTitle)
+        
+        // Отправляем уведомление для обновления других экранов
+        NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+        
+        print("💰 ChildRewardsScreen: Баланс после покупки: \(unicornBalance) 🦄")
+        
+        // Успешный feedback
+        HapticFeedback.notification(.success)
+        
+        print("🎁 Куплена награда: \(pendingPurchaseTitle) за \(pendingPurchasePrice) 🦄. Осталось: \(unicornBalance) 🦄")
+        
+        // Закрываем модальное окно
+        showPurchaseConfirmation = false
+    }
+    
+    /// Применение купленной награды
+    private func applyReward(_ title: String) {
+        let lowercased = title.lowercased()
+        
+        if lowercased.contains("30 минут игр") || lowercased.contains("игр") {
+            // +30 минут игр
+            let currentExtraTime = UserDefaults.standard.integer(forKey: "extra_game_time_minutes")
+            UserDefaults.standard.set(currentExtraTime + 30, forKey: "extra_game_time_minutes")
+            print("✅ Добавлено 30 минут игрового времени")
+        } else if lowercased.contains("1 час") || lowercased.contains("экранного времени") {
+            // +1 час экранного времени
+            let currentExtraTime = UserDefaults.standard.integer(forKey: "extra_screen_time_hours")
+            UserDefaults.standard.set(currentExtraTime + 1, forKey: "extra_screen_time_hours")
+            print("✅ Добавлен 1 час экранного времени")
+        } else if lowercased.contains("30 минут перед сном") || lowercased.contains("время сна") {
+            // +30 минут перед сном
+            let currentBedtimeDelay = UserDefaults.standard.integer(forKey: "bedtime_delay_minutes")
+            UserDefaults.standard.set(currentBedtimeDelay + 30, forKey: "bedtime_delay_minutes")
+            print("✅ Добавлено 30 минут перед сном")
+        } else if lowercased.contains("пицц") {
+            // Заказ пиццы - добавляем в список запросов для родителей
+            let _ = [
+                "type": "pizza_order",
+                "title": "Заказ пиццы",
+                "timestamp": Date().timeIntervalSince1970
+            ] as [String : Any]
+            // TODO: Сохранить запрос в список для родителей
+            print("✅ Запрос на заказ пиццы отправлен родителям")
+        }
+        // Остальные награды обрабатываются аналогично
+    }
+    
+    // MARK: - Reward/Punish Actions (ТОЛЬКО ДЛЯ РОДИТЕЛЕЙ)
+    
+    /// Вознаграждение ребёнка (ТОЛЬКО ДЛЯ РОДИТЕЛЕЙ!)
+    /// ✅ БЕЗОПАСНОСТЬ: Проверка роли обязательна
+    private func rewardChild(amount: Int, history: RewardHistoryTexts) {
+        // ✅ КРИТИЧНАЯ ПРОВЕРКА БЕЗОПАСНОСТИ
+        guard isCurrentUserParent() else {
+            print("🚨 ПРОБЛЕМА БЕЗОПАСНОСТИ: Попытка наградить ребёнка не родителем!")
+            print("   - Роль: \(UserDefaults.standard.string(forKey: "current_user_role") ?? "НЕ УСТАНОВЛЕНА")")
+            HapticFeedback.notification(.error)
+            return
+        }
+        let resolvedReason = history.reason.resolved(with: localizationManager)
+        
+        // Обновляем баланс в AppStorage (синхронизация)
+        let currentBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+        let newBalance = currentBalance + amount
+        UserDefaults.standard.set(newBalance, forKey: "child_unicorn_balance")
+        
+        // Обновляем статистику за неделю
+        let currentWeekly = UserDefaults.standard.integer(forKey: "child_weekly_earned")
+        UserDefaults.standard.set(currentWeekly + amount, forKey: "child_weekly_earned")
+        
+        // Явно отправляем уведомление для обновления других экранов
+        NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+        
+        // Обновляем локальные переменные
+        unicornBalance = newBalance
+        weeklyEarned += amount
+        
+        // Добавляем в историю (используем ту же логику, что и в RewardsModalView)
+        addToHistory(isReward: true, texts: history, amount: amount)
+        
+        HapticFeedback.notification(.success)
+        print("✅ Вознаградили ребёнка: +\(amount) 🦄, причина: \(resolvedReason)")
+        print("💰 Новый баланс: \(newBalance) 🦄")
+    }
+    
+    /// Наказание ребёнка (ТОЛЬКО ДЛЯ РОДИТЕЛЕЙ!)
+    /// ✅ БЕЗОПАСНОСТЬ: Проверка роли обязательна
+    private func punishChild(amount: Int, history: RewardHistoryTexts) {
+        // ✅ КРИТИЧНАЯ ПРОВЕРКА БЕЗОПАСНОСТИ
+        guard isCurrentUserParent() else {
+            print("🚨 ПРОБЛЕМА БЕЗОПАСНОСТИ: Попытка наказать ребёнка не родителем!")
+            print("   - Роль: \(UserDefaults.standard.string(forKey: "current_user_role") ?? "НЕ УСТАНОВЛЕНА")")
+            HapticFeedback.notification(.error)
+            return
+        }
+        let resolvedReason = history.reason.resolved(with: localizationManager)
+        
+        // Обновляем баланс в AppStorage (синхронизация)
+        let currentBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+        let newBalance = max(0, currentBalance - amount) // Не может быть отрицательным
+        UserDefaults.standard.set(newBalance, forKey: "child_unicorn_balance")
+        
+        // Обновляем статистику за неделю
+        let currentWeekly = UserDefaults.standard.integer(forKey: "child_weekly_punished")
+        UserDefaults.standard.set(currentWeekly + amount, forKey: "child_weekly_punished")
+        
+        // Явно отправляем уведомление для обновления других экранов
+        NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+        
+        // Обновляем локальные переменные
+        unicornBalance = newBalance
+        weeklyPunished += amount
+        
+        // Добавляем в историю (используем ту же логику, что и в RewardsModalView)
+        addToHistory(isReward: false, texts: history, amount: amount)
+        
+        HapticFeedback.notification(.error)
+        print("✅ Наказали ребёнка: -\(amount) 🦄, причина: \(resolvedReason)")
+        print("💰 Новый баланс: \(newBalance) 🦄")
+    }
+    
+    // MARK: - History Management
+    
+    private func addToHistory(isReward: Bool, texts: RewardHistoryTexts, amount: Int) {
+        let operation = RewardHistoryEntry(
+            id: UUID().uuidString,
+            title: texts.title,
+            reason: texts.reason,
+            amount: amount,
+            isReward: isReward,
+            date: Date()
+        )
+        var history = getHistoryOperations()
+        history.append(operation)
+        if let encoded = try? JSONEncoder().encode(history),
+           let jsonString = String(data: encoded, encoding: .utf8) {
+            UserDefaults.standard.set(jsonString, forKey: "rewards_history")
+        }
+    }
+
+    private func sendRequestToParents(_ achievement: String) {
+        guard !achievement.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            print("⚠️ Пустой запрос не будет отправлен")
+            return
+        }
+
+        var requests: [[String: Any]] = []
+        if let stored = UserDefaults.standard.data(forKey: "child_achievement_requests"),
+           let decoded = try? JSONSerialization.jsonObject(with: stored) as? [[String: Any]] {
+            requests = decoded
+        }
+
+        let request: [String: Any] = [
+            "id": UUID().uuidString,
+            "achievement": achievement,
+            "date": ISO8601DateFormatter().string(from: Date())
+        ]
+        requests.append(request)
+
+        if let encoded = try? JSONSerialization.data(withJSONObject: requests) {
+            UserDefaults.standard.set(encoded, forKey: "child_achievement_requests")
+            print("📣 Отправлен запрос родителям: \(achievement)")
+            print("📊 Всего запросов: \(requests.count)")
+        }
+    }
+}
+
+// MARK: - Achievement Request Modal
+
+struct AchievementRequestModal: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+    let onSendRequest: (String) -> Void
+    
+    @State private var selectedTemplate: String?
+    @State private var customMessage: String = ""
+    
+    private var templates: [(icon: String, title: String, reward: String)] {
+        [
+            ("📚", localizationManager.localized("child_rewards_achievement_request_template_homework"), "+10 🦄"),
+            ("🧹", localizationManager.localized("child_rewards_achievement_request_template_cleaning"), "+5 🦄"),
+            ("📖", localizationManager.localized("child_rewards_achievement_request_template_reading"), "+20 🦄"),
+            ("🏆", localizationManager.localized("child_rewards_achievement_request_template_grade"), "+50 🦄"),
+            ("🤝", localizationManager.localized("child_rewards_achievement_request_template_help"), "+15 🦄")
+        ]
+    }
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                LinearGradient.backgroundGradient
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: Spacing.l) {
+                        Text(localizationManager.localized("child_rewards_achievement_request_select"))
+                            .font(.body)
+                            .foregroundColor(.textSecondary)
+                            .padding(.horizontal, Spacing.screenPadding)
+                        
+                        VStack(spacing: Spacing.s) {
+                            ForEach(Array(templates.enumerated()), id: \.offset) { index, template in
+                                templateButton(template, index: index)
+                            }
+                            customMessageSection
+                        }
+                        .padding(.horizontal, Spacing.screenPadding)
+                        
+                        if selectedTemplate != nil || !customMessage.isEmpty {
+                            sendButton
+                        }
+                    }
+                    .padding(.top, Spacing.m)
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(localizationManager.localized("child_rewards_achievement_request_title"))
+                        .font(.h3)
+                        .foregroundColor(.textPrimary)
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+            }
+        }
+    }
+    
+    private func templateButton(_ template: (icon: String, title: String, reward: String), index: Int) -> some View {
+        return Button(action: {
+            selectedTemplate = template.title
+            customMessage = ""
+        }) {
+            HStack(spacing: Spacing.m) {
+                Text(template.icon)
+                    .font(.system(size: 28))
+                
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(template.title)
+                        .font(.body)
+                        .foregroundColor(.textPrimary)
+                    Text(template.reward)
+                        .font(.caption)
+                        .foregroundColor(.successGreen)
+                }
+                
+                Spacer()
+                
+                if selectedTemplate == template.title {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.successGreen)
+                }
+            }
+            .padding(Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(selectedTemplate == template.title ? Color.successGreen.opacity(0.2) : Color.backgroundMedium.opacity(0.5))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .stroke(selectedTemplate == template.title ? Color.successGreen : Color.textSecondary.opacity(0.2), lineWidth: selectedTemplate == template.title ? 2 : 1)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private var customMessageSection: some View {
+        return VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack(spacing: Spacing.m) {
+                Text("✍️")
+                    .font(.system(size: 28))
+                Text(localizationManager.localized("child_rewards_achievement_request_custom"))
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.textPrimary)
+            }
+            
+            TextField(localizationManager.localized("child_rewards_achievement_request_custom_placeholder"), text: $customMessage)
+                .textFieldStyle(.plain)
+                .padding(Spacing.m)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.small)
+                        .fill(Color.backgroundMedium.opacity(0.5))
+                )
+                .foregroundColor(.textPrimary)
+                .onChange(of: customMessage) { _ in
+                    if !customMessage.isEmpty {
+                        selectedTemplate = nil
+                    }
+                }
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.5))
+        )
+    }
+    
+    private var sendButton: some View {
+        return Button(action: {
+            let message = customMessage.isEmpty ? (selectedTemplate ?? "") : customMessage
+            onSendRequest(message)
+            dismiss()
+        }) {
+            Text(localizationManager.localized("child_rewards_achievement_request_send"))
+                .font(.body)
+                .fontWeight(.semibold)
+                .foregroundColor(.textPrimary)
+                .frame(maxWidth: .infinity)
+                .padding(Spacing.m)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.large)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [.successGreen, .successGreen.opacity(0.8)]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                )
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+}
+
+// MARK: - Purchase Confirmation Modal
+
+struct PurchaseConfirmationModal: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+    
+    let title: String
+    let price: Int
+    let balance: Int
+    let onConfirm: () -> Void
+    let onCancel: () -> Void
+    
+    var body: some View {
+        NavigationView {
+            VStack(spacing: Spacing.l) {
+                Text("🎁")
+                    .font(.system(size: 60))
+                
+                Text(localizationManager.localized("child_rewards_purchase_confirm_title"))
+                    .font(.h2)
+                    .foregroundColor(.textPrimary)
+                
+                VStack(alignment: .leading, spacing: Spacing.m) {
+                    infoRow(label: localizationManager.localized("child_rewards_purchase_confirm_reward"), value: title)
+                    infoRow(label: localizationManager.localized("child_rewards_purchase_confirm_cost"), value: "\(price) 🦄")
+                    infoRow(label: localizationManager.localized("child_rewards_purchase_confirm_balance"), value: "\(balance - price) 🦄")
+                    Text(localizationManager.localized("child_rewards_purchase_confirm_remaining"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                .padding(Spacing.m)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                        .fill(Color.backgroundMedium.opacity(0.4))
+                )
+                .padding(.horizontal, Spacing.screenPadding)
+                
+                VStack(spacing: Spacing.s) {
+                    Button(action: {
+                        onConfirm()
+                        dismiss()
+                    }) {
+                        Text(localizationManager.localized("child_rewards_purchase_confirm_buy"))
+                            .font(.bodyBold)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(Spacing.m)
+                            .background(Color.successGreen)
+                            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    
+                    Button(action: {
+                        onCancel()
+                        dismiss()
+                    }) {
+                        Text(localizationManager.localized("child_rewards_purchase_confirm_cancel"))
+                            .font(.body)
+                            .foregroundColor(.textSecondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(Spacing.m)
+                            .background(
+                                RoundedRectangle(cornerRadius: CornerRadius.large)
+                                    .stroke(Color.textSecondary.opacity(0.2), lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                .padding(.horizontal, Spacing.screenPadding)
+                
+                Button(action: { dismiss() }) {
+                    Text(localizationManager.localized("child_rewards_purchase_confirm_close"))
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                        .padding(.top, Spacing.s)
+                }
+            }
+            .padding(.vertical, Spacing.l)
+            .background(
+                LinearGradient.backgroundGradient
+                    .ignoresSafeArea()
+            )
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(localizationManager.localized("child_rewards_purchase_confirm_title"))
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                }
+            }
+        }
+    }
+    
+    private func infoRow(label: String, value: String) -> some View {
+        return HStack {
+            Text(label)
+                .font(.body)
+                .foregroundColor(.textSecondary)
+            Spacer()
+            Text(value)
+                .font(.bodyBold)
+                .foregroundColor(.textPrimary)
+        }
+    }
+}

@@ -1,0 +1,96 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/FamilyProtectorView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "🕵️ Я защитник"
+      },
+      {
+        "comment": "",
+        "key": "%lld/10 квестов"
+      },
+      {
+        "comment": "",
+        "key": "🕵️"
+      },
+      {
+        "comment": "",
+        "key": "%lld"
+      },
+      {
+        "comment": "",
+        "key": "квестов\nпройдено"
+      },
+      {
+        "comment": "",
+        "key": "очков\nнабрано"
+      },
+      {
+        "comment": "",
+        "key": "Еженедельная\nпроверка"
+      },
+      {
+        "comment": "",
+        "key": "✅"
+      },
+      {
+        "comment": "",
+        "key": "⏳"
+      },
+      {
+        "comment": "",
+        "key": "🎯 Квесты безопасности"
+      },
+      {
+        "comment": "",
+        "key": "+%lld 🦄 получено"
+      },
+      {
+        "comment": "",
+        "key": "▶️"
+      },
+      {
+        "comment": "",
+        "key": "📋"
+      },
+      {
+        "comment": "",
+        "key": "10 случайных сценариев безопасности"
+      },
+      {
+        "comment": "",
+        "key": "Награда: %lld 🦄"
+      },
+      {
+        "comment": "",
+        "key": "📋 Еженедельная проверка"
+      },
+      {
+        "comment": "",
+        "key": "Сценарий %lld из %lld"
+      },
+      {
+        "comment": "",
+        "key": "Вопрос %lld из %lld"
+      },
+      {
+        "comment": "",
+        "key": "Закрыть"
+      },
+      {
+        "comment": "",
+        "key": "Что ты сделаешь?"
+      },
+      {
+        "comment": "",
+        "key": "✅ Правильно!"
+      },
+      {
+        "comment": "",
+        "key": "❌ Неправильно"
+      }
+    ]
+  },
+  "version": 1
+}

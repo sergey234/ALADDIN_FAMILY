@@ -47,21 +47,25 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-xcode-
           
-    - name: Build Archive (without signing)
+    - name: Build Archive (with automatic signing)
+      env:
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       run: |
-        echo "Building archive without signing (for testing)..."
-        echo "This will create an archive that can be exported manually"
+        echo "Building archive with automatic signing..."
+        echo "Team ID: $APPLE_TEAM_ID"
+        echo "Bundle ID: family.aladdin.ios"
         
-        # Попробуем собрать без подписи (для проверки компиляции)
+        # Собираем Archive с автоматической подписью
+        # Network Extension теперь использует Automatic signing вместо Manual
         xcodebuild archive \
           -project ALADDIN.xcodeproj \
           -scheme ALADDIN \
           -configuration Release \
           -archivePath ./build/ALADDIN.xcarchive \
           -destination 'generic/platform=iOS' \
-          CODE_SIGN_IDENTITY="" \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGNING_ALLOWED=NO || echo "Build failed, but continuing..."
+          CODE_SIGN_STYLE=Automatic \
+          DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+          PRODUCT_BUNDLE_IDENTIFIER="family.aladdin.ios" || echo "Build failed, but continuing..."
         
     - name: Check build result
       run: |

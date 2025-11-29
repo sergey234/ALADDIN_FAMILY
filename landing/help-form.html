@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Форма помощи — ALADDIN AI</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero__content">
+      <a href="index.html" class="cta ghost" style="margin-bottom: 24px;">← Назад на главную</a>
+      <h1>Форма помощи</h1>
+      <p>Мы поможем решить вашу проблему</p>
+    </div>
+  </header>
+
+  <main style="max-width: 800px; margin: 0 auto; padding: 80px clamp(24px, 5vw, 80px);">
+    <article class="legal-content">
+      <section>
+        <h2>Обратиться в поддержку</h2>
+        <p>Если у вас возникли вопросы или проблемы, вы можете связаться с нами несколькими способами:</p>
+        
+        <div style="margin-top: 32px; padding: 24px; background: rgba(76, 111, 255, 0.1); border-radius: var(--radius-md); border-left: 4px solid var(--accent);">
+          <h3 style="color: var(--accent); margin-top: 0;">📱 Telegram-бот</h3>
+          <p>Самый быстрый способ получить помощь:</p>
+          <p style="margin-top: 12px;">
+            <a href="https://t.me/aladdin_support" target="_blank" class="cta primary" style="display: inline-block; text-decoration: none;">
+              Открыть Telegram-бот
+            </a>
+          </p>
+        </div>
+
+        <div style="margin-top: 24px; padding: 24px; background: rgba(245, 200, 110, 0.1); border-radius: var(--radius-md); border-left: 4px solid var(--gold);">
+          <h3 style="color: var(--gold); margin-top: 0;">📧 Email</h3>
+          <p>Напишите нам на почту:</p>
+          <p style="margin-top: 12px;">
+            <a href="mailto:sergey21-02-84@list.ru" style="color: var(--accent); text-decoration: none; font-weight: 600;">
+              sergey21-02-84@list.ru
+            </a>
+          </p>
+        </div>
+
+        <div style="margin-top: 24px; padding: 24px; background: rgba(255, 255, 255, 0.03); border-radius: var(--radius-md); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <h3 style="margin-top: 0;">📞 Телефон</h3>
+          <p>Позвоните нам:</p>
+          <p style="margin-top: 12px;">
+            <a href="tel:+79270051577" style="color: var(--accent); text-decoration: none; font-weight: 600; font-size: 18px;">
+              +7 (927) 005-15-77
+            </a>
+          </p>
+        </div>
+      </section>
+
+      <section style="margin-top: 40px;">
+        <h2>Что указать в обращении?</h2>
+        <p>Чтобы мы могли быстрее помочь, укажите:</p>
+        <ul>
+          <li><strong>Если вопрос о подписке:</strong> alias и PIN, которые вы указали при оплате</li>
+          <li><strong>Если вопрос о приложении:</strong> опишите проблему и шаги, которые привели к ней</li>
+          <li><strong>Если вопрос о семье:</strong> код восстановления семьи (FAM-XXXX-XXXX-XXXX), если он у вас есть</li>
+        </ul>
+      </section>
+
+      <section style="margin-top: 40px;">
+        <h2>Часто задаваемые вопросы</h2>
+        <p>Возможно, ответ на ваш вопрос уже есть в <a href="help-faq.html" style="color: var(--accent);">FAQ</a>.</p>
+      </section>
+    </article>
+  </main>
+
+  <footer style="padding: 40px clamp(24px, 5vw, 80px); text-align: center; border-top: 1px solid var(--border);">
+    <div class="footer__links">
+      <a href="index.html">Главная</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+      <a href="help-faq.html">Help</a>
+    </div>
+    <p style="opacity: 0.6; margin-top: 16px;">© 2025 ALADDIN AI. Все права защищены.</p>
+  </footer>
+
+  <style>
+    .legal-content {
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+    .legal-content section {
+      margin-bottom: 24px;
+    }
+    .legal-content h2 {
+      color: var(--gold);
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 22px;
+    }
+    .legal-content h3 {
+      color: var(--accent);
+      margin-top: 12px;
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+    .legal-content p {
+      margin-top: 0;
+      margin-bottom: 8px;
+      line-height: 1.7;
+    }
+    .legal-content ul {
+      margin-top: 8px;
+      margin-left: 24px;
+      margin-bottom: 8px;
+      padding-left: 0;
+    }
+    .legal-content li {
+      margin-bottom: 6px;
+      line-height: 1.7;
+    }
+    .footer__links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .footer__links a {
+      color: var(--text-light);
+      text-decoration: none;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .footer__links a:hover {
+      opacity: 1;
+      color: var(--accent);
+    }
+  </style>
+</body>
+</html>
+
+
+

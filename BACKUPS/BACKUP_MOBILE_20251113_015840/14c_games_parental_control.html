@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Управление играми - Родительский контроль</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 18px;
+            color: white;
+            border: none;
+        }
+        
+        .title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FCD34D;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .info-banner {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2));
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3B82F6;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .info-text {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+        
+        .game-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        
+        .game-card.enabled {
+            border-color: rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .game-card.disabled {
+            opacity: 0.6;
+        }
+        
+        .game-card.always-on {
+            border-color: rgba(168, 85, 247, 0.4);
+            background: rgba(168, 85, 247, 0.1);
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .game-info {
+            flex: 1;
+        }
+        
+        .game-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .game-desc {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        
+        .toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            transition: 0.3s;
+            border-radius: 26px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        
+        .toggle-input:checked + .toggle-slider {
+            background-color: #10B981;
+        }
+        
+        .toggle-input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+        
+        .toggle-input:disabled + .toggle-slider {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .frequency-control {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .frequency-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        
+        .frequency-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .frequency-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #10B981;
+            cursor: pointer;
+        }
+        
+        .frequency-value {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
+        
+        .save-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .always-on-badge {
+            background: rgba(168, 85, 247, 0.3);
+            color: #C084FC;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            border: 1px solid #C084FC;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="screen">
+            <div class="header">
+                <button class="back-btn" onclick="window.history.back()">←</button>
+                <div class="title">🎮 Управление играми</div>
+                <div style="width: 40px;"></div>
+            </div>
+            
+            <div class="content">
+                <!-- INFO BANNER -->
+                <div class="info-banner">
+                    <div class="info-title">
+                        <span>💡</span>
+                        <span>Родительский контроль игр</span>
+                    </div>
+                    <div class="info-text">
+                        Здесь вы можете включать/отключать игровые элементы и настраивать их частоту.
+                        <strong>Единорог-питомец всегда активен</strong> - это основная мотивация для ребёнка! 🦄
+                    </div>
+                </div>
+                
+                <!-- ИГРА 1: КОЛЕСО УДАЧИ -->
+                <div class="game-card enabled" id="game-wheel">
+                    <div class="game-header">
+                        <div class="game-info">
+                            <div class="game-title">
+                                <span style="font-size: 22px;">🎰</span>
+                                <span>Колесо удачи</span>
+                            </div>
+                            <div class="game-desc">
+                                Ребёнок крутит колесо и получает случайный приз от 5 до 500 🦄. 
+                                Призы: 1️⃣ 5🦄 • 2️⃣ 10🦄 • 3️⃣ 20🦄 • 4️⃣ 50🦄 • 5️⃣ 100🦄 • 6️⃣ 500🦄 ДЖЕКПОТ!
+                            </div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="toggle-input" id="toggle-wheel" checked onchange="toggleGame('wheel', this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="frequency-control">
+                        <div class="frequency-label">Частота вращений в день:</div>
+                        <input type="range" min="1" max="7" value="1" class="frequency-slider" id="freq-wheel" oninput="updateFrequency('wheel', this.value)">
+                        <div class="frequency-value">
+                            <span>1 раз</span>
+                            <span id="freq-wheel-value" style="color: #10B981; font-weight: 600;">1 раз в день</span>
+                            <span>7 раз</span>
+                        </div>
+                    </div>
+                    
+                    <!-- НОВОЕ: Настройка призов на барабане -->
+                    <div class="frequency-control" style="margin-top: 12px;">
+                        <div class="frequency-label" style="margin-bottom: 10px;">⚙️ Настройка призов на барабане:</div>
+                        
+                        <!-- Приз 1 -->
+                        <div style="margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.9); margin-bottom: 4px;">
+                                <span>1️⃣ Сектор 1 (40% шанс):</span>
+                                <span id="prize1-value" style="color: #FFD700; font-weight: 600;">5 🦄</span>
+                            </div>
+                            <input type="range" min="1" max="50" value="5" class="frequency-slider" id="prize1" oninput="updatePrize(1, this.value)" style="height: 4px;">
+                        </div>
+                        
+                        <!-- Приз 2 -->
+                        <div style="margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.9); margin-bottom: 4px;">
+                                <span>2️⃣ Сектор 2 (30% шанс):</span>
+                                <span id="prize2-value" style="color: #FFD700; font-weight: 600;">10 🦄</span>
+                            </div>
+                            <input type="range" min="5" max="100" value="10" class="frequency-slider" id="prize2" oninput="updatePrize(2, this.value)" style="height: 4px;">
+                        </div>
+                        
+                        <!-- Приз 3 -->
+                        <div style="margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.9); margin-bottom: 4px;">
+                                <span>3️⃣ Сектор 3 (15% шанс):</span>
+                                <span id="prize3-value" style="color: #FFD700; font-weight: 600;">20 🦄</span>
+                            </div>
+                            <input type="range" min="10" max="150" value="20" class="frequency-slider" id="prize3" oninput="updatePrize(3, this.value)" style="height: 4px;">
+                        </div>
+                        
+                        <!-- Приз 4 -->
+                        <div style="margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.9); margin-bottom: 4px;">
+                                <span>4️⃣ Сектор 4 (10% шанс):</span>
+                                <span id="prize4-value" style="color: #FFD700; font-weight: 600;">50 🦄</span>
+                            </div>
+                            <input type="range" min="20" max="200" value="50" class="frequency-slider" id="prize4" oninput="updatePrize(4, this.value)" style="height: 4px;">
+                        </div>
+                        
+                        <!-- Приз 5 -->
+                        <div style="margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.9); margin-bottom: 4px;">
+                                <span>5️⃣ Сектор 5 (4% шанс):</span>
+                                <span id="prize5-value" style="color: #FFD700; font-weight: 600;">100 🦄</span>
+                            </div>
+                            <input type="range" min="50" max="300" value="100" class="frequency-slider" id="prize5" oninput="updatePrize(5, this.value)" style="height: 4px;">
+                        </div>
+                        
+                        <!-- Приз 6 (Джекпот) -->
+                        <div style="margin-bottom: 8px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.9); margin-bottom: 4px;">
+                                <span>6️⃣ Сектор 6 ДЖЕКПОТ (1% шанс):</span>
+                                <span id="prize6-value" style="color: #FFD700; font-weight: 600;">500 🦄</span>
+                            </div>
+                            <input type="range" min="100" max="1000" value="500" class="frequency-slider" id="prize6" oninput="updatePrize(6, this.value)" style="height: 4px;">
+                        </div>
+                        
+                        <div style="background: rgba(59, 130, 246, 0.1); padding: 8px; border-radius: 8px; margin-top: 8px; font-size: 10px; color: rgba(255,255,255,0.8);">
+                            💡 <strong>Совет:</strong> Начните с малых призов и постепенно увеличивайте для мотивации!
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ИГРА 2: СЕМЕЙНЫЙ ТУРНИР -->
+                <div class="game-card enabled" id="game-tournament">
+                    <div class="game-header">
+                        <div class="game-info">
+                            <div class="game-title">
+                                <span style="font-size: 22px;">🏆</span>
+                                <span>Семейный турнир</span>
+                            </div>
+                            <div class="game-desc">
+                                Еженедельное соревнование всей семьи. 5 типов турниров: отличники 📚, помощники 🧹, без конфликтов 😊, чтение 📖, универсальный 🎯. 
+                                Призы: 🥇 +50 • 🥈 +30 • 🥉 +20 🦄
+                            </div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="toggle-input" id="toggle-tournament" checked onchange="toggleGame('tournament', this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- ИГРА 3: ЕДИНОРОГ-ПИТОМЕЦ (ВСЕГДА ВКЛЮЧЕН!) -->
+                <div class="game-card always-on" id="game-pet">
+                    <div class="game-header">
+                        <div class="game-info">
+                            <div class="game-title">
+                                <span style="font-size: 22px;">🦄</span>
+                                <span>Единорог-питомец</span>
+                                <span class="always-on-badge">ВСЕГДА ВКЛЮЧЕН</span>
+                            </div>
+                            <div class="game-desc">
+                                Тамагочи-питомец с 4 индикаторами (❤️🍎⭐😊). Эволюция через 4 стадии: Малыш → Подросток ✨ → Взрослый 🌟 → Легендарный 💎🌈. 
+                                Кормление 10🦄, игра 5🦄, погладить бесплатно.
+                                <strong>Основа мотивации - нельзя отключить!</strong>
+                            </div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="toggle-input" checked disabled title="Питомец всегда активен">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- ИГРА 4: ЕДИНОРОГ-ВСЕЛЕННАЯ -->
+                <div class="game-card enabled" id="game-universe">
+                    <div class="game-header">
+                        <div class="game-info">
+                            <div class="game-title">
+                                <span style="font-size: 22px;">🌳</span>
+                                <span>Единорог-вселенная</span>
+                            </div>
+                            <div class="game-desc">
+                                Визуализация баланса через сад единорогов. Коллекция 10 видов: Базовый, Звёздный ✨, Радужный 🌈, Алмазный 💎, Огненный 🔥, Ледяной ❄️, Лунный 🌙, Королевский 👑, Весенний 🌸, Молниеносный ⚡. 
+                                Сторителлинг 5 глав (0-100-300-500-1000+ 🦄).
+                            </div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" class="toggle-input" id="toggle-universe" checked onchange="toggleGame('universe', this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- ОБЩИЕ НАСТРОЙКИ -->
+                <div style="background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3); border-radius: 15px; padding: 15px; margin-top: 20px;">
+                    <div style="font-size: 14px; font-weight: 600; color: #EF4444; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                        <span>⚠️</span>
+                        <span>Быстрое отключение</span>
+                    </div>
+                    <div style="font-size: 11px; color: rgba(255, 255, 255, 0.9); margin-bottom: 12px;">
+                        Отключить все игры кроме питомца (например, перед экзаменами):
+                    </div>
+                    <button onclick="disableAllGames()" style="width: 100%; padding: 12px; background: rgba(239, 68, 68, 0.2); border: 2px solid #EF4444; border-radius: 12px; color: #EF4444; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+                        🚫 Отключить все игры (кроме 🦄)
+                    </button>
+                    
+                    <button onclick="enableAllGames()" style="width: 100%; padding: 12px; background: rgba(16, 185, 129, 0.2); border: 2px solid #10B981; border-radius: 12px; color: #10B981; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: all 0.3s;">
+                        ✅ Включить все игры
+                    </button>
+                </div>
+                
+                <!-- СОХРАНИТЬ -->
+                <button class="save-btn" onclick="saveSettings()">
+                    ✅ Сохранить настройки
+                </button>
+                
+                <!-- ТЕКУЩИЕ НАСТРОЙКИ -->
+                <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 12px; margin-top: 15px;">
+                    <div style="font-size: 12px; font-weight: 600; color: white; margin-bottom: 8px;">
+                        📊 Текущие настройки:
+                    </div>
+                    <div id="current-settings" style="font-size: 10px; color: rgba(255, 255, 255, 0.8); line-height: 1.6;">
+                        • Колесо удачи: ✅ Включено (1 раз в день)<br>
+                        • Семейный турнир: ✅ Включен<br>
+                        • Единорог-питомец: 🔒 Всегда включен<br>
+                        • Единорог-вселенная: ✅ Включена
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // СОСТОЯНИЕ НАСТРОЕК ИГР
+        // ═══════════════════════════════════════════════════════════════
+        
+        let gamesSettings = {
+            wheel: {
+                enabled: true,
+                frequency: 1,  // раз в день
+                prizes: {
+                    1: 5,    // Сектор 1 (40%)
+                    2: 10,   // Сектор 2 (30%)
+                    3: 20,   // Сектор 3 (15%)
+                    4: 50,   // Сектор 4 (10%)
+                    5: 100,  // Сектор 5 (4%)
+                    6: 500   // Сектор 6 ДЖЕКПОТ (1%)
+                }
+            },
+            tournament: {
+                enabled: true
+            },
+            pet: {
+                enabled: true,  // ВСЕГДА true (нельзя отключить)
+                locked: true
+            },
+            universe: {
+                enabled: true
+            }
+        };
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: ПЕРЕКЛЮЧЕНИЕ ИГРЫ
+        // ═══════════════════════════════════════════════════════════════
+        
+        function toggleGame(gameId, enabled) {
+            gamesSettings[gameId].enabled = enabled;
+            
+            const card = document.getElementById(`game-${gameId}`);
+            
+            if (enabled) {
+                card.classList.add('enabled');
+                card.classList.remove('disabled');
+            } else {
+                card.classList.remove('enabled');
+                card.classList.add('disabled');
+            }
+            
+            updateCurrentSettings();
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: ОБНОВЛЕНИЕ ЧАСТОТЫ
+        // ═══════════════════════════════════════════════════════════════
+        
+        function updateFrequency(gameId, value) {
+            gamesSettings[gameId].frequency = parseInt(value);
+            
+            const display = document.getElementById(`freq-${gameId}-value`);
+            
+            if (value == 1) {
+                display.textContent = '1 раз в день';
+            } else if (value <= 4) {
+                display.textContent = `${value} раза в день`;
+            } else {
+                display.textContent = `${value} раз в день`;
+            }
+            
+            updateCurrentSettings();
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: ОБНОВЛЕНИЕ ПРИЗА НА БАРАБАНЕ
+        // ═══════════════════════════════════════════════════════════════
+        
+        function updatePrize(sector, value) {
+            gamesSettings.wheel.prizes[sector] = parseInt(value);
+            
+            // Обновляем отображение значения
+            const display = document.getElementById(`prize${sector}-value`);
+            display.textContent = `${value} 🦄`;
+            
+            updateCurrentSettings();
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: ОТКЛЮЧИТЬ ВСЕ ИГРЫ (КРОМЕ ПИТОМЦА)
+        // ═══════════════════════════════════════════════════════════════
+        
+        function disableAllGames() {
+            // Колесо
+            document.getElementById('toggle-wheel').checked = false;
+            toggleGame('wheel', false);
+            
+            // Турнир
+            document.getElementById('toggle-tournament').checked = false;
+            toggleGame('tournament', false);
+            
+            // Вселенная
+            document.getElementById('toggle-universe').checked = false;
+            toggleGame('universe', false);
+            
+            // Питомец ВСЕГДА включен (не трогаем!)
+            
+            alert('✅ Все игры отключены, кроме Единорога-питомца! 🦄');
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: ВКЛЮЧИТЬ ВСЕ ИГРЫ
+        // ═══════════════════════════════════════════════════════════════
+        
+        function enableAllGames() {
+            // Колесо
+            document.getElementById('toggle-wheel').checked = true;
+            toggleGame('wheel', true);
+            
+            // Турнир
+            document.getElementById('toggle-tournament').checked = true;
+            toggleGame('tournament', true);
+            
+            // Вселенная
+            document.getElementById('toggle-universe').checked = true;
+            toggleGame('universe', true);
+            
+            alert('✅ Все игры включены!');
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: ОБНОВЛЕНИЕ ТЕКУЩИХ НАСТРОЕК
+        // ═══════════════════════════════════════════════════════════════
+        
+        function updateCurrentSettings() {
+            const display = document.getElementById('current-settings');
+            
+            let html = '';
+            
+            // Колесо
+            if (gamesSettings.wheel.enabled) {
+                const prizes = gamesSettings.wheel.prizes;
+                html += `• Колесо удачи: ✅ Включено (${gamesSettings.wheel.frequency} раз в день)<br>`;
+                html += `  Призы: 1️⃣${prizes[1]} • 2️⃣${prizes[2]} • 3️⃣${prizes[3]} • 4️⃣${prizes[4]} • 5️⃣${prizes[5]} • 6️⃣${prizes[6]} 🦄<br>`;
+            } else {
+                html += '• Колесо удачи: ❌ Отключено<br>';
+            }
+            
+            // Турнир
+            if (gamesSettings.tournament.enabled) {
+                html += '• Семейный турнир: ✅ Включен<br>';
+            } else {
+                html += '• Семейный турнир: ❌ Отключен<br>';
+            }
+            
+            // Питомец (всегда включен)
+            html += '• Единорог-питомец: 🔒 Всегда включен<br>';
+            
+            // Вселенная
+            if (gamesSettings.universe.enabled) {
+                html += '• Единорог-вселенная: ✅ Включена';
+            } else {
+                html += '• Единорог-вселенная: ❌ Отключена';
+            }
+            
+            display.innerHTML = html;
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: СОХРАНЕНИЕ НАСТРОЕК
+        // ═══════════════════════════════════════════════════════════════
+        
+        function saveSettings() {
+            console.log('💾 Сохранение настроек игр:', gamesSettings);
+            
+            // TODO: Backend call
+            // await fetch('/api/games/settings', {
+            //     method: 'POST',
+            //     body: JSON.stringify({ family_id: 'FAM_123', settings: gamesSettings })
+            // });
+            
+            // Показываем уведомление
+            const btn = document.querySelector('.save-btn');
+            const originalText = btn.textContent;
+            btn.textContent = '✅ Сохранено!';
+            btn.style.background = 'linear-gradient(135deg, #10B981 0%, #047857 100%)';
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.background = 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
+            }, 2000);
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ИНИЦИАЛИЗАЦИЯ
+        // ═══════════════════════════════════════════════════════════════
+        
+        updateCurrentSettings();
+        
+        console.log('🎮 Родительский контроль игр готов!');
+        console.log('📊 Настройки:', gamesSettings);
+    </script>
+</body>
+</html>
+

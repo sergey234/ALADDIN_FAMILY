@@ -1,0 +1,92 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/SecurityEducationScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Назад"
+      },
+      {
+        "comment": "",
+        "key": "Безопасность"
+      },
+      {
+        "comment": "",
+        "key": "Обучение защите"
+      },
+      {
+        "comment": "",
+        "key": "👋"
+      },
+      {
+        "comment": "",
+        "key": "Привет, Алексей!"
+      },
+      {
+        "comment": "",
+        "key": "Ты молодец! Продолжай изучать безопасность!"
+      },
+      {
+        "comment": "",
+        "key": "🛡️"
+      },
+      {
+        "comment": "",
+        "key": "Уровень %lld"
+      },
+      {
+        "comment": "",
+        "key": "Защитник семьи"
+      },
+      {
+        "comment": "",
+        "key": "%lld XP"
+      },
+      {
+        "comment": "",
+        "key": "%lld уроков пройдено"
+      },
+      {
+        "comment": "",
+        "key": "Уроки безопасности"
+      },
+      {
+        "comment": "",
+        "key": "✅ Простые правила"
+      },
+      {
+        "comment": "",
+        "key": "💡 Продвинутые советы"
+      },
+      {
+        "comment": "",
+        "key": "+%lld XP"
+      },
+      {
+        "comment": "",
+        "key": "•"
+      },
+      {
+        "comment": "",
+        "key": "🎓 Изучить урок"
+      },
+      {
+        "comment": "",
+        "key": "+%lld XP +10 🦄"
+      },
+      {
+        "comment": "",
+        "key": "✅ Урок изучен!"
+      },
+      {
+        "comment": "",
+        "key": "+%lld XP • +10 🦄"
+      },
+      {
+        "comment": "",
+        "key": "Продолжить"
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,68 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/ChildGoalEditorView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Цель отправлена! 📨"
+      },
+      {
+        "comment": "",
+        "key": "ОК"
+      },
+      {
+        "comment": "",
+        "key": "Родители получили твою цель и скоро ответят!"
+      },
+      {
+        "comment": "",
+        "key": "🎯 Моя цель"
+      },
+      {
+        "comment": "",
+        "key": "💡"
+      },
+      {
+        "comment": "",
+        "key": "Установить новую цель"
+      },
+      {
+        "comment": "",
+        "key": "Опиши, на что ты копишь единорогов, и родители одобрят твою цель!"
+      },
+      {
+        "comment": "",
+        "key": "На что копишь? 🎁"
+      },
+      {
+        "comment": "",
+        "key": "Опиши, какой подарок ты хочешь"
+      },
+      {
+        "comment": "",
+        "key": "Например: Новая игра PS5"
+      },
+      {
+        "comment": "",
+        "key": "Сколько единорогов нужно? 🦄"
+      },
+      {
+        "comment": "",
+        "key": "Примерная стоимость подарка в единорогах"
+      },
+      {
+        "comment": "",
+        "key": "🦄"
+      },
+      {
+        "comment": "",
+        "key": "100"
+      },
+      {
+        "comment": "",
+        "key": "📨 Отправить родителям"
+      }
+    ]
+  },
+  "version": 1
+}

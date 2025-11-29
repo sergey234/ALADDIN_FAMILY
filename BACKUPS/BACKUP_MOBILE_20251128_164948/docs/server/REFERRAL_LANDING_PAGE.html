@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приглашение в ALADDIN</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .code-section {
+            margin: 30px 0;
+        }
+        
+        .code-label {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .code {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: inline-block;
+            letter-spacing: 3px;
+        }
+        
+        .benefit {
+            font-size: 1.2em;
+            margin: 30px 0;
+            line-height: 1.6;
+        }
+        
+        .benefit strong {
+            color: #ffd700;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 18px 50px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-top: 30px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .features {
+            margin-top: 40px;
+            text-align: left;
+        }
+        
+        .feature {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .feature-icon {
+            font-size: 1.5em;
+        }
+        
+        .feature-text {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+            
+            .code {
+                font-size: 1.5em;
+                padding: 12px 20px;
+            }
+            
+            .container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🛡️</div>
+        <h1>🎁 Вы приглашены в ALADDIN!</h1>
+        
+        <div class="code-section">
+            <div class="code-label">Ваш друг пригласил вас по коду:</div>
+            <div class="code" id="referralCode">ABC123</div>
+        </div>
+        
+        <p class="benefit">
+            Вы оба получите скидку <strong>-20%</strong> на 1 месяц после тестового периода!
+        </p>
+        
+        <a href="/register?ref=ABC123" class="btn" id="registerBtn">Зарегистрироваться</a>
+        
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">🔒</span>
+                <span class="feature-text">Защита всей семьи от угроз</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">👨‍👩‍👧‍👦</span>
+                <span class="feature-text">Родительский контроль</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🌐</span>
+                <span class="feature-text">Безопасный интернет</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Получить код из URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const codeFromPath = window.location.pathname.split('/').pop();
+        const referralCode = codeFromPath || urlParams.get('ref') || 'ABC123';
+        
+        // Обновить код на странице
+        document.getElementById('referralCode').textContent = referralCode;
+        
+        // Обновить ссылку регистрации
+        const registerBtn = document.getElementById('registerBtn');
+        registerBtn.href = `/register?ref=${referralCode}`;
+        
+        // Опционально: Проверить код на сервере
+        // fetch(`/api/referral/validate/${referralCode}`)
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         if (!data.valid) {
+        //             // Код не найден, показать ошибку или редирект
+        //             window.location.href = '/';
+        //         }
+        //     });
+    </script>
+</body>
+</html>
+
+

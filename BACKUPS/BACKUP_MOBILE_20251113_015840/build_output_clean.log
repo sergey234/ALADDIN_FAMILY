@@ -1,0 +1,124 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 13" clean build
+
+User defaults from command line:
+    IDEPackageSupportUseBuiltinSCM = YES
+
+Build settings from command line:
+    SDKROOT = iphonesimulator15.2
+
+note: Using new build system
+note: Build preparation complete
+
+** CLEAN SUCCEEDED **
+
+note: Using new build system
+note: Planning
+Analyze workspace
+
+Create build description
+Build description signature: d92eb4611fe61e535c1a591e5d31ba8e
+Build description path: /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/XCBuildData/d92eb4611fe61e535c1a591e5d31ba8e-desc.xcbuild
+
+note: Build preparation complete
+note: Building targets in dependency order
+CreateBuildDirectory /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/ALADDIN.xcodeproj
+    builtin-create-build-directory /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex
+
+CreateBuildDirectory /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Products
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/ALADDIN.xcodeproj
+    builtin-create-build-directory /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Products
+
+CreateBuildDirectory /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Products/Debug-iphonesimulator
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/ALADDIN.xcodeproj
+    builtin-create-build-directory /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Products/Debug-iphonesimulator
+
+warning: Skipping duplicate build file in Compile Sources build phase: /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/14_OnboardingScreen.swift (in target 'ALADDIN' from project 'ALADDIN')
+warning: Skipping duplicate build file in Compile Sources build phase: /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/FamilyScreenNew.swift (in target 'ALADDIN' from project 'ALADDIN')
+MkDir /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Products/Debug-iphonesimulator/ALADDIN.app (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    /bin/mkdir -p /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Products/Debug-iphonesimulator/ALADDIN.app
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/DerivedSources/Entitlements-Simulated.plist (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/DerivedSources/Entitlements-Simulated.plist
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/DerivedSources/Entitlements.plist (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/DerivedSources/Entitlements.plist
+
+ProcessProductPackaging "" /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN.app-Simulated.xcent (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    
+    Entitlements:
+    
+    {
+    "application-identifier" = "6CJVBBUGSN.family.aladdin.ios";
+    "keychain-access-groups" =     (
+        "6CJVBBUGSN.family.aladdin.ios"
+    );
+}
+    
+    builtin-productPackagingUtility -entitlements -format xml -o /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN.app-Simulated.xcent
+
+ProcessProductPackaging "" /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN.app.xcent (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    
+    Entitlements:
+    
+    {
+    "com.apple.security.get-task-allow" = 1;
+}
+    
+    builtin-productPackagingUtility -entitlements -format xml -o /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN.app.xcent
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN.hmap (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN.hmap
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/all-product-headers.yaml (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/all-product-headers.yaml
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-generated-files.hmap (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-generated-files.hmap
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-project-headers.hmap (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-project-headers.hmap
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-own-target-headers.hmap (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-all-target-headers.hmap (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-all-non-framework-target-headers.hmap (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ALADDIN-OutputFileMap.json (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ALADDIN-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ALADDIN.SwiftFileList (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ALADDIN.SwiftFileList
+
+WriteAuxiliaryFile /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ALADDIN.LinkFileList (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    write-file /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ALADDIN.LinkFileList
+
+CompileSwiftSources normal x86_64 com.apple.xcode.tools.swift.compiler (in target 'ALADDIN' from project 'ALADDIN')
+    cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+    export DEVELOPER_DIR\=/Applications/Xcode.app/Contents/Developer
+    export SDKROOT\=/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator15.2.sdk
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -incremental -module-name ALADDIN -Onone -enable-batch-mode -enforce-exclusivity\=checked @/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ALADDIN.SwiftFileList -DDEBUG -sdk /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator15.2.sdk -target x86_64-apple-ios15.0-simulator -g -module-cache-path /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -index-store-path /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Index/DataStore -swift-version 5 -I /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Products/Debug-iphonesimulator -F /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Products/Debug-iphonesimulator -emit-localized-strings -emit-localized-strings-path /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64 -c -j8 -output-file-map /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ALADDIN-OutputFileMap.json -parseable-output -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ALADDIN.swiftmodule -Xcc -I/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/swift-overrides.hmap -Xcc -iquote -Xcc /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-generated-files.hmap -Xcc -I/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-own-target-headers.hmap -Xcc -I/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-all-target-headers.hmap -Xcc -iquote -Xcc /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/ALADDIN-project-headers.hmap -Xcc -I/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Products/Debug-iphonesimulator/include -Xcc -I/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/DerivedSources-normal/x86_64 -Xcc -I/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/DerivedSources/x86_64 -Xcc -I/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ALADDIN-Swift.h -working-directory /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+error: Build input file cannot be found: '/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/FamilyScreenNew.swift' (in target 'ALADDIN' from project 'ALADDIN')
+
+** BUILD SUCCEEDED **
+

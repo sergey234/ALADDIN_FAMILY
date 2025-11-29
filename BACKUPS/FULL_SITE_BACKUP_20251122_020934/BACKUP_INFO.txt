@@ -1,0 +1,31 @@
+===========================================
+ПОЛНЫЙ BACKUP САЙТА
+===========================================
+Дата: 2025-11-22 02:09:42
+Backup директория: /tmp/full_site_backup_20251122_020934
+
+СОЗДАННЫЕ BACKUP'Ы:
+- База данных: database_full_backup.sql
+- Nginx: nginx_sites_available/, nginx_main.conf
+- Сайт: website_full_backup.tar.gz
+- Проект: project_backup.tar.gz
+- Конфигурации: config_files_backup.tar.gz
+
+РАЗМЕРЫ:
+(выполните: du -sh /tmp/full_site_backup_20251122_020934/*)
+
+ВОССТАНОВЛЕНИЕ:
+1. База данных:
+   psql -h localhost -U user -d database < database_full_backup.sql
+
+2. Nginx:
+   cp -r nginx_sites_available/* /etc/nginx/sites-available/
+   cp nginx_main.conf /etc/nginx/nginx.conf
+
+3. Сайт:
+   tar -xzf website_full_backup.tar.gz -C /var/www/
+
+4. Проект:
+   tar -xzf project_backup.tar.gz -C /path/to/
+
+===========================================

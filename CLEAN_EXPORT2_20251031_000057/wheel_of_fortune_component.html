@@ -1,0 +1,738 @@
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- 🎰 КОЛЕСО УДАЧИ - КОМПОНЕНТ                                               -->
+<!-- Создано: 12.10.2025                                                       -->
+<!-- Принцип: Качество + Красота + Функциональность                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+<style>
+/* ═══════════════════════════════════════════════════════════════════════════
+   СТИЛИ КОЛЕСА УДАЧИ
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.wheel-card {
+    background: linear-gradient(135deg, #FF0080 0%, #7928CA 50%, #FF0080 100%);
+    border: 2px solid #FF0080;
+    border-radius: 20px;
+    padding: 20px;
+    margin: 15px 0;
+    box-shadow: 0 10px 30px rgba(255, 0, 128, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.wheel-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.wheel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.wheel-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wheel-timer {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    color: white;
+    font-weight: 600;
+}
+
+.wheel-timer.available {
+    background: rgba(16, 185, 129, 0.3);
+    color: #10B981;
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    50% { box-shadow: 0 0 20px 10px rgba(16, 185, 129, 0); }
+}
+
+.wheel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    position: relative;
+    z-index: 1;
+}
+
+.wheel-svg-container {
+    position: relative;
+    width: 250px;
+    height: 250px;
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 40px;
+    z-index: 10;
+    filter: drop-shadow(0 0 10px rgba(255, 0, 128, 0.8));
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-5px); }
+}
+
+#wheel {
+    transition: transform 3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+#wheel.spinning {
+    transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+}
+
+.wheel-prize {
+    fill: white;
+    font-size: 24px;
+    font-weight: bold;
+    text-anchor: middle;
+}
+
+.wheel-label {
+    fill: rgba(255, 255, 255, 0.9);
+    font-size: 10px;
+    font-weight: 600;
+    text-anchor: middle;
+}
+
+.spin-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    border: 3px solid #FFD700;
+    border-radius: 18px;
+    color: #1e3a5f;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.spin-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transform: rotate(45deg);
+    animation: shine 3s infinite;
+}
+
+@keyframes shine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.spin-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 15px 35px rgba(255, 215, 0, 0.6);
+}
+
+.spin-btn:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.spin-btn-text {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.wheel-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.wheel-stat {
+    text-align: center;
+    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 12px;
+}
+
+.wheel-stat-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+.wheel-stat-label {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 3px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   КОНФЕТТИ ЭФФЕКТ
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #FFD700;
+    animation: confetti-fall 3s linear forwards;
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   МОДАЛЬНОЕ ОКНО ВЫИГРЫША
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.prize-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.prize-modal-content {
+    background: linear-gradient(135deg, #7928CA 0%, #FF0080 100%);
+    border-radius: 25px;
+    padding: 30px;
+    text-align: center;
+    max-width: 90%;
+    width: 300px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: scaleIn 0.5s;
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.prize-icon {
+    font-size: 80px;
+    margin-bottom: 15px;
+    animation: rotate-scale 1s infinite;
+}
+
+@keyframes rotate-scale {
+    0%, 100% { transform: rotate(-5deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.1); }
+}
+
+.prize-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.prize-amount {
+    font-size: 48px;
+    font-weight: bold;
+    color: #FFD700;
+    margin: 15px 0;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+}
+
+.prize-message {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 20px;
+}
+
+.prize-close-btn {
+    width: 100%;
+    padding: 14px;
+    background: white;
+    color: #7928CA;
+    border: none;
+    border-radius: 15px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.prize-close-btn:hover {
+    transform: scale(1.05);
+}
+</style>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     HTML СТРУКТУРА КОЛЕСА УДАЧИ
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<div class="wheel-card">
+    <div class="wheel-header">
+        <div class="wheel-title">
+            <span style="font-size: 24px;">🎰</span>
+            <span>Колесо удачи</span>
+        </div>
+        <div class="wheel-timer available" id="wheel-timer">
+            ✅ Доступно!
+        </div>
+    </div>
+    
+    <div class="wheel-container">
+        <div class="wheel-svg-container">
+            <div class="wheel-pointer">🔻</div>
+            
+            <svg width="250" height="250" viewBox="0 0 250 250">
+                <defs>
+                    <!-- Градиенты для секторов -->
+                    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#FF0080;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#4ECDC4;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#00D4FF;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="gradient4" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#9B59B6;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#7928CA;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="gradient5" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+                    </linearGradient>
+                    <linearGradient id="gradient6" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                
+                <g id="wheel" transform="translate(125, 125)">
+                    <!-- Центральный круг (фон) -->
+                    <circle cx="0" cy="0" r="120" fill="#1e3a5f" stroke="white" stroke-width="3"/>
+                    
+                    <!-- Сектор 1: +5 🦄 (40% вероятность) - 60° (0-60°) -->
+                    <path d="M 0 0 L 103.92 -60 A 120 120 0 0 1 103.92 60 Z" 
+                          fill="url(#gradient1)" stroke="white" stroke-width="2" opacity="0.95"/>
+                    <text x="70" y="-15" class="wheel-prize" style="font-size: 18px;">1️⃣</text>
+                    <text x="70" y="5" class="wheel-prize" style="font-size: 20px;">5</text>
+                    <text x="70" y="18" class="wheel-label">🦄</text>
+                    
+                    <!-- Сектор 2: +10 🦄 (30% вероятность) - 60° (60-120°) -->
+                    <path d="M 0 0 L 103.92 60 A 120 120 0 0 1 0 120 Z" 
+                          fill="url(#gradient2)" stroke="white" stroke-width="2" opacity="0.95"/>
+                    <text x="50" y="60" class="wheel-prize" style="font-size: 18px;">2️⃣</text>
+                    <text x="50" y="78" class="wheel-prize" style="font-size: 20px;">10</text>
+                    <text x="50" y="91" class="wheel-label">🦄</text>
+                    
+                    <!-- Сектор 3: +20 🦄 (15% вероятность) - 60° (120-180°) -->
+                    <path d="M 0 0 L 0 120 A 120 120 0 0 1 -103.92 60 Z" 
+                          fill="url(#gradient3)" stroke="white" stroke-width="2" opacity="0.95"/>
+                    <text x="-50" y="60" class="wheel-prize" style="font-size: 18px;">3️⃣</text>
+                    <text x="-50" y="78" class="wheel-prize" style="font-size: 20px;">20</text>
+                    <text x="-50" y="91" class="wheel-label">🦄</text>
+                    
+                    <!-- Сектор 4: +50 🦄 (10% вероятность) - 60° (180-240°) -->
+                    <path d="M 0 0 L -103.92 60 A 120 120 0 0 1 -103.92 -60 Z" 
+                          fill="url(#gradient4)" stroke="white" stroke-width="2" opacity="0.95"/>
+                    <text x="-70" y="-15" class="wheel-prize" style="font-size: 18px;">4️⃣</text>
+                    <text x="-70" y="5" class="wheel-prize" style="font-size: 20px;">50</text>
+                    <text x="-70" y="18" class="wheel-label">🦄</text>
+                    
+                    <!-- Сектор 5: +100 🦄 (4% вероятность) - 24° (240-264°) -->
+                    <path d="M 0 0 L -103.92 -60 A 120 120 0 0 0 -48.54 -109.85 Z" 
+                          fill="url(#gradient5)" stroke="white" stroke-width="2" opacity="0.95"/>
+                    <text x="-70" y="-75" class="wheel-prize" style="font-size: 18px;">5️⃣</text>
+                    <text x="-70" y="-58" class="wheel-prize" style="font-size: 18px;">100</text>
+                    <text x="-70" y="-43" class="wheel-label">🦄</text>
+                    
+                    <!-- Сектор 6: 🎁 +500 🦄 ДЖЕКПОТ! (1% вероятность) - 36° (264-300°) -->
+                    <path d="M 0 0 L -48.54 -109.85 A 120 120 0 0 0 60 -103.92 Z" 
+                          fill="url(#gradient6)" stroke="white" stroke-width="2" opacity="0.95"/>
+                    <text x="0" y="-85" class="wheel-prize" style="font-size: 18px;">6️⃣</text>
+                    <text x="0" y="-68" class="wheel-prize" style="font-size: 16px;">🎁</text>
+                    <text x="0" y="-53" class="wheel-label" style="font-size: 10px;">500🦄</text>
+                    
+                    <!-- Центральный декоративный круг -->
+                    <circle cx="0" cy="0" r="25" fill="#7928CA" stroke="white" stroke-width="3"/>
+                    <text x="0" y="8" text-anchor="middle" fill="white" font-size="20" font-weight="bold">🎰</text>
+                </g>
+            </svg>
+        </div>
+        
+        <button class="spin-btn" id="spin-btn" onclick="spinWheel()">
+            <span class="spin-btn-text">
+                <span style="font-size: 24px;">🎰</span>
+                <span>КРУТИТЬ КОЛЕСО!</span>
+            </span>
+        </button>
+    </div>
+    
+    <div class="wheel-stats">
+        <div class="wheel-stat">
+            <div class="wheel-stat-value" id="total-spins">12</div>
+            <div class="wheel-stat-label">Всего<br>спинов</div>
+        </div>
+        <div class="wheel-stat">
+            <div class="wheel-stat-value" id="total-won">+427 🦄</div>
+            <div class="wheel-stat-label">Всего<br>выиграно</div>
+        </div>
+        <div class="wheel-stat">
+            <div class="wheel-stat-value" id="best-prize">+100 🦄</div>
+            <div class="wheel-stat-label">Лучший<br>приз</div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     JAVASCRIPT ЛОГИКА КОЛЕСА УДАЧИ
+     ═══════════════════════════════════════════════════════════════════════════ -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// КОНФИГУРАЦИЯ КОЛЕСА
+// ═══════════════════════════════════════════════════════════════════════════
+
+const WHEEL_CONFIG = {
+    prizes: [
+        { amount: 5,   probability: 0.40, color: '#FF6B6B', angle: 30 },   // Сектор 1: 0-60°
+        { amount: 10,  probability: 0.30, color: '#4ECDC4', angle: 90 },   // Сектор 2: 60-120°
+        { amount: 20,  probability: 0.15, color: '#FFD700', angle: 150 },  // Сектор 3: 120-180°
+        { amount: 50,  probability: 0.10, color: '#9B59B6', angle: 210 },  // Сектор 4: 180-240°
+        { amount: 100, probability: 0.04, color: '#10B981', angle: 252 },  // Сектор 5: 240-264°
+        { amount: 500, probability: 0.01, color: '#F59E0B', angle: 282 }   // Сектор 6: 264-300°
+    ],
+    spinDuration: 3000, // 3 секунды
+    minRotations: 5,    // Минимум 5 полных оборотов
+    maxRotations: 8     // Максимум 8 полных оборотов
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// СОСТОЯНИЕ КОЛЕСА
+// ═══════════════════════════════════════════════════════════════════════════
+
+let wheelState = {
+    isSpinning: false,
+    lastSpin: null,
+    totalSpins: 12,
+    totalWon: 427,
+    bestPrize: 100,
+    currentRotation: 0
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ВЫБОР СЛУЧАЙНОГО ПРИЗА (WEIGHTED RANDOM)
+// ═══════════════════════════════════════════════════════════════════════════
+
+function getRandomPrize() {
+    const random = Math.random();
+    let cumulativeProbability = 0;
+    
+    for (let i = 0; i < WHEEL_CONFIG.prizes.length; i++) {
+        cumulativeProbability += WHEEL_CONFIG.prizes[i].probability;
+        if (random <= cumulativeProbability) {
+            return WHEEL_CONFIG.prizes[i];
+        }
+    }
+    
+    // Fallback (не должно произойти)
+    return WHEEL_CONFIG.prizes[0];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ВРАЩЕНИЕ КОЛЕСА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function spinWheel() {
+    if (wheelState.isSpinning) return;
+    
+    // Проверка доступности (API call)
+    // TODO: Backend check - /api/rewards/wheel-status
+    
+    wheelState.isSpinning = true;
+    
+    const spinBtn = document.getElementById('spin-btn');
+    spinBtn.disabled = true;
+    
+    // Выбираем приз
+    const prize = getRandomPrize();
+    
+    // Вычисляем финальный угол
+    const rotations = WHEEL_CONFIG.minRotations + 
+                     Math.random() * (WHEEL_CONFIG.maxRotations - WHEEL_CONFIG.minRotations);
+    const finalAngle = rotations * 360 + prize.angle;
+    
+    // Применяем вращение
+    const wheel = document.getElementById('wheel');
+    wheelState.currentRotation += finalAngle;
+    wheel.style.transform = `rotate(${wheelState.currentRotation}deg)`;
+    
+    // После вращения показываем результат
+    setTimeout(() => {
+        wheelState.isSpinning = false;
+        
+        // Обновляем баланс (API call)
+        // TODO: Backend call - /api/rewards/spin-wheel
+        updateBalance(prize.amount);
+        
+        // Обновляем статистику
+        wheelState.totalSpins++;
+        wheelState.totalWon += prize.amount;
+        if (prize.amount > wheelState.bestPrize) {
+            wheelState.bestPrize = prize.amount;
+        }
+        
+        updateWheelStats();
+        
+        // Показываем модальное окно выигрыша
+        showPrizeModal(prize);
+        
+        // Конфетти для больших призов
+        if (prize.amount >= 50) {
+            createConfetti();
+        }
+        
+        // Устанавливаем таймер следующего спина
+        setNextSpinTimer();
+        
+    }, WHEEL_CONFIG.spinDuration);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОБНОВЛЕНИЕ БАЛАНСА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateBalance(amount) {
+    const balanceElement = document.getElementById('balance');
+    const currentBalance = parseInt(balanceElement.textContent);
+    const newBalance = currentBalance + amount;
+    
+    // Анимация изменения числа
+    animateNumber(balanceElement, currentBalance, newBalance, 1000);
+}
+
+function animateNumber(element, start, end, duration) {
+    const startTime = performance.now();
+    
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        const current = Math.floor(start + (end - start) * progress);
+        element.textContent = current;
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    
+    requestAnimationFrame(update);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ОБНОВЛЕНИЕ СТАТИСТИКИ КОЛЕСА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateWheelStats() {
+    document.getElementById('total-spins').textContent = wheelState.totalSpins;
+    document.getElementById('total-won').textContent = `+${wheelState.totalWon} 🦄`;
+    document.getElementById('best-prize').textContent = `+${wheelState.bestPrize} 🦄`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: МОДАЛЬНОЕ ОКНО ВЫИГРЫША
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showPrizeModal(prize) {
+    const modal = document.createElement('div');
+    modal.className = 'prize-modal';
+    modal.innerHTML = `
+        <div class="prize-modal-content">
+            <div class="prize-icon">${prize.amount >= 500 ? '🎁' : '🦄'}</div>
+            <div class="prize-title">${prize.amount >= 500 ? 'ДЖЕКПОТ!' : 'Поздравляем!'}</div>
+            <div class="prize-amount">+${prize.amount} 🦄</div>
+            <div class="prize-message">
+                ${getPrizeMessage(prize.amount)}
+            </div>
+            <button class="prize-close-btn" onclick="this.parentElement.parentElement.remove()">
+                Отлично! 🎉
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Автоудаление через 5 секунд
+    setTimeout(() => {
+        if (modal.parentElement) {
+            modal.remove();
+        }
+    }, 5000);
+}
+
+function getPrizeMessage(amount) {
+    if (amount >= 500) {
+        return 'Невероятная удача! Ты выиграл ДЖЕКПОТ! 🎰🔥';
+    } else if (amount >= 100) {
+        return 'Вау! Отличный выигрыш! 🌟';
+    } else if (amount >= 50) {
+        return 'Хороший приз! Так держать! 💪';
+    } else if (amount >= 20) {
+        return 'Неплохо! Продолжай крутить! 😊';
+    } else {
+        return 'Удача улыбается тебе! 🍀';
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ЭФФЕКТ КОНФЕТТИ
+// ═══════════════════════════════════════════════════════════════════════════
+
+function createConfetti() {
+    const container = document.createElement('div');
+    container.className = 'confetti-container';
+    document.body.appendChild(container);
+    
+    const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#9B59B6', '#10B981', '#F59E0B'];
+    
+    for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animationDelay = Math.random() * 0.5 + 's';
+            confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+            container.appendChild(confetti);
+            
+            setTimeout(() => confetti.remove(), 3000);
+        }, i * 30);
+    }
+    
+    setTimeout(() => container.remove(), 4000);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ФУНКЦИЯ: ТАЙМЕР СЛЕДУЮЩЕГО СПИНА
+// ═══════════════════════════════════════════════════════════════════════════
+
+function setNextSpinTimer() {
+    const timerElement = document.getElementById('wheel-timer');
+    const spinBtn = document.getElementById('spin-btn');
+    
+    // Следующий спин через 24 часа
+    const nextSpinTime = new Date();
+    nextSpinTime.setHours(nextSpinTime.getHours() + 24);
+    
+    timerElement.classList.remove('available');
+    spinBtn.disabled = true;
+    
+    function updateTimer() {
+        const now = new Date();
+        const diff = nextSpinTime - now;
+        
+        if (diff <= 0) {
+            timerElement.textContent = '✅ Доступно!';
+            timerElement.classList.add('available');
+            spinBtn.disabled = false;
+            return;
+        }
+        
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        timerElement.textContent = `${hours}ч ${minutes}м ${seconds}с`;
+        
+        setTimeout(updateTimer, 1000);
+    }
+    
+    updateTimer();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ
+// ═══════════════════════════════════════════════════════════════════════════
+
+// TODO: При реальном запуске загружать состояние из API
+// fetch('/api/rewards/wheel-status?child_id=123')
+//   .then(res => res.json())
+//   .then(data => {
+//     if (!data.available) {
+//       setNextSpinTimer();
+//     }
+//   });
+</script>
+
