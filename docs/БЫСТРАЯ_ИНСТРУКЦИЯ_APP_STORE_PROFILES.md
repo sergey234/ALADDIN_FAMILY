@@ -19,22 +19,24 @@
 
 1. Откройте: https://developer.apple.com/account/resources/profiles/list
 2. Нажмите "+"
-3. Выберите **"App Store"** (не Development!)
-4. Выберите App ID: `family.aladdin.ios`
-5. Выберите сертификат: "Apple Distribution"
-6. Название: `ALADDIN App Store Distribution`
-7. Скачайте профиль
+3. **ВАЖНО:** Выберите **Distribution → App Store Connect** (не Development!)
+4. Нажмите "Continue"
+5. Выберите App ID: `family.aladdin.ios`
+6. Выберите сертификат: "Apple Distribution"
+7. Название: `ALADDIN App Store Distribution`
+8. Скачайте профиль
 
 ---
 
 ### 3️⃣ Создать профиль для Extension
 
 1. Нажмите "+"
-2. Выберите **"App Store"**
-3. Выберите App ID: `family.aladdin.ios.packetTunnel`
-4. Выберите сертификат: "Apple Distribution"
-5. Название: `ALADDIN PacketTunnel App Store Distribution`
-6. Скачайте профиль
+2. **ВАЖНО:** Выберите **Distribution → App Store Connect** (не Development!)
+3. Нажмите "Continue"
+4. Выберите App ID: `family.aladdin.ios.packetTunnel`
+5. Выберите сертификат: "Apple Distribution"
+6. Название: `ALADDIN PacketTunnel App Store Distribution`
+7. Скачайте профиль
 
 ---
 
