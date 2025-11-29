@@ -39,22 +39,63 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles/
         
         # Декодировать и сохранить profiles из secrets
-        if [ -n "${{ secrets.PROVISIONING_PROFILE_APP }}" ]; then
-          echo "${{ secrets.PROVISIONING_PROFILE_APP }}" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision
-          echo "✅ App provisioning profile installed"
-          ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision
-        else
+        if [ -z "${{ secrets.PROVISIONING_PROFILE_APP }}" ]; then
           echo "❌ PROVISIONING_PROFILE_APP secret is not set!"
           exit 1
         fi
         
-        if [ -n "${{ secrets.PROVISIONING_PROFILE_EXTENSION }}" ]; then
-          echo "${{ secrets.PROVISIONING_PROFILE_EXTENSION }}" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision
-          echo "✅ Extension provisioning profile installed"
-          ls -lh ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision
+        echo "Decoding app provisioning profile..."
+        echo "${{ secrets.PROVISIONING_PROFILE_APP }}" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision 2>&1
+        if [ $? -ne 0 ]; then
+          echo "❌ Failed to decode PROVISIONING_PROFILE_APP (invalid base64)"
+          exit 1
+        fi
+        
+        # Извлечь UUID из профиля для использования в xcodebuild
+        APP_PROFILE_UUID=$(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision 2>/dev/null | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
+        if [ -z "$APP_PROFILE_UUID" ]; then
+          # Альтернативный способ: поиск UUID в тексте
+          APP_PROFILE_UUID=$(strings ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
+        fi
+        
+        if [ -n "$APP_PROFILE_UUID" ]; then
+          # Переименовать файл в формат UUID.mobileprovision (Xcode автоматически находит)
+          mv ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/${APP_PROFILE_UUID}.mobileprovision
+          echo "✅ App provisioning profile installed with UUID: $APP_PROFILE_UUID"
+          echo "APP_PROFILE_UUID=$APP_PROFILE_UUID" >> $GITHUB_ENV
         else
+          echo "⚠️  Could not extract UUID, keeping default name"
+          echo "APP_PROFILE_PATH=~/Library/MobileDevice/Provisioning Profiles/app.mobileprovision" >> $GITHUB_ENV
+        fi
+        
+        if [ -z "${{ secrets.PROVISIONING_PROFILE_EXTENSION }}" ]; then
           echo "❌ PROVISIONING_PROFILE_EXTENSION secret is not set!"
           exit 1
+        fi
+        
+        echo "Decoding extension provisioning profile..."
+        echo "${{ secrets.PROVISIONING_PROFILE_EXTENSION }}" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision 2>&1
+        if [ $? -ne 0 ]; then
+          echo "❌ Failed to decode PROVISIONING_PROFILE_EXTENSION (invalid base64)"
+          echo "⚠️  Проверьте, что секрет содержит валидный base64"
+          exit 1
+        fi
+        
+        # Извлечь UUID из профиля extension
+        EXT_PROFILE_UUID=$(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision 2>/dev/null | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
+        if [ -z "$EXT_PROFILE_UUID" ]; then
+          # Альтернативный способ: поиск UUID в тексте
+          EXT_PROFILE_UUID=$(strings ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
+        fi
+        
+        if [ -n "$EXT_PROFILE_UUID" ]; then
+          # Переименовать файл в формат UUID.mobileprovision
+          mv ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/${EXT_PROFILE_UUID}.mobileprovision
+          echo "✅ Extension provisioning profile installed with UUID: $EXT_PROFILE_UUID"
+          echo "EXT_PROFILE_UUID=$EXT_PROFILE_UUID" >> $GITHUB_ENV
+        else
+          echo "⚠️  Could not extract UUID, keeping default name"
+          echo "EXT_PROFILE_PATH=~/Library/MobileDevice/Provisioning Profiles/extension.mobileprovision" >> $GITHUB_ENV
         fi
         
         # Проверить установленные profiles
@@ -65,26 +106,48 @@ jobs:
     - name: Build Archive (with signing)
       env:
         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        APP_PROFILE_UUID: ${{ env.APP_PROFILE_UUID }}
+        EXT_PROFILE_UUID: ${{ env.EXT_PROFILE_UUID }}
       run: |
         echo "Building archive with manual signing..."
         echo "Team ID: $APPLE_TEAM_ID"
         echo "Bundle ID: family.aladdin.ios"
+        echo "App Profile UUID: $APP_PROFILE_UUID"
+        echo "Extension Profile UUID: $EXT_PROFILE_UUID"
         
         if [ -z "$APPLE_TEAM_ID" ]; then
           echo "❌ APPLE_TEAM_ID secret is not set!"
           exit 1
         fi
         
-        xcodebuild archive \
-          -project ALADDIN.xcodeproj \
-          -scheme ALADDIN \
-          -configuration Release \
-          -archivePath ./build/ALADDIN.xcarchive \
-          -destination 'generic/platform=iOS' \
-          CODE_SIGN_STYLE=Manual \
-          DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-          PROVISIONING_PROFILE_SPECIFIER="family.aladdin.ios" \
-          CODE_SIGN_IDENTITY="iPhone Distribution"
+        # Используем UUID профилей для каждого таргета
+        # Если UUID не извлечен, используем автоматический поиск по bundle ID
+        if [ -n "$APP_PROFILE_UUID" ] && [ -n "$EXT_PROFILE_UUID" ]; then
+          echo "Using extracted UUIDs for provisioning profiles"
+          xcodebuild archive \
+            -project ALADDIN.xcodeproj \
+            -scheme ALADDIN \
+            -configuration Release \
+            -archivePath ./build/ALADDIN.xcarchive \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
+            ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
+            ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID"
+        else
+          echo "Using automatic provisioning profile detection"
+          xcodebuild archive \
+            -project ALADDIN.xcodeproj \
+            -scheme ALADDIN \
+            -configuration Release \
+            -archivePath ./build/ALADDIN.xcarchive \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_IDENTITY="iPhone Distribution"
+        fi
         
     - name: List Archive Contents
       run: |
@@ -97,6 +160,18 @@ jobs:
       run: |
         echo "Exporting IPA..."
         mkdir -p ./build/export
+        
+        # Извлечь UUID профилей для ExportOptions
+        APP_PROFILE_UUID="${{ env.APP_PROFILE_UUID }}"
+        EXT_PROFILE_UUID="${{ env.EXT_PROFILE_UUID }}"
+        
+        # Если UUID не извлечены, используем bundle ID (Xcode найдет профили автоматически)
+        if [ -z "$APP_PROFILE_UUID" ]; then
+          APP_PROFILE_UUID="family.aladdin.ios"
+        fi
+        if [ -z "$EXT_PROFILE_UUID" ]; then
+          EXT_PROFILE_UUID="family.aladdin.ios.packetTunnel"
+        fi
         
         # Создать ExportOptions.plist для Manual signing
         cat > ./build/ExportOptions.plist << EOF
@@ -115,7 +190,9 @@ jobs:
           <key>provisioningProfiles</key>
           <dict>
             <key>family.aladdin.ios</key>
-            <string>family.aladdin.ios</string>
+            <string>$APP_PROFILE_UUID</string>
+            <key>family.aladdin.ios.packetTunnel</key>
+            <string>$EXT_PROFILE_UUID</string>
           </dict>
           <key>uploadBitcode</key>
           <false/>
