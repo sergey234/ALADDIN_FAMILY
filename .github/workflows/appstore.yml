@@ -337,8 +337,7 @@ jobs:
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             -allowProvisioningUpdates
-        fi \
-          CODE_SIGN_KEYCHAIN="$KEYCHAIN_PATH"
+        fi
         
     - name: List Archive Contents
       run: |
