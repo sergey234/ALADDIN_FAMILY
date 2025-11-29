@@ -264,6 +264,7 @@ jobs:
           echo "✅ Using Manual signing with provisioning profiles from secrets"
           echo "Using extracted UUIDs for provisioning profiles"
           
+          # Используем Apple Distribution (может быть Cloud Managed)
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
@@ -272,6 +273,7 @@ jobs:
             -destination 'generic/platform=iOS' \
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
             ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
             ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID"
