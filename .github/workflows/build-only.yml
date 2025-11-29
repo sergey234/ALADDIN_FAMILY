@@ -47,27 +47,26 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-xcode-
           
-    - name: Build Archive (with automatic signing)
-      env:
-        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    - name: Build Archive (without signing for CI)
       run: |
-        echo "Building archive with automatic signing..."
-        echo "Team ID: $APPLE_TEAM_ID"
-        echo "Bundle ID: family.aladdin.ios"
+        echo "Building archive without signing (for CI testing)..."
+        echo "Note: On GitHub Actions, we cannot create provisioning profiles automatically"
+        echo "This build is for compilation testing only"
+        echo "For App Store submission, use local Xcode with proper signing"
         
-        # Собираем Archive с автоматической подписью
-        # Network Extension теперь использует Automatic signing вместо Manual
-        # -allowProvisioningUpdates позволяет Xcode автоматически создавать provisioning profiles на CI
+        # Собираем Archive без подписи для проверки компиляции
+        # На GitHub Actions нет доступа к Apple Developer Portal для создания profiles
+        # Для App Store нужна локальная сборка с правильной подписью
         xcodebuild archive \
           -project ALADDIN.xcodeproj \
           -scheme ALADDIN \
           -configuration Release \
           -archivePath ./build/ALADDIN.xcarchive \
           -destination 'generic/platform=iOS' \
-          CODE_SIGN_STYLE=Automatic \
-          DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-          PRODUCT_BUNDLE_IDENTIFIER="family.aladdin.ios" \
-          -allowProvisioningUpdates || echo "Build failed, but continuing..."
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO \
+          -skipPackagePluginValidation || echo "Build failed, but continuing..."
         
     - name: Check build result
       run: |
