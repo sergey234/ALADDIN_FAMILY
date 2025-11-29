@@ -247,35 +247,51 @@ jobs:
         fi
         
         # Проверить доступность сертификата
-        # Если CERTIFICATE_AVAILABLE не установлен, используем автоматическую подпись
-        # Это единственный способ без локального сертификата
+        # Если CERTIFICATE_AVAILABLE не установлен, используем Manual signing с provisioning profiles
+        # Xcode должен найти сертификат автоматически или использовать Cloud Managed Certificate
         if [ "${{ env.CERTIFICATE_AVAILABLE }}" != "true" ]; then
-          echo "⚠️  Certificate not in secrets, using Automatic signing"
-          echo "This requires App Store Connect API authentication"
-          echo "Xcode will create provisioning profiles automatically"
+          echo "⚠️  Certificate not in secrets, using Manual signing with provisioning profiles"
+          echo "Xcode will try to find certificate automatically or use Cloud Managed Certificate"
           
-          # Проверить наличие API ключей (для загрузки, не для сборки)
-          if [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] || \
-             [ -z "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] || \
-             [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
-            echo "⚠️  App Store Connect API keys not set"
-            echo "Will try automatic signing anyway (may fail without authentication)"
+          # Проверить что UUID профилей извлечены
+          if [ -z "$APP_PROFILE_UUID" ] || [ -z "$EXT_PROFILE_UUID" ]; then
+            echo "❌ Failed to extract provisioning profile UUIDs!"
+            echo "APP_PROFILE_UUID: $APP_PROFILE_UUID"
+            echo "EXT_PROFILE_UUID: $EXT_PROFILE_UUID"
+            exit 1
           fi
           
-          echo "✅ Using Automatic signing with -allowProvisioningUpdates"
-          echo "Xcode will automatically create/update provisioning profiles"
+          echo "✅ Using Manual signing with provisioning profiles from secrets"
+          echo "Using extracted UUIDs for provisioning profiles"
+          echo "⚠️  Note: Xcode will try to find certificate automatically"
           
-          # Используем автоматическую подпись
-          # Xcode автоматически создаст provisioning profiles и найдет сертификат
+          # Используем Manual signing с provisioning profiles
+          # Не указываем CODE_SIGN_IDENTITY - Xcode найдет автоматически
+          # Попробуем сначала без указания сертификата
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
             -configuration Release \
             -archivePath ./build/ALADDIN.xcarchive \
             -destination 'generic/platform=iOS' \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            -allowProvisioningUpdates
+            PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
+            ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
+            ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID" || \
+          # Если не сработало, попробуем с Apple Distribution
+          xcodebuild archive \
+            -project ALADDIN.xcodeproj \
+            -scheme ALADDIN \
+            -configuration Release \
+            -archivePath ./build/ALADDIN.xcarchive \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
+            ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
+            ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID"
         elif [ "${{ env.CERTIFICATE_AVAILABLE }}" = "true" ]; then
           echo "✅ Using manual signing with certificate"
           
