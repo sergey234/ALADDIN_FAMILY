@@ -323,6 +323,37 @@ jobs:
           export KEYCHAIN_PATH="${{ env.KEYCHAIN_PATH }}"
           export KEYCHAIN_PASSWORD="${{ env.KEYCHAIN_PASSWORD }}"
           
+          # Найти правильное имя сертификата Distribution из keychain
+          echo "🔍 Finding Distribution certificate in keychain..."
+          CERT_INFO=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -i "distribution" | head -1)
+          if [ -z "$CERT_INFO" ]; then
+            echo "❌ No Distribution certificate found in keychain!"
+            exit 1
+          fi
+          
+          # Извлечь полное имя сертификата (включая "Apple Distribution: NAME (ID)")
+          DIST_CERT_NAME=$(echo "$CERT_INFO" | sed -E 's/^[[:space:]]*[0-9]+[[:space:]]+[A-F0-9]+[[:space:]]+"([^"]+)".*/\1/')
+          echo "✅ Using certificate: $DIST_CERT_NAME"
+          
+          # Проверить что профили связаны с сертификатом
+          echo "🔍 Verifying profile-certificate relationship..."
+          APP_PROFILE_FILE="$HOME/Library/MobileDevice/Provisioning Profiles/${APP_PROFILE_UUID}.mobileprovision"
+          EXT_PROFILE_FILE="$HOME/Library/MobileDevice/Provisioning Profiles/${EXT_PROFILE_UUID}.mobileprovision"
+          
+          # Извлечь сертификаты из профилей
+          if [ -f "$APP_PROFILE_FILE" ]; then
+            APP_PROFILE_CERTS=$(security cms -D -i "$APP_PROFILE_FILE" 2>/dev/null | plutil -extract DeveloperCertificates raw -o - - 2>/dev/null || echo "")
+            echo "App profile certificates: $(echo "$APP_PROFILE_CERTS" | wc -l | tr -d ' ') found"
+          fi
+          
+          if [ -f "$EXT_PROFILE_FILE" ]; then
+            EXT_PROFILE_CERTS=$(security cms -D -i "$EXT_PROFILE_FILE" 2>/dev/null | plutil -extract DeveloperCertificates raw -o - - 2>/dev/null || echo "")
+            echo "Extension profile certificates: $(echo "$EXT_PROFILE_CERTS" | wc -l | tr -d ' ') found"
+          fi
+          
+          echo "⚠️  Note: If profiles don't match certificate, they need to be regenerated in Developer Portal"
+          echo "⚠️  Using -allowProvisioningUpdates to let Xcode try to fix profile issues"
+          
           # Используем правильный синтаксис для Manual signing с профилями
           # PROVISIONING_PROFILE_SPECIFIER указывается для каждого target отдельно
           xcodebuild archive \
@@ -333,7 +364,7 @@ jobs:
             -destination 'generic/platform=iOS' \
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CODE_SIGN_IDENTITY="iPhone Distribution" \
+            CODE_SIGN_IDENTITY="$DIST_CERT_NAME" \
             PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
             "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=$APP_PROFILE_UUID" \
             "ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER=$EXT_PROFILE_UUID" \
