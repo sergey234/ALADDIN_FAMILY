@@ -246,7 +246,38 @@ jobs:
         fi
         
         # Проверить доступность сертификата
-        if [ "${{ env.CERTIFICATE_AVAILABLE }}" = "true" ]; then
+        # Если CERTIFICATE_AVAILABLE не установлен, значит используем автоматическую подпись
+        if [ "${{ env.CERTIFICATE_AVAILABLE }}" != "true" ]; then
+          echo "⚠️  Certificate not available, using automatic signing with -allowProvisioningUpdates"
+          echo "This requires App Store Connect API access"
+          
+          # Проверить наличие API ключей
+          if [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] || \
+             [ -z "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] || \
+             [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+            echo "❌ App Store Connect API keys not set!"
+            echo "Please add:"
+            echo "  - APP_STORE_CONNECT_API_KEY"
+            echo "  - APP_STORE_CONNECT_ISSUER_ID"
+            echo "  - APP_STORE_CONNECT_API_KEY_ID"
+            echo ""
+            echo "Or add signing certificate:"
+            echo "  - IOS_DISTRIBUTION_CERTIFICATE"
+            echo "  - IOS_DISTRIBUTION_CERTIFICATE_PASSWORD"
+            exit 1
+          fi
+          
+          echo "✅ Using automatic signing with provisioning updates"
+          xcodebuild archive \
+            -project ALADDIN.xcodeproj \
+            -scheme ALADDIN \
+            -configuration Release \
+            -archivePath ./build/ALADDIN.xcarchive \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            -allowProvisioningUpdates
+        elif [ "${{ env.CERTIFICATE_AVAILABLE }}" = "true" ]; then
           echo "✅ Using manual signing with certificate"
           
           # Проверить что UUID профилей извлечены
