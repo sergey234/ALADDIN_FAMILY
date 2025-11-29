@@ -247,53 +247,30 @@ jobs:
         fi
         
         # Проверить доступность сертификата
-        # Если CERTIFICATE_AVAILABLE не установлен, используем fastlane с API ключами
+        # Если CERTIFICATE_AVAILABLE не установлен, используем Automatic signing с API ключами
         if [ "${{ env.CERTIFICATE_AVAILABLE }}" != "true" ]; then
-          echo "⚠️  Certificate not in secrets, using Fastlane with App Store Connect API"
+          echo "⚠️  Certificate not in secrets, using Automatic signing with App Store Connect API"
           
-          # Проверить наличие API ключей
-          if [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] || \
-             [ -z "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] || \
-             [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
-            echo "❌ App Store Connect API keys not set!"
-            echo "Please add:"
-            echo "  - APP_STORE_CONNECT_API_KEY"
-            echo "  - APP_STORE_CONNECT_ISSUER_ID"
-            echo "  - APP_STORE_CONNECT_API_KEY_ID"
-            exit 1
+          # Проверить наличие API ключей (если есть - используем для авторизации)
+          if [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+            echo "✅ App Store Connect API keys found - will use for automatic certificate management"
+            
+            # Создать временный файл с API ключом для fastlane (если понадобится)
+            mkdir -p ~/.appstoreconnect/private_keys
+            echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+            chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+          else
+            echo "⚠️  App Store Connect API keys not set, but will try Automatic signing anyway"
           fi
           
-          echo "✅ Using Fastlane with App Store Connect API authentication"
-          
-          # Создать временный файл с API ключом для fastlane
-          mkdir -p ~/.appstoreconnect/private_keys
-          echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
-          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
-          
-          # Используем fastlane для сборки с авторизацией через API
-          export FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD=""
-          export FASTLANE_USER=""
-          export FASTLANE_APPLE_APPLICATION_SPECIFIC_PASSWORD=""
-          
-          # Проблема: Provisioning profiles являются "Xcode managed", а для Manual signing нужны "manually managed"
-          # Решение: Используем Manual signing, но БЕЗ указания CODE_SIGN_IDENTITY
-          # Xcode попытается найти сертификат автоматически или использовать Cloud Managed Certificate
-          echo "✅ Using Manual signing with provisioning profiles (Xcode will find certificate)"
-          echo "⚠️  Note: Provisioning profiles must be manually managed (not Xcode managed)"
-          
-          # Проверить что UUID профилей извлечены
-          if [ -z "$APP_PROFILE_UUID" ] || [ -z "$EXT_PROFILE_UUID" ]; then
-            echo "❌ Failed to extract provisioning profile UUIDs!"
-            echo "APP_PROFILE_UUID: $APP_PROFILE_UUID"
-            echo "EXT_PROFILE_UUID: $EXT_PROFILE_UUID"
-            exit 1
-          fi
-          
-          # ПРОБЛЕМА: Нет сертификата, но есть provisioning profiles
           # РЕШЕНИЕ: Используем Automatic signing с -allowProvisioningUpdates
           # Xcode автоматически создаст/найдет сертификат через App Store Connect API
-          echo "✅ Using Automatic signing with provisioning profiles"
-          echo "Xcode will automatically manage certificates via App Store Connect API"
+          # ИЛИ использует сертификат из Developer Portal автоматически
+          echo "✅ Using Automatic signing - Xcode will manage certificates automatically"
+          echo "Team ID: $APPLE_TEAM_ID"
+          echo "Xcode will use certificates from Developer Portal via API"
           
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
@@ -303,22 +280,7 @@ jobs:
             -destination 'generic/platform=iOS' \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            -allowProvisioningUpdates || {
-            echo "⚠️  Automatic signing failed, trying with Manual signing and profiles..."
-            # Fallback: Manual signing с профилями (Xcode попытается найти сертификат)
-            xcodebuild archive \
-              -project ALADDIN.xcodeproj \
-              -scheme ALADDIN \
-              -configuration Release \
-              -archivePath ./build/ALADDIN.xcarchive \
-              -destination 'generic/platform=iOS' \
-              CODE_SIGN_STYLE=Manual \
-              DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-              PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
-              ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
-              ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID" \
-              -allowProvisioningUpdates
-          }
+            -allowProvisioningUpdates
         elif [ "${{ env.CERTIFICATE_AVAILABLE }}" = "true" ]; then
           echo "✅ Using manual signing with certificate"
           
