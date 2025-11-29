@@ -9,7 +9,7 @@ on:
 jobs:
   build-and-upload:
     name: Build and Upload to App Store Connect
-    runs-on: macos-latest
+    runs-on: macos-14  # Используем macOS 14 для поддержки Xcode 16
     
     steps:
     - name: Checkout code
@@ -18,7 +18,7 @@ jobs:
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: latest-stable
+        xcode-version: '16.2.0'  # Используем Xcode 16.2.0 для iOS 18 SDK (доступна на GitHub Actions)
         
     - name: Cache dependencies
       uses: actions/cache@v4
@@ -30,62 +30,98 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-xcode-
           
+    - name: Show Xcode version
+      run: xcodebuild -version
+      
     - name: Build Archive
       env:
-        APPLE_ID: ${{ secrets.APPLE_ID }}
-        APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        # Xcode может использовать эти переменные для авторизации
-        XCODE_APPLE_ID: ${{ secrets.APPLE_ID }}
       run: |
         echo "Building archive with automatic signing..."
         echo "Team ID: $APPLE_TEAM_ID"
-        # Пытаемся использовать -allowProvisioningUpdates с Apple ID
-        # Если это не сработает, нужно будет использовать manual signing
+        echo "Bundle ID: family.aladdin.ios"
         xcodebuild archive \
           -project ALADDIN.xcodeproj \
           -scheme ALADDIN \
           -configuration Release \
-          -archivePath ALADDIN.xcarchive \
+          -archivePath ./build/ALADDIN.xcarchive \
           -destination 'generic/platform=iOS' \
-          -allowProvisioningUpdates \
           CODE_SIGN_STYLE=Automatic \
-          DEVELOPMENT_TEAM="$APPLE_TEAM_ID"
+          DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+          PRODUCT_BUNDLE_IDENTIFIER="family.aladdin.ios"
         
     - name: List Archive Contents
       run: |
         echo "Checking archive..."
-        ls -la ALADDIN.xcarchive/Products/Applications/ 2>&1 || echo "Archive not found or empty"
+        ls -la ./build/ALADDIN.xcarchive/Products/Applications/ 2>&1 || echo "Archive not found or empty"
         
     - name: Export IPA
       env:
         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       run: |
         echo "Exporting IPA..."
+        mkdir -p ./build/export
         xcodebuild -exportArchive \
-          -archivePath ALADDIN.xcarchive \
-          -exportPath Export \
-          -exportOptionsPlist ExportOptions.plist \
-          -allowProvisioningUpdates
+          -archivePath ./build/ALADDIN.xcarchive \
+          -exportPath ./build/export \
+          -exportOptionsPlist ExportOptions.plist
         echo "Checking exported files..."
-        ls -la Export/ 2>&1 || echo "Export directory not found"
+        ls -la ./build/export/ 2>&1 || echo "Export directory not found"
+        # Найти .ipa файл
+        IPA_FILE=$(find ./build/export -name "*.ipa" | head -1)
+        echo "IPA file: $IPA_FILE"
+        if [ -z "$IPA_FILE" ]; then
+          echo "Error: IPA file not found!"
+          exit 1
+        fi
+        echo "IPA_FILE_PATH=$IPA_FILE" >> $GITHUB_ENV
         
     - name: Upload to App Store Connect
       env:
-        APPLE_ID: ${{ secrets.APPLE_ID }}
-        APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
       run: |
-        xcrun altool --upload-app \
-          --type ios \
-          --file "Export/ALADDIN.ipa" \
-          --username "$APPLE_ID" \
-          --password "$APPLE_APP_SPECIFIC_PASSWORD"
+        if [ -z "$APP_STORE_CONNECT_API_KEY" ]; then
+          echo "Error: APP_STORE_CONNECT_API_KEY secret is not set!"
+          echo "Please set up App Store Connect API key in GitHub Secrets:"
+          echo "1. Go to App Store Connect → Users and Access → Keys"
+          echo "2. Create a new API key"
+          echo "3. Download .p8 file and add its content to APP_STORE_CONNECT_API_KEY secret"
+          echo "4. Add Issuer ID to APP_STORE_CONNECT_ISSUER_ID secret"
+          echo "5. Add Key ID to APP_STORE_CONNECT_API_KEY_ID secret"
+          exit 1
+        fi
+        
+        # Используем apple-actions для загрузки
+        echo "Uploading to App Store Connect..."
+        # Создаём временный файл с API ключом
+        echo "$APP_STORE_CONNECT_API_KEY" > /tmp/AuthKey.p8
+        chmod 600 /tmp/AuthKey.p8
+        
+        # Используем fastlane или apple-actions для загрузки
+        # Для начала просто проверим, что файл существует
+        if [ ! -f "$IPA_FILE_PATH" ]; then
+          echo "Error: IPA file not found at $IPA_FILE_PATH"
+          exit 1
+        fi
+        
+        echo "IPA file found: $IPA_FILE_PATH"
+        echo "Ready to upload to App Store Connect"
+        
+    - name: Upload to App Store Connect using apple-actions
+      uses: apple-actions/upload-testflight-build@v1
+      with:
+        app-path: ${{ env.IPA_FILE_PATH }}
+        api-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
         
     - name: Upload IPA as artifact
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: ALADDIN-IPA
-        path: Export/ALADDIN.ipa
+        path: ${{ env.IPA_FILE_PATH }}
         retention-days: 30
 
