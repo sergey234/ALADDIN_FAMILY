@@ -4,12 +4,7 @@ on:
   workflow_dispatch:  # Запуск вручную через GitHub UI
   push:
     branches: [ main, master ]
-    paths:
-      - '.github/workflows/build-only.yml'
-      - 'ALADDIN.xcodeproj/**'
-      - 'Info.plist'
-      - '*.swift'
-      - '*.plist'
+    # Убрали paths, чтобы workflow запускался при любом push в master
 
 jobs:
   build-only:
