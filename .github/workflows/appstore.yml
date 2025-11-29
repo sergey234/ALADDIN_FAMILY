@@ -161,6 +161,29 @@ jobs:
         echo "📋 Installed provisioning profiles:"
         ls -la ~/Library/MobileDevice/Provisioning\ Profiles/
         
+        # Проверить что профили правильно установлены
+        echo ""
+        echo "📋 Verifying profiles..."
+        if [ -n "$APP_PROFILE_UUID" ]; then
+          if [ -f ~/Library/MobileDevice/Provisioning\ Profiles/${APP_PROFILE_UUID}.mobileprovision ]; then
+            echo "✅ App profile found: ${APP_PROFILE_UUID}.mobileprovision"
+            # Показать информацию о профиле
+            security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/${APP_PROFILE_UUID}.mobileprovision 2>/dev/null | plutil -extract Name raw -o - - 2>/dev/null || echo "  Name: (could not extract)"
+          else
+            echo "❌ App profile NOT found: ${APP_PROFILE_UUID}.mobileprovision"
+          fi
+        fi
+        
+        if [ -n "$EXT_PROFILE_UUID" ]; then
+          if [ -f ~/Library/MobileDevice/Provisioning\ Profiles/${EXT_PROFILE_UUID}.mobileprovision ]; then
+            echo "✅ Extension profile found: ${EXT_PROFILE_UUID}.mobileprovision"
+            # Показать информацию о профиле
+            security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/${EXT_PROFILE_UUID}.mobileprovision 2>/dev/null | plutil -extract Name raw -o - - 2>/dev/null || echo "  Name: (could not extract)"
+          else
+            echo "❌ Extension profile NOT found: ${EXT_PROFILE_UUID}.mobileprovision"
+          fi
+        fi
+        
         # Проверить что profiles правильные
         if [ -n "$APP_PROFILE_UUID" ]; then
           APP_PROFILE_FILE="$HOME/Library/MobileDevice/Provisioning Profiles/${APP_PROFILE_UUID}.mobileprovision"
@@ -298,6 +321,8 @@ jobs:
           export KEYCHAIN_PATH="${{ env.KEYCHAIN_PATH }}"
           export KEYCHAIN_PASSWORD="${{ env.KEYCHAIN_PASSWORD }}"
           
+          # Используем правильный синтаксис для Manual signing с профилями
+          # PROVISIONING_PROFILE_SPECIFIER указывается для каждого target отдельно
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
@@ -308,8 +333,9 @@ jobs:
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CODE_SIGN_IDENTITY="iPhone Distribution" \
             PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
-            ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
-            ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID"
+            "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=$APP_PROFILE_UUID" \
+            "ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER=$EXT_PROFILE_UUID" \
+            -allowProvisioningUpdates
         else
           echo "⚠️  Certificate not available, using automatic signing with -allowProvisioningUpdates"
           echo "This requires App Store Connect API access"
