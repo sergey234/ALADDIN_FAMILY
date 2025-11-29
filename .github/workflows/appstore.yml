@@ -38,9 +38,10 @@ jobs:
         echo "🔐 Setting up signing certificate..."
         
         if [ -z "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE }}" ] || [ -z "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}" ]; then
-          echo "❌ Signing certificate not provided!"
-          echo "❌ IOS_DISTRIBUTION_CERTIFICATE and IOS_DISTRIBUTION_CERTIFICATE_PASSWORD secrets are required for manual signing"
-          exit 1
+          echo "⚠️  Signing certificate not provided, will use automatic signing"
+          echo "CERTIFICATE_AVAILABLE=false" >> $GITHUB_ENV
+          echo "✅ Will use automatic signing with App Store Connect API"
+          exit 0
         fi
         
         # Создать временный keychain
