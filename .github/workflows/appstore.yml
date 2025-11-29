@@ -263,8 +263,10 @@ jobs:
           
           echo "✅ Using Manual signing with provisioning profiles from secrets"
           echo "Using extracted UUIDs for provisioning profiles"
+          echo "⚠️  Note: Using Cloud Managed Certificate (Apple Distribution)"
           
-          # Используем Apple Distribution (может быть Cloud Managed)
+          # Используем Apple Distribution (Cloud Managed Certificate)
+          # Это сертификат, который Apple управляет автоматически
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
@@ -276,7 +278,8 @@ jobs:
             CODE_SIGN_IDENTITY="Apple Distribution" \
             PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
             ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
-            ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID"
+            ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID" \
+            -allowProvisioningUpdates
         elif [ "${{ env.CERTIFICATE_AVAILABLE }}" = "true" ]; then
           echo "✅ Using manual signing with certificate"
           
