@@ -1,0 +1,3492 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ALADDIN AI — Оплата подписки</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <!-- Визуальный индикатор для отладки (в самом начале body) -->
+    <div id="debugIndicator" style="position: fixed; top: 10px; right: 10px; background: rgba(0,255,0,0.8); color: black; padding: 10px; border-radius: 5px; z-index: 9999; font-size: 12px; display: none; font-family: monospace;">
+      JS работает!
+    </div>
+    
+    <!-- Кнопка для показа диагностики -->
+    <button onclick="document.getElementById('debugPanel').style.display=document.getElementById('debugPanel').style.display==='none'?'block':'none'" style="position: fixed; bottom: 10px; right: 10px; background: #0f0; color: black; border: none; padding: 10px 15px; border-radius: 5px; z-index: 9999; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
+      🔍 Диагностика
+    </button>
+    
+    <!-- Визуальный блок диагностики (для пользователей без консоли) -->
+    <div id="debugPanel" style="position: fixed; bottom: 10px; left: 10px; right: 10px; max-width: 600px; max-height: 400px; overflow-y: auto; background: rgba(0,0,0,0.9); color: #0f0; padding: 15px; border-radius: 8px; z-index: 9998; font-size: 11px; font-family: monospace; display: none; border: 2px solid #0f0;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <strong style="color: #0f0;">🔍 Диагностика (без консоли)</strong>
+        <button onclick="document.getElementById('debugPanel').style.display='none'" style="background: #f00; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">✕ Закрыть</button>
+      </div>
+      <div id="debugLog" style="line-height: 1.4;"></div>
+    </div>
+    
+    <!-- Глобальные функции определяем СРАЗУ, до загрузки DOM -->
+    <script>
+      // ========== ПРИЧИНА 7: Глобальный обработчик ошибок ==========
+      window.addEventListener('error', function(e) {
+        console.error('❌ ГЛОБАЛЬНАЯ ОШИБКА JavaScript:', e.error);
+        console.error('❌ Файл:', e.filename, 'Строка:', e.lineno, 'Колонка:', e.colno);
+        alert('❌ Ошибка JavaScript: ' + (e.error ? e.error.message : e.message) + '\n\nПроверьте консоль (F12)');
+      });
+      
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('❌ НЕОБРАБОТАННОЕ ОТКЛОНЕНИЕ ПРОМИСА:', e.reason);
+        alert('❌ Ошибка Promise: ' + (e.reason ? e.reason.message || e.reason : 'Неизвестная ошибка'));
+      });
+      
+      // ========== ОТЛАДКА: Проверяем, что JavaScript работает ==========
+      console.log('🚀 ПЕРВЫЙ СКРИПТ ЗАГРУЖЕН!', new Date().toISOString());
+      
+      // ПРИЧИНА 8: Проверяем, что console доступен
+      if (typeof console === 'undefined') {
+        window.console = { log: function() {}, error: function() {}, warn: function() {} };
+      }
+      
+      // Функция для логирования в визуальный блок (для пользователей без консоли)
+      window.debugLog = function(message, type = 'info') {
+        const colors = {
+          info: '#0f0',
+          error: '#f00',
+          warn: '#ff0',
+          success: '#0ff'
+        };
+        const panel = document.getElementById('debugPanel');
+        const log = document.getElementById('debugLog');
+        if (panel && log) {
+          panel.style.display = 'block';
+          const time = new Date().toLocaleTimeString();
+          const color = colors[type] || '#0f0';
+          log.innerHTML += `<div style="color: ${color}; margin: 2px 0;">[${time}] ${message}</div>`;
+          log.scrollTop = log.scrollHeight;
+        }
+        // Также логируем в консоль, если доступна
+        if (typeof console !== 'undefined' && console.log) {
+          console.log(message);
+        }
+      };
+      
+      // Показываем визуальный индикатор вместо alert
+      setTimeout(function() {
+        const indicator = document.getElementById('debugIndicator');
+        if (indicator) {
+          indicator.style.display = 'block';
+          indicator.textContent = 'JS работает! ' + new Date().toLocaleTimeString();
+        }
+        window.debugLog('✅ JavaScript загружен и работает', 'success');
+      }, 100);
+      
+      // ПРИЧИНА: Определяем API_BASE и API_KEY СРАЗУ, чтобы они были доступны для handleFormSubmit
+      // Определяем их здесь, чтобы функция могла их использовать
+      window.API_BASE = null; // Будет установлен позже
+      window.API_KEY = 'PUBLIC_CLIENT_KEY';
+      window.selectedTariffPeriods = {};
+      window.tariffsReady = false;
+      
+      // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: НЕ инициализируем tariffsCache как пустой массив!
+      // Он будет заполнен сразу после определения FALLBACK_TARIFFS
+      window.traceStep = function(message, type = 'info') {
+        if (window.debugLog) {
+          window.debugLog(message, type);
+        } else {
+          const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warn' ? '⚠️' : 'ℹ️';
+          console.log(prefix, message);
+        }
+      };
+      const FALLBACK_TARIFFS = [
+        {
+          id: 'free',
+          name: 'Free',
+          devices: 1,
+          protection: '16 / 100',
+          pricing: {
+            currency: 'RUB',
+            periods: [
+              {
+                months: 0,
+                label: 'Всегда бесплатно',
+                total: 0,
+                monthly: 0,
+                discountPercent: 0,
+                savings: 0,
+                note: 'Для мониторинга одного устройства'
+              }
+            ]
+          },
+          perks: [
+            'Базовые уведомления о угрозах',
+            'Статистика для 1 устройства',
+            'AI советник в демо-режиме'
+          ]
+        },
+        {
+          id: 'personal',
+          name: 'Personal',
+          devices: 4,
+          protection: '50 / 100',
+          pricing: {
+            currency: 'RUB',
+            defaultMonths: 12,
+            periods: [
+              { months: 1, label: '1 мес', total: 290, monthly: 290, discountPercent: 0, savings: 0 },
+              { months: 3, label: '3 мес', total: 783, monthly: 261, discountPercent: 10, savings: 87 },
+              { months: 6, label: '6 мес', total: 1479, monthly: 246, discountPercent: 15, savings: 261 },
+              { months: 12, label: '12 мес', total: 2780, monthly: 231, discountPercent: 20, savings: 700, note: 'Специальная цена на год' }
+            ]
+          },
+          perks: [
+            'VPN защита и фильтрация сайтов',
+            'Мониторинг 4 устройств',
+            'Умные уведомления и отчёты',
+            'Обучение безопасности для взрослых'
+          ]
+        },
+        {
+          id: 'family',
+          name: 'Family',
+          devices: 6,
+          protection: '92 / 100',
+          pricing: {
+            currency: 'RUB',
+            defaultMonths: 12,
+            periods: [
+              { months: 1, label: '1 мес', total: 490, monthly: 490, discountPercent: 0, savings: 0 },
+              { months: 3, label: '3 мес', total: 1323, monthly: 441, discountPercent: 10, savings: 147 },
+              { months: 6, label: '6 мес', total: 2499, monthly: 416, discountPercent: 15, savings: 441 },
+              { months: 12, label: '12 мес', total: 4704, monthly: 392, discountPercent: 20, savings: 1176 }
+            ]
+          },
+          perks: [
+            'AI помощник для детей',
+            'Родительский контроль и геолокация',
+            'Ограничения экранного времени',
+            'Уведомления об обходах блокировок',
+            '138 функций защиты семьи'
+          ]
+        },
+        {
+          id: 'premium',
+          name: 'Premium',
+          devices: 10,
+          protection: '100 / 100',
+          pricing: {
+            currency: 'RUB',
+            defaultMonths: 12,
+            periods: [
+              { months: 1, label: '1 мес', total: 990, monthly: 990, discountPercent: 0, savings: 0 },
+              { months: 3, label: '3 мес', total: 2673, monthly: 891, discountPercent: 10, savings: 297 },
+              { months: 6, label: '6 мес', total: 5049, monthly: 841, discountPercent: 15, savings: 891 },
+              { months: 12, label: '12 мес', total: 9504, monthly: 792, discountPercent: 20, savings: 2376 }
+            ]
+          },
+          perks: [
+            'Все функции Family',
+            'IoT защита и расширенный VPN',
+            'Безлимитные устройства в семье',
+            'Приоритетная поддержка 24/7'
+          ]
+        }
+      ];
+      
+      // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Загружаем тарифы в кэш СРАЗУ после определения FALLBACK_TARIFFS
+      window.tariffsCache = FALLBACK_TARIFFS;
+      console.log('✅ ТАРИФЫ ЗАГРУЖЕНЫ В КЭШ СРАЗУ! tariffsCache.length =', window.tariffsCache.length);
+
+      // ✅ РЕФЕРАЛЬНАЯ ПРОГРАММА: Обработка реферального кода из URL
+      window.referralCode = null;
+      window.referralDiscountPercent = 20; // Скидка -20%
+      
+      // Извлекаем реферальный код из URL
+      (function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        // ✅ ИСПРАВЛЕНИЕ: Обрабатываем hash вида #pay?ref=CODE
+        const hash = window.location.hash || '';
+        const hashMatch = hash.match(/[#&?]ref=([^&]+)/);
+        const refFromHash = hashMatch ? hashMatch[1] : null;
+        const hashParams = new URLSearchParams(hash.split('?')[1] || '');
+        const refFromUrl = urlParams.get('ref') || refFromHash || hashParams.get('ref');
+        
+        // Также проверяем localStorage (на случай если код был сохранен ранее)
+        const refFromStorage = localStorage.getItem('referral_code');
+        
+        window.referralCode = refFromUrl || refFromStorage || null;
+        
+        if (window.referralCode) {
+          // Сохраняем в localStorage для дальнейшего использования
+          localStorage.setItem('referral_code', window.referralCode);
+          console.log('✅ Реферальный код найден:', window.referralCode);
+          
+          // Показываем баннер со скидкой
+          const banner = document.getElementById('referralDiscountBanner');
+          const codeDisplay = document.getElementById('referralCodeDisplay');
+          if (banner) {
+            banner.style.display = 'block';
+            if (codeDisplay) {
+              codeDisplay.textContent = window.referralCode;
+            }
+          }
+        } else {
+          console.log('ℹ️ Реферальный код не найден');
+        }
+        
+        // ✅ АВТОПРОКРУТКА: Если в URL есть #pay, прокручиваем к форме оплаты
+        if (hash.includes('#pay') || hash.startsWith('#pay')) {
+          // Ждем загрузки DOM, затем прокручиваем
+          setTimeout(() => {
+            const paySection = document.getElementById('pay');
+            if (paySection) {
+              paySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              console.log('✅ Прокрутка к форме оплаты выполнена');
+            } else {
+              console.warn('⚠️ Секция #pay не найдена');
+            }
+          }, 300); // Небольшая задержка для загрузки контента
+        }
+      })();
+
+      function formatCurrency(amount) {
+        if (typeof amount !== 'number' || isNaN(amount)) return '-';
+        return new Intl.NumberFormat('ru-RU').format(amount) + ' ₽';
+      }
+
+      function describePeriod(priceInfo) {
+        if (!priceInfo) return '';
+        if (priceInfo.months <= 0) {
+          return 'Навсегда • бесплатно';
+        }
+        const monthsText = priceInfo.months === 1 ? 'за 1 месяц' : `за ${priceInfo.months} месяцев`;
+        return `${monthsText} • ${formatCurrency(priceInfo.monthly)}/мес`;
+      }
+
+      function getTariffDataById(tariffId) {
+        if (!Array.isArray(window.tariffsCache)) {
+          return null;
+        }
+        return window.tariffsCache.find(t => t.id === tariffId) || null;
+      }
+
+      function getDefaultPeriodMonths(tariff) {
+        if (!tariff || !tariff.pricing || !Array.isArray(tariff.pricing.periods)) {
+          return null;
+        }
+        return tariff.pricing.defaultMonths || tariff.pricing.periods[0]?.months || null;
+      }
+
+      function getTariffPeriodInfo(tariffId, months) {
+        const tariff = getTariffDataById(tariffId);
+        if (!tariff || !tariff.pricing || !Array.isArray(tariff.pricing.periods)) {
+          return null;
+        }
+        const targetMonths = months || getDefaultPeriodMonths(tariff);
+        const period = tariff.pricing.periods.find(p => Number(p.months) === Number(targetMonths))
+          || tariff.pricing.periods[0];
+        if (!period) return null;
+        const original = (Number(period.total) || 0) + (Number(period.savings) || 0);
+        
+        // ✅ РЕФЕРАЛЬНАЯ ПРОГРАММА: Применяем скидку -20% если есть реферальный код
+        let finalTotal = Number(period.total);
+        let referralDiscount = 0;
+        let referralSavings = 0;
+        
+        if (window.referralCode && window.referralDiscountPercent) {
+          // Применяем скидку к итоговой цене
+          referralDiscount = window.referralDiscountPercent;
+          referralSavings = Math.round(finalTotal * (referralDiscount / 100));
+          finalTotal = finalTotal - referralSavings;
+          console.log(`🎁 Применена реферальная скидка ${referralDiscount}%: экономия ${referralSavings} ₽`);
+        }
+        
+        return {
+          ...period,
+          months: Number(period.months),
+          total: finalTotal, // Итоговая цена со скидкой
+          monthly: referralSavings > 0 ? Math.round(finalTotal / Number(period.months)) : Number(period.monthly),
+          savings: Number(period.savings || 0) + referralSavings, // Общая экономия (включая реферальную)
+          discountPercent: Number(period.discountPercent || 0) + (referralDiscount || 0), // Общий процент скидки
+          original: original,
+          referralDiscount: referralDiscount, // Процент реферальной скидки
+          referralSavings: referralSavings // Сумма реферальной скидки
+        };
+      }
+      
+      // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Определяем bootstrapFallbackTariffs ДО handleFormSubmit
+      // Заглушка, которая будет переопределена позже полной версией
+      window.bootstrapFallbackTariffs = function() {
+        console.warn('⚠️ bootstrapFallbackTariffs вызвана до полной инициализации, используем простой fallback');
+        if (!Array.isArray(window.tariffsCache) || window.tariffsCache.length === 0) {
+          window.tariffsCache = FALLBACK_TARIFFS;
+        }
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Заполняем селект периода СРАЗУ при загрузке
+        try {
+          const tariffSelect = document.querySelector('[data-tariff-select]');
+          const periodSelect = document.querySelector('[data-tariff-period]');
+          if (tariffSelect && periodSelect && window.tariffsCache.length > 0) {
+            // ✅ Устанавливаем значение тарифа по умолчанию, если не установлено
+            let tariffId = tariffSelect.value;
+            if (!tariffId) {
+              tariffId = 'family'; // По умолчанию Family
+              tariffSelect.value = tariffId;
+            }
+            
+            const tariff = window.tariffsCache.find(t => t.id === tariffId);
+            if (tariff && tariff.pricing && tariff.pricing.periods) {
+              periodSelect.innerHTML = '';
+              tariff.pricing.periods.forEach(period => {
+                const option = document.createElement('option');
+                option.value = period.months;
+                option.textContent = `${period.label} — ${formatCurrency(Number(period.total))} (${formatCurrency(Number(period.monthly))}/мес)`;
+                periodSelect.appendChild(option);
+              });
+              const defaultMonths = tariff.pricing.defaultMonths || tariff.pricing.periods[0]?.months || 12;
+              periodSelect.value = defaultMonths;
+              periodSelect.disabled = false;
+              
+              // ✅ Обновляем подсказку с ценой
+              const hint = document.querySelector('[data-period-hint]');
+              if (hint) {
+                const priceInfo = getTariffPeriodInfo(tariffId, defaultMonths);
+                if (priceInfo) {
+                  const pieces = [
+                    `К оплате: ${formatCurrency(priceInfo.total)}`,
+                    priceInfo.months === 1 ? 'за 1 месяц' : `за ${priceInfo.months} месяцев`,
+                    priceInfo.savings > 0 ? `Экономия ${formatCurrency(priceInfo.savings)}` : ''
+                  ].filter(Boolean);
+                  hint.textContent = pieces.join(' • ');
+                }
+              }
+              
+              console.log(`✅ Селект периода заполнен через заглушку: тариф=${tariffId}, период=${defaultMonths}`);
+            }
+          }
+        } catch (e) {
+          console.error('❌ Ошибка при заполнении селекта через заглушку:', e);
+        }
+        
+        window.tariffsReady = true;
+        console.log('✅ tariffsReady установлен через заглушку');
+      };
+      
+      // Функция получения IP адреса клиента (опционально)
+      async function getClientIP() {
+        try {
+          const response = await fetch('https://api.ipify.org?format=json');
+          const data = await response.json();
+          return data.ip;
+        } catch (error) {
+          if (window.debugLog) {
+            window.debugLog('⚠️ Не удалось получить IP адрес: ' + error.message, 'warn');
+          }
+          return 'unknown';
+        }
+      }
+
+      // ПРИЧИНА: Определяем полную версию handleFormSubmit СРАЗУ, чтобы она была доступна из onclick
+      // Функция будет использовать window.API_BASE, который будет установлен позже
+      window.handleFormSubmit = async function(form) {
+        if (window.debugLog) {
+          window.debugLog('📝 handleFormSubmit вызвана', 'success');
+          window.debugLog(`🔍 tariffsReady: ${window.tariffsReady}`, 'info');
+          window.debugLog(`🔍 tariffsCache.length: ${window.tariffsCache?.length || 0}`, 'info');
+        }
+
+        // ✅ Проверка единого согласия (оферта + согласие ПДн + политика конфиденциальности)
+        const consentCheckbox = document.getElementById('personalDataConsent');
+        if (!consentCheckbox || !consentCheckbox.checked) {
+          alert('⚠️ Для продолжения необходимо ознакомиться и принять условия:\n\n• Публичную оферту\n• Согласие на обработку персональных данных\n• Политику конфиденциальности\n\nПожалуйста, отметьте чекбокс согласия.');
+          if (window.debugLog) {
+            window.debugLog('❌ Чекбокс согласия не отмечен', 'error');
+          }
+          consentCheckbox?.focus();
+          return;
+        }
+
+        if (!window.tariffsReady) {
+          // ✅ ИСПРАВЛЕНИЕ: Если тарифы не готовы, пробуем загрузить fallback
+          if (window.debugLog) {
+            window.debugLog('⚠️ Тарифы не готовы, пробуем загрузить fallback...', 'warn');
+          }
+          
+          // Проверяем, есть ли тарифы в кэше
+          if (!window.tariffsCache || window.tariffsCache.length === 0) {
+            if (window.debugLog) {
+              window.debugLog('📦 Тарифы отсутствуют, загружаем fallback...', 'info');
+            }
+            // ✅ ИСПРАВЛЕНИЕ: Используем window.bootstrapFallbackTariffs
+            if (typeof window.bootstrapFallbackTariffs === 'function') {
+              window.bootstrapFallbackTariffs();
+              // Ждём немного, чтобы tariffsReady установился
+              await new Promise(resolve => setTimeout(resolve, 200));
+            } else {
+              if (window.debugLog) {
+                window.debugLog('❌ window.bootstrapFallbackTariffs не найдена!', 'error');
+              }
+            }
+          } else {
+            // Если тарифы есть, но tariffsReady не установлен, устанавливаем вручную
+            if (window.debugLog) {
+              window.debugLog(`📦 Тарифы есть (${window.tariffsCache.length}), но tariffsReady=false, устанавливаем вручную...`, 'info');
+            }
+            const tariffSelect = document.querySelector('[data-tariff-select]');
+            const tariffId = tariffSelect?.value || window.tariffsCache[0]?.id || 'family';
+            const months = selectedTariffPeriods[tariffId] || getDefaultPeriodMonths(getTariffDataById(tariffId)) || 12;
+            if (typeof window.markTariffsReady === 'function') {
+              window.markTariffsReady(tariffId, months);
+            } else {
+              // ✅ ИСПРАВЛЕНИЕ: Если markTariffsReady не доступна, устанавливаем tariffsReady напрямую
+              window.tariffsReady = true;
+              if (window.debugLog) {
+                window.debugLog('✅ tariffsReady установлен напрямую', 'success');
+              }
+            }
+          }
+          
+          // Проверяем ещё раз
+          if (!window.tariffsReady) {
+            alert('⏳ Тарифы ещё загружаются. Подождите пару секунд и попробуйте снова.');
+            if (window.debugLog) {
+              window.debugLog('❌ tariffsReady всё ещё false после попытки исправления', 'error');
+            }
+            return;
+          } else {
+            if (window.debugLog) {
+              window.debugLog('✅ tariffsReady установлен, продолжаем...', 'success');
+            }
+          }
+        }
+        
+        // Проверяем, что API_BASE установлен
+        if (!window.API_BASE) {
+          // Пробуем определить API_BASE на основе текущего URL
+          const hostname = window.location.hostname;
+          const protocol = window.location.protocol;
+          
+          if (protocol === 'file:') {
+            alert('❌ Ошибка: Лендинг открыт через file:// протокол.\n\nОткройте лендинг через HTTP сервер:\ncd landing && python3 -m http.server 8080\n\nЗатем откройте: http://localhost:8080');
+            return;
+          } else if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '' || hostname === '0.0.0.0') {
+            window.API_BASE = 'http://localhost:8000';
+          } else if (hostname.includes('aladdin-ai.ru') || hostname === '149.154.65.180') {
+            // ✅ ПРОДАКШН: Backend работает на основном домене через /api/
+            window.API_BASE = 'https://aladdin-ai.ru';
+          } else {
+            // Fallback на старый URL (если используется другой домен)
+            window.API_BASE = 'https://api.aladdin.family';
+          }
+          
+          if (window.debugLog) {
+            window.debugLog(`🔧 API_BASE автоматически установлен: ${window.API_BASE}`, 'info');
+          }
+        }
+        
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn?.textContent || 'Оплатить';
+        
+        // Показываем индикатор загрузки
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = '⏳ Создание платежа...';
+          submitBtn.style.opacity = '0.7';
+          submitBtn.style.cursor = 'not-allowed';
+        }
+        
+        const formData = new FormData(form);
+        const payload = Object.fromEntries(formData.entries());
+        payload.tariff = payload.tariff || 'family';
+        const requestedPeriod = parseInt(payload.tariffPeriod || '', 10) || null;
+        const priceInfo = getTariffPeriodInfo(payload.tariff, requestedPeriod);
+        if (!priceInfo) {
+          alert('Не удалось определить стоимость тарифа. Обновите страницу и попробуйте снова.');
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+            submitBtn.style.opacity = '';
+            submitBtn.style.cursor = '';
+          }
+          return;
+        }
+        payload.tariffPeriod = priceInfo.months;
+        
+        if (window.debugLog) {
+          window.debugLog(`📋 Данные формы: alias=${payload.alias}, tariff=${payload.tariff}, period=${priceInfo.months} мес, сумма=${priceInfo.total}`, 'info');
+        }
+        
+        // Валидация PIN
+        const pinValue = payload.pin.trim();
+        if (!/^[0-9]{4,6}$/.test(pinValue)) {
+          alert('PIN должен содержать от 4 до 6 цифр (только цифры, без букв и пробелов)');
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+            submitBtn.style.opacity = '';
+            submitBtn.style.cursor = '';
+          }
+          return;
+        }
+        
+        // Валидация alias
+        const aliasValue = payload.alias.trim();
+        if (aliasValue.length < 6) {
+          alert('Alias должен содержать минимум 6 символов');
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+            submitBtn.style.opacity = '';
+            submitBtn.style.cursor = '';
+          }
+          return;
+        }
+        
+        // ✅ ИСПРАВЛЕНИЕ: Определяем переменные ВНЕ блока try, чтобы они были доступны в catch
+        const requestUrl = `${window.API_BASE}/api/payments/create`;
+        
+        // Получаем IP адрес клиента (опционально)
+        const clientIP = await getClientIP();
+        
+        const requestBody = {
+          tariffId: payload.tariff,
+          userAlias: payload.alias.trim(),
+          pin: payload.pin.trim(),
+          paymentMethod: payload.paymentMethod,
+          periodMonths: priceInfo.months,
+          amount: priceInfo.total,
+          personalDataConsent: true,  // ✅ Согласие на обработку ПДн
+          consentTimestamp: new Date().toISOString(),  // ✅ Время согласия
+          consentIP: clientIP,  // ✅ IP адрес клиента
+          referralCode: window.referralCode || null  // ✅ РЕФЕРАЛЬНАЯ ПРОГРАММА: Передаем реферальный код
+        };
+        
+        // Отправляем запрос
+        try {
+          if (window.debugLog) {
+            window.debugLog(`📤 Отправка POST запроса на ${requestUrl}`, 'info');
+            window.debugLog(`📋 Request body: ${JSON.stringify(requestBody)}`, 'info');
+          }
+          
+          const response = await fetch(requestUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-Key': window.API_KEY
+            },
+            body: JSON.stringify(requestBody),
+            mode: 'cors',  // ✅ Явно указываем CORS режим
+            credentials: 'omit'  // ✅ Не отправляем cookies
+          });
+          
+          if (window.debugLog) {
+            const statusColor = response.ok ? 'success' : 'error';
+            window.debugLog(`📥 Ответ: ${response.status} ${response.statusText}`, statusColor);
+          }
+          
+          if (!response.ok) {
+            // Пытаемся получить детали ошибки из ответа
+            let errorDetail = '';
+            try {
+              const errorData = await response.json();
+              errorDetail = errorData.detail || errorData.message || '';
+            } catch (e) {
+              // Игнорируем ошибку парсинга JSON
+            }
+            throw new Error(`Ошибка ${response.status}: ${response.statusText}${errorDetail ? ' - ' + errorDetail : ''}`);
+          }
+          
+          const data = await response.json();
+          
+          // ✅ Проверяем, что paymentId есть (может быть payment_id или paymentId)
+          const paymentIdValue = data.paymentId || data.payment_id || data.id;
+          if (!paymentIdValue) {
+            throw new Error('Payment ID не получен от сервера');
+          }
+          
+          if (window.debugLog) {
+            window.debugLog(`✅ Платёж создан! ID: ${paymentIdValue}`, 'success');
+          }
+          
+          // ✅ Сохраняем alias и pin в localStorage для автоматического получения кода
+          localStorage.setItem('payment_alias', payload.alias.trim());
+          localStorage.setItem('payment_pin', payload.pin.trim());
+          localStorage.setItem('payment_id', paymentIdValue);
+          
+          // Редирект на success.html
+          if (payload.paymentMethod === 'manual_transfer') {
+            localStorage.setItem('manualTransferData', JSON.stringify({
+              cardNumber: data.cardNumber || '',
+              cardHolderName: data.cardHolderName || '',
+              amount: priceInfo.total,
+              paymentId: paymentIdValue
+            }));
+            
+            // ✅ РЕФЕРАЛЬНАЯ ПРОГРАММА: Передаем referral_code в URL, если есть
+            const referralParam = window.referralCode ? `&referralCode=${encodeURIComponent(window.referralCode)}` : '';
+            window.location.href = `success.html?paymentId=${paymentIdValue}&alias=${encodeURIComponent(payload.alias.trim())}&method=manual_transfer&amount=${priceInfo.total || ''}${referralParam}`;
+          } else {
+            // ✅ РЕФЕРАЛЬНАЯ ПРОГРАММА: Передаем referral_code в URL, если есть
+            const referralParam = window.referralCode ? `&referralCode=${encodeURIComponent(window.referralCode)}` : '';
+            window.location.href = `success.html?paymentId=${paymentIdValue}&alias=${encodeURIComponent(payload.alias.trim())}${referralParam}`;
+          }
+        } catch (error) {
+          if (window.debugLog) {
+            window.debugLog(`❌ Ошибка: ${error.message}`, 'error');
+            window.debugLog(`❌ Тип ошибки: ${error.constructor.name}`, 'error');
+            window.debugLog(`❌ Полная ошибка: ${error}`, 'error');
+            if (error.stack) {
+              window.debugLog(`❌ Stack trace: ${error.stack}`, 'error');
+            }
+          }
+          
+          let errorMessage = error.message;
+          
+          // ✅ УЛУЧШЕННАЯ ОБРАБОТКА ОШИБОК
+          if (error.message.includes('Load failed') || error.message.includes('Failed to fetch') || error.message.includes('NetworkError') || error.name === 'TypeError') {
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем, доступен ли backend и правильно ли настроен API_KEY
+            try {
+              const testUrl = `${window.API_BASE}/api/payment-methods`;
+              if (window.debugLog) {
+                window.debugLog(`🔍 Проверка доступности backend: ${testUrl}`, 'info');
+              }
+              
+              // Пробуем сделать тестовый запрос с API_KEY
+              fetch(testUrl, { 
+                method: 'GET', 
+                mode: 'cors',
+                headers: {
+                  'X-API-Key': window.API_KEY || 'PUBLIC_CLIENT_KEY'
+                }
+              })
+              .then(testResponse => {
+                if (testResponse.ok) {
+                  // Backend доступен, значит проблема в запросе на создание платежа
+                  errorMessage = `❌ Backend доступен, но запрос на создание платежа не прошел.\n\nВозможные причины:\n• Ошибка валидации данных\n• Неправильный API_KEY (используется: ${window.API_KEY || 'не установлен'})\n• Неправильный формат запроса\n\nПроверьте консоль браузера (F12) для деталей.`;
+                } else if (testResponse.status === 401) {
+                  errorMessage = `❌ Ошибка авторизации (401): Неправильный API_KEY.\n\nИспользуется: ${window.API_KEY || 'не установлен'}\nОжидается: PUBLIC_CLIENT_KEY\n\nПроверьте настройки backend.`;
+                } else {
+                  errorMessage = `❌ Backend вернул ошибку ${testResponse.status}.\n\nПроверьте логи backend.`;
+                }
+                alert(errorMessage);
+              })
+              .catch(() => {
+                errorMessage = '❌ Не удалось подключиться к серверу оплаты.\n\nВозможные причины:\n• Backend не запущен (порт 8000)\n• Проблемы с сетью\n• CORS ошибка\n\nДля запуска backend:\ncd payment_service && python3 -m uvicorn main:app --host 0.0.0.0 --port 8000';
+                alert(errorMessage);
+              });
+            } catch (testError) {
+              errorMessage = `❌ Ошибка при проверке backend: ${testError.message}`;
+              alert(errorMessage);
+            }
+          } else if (error.message.includes('timeout')) {
+            errorMessage = '⏱️ Превышено время ожидания ответа от сервера. Попробуйте позже.';
+            alert(errorMessage);
+          } else if (error.message.includes('500')) {
+            errorMessage = '❌ Ошибка на сервере. Попробуйте позже или обратитесь в поддержку.';
+            alert(errorMessage);
+          } else if (error.message.includes('404')) {
+            errorMessage = '❌ Endpoint не найден. Проверьте конфигурацию backend.';
+            alert(errorMessage);
+          } else {
+            alert(errorMessage);
+          }
+          
+          if (window.debugLog) {
+            window.debugLog(`❌ Ошибка: ${error.message}`, 'error');
+            window.debugLog(`❌ Тип ошибки: ${error.name}`, 'error');
+            window.debugLog(`📋 Полная ошибка: ${error}`, 'error');
+            if (error.stack) {
+              window.debugLog(`📋 Stack trace: ${error.stack}`, 'error');
+            }
+          }
+          
+          console.error('❌ Ошибка при создании платежа:', error);
+          console.error('📋 Request body:', requestBody);
+          console.error('📋 Request URL:', requestUrl);
+          
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+            submitBtn.style.opacity = '';
+            submitBtn.style.cursor = '';
+          }
+        }
+      };
+      
+      // ========== ГЛОБАЛЬНАЯ ФУНКЦИЯ ДЛЯ ЗАКРЫТИЯ МОДАЛЬНОГО ОКНА ==========
+      // Определяем СРАЗУ в начале body, чтобы была доступна из onclick
+      window.closeComparisonModal = function() {
+        try {
+          const modal = document.getElementById('fullComparisonModal');
+          if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+          }
+        } catch (error) {
+          console.error('Ошибка при закрытии модального окна:', error);
+        }
+      };
+      
+      // ========== ГЛОБАЛЬНАЯ ФУНКЦИЯ ДЛЯ ОТКРЫТИЯ МОДАЛЬНОГО ОКНА ==========
+      // Определяем СРАЗУ в начале body, чтобы была доступна из onclick
+      // ВАЖНО: window.allFunctions и window.renderFullComparisonTable будут определены позже в другом скрипте
+      // Эта функция будет ждать их загрузки через систему повторных попыток
+      window.openComparisonModal = function() {
+        try {
+          const modal = document.getElementById('fullComparisonModal');
+          if (!modal) {
+            alert('Ошибка: модальное окно не найдено. Обновите страницу.');
+            return;
+          }
+          
+          modal.style.display = 'flex';
+          document.body.style.overflow = 'hidden';
+          
+          const table = document.getElementById('fullComparisonTable');
+          if (table) {
+            table.innerHTML = '<p style="padding: 40px; text-align: center; color: rgba(255,255,255,0.6);">Загрузка таблицы...</p>';
+          }
+          
+          // Функция для попытки рендеринга таблицы
+          function tryRenderTable(attempt = 0) {
+            if (attempt > 20) {
+              if (table) {
+                const debugInfo = [];
+                debugInfo.push('renderFullComparisonTable: ' + (typeof window.renderFullComparisonTable === 'function' ? '✅' : '❌'));
+                debugInfo.push('allFunctions: ' + (window.allFunctions ? (Array.isArray(window.allFunctions) ? window.allFunctions.length + ' функций' : 'не массив') : 'не определена'));
+                table.innerHTML = '<p style="padding: 40px; text-align: center; color: rgba(255,255,255,0.6);">Ошибка: не удалось загрузить таблицу.<br><small style="font-size: 12px; margin-top: 10px; display: block;">' + debugInfo.join('<br>') + '</small><br><button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: var(--gold); color: #000; border: none; border-radius: 8px; cursor: pointer;">Обновить страницу</button></p>';
+              }
+              return;
+            }
+            
+            // Проверяем наличие всех необходимых данных
+            const hasRenderFunc = typeof window.renderFullComparisonTable === 'function';
+            const hasData = window.allFunctions && Array.isArray(window.allFunctions) && window.allFunctions.length > 0;
+            
+            if (hasRenderFunc && hasData) {
+              try {
+                window.renderFullComparisonTable();
+                return; // Успешно отрисовали, выходим
+              } catch (err) {
+                if (table) {
+                  table.innerHTML = '<p style="padding: 40px; text-align: center; color: rgba(255,255,255,0.6);">Ошибка при отрисовке таблицы: ' + err.message + '<br><small style="font-size: 12px; margin-top: 10px; display: block;">Stack: ' + (err.stack || 'нет') + '</small></p>';
+                }
+                return; // Ошибка, не повторяем
+              }
+            } else {
+              // Пробуем ещё раз через 100мс (уменьшили интервал)
+              setTimeout(function() {
+                tryRenderTable(attempt + 1);
+              }, 100);
+            }
+          }
+          
+          // Начинаем попытки рендеринга
+          tryRenderTable();
+        } catch (error) {
+          alert('Ошибка при открытии модального окна: ' + error.message);
+        }
+      };
+      
+      // ========== ДАННЫЕ ВСЕХ 138 ФУНКЦИЙ (определяем СРАЗУ) ==========
+      window.allFunctions = [
+        // Защита от угроз (100 функций)
+        { name: 'Вирусы и трояны', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+        { name: 'Шифровальщики (ransomware)', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+        { name: 'Шпионское ПО', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+        { name: 'Ботнеты', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+        { name: 'DDoS-атаки', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+        { name: 'Фишинговые сайты', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+        { name: 'Поддельные приложения', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+        { name: 'Вредоносные ссылки', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+        { name: 'Криптовалютные майнеры', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+        { name: 'Руткиты', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+        { name: 'Опасные сайты', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+        { name: 'Вредоносная реклама', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+        { name: 'Подозрительные загрузки', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+        { name: 'Небезопасные сети Wi-Fi', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+        { name: 'DNS-спуфинг', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+        { name: 'Атаки «человек посередине»', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+        { name: 'Телефонное мошенничество', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Финансовое мошенничество', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Медицинские аферы', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Социальная инженерия', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Поддельные банки', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Фишинговые письма', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Мошенничество с картами', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Инвестиционные пирамиды', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Лотерейные мошенничества', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Романтические аферы', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Vishing (голосовой фишинг)', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Smishing (SMS-фишинг)', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+        { name: 'Кража паролей', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Компрометация аккаунтов', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Утечки персональных данных', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Нарушение приватности', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Слежка за семьёй', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Утечки в тёмной сети', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Утечки метаданных', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Кейлоггеры (keyloggers)', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Перехват сессий (session hijacking)', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Отслеживающие cookie-файлы', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Отслеживание геолокации', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Утечки данных EXIF', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+        { name: 'Вредоносные приложения', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+        { name: 'SMS-мошенничество', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+        { name: 'Поддельные уведомления', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+        { name: 'Кража данных', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+        { name: 'Геолокационные угрозы', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+        { name: 'Bluetooth-атаки', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+        { name: 'SIM-swapping', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+        { name: 'Поддельные банковские приложения', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+        { name: 'Мобильные шифровальщики', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+        { name: 'Скрытая запись экрана', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+        { name: 'Неподходящий контент', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Кибербуллинг', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Опасные знакомства', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Игровая зависимость', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Случайные покупки', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Взрослые сайты', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Насилие в играх', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Наркотики/алкоголь', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Азартные игры', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Экстремизм', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Контент с призывами к саморазрушению', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Неподходящая реклама', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Онлайн-хищники', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Груминг', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Кэтфишинг', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Токсичные сообщества', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Зависимость от онлайн-казино', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+        { name: 'Домашнее насилие в сети', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Семейные конфликты', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Изоляция', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Эмоциональные проблемы', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Психологическое давление', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Киберсталкинг', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Цифровое преследование', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Онлайн-конфликты', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Подмена члена семьи', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Цифровая изоляция', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Триггеры депрессии', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Манипуляции', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Газлайтинг', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Нарушение семейной приватности', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Несанкционированный доступ родственников', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+        { name: 'Взлом умных устройств', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+        { name: 'Взлом умного дома', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+        { name: 'Компрометация камер', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+        { name: 'Подслушивание через колонки', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+        { name: 'Взлом домашней сети', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+        { name: 'Утечки данных IoT', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+        { name: 'Манипуляция голосовыми командами', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+        { name: 'Слабые пароли', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+        { name: 'Пароли по умолчанию', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+        { name: 'Кража устройств', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+        { name: 'Deepfake-видео', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+        { name: 'Поддельные голоса', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+        { name: 'Спуфинг номеров', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+        { name: 'Поддельные сайты', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+        { name: 'Фейковые новости', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+        { name: 'Поддельные документы', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+        { name: 'Фейковые профили знакомств', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+        { name: 'Спуфинг писем', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+        // Родительский контроль (32 функции)
+        { name: 'Блокировка опасных сайтов', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Блокировка контента' },
+        { name: 'Блокировка приложений', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Блокировка контента' },
+        { name: 'SafeSearch в поисковиках', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Блокировка контента' },
+        { name: 'Белые списки сайтов', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Блокировка контента' },
+        { name: 'Автоблокировка по категориям', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Блокировка контента' },
+        { name: 'Лимит экранного времени', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Управление временем' },
+        { name: 'Время сна (блокировка)', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Управление временем' },
+        { name: 'Расписания использования', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Управление временем' },
+        { name: 'Лимиты по типам контента', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Управление временем' },
+        { name: 'История активности (24 часа)', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Мониторинг' },
+        { name: 'История активности (7 дней)', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Мониторинг' },
+        { name: 'Мониторинг контактов', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Мониторинг' },
+        { name: 'Мониторинг сообщений', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Мониторинг' },
+        { name: 'Мониторинг звонков', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Мониторинг' },
+        { name: 'Геолокация в реальном времени', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Геолокация' },
+        { name: 'Геозоны (безопасные зоны)', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Геолокация' },
+        { name: 'История геолокации (24 часа)', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Геолокация' },
+        { name: 'Кнопка SOS', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Геолокация' },
+        { name: 'История геолокации (7 дней + экспорт)', category: 'parental', free: false, personal: false, family: false, premium: true, subcategory: 'Геолокация' },
+        { name: 'Еженедельный отчёт', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Отчёты' },
+        { name: 'Расширенный отчёт', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Отчёты' },
+        { name: 'Ежемесячный отчёт + экспорт', category: 'parental', free: false, personal: false, family: false, premium: true, subcategory: 'Отчёты' },
+        { name: 'Запросы доступа к контенту', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Дополнительно' },
+        { name: 'Домашнее задание (блокировка)', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Дополнительно' },
+        { name: 'YouTube Safe Mode', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Дополнительно' },
+        { name: 'AI-аналитика поведения', category: 'parental', free: false, personal: false, family: false, premium: true, subcategory: 'Дополнительно' },
+        { name: 'Обнаружение инкогнито-режима', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Защита от обхода' },
+        { name: 'Блокировка VPN/Tor/Proxy', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Защита от обхода' },
+        { name: 'Мгновенная блокировка', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Защита от обхода' },
+        { name: 'Базовые награды (единороги)', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Вознаграждения' },
+        { name: 'Автоматические награды', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Вознаграждения' },
+        { name: 'Премиум награды + аналитика', category: 'parental', free: false, personal: false, family: false, premium: true, subcategory: 'Вознаграждения' },
+        // Дополнительные функции (6 функций)
+        { name: 'VPN (50-100 МБ/день)', category: 'additional', free: true, personal: false, family: false, premium: false, subcategory: 'VPN' },
+        { name: 'VPN (безлимит)', category: 'additional', free: false, personal: true, family: true, premium: true, subcategory: 'VPN' },
+        { name: 'VPN (безлимит AES-256)', category: 'additional', free: false, personal: false, family: false, premium: true, subcategory: 'VPN' },
+        { name: 'AI помощник', category: 'additional', free: false, personal: true, family: true, premium: true, subcategory: 'AI' },
+        { name: 'Защита пожилых', category: 'additional', free: false, personal: false, family: true, premium: true, subcategory: 'Специальные' },
+        { name: 'Голосовое управление', category: 'additional', free: false, personal: false, family: true, premium: true, subcategory: 'Специальные' },
+        { name: 'Геймификация', category: 'additional', free: false, personal: false, family: true, premium: true, subcategory: 'Специальные' },
+        { name: 'Анонимные профили', category: 'additional', free: false, personal: false, family: false, premium: true, subcategory: 'Специальные' }
+      ];
+      
+      // ========== ФУНКЦИЯ РЕНДЕРИНГА ТАБЛИЦЫ (определяем СРАЗУ) ==========
+      window.renderFullComparisonTable = function(filter = 'all', search = '') {
+        try {
+          const table = document.getElementById('fullComparisonTable');
+          if (!table) {
+            return;
+          }
+          
+          // Используем глобальный allFunctions
+          const allFunctions = window.allFunctions;
+          if (!allFunctions || !Array.isArray(allFunctions) || allFunctions.length === 0) {
+            table.innerHTML = '<p style="padding: 40px; text-align: center; color: rgba(255,255,255,0.6);">Ошибка: данные функций не загружены (' + (allFunctions ? '0 функций' : 'allFunctions не определена') + '). Попробуйте обновить страницу.</p>';
+            return;
+          }
+        
+        let filtered = allFunctions;
+        
+        // Фильтр по категории
+        if (filter !== 'all') {
+          filtered = filtered.filter(f => f.category === filter);
+        }
+        
+        // Поиск
+        if (search.trim()) {
+          const searchLower = search.toLowerCase();
+          filtered = filtered.filter(f => 
+            f.name.toLowerCase().includes(searchLower) ||
+            f.subcategory.toLowerCase().includes(searchLower)
+          );
+        }
+        
+        // Группировка по подкатегориям
+        const grouped = {};
+        filtered.forEach(func => {
+          if (!grouped[func.subcategory]) {
+            grouped[func.subcategory] = [];
+          }
+          grouped[func.subcategory].push(func);
+        });
+        
+        let html = '<table class="full-comparison-table"><thead><tr><th>Функция</th><th>FREE</th><th>PERSONAL</th><th>FAMILY</th><th>PREMIUM</th></tr></thead><tbody>';
+        
+        Object.keys(grouped).sort().forEach(subcategory => {
+          html += `<tr class="subcategory-header"><td colspan="5"><strong>${subcategory}</strong></td></tr>`;
+          grouped[subcategory].forEach(func => {
+            html += `<tr>
+              <td>${func.name}</td>
+              <td class="check-cell">${func.free ? '✅' : '❌'}</td>
+              <td class="check-cell">${func.personal ? '✅' : '❌'}</td>
+              <td class="check-cell">${func.family ? '✅' : '❌'}</td>
+              <td class="check-cell">${func.premium ? '✅' : '❌'}</td>
+            </tr>`;
+          });
+        });
+        
+        html += '</tbody></table>';
+        
+        if (filtered.length === 0) {
+          html = '<p style="text-align: center; padding: 40px; color: rgba(255,255,255,0.6);">Ничего не найдено. Попробуйте другой поисковый запрос.</p>';
+        }
+        
+          try {
+            table.innerHTML = html;
+          } catch (err) {
+            table.innerHTML = '<p style="padding: 40px; text-align: center; color: rgba(255,255,255,0.6);">Ошибка при отрисовке: ' + err.message + '</p>';
+          }
+        } catch (err) {
+          const table = document.getElementById('fullComparisonTable');
+          if (table) {
+            table.innerHTML = '<p style="padding: 40px; text-align: center; color: rgba(255,255,255,0.6);">Критическая ошибка: ' + err.message + '<br><small style="font-size: 12px; margin-top: 10px; display: block;">Stack: ' + (err.stack || 'нет') + '</small></p>';
+          }
+        }
+      };
+    </script>
+  <header class="hero" id="hero">
+    <div class="hero__content">
+      <div class="hero__badge">Спокойствие близких — бесценно. Защита начинается сегодня</div>
+      <h1 style="color: var(--gold);">ALADDIN AI — защита семьи 24/7</h1>
+      <p>Оплата происходит на сайте aladdin-ai.ru: после покупки вы получаете код и активируете 138 функций защиты в приложении ALADDIN AI.</p>
+      <p class="hero__note" style="margin-top: 12px; color: rgba(255,255,255,0.8); font-size: 16px;">
+        Оплата и оформление подписки происходят на сайте aladdin-ai.ru. После оплаты вы получите код активации и введёте его в приложении.
+      </p>
+      <div class="hero__ctas">
+        <a class="cta primary" href="#pay">Оплатить подписку</a>
+        <a class="cta ghost" href="#activate">Ввести код</a>
+      </div>
+      <div class="hero__stats" data-hero-stats>
+        <div class="stat">
+          <strong>4</strong>
+          <span>семьи защищено</span>
+        </div>
+        <div class="stat">
+          <strong>8</strong>
+          <span>устройств</span>
+        </div>
+        <div class="stat">
+          <strong>47</strong>
+          <span>угроз блокируем</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero__visual">
+      <div class="hero__visual-placeholder">
+        <div class="hero__visual-icon">🛡️</div>
+        <p>ALADDIN AI</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="benefits" id="about">
+    <h2>Что такое ALADDIN AI</h2>
+    <p class="section-subtitle">ALADDIN AI — это ваш персональный агент безопасности, который защищает всю вашу семью от более чем 100 видов киберугроз 24/7. Приложение использует искусственный интеллект и военные технологии шифрования для обеспечения максимальной безопасности ваших данных и близких.</p>
+    <div class="benefits__grid">
+      <article>
+        <h3>🛡️ Защита всей семьи</h3>
+        <p>Комплексная защита всех членов семьи от киберугроз, мониторинг безопасности в реальном времени, защита от мошенников, фишинга и вредоносного ПО.</p>
+      </article>
+      <article>
+        <h3>🤖 AI-помощник безопасности</h3>
+        <p>Персональный агент безопасности на базе искусственного интеллекта, круглосуточный мониторинг угроз, умные рекомендации и образовательный контент для всей семьи.</p>
+      </article>
+      <article>
+        <h3>🔒 VPN защита</h3>
+        <p>Защищённое подключение к интернету с военными технологиями шифрования (AES-256), NO-LOGS политика, быстрое и стабильное соединение, экономия батареи до 40%.</p>
+      </article>
+      <article>
+        <h3>👨‍👩‍👧 Родительский контроль</h3>
+        <p>Полный контроль активности детей в интернете, блокировка опасных сайтов и приложений, защита от онлайн-казино, система обучения детей безопасности.</p>
+      </article>
+      <article>
+        <h3>📊 Аналитика рисков</h3>
+        <p>AI-прогноз угроз в реальном времени. Предотвращение утечки ваших персональных данных в DarkNet. Детальные отчёты о безопасности для каждого члена семьи.</p>
+      </article>
+      <article>
+        <h3>🎮 Защита для детей</h3>
+        <p>Дети не смогут посещать опасные приложения, онлайн-казино, взрослые сайты или совершать покупки в играх и стриминговых сервисах. Безопасная среда для развития.</p>
+      </article>
+      <article>
+        <h3>🧑 Защита от фейков</h3>
+        <p>AI распознаёт фейковые звонки, новости, сообщения и видео. Защита от поддельных голосов и номеров! Защита для людей 23+ от мошенников и обмана.</p>
+      </article>
+    </div>
+  </section>
+
+      <section class="how-it-works" id="how-it-works">
+        <h2>Как это работает</h2>
+        <p class="section-subtitle" style="margin-bottom: 32px; color: rgba(255,255,255,0.8);">
+          Оплата подписки выполняется на сайте aladdin-ai.ru (вне App Store). В приложении ALADDIN AI вы вводите полученный код и активируете защиту.
+        </p>
+        <div class="steps">
+          <article>
+            <span>1</span>
+            <h3>Оплатите тариф на сайте</h3>
+            <p>Выберите тариф на aladdin-ai.ru, укажите alias и PIN и оплатите удобным способом (оплата вне App Store).</p>
+          </article>
+          <article>
+            <span>2</span>
+            <h3>Получите код</h3>
+            <p>Код активации появится на сайте. Восстановление доступно по alias+PIN.</p>
+          </article>
+          <article>
+            <span>3</span>
+            <h3>Активируйте в приложении</h3>
+            <p>Откройте приложение ALADDIN AI → «Ввести код» → получайте защиту.</p>
+          </article>
+        </div>
+        
+        <details class="how-it-works-details" style="margin-top: 32px; padding: 24px; background: rgba(76, 111, 255, 0.05); border-radius: var(--radius-md); border: 1px solid rgba(76, 111, 255, 0.2);">
+          <summary style="cursor: pointer; font-weight: 600; color: var(--accent); font-size: 18px; user-select: none; padding: 8px;">
+            📋 Подробнее: Как получить код активации после оплаты
+          </summary>
+          <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.1); line-height: 1.8;">
+            <ol style="padding-left: 24px; margin: 0;">
+              <li style="margin-bottom: 16px;">
+                <strong>Вы заполняете форму оплаты</strong><br>
+                Выбираете тариф, придумываете alias (псевдоним) и PIN-код, выбираете способ оплаты и нажимаете "Перейти к оплате".
+              </li>
+              <li style="margin-bottom: 16px;">
+                <strong>Вы переходите на страницу оплаты банка</strong><br>
+                После нажатия кнопки вы автоматически попадаете на защищённую страницу вашего банка, где вводите данные карты или сканируете QR-код.
+              </li>
+              <li style="margin-bottom: 16px;">
+                <strong>Вы оплачиваете подписку</strong><br>
+                Подтверждаете платёж в приложении банка или на сайте банка. Деньги списываются с вашего счёта.
+              </li>
+              <li style="margin-bottom: 16px;">
+                <strong>Банк подтверждает оплату</strong><br>
+                Банк автоматически отправляет нам подтверждение, что платёж прошёл успешно. Это происходит в течение нескольких секунд.
+              </li>
+              <li style="margin-bottom: 16px;">
+                <strong>Система создаёт ваш код активации</strong><br>
+                Как только мы получаем подтверждение от банка, система автоматически генерирует уникальный код активации в формате ALDN-XXXX-XXXX-XXXX. Этот код сохраняется в нашей системе и будет действителен 30 дней.
+              </li>
+              <li style="margin-bottom: 16px;">
+                <strong>Вы возвращаетесь на наш сайт</strong><br>
+                После успешной оплаты банк автоматически перенаправляет вас обратно на наш сайт, на специальную страницу с вашим кодом активации.
+              </li>
+              <li style="margin-bottom: 16px;">
+                <strong>Сайт показывает ваш код</strong><br>
+                Наша страница автоматически проверяет статус вашего платежа и, как только код готов, сразу показывает его вам. Если код ещё обрабатывается, страница будет обновляться каждые несколько секунд, пока код не появится.
+              </li>
+              <li style="margin-bottom: 16px;">
+                <strong>Вы копируете код и активируете в приложении</strong><br>
+                Нажимаете кнопку "Копировать код", затем "Открыть приложение". В приложении ALADDIN AI выбираете "Ввести код активации", вставляете скопированный код и подтверждаете. Ваша подписка активируется!
+              </li>
+            </ol>
+            <div style="margin-top: 24px; padding: 16px; background: rgba(245, 200, 110, 0.1); border-left: 3px solid var(--gold); border-radius: var(--radius-sm);">
+              <p style="margin: 0;"><strong>💡 Важно:</strong> Сохраните alias и PIN, которые вы указали при оплате! Если вы потеряете код активации, вы сможете восстановить его на сайте, указав свой alias и PIN.</p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+  <section class="tariffs" id="tariffs">
+    <div class="tariffs__header">
+      <h2>Тарифы ALADDIN AI</h2>
+      <p>Все подписи активируются кодом и работают без e-mail и номера телефона.</p>
+      <p class="tariffs__note" style="margin-top: 12px; color: rgba(255,255,255,0.8);">
+        Оплата и оформление подписки происходят на сайте aladdin-ai.ru. После оплаты вы получите код активации, который нужно ввести в приложении.
+      </p>
+    </div>
+    
+    <!-- Компактная таблица сравнения -->
+    <div class="comparison-compact">
+      <h3 style="text-align: center; margin-bottom: 32px; color: var(--gold);">📊 Сравнение функций защиты</h3>
+      <div class="comparison-table-compact">
+        <table>
+          <thead>
+            <tr>
+              <th>Категория</th>
+              <th>FREE</th>
+              <th>PERSONAL</th>
+              <th>FAMILY</th>
+              <th>PREMIUM</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <strong>🛡️ Защита от угроз</strong>
+                <small>100 функций</small>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 16%; background: #ef4444;"></div>
+                </div>
+                <span class="progress-text">16/100 (16%)</span>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 50%; background: #f59e0b;"></div>
+                </div>
+                <span class="progress-text">50/100 (50%)</span>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 92%; background: #10b981;"></div>
+                </div>
+                <span class="progress-text">92/100 (92%)</span>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 100%; background: var(--gold);"></div>
+                </div>
+                <span class="progress-text">100/100 (100%)</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong>👨‍👩‍👧 Родительский контроль</strong>
+                <small>32 функции</small>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 25%; background: #ef4444;"></div>
+                </div>
+                <span class="progress-text">8/32 (25%)</span>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 54%; background: #f59e0b;"></div>
+                </div>
+                <span class="progress-text">17/32 (54%)</span>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 90%; background: #10b981;"></div>
+                </div>
+                <span class="progress-text">28/32 (90%)</span>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 100%; background: var(--gold);"></div>
+                </div>
+                <span class="progress-text">32/32 (100%)</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <strong>⚙️ Дополнительные</strong>
+                <small>6 функций</small>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 33%; background: #ef4444;"></div>
+                </div>
+                <span class="progress-text">2/6 (33%)</span>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 33%; background: #f59e0b;"></div>
+                </div>
+                <span class="progress-text">2/6 (33%)</span>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 67%; background: #10b981;"></div>
+                </div>
+                <span class="progress-text">4/6 (67%)</span>
+              </td>
+              <td>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 100%; background: var(--gold);"></div>
+                </div>
+                <span class="progress-text">6/6 (100%)</span>
+              </td>
+            </tr>
+            <tr class="comparison-total">
+              <td>
+                <strong>📊 ВСЕГО</strong>
+                <small>138 функций</small>
+              </td>
+              <td>
+                <strong class="total-count">26</strong>
+                <span class="total-percent">19%</span>
+              </td>
+              <td>
+                <strong class="total-count">69</strong>
+                <span class="total-percent">50%</span>
+              </td>
+              <td>
+                <strong class="total-count">124</strong>
+                <span class="total-percent">90%</span>
+              </td>
+              <td>
+                <strong class="total-count">138</strong>
+                <span class="total-percent">100%</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div style="text-align: center; margin-top: 32px;">
+        <button type="button" class="cta secondary" id="showFullComparison" onclick="window.openComparisonModal();" style="font-size: 16px; padding: 14px 28px; cursor: pointer; pointer-events: auto; z-index: 1; position: relative;">
+          📋 Подробное сравнение всех 138 функций
+        </button>
+      </div>
+    </div>
+    
+    <!-- Карточки тарифов (для выбора) -->
+    <div class="tariffs__grid" data-tariff-list style="margin-top: 48px;">
+      <!-- заполнится из JSON -->
+    </div>
+  </section>
+
+  <section class="pay-form" id="pay">
+    <div class="pay-form__card">
+      <!-- Баннер реферальной скидки (показывается только если есть реферальный код) -->
+      <div id="referralDiscountBanner" style="display: none; margin-bottom: 24px; padding: 20px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.2) 100%); border: 2px solid var(--gold); border-radius: var(--radius-md); text-align: center;">
+        <div style="font-size: 32px; margin-bottom: 12px;">🎁</div>
+        <h3 style="color: var(--gold); margin: 0 0 8px 0; font-size: 24px;">У вас применена скидка -20%!</h3>
+        <p style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 16px;">
+          Реферальный код: <strong id="referralCodeDisplay" style="color: var(--gold);">ABC123</strong>
+        </p>
+        <p style="margin: 8px 0 0 0; color: rgba(255, 255, 255, 0.8); font-size: 14px;">
+          Вы и ваш друг получите скидку -20% на 1 месяц после тестового периода!
+        </p>
+      </div>
+      
+      <h2>Готовы подключить защиту?</h2>
+      
+          <div class="payment-instruction">
+            <h3>📋 Инструкция по оплате (простыми словами):</h3>
+            <ol>
+              <li><strong>Выберите тариф</strong> — Free, Personal, Family или Premium</li>
+              <li><strong>Придумайте alias</strong> — это ваш псевдоним (например: "familySmith" или "myAlias2024"). Нужен для восстановления кода активации, если вы его потеряете. Запомните его!</li>
+              <li><strong>Придумайте PIN</strong> — это код из 4-6 цифр (например: 1234 или 567890). Нужен вместе с alias для восстановления кода активации. Сохраните в надёжном месте!</li>
+              <li><strong>Выберите способ оплаты</strong> — QR/СБП, карта «Мир», SberPay, Tinkoff Pay или прямой перевод</li>
+              <li><strong>Нажмите "Перейти к оплате"</strong> — вас перенаправит на страницу оплаты банка</li>
+              <li><strong>После оплаты</strong> — вы получите код активации (например: ALDN-1234-5678-ABCD)</li>
+              <li><strong>Откройте приложение ALADDIN AI</strong> → "Ввести код активации" → введите код → готово!</li>
+            </ol>
+            <div style="margin-top: 16px; padding: 16px; background: rgba(76, 111, 255, 0.1); border-left: 3px solid var(--accent); border-radius: var(--radius-sm);">
+              <p style="margin: 0 0 12px 0;"><strong>❓ Зачем нужны alias и PIN?</strong></p>
+              <p style="margin: 0 0 12px 0;">Alias и PIN нужны только для восстановления кода активации подписки, если вы его потеряли. Это не связано с кодом восстановления семьи в приложении.</p>
+              <p style="margin: 0;"><strong>Разница:</strong></p>
+              <ul style="margin: 8px 0 0 0; padding-left: 24px;">
+                <li><strong>Alias + PIN</strong> — для восстановления кода активации подписки (ALDN-XXXX-XXXX-XXXX) после оплаты</li>
+                <li><strong>Код восстановления семьи</strong> (FAM-XXXX-XXXX-XXXX) — для восстановления доступа к семье в приложении, если вы потеряли устройство или переустановили приложение</li>
+              </ul>
+            </div>
+            <p style="margin-top: 16px;"><strong>💡 Важно:</strong> Сохраните alias и PIN! Если потеряете код активации, вы сможете восстановить его на сайте, указав alias и PIN.</p>
+          </div>
+
+      <form id="paymentForm" method="post" action="javascript:void(0);" onsubmit="return false;">
+        <label style="color: var(--gold);">
+          Метод оплаты
+          <select name="paymentMethod" data-method-select>
+            <option value="qr_sbp" selected>QR / Система быстрых платежей</option>
+            <option value="sberpay">SberPay</option>
+            <option value="card_sber">Карта Сбербанк (Мир/Visa/Mastercard)</option>
+            <option value="tinkoff_pay">Tinkoff Pay</option>
+            <option value="manual_transfer">Оплата на карту через СБП</option>
+          </select>
+        </label>
+        <div class="method-description-box" data-method-description>
+          <div class="method-selected">
+            <h4>✅ Выбран: QR / Система быстрых платежей</h4>
+            <p>Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.</p>
+            <button type="button" class="method-info-btn" data-method-info="qr_sbp">
+              ℹ️ Подробнее об этом методе
+            </button>
+          </div>
+        </div>
+        <label style="color: var(--gold);">
+          Alias (псевдоним заказа)
+          <input type="text" name="alias" minlength="6" required placeholder="familySmith">
+          <small>Придумайте псевдоним (6+ символов, буквы и цифры). Он нужен для восстановления кода активации. Например: familySmith, myAlias2024</small>
+        </label>
+        <label style="color: var(--gold);">
+          PIN (код доступа)
+          <input type="password" name="pin" pattern="[0-9]{4,6}" required placeholder="4-6 цифр" inputmode="numeric">
+          <small>Придумайте PIN-код (4-6 цифр). Он нужен вместе с alias для восстановления кода активации. Запомните или сохраните его в надёжном месте!</small>
+        </label>
+        <label style="color: var(--gold);">
+          Тариф
+          <select name="tariff" data-tariff-select>
+            <option value="free">Free</option>
+            <option value="personal">Personal</option>
+            <option value="family" selected>Family</option>
+            <option value="premium">Premium</option>
+          </select>
+        </label>
+        <!-- ✅ ДИАГНОСТИКА: Переместили селект периода СРАЗУ ПОСЛЕ выбора тарифа для лучшей видимости -->
+        <label style="color: var(--gold); background: rgba(255,215,0,0.2); padding: 15px; border: 3px solid #FFD700; border-radius: 8px; margin: 15px 0;" data-period-wrapper>
+          <strong style="font-size: 18px; display: block; margin-bottom: 10px;">📅 Период подписки (ДИАГНОСТИКА - ВИДНО?)</strong>
+          <select name="tariffPeriod" data-tariff-period style="font-size: 18px; padding: 12px; width: 100%; margin-top: 5px; background: white; color: black; border: 2px solid #FFD700; border-radius: 5px;">
+            <option value="">⏳ Загрузка тарифов...</option>
+          </select>
+          <small data-period-hint style="display: block; margin-top: 10px; font-size: 16px; font-weight: bold; color: #FFD700;">⏳ Загрузка тарифов...</small>
+        </label>
+        <!-- Единое согласие со всеми документами -->
+        <div class="consent-wrapper" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+          <label class="checkbox" style="display: flex; align-items: flex-start; cursor: pointer;">
+            <input 
+              type="checkbox" 
+              id="personalDataConsent" 
+              name="personalDataConsent" 
+              required
+              style="margin-right: 10px; margin-top: 3px; width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;"
+            >
+            <span style="font-size: 14px; line-height: 1.5; color: #333;">
+              Нажимая «Перейти к оплате», я даю согласие на обработку персональных данных в соответствии с 
+              <a href="consent.html" target="_blank" rel="noopener" style="color: #007bff; text-decoration: underline;">
+                Согласием на обработку персональных данных
+              </a>
+              и 
+              <a href="privacy.html" target="_blank" rel="noopener" style="color: #007bff; text-decoration: underline;">
+                Политикой конфиденциальности
+              </a>
+              , а также принимаю 
+              <a href="terms.html" target="_blank" rel="noopener" style="color: #007bff; text-decoration: underline;">
+                публичную оферту
+              </a>
+              .
+            </span>
+          </label>
+        </div>
+        <button type="submit" class="cta primary" id="submitPaymentBtn" style="cursor: pointer; pointer-events: auto; position: relative; z-index: 10;" onclick="if(typeof window.handleFormSubmit==='function'){event.preventDefault();event.stopPropagation();window.handleFormSubmit(document.getElementById('paymentForm'));}else{if(typeof window.debugLog==='function'){window.debugLog('❌ handleFormSubmit не найдена!', 'error');}alert('Ошибка: функция обработки формы не загружена. Обновите страницу.');}return false;">Перейти к оплате</button>
+      </form>
+      <div class="pay-form__links">
+        <a href="privacy.html" target="_blank" rel="noopener">Политика конфиденциальности</a>
+        <a href="help-faq.html" target="_blank" rel="noopener">FAQ</a>
+          <a href="https://t.me/aladdin_support" target="_blank" rel="noopener">Telegram-бот</a>
+          <a href="help-form.html" target="_blank" rel="noopener">Форма помощи</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust" id="trust">
+    <div class="trust__badges">
+      <div>
+        <strong>138</strong>
+        <span>функций безопасности</span>
+      </div>
+      <div>
+        <strong>AI Shield</strong>
+        <span>Золотой стандарт Aladdin</span>
+      </div>
+      <div>
+        <strong>Family Safety</strong>
+        <span>Защита детей и взрослых</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="payment-methods" id="methods">
+    <div class="payment-methods__intro">
+      <h2>Способы оплаты и банки</h2>
+      <p>Сайт ALADDIN подключён к собственным интеграциям с топ‑21 банком России. Вы можете оплатить подписку через QR/СБП, карты «Мир»/Visa/Mastercard, кнопки SberPay/Tinkoff Pay или по прямым реквизитам.</p>
+    </div>
+    <div class="bank-grid" data-bank-list>
+      <!-- заполнится из CMS -->
+    </div>
+  </section>
+
+  <section class="testimonials" id="reviews">
+    <h2>Отзывы семей</h2>
+    <div class="testimonials__carousel" data-testimonials>
+      <!-- заполнится динамически -->
+    </div>
+  </section>
+
+  <section class="faq" id="faq">
+    <h2>FAQ и поддержка</h2>
+    <div class="faq__list" data-faq>
+      <!-- заполнится из JSON -->
+    </div>
+    <div class="faq__contacts">
+      <a class="cta ghost" href="https://t.me/aladdin_support" target="_blank" rel="noopener">Telegram-бот</a>
+      <a class="cta ghost" href="https://aladdin.family/help-form" target="_blank" rel="noopener">Форма помощи</a>
+    </div>
+  </section>
+
+  <footer class="footer" id="activate">
+    <div>
+      <h3>Готовы активировать код?</h3>
+      <p>Откройте приложение ALADDIN AI → «Ввести код активации».</p>
+    </div>
+    <div class="footer__ctas">
+      <a class="cta primary" href="#pay">Оплатить</a>
+      <a class="cta ghost" href="aladdinaf://activate">Открыть приложение</a>
+    </div>
+    <div class="footer__links">
+      <a href="privacy.html" target="_blank" rel="noopener">Privacy</a>
+      <a href="terms.html" target="_blank" rel="noopener">Terms</a>
+      <a href="help-faq.html" target="_blank" rel="noopener">Help</a>
+      <a href="/invite.html" target="_blank" rel="noopener">🎁 Пригласить друзей</a>
+    </div>
+    <!-- Контактная информация -->
+    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+      <h4 style="color: #fff; margin-bottom: 15px; font-size: 18px;">Контакты</h4>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; color: rgba(255,255,255,0.8);">
+        <div>
+          <strong style="color: #fff; display: block; margin-bottom: 5px;">Телефон:</strong>
+          <a href="tel:+79270051577" style="color: #3498db; text-decoration: none;">
+            +7 (927) 005-15-77
+          </a>
+        </div>
+        <div>
+          <strong style="color: #fff; display: block; margin-bottom: 5px;">Telegram:</strong>
+          <a href="https://t.me/aladdin_support_bot" target="_blank" rel="noopener" style="color: #3498db; text-decoration: none;">
+            @aladdin_support_bot
+          </a>
+        </div>
+        <div>
+          <strong style="color: #fff; display: block; margin-bottom: 5px;">Email:</strong>
+          <a href="mailto:sergey21-02-84@list.ru" style="color: #3498db; text-decoration: none;">
+            sergey21-02-84@list.ru
+          </a>
+        </div>
+      </div>
+    </div>
+      </footer>
+
+      <!-- Модальное окно с полной таблицей сравнения -->
+      <div id="fullComparisonModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>📊 Подробное сравнение всех 138 функций защиты</h2>
+            <button class="modal-close" id="closeModal" onclick="window.closeComparisonModal(); return false;" type="button">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="comparison-filters" style="margin-bottom: 24px;">
+              <input type="text" id="functionSearch" placeholder="🔍 Поиск функции..." class="search-input">
+              <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">Все</button>
+                <button class="filter-btn" data-filter="protection">🛡️ Защита от угроз</button>
+                <button class="filter-btn" data-filter="parental">👨‍👩‍👧 Родительский контроль</button>
+                <button class="filter-btn" data-filter="additional">⚙️ Дополнительные</button>
+              </div>
+            </div>
+            <div class="comparison-table-full" id="fullComparisonTable">
+              <!-- Заполнится через JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+    // ========== ОТЛАДКА: Проверяем, что скрипт загружается ==========
+    console.log('🚀 СКРИПТ ЗАГРУЖЕН! Время:', new Date().toISOString());
+    console.log('🚀 document.readyState:', document.readyState);
+    console.log('🚀 window.location:', window.location.href);
+    
+    // Показываем визуальный индикатор
+    try {
+      const debugIndicator = document.getElementById('debugIndicator');
+      if (debugIndicator) {
+        debugIndicator.style.display = 'block';
+        debugIndicator.textContent = 'JS работает! ' + new Date().toLocaleTimeString();
+      }
+    } catch (e) {
+      console.error('Ошибка при показе индикатора:', e);
+    }
+    
+    async function loadJSON(path, fallback) {
+      try {
+        const response = await fetch(path);
+        if (!response.ok) {
+          window.traceStep(`⚠️ loadJSON fallback: ${path} → HTTP ${response.status}`, 'warn');
+          return fallback;
+        }
+        const data = await response.json();
+          window.traceStep(`✅ loadJSON успешно: ${path}`, 'success');
+        return data;
+      } catch (error) {
+        window.traceStep(`❌ loadJSON ошибка: ${path} → ${error.message}`, 'error');
+        return fallback;
+      }
+    }
+
+    function renderHeroStats(stats) {
+      const wrapper = document.querySelector('[data-hero-stats]');
+      wrapper.innerHTML = '';
+      stats.forEach(item => {
+        const block = document.createElement('div');
+        block.className = 'stat';
+        block.innerHTML = `<strong>${item.value}</strong><span>${item.label}</span>`;
+        wrapper.appendChild(block);
+      });
+    }
+
+    const tariffFunctions = {
+      free: {
+        total: 26,
+        protection: 16,
+        parental: 8,
+        additional: 2,
+        description: "Базовый уровень защиты: 16 функций защиты от угроз (вирусы, трояны, фишинг), 8 функций родительского контроля, 2 дополнительные функции."
+      },
+      personal: {
+        total: 69,
+        protection: 50,
+        parental: 17,
+        additional: 2,
+        description: "Средний уровень защиты: 50 функций защиты от угроз, 17 функций родительского контроля, защита от социальной инженерии и финансового мошенничества."
+      },
+      family: {
+        total: 124,
+        protection: 92,
+        parental: 28,
+        additional: 4,
+        description: "Высокий уровень защиты: 92 функции защиты от угроз (включая IoT), 28 функций родительского контроля, защита для всей семьи до 5 устройств."
+      },
+      premium: {
+        total: 138,
+        protection: 100,
+        parental: 32,
+        additional: 6,
+        description: "Максимальная защита: все 100 функций защиты от угроз, все 32 функции родительского контроля, все 6 дополнительных функций. Полный стек безопасности."
+      }
+    };
+
+    function renderTariffs(tariffs) {
+      const list = document.querySelector('[data-tariff-list]');
+      if (!list) return;
+      window.traceStep(`🔄 renderTariffs: получено ${Array.isArray(tariffs) ? tariffs.length : 0} тарифов`, Array.isArray(tariffs) && tariffs.length ? 'info' : 'warn');
+      list.innerHTML = '';
+      tariffs.forEach(tariff => {
+        const funcs = tariffFunctions[tariff.id] || tariffFunctions.free;
+        const hasPricing = tariff.pricing && Array.isArray(tariff.pricing.periods) && tariff.pricing.periods.length > 0;
+        const defaultMonths = selectedTariffPeriods[tariff.id] ?? getDefaultPeriodMonths(tariff);
+        if (defaultMonths !== null && defaultMonths !== undefined) {
+          selectedTariffPeriods[tariff.id] = defaultMonths;
+        }
+        const priceInfo = hasPricing ? getTariffPeriodInfo(tariff.id, defaultMonths) : null;
+        const periodButtons = hasPricing ? `
+          <div class="tariff-periods" data-period-container="${tariff.id}">
+            ${(tariff.pricing.periods || []).map(period => `
+              <button type="button"
+                class="tariff-period-btn ${Number(period.months) === Number(selectedTariffPeriods[tariff.id]) ? 'active' : ''}"
+                data-period-btn="${tariff.id}"
+                data-period-months="${period.months}">
+                ${period.label}
+              </button>
+            `).join('')}
+          </div>
+        ` : '';
+        const priceBlock = hasPricing && priceInfo ? `
+          <div class="tariff-price-block">
+            <div class="tariff-price-main" data-price-total="${tariff.id}">${formatCurrency(priceInfo.total)}</div>
+            <div class="tariff-price-sub" data-price-monthly="${tariff.id}">${describePeriod(priceInfo)}</div>
+            <div class="tariff-price-original"${priceInfo.discountPercent ? '' : ' style="display:none;"'} data-price-original="${tariff.id}">${formatCurrency(priceInfo.original)} без скидки</div>
+            <div class="tariff-price-savings"${priceInfo.savings > 0 ? '' : ' style="display:none;"'} data-price-savings="${tariff.id}">Экономия ${formatCurrency(priceInfo.savings)}</div>
+            <div class="tariff-price-note"${priceInfo.note ? '' : ' style="display:none;"'} data-price-note="${tariff.id}">${priceInfo.note || ''}</div>
+          </div>
+        ` : `<p class="tariff-price">${tariff.price || ''}</p>`;
+
+        const card = document.createElement('article');
+        card.className = 'tariff-card';
+        card.innerHTML = `
+          <div class="tariff-card__head">
+            <span class="tariff-name">${tariff.name}</span>
+            ${priceBlock}
+          </div>
+          ${periodButtons}
+          <p class="tariff-label">${tariff.devices} устройств • защита ${tariff.protection}</p>
+          <p class="tariff-functions-count"><strong>${funcs.total}/138 функций</strong> (${funcs.protection} защита от угроз, ${funcs.parental} родительский контроль, ${funcs.additional} дополнительные)</p>
+          <ul>${tariff.perks.map(perk => '<li>' + perk + '</li>').join('')}</ul>
+          <details class="tariff-functions-details">
+            <summary>📋 Посмотреть все ${funcs.total} функций защиты</summary>
+            <div class="tariff-functions-content">
+              <p>${funcs.description}</p>
+              <p><strong>🛡️ Защита от угроз:</strong> ${funcs.protection}/100 функций</p>
+              <p><strong>👨‍👩‍👧 Родительский контроль:</strong> ${funcs.parental}/32 функций</p>
+              <p><strong>⚙️ Дополнительные:</strong> ${funcs.additional}/6 функций</p>
+              <p><em>Полный список всех 138 функций доступен в приложении после активации.</em></p>
+            </div>
+          </details>
+          <button class="cta secondary" data-select-tariff="${tariff.id}">Выбрать</button>
+        `;
+        list.appendChild(card);
+      });
+
+      if (!list.dataset.boundTariffEvents) {
+        list.addEventListener('click', handleTariffListClick);
+        list.dataset.boundTariffEvents = 'true';
+      }
+    }
+
+    function handleTariffListClick(event) {
+      const periodBtn = event.target.closest('[data-period-btn]');
+      if (periodBtn) {
+        const tariffId = periodBtn.dataset.periodBtn;
+        const months = Number(periodBtn.dataset.periodMonths);
+        window.traceStep(`🟡 Кнопка периода: тариф=${tariffId}, период=${months}`, 'info');
+        selectedTariffPeriods[tariffId] = months;
+        updateTariffPriceDisplay(tariffId, months);
+        document.querySelectorAll(`[data-period-btn="${tariffId}"]`).forEach(btn => {
+          btn.classList.toggle('active', Number(btn.dataset.periodMonths) === months);
+        });
+        const tariffSelect = document.querySelector('[data-tariff-select]');
+        if (tariffSelect && tariffSelect.value === tariffId) {
+          populatePeriodSelect(tariffId, months);
+        }
+        return;
+      }
+      const btn = event.target.closest('[data-select-tariff]');
+      if (!btn) return;
+      const tariffId = btn.dataset.selectTariff;
+      window.traceStep(`🟢 Кнопка "Выбрать": тариф=${tariffId}`, 'info');
+      const tariffSelect = document.querySelector('[data-tariff-select]');
+      if (tariffSelect) {
+        tariffSelect.value = tariffId;
+      }
+      populatePeriodSelect(tariffId, selectedTariffPeriods[tariffId] || getDefaultPeriodMonths(getTariffDataById(tariffId)));
+      document.getElementById('paymentForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function updateTariffPriceDisplay(tariffId, months) {
+      const priceInfo = getTariffPeriodInfo(tariffId, months);
+      if (!priceInfo) return;
+      const totalEl = document.querySelector(`[data-price-total="${tariffId}"]`);
+      if (totalEl) {
+        totalEl.textContent = formatCurrency(priceInfo.total);
+      }
+      const monthlyEl = document.querySelector(`[data-price-monthly="${tariffId}"]`);
+      if (monthlyEl) {
+        monthlyEl.textContent = describePeriod(priceInfo);
+      }
+      const originalEl = document.querySelector(`[data-price-original="${tariffId}"]`);
+      if (originalEl) {
+        if (priceInfo.discountPercent) {
+          originalEl.style.display = 'block';
+          originalEl.textContent = `${formatCurrency(priceInfo.original)} без скидки`;
+        } else {
+          originalEl.style.display = 'none';
+        }
+      }
+      const savingsEl = document.querySelector(`[data-price-savings="${tariffId}"]`);
+      if (savingsEl) {
+        if (priceInfo.savings > 0) {
+          savingsEl.style.display = 'block';
+          savingsEl.textContent = `Экономия ${formatCurrency(priceInfo.savings)}`;
+        } else {
+          savingsEl.style.display = 'none';
+        }
+      }
+      const noteEl = document.querySelector(`[data-price-note="${tariffId}"]`);
+      if (noteEl) {
+        if (priceInfo.note) {
+          noteEl.style.display = 'block';
+          noteEl.textContent = priceInfo.note;
+        } else {
+          noteEl.style.display = 'none';
+        }
+      }
+    }
+
+    function populatePeriodSelect(tariffId, months) {
+      const select = document.querySelector('[data-tariff-period]');
+      if (!select) {
+        window.traceStep('❌ populatePeriodSelect: селект периода не найден!', 'error');
+        if (window.debugLog) {
+          window.debugLog('❌ Селект [data-tariff-period] не найден в DOM', 'error');
+        }
+        return;
+      }
+      const tariff = getTariffDataById(tariffId);
+      if (!tariff) {
+        window.traceStep(`❌ populatePeriodSelect: тариф ${tariffId} не найден!`, 'error');
+        if (window.debugLog) {
+          window.debugLog(`❌ Тариф ${tariffId} не найден в кэше. Доступно тарифов: ${window.tariffsCache?.length || 0}`, 'error');
+        }
+        select.innerHTML = '<option value="">Тариф не найден</option>';
+        select.disabled = true;
+        return;
+      }
+      const periods = tariff?.pricing?.periods || [];
+      window.traceStep(`🔄 populatePeriodSelect: тариф=${tariffId}, период=${months}, вариантов=${periods.length}`, periods.length ? 'info' : 'warn');
+      
+      if (window.debugLog) {
+        window.debugLog(`🔄 Заполнение селекта периода: тариф=${tariffId}, периодов=${periods.length}`, 'info');
+      }
+      
+      select.innerHTML = '';
+      if (periods.length === 0) {
+        const option = document.createElement('option');
+        option.value = months || 0;
+        option.textContent = 'Периоды недоступны';
+        select.appendChild(option);
+        select.disabled = true;
+        updatePeriodHint(tariffId, months);
+        if (window.debugLog) {
+          window.debugLog('⚠️ Периоды недоступны для тарифа', 'warn');
+        }
+        return;
+      }
+      select.disabled = false;
+      periods.forEach(period => {
+        const option = document.createElement('option');
+        option.value = period.months;
+        option.textContent = `${period.label} — ${formatCurrency(Number(period.total))} (${formatCurrency(Number(period.monthly))}/мес)`;
+        select.appendChild(option);
+      });
+      const fallbackMonths = months || getDefaultPeriodMonths(tariff) || periods[0]?.months;
+      if (fallbackMonths) {
+        select.value = fallbackMonths;
+        selectedTariffPeriods[tariffId] = Number(fallbackMonths);
+        updatePeriodHint(tariffId, Number(select.value));
+        if (window.debugLog) {
+          window.debugLog(`✅ Селект периода заполнен: выбрано ${fallbackMonths} мес для тарифа ${tariffId}`, 'success');
+        }
+      } else {
+        if (window.debugLog) {
+          window.debugLog('⚠️ Не удалось определить период по умолчанию', 'warn');
+        }
+      }
+    }
+
+    // ✅ ИСПРАВЛЕНИЕ: Делаем функцию доступной глобально через window
+    window.markTariffsReady = function markTariffsReady(tariffId, months) {
+      const select = document.querySelector('[data-tariff-period]');
+      const submitBtn = document.getElementById('submitPaymentBtn');
+      window.traceStep(`✅ markTariffsReady: тариф=${tariffId}, период=${months}`, 'success');
+      
+      if (window.debugLog) {
+        window.debugLog(`🔄 markTariffsReady вызвана: тариф=${tariffId}, период=${months}`, 'info');
+      }
+      
+      if (select) {
+        select.disabled = false;
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '';
+        submitBtn.style.cursor = '';
+      }
+      populatePeriodSelect(tariffId, months);
+      updatePeriodHint(tariffId, months);
+      
+      // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Устанавливаем tariffsReady ПЕРЕД логированием
+      window.tariffsReady = true;
+      
+      // ✅ ДОПОЛНИТЕЛЬНОЕ ЛОГИРОВАНИЕ
+      if (window.debugLog) {
+        window.debugLog(`✅ tariffsReady установлен в true`, 'success');
+        window.debugLog(`✅ Тарифы готовы: ${window.tariffsCache?.length || 0} тарифов`, 'success');
+      }
+      console.log('✅ markTariffsReady: tariffsReady =', window.tariffsReady);
+      console.log('✅ markTariffsReady: window.tariffsReady =', window.tariffsReady);
+    };
+
+    function updatePeriodHint(tariffId, months) {
+      const hint = document.querySelector('[data-period-hint]');
+      if (!hint) return;
+      const priceInfo = getTariffPeriodInfo(tariffId, months);
+      if (!priceInfo) {
+        window.traceStep(`⚠️ updatePeriodHint: нет данных для тарифа ${tariffId}, периода ${months}`, 'warn');
+        hint.textContent = 'Выберите тариф, чтобы увидеть итоговую сумму и экономию.';
+        return;
+      }
+      window.traceStep(`ℹ️ updatePeriodHint: тариф=${tariffId}, период=${months}, сумма=${priceInfo.total}`, 'info');
+      const pieces = [
+        `К оплате: ${formatCurrency(priceInfo.total)}`,
+        priceInfo.months === 1 ? 'за 1 месяц' : `за ${priceInfo.months} месяцев`,
+        priceInfo.savings > 0 ? `Экономия ${formatCurrency(priceInfo.savings)}` : ''
+      ].filter(Boolean);
+      // ✅ РЕФЕРАЛЬНАЯ ПРОГРАММА: Добавляем информацию о реферальной скидке
+      if (priceInfo.referralSavings > 0) {
+        pieces.push(`🎁 Реферальная скидка: ${formatCurrency(priceInfo.referralSavings)}`);
+      }
+      hint.textContent = pieces.join(' • ');
+    }
+
+    function initTariffFormControls() {
+      const tariffSelect = document.querySelector('[data-tariff-select]');
+      const periodSelect = document.querySelector('[data-tariff-period]');
+      if (!tariffSelect || !periodSelect) return;
+      if (tariffSelect.dataset.bound === 'true') {
+        window.traceStep('ℹ️ initTariffFormControls: обработчики уже настроены', 'info');
+        return;
+      }
+      window.traceStep('🔧 initTariffFormControls: настраиваем обработчики', 'info');
+      tariffSelect.dataset.bound = 'true';
+      tariffSelect.addEventListener('change', () => {
+        const tariffId = tariffSelect.value;
+        const months = selectedTariffPeriods[tariffId] || getDefaultPeriodMonths(getTariffDataById(tariffId)) || 1;
+        window.traceStep(`🟣 Смена тарифа в селекте: ${tariffId}, период=${months}`, 'info');
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала заполняем селект периода
+        populatePeriodSelect(tariffId, months);
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем подсказку с ценой для ВЫБРАННОГО тарифа
+        updatePeriodHint(tariffId, months);
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем цены в карточках тарифов
+        updateTariffPriceDisplay(tariffId, months);
+        
+        // Обновляем активные кнопки периодов
+        document.querySelectorAll(`[data-period-btn="${tariffId}"]`).forEach(btn => {
+          btn.classList.toggle('active', Number(btn.dataset.periodMonths) === Number(months));
+        });
+        
+        console.log(`✅ Тариф изменен на ${tariffId}, период ${months} мес, цены обновлены`);
+      });
+      periodSelect.addEventListener('change', () => {
+        const tariffId = tariffSelect.value;
+        const months = Number(periodSelect.value);
+        window.traceStep(`🔵 Смена периода в селекте: тариф=${tariffId}, период=${months}`, 'info');
+        selectedTariffPeriods[tariffId] = months;
+        updatePeriodHint(tariffId, months);
+        updateTariffPriceDisplay(tariffId, months);
+        document.querySelectorAll(`[data-period-btn="${tariffId}"]`).forEach(btn => {
+          btn.classList.toggle('active', Number(btn.dataset.periodMonths) === Number(months));
+        });
+      });
+    }
+
+    function renderTestimonials(items) {
+      const container = document.querySelector('[data-testimonials]');
+      container.innerHTML = '';
+      items.forEach(item => {
+        const card = document.createElement('article');
+        card.className = 'testimonial';
+        card.innerHTML = `
+          <p>"${item.text}"</p>
+          <div class="testimonial__meta">
+            <strong>${item.author}</strong>
+            <span>${item.role}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // ✅ ИСПРАВЛЕНИЕ: Делаем функцию доступной глобально через window
+    window.bootstrapFallbackTariffs = function bootstrapFallbackTariffs() {
+      window.traceStep('🚀 bootstrapFallbackTariffs: старт инициализации', 'info');
+      console.log('🔍 bootstrapFallbackTariffs: tariffsCache.length до загрузки =', window.tariffsCache?.length || 0);
+      
+      if (!Array.isArray(window.tariffsCache) || window.tariffsCache.length === 0) {
+        window.traceStep('📦 Используем встроенный список тарифов (fallback)', 'warn');
+        window.tariffsCache = FALLBACK_TARIFFS;
+        console.log('✅ bootstrapFallbackTariffs: тарифы загружены, tariffsCache.length =', window.tariffsCache.length);
+      } else {
+        window.traceStep(`📦 Тарифы уже присутствуют (${window.tariffsCache.length})`, 'info');
+        console.log('ℹ️ bootstrapFallbackTariffs: тарифы уже загружены');
+      }
+      
+      // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала рендерим тарифы
+      renderTariffs(window.tariffsCache);
+      
+      // ✅ Затем получаем селект тарифа и устанавливаем значение по умолчанию
+      const tariffSelect = document.querySelector('[data-tariff-select]');
+      let initialTariffId = 'family'; // По умолчанию Family
+      
+      // Проверяем, есть ли выбранное значение в HTML
+      if (tariffSelect) {
+        if (tariffSelect.value) {
+          initialTariffId = tariffSelect.value;
+        } else {
+          // Если нет выбранного значения, устанавливаем по умолчанию
+          tariffSelect.value = initialTariffId;
+        }
+      }
+      
+      // Проверяем, что тариф существует в кэше
+      if (!window.tariffsCache.some(t => t.id === initialTariffId)) {
+        initialTariffId = window.tariffsCache[0]?.id || 'family';
+        if (tariffSelect) {
+          tariffSelect.value = initialTariffId;
+        }
+      }
+      
+      // ✅ Инициализируем контролы формы ПОСЛЕ установки значения тарифа
+      initTariffFormControls();
+      
+      // ✅ Получаем период по умолчанию для выбранного тарифа
+      const initialMonths = selectedTariffPeriods[initialTariffId] || getDefaultPeriodMonths(getTariffDataById(initialTariffId)) || 12;
+      window.traceStep(`📦 bootstrapFallbackTariffs: initialTariff=${initialTariffId}, months=${initialMonths}`, 'info');
+      
+      // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Заполняем селект периода СРАЗУ при загрузке
+      if (typeof window.markTariffsReady === 'function') {
+        window.markTariffsReady(initialTariffId, initialMonths);
+      } else {
+        // Fallback: устанавливаем напрямую
+        window.tariffsReady = true;
+        populatePeriodSelect(initialTariffId, initialMonths);
+        updatePeriodHint(initialTariffId, initialMonths);
+      }
+      
+      // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Убеждаемся, что tariffsReady установлен и селект заполнен
+      const periodSelect = document.querySelector('[data-tariff-period]');
+      if (window.debugLog) {
+        window.debugLog(`✅ bootstrapFallbackTariffs завершена, tariffsReady=${window.tariffsReady}`, window.tariffsReady ? 'success' : 'error');
+        if (periodSelect) {
+          window.debugLog(`✅ Селект периода: disabled=${periodSelect.disabled}, options=${periodSelect.options.length}`, periodSelect.disabled ? 'warn' : 'success');
+        }
+      }
+    };
+
+    function renderFAQ(items) {
+      const list = document.querySelector('[data-faq]');
+      list.innerHTML = '';
+      items.forEach(item => {
+        const details = document.createElement('details');
+        const summary = document.createElement('summary');
+        summary.textContent = item.question;
+        const answer = document.createElement('p');
+        answer.textContent = item.answer;
+        details.append(summary, answer);
+        list.appendChild(details);
+      });
+    }
+    let cachedMethods = [];
+
+    function renderPaymentSelect(methods) {
+      if (!methods || !Array.isArray(methods) || methods.length === 0) {
+        // Если методы не загрузились, используем встроенные в HTML
+        // Они уже есть в HTML, просто обновляем описание
+        const select = document.querySelector('[data-method-select]');
+        const descriptionBox = document.querySelector('[data-method-description]');
+        if (select && descriptionBox) {
+          // Обновляем описание для текущего выбранного метода
+          const updateDescription = () => {
+            const methodDescriptions = {
+              'qr_sbp': { label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+              'sberpay': { label: 'SberPay', description: 'Официальная кнопка Сбербанка для быстрой оплаты.' },
+              'card_sber': { label: 'Карта Сбербанк (Мир/Visa/Mastercard)', description: 'Интернет-эквайринг Сбербанка для карт «Мир», Visa, Mastercard. Без ввода лишних данных.' },
+              'tinkoff_pay': { label: 'Tinkoff Pay', description: 'Моментальная оплата через приложение Тинькофф.' },
+              'manual_transfer': { label: 'Оплата на карту через СБП', description: 'Переведите деньги через СБП на номер нашей карты. Мгновенное зачисление, без комиссии. После оплаты вы получите код активации.' }
+            };
+            const current = methodDescriptions[select.value];
+            if (current) {
+              descriptionBox.innerHTML = `
+                <div class="method-selected">
+                  <h4>✅ Выбран: ${current.label}</h4>
+                  <p>${current.description}</p>
+                  <button type="button" class="method-info-btn" data-method-info="${select.value}">
+                    ℹ️ Подробнее об этом методе
+                  </button>
+                </div>
+              `;
+              const infoBtn = descriptionBox.querySelector('[data-method-info]');
+              if (infoBtn) {
+                infoBtn.addEventListener('click', () => {
+                  alert(`${current.label}\n\n${current.description}\n\n📋 Что дальше?\nПосле нажатия "Перейти к оплате" вы будете перенаправлены на страницу оплаты банка или увидите QR-код для сканирования в приложении вашего банка.`);
+                });
+              }
+            }
+          };
+          select.addEventListener('change', updateDescription);
+          updateDescription();
+        }
+        return;
+      }
+      
+      cachedMethods = methods;
+      const select = document.querySelector('[data-method-select]');
+      const descriptionBox = document.querySelector('[data-method-description]');
+      
+      if (!select) {
+        return;
+      }
+
+      // Обновляем select с загруженными методами (если они есть)
+      select.innerHTML = '';
+      methods.forEach((method, index) => {
+        const option = document.createElement('option');
+        option.value = method.id;
+        option.textContent = method.label;
+        if (index === 0) {
+          option.selected = true;
+        }
+        select.appendChild(option);
+      });
+
+      // Словарь описаний методов (fallback, если JSON не загрузится)
+      const methodDescriptions = {
+        'qr_sbp': { label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+        'sberpay': { label: 'SberPay', description: 'Официальная кнопка Сбербанка для быстрой оплаты.' },
+        'card_sber': { label: 'Карта Сбербанк (Мир/Visa/Mastercard)', description: 'Интернет-эквайринг Сбербанка для карт «Мир», Visa, Mastercard. Без ввода лишних данных.' },
+        'tinkoff_pay': { label: 'Tinkoff Pay', description: 'Моментальная оплата через приложение Тинькофф.' },
+        'manual_transfer': { label: 'Оплата на карту через СБП', description: 'Переведите деньги через СБП на номер нашей карты. Мгновенное зачисление, без комиссии. После оплаты вы получите код активации.' }
+      };
+
+      const updateDescription = () => {
+        const selectedId = select.value;
+        const current = methods.find(m => m.id === selectedId) || methodDescriptions[selectedId];
+        
+        if (current && descriptionBox) {
+          descriptionBox.innerHTML = `
+            <div class="method-selected">
+              <h4>✅ Выбран: ${current.label}</h4>
+              <p>${current.description}</p>
+              <button type="button" class="method-info-btn" data-method-info="${selectedId}">
+                ℹ️ Подробнее об этом методе
+              </button>
+            </div>
+          `;
+          
+          // Добавляем обработчик для кнопки "Подробнее"
+          const infoBtn = descriptionBox.querySelector('[data-method-info]');
+          if (infoBtn) {
+            infoBtn.addEventListener('click', () => {
+              const methodInfo = methods.find(m => m.id === selectedId) || methodDescriptions[selectedId];
+              if (methodInfo) {
+                alert(`${methodInfo.label}\n\n${methodInfo.description}\n\n📋 Что дальше?\nПосле нажатия "Перейти к оплате" вы будете перенаправлены на страницу оплаты банка или увидите QR-код для сканирования в приложении вашего банка.`);
+              }
+            });
+          }
+        } else if (descriptionBox) {
+          descriptionBox.innerHTML = '<p>👆 Выберите метод оплаты из списка выше</p>';
+        }
+      };
+
+      select.addEventListener('change', updateDescription);
+      updateDescription(); // Обновляем сразу при загрузке
+    }
+
+    function renderBankGrid(banks) {
+      const grid = document.querySelector('[data-bank-list]');
+      if (!grid) return;
+      grid.innerHTML = banks.map(bank => `
+        <article class="bank-card">
+          <h3>${bank.name}</h3>
+          <ul>
+            ${bank.channels.map(channel => `<li>${channel}</li>`).join('')}
+          </ul>
+        </article>
+      `).join('');
+    }
+
+
+
+    async function bootstrapCMS() {
+      // Показываем индикатор загрузки
+      const loadingIndicator = document.querySelector('[data-loading-indicator]');
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'block';
+      }
+      window.traceStep('🌐 bootstrapCMS: начинаем загрузку данных из CMS', 'info');
+      const submitBtn = document.getElementById('submitPaymentBtn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        submitBtn.style.cursor = 'not-allowed';
+      }
+      
+      try {
+        const [hero, tariffs, testimonials, faq, banks, methods] = await Promise.all([
+          loadJSON('cms/hero.json', [
+            { value: '4', label: 'семьи защищено' },
+            { value: '8', label: 'устройств' },
+            { value: '47', label: 'угроз предотвращаем' }
+          ]),
+          loadJSON('cms/tariffs.json', []),
+          loadJSON('cms/testimonials.json', []),
+          loadJSON('cms/faq.json', []),
+          loadJSON('cms/banks.json', []),
+          loadJSON('cms/methods.json', [
+            { id: 'qr_sbp', label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+            { id: 'sberpay', label: 'SberPay', description: 'Официальная кнопка Сбербанка для быстрой оплаты.' },
+            { id: 'card_sber', label: 'Карта Сбербанк (Мир/Visa/Mastercard)', description: 'Интернет-эквайринг Сбербанка для карт «Мир», Visa, Mastercard. Без ввода лишних данных.' },
+            { id: 'tinkoff_pay', label: 'Tinkoff Pay', description: 'Моментальная оплата через приложение Тинькофф.' },
+            { id: 'manual_transfer', label: 'Оплата на карту через СБП', description: 'Переведите деньги через СБП на номер нашей карты. Мгновенное зачисление, без комиссии. После оплаты вы получите код активации.' }
+          ])
+        ]);
+
+        // Проверяем, что methods - это массив
+        const methodsArray = Array.isArray(methods) ? methods : [];
+
+        // ✅ ИСПРАВЛЕНИЕ: Если тарифы пустые или не загрузились, используем fallback
+        if (Array.isArray(tariffs) && tariffs.length > 0) {
+          window.tariffsCache = tariffs;
+        } else {
+          // Если тарифы не загрузились, используем fallback
+          window.traceStep('⚠️ Тарифы не загрузились из CMS, используем fallback', 'warn');
+          if (!Array.isArray(window.tariffsCache) || window.tariffsCache.length === 0) {
+            window.tariffsCache = FALLBACK_TARIFFS;
+          }
+        }
+        
+        const currentTariffSelect = document.querySelector('[data-tariff-select]');
+        let currentTariffId = currentTariffSelect?.value || window.tariffsCache[0]?.id || 'family';
+        let currentMonths = selectedTariffPeriods[currentTariffId] || getDefaultPeriodMonths(getTariffDataById(currentTariffId));
+
+        window.traceStep('🌐 bootstrapCMS: данные CMS получены', 'success');
+        renderHeroStats(hero);
+        renderTariffs(window.tariffsCache);
+        renderTestimonials(testimonials);
+        renderFAQ(faq);
+        renderBankGrid(banks);
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала устанавливаем значение тарифа по умолчанию
+        const tariffSelect = document.querySelector('[data-tariff-select]');
+        if (!window.tariffsCache.some(t => t.id === currentTariffId)) {
+          currentTariffId = window.tariffsCache[0]?.id || 'family';
+          currentMonths = selectedTariffPeriods[currentTariffId] || getDefaultPeriodMonths(getTariffDataById(currentTariffId));
+        }
+        if (tariffSelect) {
+          // ✅ Устанавливаем значение тарифа в селекте
+          if (!tariffSelect.value) {
+            tariffSelect.value = currentTariffId;
+          } else {
+            currentTariffId = tariffSelect.value;
+          }
+        }
+        
+        // ✅ Инициализируем контролы формы ПОСЛЕ установки значения тарифа
+        initTariffFormControls();
+        
+        const monthsToApply = selectedTariffPeriods[currentTariffId] || currentMonths || getDefaultPeriodMonths(getTariffDataById(currentTariffId)) || 12;
+        
+        // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Убеждаемся, что тарифы есть перед вызовом markTariffsReady
+        if (!window.tariffsCache || window.tariffsCache.length === 0) {
+          window.traceStep('⚠️ Тарифы пустые перед markTariffsReady, используем fallback', 'warn');
+          window.tariffsCache = FALLBACK_TARIFFS;
+          if (!currentTariffId || !window.tariffsCache.some(t => t.id === currentTariffId)) {
+            currentTariffId = window.tariffsCache[0]?.id || 'family';
+            if (tariffSelect) {
+              tariffSelect.value = currentTariffId;
+            }
+          }
+        }
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Заполняем селект периода СРАЗУ при загрузке
+        if (typeof window.markTariffsReady === 'function') {
+          window.markTariffsReady(currentTariffId, monthsToApply);
+        } else {
+          // Fallback: устанавливаем напрямую
+          window.tariffsReady = true;
+          populatePeriodSelect(currentTariffId, monthsToApply);
+          updatePeriodHint(currentTariffId, monthsToApply);
+        }
+        
+        // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Убеждаемся, что селект периода заполнен
+        const periodSelect = document.querySelector('[data-tariff-period]');
+        if (window.debugLog && periodSelect) {
+          window.debugLog(`✅ Селект периода после bootstrapCMS: disabled=${periodSelect.disabled}, options=${periodSelect.options.length}`, periodSelect.disabled || periodSelect.options.length === 0 ? 'warn' : 'success');
+        }
+        
+        // Загружаем методы оплаты в последнюю очередь, чтобы пользователь видел прогресс
+        renderPaymentSelect(methodsArray);
+      } catch (error) {
+        window.traceStep(`❌ bootstrapCMS ошибка: ${error.message}. Используем fallback.`, 'error');
+        // ✅ ИСПРАВЛЕНИЕ: При ошибке загружаем fallback тарифы и устанавливаем tariffsReady
+        if (typeof window.bootstrapFallbackTariffs === 'function') {
+          window.bootstrapFallbackTariffs();
+        } else {
+          console.error('❌ window.bootstrapFallbackTariffs не найдена в catch блоке');
+        }
+        
+        // Показываем fallback методы даже при ошибке
+        const fallbackMethods = [
+          { id: 'qr_sbp', label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+          { id: 'card_sber', label: 'Карта Сбербанк (Мир)', description: 'Интернет-эквайринг Сбербанка для карт «Мир». Без ввода лишних данных.' },
+          { id: 'manual_transfer', label: 'Прямой банковский перевод по реквизитам', description: 'Если нужен счёт на оплату — отправьте перевод по нашим реквизитам и получите код от поддержки.' }
+        ];
+        renderPaymentSelect(fallbackMethods);
+      }
+    }
+
+    // Определяем API URL (тот же, что в success.html)
+    // ПРИЧИНА: Проверяем hostname и port для правильного определения API URL
+    const hostname = window.location.hostname;
+    const port = window.location.port;
+    const protocol = window.location.protocol;
+    
+    console.log('🔍 window.location.hostname:', hostname);
+    console.log('🔍 window.location.port:', port);
+    console.log('🔍 window.location.protocol:', protocol);
+    console.log('🔍 window.location.href:', window.location.href);
+    
+    // Логируем в визуальный блок
+    if (window.debugLog) {
+      window.debugLog(`📍 Страница: ${window.location.href}`, 'info');
+      window.debugLog(`📍 Hostname: ${hostname}`, 'info');
+      window.debugLog(`📍 Port: ${port}`, 'info');
+      window.debugLog(`📍 Protocol: ${protocol}`, 'info');
+    }
+    
+    // Определяем API_BASE
+    // ПРИЧИНА: ВСЕГДА используем абсолютный URL для бэкенда, независимо от порта лендинга
+    // Устанавливаем в window.API_BASE, чтобы handleFormSubmit могла его использовать
+    let API_BASE;
+    
+    // ПРИЧИНА: Проверяем протокол - если file://, то показываем ошибку
+    if (protocol === 'file:') {
+      console.error('❌ Лендинг открыт через file:// протокол!');
+      alert(`❌ Ошибка: Лендинг открыт через file:// протокол.\n\nОткройте лендинг через HTTP сервер:\ncd landing && python3 -m http.server 8080\n\nЗатем откройте: http://localhost:8080`);
+      API_BASE = 'http://localhost:8000'; // Устанавливаем по умолчанию, но запрос не сработает
+    } else if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '' || hostname === '0.0.0.0') {
+      // ВСЕГДА используем порт 8000 для бэкенда, независимо от порта лендинга (8080)
+      API_BASE = 'http://localhost:8000';
+      console.log('✅ API_BASE установлен на порт 8000 (бэкенд)');
+    } else if (hostname.includes('aladdin-ai.ru') || hostname === '149.154.65.180') {
+      // ✅ ПРОДАКШН: Backend работает на основном домене через /api/
+      API_BASE = 'https://aladdin-ai.ru';
+      console.log('✅ API_BASE установлен на продакшн API:', API_BASE);
+    } else {
+      // Fallback на старый URL (если используется другой домен)
+      API_BASE = 'https://api.aladdin.family';
+      console.log('⚠️ API_BASE установлен на fallback URL:', API_BASE);
+    }
+    
+    // ПРИЧИНА: Дополнительная проверка - убеждаемся, что API_BASE правильный
+    if (!API_BASE || API_BASE.includes(':8080')) {
+      console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: API_BASE установлен неправильно!', API_BASE);
+      API_BASE = 'http://localhost:8000'; // Принудительно устанавливаем правильный URL
+      console.log('✅ API_BASE исправлен на:', API_BASE);
+    }
+    
+    // Устанавливаем в window, чтобы handleFormSubmit могла использовать
+    window.API_BASE = API_BASE;
+    const API_KEY = 'PUBLIC_CLIENT_KEY';
+    window.API_KEY = API_KEY;
+    
+    console.log('🔧 API_BASE установлен:', API_BASE);
+    console.log('🔧 API_KEY установлен:', API_KEY);
+    console.log('🔧 Полный URL для запроса:', `${API_BASE}/api/payments/create`);
+    
+    // ✅ АВТОПРОКРУТКА: Обработка hash #pay при загрузке страницы
+    (function() {
+      function scrollToPaySection() {
+        const hash = window.location.hash || '';
+        if (hash.includes('#pay') || hash.startsWith('#pay')) {
+          const paySection = document.getElementById('pay');
+          if (paySection) {
+            // Небольшая задержка для полной загрузки контента
+            setTimeout(() => {
+              paySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              console.log('✅ Автопрокрутка к форме оплаты выполнена');
+            }, 500);
+          }
+        }
+      }
+      
+      // Выполняем при загрузке DOM
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', scrollToPaySection);
+      } else {
+        // DOM уже загружен
+        scrollToPaySection();
+      }
+      
+      // Также обрабатываем изменение hash (если пользователь кликает на якорные ссылки)
+      window.addEventListener('hashchange', scrollToPaySection);
+    })();
+    
+    // Логируем в визуальный блок
+    if (window.debugLog) {
+      window.debugLog(`🔧 API_BASE: ${API_BASE}`, 'info');
+      window.debugLog(`🔧 Полный URL: ${API_BASE}/api/payments/create`, 'info');
+    }
+
+    // ПРИЧИНА: handleFormSubmit уже определена в первом скрипте, просто обновляем window.API_BASE
+    // Функция уже полностью реализована выше, здесь только обновляем переменные
+
+    // Функция инициализации формы оплаты
+    function initPaymentForm() {
+      try {
+        console.log('🔧 initPaymentForm() вызвана');
+        const paymentForm = document.getElementById('paymentForm');
+        if (!paymentForm) {
+          console.error('❌ Форма paymentForm не найдена!');
+          // Пробуем еще раз через небольшую задержку
+          setTimeout(initPaymentForm, 100);
+          return;
+        }
+        
+        // ПРИЧИНА 1: Проверяем, не добавлен ли уже обработчик (ПЕРЕД всеми действиями)
+        if (paymentForm.dataset.initialized === 'true') {
+          console.log('⚠️ Форма уже инициализирована, пропускаем');
+          return;
+        }
+        
+        console.log('✅ Форма paymentForm найдена');
+        
+        // Логируем в визуальный блок
+        if (window.debugLog) {
+          window.debugLog('✅ Форма paymentForm найдена', 'success');
+        }
+        
+        // Находим кнопку
+        const submitBtn = paymentForm.querySelector('button[type="submit"]');
+        if (!submitBtn) {
+          console.error('❌ Кнопка submit не найдена в форме!');
+          if (window.debugLog) {
+            window.debugLog('❌ Кнопка submit не найдена в форме!', 'error');
+          }
+          return;
+        }
+        
+        console.log('✅ Кнопка submit найдена:', submitBtn);
+        
+        // Логируем в визуальный блок
+        if (window.debugLog) {
+          window.debugLog('✅ Кнопка submit найдена', 'success');
+        }
+        console.log('🔍 Кнопка disabled?', submitBtn.disabled);
+        console.log('🔍 Кнопка style:', submitBtn.style.cssText);
+        console.log('🔍 Кнопка pointer-events:', window.getComputedStyle(submitBtn).pointerEvents);
+        
+        // ПРИЧИНА 2: Убеждаемся, что кнопка не заблокирована
+        submitBtn.disabled = false;
+        submitBtn.style.pointerEvents = 'auto';
+        submitBtn.style.cursor = 'pointer';
+        submitBtn.style.opacity = '1';
+        
+        // ПРИЧИНА 3: Добавляем обработчик клика прямо на кнопку (самый надежный способ)
+        // Этот обработчик будет напрямую вызывать функцию отправки формы
+        submitBtn.onclick = async function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          console.log('🖱️ ONCLICK НА КНОПКЕ СРАБОТАЛ!', e);
+          
+          // Логируем в визуальный блок
+          if (window.debugLog) {
+            window.debugLog('🖱️ Клик по кнопке "Перейти к оплате"', 'success');
+            window.debugLog('🖱️ Вызываем handleFormSubmit...', 'info');
+          }
+          
+          // Проверяем, что функция доступна
+          if (typeof window.handleFormSubmit === 'function') {
+            await window.handleFormSubmit(paymentForm);
+          } else {
+            const errorMsg = '❌ ОШИБКА: handleFormSubmit не найдена!';
+            console.error(errorMsg);
+            if (window.debugLog) {
+              window.debugLog(errorMsg, 'error');
+            }
+            alert(errorMsg);
+          }
+        };
+        
+        // Логируем, что обработчик установлен
+        if (window.debugLog) {
+          window.debugLog('✅ Обработчик onclick установлен на кнопку', 'success');
+        }
+        
+        // ПРИЧИНА 4: Добавляем обработчик через addEventListener (дублирование для надежности)
+        submitBtn.addEventListener('click', function(e) {
+          console.log('🖱️ ADD EVENT LISTENER: КЛИК ПО КНОПКЕ ЗАФИКСИРОВАН!', e);
+        }, true); // Используем capture phase
+        
+        // ПРИЧИНА 5: Убираем блокирующие атрибуты формы и устанавливаем правильный action
+        paymentForm.action = 'javascript:void(0);'; // Предотвращаем стандартную отправку
+        paymentForm.method = 'post'; // Устанавливаем метод POST
+        paymentForm.onsubmit = function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }; // Блокируем стандартную отправку
+        
+        // Помечаем форму как инициализированную
+        paymentForm.dataset.initialized = 'true';
+        
+        // ПРИЧИНА 6: Добавляем обработчик на форму (самый важный) - САМЫМ ПЕРВЫМ
+        // Используем capture phase для перехвата события ДО других обработчиков
+        paymentForm.addEventListener('submit', async function(event) {
+          // КРИТИЧЕСКИ ВАЖНО: Блокируем стандартную отправку формы СРАЗУ
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+          
+          console.log('📝 СУБМИТ ФОРМЫ: обработчик вызван!', event);
+          
+          // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем чекбокс согласия с офертой ПЕРЕД отправкой
+          const termsCheckbox = paymentForm.querySelector('input[type="checkbox"][required]');
+          if (termsCheckbox && !termsCheckbox.checked) {
+            alert('❌ Необходимо принять публичную оферту для продолжения оплаты.\n\nПожалуйста, отметьте чекбокс "Нажимая «Перейти к оплате», вы принимаете публичную оферту".');
+            if (window.debugLog) {
+              window.debugLog('❌ Чекбокс согласия с офертой не отмечен (submit handler)', 'error');
+            }
+            termsCheckbox.focus();
+            // Добавляем визуальную индикацию
+            termsCheckbox.style.outline = '2px solid red';
+            setTimeout(() => {
+              termsCheckbox.style.outline = '';
+            }, 3000);
+            return;
+          }
+          
+          // Логируем в визуальный блок СРАЗУ
+          if (window.debugLog) {
+            window.debugLog('📝 Форма отправлена, обработчик вызван', 'success');
+            window.debugLog('🛑 Стандартная отправка заблокирована', 'info');
+          }
+      
+      if (!window.tariffsReady) {
+        alert('⏳ Тарифы ещё загружаются. Подождите пару секунд и попробуйте снова.');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Перейти к оплате';
+          submitBtn.style.opacity = '';
+          submitBtn.style.cursor = '';
+        }
+        return;
+      }
+          
+          console.log('📝 Форма отправлена, обработчик вызван');
+      
+      const form = event.target;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn?.textContent || 'Оплатить';
+      
+      // Показываем индикатор загрузки
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Создание платежа...';
+        submitBtn.style.opacity = '0.7';
+        submitBtn.style.cursor = 'not-allowed';
+      }
+      
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+      payload.tariff = payload.tariff || 'family';
+      const requestedPeriod = parseInt(payload.tariffPeriod || '', 10) || null;
+      const priceInfo = getTariffPeriodInfo(payload.tariff, requestedPeriod);
+      if (!priceInfo) {
+        alert('Не удалось определить стоимость тарифа. Обновите страницу и попробуйте снова.');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
+          submitBtn.style.opacity = '';
+          submitBtn.style.cursor = '';
+        }
+        return;
+      }
+      payload.tariffPeriod = priceInfo.months;
+
+      // Валидация PIN вручную
+      const pinValue = payload.pin.trim();
+      if (!/^[0-9]{4,6}$/.test(pinValue)) {
+        alert('PIN должен содержать от 4 до 6 цифр (только цифры, без букв и пробелов)');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
+          submitBtn.style.opacity = '';
+          submitBtn.style.cursor = '';
+        }
+        return;
+      }
+
+      // Валидация alias
+      const aliasValue = payload.alias.trim();
+      if (aliasValue.length < 6) {
+        alert('Alias должен содержать минимум 6 символов');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
+          submitBtn.style.opacity = '';
+          submitBtn.style.cursor = '';
+        }
+        return;
+      }
+
+      try {
+        // ПРИЧИНА: Принудительно используем абсолютный URL для бэкенда
+        const requestUrl = `${API_BASE}/api/payments/create`;
+        const requestBody = {
+          tariffId: payload.tariff,
+          userAlias: payload.alias.trim(),
+          pin: payload.pin.trim(),
+          paymentMethod: payload.paymentMethod,
+          periodMonths: priceInfo.months,
+          amount: priceInfo.total
+        };
+        
+        console.log('📤 Отправка запроса на создание платежа...');
+        console.log('📍 Текущий URL страницы:', window.location.href);
+        console.log('📍 API_BASE:', API_BASE);
+        console.log('📍 API URL (полный):', requestUrl);
+        console.log('📍 Метод:', 'POST');
+        
+        // Логируем в визуальный блок
+        if (window.debugLog) {
+          window.debugLog(`📤 Отправка POST запроса...`, 'info');
+          window.debugLog(`📍 URL: ${requestUrl}`, 'info');
+          window.debugLog(`📍 Метод: POST`, 'info');
+        }
+        console.log('📍 Headers:', {
+          'Content-Type': 'application/json',
+          'X-API-Key': API_KEY
+        });
+        console.log('📋 Данные:', {
+          tariffId: payload.tariff,
+          userAlias: payload.alias.trim(),
+          pin: '***',
+          paymentMethod: payload.paymentMethod
+        });
+        console.log('📋 Полное тело запроса:', JSON.stringify(requestBody));
+        
+        // ПРИЧИНА: Проверяем, что URL правильный перед запросом
+        if (!requestUrl.startsWith('http://') && !requestUrl.startsWith('https://')) {
+          throw new Error(`Неправильный URL: ${requestUrl}. URL должен начинаться с http:// или https://`);
+        }
+        
+        // ПРИЧИНА: Проверяем, что запрос идёт на правильный порт (8000 для бэкенда, не 8080)
+        if (requestUrl.includes(':8080')) {
+          const errorMsg = `❌ ОШИБКА: Запрос идёт на порт 8080 (статический сервер) вместо 8000 (бэкенд)!\n\nТекущий URL: ${requestUrl}\n\nИсправьте API_BASE на: http://localhost:8000`;
+          console.error(errorMsg);
+          alert(errorMsg);
+          throw new Error('Неправильный порт для API запроса');
+        }
+        
+        const response = await fetch(requestUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': API_KEY
+          },
+          body: JSON.stringify(requestBody)
+        });
+        
+        console.log('📥 Ответ получен. Статус:', response.status);
+        console.log('📥 Статус текст:', response.statusText);
+        console.log('📥 URL ответа:', response.url);
+        console.log('📥 Headers ответа:', Object.fromEntries(response.headers.entries()));
+        
+        // Логируем в визуальный блок
+        if (window.debugLog) {
+          const statusColor = response.ok ? 'success' : 'error';
+          window.debugLog(`📥 Ответ получен. Статус: ${response.status} ${response.statusText}`, statusColor);
+          window.debugLog(`📥 URL ответа: ${response.url}`, 'info');
+          if (!response.ok) {
+            window.debugLog(`❌ ОШИБКА! Статус: ${response.status}`, 'error');
+          }
+        }
+
+        if (!response.ok) {
+          // ПРИЧИНА 501: Сервер не поддерживает POST (бэкенд не запущен или запрос идёт на статический сервер)
+          if (response.status === 501) {
+            const errorMsg = `❌ Ошибка 501: Сервер не поддерживает метод POST.\n\nЗапрос был отправлен на: ${requestUrl}\nТекущий URL страницы: ${window.location.href}\n\nВозможные причины:\n1. Бэкенд не запущен на ${API_BASE}\n2. Запрос идёт на статический сервер вместо API\n3. Лендинг открыт через file:// протокол\n\nРешение:\n1. Убедитесь, что лендинг открыт через http://localhost:8080 (или другой порт)\n2. Запустите бэкенд: cd payment_service && uvicorn main:app --reload --port 8000\n3. Проверьте, что API_BASE = ${API_BASE}`;
+            console.error('❌ ОШИБКА 501:', errorMsg);
+            console.error('❌ Request URL:', requestUrl);
+            console.error('❌ Response URL:', response.url);
+            
+            // Логируем в визуальный блок
+            if (window.debugLog) {
+              window.debugLog(`❌ ОШИБКА 501: Сервер не поддерживает POST!`, 'error');
+              window.debugLog(`❌ Запрос был на: ${requestUrl}`, 'error');
+              window.debugLog(`❌ Ответ пришёл с: ${response.url}`, 'error');
+              window.debugLog(`❌ Проверьте, что бэкенд запущен на порту 8000!`, 'error');
+            }
+            
+            alert(errorMsg);
+            throw new Error('Backend не запущен или недоступен');
+          }
+          
+          // ПРИЧИНА 404: Эндпоинт не найден
+          if (response.status === 404) {
+            const errorMsg = `❌ Ошибка 404: Эндпоинт не найден.\n\nЗапрос был отправлен на: ${requestUrl}\nПроверьте, что:\n1. Бэкенд запущен на ${API_BASE}\n2. URL правильный: ${requestUrl}`;
+            console.error('❌ ОШИБКА 404:', errorMsg);
+            alert(errorMsg);
+            throw new Error('Эндпоинт не найден');
+          }
+          
+          const errorData = await response.json().catch(() => ({}));
+          console.error('❌ Ошибка ответа:', errorData);
+          console.error('❌ Статус:', response.status, response.statusText);
+          throw new Error(errorData.detail || `Ошибка ${response.status}: Не удалось создать платёж`);
+        }
+
+        const data = await response.json();
+        console.log('✅ Платёж создан:', data);
+        
+        // ✅ Проверяем, что paymentId есть (может быть payment_id или paymentId)
+        const paymentIdValue = data.paymentId || data.payment_id || data.id;
+        if (!paymentIdValue) {
+          throw new Error('Ошибка: не получен ID платежа');
+        }
+
+        // ✅ Сохраняем alias и pin в localStorage для автоматического получения кода
+        localStorage.setItem('payment_alias', payload.alias.trim());
+        localStorage.setItem('payment_pin', payload.pin.trim());
+        localStorage.setItem('payment_id', paymentIdValue);
+
+        if (data.redirectUrl || data.redirect_url) {
+          const redirectUrl = data.redirectUrl || data.redirect_url;
+          console.log('🔄 Редирект на:', redirectUrl);
+          // Если есть redirectUrl от банка, переходим туда
+          // Банк после оплаты должен редиректить на success.html?paymentId=xxx
+          window.location.href = redirectUrl;
+        } else if (data.qrData || data.qr_data) {
+          // Для QR/SBP - показываем QR и редиректим на success после оплаты
+          // TODO: показать QR-код в модальном окне
+          alert('Сканируйте QR-код, чтобы завершить оплату. После оплаты вы будете перенаправлены на страницу с кодом активации.');
+          // Редиректим на success с paymentId
+          window.location.href = `success.html?paymentId=${paymentIdValue}&alias=${encodeURIComponent(payload.alias.trim())}`;
+        } else if (payload.paymentMethod === 'manual_transfer') {
+          // Для ручного перевода на карту - сохраняем данные карты и сумму
+          const amountValue = priceInfo.total;
+          
+          // Проверяем, что данные карты есть
+          const cardNumber = data.cardNumber || data.card_number || '';
+          const cardHolderName = data.cardHolderName || data.card_holder_name || '';
+          if (!cardNumber) {
+            console.warn('⚠️ Номер карты не получен от сервера. Убедитесь, что PAYMENT_CARD_NUMBER настроен в конфигурации.');
+          }
+          
+          // Сохраняем данные в localStorage
+          localStorage.setItem('manualTransferData', JSON.stringify({
+            cardNumber: cardNumber,
+            cardHolderName: cardHolderName,
+            amount: amountValue,
+            paymentId: paymentIdValue
+          }));
+          
+          // Редиректим на success (используем абсолютный путь)
+          const successUrl = `success.html?paymentId=${paymentIdValue}&alias=${encodeURIComponent(payload.alias.trim())}&method=manual_transfer&amount=${amountValue || ''}`;
+          console.log('🔄 Редирект на success.html для manual_transfer:', successUrl);
+          console.log('💳 Данные карты:', { cardNumber: cardNumber, cardHolderName: cardHolderName });
+          window.location.href = successUrl;
+        } else {
+          // Для других методов - сразу на success
+          window.location.href = `success.html?paymentId=${paymentIdValue}&alias=${encodeURIComponent(payload.alias.trim())}`;
+        }
+      } catch (error) {
+        console.error('❌ Ошибка при создании платежа:', error);
+        console.error('❌ Тип ошибки:', error.name);
+        console.error('❌ Сообщение:', error.message);
+        console.error('❌ Stack:', error.stack);
+        
+        let errorMessage = 'Ошибка при создании платежа. Попробуйте позже или обратитесь в поддержку.';
+        
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          errorMessage = `❌ Ошибка подключения к серверу.\n\nПроверьте, что backend запущен на ${API_BASE}\n\nЗапустите бэкенд:\ncd payment_service && uvicorn main:app --reload --port 8000`;
+        } else if (error.message.includes('Backend не запущен')) {
+          errorMessage = error.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        
+        alert(`❌ ${errorMessage}\n\nПроверьте консоль браузера (F12) для подробностей.`);
+        
+        // Восстанавливаем кнопку
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
+          submitBtn.style.opacity = '';
+          submitBtn.style.cursor = '';
+        }
+        
+        // НЕ делаем редирект при ошибке - остаёмся на странице
+        return false;
+      }
+      }, false); // Используем bubble phase
+      
+      console.log('✅ Обработчик формы добавлен');
+      } catch (error) {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА в initPaymentForm:', error);
+        console.error('❌ Stack:', error.stack);
+      }
+    }
+
+    // Запускаем загрузку CMS при загрузке страницы
+    function initCMS() {
+      bootstrapCMS().catch(error => {
+        // Показываем fallback методы даже при ошибке
+        const fallbackMethods = [
+          { id: 'qr_sbp', label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+          { id: 'sberpay', label: 'SberPay', description: 'Официальная кнопка Сбербанка для быстрой оплаты.' },
+          { id: 'card_sber', label: 'Карта Сбербанк (Мир/Visa/Mastercard)', description: 'Интернет-эквайринг Сбербанка для карт «Мир», Visa, Mastercard. Без ввода лишних данных.' },
+          { id: 'tinkoff_pay', label: 'Tinkoff Pay', description: 'Моментальная оплата через приложение Тинькофф.' },
+          { id: 'manual_transfer', label: 'Оплата на карту через СБП', description: 'Переведите деньги через СБП на номер нашей карты. Мгновенное зачисление, без комиссии. После оплаты вы получите код активации.' }
+        ];
+        renderPaymentSelect(fallbackMethods);
+      });
+    }
+    
+    // Обработчик изменения метода оплаты (работает даже без загрузки JSON)
+    function setupPaymentMethodHandler() {
+      const select = document.querySelector('[data-method-select]');
+      const descriptionBox = document.querySelector('[data-method-description]');
+      
+      if (!select || !descriptionBox) return;
+      
+      const methodDescriptions = {
+        'qr_sbp': { label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+        'sberpay': { label: 'SberPay', description: 'Официальная кнопка Сбербанка для быстрой оплаты.' },
+        'card_sber': { label: 'Карта Сбербанк (Мир/Visa/Mastercard)', description: 'Интернет-эквайринг Сбербанка для карт «Мир», Visa, Mastercard. Без ввода лишних данных.' },
+        'tinkoff_pay': { label: 'Tinkoff Pay', description: 'Моментальная оплата через приложение Тинькофф.' },
+        'manual_transfer': { label: 'Оплата на карту через СБП', description: 'Переведите деньги через СБП на номер нашей карты. Мгновенное зачисление, без комиссии. После оплаты вы получите код активации.' }
+      };
+      
+      const updateDescription = () => {
+        const selectedId = select.value;
+        const current = methodDescriptions[selectedId];
+        
+        if (current) {
+          descriptionBox.innerHTML = `
+            <div class="method-selected">
+              <h4>✅ Выбран: ${current.label}</h4>
+              <p>${current.description}</p>
+              <button type="button" class="method-info-btn" data-method-info="${selectedId}">
+                ℹ️ Подробнее об этом методе
+              </button>
+            </div>
+          `;
+          
+          // Добавляем обработчик для кнопки "Подробнее"
+          const infoBtn = descriptionBox.querySelector('[data-method-info]');
+          if (infoBtn) {
+            infoBtn.addEventListener('click', () => {
+              alert(`${current.label}\n\n${current.description}\n\n📋 Что дальше?\nПосле нажатия "Перейти к оплате" вы будете перенаправлены на страницу оплаты банка или увидите QR-код для сканирования в приложении вашего банка.`);
+            });
+          }
+        }
+      };
+      
+      select.addEventListener('change', updateDescription);
+    }
+    
+    // ========== МОДАЛЬНОЕ ОКНО С ПОЛНОЙ ТАБЛИЦЕЙ СРАВНЕНИЯ ==========
+    
+    // Данные всех 138 функций (делаем глобальными) - ОПРЕДЕЛЯЕМ СРАЗУ
+    window.allFunctions = [
+      // Защита от угроз (100 функций)
+      { name: 'Вирусы и трояны', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+      { name: 'Шифровальщики (ransomware)', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+      { name: 'Шпионское ПО', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+      { name: 'Ботнеты', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+      { name: 'DDoS-атаки', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+      { name: 'Фишинговые сайты', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+      { name: 'Поддельные приложения', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+      { name: 'Вредоносные ссылки', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+      { name: 'Криптовалютные майнеры', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+      { name: 'Руткиты', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Киберугрозы' },
+      { name: 'Опасные сайты', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+      { name: 'Вредоносная реклама', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+      { name: 'Подозрительные загрузки', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+      { name: 'Небезопасные сети Wi-Fi', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+      { name: 'DNS-спуфинг', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+      { name: 'Атаки «человек посередине»', category: 'protection', free: true, personal: true, family: true, premium: true, subcategory: 'Интернет-угрозы' },
+      { name: 'Телефонное мошенничество', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Финансовое мошенничество', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Медицинские аферы', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Социальная инженерия', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Поддельные банки', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Фишинговые письма', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Мошенничество с картами', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Инвестиционные пирамиды', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Лотерейные мошенничества', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Романтические аферы', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Vishing (голосовой фишинг)', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Smishing (SMS-фишинг)', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мошенничество' },
+      { name: 'Кража паролей', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Компрометация аккаунтов', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Утечки персональных данных', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Нарушение приватности', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Слежка за семьёй', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Утечки в тёмной сети', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Утечки метаданных', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Кейлоггеры (keyloggers)', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Перехват сессий (session hijacking)', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Отслеживающие cookie-файлы', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Отслеживание геолокации', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Утечки данных EXIF', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Утечки данных' },
+      { name: 'Вредоносные приложения', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+      { name: 'SMS-мошенничество', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+      { name: 'Поддельные уведомления', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+      { name: 'Кража данных', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+      { name: 'Геолокационные угрозы', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+      { name: 'Bluetooth-атаки', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+      { name: 'SIM-swapping', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+      { name: 'Поддельные банковские приложения', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+      { name: 'Мобильные шифровальщики', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+      { name: 'Скрытая запись экрана', category: 'protection', free: false, personal: true, family: true, premium: true, subcategory: 'Мобильные угрозы' },
+      { name: 'Неподходящий контент', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Кибербуллинг', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Опасные знакомства', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Игровая зависимость', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Случайные покупки', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Взрослые сайты', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Насилие в играх', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Наркотики/алкоголь', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Азартные игры', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Экстремизм', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Контент с призывами к саморазрушению', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Неподходящая реклама', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Онлайн-хищники', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Груминг', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Кэтфишинг', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Токсичные сообщества', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Зависимость от онлайн-казино', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Угрозы для детей' },
+      { name: 'Домашнее насилие в сети', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Семейные конфликты', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Изоляция', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Эмоциональные проблемы', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Психологическое давление', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Киберсталкинг', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Цифровое преследование', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Онлайн-конфликты', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Подмена члена семьи', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Цифровая изоляция', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Триггеры депрессии', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Манипуляции', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Газлайтинг', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Нарушение семейной приватности', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Несанкционированный доступ родственников', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'Семейные угрозы' },
+      { name: 'Взлом умных устройств', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+      { name: 'Взлом умного дома', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+      { name: 'Компрометация камер', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+      { name: 'Подслушивание через колонки', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+      { name: 'Взлом домашней сети', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+      { name: 'Утечки данных IoT', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+      { name: 'Манипуляция голосовыми командами', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+      { name: 'Слабые пароли', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+      { name: 'Пароли по умолчанию', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+      { name: 'Кража устройств', category: 'protection', free: false, personal: false, family: true, premium: true, subcategory: 'IoT угрозы' },
+      { name: 'Deepfake-видео', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+      { name: 'Поддельные голоса', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+      { name: 'Спуфинг номеров', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+      { name: 'Поддельные сайты', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+      { name: 'Фейковые новости', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+      { name: 'Поддельные документы', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+      { name: 'Фейковые профили знакомств', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+      { name: 'Спуфинг писем', category: 'protection', free: false, personal: false, family: false, premium: true, subcategory: 'Deepfake' },
+      // Родительский контроль (32 функции)
+      { name: 'Блокировка опасных сайтов', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Блокировка контента' },
+      { name: 'Блокировка приложений', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Блокировка контента' },
+      { name: 'SafeSearch в поисковиках', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Блокировка контента' },
+      { name: 'Белые списки сайтов', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Блокировка контента' },
+      { name: 'Автоблокировка по категориям', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Блокировка контента' },
+      { name: 'Лимит экранного времени', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Управление временем' },
+      { name: 'Время сна (блокировка)', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Управление временем' },
+      { name: 'Расписания использования', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Управление временем' },
+      { name: 'Лимиты по типам контента', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Управление временем' },
+      { name: 'История активности (24 часа)', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Мониторинг' },
+      { name: 'История активности (7 дней)', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Мониторинг' },
+      { name: 'Мониторинг контактов', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Мониторинг' },
+      { name: 'Мониторинг сообщений', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Мониторинг' },
+      { name: 'Мониторинг звонков', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Мониторинг' },
+      { name: 'Геолокация в реальном времени', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Геолокация' },
+      { name: 'Геозоны (безопасные зоны)', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Геолокация' },
+      { name: 'История геолокации (24 часа)', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Геолокация' },
+      { name: 'Кнопка SOS', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Геолокация' },
+      { name: 'История геолокации (7 дней + экспорт)', category: 'parental', free: false, personal: false, family: false, premium: true, subcategory: 'Геолокация' },
+      { name: 'Еженедельный отчёт', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Отчёты' },
+      { name: 'Расширенный отчёт', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Отчёты' },
+      { name: 'Ежемесячный отчёт + экспорт', category: 'parental', free: false, personal: false, family: false, premium: true, subcategory: 'Отчёты' },
+      { name: 'Запросы доступа к контенту', category: 'parental', free: false, personal: true, family: true, premium: true, subcategory: 'Дополнительно' },
+      { name: 'Домашнее задание (блокировка)', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Дополнительно' },
+      { name: 'YouTube Safe Mode', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Дополнительно' },
+      { name: 'AI-аналитика поведения', category: 'parental', free: false, personal: false, family: false, premium: true, subcategory: 'Дополнительно' },
+      { name: 'Обнаружение инкогнито-режима', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Защита от обхода' },
+      { name: 'Блокировка VPN/Tor/Proxy', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Защита от обхода' },
+      { name: 'Мгновенная блокировка', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Защита от обхода' },
+      { name: 'Базовые награды (единороги)', category: 'parental', free: true, personal: true, family: true, premium: true, subcategory: 'Вознаграждения' },
+      { name: 'Автоматические награды', category: 'parental', free: false, personal: false, family: true, premium: true, subcategory: 'Вознаграждения' },
+      { name: 'Премиум награды + аналитика', category: 'parental', free: false, personal: false, family: false, premium: true, subcategory: 'Вознаграждения' },
+      // Дополнительные функции (6 функций)
+      { name: 'VPN (50-100 МБ/день)', category: 'additional', free: true, personal: false, family: false, premium: false, subcategory: 'VPN' },
+      { name: 'VPN (безлимит)', category: 'additional', free: false, personal: true, family: true, premium: true, subcategory: 'VPN' },
+      { name: 'VPN (безлимит AES-256)', category: 'additional', free: false, personal: false, family: false, premium: true, subcategory: 'VPN' },
+      { name: 'AI помощник', category: 'additional', free: false, personal: true, family: true, premium: true, subcategory: 'AI' },
+      { name: 'Защита пожилых', category: 'additional', free: false, personal: false, family: true, premium: true, subcategory: 'Специальные' },
+      { name: 'Голосовое управление', category: 'additional', free: false, personal: false, family: true, premium: true, subcategory: 'Специальные' },
+      { name: 'Геймификация', category: 'additional', free: false, personal: false, family: true, premium: true, subcategory: 'Специальные' },
+      { name: 'Анонимные профили', category: 'additional', free: false, personal: false, family: false, premium: true, subcategory: 'Специальные' }
+    ];
+    
+    // Делаем функцию глобальной для доступа из window.openComparisonModal
+    window.renderFullComparisonTable = function(filter = 'all', search = '') {
+      try {
+        const table = document.getElementById('fullComparisonTable');
+        if (!table) {
+          return;
+        }
+        
+        // Используем глобальный allFunctions
+        const allFunctions = window.allFunctions;
+        if (!allFunctions || !Array.isArray(allFunctions) || allFunctions.length === 0) {
+          table.innerHTML = '<p style="padding: 40px; text-align: center; color: rgba(255,255,255,0.6);">Ошибка: данные функций не загружены (' + (allFunctions ? '0 функций' : 'allFunctions не определена') + '). Попробуйте обновить страницу.</p>';
+          return;
+        }
+      
+      let filtered = allFunctions;
+      
+      // Фильтр по категории
+      if (filter !== 'all') {
+        filtered = filtered.filter(f => f.category === filter);
+      }
+      
+      // Поиск
+      if (search.trim()) {
+        const searchLower = search.toLowerCase();
+        filtered = filtered.filter(f => 
+          f.name.toLowerCase().includes(searchLower) ||
+          f.subcategory.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      // Группировка по подкатегориям
+      const grouped = {};
+      filtered.forEach(func => {
+        if (!grouped[func.subcategory]) {
+          grouped[func.subcategory] = [];
+        }
+        grouped[func.subcategory].push(func);
+      });
+      
+      let html = '<table class="full-comparison-table"><thead><tr><th>Функция</th><th>FREE</th><th>PERSONAL</th><th>FAMILY</th><th>PREMIUM</th></tr></thead><tbody>';
+      
+      Object.keys(grouped).sort().forEach(subcategory => {
+        html += `<tr class="subcategory-header"><td colspan="5"><strong>${subcategory}</strong></td></tr>`;
+        grouped[subcategory].forEach(func => {
+          html += `<tr>
+            <td>${func.name}</td>
+            <td class="check-cell">${func.free ? '✅' : '❌'}</td>
+            <td class="check-cell">${func.personal ? '✅' : '❌'}</td>
+            <td class="check-cell">${func.family ? '✅' : '❌'}</td>
+            <td class="check-cell">${func.premium ? '✅' : '❌'}</td>
+          </tr>`;
+        });
+      });
+      
+      html += '</tbody></table>';
+      
+      if (filtered.length === 0) {
+        html = '<p style="text-align: center; padding: 40px; color: rgba(255,255,255,0.6);">Ничего не найдено. Попробуйте другой поисковый запрос.</p>';
+      }
+      
+        try {
+          table.innerHTML = html;
+        } catch (err) {
+          table.innerHTML = '<p style="padding: 40px; text-align: center; color: rgba(255,255,255,0.6);">Ошибка при отрисовке: ' + err.message + '</p>';
+        }
+      } catch (err) {
+        const table = document.getElementById('fullComparisonTable');
+        if (table) {
+          table.innerHTML = '<p style="padding: 40px; text-align: center; color: rgba(255,255,255,0.6);">Критическая ошибка: ' + err.message + '<br><small style="font-size: 12px; margin-top: 10px; display: block;">Stack: ' + (err.stack || 'нет') + '</small></p>';
+        }
+      }
+    }
+    
+    // ========== ИНИЦИАЛИЗАЦИЯ МОДАЛЬНОГО ОКНА ==========
+    function initModal() {
+      const modal = document.getElementById('fullComparisonModal');
+      const showBtn = document.getElementById('showFullComparison');
+      const closeBtn = document.getElementById('closeModal');
+      
+      if (!modal) {
+        console.error('❌ Модальное окно не найдено в DOM');
+        return;
+      }
+      
+      console.log('✅ Модальное окно найдено, инициализация...');
+      
+      // Дополнительная привязка к кнопке (на случай, если onclick не сработал)
+      if (showBtn) {
+        showBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('✅ Клик через addEventListener!');
+          window.openComparisonModal();
+        });
+      }
+      
+      // ПРИЧИНА 1: Используем глобальную функцию закрытия (уже определена в начале скрипта)
+      // ПРИЧИНА 2: Удаляем старые обработчики перед добавлением новых (избегаем дублирования)
+      if (closeBtn) {
+        // Клонируем кнопку, чтобы удалить все старые обработчики
+        const newCloseBtn = closeBtn.cloneNode(true);
+        closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+        
+        // ПРИЧИНА 3: Добавляем обработчики через addEventListener (более надежно)
+        newCloseBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof window.closeComparisonModal === 'function') {
+            window.closeComparisonModal();
+          }
+        }, true); // Используем capture phase для надежности
+        
+        // ПРИЧИНА 4: Дополнительный обработчик через onclick (на случай, если addEventListener не сработал)
+        newCloseBtn.onclick = function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof window.closeComparisonModal === 'function') {
+            window.closeComparisonModal();
+          }
+          return false;
+        };
+      }
+      
+      // ПРИЧИНА 5: Event delegation на уровне document (самый надежный способ)
+      // Это работает даже если кнопка создается динамически
+      document.addEventListener('click', function(e) {
+        // Проверяем, что клик был именно на кнопке закрытия
+        if (e.target && (e.target.id === 'closeModal' || e.target.closest('#closeModal'))) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (typeof window.closeComparisonModal === 'function') {
+            window.closeComparisonModal();
+          }
+        }
+      }, true); // Используем capture phase
+      
+      // Закрытие по клику вне модалки (на overlay)
+      modal.onclick = function(e) {
+        if (e.target === modal) {
+          if (typeof window.closeComparisonModal === 'function') {
+            window.closeComparisonModal();
+          }
+        }
+      };
+      
+      // Предотвращаем закрытие при клике на содержимое модального окна
+      const modalContent = modal.querySelector('.modal-content');
+      if (modalContent) {
+        modalContent.onclick = function(e) {
+          e.stopPropagation();
+        };
+      }
+      
+      // Закрытие по клавише ESC
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') {
+          if (typeof window.closeComparisonModal === 'function') {
+            window.closeComparisonModal();
+          }
+        }
+      });
+      
+      // Поиск
+      const searchInput = document.getElementById('functionSearch');
+      if (searchInput) {
+        searchInput.oninput = function(e) {
+          const activeFilter = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+          if (typeof window.renderFullComparisonTable === 'function') {
+            window.renderFullComparisonTable(activeFilter, e.target.value);
+          }
+        };
+      }
+      
+      // Фильтры
+      document.addEventListener('click', function filterClickHandler(e) {
+        const filterBtn = e.target.closest('.filter-btn');
+        if (filterBtn && modal.style.display === 'flex') {
+          e.preventDefault();
+          e.stopPropagation();
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          filterBtn.classList.add('active');
+          const filter = filterBtn.dataset.filter || 'all';
+          const search = searchInput?.value || '';
+          if (typeof window.renderFullComparisonTable === 'function') {
+            window.renderFullComparisonTable(filter, search);
+          }
+        }
+      });
+      
+      // Модальное окно полностью инициализировано
+    }
+    
+    // ПРИЧИНА 6: Множественные точки инициализации для гарантии
+    function initializeAll() {
+      try {
+        console.log('🔧 initializeAll() вызвана');
+        console.log('🔍 Проверка: tariffsCache.length =', window.tariffsCache?.length || 0);
+        console.log('🔍 Проверка: tariffsReady =', window.tariffsReady);
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала загружаем тарифы, потом инициализируем форму
+        // ✅ ИСПРАВЛЕНИЕ: Используем window.bootstrapFallbackTariffs
+        if (typeof window.bootstrapFallbackTariffs === 'function') {
+          console.log('✅ Вызываем bootstrapFallbackTariffs()...');
+          window.bootstrapFallbackTariffs();
+          console.log('✅ bootstrapFallbackTariffs() завершена');
+          console.log('🔍 После bootstrapFallbackTariffs: tariffsCache.length =', window.tariffsCache?.length || 0);
+          console.log('🔍 После bootstrapFallbackTariffs: tariffsReady =', window.tariffsReady);
+          
+          // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убеждаемся, что селект периода заполнен СРАЗУ при загрузке
+          // Проверяем несколько раз с небольшими задержками, чтобы гарантировать заполнение
+          const checkAndFillPeriodSelect = (attempt = 0) => {
+            const periodSelect = document.querySelector('[data-tariff-period]');
+            const tariffSelect = document.querySelector('[data-tariff-select]');
+            
+            if (!periodSelect || !tariffSelect) {
+              if (attempt < 5) {
+                setTimeout(() => checkAndFillPeriodSelect(attempt + 1), 100);
+              }
+              return;
+            }
+            
+            const tariffId = tariffSelect.value || 'family';
+            const tariff = window.tariffsCache?.find(t => t.id === tariffId);
+            
+            // Если селект не заполнен или отключен, заполняем его
+            if (periodSelect.disabled || periodSelect.options.length <= 1) {
+              if (tariff && tariff.pricing && tariff.pricing.periods) {
+                periodSelect.innerHTML = '';
+                tariff.pricing.periods.forEach(period => {
+                  const option = document.createElement('option');
+                  option.value = period.months;
+                  option.textContent = `${period.label} — ${formatCurrency(Number(period.total))} (${formatCurrency(Number(period.monthly))}/мес)`;
+                  periodSelect.appendChild(option);
+                });
+                const defaultMonths = tariff.pricing.defaultMonths || tariff.pricing.periods[0]?.months || 12;
+                periodSelect.value = defaultMonths;
+                periodSelect.disabled = false;
+                updatePeriodHint(tariffId, defaultMonths);
+                console.log(`✅ Селект периода заполнен (попытка ${attempt + 1}): тариф=${tariffId}, период=${defaultMonths}, опций=${periodSelect.options.length}`);
+              } else if (attempt < 5) {
+                // Если тариф еще не загружен, пробуем еще раз
+                setTimeout(() => checkAndFillPeriodSelect(attempt + 1), 100);
+              }
+            } else {
+              console.log(`✅ Селект периода уже заполнен (${periodSelect.options.length} опций)`);
+            }
+          };
+          
+          // Запускаем проверку сразу и с задержками для гарантии
+          checkAndFillPeriodSelect(0);
+          setTimeout(() => checkAndFillPeriodSelect(1), 100);
+          setTimeout(() => checkAndFillPeriodSelect(2), 300);
+        } else {
+          console.error('❌ window.bootstrapFallbackTariffs не найдена в initializeAll()');
+        }
+        setupPaymentMethodHandler();
+        initCMS();
+        initModal();
+        initPaymentForm(); // Инициализируем форму оплаты
+        console.log('✅ initializeAll() завершена');
+      } catch (error) {
+        console.error('❌ ОШИБКА в initializeAll():', error);
+        console.error('❌ Stack:', error.stack);
+        alert('❌ Ошибка инициализации: ' + error.message);
+      }
+    }
+    
+    // ПРИЧИНА 9: Множественные способы инициализации
+    function safeInit() {
+      try {
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('🔧 safeInit() ВЫЗВАНА');
+        console.log('   readyState:', document.readyState);
+        console.log('   simpleFillPeriodSelect exists:', typeof window.simpleFillPeriodSelect);
+        console.log('═══════════════════════════════════════════════════════');
+        
+        // ✅ ПРОСТОЕ РЕШЕНИЕ: Заполняем селект периода СРАЗУ после загрузки DOM
+        const fillPeriodSelect = () => {
+          console.log('🔧 fillPeriodSelect() вызвана');
+          console.log('   simpleFillPeriodSelect exists:', typeof window.simpleFillPeriodSelect);
+          
+          if (window.simpleFillPeriodSelect) {
+            console.log('   Вызываем simpleFillPeriodSelect()...');
+            const result = window.simpleFillPeriodSelect();
+            console.log('   Результат:', result);
+            if (result) {
+              console.log('✅ Селект периода заполнен ПРОСТЫМ способом!');
+            } else {
+              console.error('❌ simpleFillPeriodSelect вернула false!');
+              // Пробуем еще раз через 100ms
+              setTimeout(() => {
+                console.log('   Повторная попытка через 100ms...');
+                if (window.simpleFillPeriodSelect && window.simpleFillPeriodSelect()) {
+                  console.log('✅ Селект периода заполнен ПРОСТЫМ способом (повторная попытка)!');
+                } else {
+                  console.error('❌ Повторная попытка тоже не удалась!');
+                }
+              }, 100);
+            }
+          } else {
+            console.error('❌ simpleFillPeriodSelect НЕ НАЙДЕНА!');
+          }
+        };
+        
+        if (document.readyState === 'loading') {
+          console.log('⏳ DOM еще загружается, ждем DOMContentLoaded...');
+          document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ DOMContentLoaded сработал!');
+            fillPeriodSelect(); // Заполняем селект СРАЗУ
+            initializeAll();
+          });
+        } else {
+          console.log('✅ DOM уже загружен, запускаем сразу');
+          fillPeriodSelect(); // Заполняем селект СРАЗУ
+          initializeAll();
+        }
+      } catch (error) {
+        console.error('❌ ОШИБКА в safeInit():', error);
+        // Пробуем еще раз через задержку
+        setTimeout(function() {
+          try {
+            initializeAll();
+          } catch (e) {
+            console.error('❌ ОШИБКА при повторной попытке:', e);
+          }
+        }, 500);
+      }
+    }
+    
+    // ✅ ПРОСТОЕ РЕШЕНИЕ: Проверяем, что тарифы загружены (они уже должны быть загружены выше)
+    console.log('🔧 ПРОСТОЕ РЕШЕНИЕ: проверяем тарифы в кэше...');
+    console.log('🔍 tariffsCache.length =', window.tariffsCache?.length || 0);
+    if (!window.tariffsCache || window.tariffsCache.length === 0) {
+      console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: тарифы не загружены! Загружаем fallback...');
+      window.tariffsCache = FALLBACK_TARIFFS;
+      console.log('✅ Тарифы загружены через fallback, tariffsCache.length =', window.tariffsCache.length);
+    } else {
+      console.log('✅ Тарифы уже в кэше, tariffsCache.length =', window.tariffsCache.length);
+    }
+    
+    // ✅ ПРОСТАЯ ФУНКЦИЯ: Заполняет селект периода БЕЗ сложных проверок
+    window.simpleFillPeriodSelect = function() {
+      console.log('═══════════════════════════════════════════════════════');
+      console.log('🔧 simpleFillPeriodSelect ВЫЗВАНА');
+      console.log('═══════════════════════════════════════════════════════');
+      console.log('🔍 Шаг 1: Проверка tariffsCache');
+      console.log('   tariffsCache =', window.tariffsCache);
+      console.log('   tariffsCache.length =', window.tariffsCache?.length || 0);
+      console.log('   tariffsCache type =', typeof window.tariffsCache);
+      console.log('   tariffsCache isArray =', Array.isArray(window.tariffsCache));
+      
+      const select = document.querySelector('[data-tariff-period]');
+      console.log('🔍 Шаг 2: Проверка селекта в DOM');
+      console.log('   select =', select);
+      console.log('   select exists =', !!select);
+      if (select) {
+        console.log('   select.innerHTML =', select.innerHTML);
+        console.log('   select.disabled =', select.disabled);
+        console.log('   select.options.length =', select.options.length);
+      } else {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Селект периода НЕ НАЙДЕН в DOM!');
+        console.error('   Попробуем найти все селекты:', document.querySelectorAll('select'));
+        return false;
+      }
+      
+      // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Берем тариф из селекта, а не по умолчанию
+      const tariffSelect = document.querySelector('[data-tariff-select]');
+      const selectedTariffId = tariffSelect?.value || 'family';
+      console.log('🔍 Шаг 3: Поиск тарифа из селекта');
+      console.log('   selectedTariffId =', selectedTariffId);
+      
+      const tariff = window.tariffsCache?.find(t => t.id === selectedTariffId) || window.tariffsCache?.find(t => t.id === 'family') || window.tariffsCache?.[0];
+      console.log('   tariff =', tariff);
+      console.log('   tariff exists =', !!tariff);
+      if (tariff) {
+        console.log('   tariff.id =', tariff.id);
+        console.log('   tariff.pricing =', tariff.pricing);
+        console.log('   tariff.pricing.periods =', tariff.pricing?.periods);
+        console.log('   tariff.pricing.periods.length =', tariff.pricing?.periods?.length || 0);
+      }
+      
+      if (!tariff || !tariff.pricing || !tariff.pricing.periods) {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Тарифы не найдены!');
+        console.error('   tariffsCache.length =', window.tariffsCache?.length || 0);
+        console.error('   tariff =', tariff);
+        console.error('   tariff.pricing =', tariff?.pricing);
+        console.error('   tariff.pricing.periods =', tariff?.pricing?.periods);
+        return false;
+      }
+      
+      console.log('✅ Шаг 4: Тариф найден:', tariff.id, 'периодов:', tariff.pricing.periods.length);
+      
+      // ПРОСТО заполняем селект
+      console.log('🔍 Шаг 5: Заполнение селекта');
+      try {
+        select.innerHTML = '';
+        console.log('   Селект очищен');
+        
+        tariff.pricing.periods.forEach((period, index) => {
+          console.log(`   Создание опции ${index + 1}: months=${period.months}, label=${period.label}`);
+          const option = document.createElement('option');
+          option.value = period.months;
+          option.textContent = `${period.label} — ${formatCurrency(Number(period.total))} (${formatCurrency(Number(period.monthly))}/мес)`;
+          select.appendChild(option);
+          console.log(`   ✅ Опция ${index + 1} добавлена`);
+        });
+        
+        console.log('   Всего опций создано:', select.options.length);
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Устанавливаем значение по умолчанию (1 месяц) для ВЫБРАННОГО тарифа
+        const selectedMonths = 1; // По умолчанию 1 месяц
+        select.value = String(selectedMonths);
+        select.disabled = false;
+        console.log(`   Значение установлено: ${selectedMonths} месяц для тарифа ${tariff.id}`);
+        console.log('   disabled = false');
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем подсказку для ВЫБРАННОГО тарифа
+        const hint = document.querySelector('[data-period-hint]');
+        if (hint) {
+          const priceInfo = getTariffPeriodInfo(tariff.id, selectedMonths);
+          if (priceInfo) {
+            hint.textContent = `К оплате: ${formatCurrency(priceInfo.total)} за ${selectedMonths} месяц${priceInfo.savings > 0 ? ` • Экономия ${formatCurrency(priceInfo.savings)}` : ''}`;
+            console.log(`   Подсказка обновлена для тарифа ${tariff.id}, период ${selectedMonths} мес`);
+          } else {
+            console.error('   ❌ Не удалось получить цену для тарифа', tariff.id, 'период', selectedMonths);
+          }
+        }
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сохраняем выбранный период для тарифа
+        selectedTariffPeriods[tariff.id] = selectedMonths;
+        
+        console.log('═══════════════════════════════════════════════════════');
+        console.log('✅ УСПЕХ: Селект периода заполнен!');
+        console.log('   Опций в селекте:', select.options.length);
+        console.log('   Выбранное значение:', select.value);
+        console.log('   disabled:', select.disabled);
+        console.log('═══════════════════════════════════════════════════════');
+        return true;
+      } catch (error) {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА при заполнении селекта:', error);
+        console.error('   Error message:', error.message);
+        console.error('   Error stack:', error.stack);
+        return false;
+      }
+    };
+    
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Вызываем заполнение селекта периода НЕМЕДЛЕННО после определения функции
+    console.log('═══════════════════════════════════════════════════════');
+    console.log('🔧 НЕМЕДЛЕННЫЙ ВЫЗОВ: Проверяем readyState:', document.readyState);
+    console.log('   simpleFillPeriodSelect exists:', typeof window.simpleFillPeriodSelect);
+    
+    // Пробуем заполнить селект СРАЗУ, если DOM готов
+    if (typeof window.simpleFillPeriodSelect === 'function') {
+      console.log('   Вызываем simpleFillPeriodSelect() НЕМЕДЛЕННО...');
+      if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        console.log('   DOM готов, вызываем сразу');
+        setTimeout(() => {
+          window.simpleFillPeriodSelect();
+        }, 0);
+      } else {
+        console.log('   DOM еще не готов, ждем...');
+      }
+    } else {
+      console.error('❌ simpleFillPeriodSelect НЕ НАЙДЕНА при немедленном вызове!');
+    }
+    console.log('═══════════════════════════════════════════════════════');
+    
+    // Запускаем инициализацию
+    safeInit();
+    
+        // ✅ ПРОСТОЕ РЕШЕНИЕ: Дополнительная проверка - заполняем селект периода еще раз
+    setTimeout(function() {
+      console.log('🔧 Дополнительная проверка через 1 секунду...');
+      // Пробуем заполнить селект периода еще раз
+      if (window.simpleFillPeriodSelect) {
+        window.simpleFillPeriodSelect();
+      }
+      const form = document.getElementById('paymentForm');
+      const btn = document.getElementById('submitPaymentBtn');
+      
+      if (form && !form.dataset.initialized) {
+        console.log('⚠️ Форма не инициализирована, пробуем еще раз...');
+        initPaymentForm();
+      }
+      
+      // Тест кнопки
+      if (btn) {
+        console.log('✅ Кнопка найдена в дополнительной проверке');
+        console.log('🔍 Кнопка disabled?', btn.disabled);
+        console.log('🔍 Кнопка style.display:', window.getComputedStyle(btn).display);
+        console.log('🔍 Кнопка style.visibility:', window.getComputedStyle(btn).visibility);
+        console.log('🔍 Кнопка style.pointerEvents:', window.getComputedStyle(btn).pointerEvents);
+        console.log('🔍 Кнопка style.zIndex:', window.getComputedStyle(btn).zIndex);
+        console.log('🔍 Кнопка style.position:', window.getComputedStyle(btn).position);
+        
+        // Убеждаемся, что кнопка кликабельна
+        btn.style.pointerEvents = 'auto';
+        btn.style.cursor = 'pointer';
+        btn.style.zIndex = '10';
+        btn.style.position = 'relative';
+        btn.disabled = false;
+        
+        // Простой тест клика
+        btn.addEventListener('click', function(e) {
+          console.log('✅ ТЕСТ: Кнопка кликабельна!', e);
+        }, true);
+      } else {
+        console.error('❌ Кнопка submitPaymentBtn не найдена!');
+      }
+    }, 1000);
+    
+    // ПРИЧИНА 7: Дополнительная инициализация после полной загрузки страницы
+    window.addEventListener('load', function() {
+      setTimeout(initModal, 100);
+      setTimeout(initPaymentForm, 100); // Инициализируем форму еще раз
+      // Проверяем, что данные загружены
+      setTimeout(function() {
+        if (window.allFunctions && window.allFunctions.length > 0) {
+          // Данные загружены, всё ок
+        } else {
+          alert('Внимание: данные функций не загружены. Обновите страницу.');
+        }
+      }, 1000);
+    });
+    
+    // Также пробуем инициализировать через небольшую задержку (на случай динамического контента)
+    setTimeout(initModal, 500);
+    setTimeout(initPaymentForm, 500); // Инициализируем форму еще раз
+  </script>
+</body>
+</html>
+

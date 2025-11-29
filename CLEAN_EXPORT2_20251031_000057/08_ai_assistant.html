@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Wireframes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        
+        .voice-btn {
+            width: 40px;
+            height: 40px;
+            background: #F59E0B;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #0a1128;
+            font-weight: bold;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .message.user {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .message.user .message-avatar {
+            background: #F59E0B;
+            color: #0a1128;
+        }
+        
+        .message.ai .message-avatar {
+            background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+            color: white;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+        
+        .message.user .message-content {
+            background: #F59E0B;
+            color: #0a1128;
+            border-bottom-right-radius: 5px;
+        }
+        
+        .message.ai .message-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-bottom-left-radius: 5px;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 15px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #F59E0B;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-action {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 12px 10px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            text-align: center;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .quick-action:hover {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: #F59E0B;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .message-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            padding: 15px 20px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .send-btn {
+            width: 50px;
+            height: 50px;
+            background: #F59E0B;
+            border: none;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #0a1128;
+            font-weight: bold;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+        
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+        
+        .ai-status {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10B981;
+            border-radius: 15px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #10B981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 6px 2px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 4px 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            min-width: 0;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+        
+        .status-left {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .status-right {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #F59E0B;
+            color: #0a1128;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">AI помощник</div>
+        <div class="screen">
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="back-btn" onclick="window.location.href='01_main_screen.html'" style="cursor: pointer;">←</div>
+                <div class="title">🤖 AI Помощник</div>
+                <div class="voice-btn" onclick="alert('🎤 Голосовой ввод активирован!\n\nГоворите после звукового сигнала...')" style="cursor: pointer;">🎤</div>
+            </div>
+            
+            <!-- Статус AI -->
+            <div class="ai-status">
+                <div class="status-dot"></div>
+                <span>AI помощник онлайн и готов помочь</span>
+            </div>
+            
+            <!-- Чат -->
+            <div class="chat-container" role="region" aria-label="История чата с AI помощником">
+                <div class="message ai">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        Привет! Я ваш AI помощник ALADDIN. Чем могу помочь с безопасностью семьи?
+                    </div>
+                </div>
+                
+                <div class="message user">
+                    <div class="message-avatar">👨</div>
+                    <div class="message-content">
+                        Как настроить родительский контроль?
+                    </div>
+                </div>
+                
+                <div class="message ai">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        Отлично! Для настройки родительского контроля:
+                        <br><br>
+                        1. Перейдите в раздел "Семья"
+                        2. Выберите профиль ребенка
+                        3. Нажмите "Настройки безопасности"
+                        4. Включите нужные ограничения
+                        <br><br>
+                        Хотите, чтобы я показал пошагово?
+                    </div>
+                </div>
+                
+                <div class="typing-indicator">
+                    <div class="message-avatar">🤖</div>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Быстрые действия -->
+            <div class="quick-actions" role="region" aria-label="Быстрые действия">
+                <div class="quick-action" onclick="window.location.href='02_protection_screen.html'" style="cursor: pointer;">🛡️ Защита</div>
+                <div class="quick-action" onclick="sessionStorage.setItem('previousPage', '08_ai_assistant.html'); window.location.href='03_family_screen.html'" style="cursor: pointer;">👨‍👩‍👧‍👦 Семья</div>
+                <div class="quick-action" onclick="sessionStorage.setItem('previousPage', '08_ai_assistant.html'); window.location.href='10_info_screen.html'" style="cursor: pointer;">❓ Помощь</div>
+                <div class="quick-action" onclick="sessionStorage.setItem('previousPage', '08_ai_assistant.html'); window.location.href='10_info_screen.html'" style="cursor: pointer;">📄 Политика</div>
+                <div class="quick-action" onclick="window.location.href='05_settings_screen.html'" style="cursor: pointer;">⚙️ Настройки</div>
+                <div class="quick-action" onclick="window.location.href='04_analytics_screen.html'" style="cursor: pointer;">📊 Аналитика</div>
+            </div>
+            
+            <!-- Ввод сообщения -->
+            <div class="input-container">
+                <input type="text" class="message-input" id="messageInput" placeholder="Напишите сообщение..." aria-label="Поле ввода сообщения для AI помощника">
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()" aria-label="Отправить сообщение">➤</button>
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN">
+                    <div class="nav-icon">🛡️</div>
+                    <div class="nav-label">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления">
+                    <div class="nav-icon">🔔</div>
+                    <div class="nav-label">Уведомления</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи">
+                    <div class="nav-icon">📱</div>
+                    <div class="nav-label">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    // Отправка сообщения
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        
+        if (!message) return;
+        
+        // Добавляем сообщение пользователя
+        addUserMessage(message);
+        
+        // Очищаем input
+        input.value = '';
+        
+        // Показываем typing indicator
+        showTypingIndicator();
+        
+        // Через 2 секунды показываем ответ AI
+        setTimeout(() => {
+            hideTypingIndicator();
+            const response = generateResponse(message);
+            addAIMessage(response);
+            saveMessageHistory();
+        }, 2000);
+    }
+    
+    // Добавление сообщения пользователя
+    function addUserMessage(text) {
+        const chatContainer = document.querySelector('.chat-container');
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message user';
+        messageDiv.innerHTML = `
+            <div class="message-avatar">👨</div>
+            <div class="message-content">${text}</div>
+        `;
+        
+        // Вставляем перед typing indicator
+        const typingIndicator = document.querySelector('.typing-indicator');
+        chatContainer.insertBefore(messageDiv, typingIndicator);
+        
+        scrollToBottom();
+    }
+    
+    // Добавление ответа AI
+    function addAIMessage(text) {
+        const chatContainer = document.querySelector('.chat-container');
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message ai';
+        messageDiv.innerHTML = `
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">${text}</div>
+        `;
+        
+        // Вставляем перед typing indicator
+        const typingIndicator = document.querySelector('.typing-indicator');
+        chatContainer.insertBefore(messageDiv, typingIndicator);
+        
+        scrollToBottom();
+    }
+    
+    // Генерация ответа AI
+    function generateResponse(userMessage) {
+        const msg = userMessage.toLowerCase();
+        
+        // База знаний AI
+        const responses = {
+            'впн': 'VPN защищает ваше интернет-соединение, скрывая ваш IP-адрес и шифруя трафик. Для настройки VPN перейдите в раздел 🛡️ Защита.',
+            'vpn': 'VPN защищает ваше интернет-соединение, скрывая ваш IP-адрес и шифруя трафик. Для настройки VPN перейдите в раздел 🛡️ Защита.',
+            'семь': 'Семейная защита включает:<br><br>• Родительский контроль (28 функций)<br>• Детский интерфейс с играми<br>• Интерфейс для пожилых (60+)<br>• Семейный чат с E2E шифрованием<br><br>Перейдите в раздел 👨‍👩‍👧‍👦 Семья для настройки.',
+            'контроль': 'Родительский контроль включает:<br><br>📱 Контент-фильтр (12 категорий)<br>⏰ Управление временем<br>👁️ Мониторинг активности<br>🛡️ Защита и безопасность<br><br>Доступно 28 функций! Перейти к настройкам?',
+            'родитель': 'Родительский контроль включает:<br><br>📱 Контент-фильтр (12 категорий)<br>⏰ Управление временем<br>👁️ Мониторинг активности<br>🛡️ Защита и безопасность<br><br>Доступно 28 функций! Перейти к настройкам?',
+            'защит': 'ALADDIN предлагает комплексную защиту:<br><br>🛡️ VPN (50+ серверов)<br>🦠 Антивирус в реальном времени<br>🚫 Защита от фишинга<br>🔒 Защита от обхода (VPN/Tor/Incognito)<br><br>Перейти в раздел Защита?',
+            'тариф': 'Доступны 4 тарифа:<br><br>🆓 FREEMIUM - 0₽ (базовые функции)<br>💎 BASIC - 290₽/мес (1 устройство)<br>👨‍👩‍👧‍👦 FAMILY - 490₽/мес (6 устройств) - рекомендуем!<br>⭐ PREMIUM - 900₽/мес (всё включено)<br><br>Показать детали тарифов?',
+            'цена': 'Рекомендую тариф FAMILY за 490₽/мес:<br><br>✅ До 6 устройств<br>✅ Весь семейный функционал<br>✅ Родительский контроль<br>✅ VPN без лимитов<br>✅ Приоритетная поддержка<br><br>Это лучшее соотношение цена/качество!',
+            'мошенник': 'Защита от мошенников (для пожилых):<br><br>🎯 Проверка на фишинг<br>🛡️ База мошенников (147,000 записей)<br>⚠️ Проверка СМС, звонков, ссылок<br>🔔 Мгновенные алерты<br><br>Эта функция уникальна для ALADDIN! Доступна в интерфейсе 60+.',
+            'ребен': 'Для детей доступны:<br><br>🎮 16 обучающих игр по возрастам<br>🔒 Родительский контроль (28 функций)<br>👁️ Мониторинг активности<br>⏰ Управление временем<br>📍 Геолокация<br><br>Настроить защиту ребёнка?',
+            'дет': 'Для детей доступны:<br><br>🎮 16 обучающих игр по возрастам<br>🔒 Родительский контроль (28 функций)<br>👁️ Мониторинг активности<br>⏰ Управление временем<br>📍 Геолокация<br><br>Настроить защиту ребёнка?',
+            'игр': 'Обучающие игры для детей:<br><br>👶 1-6 лет: Раскраски, пазлы (4 игры)<br>🎒 7-12 лет: Детектив, викторина (4 игры)<br>🎓 13-17 лет: Киберзащита, фишинг (4 игры)<br><br>Всего 16 игр! Открыть детский интерфейс?',
+            'помощ': 'Я могу помочь с:<br><br>🛡️ Настройкой VPN и защиты<br>👨‍👩‍👧‍👦 Управлением семьей<br>🔒 Родительским контролем<br>📊 Пониманием аналитики<br>💎 Выбором тарифа<br>⚙️ Настройками приложения<br><br>О чём хотите узнать подробнее?',
+            'как': 'Я могу помочь вам:<br><br>1. Настроить защиту семьи<br>2. Включить родительский контроль<br>3. Настроить VPN<br>4. Выбрать подходящий тариф<br>5. Добавить члена семьи<br><br>Выберите нужный пункт или задайте свой вопрос!',
+            'спасибо': 'Пожалуйста! Рад помочь! 😊<br><br>Если возникнут ещё вопросы - обращайтесь! Я всегда онлайн.',
+            'привет': 'Привет! 👋<br><br>Я AI помощник ALADDIN. Могу помочь с настройкой защиты вашей семьи.<br><br>О чём хотите узнать?'
+        };
+        
+        // Ищем ключевое слово
+        for (const keyword in responses) {
+            if (msg.includes(keyword)) {
+                return responses[keyword];
+            }
+        }
+        
+        // Ответ по умолчанию
+        return 'Я могу помочь с:<br><br>🛡️ Настройкой VPN и защиты<br>👨‍👩‍👧‍👦 Управлением семьей<br>🔒 Родительским контролем<br>📊 Аналитикой и статистикой<br>💎 Выбором тарифа<br>⚙️ Настройками<br><br>Напишите, что именно вас интересует, и я помогу!';
+    }
+    
+    // Показать typing indicator
+    function showTypingIndicator() {
+        const indicator = document.querySelector('.typing-indicator');
+        if (indicator) {
+            indicator.style.display = 'flex';
+        }
+    }
+    
+    // Скрыть typing indicator
+    function hideTypingIndicator() {
+        const indicator = document.querySelector('.typing-indicator');
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+    }
+    
+    // Scroll to bottom
+    function scrollToBottom() {
+        const chatContainer = document.querySelector('.chat-container');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    // Сохранение истории чата
+    function saveMessageHistory() {
+        const messages = [];
+        document.querySelectorAll('.message').forEach(msg => {
+            if (!msg.classList.contains('typing-indicator')) {
+                messages.push({
+                    type: msg.classList.contains('ai') ? 'ai' : 'user',
+                    text: msg.querySelector('.message-content').innerHTML
+                });
+            }
+        });
+        
+        try {
+            localStorage.setItem('chatHistory', JSON.stringify(messages));
+        } catch (e) {
+            console.warn('Could not save chat history:', e);
+        }
+    }
+    
+    // Загрузка истории чата
+    function loadMessageHistory() {
+        try {
+            const history = localStorage.getItem('chatHistory');
+            if (history) {
+                const messages = JSON.parse(history);
+                // История уже в HTML, не загружаем повторно
+            }
+        } catch (e) {
+            console.warn('Could not load chat history:', e);
+        }
+    }
+    
+    // Обработчик Enter
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('messageInput');
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
+        
+        // Загружаем историю
+        loadMessageHistory();
+        
+        // Прокручиваем вниз
+        scrollToBottom();
+        
+        // Скрываем typing indicator по умолчанию
+        hideTypingIndicator();
+        
+        // Проверяем есть ли вопрос из главной страницы
+        const aiQuestion = sessionStorage.getItem('aiQuestion');
+        if (aiQuestion) {
+            // Очищаем из sessionStorage
+            sessionStorage.removeItem('aiQuestion');
+            
+            // Подставляем вопрос в input
+            input.value = aiQuestion;
+            
+            // Автоматически отправляем через 500ms
+            setTimeout(() => {
+                sendMessage();
+            }, 500);
+        }
+    });
+</script>
+</body>
+</html>

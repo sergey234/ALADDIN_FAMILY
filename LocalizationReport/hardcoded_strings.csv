@@ -1,0 +1,278 @@
+file,line,type,string
+Screens/03_VPNScreen.swift,483,Text,2.4 GB
+Screens/03_VPNScreen.swift,1012,Text,2.4 GB
+Screens/03_VPNScreen.swift,1030,Text,1.2 GB
+Screens/07_ParentalControlScreen.swift,81,Label,Фон экрана родительского контроля
+Screens/07_ParentalControlScreen.swift,108,Label,Карточки родительского контроля
+Screens/07_ParentalControlScreen.swift,206,Label,Навигационная панель родительского контроля
+Screens/09_ElderlyInterfaceScreen.swift,407,Text,👨‍👩‍👧‍👦 Моя семья
+Screens/09_ElderlyInterfaceScreen.swift,971,Text,⚙️ Настройки интерфейса
+Screens/09_ElderlyInterfaceScreen.swift,977,Text,📝 Размер шрифта
+Screens/09_ElderlyInterfaceScreen.swift,982,Text,Маленький
+Screens/09_ElderlyInterfaceScreen.swift,989,Text,Большой
+Screens/09_ElderlyInterfaceScreen.swift,1004,Text,🔊 Звуки и уведомления
+Screens/09_ElderlyInterfaceScreen.swift,1009,Text,🔊 Звуки
+Screens/09_ElderlyInterfaceScreen.swift,1021,Text,📳 Вибрация
+Screens/09_ElderlyInterfaceScreen.swift,1038,Text,🚨 Экстренные вызовы
+Screens/09_ElderlyInterfaceScreen.swift,1043,Text,📞 Автоматический звонок
+Screens/09_ElderlyInterfaceScreen.swift,1054,Text,При включении: автоматически звонить детям при нажатии SOS
+Screens/09_ElderlyInterfaceScreen.swift,1064,Text,👨‍👩‍👧‍👦 Управление семьей
+Screens/09_ElderlyInterfaceScreen.swift,1074,Text,Добавить номер телефона
+Screens/09_ElderlyInterfaceScreen.swift,1091,Text,Редактировать контакты
+Screens/09_ElderlyInterfaceScreen.swift,1113,Text,Сбросить настройки
+Screens/09_ElderlyInterfaceScreen.swift,1127,Button,Готово
+Screens/09_ElderlyInterfaceScreen.swift,1155,Text,📞 Добавить номер телефона
+Screens/09_ElderlyInterfaceScreen.swift,1161,Text,Имя контакта
+Screens/09_ElderlyInterfaceScreen.swift,1165,TextField,Введите имя
+Screens/09_ElderlyInterfaceScreen.swift,1170,Text,Номер телефона
+Screens/09_ElderlyInterfaceScreen.swift,1180,Text,Родство
+Screens/09_ElderlyInterfaceScreen.swift,1201,Text,Сохранить контакт
+Screens/09_ElderlyInterfaceScreen.swift,1217,Button,Отмена
+Screens/09_ElderlyInterfaceScreen.swift,1239,Text,📋 Редактировать контакты
+Screens/09_ElderlyInterfaceScreen.swift,1290,Button,Отмена
+Screens/09_ElderlyInterfaceScreen.swift,1295,Button,Готово
+Screens/09_ElderlyInterfaceScreen.swift,1320,Text,🛡️ Статус безопасности
+Screens/09_ElderlyInterfaceScreen.swift,1329,Text,ВСЁ ХОРОШО
+Screens/09_ElderlyInterfaceScreen.swift,1333,Text,Угроз не обнаружено
+Screens/09_ElderlyInterfaceScreen.swift,1349,Text,📊 Детальная информация:
+Screens/09_ElderlyInterfaceScreen.swift,1364,Text,🕐 Последняя проверка:
+Screens/09_ElderlyInterfaceScreen.swift,1368,Text,Сегодня в 14:30
+Screens/09_ElderlyInterfaceScreen.swift,1372,Text,Следующая проверка: через 2 часа
+Screens/09_ElderlyInterfaceScreen.swift,1385,Button,Готово
+Screens/09_ElderlyInterfaceScreen.swift,1474,Text,📖 Инструкции по безопасности
+Screens/09_ElderlyInterfaceScreen.swift,1480,Text,🛡️ Защита от мошенников
+Screens/09_ElderlyInterfaceScreen.swift,1484,Text,"❌ НЕ ВЕРИТЕ звонкам от: Сотрудников ФСБ, Прокуратуры, Начальства, Банков, Соцсетей"
+Screens/09_ElderlyInterfaceScreen.swift,1489,Text,✅ ПРАВИЛЬНО:
+Screens/09_ElderlyInterfaceScreen.swift,1494,Text,• Никогда не называйте пароли\n• Не переводите деньги\n• Не устанавливайте программы\n• Сразу кладите трубку
+Screens/09_ElderlyInterfaceScreen.swift,1504,Text,🎭 Социальная инженерия
+Screens/09_ElderlyInterfaceScreen.swift,1508,Text,"Мошенники могут: Называть ваше имя, знать адрес, говорить о ваших детях, требовать срочности"
+Screens/09_ElderlyInterfaceScreen.swift,1513,Text,⚠️ ВНИМАНИЕ:
+Screens/09_ElderlyInterfaceScreen.swift,1518,Text,"Это НЕ означает, что они настоящие!"
+Screens/09_ElderlyInterfaceScreen.swift,1528,Text,🔗 Опасные ссылки
+Screens/09_ElderlyInterfaceScreen.swift,1532,Text,"❌ НЕ НАЖИМАЙТЕ на: Ссылки в SMS, WhatsApp, письмах, неизвестные сайты"
+Screens/09_ElderlyInterfaceScreen.swift,1537,Text,✅ ПРАВИЛЬНО:
+Screens/09_ElderlyInterfaceScreen.swift,1542,Text,• Используйте кнопку 'Проверить сайт'\n• Спрашивайте у детей\n• Проверяйте адрес сайта
+Screens/09_ElderlyInterfaceScreen.swift,1552,Text,📱 Как пользоваться приложением
+Screens/09_ElderlyInterfaceScreen.swift,1556,Text,"📞 Звонки: Нажмите 'ЗВОНОК' для быстрого набора, выберите нужного родственника"
+Screens/09_ElderlyInterfaceScreen.swift,1561,Text,"🩺 Здоровье: Добавляйте лекарства кнопкой '+', отмечайте прием"
+Screens/09_ElderlyInterfaceScreen.swift,1566,Text,"🛡️ Безопасность: Используйте 'Проверить сайт', включите защиту от мошенников"
+Screens/09_ElderlyInterfaceScreen.swift,1571,Text,"🚨 Экстренная помощь: Нажмите красную кнопку SOS, выберите службу (103, 101, 102)"
+Screens/09_ElderlyInterfaceScreen.swift,1582,Text,👨‍👩‍👧‍👦 Управление семьей
+Screens/09_ElderlyInterfaceScreen.swift,1586,Text,"📱 Добавление телефонов: Нажмите на карточку родственника, выберите 'Редактировать', введите номер, сохраните"
+Screens/09_ElderlyInterfaceScreen.swift,1591,Text,"⚙️ Настройки: Нажмите на иконку шестеренки, измените размер текста, управляйте уведомлениями"
+Screens/09_ElderlyInterfaceScreen.swift,1605,Button,Готово
+Screens/09_ElderlyInterfaceScreen.swift,1705,Text,💊 Лекарства
+Screens/09_ElderlyInterfaceScreen.swift,1713,Text,Добавить лекарство
+Screens/09_ElderlyInterfaceScreen.swift,1781,Button,Готово
+Screens/09_ElderlyInterfaceScreen.swift,1809,Text,Добавить лекарство
+Screens/09_ElderlyInterfaceScreen.swift,1813,Text,Название лекарства:
+Screens/09_ElderlyInterfaceScreen.swift,1816,TextField,Например: Аспирин
+Screens/09_ElderlyInterfaceScreen.swift,1821,Text,Время приёма:
+Screens/09_ElderlyInterfaceScreen.swift,1824,TextField,Например: 18:00
+Screens/09_ElderlyInterfaceScreen.swift,1837,Text,Добавить
+Screens/09_ElderlyInterfaceScreen.swift,1852,Button,Отмена
+Screens/09_ElderlyInterfaceScreen.swift,1873,Text,🏥 Визиты к врачу
+Screens/09_ElderlyInterfaceScreen.swift,1881,Text,Добавить визит
+Screens/09_ElderlyInterfaceScreen.swift,1907,Button,Напомнить
+Screens/09_ElderlyInterfaceScreen.swift,1954,Button,Готово
+Screens/09_ElderlyInterfaceScreen.swift,1984,Text,Добавить визит к врачу
+Screens/09_ElderlyInterfaceScreen.swift,1988,Text,Врач:
+Screens/09_ElderlyInterfaceScreen.swift,1991,TextField,Например: Терапевт
+Screens/09_ElderlyInterfaceScreen.swift,1996,Text,Дата:
+Screens/09_ElderlyInterfaceScreen.swift,1999,TextField,Например: 12.10
+Screens/09_ElderlyInterfaceScreen.swift,2004,Text,Время:
+Screens/09_ElderlyInterfaceScreen.swift,2007,TextField,Например: 14:00
+Screens/09_ElderlyInterfaceScreen.swift,2021,Text,Добавить
+Screens/09_ElderlyInterfaceScreen.swift,2036,Button,Отмена
+Screens/09_ElderlyInterfaceScreen.swift,2058,Text,🩺 Измерение давления
+Screens/09_ElderlyInterfaceScreen.swift,2066,Text,Добавить измерение
+Screens/09_ElderlyInterfaceScreen.swift,2077,Text,Последнее измерение
+Screens/09_ElderlyInterfaceScreen.swift,2094,Text,История измерений:
+Screens/09_ElderlyInterfaceScreen.swift,2136,Button,Готово
+Screens/09_ElderlyInterfaceScreen.swift,2191,Text,Добавить измерение давления
+Screens/09_ElderlyInterfaceScreen.swift,2195,Text,Верхнее давление (систолическое):
+Screens/09_ElderlyInterfaceScreen.swift,2198,TextField,Например: 120
+Screens/09_ElderlyInterfaceScreen.swift,2204,Text,Нижнее давление (диастолическое):
+Screens/09_ElderlyInterfaceScreen.swift,2207,TextField,Например: 80
+Screens/09_ElderlyInterfaceScreen.swift,2213,Text,Дата:
+Screens/09_ElderlyInterfaceScreen.swift,2216,TextField,Например: 08.10
+Screens/09_ElderlyInterfaceScreen.swift,2231,Text,Добавить
+Screens/09_ElderlyInterfaceScreen.swift,2246,Button,Отмена
+Screens/09_ElderlyInterfaceScreen.swift,2265,Text,📋 Журнал здоровья
+Screens/09_ElderlyInterfaceScreen.swift,2275,Text,Записей
+Screens/09_ElderlyInterfaceScreen.swift,2288,Text,Дней
+Screens/09_ElderlyInterfaceScreen.swift,2302,Text,Добавить запись
+Screens/09_ElderlyInterfaceScreen.swift,2348,Button,Готово
+Screens/09_ElderlyInterfaceScreen.swift,2392,Text,Добавить запись в журнал
+Screens/09_ElderlyInterfaceScreen.swift,2396,Text,Дата:
+Screens/09_ElderlyInterfaceScreen.swift,2399,TextField,Например: 08.10
+Screens/09_ElderlyInterfaceScreen.swift,2404,Text,Запись:
+Screens/09_ElderlyInterfaceScreen.swift,2407,TextField,Опишите ваше самочувствие...
+Screens/09_ElderlyInterfaceScreen.swift,2420,Text,Добавить
+Screens/09_ElderlyInterfaceScreen.swift,2435,Button,Отмена
+Screens/09_ElderlyInterfaceScreen.swift,2455,Text,🔍 Проверить сайт
+Screens/09_ElderlyInterfaceScreen.swift,2460,Text,Введите адрес сайта:
+Screens/09_ElderlyInterfaceScreen.swift,2463,TextField,https://example.com
+Screens/09_ElderlyInterfaceScreen.swift,2506,Button,Готово
+Screens/09_ElderlyInterfaceScreen.swift,2522,Text,🛡️ Защита от обмана
+Screens/09_ElderlyInterfaceScreen.swift,2528,Text,Защита включена
+Screens/09_ElderlyInterfaceScreen.swift,2544,Text,Что защищает:
+Screens/09_ElderlyInterfaceScreen.swift,2547,Text,• Подозрительные звонки
+Screens/09_ElderlyInterfaceScreen.swift,2548,Text,• Подозрительные SMS
+Screens/09_ElderlyInterfaceScreen.swift,2549,Text,• Опасные сайты
+Screens/09_ElderlyInterfaceScreen.swift,2550,Text,• Мошеннические приложения
+Screens/09_ElderlyInterfaceScreen.swift,2563,Button,Готово
+Screens/09_ElderlyInterfaceScreen.swift,2579,Text,📞 Опасные контакты
+Screens/09_ElderlyInterfaceScreen.swift,2589,Text,Все контакты безопасны
+Screens/09_ElderlyInterfaceScreen.swift,2597,Text,Заблокированные номера:
+Screens/09_ElderlyInterfaceScreen.swift,2607,Button,Разблокировать
+Screens/09_ElderlyInterfaceScreen.swift,2628,Button,Готово
+Screens/11_ProfileScreen.swift,190,Text,Сергей Хлыстов
+Screens/11_ProfileScreen.swift,194,Text,sergey@aladdin.family
+Screens/11_ProfileScreen.swift,476,Toggle,Включить 2FA
+Screens/11_ProfileScreen.swift,484,Button,Готово
+Screens/11_ProfileScreen.swift,502,Text,iPhone 13
+Screens/11_ProfileScreen.swift,772,Button,Готово
+Screens/13_SupportScreen.swift,259,Label,Поиск
+Screens/13_SupportScreen.swift,263,Label,Поле поиска по вопросам
+Screens/13_SupportScreen.swift,272,Label,Поиск по вопросам
+Screens/13_SupportScreen.swift,283,Label,СВЯЗАТЬСЯ С НАМИ
+Screens/13_SupportScreen.swift,294,Label,Способы связи с поддержкой
+Screens/13_SupportScreen.swift,340,Label,Перейти
+Screens/13_SupportScreen.swift,367,Label,ЧАСТЫЕ ВОПРОСЫ
+Screens/13_SupportScreen.swift,378,Label,Часто задаваемые вопросы
+Screens/13_SupportScreen.swift,392,Label,Иконка вопроса
+Screens/14_OnboardingScreen.swift,96,Label,Фон экрана онбординга
+Screens/14_OnboardingScreen.swift,141,Label,Индикаторы страниц
+Screens/20_DevicesScreen.swift,49,Label,Фон экрана устройств
+Screens/20_DevicesScreen.swift,71,Label,Список устройств семьи
+Screens/20_DevicesScreen.swift,96,Button,ОК
+Screens/20_DevicesScreen.swift,134,Label,Навигационная панель устройств
+Screens/20_DevicesScreen.swift,725,TextField,Например: iPhone 14 Pro
+Screens/20_DevicesScreen.swift,728,Label,Название устройства
+Screens/20_DevicesScreen.swift,750,Label,Тип устройства
+Screens/20_DevicesScreen.swift,775,Label,Владелец устройства
+Screens/20_DevicesScreen.swift,821,Label,Добавить устройство
+Screens/20_DevicesScreen.swift,826,Label,Форма добавления устройства
+Screens/20_DevicesScreen.swift,832,Button,Отмена
+Screens/20_DevicesScreen.swift,842,Button,ОК
+Screens/20_DevicesScreen.swift,850,Button,ОК
+Screens/ChildRewardsScreen.swift,718,Label,Галочка
+Screens/ChildRewardsScreen.swift,744,Label,Крестик
+Screens/FamilyTournamentView.swift,153,Text,🏆 Турнир семьи
+Screens/FamilyTournamentView.swift,226,Text,👨‍👩‍👧‍👦 СЕМЕЙНЫЙ КВЕСТ
+Screens/FamilyTournamentView.swift,230,Text,Вместе заработайте 500 🦄 за неделю
+Screens/FamilyTournamentView.swift,258,Text,🎁 Награда: каждому по +50 🦄
+Screens/GamesParentalControlView.swift,86,Text,Доступ ограничен
+Screens/GamesParentalControlView.swift,90,Text,Настройки игр доступны только родителям.
+Screens/GamesParentalControlView.swift,100,Text,Назад
+Screens/GamesParentalControlView.swift,122,Button,Понятно
+Screens/GamesParentalControlView.swift,127,Text,"Настройки игр доступны только родителям. Если ты родитель, убедись, что выбрана правильная роль в приложении."
+Screens/GamesParentalControlView.swift,149,Text,⚙️ Управление играми
+Screens/GamesParentalControlView.swift,167,Text,Родительский контроль игр
+Screens/GamesParentalControlView.swift,171,Text,Здесь вы можете настроить все награды и параметры игр. Все настройки сохраняются автоматически! 🎮
+Screens/GamesParentalControlView.swift,194,Text,Юный защитник
+Screens/GamesParentalControlView.swift,210,Text,Образовательная игра: 6 уроков безопасности с квизами. Ребёнок проходит уроки и получает награды за правильные ответы.
+Screens/GamesParentalControlView.swift,271,Text,Мой питомец
+Screens/GamesParentalControlView.swift,279,Text,🔒 ВСЕГДА ВКЛ
+Screens/GamesParentalControlView.swift,294,Text,"Тамагочи-питомец с индикаторами ❤️🍎⭐😊. Ребёнок кормит, играет, гладит. 4 стадии эволюции. Нельзя отключить - это основа мотивации!"
+Screens/GamesParentalControlView.swift,301,Text,💰 Цены действий:
+Screens/GamesParentalControlView.swift,367,Text,Я защитник
+Screens/GamesParentalControlView.swift,383,Text,"Интерактивные квесты безопасности: детектив фишинга, защитник устройства, сценарии общения. Еженедельная проверка из 10 случайных сценариев."
+Screens/GamesParentalControlView.swift,453,Text,Турнир семьи
+Screens/GamesParentalControlView.swift,469,Text,"Еженедельное соревнование всей семьи. 5 типов турниров: отличники 📚, помощники 🧹, без конфликтов 😊, чтение 📖, универсальный 🎯."
+Screens/GamesParentalControlView.swift,518,Text,Длительность турнира:
+Screens/GamesParentalControlView.swift,529,Text,1 день
+Screens/GamesParentalControlView.swift,538,Text,30 дней
+Screens/GamesParentalControlView.swift,567,Text,Магазин наград
+Screens/GamesParentalControlView.swift,583,Text,"Ребёнок тратит единороги на награды: дополнительное время игр, экранное время, пицца, кино, подарки."
+Screens/GamesParentalControlView.swift,591,Text,💰 Цены товаров:
+Screens/GamesParentalControlView.swift,657,Text,Лимит трат в день:
+Screens/GamesParentalControlView.swift,688,Text,Подтверждение покупок родителем
+Screens/GamesParentalControlView.swift,712,Text,⚙️ Общие настройки
+Screens/GamesParentalControlView.swift,721,Text,Уведомления о достижениях
+Screens/GamesParentalControlView.swift,730,Text,Статистика достижений
+Screens/GamesParentalControlView.swift,772,Text,🔄 Сброс к базовым настройкам
+Screens/GamesParentalControlView.swift,799,Text,💾 Настройки сохранены!
+Screens/LanguageSettingsScreen.swift,170,Label,Фон настроек языка
+Screens/LanguageSettingsScreen.swift,192,Label,Настройки языка приложения
+Screens/LanguageSettingsScreen.swift,255,Label,Навигационная панель настроек языка
+Screens/MainScreenWithRegistration.swift,35,Button,Отмена
+Screens/MainScreenWithRegistration.swift,78,Text,Выберите возраст
+Screens/MainScreenWithRegistration.swift,113,Text,Выберите букву
+Screens/MainScreenWithRegistration.swift,158,Text,Регистрация успешна!
+Screens/MainScreenWithRegistration.swift,162,Text,Добро пожаловать в семью!
+Screens/MainScreenWithRegistration.swift,166,Button,Продолжить
+Screens/MainScreenWithRegistration.swift,191,Label,Экран регистрации семьи
+Screens/MainScreenWithRegistration.swift,255,Text,💡 Совет
+Screens/MainScreenWithRegistration.swift,258,Label,Совет
+Screens/MainScreenWithRegistration.swift,271,Label,Закрыть совет
+Screens/MainScreenWithRegistration.swift,286,Text,ПОКАЖИТЕ КАК
+Screens/MainScreenWithRegistration.swift,294,Label,Покажите как
+Screens/MainScreenWithRegistration.swift,302,Text,ПОЗЖЕ
+Screens/MainScreenWithRegistration.swift,306,Label,Позже
+Screens/MainScreenWithRegistration.swift,321,Label,Уведомление с советом
+Screens/NotificationSettingsScreen.swift,94,Text,ТИПЫ УВЕДОМЛЕНИЙ
+Screens/NotificationSettingsScreen.swift,147,Text,ЗВУК И BADGE
+Screens/NotificationSettingsScreen.swift,187,Text,ДОПОЛНИТЕЛЬНЫЕ РЕЖИМЫ
+Screens/NotificationSettingsScreen.swift,241,Text,Ограничение частоты
+Screens/NotificationSettingsScreen.swift,304,Text,ТИХИЕ ЧАСЫ
+Screens/NotificationSettingsScreen.swift,320,Text,Начало
+Screens/NotificationSettingsScreen.swift,337,Text,Конец
+Screens/RewardsModalView.swift,107,Label,Фон модального окна вознаграждений
+Screens/RewardsModalView.swift,154,Label,Содержимое модального окна вознаграждений
+Screens/RewardsModalView.swift,321,Label,Настройки игр
+Screens/RewardsModalView.swift,349,Label,Закрыть
+Screens/RewardsModalView.swift,363,Label,Единорог
+Screens/RewardsModalView.swift,431,Label,Карточка баланса единорогов
+Screens/RewardsModalView.swift,623,Text,📋 Все игры:
+Screens/RewardsModalView.swift,700,Text,🔒 ВСЕГДА ВКЛ
+Screens/RewardsModalView.swift,825,Label,Галочка
+Screens/RewardsModalView.swift,853,Label,Крестик
+Screens/RewardsModalView.swift,1217,Text,Изменить
+Screens/RewardsQuickModal.swift,47,Text,Единорогов на счету
+Screens/RewardsQuickModal.swift,79,Text,Доступ ограничен
+Screens/RewardsQuickModal.swift,82,Text,Этот функционал доступен только родителям.
+Screens/RewardsQuickModal.swift,92,Text,Понятно
+Screens/RewardsQuickModal.swift,111,Text,Вознаграждение ребёнка
+Screens/UnicornPetView.swift,25,Label,Фон экрана питомца-единорога
+Screens/UnicornPetView.swift,48,Label,Содержимое экрана питомца-единорога
+Screens/UnicornPetView.swift,75,Text,🦄 Мой питомец
+Screens/UnicornPetView.swift,91,Label,Единорог питомец
+Screens/UnicornPetView.swift,112,Label,Карточка питомца единорога
+Screens/UnicornPetView.swift,124,Label,Индикаторы состояния питомца
+Screens/UnicornPetView.swift,179,Label,Действия с питомцем
+Screens/UnicornUniverseView.swift,24,Label,Фон экрана единорог-вселенной
+Screens/UnicornUniverseView.swift,28,Text,🌳 ЕДИНОРОГ-ВСЕЛЕННАЯ
+Screens/UnicornUniverseView.swift,32,Label,Единорог-вселенная
+Screens/UnicornUniverseView.swift,45,Label,Содержимое экрана единорог-вселенной
+Screens/UnicornUniverseView.swift,57,Text,🌳 МОЙ САД
+Screens/UnicornUniverseView.swift,61,Label,Мой сад единорогов
+Screens/UnicornUniverseView.swift,73,Label,Единорог
+Screens/UnicornUniverseView.swift,88,Label,Карточка сада единорогов
+Screens/UnicornUniverseView.swift,93,Text,📚 КОЛЛЕКЦИЯ
+Screens/UnicornUniverseView.swift,97,Label,Коллекция видов единорогов
+Screens/UnicornUniverseView.swift,105,Label,Список видов единорогов
+Screens/UnicornUniverseView.swift,109,Label,Секция коллекции единорогов
+Screens/WheelOfFortuneView.swift,33,Text,🎰 КОЛЕСО УДАЧИ
+Screens/WheelOfFortuneView.swift,56,Button,OK
+Screens/WheelOfFortuneView.swift,159,Text,⏰ Следующее вращение через:
+Screens/WheelOfFortuneView.swift,183,Text,Вращений
+Screens/WheelOfFortuneView.swift,196,Text,Выиграно
+Screens/WidgetConfigurationScreen.swift,25,Label,Фон экрана настройки виджетов
+Screens/WidgetConfigurationScreen.swift,48,Label,Навигационная панель настроек виджетов
+Screens/WidgetConfigurationScreen.swift,58,Label,Иконка виджетов
+Screens/WidgetConfigurationScreen.swift,60,Text,Widget Configuration
+Screens/WidgetConfigurationScreen.swift,64,Label,Настройка виджетов
+Screens/WidgetConfigurationScreen.swift,66,Text,Configure your home screen widgets
+Screens/WidgetConfigurationScreen.swift,70,Label,Настройте виджеты для главного экрана
+Screens/WidgetConfigurationScreen.swift,74,Label,Заголовок настроек виджетов
+Screens/WidgetConfigurationScreen.swift,78,Text,How to Add Widgets
+Screens/WidgetConfigurationScreen.swift,82,Label,Как добавить виджеты
+Screens/WidgetConfigurationScreen.swift,106,Label,Пошаговые инструкции по добавлению виджетов
+Screens/WidgetConfigurationScreen.swift,114,Label,Карточка с инструкциями по добавлению виджетов
+Screens/WidgetConfigurationScreen.swift,118,Text,Available Widgets
+Screens/WidgetConfigurationScreen.swift,122,Label,Доступные виджеты
+Screens/WidgetConfigurationScreen.swift,158,Label,Список доступных виджетов
+Screens/WidgetConfigurationScreen.swift,162,Label,Секция доступных виджетов
+Screens/WidgetConfigurationScreen.swift,168,Label,Содержимое экрана настройки виджетов

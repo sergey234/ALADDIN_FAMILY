@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Wireframes</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #F59E0B;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .add-btn {
+            width: 40px;
+            height: 40px;
+            background: #F59E0B;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #0a1128;
+            font-weight: bold;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+        
+        .family-overview {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .family-title {
+            font-size: 18px;            /* Было 20px, -10% */
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 15px;
+        }
+        
+        .family-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .add-member-btn {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .add-member-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+        
+        .family-members {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .members-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 20px;
+        }
+        
+        .member-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .member-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+        .member-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .member-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+        
+        .member-age {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-bottom: 2px;
+        }
+        
+        .member-role {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-bottom: 2px;
+        }
+        
+        .member-status {
+            font-size: 11px;
+            color: #10B981;
+        }
+        
+        .member-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 17px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .parental-controls {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-sizing: border-box;
+            width: 100%;
+        }
+        
+        .controls-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .tabs-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .tab:hover {
+            background: rgba(245, 158, 11, 0.2);
+        }
+        
+        .tab.active {
+            background: rgba(245, 158, 11, 0.3);
+            border: 2px solid #F59E0B;
+            color: #F59E0B;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .controls-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 20px;
+        }
+        
+        /* Сетка карточек 2×2 */
+        .control-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 15px;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        /* Карточка контроля */
+        .control-card-simple {
+            background: rgba(245, 158, 11, 0.1);
+            border: 2px solid #F59E0B;
+            border-radius: 10px;
+            padding: 8px;
+            min-height: 90px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+        
+        .control-card-simple:hover {
+            background: rgba(245, 158, 11, 0.15);
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        
+        .card-header-simple {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #F59E0B;
+        }
+        
+        .card-icon-simple {
+            font-size: 16px;
+        }
+        
+        .card-info-simple {
+            font-size: 11px;
+            margin: 4px 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            opacity: 0.9;
+        }
+        
+        /* Световой индикатор */
+        .status-light {
+            font-size: 28px;
+            margin-top: auto;
+            animation: pulse-light 2s infinite;
+        }
+        
+        .status-light.green {
+            filter: drop-shadow(0 0 10px #10B981);
+        }
+        
+        .status-light.red {
+            filter: drop-shadow(0 0 10px #EF4444);
+            animation: pulse-danger 1s infinite;
+        }
+        
+        @keyframes pulse-light {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes pulse-danger {
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.8; 
+                transform: scale(1.08);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .control-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-item:last-child {
+            border-bottom: none;
+        }
+        
+        .control-label {
+            font-size: 14px;
+        }
+        
+        .control-switch {
+            width: 50px;
+            height: 30px;
+            background: #10B981;
+            border-radius: 15px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .control-switch.off {
+            background: #6B7280;
+        }
+        
+        .control-switch::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 13px;
+            top: 2px;
+            right: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .control-switch.off::after {
+            right: 22px;
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 6px 2px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: none;
+            border: none;
+            padding: 4px 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+        
+        .status-left {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .status-right {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #F59E0B;
+            color: #0a1128;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        /* Модальные окна */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2e5090 100%);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 320px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .modal-close:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: rotate(90deg);
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .modal-save-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 158, 11, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Экран семьи</div>
+        <div class="screen">
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="back-btn" onclick="goBackSmart()" style="cursor: pointer;">←</div>
+                <div class="title">👨‍👩‍👧‍👦 ALADDIN Family</div>
+                <div class="add-btn" onclick="addFamilyMember()" style="cursor: pointer;">+</div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="main-content" role="main">
+                <!-- Обзор семьи -->
+                <div class="family-overview">
+                    <div class="family-title">Семейная защита</div>
+                    <div class="family-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">4</div>
+                            <div class="stat-label">Участников</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">3</div>
+                            <div class="stat-label">Детей</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">100%</div>
+                            <div class="stat-label">Защита</div>
+                        </div>
+                    </div>
+                    <button class="add-member-btn" onclick="addFamilyMember()" style="cursor: pointer;">Добавить участника</button>
+                </div>
+                
+                <!-- Участники семьи -->
+                <div class="family-members" role="region" aria-label="Участники семьи">
+                    <div class="members-title">Участники семьи</div>
+                    
+                    <div class="member-card">
+                        <div class="member-avatar">👨</div>
+                        <div class="member-info">
+                            <div class="member-name">Папа</div>
+                            <div class="member-role">Администратор</div>
+                            <div class="member-status">🟢 Онлайн</div>
+                        </div>
+                        <div class="member-actions">
+                            <div class="action-btn" onclick="showMemberSettings('Папа')" style="cursor: pointer;">⚙️</div>
+                            <div class="action-btn" onclick="window.location.href='04_analytics_screen.html'" style="cursor: pointer;">📊</div>
+                        </div>
+                    </div>
+                    
+                    <div class="member-card">
+                        <div class="member-avatar">👩</div>
+                        <div class="member-info">
+                            <div class="member-name">Мама</div>
+                            <div class="member-role">Родитель</div>
+                            <div class="member-status">🟢 Онлайн</div>
+                        </div>
+                        <div class="member-actions">
+                            <div class="action-btn" onclick="showMemberSettings('Мама')" style="cursor: pointer;">⚙️</div>
+                            <div class="action-btn" onclick="window.location.href='04_analytics_screen.html'" style="cursor: pointer;">📊</div>
+                        </div>
+                    </div>
+                    
+                    <div class="member-card">
+                        <div class="member-avatar">👦</div>
+                        <div class="member-info">
+                            <div class="member-name">Алексей</div>
+                            <div class="member-age">(12 лет)</div>
+                            <div class="member-role">Ребенок</div>
+                            <div class="member-status">🟡 В школе</div>
+                        </div>
+                        <div class="member-actions">
+                            <div class="action-btn" onclick="sessionStorage.setItem('previousPage', '03_family_screen.html'); window.location.href='06_child_interface.html'" style="cursor: pointer;">⚙️</div>
+                            <div class="action-btn" onclick="window.location.href='04_analytics_screen.html'" style="cursor: pointer;">📊</div>
+                        </div>
+                    </div>
+                    
+                    <div class="member-card">
+                        <div class="member-avatar">👧</div>
+                        <div class="member-info">
+                            <div class="member-name">Мария</div>
+                            <div class="member-age">(8 лет)</div>
+                            <div class="member-role">Ребенок</div>
+                            <div class="member-status">🟢 Дома</div>
+                        </div>
+                        <div class="member-actions">
+                            <div class="action-btn" onclick="sessionStorage.setItem('previousPage', '03_family_screen.html'); window.location.href='06_child_interface.html'" style="cursor: pointer;">⚙️</div>
+                            <div class="action-btn" onclick="window.location.href='04_analytics_screen.html'" style="cursor: pointer;">📊</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Родительский контроль -->
+                <div class="parental-controls">
+                    <div class="controls-title" onclick="sessionStorage.setItem('previousPage', '03_family_screen.html'); window.location.href='14_parental_control_screen.html'" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                        <span>Родительский контроль</span>
+                        <span style="font-size: 18px;">⚙️</span>
+                    </div>
+                    
+                    <!-- 4 карточки сетка 2×2 -->
+                    <div class="control-cards-grid">
+                        <!-- Карточка 1: Контент-фильтр -->
+                        <div class="control-card-simple" onclick="openModal('content')">
+                            <div class="card-header-simple">
+                                <span class="card-icon-simple">📱</span>
+                                <span>Контент-фильтр</span>
+                            </div>
+                            <div class="card-info-simple">12 категорий</div>
+                            <div class="status-light green">🟢</div>
+                        </div>
+                        
+                        <!-- Карточка 2: Время -->
+                        <div class="control-card-simple" onclick="openModal('time')">
+                            <div class="card-header-simple">
+                                <span class="card-icon-simple">⏰</span>
+                                <span>Время</span>
+                            </div>
+                            <div class="card-info-simple">2ч 30 мин</div>
+                            <div class="status-light green">🟢</div>
+                        </div>
+                        
+                        <!-- Карточка 3: Мониторинг -->
+                        <div class="control-card-simple" onclick="openModal('monitoring')">
+                            <div class="card-header-simple">
+                                <span class="card-icon-simple">👁️</span>
+                                <span>Мониторинг</span>
+                            </div>
+                            <div class="card-info-simple">WhatsApp</div>
+                            <div class="status-light green">🟢</div>
+                        </div>
+                        
+                        <!-- Карточка 4: Безопасность -->
+                        <div class="control-card-simple" onclick="openModal('safety')">
+                            <div class="card-header-simple">
+                                <span class="card-icon-simple">🛡️</span>
+                                <span>Безопасность</span>
+                            </div>
+                            <div class="card-info-simple">5 угроз</div>
+                            <div class="status-light red">🔴</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Карточка вознаграждения (полная ширина) -->
+                    <div class="rewards-card-full" onclick="openModal('rewards')" style="margin-top: 10px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%); border: 2px solid rgba(168, 85, 247, 0.4); border-radius: 15px; padding: 15px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                            <div style="font-size: 36px; animation: pulse 2s infinite;">🦄</div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 15px; font-weight: 600; color: #C084FC; margin-bottom: 3px;">Вознаграждение ребёнка</div>
+                                <div style="font-size: 11px; color: rgba(255, 255, 255, 0.7);">245 единорогов • +128 за неделю</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="background: rgba(16, 185, 129, 0.2); padding: 6px 12px; border-radius: 12px; font-size: 11px; color: #10B981; font-weight: 600;">+128 🦄</div>
+                            <div style="font-size: 18px; color: rgba(255, 255, 255, 0.5);">›</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Модальные окна -->
+                    <!-- Modal: Контент-фильтр -->
+                    <div id="modal-content" class="modal" onclick="if(event.target === this) closeModal('content')">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <span class="modal-title">📱 Контент-фильтр</span>
+                                <span class="modal-close" onclick="closeModal('content')">×</span>
+                            </div>
+                            <div class="modal-body">
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">🚫 Блокировка сайтов</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">🔍 Фильтр контента</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">🔒 Безопасный поиск</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">📵 Блокировка приложений</div>
+                                    <div class="control-switch off" role="switch" aria-checked="false"></div>
+                                </div>
+                            </div>
+                            <button class="modal-save-btn" onclick="saveModalSettings('content')">Сохранить</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Modal: Время -->
+                    <div id="modal-time" class="modal" onclick="if(event.target === this) closeModal('time')">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <span class="modal-title">⏰ Управление временем</span>
+                                <span class="modal-close" onclick="closeModal('time')">×</span>
+                            </div>
+                            <div class="modal-body">
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">⏳ Экранное время (3ч/день)</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">📅 Расписание доступа</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">😴 Время сна (22:00-07:00)</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">⏱️ Лимиты по приложениям</div>
+                                    <div class="control-switch off" role="switch" aria-checked="false"></div>
+                                </div>
+                            </div>
+                            <button class="modal-save-btn" onclick="saveModalSettings('time')">Сохранить</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Modal: Мониторинг -->
+                    <div id="modal-monitoring" class="modal" onclick="if(event.target === this) closeModal('monitoring')">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <span class="modal-title">👁️ Мониторинг активности</span>
+                                <span class="modal-close" onclick="closeModal('monitoring')">×</span>
+                            </div>
+                            <div class="modal-body">
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">💬 Мониторинг сообщений</div>
+                                    <div class="control-switch off" role="switch" aria-checked="false"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">🌐 История браузера</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">📊 Активность приложений</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">📸 Скриншоты экрана</div>
+                                    <div class="control-switch off" role="switch" aria-checked="false"></div>
+                                </div>
+                            </div>
+                            <button class="modal-save-btn" onclick="saveModalSettings('monitoring')">Сохранить</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Modal: Безопасность -->
+                    <div id="modal-safety" class="modal" onclick="if(event.target === this) closeModal('safety')">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <span class="modal-title">🛡️ Безопасность</span>
+                                <span class="modal-close" onclick="closeModal('safety')">×</span>
+                            </div>
+                            <div class="modal-body">
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">📍 Геолокация в реальном времени</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">🗺️ Геозоны (Дом, Школа)</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">🆘 Кнопка SOS</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                                <div class="control-item" onclick="toggleModalControl(this)">
+                                    <div class="control-label">🛡️ Защита от обхода (VPN/Tor)</div>
+                                    <div class="control-switch" role="switch" aria-checked="true"></div>
+                                </div>
+                            </div>
+                            <button class="modal-save-btn" onclick="saveModalSettings('safety')">Сохранить</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Modal: Вознаграждение ребёнка -->
+                    <div id="modal-rewards" class="modal" onclick="if(event.target === this) closeModal('rewards')">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background: linear-gradient(90deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2)); border-bottom: 2px solid rgba(168, 85, 247, 0.4);">
+                                <span class="modal-title" style="color: #C084FC;">🦄 Вознаграждение ребёнка</span>
+                                <span class="modal-close" onclick="closeModal('rewards')">×</span>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Баланс -->
+                                <div style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(236, 72, 153, 0.18) 100%); border-radius: 15px; padding: 20px; margin-bottom: 15px; text-align: center; border: 2px solid rgba(168, 85, 247, 0.3);">
+                                    <div style="font-size: 48px; margin-bottom: 8px;">🦄</div>
+                                    <div style="font-size: 32px; font-weight: bold; color: #C084FC; margin-bottom: 5px;">245</div>
+                                    <div style="font-size: 13px; color: rgba(255, 255, 255, 0.7);">Единорогов на счету</div>
+                                    <div style="display: flex; justify-content: space-around; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <div style="text-align: center;">
+                                            <div style="font-size: 18px; font-weight: bold; color: #10B981;">+128</div>
+                                            <div style="font-size: 10px; color: rgba(255, 255, 255, 0.6);">Вознаграждено</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-size: 18px; font-weight: bold; color: #EF4444;">-45</div>
+                                            <div style="font-size: 10px; color: rgba(255, 255, 255, 0.6);">Наказано</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Быстрые действия -->
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px;">
+                                    <button onclick="alert('✅ Вознаграждение: выберите причину и сумму единорогов')" style="padding: 12px; background: rgba(16, 185, 129, 0.2); border: 2px solid #10B981; border-radius: 12px; color: #10B981; font-weight: 600; cursor: pointer;">
+                                        ✅ Вознаградить
+                                    </button>
+                                    <button onclick="alert('❌ Наказание: выберите причину и сумму единорогов')" style="padding: 12px; background: rgba(239, 68, 68, 0.2); border: 2px solid #EF4444; border-radius: 12px; color: #EF4444; font-weight: 600; cursor: pointer;">
+                                        ❌ Наказать
+                                    </button>
+                                </div>
+                                
+                                <!-- Последние действия -->
+                                <div style="font-size: 13px; font-weight: 600; color: #C084FC; margin-bottom: 8px;">📊 Последние действия:</div>
+                                <div style="font-size: 11px; color: rgba(255, 255, 255, 0.8); line-height: 1.6;">
+                                    <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <span>📚 Домашнее задание</span>
+                                        <span style="color: #10B981; font-weight: bold;">+10 🦄</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <span>😊 Хорошее поведение</span>
+                                        <span style="color: #10B981; font-weight: bold;">+15 🦄</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                                        <span>❌ Грубость с бабушкой</span>
+                                        <span style="color: #EF4444; font-weight: bold;">-15 🦄</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="modal-save-btn" onclick="window.location.href='14_parental_control_screen.html'">Открыть полные настройки</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN">
+                    <div class="nav-icon">🛡️</div>
+                    <div class="nav-label">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления">
+                    <div class="nav-icon">🔔</div>
+                    <div class="nav-label">Уведомления</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи">
+                    <div class="nav-icon">📱</div>
+                    <div class="nav-label">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    // Открытие модального окна
+    function openModal(modalType) {
+        const modal = document.getElementById('modal-' + modalType);
+        if (modal) {
+            modal.classList.add('active');
+        }
+    }
+    
+    // Закрытие модального окна
+    function closeModal(modalType) {
+        const modal = document.getElementById('modal-' + modalType);
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+    
+    // Переключение контроля в модальном окне
+    function toggleModalControl(element) {
+        const switchEl = element.querySelector('.control-switch');
+        if (switchEl) {
+            switchEl.classList.toggle('off');
+            const isOn = !switchEl.classList.contains('off');
+            switchEl.setAttribute('aria-checked', isOn);
+        }
+    }
+    
+    // Сохранение настроек модального окна
+    function saveModalSettings(modalType) {
+        const modalTitles = {
+            'content': 'Контент-фильтр',
+            'time': 'Управление временем',
+            'monitoring': 'Мониторинг активности',
+            'safety': 'Безопасность'
+        };
+        
+        closeModal(modalType);
+        showNotification(`✅ Настройки "${modalTitles[modalType]}" сохранены!`, 'success');
+    }
+    
+    function addFamilyMember() {
+        showNotification('➕ Добавление нового участника семьи\n\n1. Сканируйте QR-код\n2. Или введите код приглашения\n3. Выберите роль и возраст', 'info');
+    }
+
+    function showMemberSettings(name) {
+        showNotification(`⚙️ Настройки для: ${name}\n\n• Уровень доступа\n• Контент-фильтры\n• Время использования\n• Геолокация`, 'info');
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.innerHTML = message.replace(/\n/g, '<br>');
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#10B981' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
+            color: white;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 2000;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            max-width: 300px;
+            text-align: left;
+            line-height: 1.8;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+    
+    // Умная навигация назад
+    function goBackSmart() {
+        const previousPage = sessionStorage.getItem('previousPage');
+        console.log('🔍 Previous page:', previousPage);
+        
+        if (previousPage && previousPage !== '03_family_screen.html') {
+            console.log('✅ Возврат на:', previousPage);
+            window.location.href = previousPage;
+        } else {
+            console.log('✅ Возврат на главную (default)');
+            window.location.href = '01_main_screen.html';
+        }
+    }
+    
+    // Закрытие модальных окон по клавише Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal.active').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+    });
+</script>
+
+</body>
+</html>

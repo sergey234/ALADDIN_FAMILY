@@ -188,8 +188,10 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 #if __has_warning("-Watimport-in-framework-header")
 #pragma clang diagnostic ignored "-Watimport-in-framework-header"
 #endif
+@import AVFoundation;
 @import Foundation;
 @import ObjectiveC;
+@import UIKit;
 @import UserNotifications;
 #endif
 
@@ -207,6 +209,18 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 # pragma clang attribute push(__attribute__((external_source_symbol(language="Swift", defined_in="ALADDIN",generated_declaration))), apply_to=any(function,enum,objc_interface,objc_category,objc_protocol))
 # pragma pop_macro("any")
 #endif
+
+@class UIApplication;
+@class NSData;
+
+/// 🧩 AppDelegate
+/// Передает APNs токен в NotificationManager
+SWIFT_CLASS("_TtC7ALADDIN11AppDelegate")
+@interface AppDelegate : NSObject <UIApplicationDelegate>
+- (void)application:(UIApplication * _Nonnull)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData * _Nonnull)deviceToken;
+- (void)application:(UIApplication * _Nonnull)application didFailToRegisterForRemoteNotificationsWithError:(NSError * _Nonnull)error;
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
 
 
 /// 🌐 Network Manager
@@ -230,6 +244,7 @@ SWIFT_CLASS("_TtC7ALADDIN14NetworkManager")
 
 
 
+
 /// 🔔 Notification Manager
 /// Управление push и локальными уведомлениями
 /// Интеграция с сервером для отправки уведомлений
@@ -248,6 +263,16 @@ SWIFT_CLASS("_TtC7ALADDIN19NotificationManager")
 - (void)userNotificationCenter:(UNUserNotificationCenter * _Nonnull)center willPresentNotification:(UNNotification * _Nonnull)notification withCompletionHandler:(void (^ _Nonnull)(UNNotificationPresentationOptions))completionHandler;
 /// Обработка нажатия на уведомление
 - (void)userNotificationCenter:(UNUserNotificationCenter * _Nonnull)center didReceiveNotificationResponse:(UNNotificationResponse * _Nonnull)response withCompletionHandler:(void (^ _Nonnull)(void))completionHandler;
+@end
+
+@class AVCaptureMetadataOutput;
+@class AVMetadataObject;
+@class AVCaptureConnection;
+
+SWIFT_CLASS("_TtC7ALADDIN9QRScanner")
+@interface QRScanner : NSObject <AVCaptureMetadataOutputObjectsDelegate>
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+- (void)captureOutput:(AVCaptureMetadataOutput * _Nonnull)output didOutputMetadataObjects:(NSArray<AVMetadataObject *> * _Nonnull)metadataObjects fromConnection:(AVCaptureConnection * _Nonnull)connection;
 @end
 
 #if __has_attribute(external_source_symbol)

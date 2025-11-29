@@ -1,0 +1,45 @@
+#!/bin/bash
+# 🔍 Скрипт для проверки backend API на продакшн-сервере
+# Использование: ./check_backend_on_server.sh
+
+echo "🔍 Проверка backend API на сервере 149.154.65.180"
+echo "================================================"
+echo ""
+
+# Команды для выполнения на сервере через SSH
+echo "📋 Выполните эти команды на сервере (ssh root@149.154.65.180):"
+echo ""
+echo "1️⃣ Проверка запущенных процессов Python:"
+echo "   ps aux | grep python | grep -v grep"
+echo ""
+echo "2️⃣ Проверка открытых портов (8000, 8001, 8080, 443):"
+echo "   netstat -tlnp | grep -E ':(8000|8001|8080|443)'"
+echo "   # или"
+echo "   ss -tlnp | grep -E ':(8000|8001|8080|443)'"
+echo ""
+echo "3️⃣ Проверка systemd сервисов (payment, backend, api):"
+echo "   systemctl list-units --type=service | grep -E '(payment|backend|api|aladdin)'"
+echo ""
+echo "4️⃣ Проверка директории /opt/aladdin-backend:"
+echo "   ls -la /opt/aladdin-backend/"
+echo ""
+echo "5️⃣ Проверка Nginx конфигов (proxy на backend):"
+echo "   grep -r 'proxy_pass.*8000' /etc/nginx/sites-available/"
+echo "   grep -r 'api.aladdin' /etc/nginx/sites-available/"
+echo ""
+echo "6️⃣ Проверка доступности API локально на сервере:"
+echo "   curl -v http://localhost:8000/api/payment-methods"
+echo "   curl -v https://api.aladdin-ai.ru/api/payment-methods"
+echo "   curl -v https://aladdin-ai.ru/api/payment-methods"
+echo ""
+echo "7️⃣ Проверка логов Nginx:"
+echo "   tail -n 50 /var/log/nginx/error.log"
+echo "   tail -n 50 /var/log/nginx/access.log | grep api"
+echo ""
+echo "================================================"
+echo "✅ После проверки сообщите:"
+echo "   - На каком порту работает backend?"
+echo "   - Какой URL используется для API?"
+echo "   - Есть ли Nginx proxy на backend?"
+
+

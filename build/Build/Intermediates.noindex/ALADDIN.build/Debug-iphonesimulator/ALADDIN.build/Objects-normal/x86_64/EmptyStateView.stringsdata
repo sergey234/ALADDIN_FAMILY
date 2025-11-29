@@ -1,0 +1,28 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Shared/Components/EmptyStateView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Пустое состояние: %@. %@"
+      },
+      {
+        "comment": "",
+        "key": "Иконка %@"
+      },
+      {
+        "comment": "",
+        "key": "Заголовок: %@"
+      },
+      {
+        "comment": "",
+        "key": "Описание: %@"
+      },
+      {
+        "comment": "",
+        "key": "Действие: %@"
+      }
+    ]
+  },
+  "version": 1
+}

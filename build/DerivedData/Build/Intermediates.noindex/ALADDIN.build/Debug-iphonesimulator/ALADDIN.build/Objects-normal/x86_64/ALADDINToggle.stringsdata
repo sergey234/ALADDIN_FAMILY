@@ -1,0 +1,24 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Shared/Components/ALADDINToggle.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Включено"
+      },
+      {
+        "comment": "",
+        "key": "Выключено"
+      },
+      {
+        "comment": "",
+        "key": "VPN защита"
+      },
+      {
+        "comment": "",
+        "key": "Push уведомления"
+      }
+    ]
+  },
+  "version": 1
+}

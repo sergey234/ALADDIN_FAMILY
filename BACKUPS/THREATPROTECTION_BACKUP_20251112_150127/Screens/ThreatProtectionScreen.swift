@@ -1,0 +1,54 @@
+import SwiftUI
+
+struct ThreatProtectionScreen: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @State private var isExpanded: Bool = true
+    @State private var expandedCategory: ThreatProtectionCategory? = .cyberThreats
+    
+    var body: some View {
+        ZStack {
+            LinearGradient.backgroundGradient
+                .ignoresSafeArea()
+            
+            VStack(spacing: 0) {
+                ALADDINNavigationBar(
+                    title: localizationManager.localized("protection_catalog_title"),
+                    subtitle: localizationManager.localized("protection_catalog_subtitle"),
+                    showBackButton: true, // Всегда показываем кнопку "Назад" для возврата на главный экран
+                    showProfileButton: false, // Убираем кнопку профиля
+                    showListButton: false, // Убираем кнопку списка экранов
+                    onBack: {
+                        // Возвращаемся на главный экран
+                        navigationManager.navigateTo(.main)
+                    }
+                )
+                
+                ScrollView(.vertical, showsIndicators: false) {
+                    ThreatProtectionCard(
+                        icon: "🤖",
+                        title: localizationManager.localized("protection_catalog_title"),
+                        subtitle: localizationManager.localized("protection_catalog_subtitle"),
+                        isExpanded: $isExpanded,
+                        expandedCategory: $expandedCategory
+                    )
+                    .padding(.horizontal, Spacing.screenPadding)
+                    .padding(.top, Spacing.m)
+                    .padding(.bottom, Spacing.xxl)
+                }
+            }
+        }
+        .navigationBarHidden(true)
+        .id("protection_catalog_lang_\(localizationManager.currentLanguage.rawValue)")
+    }
+}
+
+#if DEBUG
+struct ThreatProtectionScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        ThreatProtectionScreen()
+            .environmentObject(LocalizationManager())
+            .environmentObject(NavigationManager())
+    }
+}
+#endif

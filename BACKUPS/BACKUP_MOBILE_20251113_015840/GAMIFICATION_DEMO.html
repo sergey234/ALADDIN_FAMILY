@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 ALADDIN Геймификация - DEMO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .demo-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .demo-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .demo-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+        }
+        
+        .demo-stats {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .phone {
+            width: 100%;
+            max-width: 375px;
+            margin: 0 auto;
+            background: #000;
+            border-radius: 40px;
+            padding: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 812px;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .screen-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .screen-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        .balance-display {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2));
+            border: 2px solid rgba(168, 85, 247, 0.4);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px;
+            text-align: center;
+        }
+        
+        .balance-amount {
+            font-size: 48px;
+            font-weight: bold;
+            color: #C084FC;
+            margin: 10px 0;
+        }
+        
+        .balance-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .content {
+            padding: 0 20px 20px 20px;
+        }
+        
+        /* Импортируем стили из компонентов */
+        @import url('wheel_of_fortune_component.html');
+        
+        /* ═══ ОБЩИЕ СТИЛИ КОМПОНЕНТОВ ═══ */
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            margin: 20px 0;
+        }
+        
+        /* Повторяю ключевые стили из компонентов */
+        
+        /* КОЛЕСО УДАЧИ */
+        .wheel-card {
+            background: linear-gradient(135deg, #FF0080 0%, #7928CA 50%, #FF0080 100%);
+            border: 2px solid #FF0080;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 10px 30px rgba(255, 0, 128, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .wheel-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        .wheel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .wheel-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .wheel-timer {
+            background: rgba(16, 185, 129, 0.3);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+            color: #10B981;
+            font-weight: 600;
+            animation: pulse-green 2s infinite;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            50% { box-shadow: 0 0 20px 10px rgba(16, 185, 129, 0); }
+        }
+        
+        .wheel-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .wheel-svg-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+        
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 30px;
+            z-index: 10;
+            filter: drop-shadow(0 0 10px rgba(255, 0, 128, 0.8));
+        }
+        
+        #wheel {
+            transition: transform 3s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+        }
+        
+        .spin-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border: 3px solid #FFD700;
+            border-radius: 15px;
+            color: #1e3a5f;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 25px rgba(255, 215, 0, 0.4);
+        }
+        
+        .spin-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+        }
+        
+        .spin-btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: not-allowed;
+        }
+        
+        .wheel-stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .wheel-stat {
+            text-align: center;
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border-radius: 10px;
+        }
+        
+        .wheel-stat-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        .wheel-stat-label {
+            font-size: 9px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* СЕМЕЙНЫЙ ТУРНИР */
+        .tournament-card {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 50%, #F59E0B 100%);
+            border: 2px solid #F59E0B;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tournament-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        .tournament-type {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .leaderboard {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .leaderboard-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .leaderboard-item.top-1 {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 223, 0, 0.2) 100%);
+            border: 2px solid #FFD700;
+        }
+        
+        .leaderboard-item.top-2 {
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.3) 0%, rgba(192, 192, 192, 0.2) 100%);
+            border: 2px solid #C0C0C0;
+        }
+        
+        .leaderboard-item.top-3 {
+            background: linear-gradient(135deg, rgba(205, 127, 50, 0.3) 0%, rgba(205, 127, 50, 0.2) 100%);
+            border: 2px solid #CD7F32;
+        }
+        
+        .rank {
+            font-size: 20px;
+            min-width: 35px;
+            text-align: center;
+        }
+        
+        .avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7928CA, #FF0080);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border: 2px solid white;
+        }
+        
+        .member-info {
+            flex: 1;
+        }
+        
+        .member-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .member-score {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .prize {
+            background: rgba(16, 185, 129, 0.3);
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #10B981;
+            font-weight: 600;
+            border: 1px solid #10B981;
+        }
+        
+        /* ПИТОМЕЦ */
+        .pet-card {
+            background: linear-gradient(135deg, #C084FC 0%, #7C3AED 50%, #C084FC 100%);
+            border: 2px solid #C084FC;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 10px 30px rgba(192, 132, 252, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .pet-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        .pet-display {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+        }
+        
+        .pet-emoji {
+            font-size: 80px;
+            animation: breathing 3s ease-in-out infinite;
+            cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes breathing {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .pet-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .stat-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stat-icon {
+            font-size: 20px;
+            min-width: 25px;
+        }
+        
+        .stat-bar-container {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            height: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .stat-bar {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.5s ease;
+            font-size: 9px;
+            font-weight: bold;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .stat-bar.love { background: linear-gradient(90deg, #EC4899, #F43F5E); }
+        .stat-bar.hunger { background: linear-gradient(90deg, #10B981, #059669); }
+        .stat-bar.energy { background: linear-gradient(90deg, #F59E0B, #D97706); }
+        .stat-bar.mood { background: linear-gradient(90deg, #3B82F6, #2563EB); }
+        
+        .pet-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* ВСЕЛЕННАЯ */
+        .universe-card {
+            background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 50%, #6366F1 100%);
+            border: 2px solid #8B5CF6;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .universe-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 2%),
+                radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.08) 0%, transparent 2%),
+                radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.06) 0%, transparent 2%);
+            animation: stars-twinkle 5s infinite;
+        }
+        
+        @keyframes stars-twinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .garden {
+            background: linear-gradient(180deg, rgba(59, 130, 246, 0.2) 0%, rgba(34, 197, 94, 0.3) 100%);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            min-height: 120px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .garden-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 6px;
+            justify-items: center;
+            margin-top: 8px;
+        }
+        
+        .garden-unicorn {
+            font-size: 24px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        
+        .collection-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+            margin-top: 10px;
+        }
+        
+        .collection-item {
+            background: rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .collection-item.unlocked {
+            border-color: #10B981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .collection-emoji {
+            font-size: 28px;
+        }
+        
+        .collection-name {
+            font-size: 9px;
+            font-weight: 600;
+            color: white;
+            margin-top: 3px;
+        }
+        
+        /* МОДАЛЬНЫЕ ОКНА */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #7928CA 0%, #FF0080 100%);
+            border-radius: 25px;
+            padding: 30px;
+            text-align: center;
+            max-width: 90%;
+            width: 300px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: scaleIn 0.5s;
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal-icon {
+            font-size: 70px;
+            margin-bottom: 15px;
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .modal-amount {
+            font-size: 42px;
+            font-weight: bold;
+            color: #FFD700;
+            margin: 12px 0;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+        
+        .modal-message {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+        }
+        
+        .modal-close-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #7928CA;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* КОНФЕТТИ */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: confetti-fall 3s linear forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .info-box {
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .info-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #3B82F6;
+            margin-bottom: 8px;
+        }
+        
+        .info-text {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- DEMO HEADER -->
+    <div class="demo-container">
+        <div class="demo-header">
+            <div class="demo-title">🎮 ALADDIN</div>
+            <div class="demo-subtitle">Система геймификации - Интерактивное DEMO</div>
+            <div class="demo-stats">
+                <div class="stat-badge">🎰 Колесо удачи</div>
+                <div class="stat-badge">🏆 Турниры</div>
+                <div class="stat-badge">🦄 Питомец</div>
+                <div class="stat-badge">🎨 Вселенная</div>
+            </div>
+        </div>
+        
+        <!-- PHONE MOCKUP -->
+        <div class="phone">
+            <div class="screen">
+                <div class="screen-header">
+                    <div class="screen-title">🦄 Мои единороги</div>
+                </div>
+                
+                <!-- БАЛАНС -->
+                <div class="balance-display">
+                    <div class="balance-label">💰 Мой баланс</div>
+                    <div class="balance-amount" id="total-balance">245</div>
+                    <div class="balance-label">единорогов</div>
+                </div>
+                
+                <div class="content">
+                    <!-- INFO BOX -->
+                    <div class="info-box">
+                        <div class="info-title">💡 О DEMO</div>
+                        <div class="info-text">
+                            Это интерактивная демонстрация всех элементов геймификации!<br>
+                            Попробуйте покрутить колесо, покормить питомца, посмотреть сад.<br>
+                            <strong>Всё работает!</strong> 🎉
+                        </div>
+                    </div>
+                    
+                    <!-- КОМПОНЕНТ 1: КОЛЕСО УДАЧИ -->
+                    <div class="wheel-card">
+                        <div class="wheel-header">
+                            <div class="wheel-title">
+                                <span style="font-size: 20px;">🎰</span>
+                                <span>Колесо удачи</span>
+                            </div>
+                            <div class="wheel-timer">✅ Доступно!</div>
+                        </div>
+                        
+                        <div class="wheel-container">
+                            <div class="wheel-svg-container">
+                                <div class="wheel-pointer">🔻</div>
+                                
+                                <svg width="200" height="200" viewBox="0 0 250 250">
+                                    <defs>
+                                        <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#FF6B6B;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#FF0080;stop-opacity:1" />
+                                        </linearGradient>
+                                        <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#4ECDC4;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#00D4FF;stop-opacity:1" />
+                                        </linearGradient>
+                                        <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+                                        </linearGradient>
+                                        <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#9B59B6;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#7928CA;stop-opacity:1" />
+                                        </linearGradient>
+                                        <linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#047857;stop-opacity:1" />
+                                        </linearGradient>
+                                        <linearGradient id="g6" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" style="stop-color:#F59E0B;stop-opacity:1" />
+                                            <stop offset="100%" style="stop-color:#D97706;stop-opacity:1" />
+                                        </linearGradient>
+                                    </defs>
+                                    
+                                    <g id="wheel" transform="translate(125, 125)">
+                                        <circle cx="0" cy="0" r="100" fill="#1e3a5f" stroke="white" stroke-width="2"/>
+                                        
+                                        <path d="M 0 0 L 86.6 -50 A 100 100 0 0 1 86.6 50 Z" fill="url(#g1)" stroke="white" stroke-width="2"/>
+                                        <text x="58" y="-12" fill="white" font-size="16" font-weight="bold" text-anchor="middle">1️⃣</text>
+                                        <text x="58" y="5" fill="white" font-size="18" font-weight="bold" text-anchor="middle">5🦄</text>
+                                        
+                                        <path d="M 0 0 L 86.6 50 A 100 100 0 0 1 0 100 Z" fill="url(#g2)" stroke="white" stroke-width="2"/>
+                                        <text x="42" y="55" fill="white" font-size="16" font-weight="bold" text-anchor="middle">2️⃣</text>
+                                        <text x="42" y="72" fill="white" font-size="18" font-weight="bold" text-anchor="middle">10🦄</text>
+                                        
+                                        <path d="M 0 0 L 0 100 A 100 100 0 0 1 -86.6 50 Z" fill="url(#g3)" stroke="white" stroke-width="2"/>
+                                        <text x="-42" y="55" fill="white" font-size="16" font-weight="bold" text-anchor="middle">3️⃣</text>
+                                        <text x="-42" y="72" fill="white" font-size="18" font-weight="bold" text-anchor="middle">20🦄</text>
+                                        
+                                        <path d="M 0 0 L -86.6 50 A 100 100 0 0 1 -86.6 -50 Z" fill="url(#g4)" stroke="white" stroke-width="2"/>
+                                        <text x="-58" y="-12" fill="white" font-size="16" font-weight="bold" text-anchor="middle">4️⃣</text>
+                                        <text x="-58" y="5" fill="white" font-size="18" font-weight="bold" text-anchor="middle">50🦄</text>
+                                        
+                                        <path d="M 0 0 L -86.6 -50 A 100 100 0 0 0 -40 -91 Z" fill="url(#g5)" stroke="white" stroke-width="2"/>
+                                        <text x="-55" y="-65" fill="white" font-size="16" font-weight="bold" text-anchor="middle">5️⃣</text>
+                                        <text x="-55" y="-48" fill="white" font-size="16" font-weight="bold" text-anchor="middle">100🦄</text>
+                                        
+                                        <path d="M 0 0 L -40 -91 A 100 100 0 0 0 50 -86.6 Z" fill="url(#g6)" stroke="white" stroke-width="2"/>
+                                        <text x="0" y="-72" fill="white" font-size="16" font-weight="bold" text-anchor="middle">6️⃣</text>
+                                        <text x="0" y="-55" fill="white" font-size="14" font-weight="bold" text-anchor="middle">🎁500</text>
+                                        
+                                        <circle cx="0" cy="0" r="20" fill="#7928CA" stroke="white" stroke-width="2"/>
+                                        <text x="0" y="7" text-anchor="middle" fill="white" font-size="16">🎰</text>
+                                    </g>
+                                </svg>
+                            </div>
+                            
+                            <button class="spin-btn" id="spin-btn" onclick="spinWheel()">
+                                🎰 КРУТИТЬ КОЛЕСО!
+                            </button>
+                        </div>
+                        
+                        <div class="wheel-stats">
+                            <div class="wheel-stat">
+                                <div class="wheel-stat-value" id="total-spins">0</div>
+                                <div class="wheel-stat-label">Спинов</div>
+                            </div>
+                            <div class="wheel-stat">
+                                <div class="wheel-stat-value" id="total-won">0 🦄</div>
+                                <div class="wheel-stat-label">Выиграно</div>
+                            </div>
+                            <div class="wheel-stat">
+                                <div class="wheel-stat-value" id="best-prize">0 🦄</div>
+                                <div class="wheel-stat-label">Рекорд</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- РАЗДЕЛИТЕЛЬ -->
+                    <div class="section-divider"></div>
+                    
+                    <!-- КОМПОНЕНТ 2: СЕМЕЙНЫЙ ТУРНИР -->
+                    <div class="tournament-card">
+                        <div class="wheel-header">
+                            <div class="wheel-title">
+                                <span style="font-size: 20px;">🏆</span>
+                                <span>Турнир недели</span>
+                            </div>
+                            <div class="wheel-timer" style="background: rgba(0,0,0,0.3); color: white;">⏰ 2д 5ч</div>
+                        </div>
+                        
+                        <div class="tournament-type">
+                            📚 "Неделя отличников" - больше всех пятёрок!
+                        </div>
+                        
+                        <div class="leaderboard">
+                            <div class="leaderboard-item top-1">
+                                <div class="rank">🥇</div>
+                                <div class="avatar">👧</div>
+                                <div class="member-info">
+                                    <div class="member-name">Маша</div>
+                                    <div class="member-score">3 пятёрки • 156 🦄</div>
+                                </div>
+                                <div class="prize">+50 🦄</div>
+                            </div>
+                            
+                            <div class="leaderboard-item top-2">
+                                <div class="rank">🥈</div>
+                                <div class="avatar">👦</div>
+                                <div class="member-info">
+                                    <div class="member-name">Алексей</div>
+                                    <div class="member-score">2 пятёрки • 128 🦄</div>
+                                </div>
+                                <div class="prize">+30 🦄</div>
+                            </div>
+                            
+                            <div class="leaderboard-item top-3">
+                                <div class="rank">🥉</div>
+                                <div class="avatar">👶</div>
+                                <div class="member-info">
+                                    <div class="member-name">Ваня</div>
+                                    <div class="member-score">1 пятёрка • 87 🦄</div>
+                                </div>
+                                <div class="prize">+20 🦄</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(16,185,129,0.2); border: 2px solid #10B981; border-radius: 12px; padding: 12px; margin-top: 12px; position: relative; z-index: 1;">
+                            <div style="font-size: 12px; font-weight: 600; color: white; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                <span>👨‍👩‍👧‍👦</span>
+                                <span>СЕМЕЙНЫЙ КВЕСТ</span>
+                            </div>
+                            <div style="font-size: 10px; color: rgba(255,255,255,0.9); margin-bottom: 8px;">
+                                "Неделя без двоек" - вся семья на 4 и 5!
+                            </div>
+                            <div style="background: rgba(0,0,0,0.3); height: 16px; border-radius: 8px; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #FFD700, #FFA500); height: 100%; width: 71%; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: bold; color: #1e3a5f;">71%</div>
+                            </div>
+                            <div style="text-align: center; margin-top: 8px; font-size: 11px; color: #FFD700; font-weight: 600;">
+                                🎁 Награда: +100 🦄 КАЖДОМУ!
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- РАЗДЕЛИТЕЛЬ -->
+                    <div class="section-divider"></div>
+                    
+                    <!-- КОМПОНЕНТ 3: ЕДИНОРОГ-ПИТОМЕЦ -->
+                    <div class="pet-card">
+                        <div class="wheel-header">
+                            <div class="wheel-title">
+                                <span style="font-size: 20px;">🦄</span>
+                                <span>Мой питомец</span>
+                            </div>
+                            <div style="background: rgba(255,215,0,0.3); padding: 6px 12px; border-radius: 12px; font-size: 10px; color: #FFD700; font-weight: 600; border: 1px solid #FFD700; position: relative; z-index: 1;">
+                                💎 Уровень 8
+                            </div>
+                        </div>
+                        
+                        <div class="pet-display">
+                            <div class="pet-emoji" id="pet" onclick="petClick()">🦄</div>
+                            <div style="position: absolute; font-size: 28px; margin-top: -20px; margin-left: 60px; position: relative; z-index: 1;">✨</div>
+                        </div>
+                        
+                        <div style="text-align: center; font-size: 14px; font-weight: 600; color: white; margin-bottom: 10px; position: relative; z-index: 1;">
+                            Подросток ✨
+                        </div>
+                        
+                        <div class="pet-stats">
+                            <div class="stat-row">
+                                <div class="stat-icon">❤️</div>
+                                <div class="stat-bar-container">
+                                    <div class="stat-bar love" id="stat-love" style="width: 85%;">85%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-row">
+                                <div class="stat-icon">🍎</div>
+                                <div class="stat-bar-container">
+                                    <div class="stat-bar hunger" id="stat-hunger" style="width: 60%;">60%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-row">
+                                <div class="stat-icon">⭐</div>
+                                <div class="stat-bar-container">
+                                    <div class="stat-bar energy" id="stat-energy" style="width: 75%;">75%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-row">
+                                <div class="stat-icon">😊</div>
+                                <div class="stat-bar-container">
+                                    <div class="stat-bar mood" id="stat-mood" style="width: 90%;">90%</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pet-actions">
+                            <button class="action-btn" onclick="feedPet()">
+                                <div style="font-size: 20px;">🍎</div>
+                                <div style="margin-top: 3px;">Покормить</div>
+                                <div style="font-size: 9px; opacity: 0.8;">-10 🦄</div>
+                            </button>
+                            
+                            <button class="action-btn" onclick="playWithPet()">
+                                <div style="font-size: 20px;">🎮</div>
+                                <div style="margin-top: 3px;">Играть</div>
+                                <div style="font-size: 9px; opacity: 0.8;">-5 🦄</div>
+                            </button>
+                            
+                            <button class="action-btn" onclick="petPet()">
+                                <div style="font-size: 20px;">💕</div>
+                                <div style="margin-top: 3px;">Погладить</div>
+                                <div style="font-size: 9px; opacity: 0.8;">Бесплатно</div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- РАЗДЕЛИТЕЛЬ -->
+                    <div class="section-divider"></div>
+                    
+                    <!-- КОМПОНЕНТ 4: ЕДИНОРОГ-ВСЕЛЕННАЯ -->
+                    <div class="universe-card">
+                        <div class="wheel-header">
+                            <div class="wheel-title">
+                                <span style="font-size: 20px;">🌳</span>
+                                <span>Сад единорогов</span>
+                            </div>
+                        </div>
+                        
+                        <div class="garden">
+                            <div style="text-align: center; font-size: 12px; font-weight: 600; color: white; margin-bottom: 8px;">
+                                🌳 МОЙ САД 🌳
+                            </div>
+                            <div class="garden-grid" id="garden">
+                                <!-- Генерируется JS -->
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 12px; font-weight: 600; color: white; margin: 15px 0 8px 0; position: relative; z-index: 1;">
+                            🦄 Коллекция (3/10)
+                        </div>
+                        
+                        <div class="collection-grid">
+                            <div class="collection-item unlocked">
+                                <div class="collection-emoji">🦄</div>
+                                <div class="collection-name">Базовый</div>
+                            </div>
+                            <div class="collection-item unlocked">
+                                <div class="collection-emoji">✨</div>
+                                <div class="collection-name">Звёздный</div>
+                            </div>
+                            <div class="collection-item unlocked">
+                                <div class="collection-emoji">🌈</div>
+                                <div class="collection-name">Радужный</div>
+                            </div>
+                            <div class="collection-item" style="opacity: 0.5;">
+                                <div class="collection-emoji" style="filter: grayscale(100%);">💎</div>
+                                <div class="collection-name">🔒 500 🦄</div>
+                            </div>
+                            <div class="collection-item" style="opacity: 0.5;">
+                                <div class="collection-emoji" style="filter: grayscale(100%);">🔥</div>
+                                <div class="collection-name">🔒 Огненный</div>
+                            </div>
+                            <div class="collection-item" style="opacity: 0.5;">
+                                <div class="collection-emoji" style="filter: grayscale(100%);">👑</div>
+                                <div class="collection-name">🔒 1000 🦄</div>
+                            </div>
+                        </div>
+                        
+                        <div style="font-size: 12px; font-weight: 600; color: white; margin: 15px 0 8px 0; position: relative; z-index: 1;">
+                            📖 История (Глава 3/5)
+                        </div>
+                        
+                        <div style="background: rgba(59,130,246,0.2); border: 2px solid #3B82F6; border-radius: 12px; padding: 12px; position: relative; z-index: 1;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                <div style="font-size: 20px;">🏰</div>
+                                <div style="font-size: 12px; font-weight: 600; color: white;">Глава 3: Замок мечты</div>
+                            </div>
+                            <div style="font-size: 10px; color: rgba(255,255,255,0.9);">
+                                "В глубине леса появился таинственный замок..."
+                            </div>
+                            <div style="font-size: 9px; color: rgba(255,255,255,0.7); margin-top: 5px;">
+                                📊 300-500 🦄 (осталось 255 🦄)
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AI РЕКОМЕНДАЦИИ -->
+                    <div class="info-box" style="background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4);">
+                        <div class="info-title" style="color: #C084FC;">🤖 Рекомендация от Супер AI</div>
+                        <div class="info-text" id="ai-recommendation">
+                            Отличный прогресс! Твоя мотивация на уровне 78/100. 
+                            Продолжай в том же духе! Покрути колесо и покорми питомца! 💪
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- МОДАЛЬНОЕ ОКНО -->
+    <div class="modal" id="prize-modal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modal-icon">🦄</div>
+            <div class="modal-title" id="modal-title">Поздравляем!</div>
+            <div class="modal-amount" id="modal-amount">+10 🦄</div>
+            <div class="modal-message" id="modal-message">Удача улыбается тебе!</div>
+            <button class="modal-close-btn" onclick="closeModal()">Отлично! 🎉</button>
+        </div>
+    </div>
+    
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // СОСТОЯНИЕ
+        // ═══════════════════════════════════════════════════════════════
+        
+        let gameState = {
+            balance: 245,
+            totalSpins: 0,
+            totalWon: 0,
+            bestPrize: 0,
+            currentRotation: 0,
+            petStats: {
+                love: 85,
+                hunger: 60,
+                energy: 75,
+                mood: 90
+            }
+        };
+        
+        // ═══════════════════════════════════════════════════════════════
+        // КОНФИГУРАЦИЯ КОЛЕСА
+        // ═══════════════════════════════════════════════════════════════
+        
+        const PRIZES = [
+            { amount: 5,   probability: 0.40, angle: 30 },
+            { amount: 10,  probability: 0.30, angle: 90 },
+            { amount: 20,  probability: 0.15, angle: 150 },
+            { amount: 50,  probability: 0.10, angle: 210 },
+            { amount: 100, probability: 0.04, angle: 252 },
+            { amount: 500, probability: 0.01, angle: 282 }
+        ];
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: ВРАЩЕНИЕ КОЛЕСА
+        // ═══════════════════════════════════════════════════════════════
+        
+        function spinWheel() {
+            const prize = getRandomPrize();
+            const rotations = 5 + Math.random() * 3;
+            const finalAngle = rotations * 360 + prize.angle;
+            
+            const wheel = document.getElementById('wheel');
+            const btn = document.getElementById('spin-btn');
+            
+            btn.disabled = true;
+            gameState.currentRotation += finalAngle;
+            wheel.style.transform = `rotate(${gameState.currentRotation}deg)`;
+            
+            setTimeout(() => {
+                gameState.totalSpins++;
+                gameState.totalWon += prize.amount;
+                gameState.balance += prize.amount;
+                
+                if (prize.amount > gameState.bestPrize) {
+                    gameState.bestPrize = prize.amount;
+                }
+                
+                updateBalance();
+                updateWheelStats();
+                updateGarden();
+                showPrizeModal(prize.amount);
+                
+                if (prize.amount >= 50) {
+                    createConfetti();
+                }
+                
+                btn.disabled = false;
+            }, 3000);
+        }
+        
+        function getRandomPrize() {
+            const random = Math.random();
+            let cumulative = 0;
+            
+            for (let prize of PRIZES) {
+                cumulative += prize.probability;
+                if (random <= cumulative) {
+                    return prize;
+                }
+            }
+            
+            return PRIZES[0];
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: ОБНОВЛЕНИЕ UI
+        // ═══════════════════════════════════════════════════════════════
+        
+        function updateBalance() {
+            document.getElementById('total-balance').textContent = gameState.balance;
+        }
+        
+        function updateWheelStats() {
+            document.getElementById('total-spins').textContent = gameState.totalSpins;
+            document.getElementById('total-won').textContent = `${gameState.totalWon} 🦄`;
+            document.getElementById('best-prize').textContent = `${gameState.bestPrize} 🦄`;
+        }
+        
+        function updateGarden() {
+            const garden = document.getElementById('garden');
+            garden.innerHTML = '';
+            
+            const count = Math.min(Math.floor(gameState.balance / 10), 25);
+            
+            for (let i = 0; i < count; i++) {
+                const unicorn = document.createElement('div');
+                unicorn.className = 'garden-unicorn';
+                unicorn.textContent = '🦄';
+                unicorn.style.animationDelay = (i * 0.1) + 's';
+                garden.appendChild(unicorn);
+            }
+        }
+        
+        function updatePetStat(stat, value) {
+            const bar = document.getElementById(`stat-${stat}`);
+            bar.style.width = value + '%';
+            bar.textContent = Math.round(value) + '%';
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: ПИТОМЕЦ
+        // ═══════════════════════════════════════════════════════════════
+        
+        function feedPet() {
+            if (gameState.balance < 10) {
+                alert('Недостаточно единорогов! Покрути колесо! 🎰');
+                return;
+            }
+            
+            gameState.balance -= 10;
+            gameState.petStats.hunger = Math.min(100, gameState.petStats.hunger + 20);
+            gameState.petStats.mood = Math.min(100, gameState.petStats.mood + 5);
+            
+            updateBalance();
+            updatePetStat('hunger', gameState.petStats.hunger);
+            updatePetStat('mood', gameState.petStats.mood);
+            updateGarden();
+            
+            showPrizeModal(0, '🍎 Ням-ням! Питомец сыт!');
+        }
+        
+        function playWithPet() {
+            if (gameState.balance < 5) {
+                alert('Недостаточно единорогов! Покрути колесо! 🎰');
+                return;
+            }
+            
+            gameState.balance -= 5;
+            gameState.petStats.energy = Math.min(100, gameState.petStats.energy + 15);
+            gameState.petStats.mood = Math.min(100, gameState.petStats.mood + 15);
+            gameState.petStats.love = Math.min(100, gameState.petStats.love + 10);
+            
+            updateBalance();
+            updatePetStat('energy', gameState.petStats.energy);
+            updatePetStat('mood', gameState.petStats.mood);
+            updatePetStat('love', gameState.petStats.love);
+            updateGarden();
+            
+            showPrizeModal(0, '🎮 Ура! Питомец полон энергии!');
+        }
+        
+        function petPet() {
+            gameState.petStats.love = Math.min(100, gameState.petStats.love + 5);
+            gameState.petStats.mood = Math.min(100, gameState.petStats.mood + 3);
+            
+            updatePetStat('love', gameState.petStats.love);
+            updatePetStat('mood', gameState.petStats.mood);
+        }
+        
+        function petClick() {
+            petPet();
+            showHearts();
+        }
+        
+        function showHearts() {
+            const pet = document.getElementById('pet');
+            const heart = document.createElement('div');
+            heart.style.position = 'absolute';
+            heart.style.fontSize = '24px';
+            heart.textContent = '💕';
+            heart.style.animation = 'float-up 2s ease-out forwards';
+            pet.parentElement.appendChild(heart);
+            
+            setTimeout(() => heart.remove(), 2000);
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: МОДАЛЬНОЕ ОКНО
+        // ═══════════════════════════════════════════════════════════════
+        
+        function showPrizeModal(amount, customMessage = null) {
+            const modal = document.getElementById('prize-modal');
+            const icon = document.getElementById('modal-icon');
+            const title = document.getElementById('modal-title');
+            const amountEl = document.getElementById('modal-amount');
+            const message = document.getElementById('modal-message');
+            
+            if (customMessage) {
+                icon.textContent = customMessage.includes('🍎') ? '🍎' : '🎮';
+                title.textContent = 'Отлично!';
+                amountEl.textContent = '';
+                message.textContent = customMessage;
+            } else {
+                icon.textContent = amount >= 500 ? '🎁' : '🦄';
+                title.textContent = amount >= 500 ? 'ДЖЕКПОТ!' : 'Поздравляем!';
+                amountEl.textContent = `+${amount} 🦄`;
+                
+                if (amount >= 500) {
+                    message.textContent = 'Невероятная удача! Ты выиграл ДЖЕКПОТ! 🎰🔥';
+                } else if (amount >= 100) {
+                    message.textContent = 'Вау! Отличный выигрыш! 🌟';
+                } else if (amount >= 50) {
+                    message.textContent = 'Хороший приз! Так держать! 💪';
+                } else if (amount >= 20) {
+                    message.textContent = 'Неплохо! Продолжай крутить! 😊';
+                } else {
+                    message.textContent = 'Удача улыбается тебе! 🍀';
+                }
+            }
+            
+            modal.classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('prize-modal').classList.remove('active');
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ФУНКЦИЯ: КОНФЕТТИ
+        // ═══════════════════════════════════════════════════════════════
+        
+        function createConfetti() {
+            const container = document.createElement('div');
+            container.className = 'confetti-container';
+            document.body.appendChild(container);
+            
+            const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#9B59B6', '#10B981', '#F59E0B'];
+            
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.3 + 's';
+                    confetti.style.animationDuration = (Math.random() * 1.5 + 2) + 's';
+                    container.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 20);
+            }
+            
+            setTimeout(() => container.remove(), 3500);
+        }
+        
+        // ═══════════════════════════════════════════════════════════════
+        // ИНИЦИАЛИЗАЦИЯ
+        // ═══════════════════════════════════════════════════════════════
+        
+        // Отрисовываем сад при загрузке
+        updateGarden();
+        
+        console.log('🎮 ALADDIN Gamification DEMO ready!');
+        console.log('📊 Balance:', gameState.balance);
+        console.log('🎰 Spin the wheel!');
+        console.log('🦄 Feed the pet!');
+        console.log('🌳 Watch the garden grow!');
+    </script>
+</body>
+</html>
+

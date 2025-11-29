@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои награды - ALADDIN (Детский интерфейс)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(251, 191, 36, 0.9);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+            color: white;
+            border: none;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FCD34D;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 0 20px 20px 20px;
+            overflow-y: auto;
+        }
+        
+        /* Balance Card */
+        .balance-card {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.2) 100%);
+            border-radius: 25px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.2);
+        }
+        
+        .balance-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .balance-amount {
+            font-size: 48px;
+            font-weight: bold;
+            color: #FCD34D;
+            margin-bottom: 5px;
+        }
+        
+        .balance-label {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 15px;
+        }
+        
+        .balance-stats {
+            display: flex;
+            justify-content: space-around;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .stat-value.earned {
+            color: #10B981;
+        }
+        
+        .stat-value.level {
+            color: #3B82F6;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Progress Bar */
+        .progress-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 18px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.1);
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #10B981, #FCD34D);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .tab.active {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: #FCD34D;
+            color: #FCD34D;
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Reward Item */
+        .reward-item {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+        
+        .reward-item:hover {
+            transform: translateX(5px);
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 5px 20px rgba(251, 191, 36, 0.3);
+        }
+        
+        .reward-item.affordable {
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+        
+        .reward-item.affordable:hover {
+            border-color: #10B981;
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .reward-item.expensive {
+            opacity: 0.6;
+        }
+        
+        .reward-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+        
+        .reward-icon {
+            font-size: 32px;
+        }
+        
+        .reward-info {
+            flex: 1;
+        }
+        
+        .reward-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .reward-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .reward-price {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+        
+        .price-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FCD34D;
+        }
+        
+        .price-badge {
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .badge-can-buy {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10B981;
+            border: 1px solid #10B981;
+        }
+        
+        .badge-need-more {
+            background: rgba(239, 68, 68, 0.2);
+            color: #EF4444;
+            border: 1px solid #EF4444;
+        }
+        
+        /* History Item */
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .history-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        .history-icon {
+            font-size: 24px;
+        }
+        
+        .history-info {
+            flex: 1;
+        }
+        
+        .history-title {
+            font-size: 14px;
+            color: white;
+            margin-bottom: 3px;
+        }
+        
+        .history-time {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .history-amount {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .history-amount.positive {
+            color: #10B981;
+        }
+        
+        .history-amount.negative {
+            color: #EF4444;
+        }
+        
+        /* Level Badge */
+        .level-badge {
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            border-radius: 15px;
+            padding: 8px 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+            border: 2px solid rgba(139, 92, 246, 0.5);
+        }
+        
+        /* Achievement Badge */
+        .achievement-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .achievement-icon {
+            font-size: 36px;
+        }
+        
+        .achievement-info {
+            flex: 1;
+        }
+        
+        .achievement-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 3px;
+        }
+        
+        .achievement-desc {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .achievement-status {
+            font-size: 12px;
+            font-weight: bold;
+            color: #10B981;
+        }
+        
+        .achievement-status.locked {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: linear-gradient(135deg, #10B981, #FCD34D);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 10000;
+            animation: slideDown 0.5s forwards, slideUp 0.5s 3s forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @keyframes slideDown {
+            to { transform: translateX(-50%) translateY(0); }
+        }
+        
+        @keyframes slideUp {
+            to { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 6px 2px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 4px 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            min-width: 0;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .section-title {
+            font-size: 17px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .buy-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #10B981, #059669);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .buy-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+        
+        .buy-btn:disabled {
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Мои награды (ДЕТСКИЙ ИНТЕРФЕЙС) 🦄</div>
+        <div class="screen">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <div class="back-btn" onclick="window.location.href='01_main_screen.html'">←</div>
+                    <div class="title" style="color: #C084FC;">Мои единороги</div>
+                </div>
+                <div class="level-badge">
+                    💎 Уровень 2
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Balance Card -->
+                <div class="balance-card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(236, 72, 153, 0.2) 100%); border-color: rgba(168, 85, 247, 0.4);">
+                    <div class="balance-icon">🦄</div>
+                    <div class="balance-amount" id="balance" style="color: #C084FC;">245</div>
+                    <div class="balance-label">Единорогов на счету</div>
+                    <div class="balance-stats">
+                        <div class="stat-item">
+                            <div class="stat-value earned" id="earned-week">+128</div>
+                            <div class="stat-label">Заработано<br>за неделю</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" style="color: #EF4444;" id="punished-week">-45</div>
+                            <div class="stat-label">Наказано<br>за неделю</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress to Goal -->
+                <div class="progress-card">
+                    <div class="progress-title">
+                        <span>🎯</span>
+                        <span>Моя цель: Новая игра PS5</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: 30.6%;"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span>245 🦄 накоплено</span>
+                        <span>Нужно: 800 🦄</span>
+                    </div>
+                    <div class="progress-text" style="margin-top: 5px; font-size: 11px; color: #10B981;">
+                        <span>✅ Осталось: 555 🦄 (примерно 35 дней)</span>
+                    </div>
+                </div>
+                
+                <!-- NEW: Request Unicorns Button -->
+                <button onclick="openRequestModal()" style="width: 100%; padding: 16px; margin: 15px 0; background: linear-gradient(135deg, rgba(168, 85, 247, 0.2) 0%, rgba(236, 72, 153, 0.2) 100%); border: 2px solid rgba(168, 85, 247, 0.4); border-radius: 18px; color: white; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s;">
+                    <span style="font-size: 24px;">📣</span>
+                    <span>Сообщить родителям о достижении</span>
+                </button>
+                
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('shop')">🏪 Магазин</div>
+                    <div class="tab" onclick="switchTab('history')">📊 История</div>
+                    <div class="tab" onclick="switchTab('achievements')">🏆 Успехи</div>
+                </div>
+                
+                <!-- Shop Tab -->
+                <div id="tab-shop">
+                    <div class="section-title">
+                        <span>🏪</span>
+                        <span>Доступные награды:</span>
+                    </div>
+                    
+                    <!-- Reward: +30 min games -->
+                    <div class="reward-item affordable" onclick="buyReward('game30', 50)">
+                        <div class="reward-left">
+                            <div class="reward-icon">🎮</div>
+                            <div class="reward-info">
+                                <div class="reward-title">+30 минут игр</div>
+                                <div class="reward-desc">Дополнительное время прямо сейчас!</div>
+                            </div>
+                        </div>
+                        <div class="reward-price">
+                            <div class="price-value" style="color: #C084FC;">50 🦄</div>
+                            <div class="price-badge badge-can-buy">Купить!</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reward: +1 hour screen time -->
+                    <div class="reward-item affordable" onclick="buyReward('screen1h', 80)">
+                        <div class="reward-left">
+                            <div class="reward-icon">📱</div>
+                            <div class="reward-info">
+                                <div class="reward-title">+1 час экранного времени</div>
+                                <div class="reward-desc">На любой день</div>
+                            </div>
+                        </div>
+                        <div class="reward-price">
+                            <div class="price-value" style="color: #C084FC;">80 🦄</div>
+                            <div class="price-badge badge-can-buy">Купить!</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reward: +30 min before sleep -->
+                    <div class="reward-item affordable" onclick="buyReward('sleep30', 100)">
+                        <div class="reward-left">
+                            <div class="reward-icon">🌙</div>
+                            <div class="reward-info">
+                                <div class="reward-title">+30 минут перед сном</div>
+                                <div class="reward-desc">Сдвинуть время сна</div>
+                            </div>
+                        </div>
+                        <div class="reward-price">
+                            <div class="price-value" style="color: #C084FC;">100 🦄</div>
+                            <div class="price-badge badge-can-buy">Купить!</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reward: Pizza -->
+                    <div class="reward-item affordable" onclick="buyReward('pizza', 150)">
+                        <div class="reward-left">
+                            <div class="reward-icon">🍕</div>
+                            <div class="reward-info">
+                                <div class="reward-title">Заказ пиццы</div>
+                                <div class="reward-desc">Твоя любимая!</div>
+                            </div>
+                        </div>
+                        <div class="reward-price">
+                            <div class="price-value" style="color: #C084FC;">150 🦄</div>
+                            <div class="price-badge badge-can-buy">Купить!</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reward: Cinema (not enough) -->
+                    <div class="reward-item expensive" onclick="showNeedMore(200, 245)">
+                        <div class="reward-left">
+                            <div class="reward-icon">🎬</div>
+                            <div class="reward-info">
+                                <div class="reward-title">Поход в кино</div>
+                                <div class="reward-desc">С друзьями!</div>
+                            </div>
+                        </div>
+                        <div class="reward-price">
+                            <div class="price-value" style="color: #C084FC;">200 🦄</div>
+                            <div class="price-badge badge-need-more">Ещё 45 🦄</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reward: Gift (not enough) -->
+                    <div class="reward-item expensive" onclick="showNeedMore(500, 245)">
+                        <div class="reward-left">
+                            <div class="reward-icon">🎁</div>
+                            <div class="reward-info">
+                                <div class="reward-title">Подарок по выбору</div>
+                                <div class="reward-desc">До 1000₽</div>
+                            </div>
+                        </div>
+                        <div class="reward-price">
+                            <div class="price-value" style="color: #C084FC;">500 🦄</div>
+                            <div class="price-badge badge-need-more">Ещё 255 🦄</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reward: New Game (Goal!) -->
+                    <div class="reward-item expensive" onclick="showNeedMore(800, 245)" style="border-color: rgba(139, 92, 246, 0.5); background: rgba(139, 92, 246, 0.05);">
+                        <div class="reward-left">
+                            <div class="reward-icon">🎮</div>
+                            <div class="reward-info">
+                                <div class="reward-title">Новая игра PS5</div>
+                                <div class="reward-desc">🎯 ТВОЯ ЦЕЛЬ!</div>
+                            </div>
+                        </div>
+                        <div class="reward-price">
+                            <div class="price-value" style="color: #C084FC;">800 🦄</div>
+                            <div class="price-badge badge-need-more">Ещё 555 🦄</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- History Tab -->
+                <div id="tab-history" style="display: none;">
+                    <div class="section-title">
+                        <span>📊</span>
+                        <span>Моя история:</span>
+                    </div>
+                    
+                    <div style="background: rgba(255, 255, 255, 0.05); border-radius: 18px; padding: 15px;">
+                        <div class="history-item">
+                            <div class="history-left">
+                                <div class="history-icon">📚</div>
+                                <div class="history-info">
+                                    <div class="history-title">Домашнее задание</div>
+                                    <div class="history-time">Сегодня, 10:30</div>
+                                </div>
+                            </div>
+                            <div class="history-amount positive">+10 🦄</div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-left">
+                                <div class="history-icon">😊</div>
+                                <div class="history-info">
+                                    <div class="history-title">Хорошее поведение</div>
+                                    <div class="history-time">Сегодня, 14:15</div>
+                                </div>
+                            </div>
+                            <div class="history-amount positive">+15 🦄</div>
+                        </div>
+                        
+                        <div class="history-item" style="background: rgba(239, 68, 68, 0.05); border-radius: 10px; padding: 12px; margin: 8px 0;">
+                            <div class="history-left">
+                                <div class="history-icon">😡</div>
+                                <div class="history-info">
+                                    <div class="history-title">❌ Грубость с бабушкой</div>
+                                    <div class="history-time">Сегодня, 16:20</div>
+                                    <div style="font-size: 11px; color: rgba(255, 255, 255, 0.6); margin-top: 3px;">Причина: "Накричал на бабушку"</div>
+                                </div>
+                            </div>
+                            <div class="history-amount negative">-15 🦄</div>
+                        </div>
+                        
+                        <div class="history-item" style="background: rgba(139, 92, 246, 0.08); border-radius: 10px; padding: 12px; margin: 8px 0;">
+                            <div class="history-left">
+                                <div class="history-icon">🎮</div>
+                                <div class="history-info">
+                                    <div class="history-title">Купил: +30 мин игр</div>
+                                    <div class="history-time">Сегодня, 18:45</div>
+                                </div>
+                            </div>
+                            <div class="history-amount" style="color: #8B5CF6;">-50 🦄</div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-left">
+                                <div class="history-icon">🧹</div>
+                                <div class="history-info">
+                                    <div class="history-title">Убрал в комнате</div>
+                                    <div class="history-time">Вчера, 09:00</div>
+                                </div>
+                            </div>
+                            <div class="history-amount positive">+5 🦄</div>
+                        </div>
+                        
+                        <div class="history-item" style="border-bottom: none;">
+                            <div class="history-left">
+                                <div class="history-icon">🏆</div>
+                                <div class="history-info">
+                                    <div class="history-title">Получил "5" по математике</div>
+                                    <div class="history-time">Вчера, 15:30</div>
+                                </div>
+                            </div>
+                            <div class="history-amount positive">+50 🦄</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 15px; padding: 15px; border: 1px solid rgba(59, 130, 246, 0.3);">
+                        <div style="font-size: 14px; font-weight: bold; color: #3B82F6; margin-bottom: 10px;">📊 Статистика за месяц:</div>
+                        <div style="font-size: 13px; color: rgba(255, 255, 255, 0.8); line-height: 1.8;">
+                            <div>💰 Всего заработано: <strong style="color: #10B981;">487 🦄</strong></div>
+                            <div>🛍️ Всего потрачено: <strong style="color: #8B5CF6;">242 🦄</strong></div>
+                            <div>❌ Всего наказано: <strong style="color: #EF4444;">-58 🦄</strong></div>
+                            <div>📈 Средне в день: <strong style="color: #C084FC;">+13 🦄</strong></div>
+                            <div>🏆 Лучший день: Среда (+78 🦄)</div>
+                            <div>⚠️ Худший день: Пятница (-23 🦄)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Achievements Tab -->
+                <div id="tab-achievements" style="display: none;">
+                    <div class="section-title">
+                        <span>🏆</span>
+                        <span>Мои достижения:</span>
+                    </div>
+                    
+                    <div class="achievement-item" style="border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.1);">
+                        <div class="achievement-icon">🏆</div>
+                        <div class="achievement-info">
+                            <div class="achievement-title">Первая звезда</div>
+                            <div class="achievement-desc">Заработать первую ⭐</div>
+                        </div>
+                        <div class="achievement-status">✅ Получено!</div>
+                    </div>
+                    
+                    <div class="achievement-item" style="border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.1);">
+                        <div class="achievement-icon">📚</div>
+                        <div class="achievement-info">
+                            <div class="achievement-title">Книжный червь</div>
+                            <div class="achievement-desc">Прочитать 5 книг</div>
+                        </div>
+                        <div class="achievement-status">✅ Получено! +50 ⭐</div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon" style="filter: grayscale(1); opacity: 0.5;">🎯</div>
+                        <div class="achievement-info">
+                            <div class="achievement-title">Неделя без нарушений</div>
+                            <div class="achievement-desc">7 дней без нарушений правил</div>
+                        </div>
+                        <div class="achievement-status locked">3/7 дней</div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon" style="filter: grayscale(1); opacity: 0.5;">💯</div>
+                        <div class="achievement-info">
+                            <div class="achievement-title">Отличник</div>
+                            <div class="achievement-desc">5 пятёрок подряд</div>
+                        </div>
+                        <div class="achievement-status locked">2/5</div>
+                    </div>
+                    
+                    <div class="achievement-item" style="border-color: rgba(16, 185, 129, 0.5); background: rgba(16, 185, 129, 0.1);">
+                        <div class="achievement-icon">🌟</div>
+                        <div class="achievement-info">
+                            <div class="achievement-title">100 звёздочек</div>
+                            <div class="achievement-desc">Накопить 100 ⭐</div>
+                        </div>
+                        <div class="achievement-status">✅ Получено!</div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon" style="filter: grayscale(1); opacity: 0.5;">👑</div>
+                        <div class="achievement-info">
+                            <div class="achievement-title">Король недели</div>
+                            <div class="achievement-desc">Больше всех ⭐ в семье</div>
+                        </div>
+                        <div class="achievement-status locked">🥇 1 место</div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; background: rgba(139, 92, 246, 0.1); border-radius: 15px; padding: 18px; border: 1px solid rgba(139, 92, 246, 0.3);">
+                        <div style="font-size: 15px; font-weight: bold; color: #8B5CF6; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                            <span>🎯</span>
+                            <span>Активные челленджи:</span>
+                        </div>
+                        
+                        <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 12px; margin-bottom: 10px;">
+                            <div style="font-size: 14px; font-weight: 600; color: white; margin-bottom: 5px;">📚 Неделя отличника</div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-bottom: 8px;">Только хорошие оценки 7 дней подряд</div>
+                            <div class="progress-bar-container" style="height: 8px;">
+                                <div class="progress-bar" style="width: 42.8%;"></div>
+                            </div>
+                            <div style="font-size: 11px; color: rgba(255, 255, 255, 0.6); margin-top: 5px;">3/7 дней • Награда: +200 🦄</div>
+                        </div>
+                        
+                        <div style="background: rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 12px;">
+                            <div style="font-size: 14px; font-weight: 600; color: white; margin-bottom: 5px;">🎮 Контроль времени</div>
+                            <div style="font-size: 12px; color: rgba(255, 255, 255, 0.7); margin-bottom: 8px;">Не превышать лимит экранного времени 5 дней</div>
+                            <div class="progress-bar-container" style="height: 8px;">
+                                <div class="progress-bar" style="width: 40%;"></div>
+                            </div>
+                            <div style="font-size: 11px; color: rgba(255, 255, 255, 0.6); margin-top: 5px;">2/5 дней • Награда: +150 🦄</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'">
+                    <div class="nav-icon">🛡️</div>
+                    <div class="nav-label">Защита</div>
+                </button>
+                <button class="nav-item active">
+                    <div class="nav-icon">🦄</div>
+                    <div class="nav-label">Единороги</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Профиль</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Request Achievement Modal -->
+    <div id="request-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="width: 90%; max-width: 400px; background: linear-gradient(135deg, #1e3a5f 0%, #2e5090 100%); border-radius: 25px; padding: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); border: 2px solid rgba(168, 85, 247, 0.4);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #C084FC; font-size: 20px; margin: 0;">📣 Сообщить о достижении</h3>
+                <button onclick="closeRequestModal()" style="background: none; border: none; color: white; font-size: 28px; cursor: pointer; padding: 0; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">✕</button>
+            </div>
+            
+            <p style="color: rgba(255,255,255,0.8); font-size: 13px; margin-bottom: 20px;">Выбери что ты сделал, и родители получат уведомление!</p>
+            
+            <!-- Achievement Templates -->
+            <div style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto;">
+                <button onclick="sendRequest('homework', '📚 Домашнее задание', 10)" class="achievement-btn">
+                    <span style="font-size: 28px;">📚</span>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 15px; font-weight: 600;">Сделал домашнее задание</div>
+                        <div style="font-size: 12px; opacity: 0.7;">+10 🦄</div>
+                    </div>
+                </button>
+                
+                <button onclick="sendRequest('cleaning', '🧹 Домашние обязанности', 5)" class="achievement-btn">
+                    <span style="font-size: 28px;">🧹</span>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 15px; font-weight: 600;">Убрал в комнате</div>
+                        <div style="font-size: 12px; opacity: 0.7;">+5 🦄</div>
+                    </div>
+                </button>
+                
+                <button onclick="sendRequest('book', '📖 Чтение книг', 20)" class="achievement-btn">
+                    <span style="font-size: 28px;">📖</span>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 15px; font-weight: 600;">Прочитал книгу</div>
+                        <div style="font-size: 12px; opacity: 0.7;">+20 🦄</div>
+                    </div>
+                </button>
+                
+                <button onclick="sendRequest('grade', '🏆 Отличная оценка', 50)" class="achievement-btn">
+                    <span style="font-size: 28px;">🏆</span>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 15px; font-weight: 600;">Получил "5" / закрыл четверть</div>
+                        <div style="font-size: 12px; opacity: 0.7;">+50 🦄</div>
+                    </div>
+                </button>
+                
+                <button onclick="sendRequest('help', '😊 Помощь семье', 15)" class="achievement-btn">
+                    <span style="font-size: 28px;">😊</span>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 15px; font-weight: 600;">Помог по дому / с младшим</div>
+                        <div style="font-size: 12px; opacity: 0.7;">+15 🦄</div>
+                    </div>
+                </button>
+                
+                <button onclick="sendRequest('custom', '💬 Своё сообщение', 0)" class="achievement-btn" style="border: 2px dashed rgba(168, 85, 247, 0.5);">
+                    <span style="font-size: 28px;">💬</span>
+                    <div style="flex: 1; text-align: left;">
+                        <div style="font-size: 15px; font-weight: 600;">Написать своё</div>
+                        <div style="font-size: 12px; opacity: 0.7;">Родители решат сколько 🦄</div>
+                    </div>
+                </button>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 15px; background: rgba(59, 130, 246, 0.1); border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3);">
+                <p style="font-size: 12px; color: rgba(255,255,255,0.8); line-height: 1.6; margin: 0;">
+                    <strong style="color: #3B82F6;">💡 Совет:</strong> Будь честным! Родители смогут проверить и одобрить твоё достижение.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        .achievement-btn {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(168, 85, 247, 0.3);
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .achievement-btn:hover {
+            background: rgba(168, 85, 247, 0.2);
+            border-color: rgba(168, 85, 247, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        .achievement-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+
+    <script>
+        let currentBalance = 245;
+        
+        // Switch tabs
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.getElementById('tab-shop').style.display = 'none';
+            document.getElementById('tab-history').style.display = 'none';
+            document.getElementById('tab-achievements').style.display = 'none';
+            
+            // Show selected tab
+            document.getElementById('tab-' + tabName).style.display = 'block';
+            
+            // Update tab styles
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        // Open request modal
+        function openRequestModal() {
+            document.getElementById('request-modal').style.display = 'flex';
+        }
+        
+        // Close request modal
+        function closeRequestModal() {
+            document.getElementById('request-modal').style.display = 'none';
+        }
+        
+        // Send achievement request to parents
+        function sendRequest(type, title, unicorns) {
+            if (type === 'custom') {
+                const customMessage = prompt('📝 Напиши что ты сделал:');
+                if (!customMessage || customMessage.trim() === '') {
+                    return;
+                }
+                title = '💬 ' + customMessage;
+            }
+            
+            // Close modal
+            closeRequestModal();
+            
+            // Show confirmation
+            alert(
+                '✅ ЗАПРОС ОТПРАВЛЕН!\n\n' +
+                'Родители получили уведомление:\n' +
+                title + '\n\n' +
+                (unicorns > 0 ? 'Ожидаемая награда: +' + unicorns + ' 🦄\n\n' : 'Родители решат сколько 🦄\n\n') +
+                '⏳ Ожидай одобрения!\n\n' +
+                '💡 Подсказка: Родители проверят твоё достижение и одобрят его, если всё правда!'
+            );
+            
+            // In real app: send to backend API
+            console.log('Achievement request sent:', {
+                child_id: 'child_123',
+                type: type,
+                title: title,
+                requested_unicorns: unicorns,
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        // Buy reward
+        function buyReward(rewardId, cost) {
+            if (currentBalance < cost) {
+                showNotification('❌ Недостаточно звёздочек!\nНужно ещё: ' + (cost - currentBalance) + ' ⭐', 'error');
+                return;
+            }
+            
+            const rewards = {
+                'game30': '🎮 +30 минут игр',
+                'screen1h': '📱 +1 час экранного времени',
+                'sleep30': '🌙 +30 минут перед сном',
+                'pizza': '🍕 Заказ пиццы'
+            };
+            
+            const rewardName = rewards[rewardId] || 'Награда';
+            
+            if (confirm('🎁 Купить награду?\n\n' + rewardName + '\n\nЦена: ' + cost + ' ⭐\nОстанется: ' + (currentBalance - cost) + ' ⭐')) {
+                currentBalance -= cost;
+                document.getElementById('balance').textContent = currentBalance;
+                
+                showNotification(
+                    '✅ НАГРАДА ПОЛУЧЕНА!\n\n' + rewardName + '\n\nПотрачено: -' + cost + ' ⭐\nОсталось: ' + currentBalance + ' ⭐',
+                    'success'
+                );
+                
+                // Update progress bar for goal
+                const goalProgress = (currentBalance / 800) * 100;
+                document.querySelector('.progress-bar').style.width = goalProgress + '%';
+                
+                // Notify parent (simulate WebSocket)
+                setTimeout(() => {
+                    showNotification(
+                        '📱 Родители получили уведомление:\n"Алексей купил: ' + rewardName + ' за ' + cost + ' ⭐"',
+                        'info'
+                    );
+                }, 2000);
+            }
+        }
+        
+        // Show "Need more stars" message
+        function showNeedMore(cost, currentBalance) {
+            const needed = cost - currentBalance;
+            const daysNeeded = Math.ceil(needed / 16); // 16 stars per day average
+            
+            showNotification(
+                '💰 Накопи ещё звёздочек!\n\n' +
+                'Нужно: ' + cost + ' ⭐\n' +
+                'У тебя: ' + currentBalance + ' ⭐\n' +
+                'Не хватает: ' + needed + ' ⭐\n\n' +
+                '📈 При заработке 16 ⭐/день:\n' +
+                'Примерно через ' + daysNeeded + ' дней!\n\n' +
+                '💡 Совет: Делай домашнее задание (+10 ⭐) и\nполучай хорошие оценки (+50 ⭐)!',
+                'info'
+            );
+        }
+        
+        // Simulate real-time update from parent
+        function simulateParentAction() {
+            setTimeout(() => {
+                // Parent gave +10 stars
+                currentBalance += 10;
+                document.getElementById('balance').textContent = currentBalance;
+                
+                // Update earned this week
+                const earnedEl = document.getElementById('earned-week');
+                const currentEarned = parseInt(earnedEl.textContent);
+                earnedEl.textContent = '+' + (currentEarned + 10);
+                
+                // Update progress
+                const goalProgress = (currentBalance / 800) * 100;
+                document.querySelector('.progress-bar').style.width = goalProgress + '%';
+                
+                showNotification(
+                    '🎉 НОВОЕ НАЧИСЛЕНИЕ!\n\n' +
+                    '📚 Домашнее задание\n' +
+                    '+10 ⭐\n\n' +
+                    'Твой баланс: ' + currentBalance + ' ⭐',
+                    'success'
+                );
+            }, 5000); // Through 5 seconds after page load
+        }
+        
+        // Show notification
+        function showNotification(message, type) {
+            const existingNotif = document.querySelector('.notification');
+            if (existingNotif) {
+                existingNotif.remove();
+            }
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = message.replace(/\n/g, '<br>');
+            
+            if (type === 'error') {
+                notification.style.background = 'linear-gradient(135deg, #EF4444, #DC2626)';
+            } else if (type === 'info') {
+                notification.style.background = 'linear-gradient(135deg, #3B82F6, #2563EB)';
+            }
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+        
+        // Simulate parent action on page load
+        simulateParentAction();
+    </script>
+</body>
+</html>
+

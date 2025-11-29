@@ -99,7 +99,6 @@
 		5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309422EA793A000C7D34B /* HapticFeedback.swift */; };
 		5EC309472EA793D900C7D34B /* CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309462EA793D900C7D34B /* CornerRadius.swift */; };
 		5EC3094B2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC3094A2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift */; };
-		5EE081872ED9C63B009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision in Resources */ = {isa = PBXBuildFile; fileRef = 5EE081862ED9C63A009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision */; };
 		62A51F3024E64580A0C842B2 /* aladdin_cert.cer in Resources */ = {isa = PBXBuildFile; fileRef = 9136C4EF975B4172830C175D /* aladdin_cert.cer */; };
 		A1000001 /* ALADDINApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000 /* ALADDINApp.swift */; };
 		A1000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002 /* ContentView.swift */; };
@@ -322,7 +321,6 @@
 		5EC309462EA793D900C7D34B /* CornerRadius.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CornerRadius.swift; sourceTree = "<group>"; };
 		5EC309482EA793FE00C7D34B /* Shared/Components/SecondaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Components/SecondaryButton.swift; sourceTree = "<group>"; };
 		5EC3094A2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Models/FunctionStatus.swift; sourceTree = "<group>"; };
-		5EE081862ED9C63A009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision */ = {isa = PBXFileReference; lastKnownFileType = file; name = ALADDINPacketTunnel_Dev_New.mobileprovision; path = ../../../../Downloads/ALADDINPacketTunnel_Dev_New.mobileprovision; sourceTree = "<group>"; };
 		9136C4EF975B4172830C175D /* aladdin_cert.cer */ = {isa = PBXFileReference; lastKnownFileType = text; path = aladdin_cert.cer; sourceTree = "<group>"; };
 		A0FFFFFE /* ALADDIN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ALADDIN.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1000000 /* ALADDINApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINApp.swift; sourceTree = "<group>"; };
@@ -551,7 +549,6 @@
 				5E709CE32ED8E5FF0046FFD5 /* ALADDINPacketTunnelDebug.entitlements */,
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
-				5EE081862ED9C63A009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision */,
 				5E46BE832ED9B6ED003FE7C9 /* ALADDINPacketTunnel_Dev.mobileprovision */,
 				5EB01F432ECB097500168BE9 /* ActivationCodeViewModel.swift */,
 				5EB01F3F2EC9B7CD00168BE9 /* BackupRecoveryModal.swift */,
@@ -883,7 +880,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5EE081872ED9C63B009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1396,7 +1392,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINPacketTunnelDebug.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				INFOPLIST_FILE = ALADDIN/ALADDINPacketTunnel/Info.plist;
@@ -1409,7 +1405,6 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "ALADDINPacketTunnel Dev.";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -1422,7 +1417,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINPacketTunnel.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				INFOPLIST_FILE = ALADDIN/ALADDINPacketTunnel/Info.plist;
@@ -1436,7 +1431,6 @@
 				"MTL_ENABLE_DEBUG_INFO[arch=*]" = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "ALADDINPacketTunnel Dev.";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;

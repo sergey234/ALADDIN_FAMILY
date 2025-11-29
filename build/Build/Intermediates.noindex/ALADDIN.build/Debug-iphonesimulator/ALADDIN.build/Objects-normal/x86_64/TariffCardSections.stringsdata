@@ -1,0 +1,36 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Components/TariffCardSections.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Доступно"
+      },
+      {
+        "comment": "",
+        "key": "%@, %lld ф."
+      },
+      {
+        "comment": "",
+        "key": "Нажмите, чтобы свернуть список угроз"
+      },
+      {
+        "comment": "",
+        "key": "Нажмите, чтобы развернуть список угроз"
+      },
+      {
+        "comment": "",
+        "key": "•"
+      },
+      {
+        "comment": "",
+        "key": "(%lld/%lld)"
+      },
+      {
+        "comment": "",
+        "key": "(%lld ф.)"
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,40 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/26_ActivationCodeScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "OK"
+      },
+      {
+        "comment": "",
+        "key": "⚠️ Для активации кода необходимо дать согласие на обработку персональных данных"
+      },
+      {
+        "comment": "",
+        "key": "Согласие на обработку персональных данных"
+      },
+      {
+        "comment": "",
+        "key": "Нажимая «Активировать», я даю согласие на обработку персональных данных в соответствии с:"
+      },
+      {
+        "comment": "",
+        "key": "и"
+      },
+      {
+        "comment": "",
+        "key": "."
+      },
+      {
+        "comment": "",
+        "key": "Согласием на обработку персональных данных"
+      },
+      {
+        "comment": "",
+        "key": "Политикой конфиденциальности"
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,180 @@
+[
+  {
+    "id": "free",
+    "name": "Free",
+    "devices": 1,
+    "protection": "16 / 100",
+    "pricing": {
+      "currency": "RUB",
+      "periods": [
+        {
+          "months": 0,
+          "label": "Всегда бесплатно",
+          "total": 0,
+          "monthly": 0,
+          "discountPercent": 0,
+          "savings": 0,
+          "note": "Для мониторинга одного устройства"
+        }
+      ]
+    },
+    "perks": [
+      "Базовые уведомления о угрозах",
+      "Статистика для 1 устройства",
+      "AI советник в демо-режиме"
+    ]
+  },
+  {
+    "id": "personal",
+    "name": "Personal",
+    "devices": 4,
+    "protection": "50 / 100",
+    "pricing": {
+      "currency": "RUB",
+      "defaultMonths": 12,
+      "periods": [
+        {
+          "months": 1,
+          "label": "1 мес",
+          "total": 290,
+          "monthly": 290,
+          "discountPercent": 0,
+          "savings": 0
+        },
+        {
+          "months": 3,
+          "label": "3 мес",
+          "total": 783,
+          "monthly": 261,
+          "discountPercent": 10,
+          "savings": 87
+        },
+        {
+          "months": 6,
+          "label": "6 мес",
+          "total": 1479,
+          "monthly": 246,
+          "discountPercent": 15,
+          "savings": 261
+        },
+        {
+          "months": 12,
+          "label": "12 мес",
+          "total": 2780,
+          "monthly": 231,
+          "discountPercent": 20,
+          "savings": 700,
+          "note": "Специальная цена на год"
+        }
+      ]
+    },
+    "perks": [
+      "VPN защита и фильтрация сайтов",
+      "Мониторинг 4 устройств",
+      "Умные уведомления и отчёты",
+      "Обучение безопасности для взрослых"
+    ]
+  },
+  {
+    "id": "family",
+    "name": "Family",
+    "devices": 6,
+    "protection": "92 / 100",
+    "pricing": {
+      "currency": "RUB",
+      "defaultMonths": 12,
+      "periods": [
+        {
+          "months": 1,
+          "label": "1 мес",
+          "total": 490,
+          "monthly": 490,
+          "discountPercent": 0,
+          "savings": 0
+        },
+        {
+          "months": 3,
+          "label": "3 мес",
+          "total": 1323,
+          "monthly": 441,
+          "discountPercent": 10,
+          "savings": 147
+        },
+        {
+          "months": 6,
+          "label": "6 мес",
+          "total": 2499,
+          "monthly": 416,
+          "discountPercent": 15,
+          "savings": 441
+        },
+        {
+          "months": 12,
+          "label": "12 мес",
+          "total": 4704,
+          "monthly": 392,
+          "discountPercent": 20,
+          "savings": 1176
+        }
+      ]
+    },
+    "perks": [
+      "AI помощник для детей",
+      "Родительский контроль и геолокация",
+      "Ограничения экранного времени",
+      "Уведомления об обходах блокировок",
+      "138 функций защиты семьи"
+    ]
+  },
+  {
+    "id": "premium",
+    "name": "Premium",
+    "devices": 10,
+    "protection": "100 / 100",
+    "pricing": {
+      "currency": "RUB",
+      "defaultMonths": 12,
+      "periods": [
+        {
+          "months": 1,
+          "label": "1 мес",
+          "total": 990,
+          "monthly": 990,
+          "discountPercent": 0,
+          "savings": 0
+        },
+        {
+          "months": 3,
+          "label": "3 мес",
+          "total": 2673,
+          "monthly": 891,
+          "discountPercent": 10,
+          "savings": 297
+        },
+        {
+          "months": 6,
+          "label": "6 мес",
+          "total": 5049,
+          "monthly": 841,
+          "discountPercent": 15,
+          "savings": 891
+        },
+        {
+          "months": 12,
+          "label": "12 мес",
+          "total": 9504,
+          "monthly": 792,
+          "discountPercent": 20,
+          "savings": 2376
+        }
+      ]
+    },
+    "perks": [
+      "Все функции Family",
+      "IoT защита и расширенный VPN",
+      "Безлимитные устройства в семье",
+      "Приоритетная поддержка 24/7"
+    ]
+  }
+]
+

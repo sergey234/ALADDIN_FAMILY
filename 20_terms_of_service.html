@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Условия использования ALADDIN AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .phone {
+            width: 375px;
+            min-height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            margin: 20px 0;
+        }
+        
+        .screen {
+            width: 100%;
+            min-height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            padding: 10px 0;
+            z-index: 100;
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .title {
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            flex: 1;
+            line-height: 1.3;
+        }
+        
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #F59E0B;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .section-text {
+            font-size: 11px;
+            line-height: 1.7;
+            opacity: 0.9;
+        }
+        
+        .section-number {
+            font-size: 18px;
+            font-weight: 700;
+            color: #F59E0B;
+            margin-bottom: 10px;
+        }
+        
+        .subsection {
+            margin-bottom: 12px;
+            padding-left: 10px;
+            border-left: 2px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .subsection-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #10B981;
+        }
+        
+        .highlight {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 3px solid #10B981;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 8px;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        
+        .list-item {
+            padding-left: 15px;
+            margin: 5px 0;
+            font-size: 11px;
+        }
+        
+        .accordion-header {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3B82F6;
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+        
+        .accordion-header:hover {
+            background: rgba(59, 130, 246, 0.3);
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .accordion-content.active {
+            max-height: 2000px;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="screen">
+            <div class="header">
+                <div class="back-btn" onclick="goBackSmart()">←</div>
+                <div class="title">📜 Условия использования<br>ALADDIN AI</div>
+                <div class="back-btn" style="opacity: 0; cursor: default;"></div>
+            </div>
+            
+            <div class="content">
+                <!-- Заголовок документа -->
+                <div class="section" style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); text-align: center;">
+                    <div style="font-size: 18px; font-weight: 700; margin-bottom: 8px;">
+                        📜 УСЛОВИЯ ИСПОЛЬЗОВАНИЯ
+                    </div>
+                    <div style="font-size: 13px; font-weight: 600;">
+                        СИСТЕМЫ СЕМЕЙНОЙ БЕЗОПАСНОСТИ ALADDIN AI
+                    </div>
+                    <div style="font-size: 10px; margin-top: 8px; opacity: 0.9;">
+                        Версия 2.0 | 10 октября 2025
+                    </div>
+                </div>
+                
+                <!-- Введение -->
+                <div class="section">
+                    <div class="highlight">
+                        <strong>Введение:</strong><br>
+                        Используя приложение ALADDIN AI, вы соглашаетесь с данными условиями использования и обязуетесь соблюдать правила безопасности.
+                    </div>
+                </div>
+                
+                <!-- 1. Принятие условий -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">✅ 1. Принятие условий</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Ваше согласие с условиями</div>
+                        <div class="list-item">• Используя приложение ALADDIN AI, вы соглашаетесь с данными условиями</div>
+                        <div class="list-item">• Вы обязуетесь соблюдать все правила использования</div>
+                        <div class="list-item">• До начала использования ознакомьтесь со всеми разделами</div>
+                        <div class="list-item">• При несогласии с условиями - прекратите использование</div>
+                    </div>
+                </div>
+                
+                <!-- 2. Описание сервиса -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">📱 2. Описание сервиса</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Что такое ALADDIN AI</div>
+                        <div class="list-item">• ALADDIN AI - система семейной безопасности от киберугроз</div>
+                        <div class="list-item">• Включает: VPN, антивирус, родительский контроль, мониторинг</div>
+                        <div class="list-item">• Защита для всей семьи: детей, подростков, пожилых</div>
+                        <div class="list-item">• Образовательный контент и игры по безопасности</div>
+                    </div>
+                </div>
+                
+                <!-- 3. Регистрация и учетные записи -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">🔐 3. Регистрация и учетные записи</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Создание аккаунта</div>
+                        <div class="list-item">• Регистрация через QR-код (анонимная)</div>
+                        <div class="list-item">• Вы несете ответственность за сохранение данных доступа</div>
+                        <div class="list-item">• Рекомендуется использовать биометрическую защиту</div>
+                        <div class="list-item">• При утере доступа обращайтесь в поддержку</div>
+                    </div>
+                </div>
+                
+                <!-- 4. Обязанности пользователя -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">🤝 4. Обязанности пользователя</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Что нужно делать</div>
+                        <div class="list-item">• Использовать приложение только в законных целях</div>
+                        <div class="list-item">• Не нарушать права других пользователей</div>
+                        <div class="list-item">• Не использовать приложение для незаконной деятельности</div>
+                        <div class="list-item">• Соблюдать все нормы безопасности и конфиденциальности</div>
+                        <div class="list-item">• Регулярно обновлять приложение до последней версии</div>
+                    </div>
+                </div>
+                
+                <!-- 5. Родительский контроль -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">👨‍👩‍👧‍👦 5. Родительский контроль</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Ответственность родителей</div>
+                        <div class="list-item">• Родители несут полную ответственность за детей</div>
+                        <div class="list-item">• Необходимо настроить родительский контроль</div>
+                        <div class="list-item">• Регулярно проверяйте настройки безопасности</div>
+                        <div class="list-item">• Обучайте детей правилам безопасности в сети</div>
+                        <div class="list-item">• Мониторьте активность детей в приложении</div>
+                    </div>
+                </div>
+                
+                <!-- 6. VPN и безопасность -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">🔒 6. VPN и безопасность</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Использование VPN</div>
+                        <div class="list-item">• VPN предоставляется для защиты соединения</div>
+                        <div class="list-item">• Вы несете ответственность за соблюдение законов</div>
+                        <div class="list-item">• Запрещена незаконная деятельность через VPN</div>
+                        <div class="list-item">• Мы не храним историю ваших посещений (NO-LOGS)</div>
+                        <div class="list-item">• Используется военное шифрование</div>
+                    </div>
+                </div>
+                
+                <!-- 7. Ограничения -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">🚫 7. Ограничения</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Что запрещено</div>
+                        <div class="list-item">• Запрещена незаконная деятельность</div>
+                        <div class="list-item">• Взлом и нарушение работы сервиса</div>
+                        <div class="list-item">• Нарушение интеллектуальной собственности</div>
+                        <div class="list-item">• Создание вредоносного контента</div>
+                        <div class="list-item">• Любые действия, нарушающие законодательство РФ</div>
+                    </div>
+                </div>
+                
+                <!-- 8. Платежи и подписки -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">💳 8. Платежи и подписки</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Оплата подписки</div>
+                        
+                        <div class="highlight" style="margin-bottom: 15px; background: rgba(59, 130, 246, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #3B82F6;">
+                            <strong style="color: #3B82F6; font-size: 13px;">🇷🇺 Для России:</strong><br>
+                            <div class="list-item" style="margin-top: 8px;">• Оплата через веб-сайт aladdin-ai.ru</div>
+                            <div class="list-item">• Доступные методы оплаты: СБП, SberPay, банковские карты, QR платежи</div>
+                            <div class="list-item">• Подписка НЕ продлевается автоматически</div>
+                            <div class="list-item">• Необходимо продлевать подписку вручную</div>
+                            <div class="list-item">• Уведомления о приближающемся окончании подписки отправляются через приложение</div>
+                        </div>
+                        
+                        <div class="highlight" style="margin-bottom: 15px; background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; border-left: 3px solid #10B981;">
+                            <strong style="color: #10B981; font-size: 13px;">🌍 Для других стран Мира (включая страны СНГ):</strong><br>
+                            <div class="list-item" style="margin-top: 8px;">• Покупка внутри приложения через App Store</div>
+                            <div class="list-item">• Автоматическое продление</div>
+                            <div class="list-item">• Уведомления через App Store</div>
+                            <div class="list-item">• Отмена подписки через настройки Apple ID</div>
+                            <div class="list-item">• Возврат средств по правилам App Store</div>
+                        </div>
+                        
+                        <div class="list-item" style="margin-top: 10px;">• Все платежи обрабатываются через защищенные платежные системы</div>
+                        <div class="list-item">• Мы не храним данные ваших банковских карт</div>
+                        <div class="list-item">• При возникновении проблем с оплатой обращайтесь в поддержку</div>
+                        
+                        <div class="subsection" style="margin-top: 20px;">
+                            <div class="subsection-title">Активация подписки</div>
+                            <div class="list-item">• После успешной оплаты подписка активируется автоматически</div>
+                            <div class="list-item">• Для России: активация происходит после подтверждения платежа на веб-сайте</div>
+                            <div class="list-item">• Для других стран (включая страны СНГ): активация происходит через App Store после успешной покупки внутри приложения</div>
+                            <div class="list-item">• Статус подписки отображается в приложении в разделе "Профиль"</div>
+                            <div class="list-item">• При проблемах с активацией обращайтесь в техническую поддержку</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 9. Интеллектуальная собственность -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">📜 9. Интеллектуальная собственность</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Права на контент</div>
+                        <div class="list-item">• Все материалы - собственность ALADDIN AI</div>
+                        <div class="list-item">• Дизайн, код, функциональность защищены</div>
+                        <div class="list-item">• Запрещено копирование и распространение</div>
+                        <div class="list-item">• Торговая марка ALADDIN AI защищена</div>
+                        <div class="list-item">• Все права принадлежат правообладателю</div>
+                    </div>
+                </div>
+                
+                <!-- 10. Ответственность -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">⚖️ 10. Ответственность</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Наша ответственность</div>
+                        <div class="list-item">• Не несем ответственности за неправильное использование</div>
+                        <div class="list-item">• Не гарантируем 100% защиту от всех угроз</div>
+                        <div class="list-item">• Не несем ущерб от действий третьих лиц</div>
+                        <div class="list-item">• Вы несете ответственность за свои действия</div>
+                        <div class="list-item">• Используйте приложение на свой риск</div>
+                    </div>
+                </div>
+                
+                <!-- 11. Прекращение использования -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">🔚 11. Прекращение использования</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Завершение доступа</div>
+                        <div class="list-item">• Мы можем прекратить доступ при нарушении</div>
+                        <div class="list-item">• Без возмещения ущерба при нарушении</div>
+                        <div class="list-item">• Вы можете удалить аккаунт в любой момент</div>
+                        <div class="list-item">• Данные будут удалены по запросу</div>
+                        <div class="list-item">• Уведомление за 7 дней до прекращения</div>
+                    </div>
+                </div>
+                
+                <!-- 12. Изменения условий -->
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span style="font-size: 13px; font-weight: 600;">📝 12. Изменения условий</span>
+                    <span style="font-size: 18px;">▼</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="section">
+                        <div class="subsection-title">Обновление условий</div>
+                        <div class="list-item">• Оставляем право изменять условия</div>
+                        <div class="list-item">• Уведомление через приложение</div>
+                        <div class="list-item">• Дальнейшее использование = согласие</div>
+                        <div class="list-item">• Изменения вступают в силу немедленно</div>
+                        <div class="list-item">• Актуальная версия всегда в приложении</div>
+                    </div>
+                </div>
+                
+                <!-- Контактная информация -->
+                <div class="section">
+                    <div class="section-number">13. Контактная информация</div>
+                    
+                    <div class="subsection">
+                        <div class="subsection-title">Для вопросов по условиям использования:</div>
+                        <div class="section-text">
+                            📞 Телефон: +7 (927) 005-15-77<br>
+                            🌐 Сайт: https://aladdin-ai.ru<br>
+                            💬 Telegram-бот: @aladdin_support_bot
+                        </div>
+                    </div>
+                    
+                    <div class="subsection">
+                        <div class="subsection-title">Для технической поддержки:</div>
+                        <div class="section-text">
+                            🌐 Сайт: https://aladdin-ai.ru<br>
+                            💬 Telegram-бот: @aladdin_support_bot<br>
+                            💬 Чат в приложении ALADDIN AI
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Заключительные положения -->
+                <div class="section">
+                    <div class="section-number">14. Заключительные положения</div>
+                    <div class="list-item">14.1. Действует бессрочно до замены</div>
+                    <div class="list-item">14.2. Актуальная версия в приложении</div>
+                    <div class="list-item">14.3. Изменения через уведомления</div>
+                    <div class="list-item">14.4. Продолжение использования = согласие</div>
+                </div>
+                
+                <!-- Финальное резюме -->
+                <div class="section" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); text-align: center; padding: 20px;">
+                    <div style="font-size: 16px; font-weight: 700; margin-bottom: 12px;">
+                        🎯 ГЛАВНОЕ
+                    </div>
+                    <div style="font-size: 13px; line-height: 1.8;">
+                        ✅ Используйте приложение ответственно<br>
+                        ✅ Соблюдайте правила безопасности<br>
+                        ✅ Защищайте свою семью<br>
+                        ✅ Мы всегда готовы помочь<br><br>
+                        <strong style="font-size: 15px;">ALADDIN AI - защита вашей семьи!</strong> 🛡️
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleAccordion(element) {
+            const content = element.nextElementSibling;
+            const arrow = element.querySelector('span:last-child');
+            
+            if (content.classList.contains('active')) {
+                content.classList.remove('active');
+                arrow.textContent = '▼';
+            } else {
+                content.classList.add('active');
+                arrow.textContent = '▲';
+            }
+        }
+        
+        function goBackSmart() {
+            const previousPage = sessionStorage.getItem('previousPage');
+            
+            if (previousPage && previousPage !== '20_terms_of_service.html') {
+                window.location.href = previousPage;
+            } else {
+                window.location.href = '11_profile_screen.html';
+            }
+        }
+    </script>
+</body>
+</html>
+

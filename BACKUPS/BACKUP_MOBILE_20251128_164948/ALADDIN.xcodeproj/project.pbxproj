@@ -1,0 +1,1498 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		378E2880F83D48D7BE7D5737 /* aladdin_cert_backup.cer in Resources */ = {isa = PBXBuildFile; fileRef = DD10070F12CB43428ABC432E /* aladdin_cert_backup.cer */; };
+		5E0058032EC3C4F900024F7E /* ALADDINTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058022EC3C4F900024F7E /* ALADDINTextField.swift */; };
+		5E0058052EC3C50500024F7E /* ALADDINToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058042EC3C50500024F7E /* ALADDINToggle.swift */; };
+		5E0058072EC3C52B00024F7E /* SecondaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058062EC3C52B00024F7E /* SecondaryButton.swift */; };
+		5E0058092EC3C7A400024F7E /* RewardsQuickModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058082EC3C7A400024F7E /* RewardsQuickModal.swift */; };
+		5E00580F2EC473DA00024F7E /* PaymentQRViewModelProtectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00580E2EC473DA00024F7E /* PaymentQRViewModelProtectionTests.swift */; };
+		5E0058112EC4A65A00024F7E /* ProtectionGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058102EC4A65900024F7E /* ProtectionGroup.swift */; };
+		5E0058132EC4A66600024F7E /* ProtectionSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058122EC4A66600024F7E /* ProtectionSettings.swift */; };
+		5E0058152EC4A6D700024F7E /* ProtectionSettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058142EC4A6D700024F7E /* ProtectionSettingsManager.swift */; };
+		5E0058172EC4A6E300024F7E /* TariffManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058162EC4A6E300024F7E /* TariffManager.swift */; };
+		5E0058192EC4AF2500024F7E /* MotivationBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058182EC4AF2500024F7E /* MotivationBanner.swift */; };
+		5E00581B2EC4AF6D00024F7E /* EnhancedThreatCategoryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00581A2EC4AF6D00024F7E /* EnhancedThreatCategoryCard.swift */; };
+		5E00581F2EC4B1CF00024F7E /* ProtectionCategoryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00581E2EC4B1CF00024F7E /* ProtectionCategoryRow.swift */; };
+		5E0058212EC4B21A00024F7E /* ProtectionGroupSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058202EC4B21A00024F7E /* ProtectionGroupSection.swift */; };
+		5E0058232EC4B2EB00024F7E /* ThreatProtectionSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058222EC4B2EB00024F7E /* ThreatProtectionSettingsScreen.swift */; };
+		5E0058252EC4E69100024F7E /* ThreatItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058242EC4E69100024F7E /* ThreatItemRow.swift */; };
+		5E0058272EC4FC5E00024F7E /* ChildRewardsSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058262EC4FC5D00024F7E /* ChildRewardsSettingsModal.swift */; };
+		5E0058292EC605FC00024F7E /* ParentalControlFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058282EC605FC00024F7E /* ParentalControlFeature.swift */; };
+		5E00582B2EC6062100024F7E /* AdditionalFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00582A2EC6062100024F7E /* AdditionalFeature.swift */; };
+		5E00582D2EC6064100024F7E /* TariffCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00582C2EC6064100024F7E /* TariffCard.swift */; };
+		5E00582F2EC606BB00024F7E /* TariffCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00582E2EC606BA00024F7E /* TariffCardView.swift */; };
+		5E0058312EC606DA00024F7E /* TariffCardSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058302EC606DA00024F7E /* TariffCardSections.swift */; };
+		5E0058332EC6073700024F7E /* TariffFeaturesGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058322EC6073600024F7E /* TariffFeaturesGallery.swift */; };
+		5E0C30B22EAE71D100FD6647 /* RoleSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */; };
+		5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */; };
+		5E0C30B82EAFAD0B00FD6647 /* 02_FamilyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */; };
+		5E0C30BA2EAFC81D00FD6647 /* ChildContentScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B92EAFC81D00FD6647 /* ChildContentScreen.swift */; };
+		5E0C30BC2EAFF09800FD6647 /* SecurityEducationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30BB2EAFF09800FD6647 /* SecurityEducationScreen.swift */; };
+		5E3200012EAD2692000574C4 /* AgeGroupSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */; };
+		5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200022EAD26CE000574C4 /* ConsentModal.swift */; };
+		5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */; };
+		5E32FFD72EACFAA9000574C4 /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFD62EACFA62000574C4 /* ViewModifiers.swift */; };
+		5E32FFE92EAD1836000574C4 /* StatItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFE82EAD1836000574C4 /* StatItem.swift */; };
+		5E32FFEB2EAD1852000574C4 /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFEA2EAD1852000574C4 /* NetworkError.swift */; };
+		5E32FFED2EAD1876000574C4 /* FamilyMemberCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFEC2EAD1876000574C4 /* FamilyMemberCard.swift */; };
+		5E32FFEF2EAD18B2000574C4 /* ProfileEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFEE2EAD18B2000574C4 /* ProfileEditView.swift */; };
+		5E32FFF12EAD18D4000574C4 /* QRScannerModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF02EAD18D4000574C4 /* QRScannerModal.swift */; };
+		5E32FFF32EAD1915000574C4 /* RecoveryOptionsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF22EAD1915000574C4 /* RecoveryOptionsModal.swift */; };
+		5E32FFF52EAD199B000574C4 /* AvatarSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */; };
+		5E32FFF72EAD23BB000574C4 /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF62EAD23BB000574C4 /* PrimaryButton.swift */; };
+		5E32FFF92EAD24D2000574C4 /* InfoRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF82EAD24D2000574C4 /* InfoRow.swift */; };
+		5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */; };
+		5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */; };
+		5E32FFFF2EAD25F5000574C4 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */; };
+		5E709CE62ED8E6010046FFD5 /* NetworkExtension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E709CE52ED8E6010046FFD5 /* NetworkExtension.framework */; };
+		5EB01F3A2EC8721300168BE9 /* MockAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F392EC8721300168BE9 /* MockAPIService.swift */; };
+		5EB01F3C2EC8723600168BE9 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F3B2EC8723600168BE9 /* StorageManager.swift */; };
+		5EB01F3E2EC9B74E00168BE9 /* RecoveryCodeStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */; };
+		5EB01F402EC9B7CD00168BE9 /* BackupRecoveryModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F3F2EC9B7CD00168BE9 /* BackupRecoveryModal.swift */; };
+		5EB01F422ECB092A00168BE9 /* URLHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F412ECB092800168BE9 /* URLHelper.swift */; };
+		5EB01F442ECB097500168BE9 /* ActivationCodeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F432ECB097500168BE9 /* ActivationCodeViewModel.swift */; };
+		5EB01F462ECB09D300168BE9 /* 26_ActivationCodeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F452ECB09D300168BE9 /* 26_ActivationCodeScreen.swift */; };
+		5EC309092EA6B5F600C7D34B /* 01_MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */; };
+		5EC3090B2EA6B60500C7D34B /* 03_VPNScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F52EA6AB8C00C7D34B /* 03_VPNScreen.swift */; };
+		5EC3090C2EA6B60900C7D34B /* 04_AnalyticsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */; };
+		5EC3090D2EA6B60F00C7D34B /* 06_AIAssistantScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */; };
+		5EC3090E2EA6B60F00C7D34B /* 07_ParentalControlScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F72EA6AB8C00C7D34B /* 07_ParentalControlScreen.swift */; };
+		5EC3090F2EA6B60F00C7D34B /* 05_SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309042EA6AB8C00C7D34B /* 05_SettingsScreen.swift */; };
+		5EC309102EA6B61700C7D34B /* 08_ChildInterfaceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308E72EA6AB8B00C7D34B /* 08_ChildInterfaceScreen.swift */; };
+		5EC309112EA6B61B00C7D34B /* 09_ElderlyInterfaceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308FC2EA6AB8C00C7D34B /* 09_ElderlyInterfaceScreen.swift */; };
+		5EC309122EA6B61E00C7D34B /* 10_TariffsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F12EA6AB8C00C7D34B /* 10_TariffsScreen.swift */; };
+		5EC309132EA6B62100C7D34B /* 11_ProfileScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308EF2EA6AB8C00C7D34B /* 11_ProfileScreen.swift */; };
+		5EC309142EA6B62500C7D34B /* 12_NotificationsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308EE2EA6AB8C00C7D34B /* 12_NotificationsScreen.swift */; };
+		5EC309152EA6B62800C7D34B /* 13_SupportScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F62EA6AB8C00C7D34B /* 13_SupportScreen.swift */; };
+		5EC309162EA6B62B00C7D34B /* 14_OnboardingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309012EA6AB8C00C7D34B /* 14_OnboardingScreen.swift */; };
+		5EC309172EA6B62E00C7D34B /* 18_PrivacyPolicyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308FD2EA6AB8C00C7D34B /* 18_PrivacyPolicyScreen.swift */; };
+		5EC309182EA6B63100C7D34B /* 19_TermsOfServiceScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309002EA6AB8C00C7D34B /* 19_TermsOfServiceScreen.swift */; };
+		5EC309192EA6B63400C7D34B /* 20_DevicesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308FB2EA6AB8C00C7D34B /* 20_DevicesScreen.swift */; };
+		5EC3091A2EA6B63700C7D34B /* 21_ReferralScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309022EA6AB8C00C7D34B /* 21_ReferralScreen.swift */; };
+		5EC3091B2EA6B63C00C7D34B /* 22_DeviceDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308E22EA6AB8B00C7D34B /* 22_DeviceDetailScreen.swift */; };
+		5EC3091C2EA6B63F00C7D34B /* 23_FamilyChatScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309052EA6AB8C00C7D34B /* 23_FamilyChatScreen.swift */; };
+		5EC3091D2EA6B64200C7D34B /* 24_VPNEnergyStatsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308FA2EA6AB8C00C7D34B /* 24_VPNEnergyStatsScreen.swift */; };
+		5EC3091E2EA6B64500C7D34B /* 25_PaymentQRScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308ED2EA6AB8C00C7D34B /* 25_PaymentQRScreen.swift */; };
+		5EC3091F2EA6B64800C7D34B /* ChildRewardsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308EC2EA6AB8C00C7D34B /* ChildRewardsScreen.swift */; };
+		5EC309212EA6B65A00C7D34B /* FamilyTournamentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F32EA6AB8C00C7D34B /* FamilyTournamentView.swift */; };
+		5EC309222EA6B65D00C7D34B /* GamesParentalControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308FF2EA6AB8C00C7D34B /* GamesParentalControlView.swift */; };
+		5EC309232EA6B66100C7D34B /* LanguageSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */; };
+		5EC309242EA6B66600C7D34B /* MainScreenWithRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308E62EA6AB8B00C7D34B /* MainScreenWithRegistration.swift */; };
+		5EC309252EA6B66900C7D34B /* NotificationSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309032EA6AB8C00C7D34B /* NotificationSettingsScreen.swift */; };
+		5EC309272EA6B66F00C7D34B /* RewardsModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F02EA6AB8C00C7D34B /* RewardsModalView.swift */; };
+		5EC309292EA6B67800C7D34B /* UnicornPetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308FE2EA6AB8C00C7D34B /* UnicornPetView.swift */; };
+		5EC3092A2EA6B67B00C7D34B /* UnicornUniverseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F42EA6AB8C00C7D34B /* UnicornUniverseView.swift */; };
+		5EC3092B2EA6B67D00C7D34B /* WheelOfFortuneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308E92EA6AB8C00C7D34B /* WheelOfFortuneView.swift */; };
+		5EC3092C2EA6B68000C7D34B /* WidgetConfigurationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308EB2EA6AB8C00C7D34B /* WidgetConfigurationScreen.swift */; };
+		5EC309352EA6CCBD00C7D34B /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309312EA6CCBD00C7D34B /* Spacing.swift */; };
+		5EC309362EA6CCBD00C7D34B /* Fonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309322EA6CCBD00C7D34B /* Fonts.swift */; };
+		5EC309372EA6CCBD00C7D34B /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309332EA6CCBD00C7D34B /* Colors.swift */; };
+		5EC309392EA6CF0600C7D34B /* ALADDINNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */; };
+		5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */; };
+		5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309422EA793A000C7D34B /* HapticFeedback.swift */; };
+		5EC309472EA793D900C7D34B /* CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309462EA793D900C7D34B /* CornerRadius.swift */; };
+		5EC3094B2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC3094A2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift */; };
+		5EE081872ED9C63B009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision in Resources */ = {isa = PBXBuildFile; fileRef = 5EE081862ED9C63A009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision */; };
+		62A51F3024E64580A0C842B2 /* aladdin_cert.cer in Resources */ = {isa = PBXBuildFile; fileRef = 9136C4EF975B4172830C175D /* aladdin_cert.cer */; };
+		A1000001 /* ALADDINApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000 /* ALADDINApp.swift */; };
+		A1000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002 /* ContentView.swift */; };
+		A1000005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000004 /* Assets.xcassets */; };
+		A1000008 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000007 /* Preview Assets.xcassets */; };
+		A3000001 /* ViewModels/MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000000 /* ViewModels/MainViewModel.swift */; };
+		A3000003 /* ViewModels/VPNViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000002 /* ViewModels/VPNViewModel.swift */; };
+		A3000005 /* Core/Models/APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000004 /* Core/Models/APIModels.swift */; };
+		A3000007 /* Core/VPN/VPNManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000006 /* Core/VPN/VPNManager.swift */; };
+		A3000009 /* Core/Network/APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000008 /* Core/Network/APIService.swift */; };
+		A3000011 /* Core/Network/NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000010 /* Core/Network/NetworkManager.swift */; };
+		A3000013 /* Core/Config/AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000012 /* Core/Config/AppConfig.swift */; };
+		A3000017 /* ViewModels/FamilyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000016 /* ViewModels/FamilyViewModel.swift */; };
+		A3000019 /* ViewModels/AIAssistantViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000018 /* ViewModels/AIAssistantViewModel.swift */; };
+		A3000021 /* ViewModels/SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000020 /* ViewModels/SettingsViewModel.swift */; };
+		A3000023 /* ViewModels/SupportViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000022 /* ViewModels/SupportViewModel.swift */; };
+		A3000025 /* ViewModels/ChildInterfaceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000024 /* ViewModels/ChildInterfaceViewModel.swift */; };
+		A3000027 /* ViewModels/ElderlyInterfaceViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000026 /* ViewModels/ElderlyInterfaceViewModel.swift */; };
+		A3000029 /* ViewModels/AnalyticsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000028 /* ViewModels/AnalyticsViewModel.swift */; };
+		A3000031 /* ViewModels/NotificationsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000030 /* ViewModels/NotificationsViewModel.swift */; };
+		A3000033 /* ViewModels/ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000032 /* ViewModels/ProfileViewModel.swift */; };
+		A3000035 /* ViewModels/ParentalControlViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000034 /* ViewModels/ParentalControlViewModel.swift */; };
+		A3000037 /* ViewModels/OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000036 /* ViewModels/OnboardingViewModel.swift */; };
+		A3000039 /* ViewModels/PaymentQRViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000038 /* ViewModels/PaymentQRViewModel.swift */; };
+		A3000041 /* Core/Navigation/NavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000040 /* Core/Navigation/NavigationManager.swift */; };
+		A3000043 /* Core/Accessibility/AccessibilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000042 /* Core/Accessibility/AccessibilityManager.swift */; };
+		A3000045 /* Core/Store/StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000044 /* Core/Store/StoreManager.swift */; };
+		A3000047 /* Core/Localization/LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000046 /* Core/Localization/LocalizationManager.swift */; };
+		A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000048 /* Core/Analytics/AnalyticsManager.swift */; };
+		A3000051 /* ViewModels/FamilyRegistrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */; };
+		A3000053 /* ViewModels/TariffsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000052 /* ViewModels/TariffsViewModel.swift */; };
+		A4AAA002 /* ThreatProtectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA001 /* ThreatProtectionScreen.swift */; };
+		A4AAA004 /* ThreatProtectionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA003 /* ThreatProtectionCard.swift */; };
+		A4AAA006 /* ThreatProtectionCategoriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA005 /* ThreatProtectionCategoriesView.swift */; };
+		A4AAA008 /* ThreatProtectionCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA007 /* ThreatProtectionCategory.swift */; };
+		A4AAA102 /* GamesSettingsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA101 /* GamesSettingsManager.swift */; };
+		A4AAA104 /* AnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA103 /* AnalyticsService.swift */; };
+		A4AAA106 /* RemoteAnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA105 /* RemoteAnalyticsService.swift */; };
+		A4AAA108 /* ProfileImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA107 /* ProfileImageManager.swift */; };
+		A4AAA200 /* RewardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA201 /* RewardModels.swift */; };
+		A4AAA202 /* ViewModels/ChildRewardsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA203 /* ViewModels/ChildRewardsViewModel.swift */; };
+		A4AAA210 /* AntivirusManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA211 /* AntivirusManager.swift */; };
+		A4AAA212 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA213 /* EmptyStateView.swift */; };
+		A4AAA214 /* JWTTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA215 /* JWTTokenManager.swift */; };
+		A4BBB001 /* YoungDefenderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4BBB000 /* YoungDefenderView.swift */; };
+		A4BBB003 /* FamilyProtectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4BBB002 /* FamilyProtectorView.swift */; };
+		A4BBB005 /* ChildGoalEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4BBB004 /* ChildGoalEditorView.swift */; };
+		A4BBB007 /* LocalThreatDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4BBB006 /* LocalThreatDatabase.swift */; };
+		A4BBB101 /* RemoteNotificationsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4BBB100 /* RemoteNotificationsService.swift */; };
+		B1000001 /* AddMemberOptionsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000 /* AddMemberOptionsModal.swift */; };
+		B1000011 /* RecoveryCodeModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000010 /* RecoveryCodeModal.swift */; };
+		B1000021 /* CollapsibleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000020 /* CollapsibleSection.swift */; };
+		B1000031 /* ParentalControlManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000030 /* ParentalControlManager.swift */; };
+		B2000100B2000100B2000100 /* ProtectionFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000100B1000100B1000100 /* ProtectionFeature.swift */; };
+		B2000110B2000110B2000110 /* ProtectionLevelHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000110B1000110B1000110 /* ProtectionLevelHistory.swift */; };
+		B2000120B2000120B2000120 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000120B1000120B1000120 /* Toast.swift */; };
+		B2000130B2000130B2000130 /* AddMoreMemberCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000130B1000130B1000130 /* AddMoreMemberCard.swift */; };
+		B2000140B2000140B2000140 /* InvitationCodeInputModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000140B1000140B1000140 /* InvitationCodeInputModal.swift */; };
+		B2000150B2000150B2000150 /* ProtectionLevelExplanationModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000150B1000150B1000150 /* ProtectionLevelExplanationModal.swift */; };
+		B2000160B2000160B2000160 /* ProtectionLevelHistoryModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000160B1000160B1000160 /* ProtectionLevelHistoryModal.swift */; };
+		B2000170B2000170B2000170 /* AdvancedProtectionSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000170B1000170B1000170 /* AdvancedProtectionSettingsScreen.swift */; };
+		B5001200 /* ALADDINUnitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001100 /* ALADDINUnitTests.swift */; };
+		B5001201 /* APIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001101 /* APIServiceTests.swift */; };
+		B5001202 /* AppConfigTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001102 /* AppConfigTests.swift */; };
+		B5001203 /* AppDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001103 /* AppDelegateTests.swift */; };
+		B5001204 /* FamilyRegistrationViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001104 /* FamilyRegistrationViewModelTests.swift */; };
+		B5001205 /* IoTSecurityModuleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001105 /* IoTSecurityModuleTests.swift */; };
+		B5001206 /* LocalizationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001106 /* LocalizationManagerTests.swift */; };
+		B5001207 /* NetworkManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001107 /* NetworkManagerTests.swift */; };
+		B5001208 /* NotificationManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001108 /* NotificationManagerTests.swift */; };
+		B5001209 /* SharedDataManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001109 /* SharedDataManagerTests.swift */; };
+		B5001210 /* MockAPIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001110 /* MockAPIServiceTests.swift */; };
+		B5002200 /* ALADDINUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5002100 /* ALADDINUITests.swift */; };
+		B5002201 /* FamilyRegistrationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5002101 /* FamilyRegistrationUITests.swift */; };
+		B5002202 /* LanguageSettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5002102 /* LanguageSettingsUITests.swift */; };
+		B5002203 /* NotificationSettingsUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5002103 /* NotificationSettingsUITests.swift */; };
+		B5002204 /* WidgetConfigurationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5002104 /* WidgetConfigurationUITests.swift */; };
+		B6000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000 /* AppDelegate.swift */; };
+		B6000003 /* IoTSecurityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000002 /* IoTSecurityModule.swift */; };
+		B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000200 /* ALADDINWidgets/SharedDataManager.swift */; };
+		C0F300180000000000000001 /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F300110000000000000001 /* PacketTunnelProvider.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B5001008 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A0FFFFFD;
+			remoteInfo = ALADDIN;
+		};
+		B5002008 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A0FFFFFD;
+			remoteInfo = ALADDIN;
+		};
+		C0F300200000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C0F300190000000000000001;
+			remoteInfo = ALADDINPacketTunnel;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C0F3001D0000000000000001 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		5E0058002EC3C4C600024F7E /* ALADDINTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINTextField.swift; path = BACKUP_MOBILE_20251108_1800/Shared/Components/ALADDINTextField.swift; sourceTree = "<group>"; };
+		5E0058022EC3C4F900024F7E /* ALADDINTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINTextField.swift; path = Shared/Components/Inputs/ALADDINTextField.swift; sourceTree = "<group>"; };
+		5E0058042EC3C50500024F7E /* ALADDINToggle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINToggle.swift; path = Shared/Components/Inputs/ALADDINToggle.swift; sourceTree = "<group>"; };
+		5E0058062EC3C52B00024F7E /* SecondaryButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecondaryButton.swift; path = Shared/Components/Buttons/SecondaryButton.swift; sourceTree = "<group>"; };
+		5E0058082EC3C7A400024F7E /* RewardsQuickModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RewardsQuickModal.swift; path = Components/Modals/RewardsQuickModal.swift; sourceTree = "<group>"; };
+		5E00580E2EC473DA00024F7E /* PaymentQRViewModelProtectionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaymentQRViewModelProtectionTests.swift; path = Tests/UnitTests/PaymentQRViewModelProtectionTests.swift; sourceTree = "<group>"; };
+		5E0058102EC4A65900024F7E /* ProtectionGroup.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionGroup.swift; path = Shared/Models/ProtectionGroup.swift; sourceTree = "<group>"; };
+		5E0058122EC4A66600024F7E /* ProtectionSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionSettings.swift; path = Shared/Models/ProtectionSettings.swift; sourceTree = "<group>"; };
+		5E0058142EC4A6D700024F7E /* ProtectionSettingsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionSettingsManager.swift; path = Core/Managers/ProtectionSettingsManager.swift; sourceTree = "<group>"; };
+		5E0058162EC4A6E300024F7E /* TariffManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TariffManager.swift; path = Core/Managers/TariffManager.swift; sourceTree = "<group>"; };
+		5E0058182EC4AF2500024F7E /* MotivationBanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MotivationBanner.swift; path = Components/MotivationBanner.swift; sourceTree = "<group>"; };
+		5E00581A2EC4AF6D00024F7E /* EnhancedThreatCategoryCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EnhancedThreatCategoryCard.swift; path = Components/EnhancedThreatCategoryCard.swift; sourceTree = "<group>"; };
+		5E00581C2EC4AFA600024F7E /* ThreatScenariosGallery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ThreatScenariosGallery.swift; path = Components/ThreatScenariosGallery.swift; sourceTree = "<group>"; };
+		5E00581E2EC4B1CF00024F7E /* ProtectionCategoryRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionCategoryRow.swift; path = Components/ProtectionCategoryRow.swift; sourceTree = "<group>"; };
+		5E0058202EC4B21A00024F7E /* ProtectionGroupSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionGroupSection.swift; path = Components/ProtectionGroupSection.swift; sourceTree = "<group>"; };
+		5E0058222EC4B2EB00024F7E /* ThreatProtectionSettingsScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThreatProtectionSettingsScreen.swift; sourceTree = "<group>"; };
+		5E0058242EC4E69100024F7E /* ThreatItemRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ThreatItemRow.swift; path = Components/ThreatItemRow.swift; sourceTree = "<group>"; };
+		5E0058262EC4FC5D00024F7E /* ChildRewardsSettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChildRewardsSettingsModal.swift; path = Components/Modals/ChildRewardsSettingsModal.swift; sourceTree = "<group>"; };
+		5E0058282EC605FC00024F7E /* ParentalControlFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalControlFeature.swift; path = Shared/Models/ParentalControlFeature.swift; sourceTree = "<group>"; };
+		5E00582A2EC6062100024F7E /* AdditionalFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AdditionalFeature.swift; path = Shared/Models/AdditionalFeature.swift; sourceTree = "<group>"; };
+		5E00582C2EC6064100024F7E /* TariffCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TariffCard.swift; path = Shared/Models/TariffCard.swift; sourceTree = "<group>"; };
+		5E00582E2EC606BA00024F7E /* TariffCardView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TariffCardView.swift; path = Components/TariffCardView.swift; sourceTree = "<group>"; };
+		5E0058302EC606DA00024F7E /* TariffCardSections.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TariffCardSections.swift; path = Components/TariffCardSections.swift; sourceTree = "<group>"; };
+		5E0058322EC6073600024F7E /* TariffFeaturesGallery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TariffFeaturesGallery.swift; path = Components/TariffFeaturesGallery.swift; sourceTree = "<group>"; };
+		5E0C30AF2EAE71A100FD6647 /* MemberSettingsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberSettingsModalView.swift; path = Shared/Components/Modals/MemberSettingsModalView.swift; sourceTree = "<group>"; };
+		5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RoleSelectionModal.swift; path = Shared/Components/Modals/RoleSelectionModal.swift; sourceTree = "<group>"; };
+		5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberStatsModalView.swift; path = Shared/Components/Modals/MemberStatsModalView.swift; sourceTree = "<group>"; };
+		5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = 02_FamilyScreen.swift; sourceTree = "<group>"; };
+		5E0C30B92EAFC81D00FD6647 /* ChildContentScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChildContentScreen.swift; sourceTree = "<group>"; };
+		5E0C30BB2EAFF09800FD6647 /* SecurityEducationScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SecurityEducationScreen.swift; sourceTree = "<group>"; };
+		5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AgeGroupSelectionModal.swift; path = Components/Modals/AgeGroupSelectionModal.swift; sourceTree = "<group>"; };
+		5E3200022EAD26CE000574C4 /* ConsentModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConsentModal.swift; path = Components/Modals/ConsentModal.swift; sourceTree = "<group>"; };
+		5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyCreatedModal.swift; path = Components/Modals/FamilyCreatedModal.swift; sourceTree = "<group>"; };
+		5E32FFD62EACFA62000574C4 /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ViewModifiers.swift; path = Shared/Components/ViewModifiers.swift; sourceTree = "<group>"; };
+		5E32FFE82EAD1836000574C4 /* StatItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StatItem.swift; path = Shared/Components/StatItem.swift; sourceTree = "<group>"; };
+		5E32FFEA2EAD1852000574C4 /* NetworkError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkError.swift; path = Core/Network/NetworkError.swift; sourceTree = "<group>"; };
+		5E32FFEC2EAD1876000574C4 /* FamilyMemberCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyMemberCard.swift; path = Shared/Components/Cards/FamilyMemberCard.swift; sourceTree = "<group>"; };
+		5E32FFEE2EAD18B2000574C4 /* ProfileEditView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProfileEditView.swift; path = Shared/Components/Modals/ProfileEditView.swift; sourceTree = "<group>"; };
+		5E32FFF02EAD18D4000574C4 /* QRScannerModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = QRScannerModal.swift; path = Shared/Components/QRScannerModal.swift; sourceTree = "<group>"; };
+		5E32FFF22EAD1915000574C4 /* RecoveryOptionsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecoveryOptionsModal.swift; path = Shared/Components/RecoveryOptionsModal.swift; sourceTree = "<group>"; };
+		5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AvatarSelector.swift; path = Shared/Components/AvatarSelector.swift; sourceTree = "<group>"; };
+		5E32FFF62EAD23BB000574C4 /* PrimaryButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PrimaryButton.swift; path = Shared/Components/Buttons/PrimaryButton.swift; sourceTree = "<group>"; };
+		5E32FFF82EAD24D2000574C4 /* InfoRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InfoRow.swift; path = Shared/Components/InfoRow.swift; sourceTree = "<group>"; };
+		5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityManager.swift; path = Core/Security/SecurityManager.swift; sourceTree = "<group>"; };
+		5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KeychainManager.swift; path = Core/Security/KeychainManager.swift; sourceTree = "<group>"; };
+		5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CacheManager.swift; path = Core/Cache/CacheManager.swift; sourceTree = "<group>"; };
+		5E46BE832ED9B6ED003FE7C9 /* ALADDINPacketTunnel_Dev.mobileprovision */ = {isa = PBXFileReference; lastKnownFileType = file; name = ALADDINPacketTunnel_Dev.mobileprovision; path = ../../../../Downloads/ALADDINPacketTunnel_Dev.mobileprovision; sourceTree = "<group>"; };
+		5E709CE32ED8E5FF0046FFD5 /* ALADDINPacketTunnelDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINPacketTunnelDebug.entitlements; sourceTree = "<group>"; };
+		5E709CE52ED8E6010046FFD5 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
+		5EB01F392EC8721300168BE9 /* MockAPIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MockAPIService.swift; path = Core/Network/MockAPIService.swift; sourceTree = "<group>"; };
+		5EB01F3B2EC8723600168BE9 /* StorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StorageManager.swift; path = Core/Storage/StorageManager.swift; sourceTree = "<group>"; };
+		5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecoveryCodeStorageManager.swift; path = Core/Security/RecoveryCodeStorageManager.swift; sourceTree = "<group>"; };
+		5EB01F3F2EC9B7CD00168BE9 /* BackupRecoveryModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BackupRecoveryModal.swift; path = Shared/Components/Modals/BackupRecoveryModal.swift; sourceTree = "<group>"; };
+		5EB01F412ECB092800168BE9 /* URLHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = URLHelper.swift; path = Core/Helpers/URLHelper.swift; sourceTree = "<group>"; };
+		5EB01F432ECB097500168BE9 /* ActivationCodeViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ActivationCodeViewModel.swift; path = ViewModels/ActivationCodeViewModel.swift; sourceTree = "<group>"; };
+		5EB01F452ECB09D300168BE9 /* 26_ActivationCodeScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = 26_ActivationCodeScreen.swift; sourceTree = "<group>"; };
+		5EC308E22EA6AB8B00C7D34B /* 22_DeviceDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 22_DeviceDetailScreen.swift; sourceTree = "<group>"; };
+		5EC308E42EA6AB8B00C7D34B /* RewardsQuickModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsQuickModal.swift; sourceTree = "<group>"; };
+		5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 06_AIAssistantScreen.swift; sourceTree = "<group>"; };
+		5EC308E62EA6AB8B00C7D34B /* MainScreenWithRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainScreenWithRegistration.swift; sourceTree = "<group>"; };
+		5EC308E72EA6AB8B00C7D34B /* 08_ChildInterfaceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 08_ChildInterfaceScreen.swift; sourceTree = "<group>"; };
+		5EC308E82EA6AB8C00C7D34B /* 14_OnboardingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 14_OnboardingScreen.swift; sourceTree = "<group>"; };
+		5EC308E92EA6AB8C00C7D34B /* WheelOfFortuneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WheelOfFortuneView.swift; sourceTree = "<group>"; };
+		5EC308EB2EA6AB8C00C7D34B /* WidgetConfigurationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetConfigurationScreen.swift; sourceTree = "<group>"; };
+		5EC308EC2EA6AB8C00C7D34B /* ChildRewardsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildRewardsScreen.swift; sourceTree = "<group>"; };
+		5EC308ED2EA6AB8C00C7D34B /* 25_PaymentQRScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 25_PaymentQRScreen.swift; sourceTree = "<group>"; };
+		5EC308EE2EA6AB8C00C7D34B /* 12_NotificationsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 12_NotificationsScreen.swift; sourceTree = "<group>"; };
+		5EC308EF2EA6AB8C00C7D34B /* 11_ProfileScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 11_ProfileScreen.swift; sourceTree = "<group>"; };
+		5EC308F02EA6AB8C00C7D34B /* RewardsModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsModalView.swift; sourceTree = "<group>"; };
+		5EC308F12EA6AB8C00C7D34B /* 10_TariffsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 10_TariffsScreen.swift; sourceTree = "<group>"; };
+		5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 01_MainScreen.swift; sourceTree = "<group>"; };
+		5EC308F32EA6AB8C00C7D34B /* FamilyTournamentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyTournamentView.swift; sourceTree = "<group>"; };
+		5EC308F42EA6AB8C00C7D34B /* UnicornUniverseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnicornUniverseView.swift; sourceTree = "<group>"; };
+		5EC308F52EA6AB8C00C7D34B /* 03_VPNScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 03_VPNScreen.swift; sourceTree = "<group>"; };
+		5EC308F62EA6AB8C00C7D34B /* 13_SupportScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 13_SupportScreen.swift; sourceTree = "<group>"; };
+		5EC308F72EA6AB8C00C7D34B /* 07_ParentalControlScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 07_ParentalControlScreen.swift; sourceTree = "<group>"; };
+		5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 04_AnalyticsScreen.swift; sourceTree = "<group>"; };
+		5EC308FA2EA6AB8C00C7D34B /* 24_VPNEnergyStatsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 24_VPNEnergyStatsScreen.swift; sourceTree = "<group>"; };
+		5EC308FB2EA6AB8C00C7D34B /* 20_DevicesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 20_DevicesScreen.swift; sourceTree = "<group>"; };
+		5EC308FC2EA6AB8C00C7D34B /* 09_ElderlyInterfaceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 09_ElderlyInterfaceScreen.swift; sourceTree = "<group>"; };
+		5EC308FD2EA6AB8C00C7D34B /* 18_PrivacyPolicyScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 18_PrivacyPolicyScreen.swift; sourceTree = "<group>"; };
+		5EC308FE2EA6AB8C00C7D34B /* UnicornPetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnicornPetView.swift; sourceTree = "<group>"; };
+		5EC308FF2EA6AB8C00C7D34B /* GamesParentalControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesParentalControlView.swift; sourceTree = "<group>"; };
+		5EC309002EA6AB8C00C7D34B /* 19_TermsOfServiceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 19_TermsOfServiceScreen.swift; sourceTree = "<group>"; };
+		5EC309012EA6AB8C00C7D34B /* 14_OnboardingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 14_OnboardingScreen.swift; sourceTree = "<group>"; };
+		5EC309022EA6AB8C00C7D34B /* 21_ReferralScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 21_ReferralScreen.swift; sourceTree = "<group>"; };
+		5EC309032EA6AB8C00C7D34B /* NotificationSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsScreen.swift; sourceTree = "<group>"; };
+		5EC309042EA6AB8C00C7D34B /* 05_SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 05_SettingsScreen.swift; sourceTree = "<group>"; };
+		5EC309052EA6AB8C00C7D34B /* 23_FamilyChatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 23_FamilyChatScreen.swift; sourceTree = "<group>"; };
+		5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSettingsScreen.swift; sourceTree = "<group>"; };
+		5EC309082EA6B33200C7D34B /* 03_VPNScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 03_VPNScreen.swift; sourceTree = "<group>"; };
+		5EC309312EA6CCBD00C7D34B /* Spacing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
+		5EC309322EA6CCBD00C7D34B /* Fonts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Fonts.swift; sourceTree = "<group>"; };
+		5EC309332EA6CCBD00C7D34B /* Colors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINNavigationBar.swift; path = Shared/Components/Navigation/ALADDINNavigationBar.swift; sourceTree = "<group>"; };
+		5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = Core/Notifications/NotificationManager.swift; sourceTree = "<group>"; };
+		5EC309422EA793A000C7D34B /* HapticFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HapticFeedback.swift; path = Shared/Components/HapticFeedback.swift; sourceTree = "<group>"; };
+		5EC309442EA793AE00C7D34B /* ALADDINToggle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINToggle.swift; path = Shared/Components/ALADDINToggle.swift; sourceTree = "<group>"; };
+		5EC309462EA793D900C7D34B /* CornerRadius.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CornerRadius.swift; sourceTree = "<group>"; };
+		5EC309482EA793FE00C7D34B /* Shared/Components/SecondaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Components/SecondaryButton.swift; sourceTree = "<group>"; };
+		5EC3094A2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Models/FunctionStatus.swift; sourceTree = "<group>"; };
+		5EE081862ED9C63A009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision */ = {isa = PBXFileReference; lastKnownFileType = file; name = ALADDINPacketTunnel_Dev_New.mobileprovision; path = ../../../../Downloads/ALADDINPacketTunnel_Dev_New.mobileprovision; sourceTree = "<group>"; };
+		9136C4EF975B4172830C175D /* aladdin_cert.cer */ = {isa = PBXFileReference; lastKnownFileType = text; path = aladdin_cert.cer; sourceTree = "<group>"; };
+		A0FFFFFE /* ALADDIN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ALADDIN.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000000 /* ALADDINApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINApp.swift; sourceTree = "<group>"; };
+		A1000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A1000004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1000007 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A3000000 /* ViewModels/MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/MainViewModel.swift; sourceTree = "<group>"; };
+		A3000002 /* ViewModels/VPNViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/VPNViewModel.swift; sourceTree = "<group>"; };
+		A3000004 /* Core/Models/APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Models/APIModels.swift; sourceTree = "<group>"; };
+		A3000006 /* Core/VPN/VPNManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/VPN/VPNManager.swift; sourceTree = "<group>"; };
+		A3000008 /* Core/Network/APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Network/APIService.swift; sourceTree = "<group>"; };
+		A3000010 /* Core/Network/NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Network/NetworkManager.swift; sourceTree = "<group>"; };
+		A3000012 /* Core/Config/AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Config/AppConfig.swift; sourceTree = "<group>"; };
+		A3000016 /* ViewModels/FamilyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/FamilyViewModel.swift; sourceTree = "<group>"; };
+		A3000018 /* ViewModels/AIAssistantViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/AIAssistantViewModel.swift; sourceTree = "<group>"; };
+		A3000020 /* ViewModels/SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SettingsViewModel.swift; sourceTree = "<group>"; };
+		A3000022 /* ViewModels/SupportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SupportViewModel.swift; sourceTree = "<group>"; };
+		A3000024 /* ViewModels/ChildInterfaceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ChildInterfaceViewModel.swift; sourceTree = "<group>"; };
+		A3000026 /* ViewModels/ElderlyInterfaceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ElderlyInterfaceViewModel.swift; sourceTree = "<group>"; };
+		A3000028 /* ViewModels/AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/AnalyticsViewModel.swift; sourceTree = "<group>"; };
+		A3000030 /* ViewModels/NotificationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/NotificationsViewModel.swift; sourceTree = "<group>"; };
+		A3000032 /* ViewModels/ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ProfileViewModel.swift; sourceTree = "<group>"; };
+		A3000034 /* ViewModels/ParentalControlViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ParentalControlViewModel.swift; sourceTree = "<group>"; };
+		A3000036 /* ViewModels/OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/OnboardingViewModel.swift; sourceTree = "<group>"; };
+		A3000038 /* ViewModels/PaymentQRViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PaymentQRViewModel.swift; sourceTree = "<group>"; };
+		A3000040 /* Core/Navigation/NavigationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Navigation/NavigationManager.swift; sourceTree = "<group>"; };
+		A3000042 /* Core/Accessibility/AccessibilityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Accessibility/AccessibilityManager.swift; sourceTree = "<group>"; };
+		A3000044 /* Core/Store/StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Store/StoreManager.swift; sourceTree = "<group>"; };
+		A3000046 /* Core/Localization/LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Localization/LocalizationManager.swift; sourceTree = "<group>"; };
+		A3000048 /* Core/Analytics/AnalyticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Analytics/AnalyticsManager.swift; sourceTree = "<group>"; };
+		A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/FamilyRegistrationViewModel.swift; sourceTree = "<group>"; };
+		A3000052 /* ViewModels/TariffsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/TariffsViewModel.swift; sourceTree = "<group>"; };
+		A4AAA001 /* ThreatProtectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThreatProtectionScreen.swift; sourceTree = "<group>"; };
+		A4AAA003 /* ThreatProtectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ThreatProtectionCard.swift; path = Components/ThreatProtectionCard.swift; sourceTree = "<group>"; };
+		A4AAA005 /* ThreatProtectionCategoriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ThreatProtectionCategoriesView.swift; path = Components/ThreatProtectionCategoriesView.swift; sourceTree = "<group>"; };
+		A4AAA007 /* ThreatProtectionCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ThreatProtectionCategory.swift; path = Shared/Models/ThreatProtectionCategory.swift; sourceTree = "<group>"; };
+		A4AAA101 /* GamesSettingsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = GamesSettingsManager.swift; path = Core/Managers/GamesSettingsManager.swift; sourceTree = "<group>"; };
+		A4AAA103 /* AnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AnalyticsService.swift; path = Core/Analytics/AnalyticsService.swift; sourceTree = "<group>"; };
+		A4AAA105 /* RemoteAnalyticsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RemoteAnalyticsService.swift; path = Core/Analytics/RemoteAnalyticsService.swift; sourceTree = "<group>"; };
+		A4AAA107 /* ProfileImageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ProfileImageManager.swift; path = Core/Storage/ProfileImageManager.swift; sourceTree = "<group>"; };
+		A4AAA201 /* RewardModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RewardModels.swift; path = Shared/Models/RewardModels.swift; sourceTree = "<group>"; };
+		A4AAA203 /* ViewModels/ChildRewardsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ChildRewardsViewModel.swift; sourceTree = "<group>"; };
+		A4AAA211 /* AntivirusManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AntivirusManager.swift; path = Core/Antivirus/AntivirusManager.swift; sourceTree = "<group>"; };
+		A4AAA213 /* EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = EmptyStateView.swift; path = Shared/Components/EmptyStateView.swift; sourceTree = "<group>"; };
+		A4AAA215 /* JWTTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = JWTTokenManager.swift; path = Core/Security/JWTTokenManager.swift; sourceTree = "<group>"; };
+		A4BBB000 /* YoungDefenderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YoungDefenderView.swift; sourceTree = "<group>"; };
+		A4BBB002 /* FamilyProtectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyProtectorView.swift; sourceTree = "<group>"; };
+		A4BBB004 /* ChildGoalEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildGoalEditorView.swift; sourceTree = "<group>"; };
+		A4BBB006 /* LocalThreatDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = LocalThreatDatabase.swift; path = Core/Antivirus/LocalThreatDatabase.swift; sourceTree = "<group>"; };
+		A4BBB100 /* RemoteNotificationsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = RemoteNotificationsService.swift; path = Core/Notifications/RemoteNotificationsService.swift; sourceTree = "<group>"; };
+		B1000000 /* AddMemberOptionsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AddMemberOptionsModal.swift; path = Shared/Components/Modals/AddMemberOptionsModal.swift; sourceTree = "<group>"; };
+		B1000010 /* RecoveryCodeModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecoveryCodeModal.swift; path = Shared/Components/Modals/RecoveryCodeModal.swift; sourceTree = "<group>"; };
+		B1000020 /* CollapsibleSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CollapsibleSection.swift; path = Shared/Components/CollapsibleSection.swift; sourceTree = "<group>"; };
+		B1000030 /* ParentalControlManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalControlManager.swift; path = Core/Managers/ParentalControlManager.swift; sourceTree = "<group>"; };
+		B1000100B1000100B1000100 /* ProtectionFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionFeature.swift; path = Core/Models/ProtectionFeature.swift; sourceTree = "<group>"; };
+		B1000110B1000110B1000110 /* ProtectionLevelHistory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionLevelHistory.swift; path = Core/Models/ProtectionLevelHistory.swift; sourceTree = "<group>"; };
+		B1000120B1000120B1000120 /* Toast.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Toast.swift; path = Shared/Components/Toast.swift; sourceTree = "<group>"; };
+		B1000130B1000130B1000130 /* AddMoreMemberCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AddMoreMemberCard.swift; path = Shared/Components/Cards/AddMoreMemberCard.swift; sourceTree = "<group>"; };
+		B1000140B1000140B1000140 /* InvitationCodeInputModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InvitationCodeInputModal.swift; path = Shared/Components/Modals/InvitationCodeInputModal.swift; sourceTree = "<group>"; };
+		B1000150B1000150B1000150 /* ProtectionLevelExplanationModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionLevelExplanationModal.swift; path = Shared/Components/Modals/ProtectionLevelExplanationModal.swift; sourceTree = "<group>"; };
+		B1000160B1000160B1000160 /* ProtectionLevelHistoryModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionLevelHistoryModal.swift; path = Shared/Components/Modals/ProtectionLevelHistoryModal.swift; sourceTree = "<group>"; };
+		B1000170B1000170B1000170 /* AdvancedProtectionSettingsScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdvancedProtectionSettingsScreen.swift; sourceTree = "<group>"; };
+		B5001010 /* ALADDINUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ALADDINUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5001100 /* ALADDINUnitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINUnitTests.swift; sourceTree = "<group>"; };
+		B5001101 /* APIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIServiceTests.swift; sourceTree = "<group>"; };
+		B5001102 /* AppConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfigTests.swift; sourceTree = "<group>"; };
+		B5001103 /* AppDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateTests.swift; sourceTree = "<group>"; };
+		B5001104 /* FamilyRegistrationViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyRegistrationViewModelTests.swift; sourceTree = "<group>"; };
+		B5001105 /* IoTSecurityModuleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IoTSecurityModuleTests.swift; sourceTree = "<group>"; };
+		B5001106 /* LocalizationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationManagerTests.swift; sourceTree = "<group>"; };
+		B5001107 /* NetworkManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManagerTests.swift; sourceTree = "<group>"; };
+		B5001108 /* NotificationManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManagerTests.swift; sourceTree = "<group>"; };
+		B5001109 /* SharedDataManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDataManagerTests.swift; sourceTree = "<group>"; };
+		B5001110 /* MockAPIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAPIServiceTests.swift; sourceTree = "<group>"; };
+		B5002010 /* ALADDINUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ALADDINUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B5002100 /* ALADDINUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINUITests.swift; sourceTree = "<group>"; };
+		B5002101 /* FamilyRegistrationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyRegistrationUITests.swift; sourceTree = "<group>"; };
+		B5002102 /* LanguageSettingsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSettingsUITests.swift; sourceTree = "<group>"; };
+		B5002103 /* NotificationSettingsUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsUITests.swift; sourceTree = "<group>"; };
+		B5002104 /* WidgetConfigurationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetConfigurationUITests.swift; sourceTree = "<group>"; };
+		B6000000 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B6000002 /* IoTSecurityModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IoTSecurityModule.swift; sourceTree = "<group>"; };
+		B6000200 /* ALADDINWidgets/SharedDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINWidgets/SharedDataManager.swift; sourceTree = "<group>"; };
+		C0F300110000000000000001 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
+		C0F300120000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C0F300130000000000000001 /* ALADDINPacketTunnel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINPacketTunnel.entitlements; sourceTree = "<group>"; };
+		C0F300140000000000000001 /* ALADDINPacketTunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINPacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		DD10070F12CB43428ABC432E /* aladdin_cert_backup.cer */ = {isa = PBXFileReference; lastKnownFileType = text; path = aladdin_cert_backup.cer; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A0FFFFFB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B5001003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B5002003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0F300160000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5E709CE62ED8E6010046FFD5 /* NetworkExtension.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5E0057FF2EC3B4DC00024F7E /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				A4AAA003 /* ThreatProtectionCard.swift */,
+				A4AAA005 /* ThreatProtectionCategoriesView.swift */,
+				A4AAA103 /* AnalyticsService.swift */,
+				A4AAA105 /* RemoteAnalyticsService.swift */,
+				A4AAA107 /* ProfileImageManager.swift */,
+				A4AAA201 /* RewardModels.swift */,
+				A4AAA203 /* ViewModels/ChildRewardsViewModel.swift */,
+				A4AAA211 /* AntivirusManager.swift */,
+				A4AAA213 /* EmptyStateView.swift */,
+				A4AAA215 /* JWTTokenManager.swift */,
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		5E709CE42ED8E6010046FFD5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5E709CE52ED8E6010046FFD5 /* NetworkExtension.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5EC308E12EA6AB8B00C7D34B /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				5E0C30BB2EAFF09800FD6647 /* SecurityEducationScreen.swift */,
+				5E0C30B92EAFC81D00FD6647 /* ChildContentScreen.swift */,
+				5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */,
+				5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */,
+				5EC308F52EA6AB8C00C7D34B /* 03_VPNScreen.swift */,
+				5EC309082EA6B33200C7D34B /* 03_VPNScreen.swift */,
+				5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */,
+				5EC309042EA6AB8C00C7D34B /* 05_SettingsScreen.swift */,
+				5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */,
+				5EC308F72EA6AB8C00C7D34B /* 07_ParentalControlScreen.swift */,
+				5EC308E72EA6AB8B00C7D34B /* 08_ChildInterfaceScreen.swift */,
+				5EC308FC2EA6AB8C00C7D34B /* 09_ElderlyInterfaceScreen.swift */,
+				5EC308F12EA6AB8C00C7D34B /* 10_TariffsScreen.swift */,
+				5EC308EF2EA6AB8C00C7D34B /* 11_ProfileScreen.swift */,
+				5EC308EE2EA6AB8C00C7D34B /* 12_NotificationsScreen.swift */,
+				5EC308F62EA6AB8C00C7D34B /* 13_SupportScreen.swift */,
+				5EC309012EA6AB8C00C7D34B /* 14_OnboardingScreen.swift */,
+				5EC308FD2EA6AB8C00C7D34B /* 18_PrivacyPolicyScreen.swift */,
+				5EC309002EA6AB8C00C7D34B /* 19_TermsOfServiceScreen.swift */,
+				5EC308FB2EA6AB8C00C7D34B /* 20_DevicesScreen.swift */,
+				5EC309022EA6AB8C00C7D34B /* 21_ReferralScreen.swift */,
+				5EC308E22EA6AB8B00C7D34B /* 22_DeviceDetailScreen.swift */,
+				5EC309052EA6AB8C00C7D34B /* 23_FamilyChatScreen.swift */,
+				5EC308FA2EA6AB8C00C7D34B /* 24_VPNEnergyStatsScreen.swift */,
+				5EC308ED2EA6AB8C00C7D34B /* 25_PaymentQRScreen.swift */,
+				5EB01F452ECB09D300168BE9 /* 26_ActivationCodeScreen.swift */,
+				5EC308EC2EA6AB8C00C7D34B /* ChildRewardsScreen.swift */,
+				5E0058222EC4B2EB00024F7E /* ThreatProtectionSettingsScreen.swift */,
+				5EC308F32EA6AB8C00C7D34B /* FamilyTournamentView.swift */,
+				5EC308FF2EA6AB8C00C7D34B /* GamesParentalControlView.swift */,
+				5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */,
+				5EC308E62EA6AB8B00C7D34B /* MainScreenWithRegistration.swift */,
+				5EC309032EA6AB8C00C7D34B /* NotificationSettingsScreen.swift */,
+				5EC308E82EA6AB8C00C7D34B /* 14_OnboardingScreen.swift */,
+				5EC308F02EA6AB8C00C7D34B /* RewardsModalView.swift */,
+				5EC308E42EA6AB8B00C7D34B /* RewardsQuickModal.swift */,
+				B1000170B1000170B1000170 /* AdvancedProtectionSettingsScreen.swift */,
+				A4AAA001 /* ThreatProtectionScreen.swift */,
+				5EC308FE2EA6AB8C00C7D34B /* UnicornPetView.swift */,
+				5EC308F42EA6AB8C00C7D34B /* UnicornUniverseView.swift */,
+				5EC308E92EA6AB8C00C7D34B /* WheelOfFortuneView.swift */,
+				5EC308EB2EA6AB8C00C7D34B /* WidgetConfigurationScreen.swift */,
+				A4BBB002 /* FamilyProtectorView.swift */,
+				A4BBB004 /* ChildGoalEditorView.swift */,
+				A4BBB000 /* YoungDefenderView.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		5EC3092F2EA6CCBD00C7D34B /* Styles */ = {
+			isa = PBXGroup;
+			children = (
+				5EC309312EA6CCBD00C7D34B /* Spacing.swift */,
+				5EC309322EA6CCBD00C7D34B /* Fonts.swift */,
+				5EC309332EA6CCBD00C7D34B /* Colors.swift */,
+				5EC309462EA793D900C7D34B /* CornerRadius.swift */,
+			);
+			name = Styles;
+			path = Shared/Styles;
+			sourceTree = "<group>";
+		};
+		61B300CAE7494F43AEDB4088 /* Certificates */ = {
+			isa = PBXGroup;
+			children = (
+				9136C4EF975B4172830C175D /* aladdin_cert.cer */,
+				DD10070F12CB43428ABC432E /* aladdin_cert_backup.cer */,
+			);
+			name = Certificates;
+			path = ALADDIN/Certificates;
+			sourceTree = "<group>";
+		};
+		A0FFFFF5 = {
+			isa = PBXGroup;
+			children = (
+				5E709CE32ED8E5FF0046FFD5 /* ALADDINPacketTunnelDebug.entitlements */,
+				61B300CAE7494F43AEDB4088 /* Certificates */,
+				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5EE081862ED9C63A009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision */,
+				5E46BE832ED9B6ED003FE7C9 /* ALADDINPacketTunnel_Dev.mobileprovision */,
+				5EB01F432ECB097500168BE9 /* ActivationCodeViewModel.swift */,
+				5EB01F3F2EC9B7CD00168BE9 /* BackupRecoveryModal.swift */,
+				5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */,
+				5EB01F3B2EC8723600168BE9 /* StorageManager.swift */,
+				5EB01F392EC8721300168BE9 /* MockAPIService.swift */,
+				5E0058262EC4FC5D00024F7E /* ChildRewardsSettingsModal.swift */,
+				5E0058282EC605FC00024F7E /* ParentalControlFeature.swift */,
+				5E00582A2EC6062100024F7E /* AdditionalFeature.swift */,
+				5E00582C2EC6064100024F7E /* TariffCard.swift */,
+				5E00582E2EC606BA00024F7E /* TariffCardView.swift */,
+				5E0058302EC606DA00024F7E /* TariffCardSections.swift */,
+				5E0058322EC6073600024F7E /* TariffFeaturesGallery.swift */,
+				5E0058242EC4E69100024F7E /* ThreatItemRow.swift */,
+				5E0058202EC4B21A00024F7E /* ProtectionGroupSection.swift */,
+				5E00581E2EC4B1CF00024F7E /* ProtectionCategoryRow.swift */,
+				5E00581C2EC4AFA600024F7E /* ThreatScenariosGallery.swift */,
+				5E00581A2EC4AF6D00024F7E /* EnhancedThreatCategoryCard.swift */,
+				5E0058182EC4AF2500024F7E /* MotivationBanner.swift */,
+				5E0058162EC4A6E300024F7E /* TariffManager.swift */,
+				5E0058142EC4A6D700024F7E /* ProtectionSettingsManager.swift */,
+				5E0058122EC4A66600024F7E /* ProtectionSettings.swift */,
+				5E0058102EC4A65900024F7E /* ProtectionGroup.swift */,
+				5E00580E2EC473DA00024F7E /* PaymentQRViewModelProtectionTests.swift */,
+				A4AAA101 /* GamesSettingsManager.swift */,
+				B1000030 /* ParentalControlManager.swift */,
+				5E0058002EC3C4C600024F7E /* ALADDINTextField.swift */,
+				5E0058022EC3C4F900024F7E /* ALADDINTextField.swift */,
+				5E0058042EC3C50500024F7E /* ALADDINToggle.swift */,
+				5E0058062EC3C52B00024F7E /* SecondaryButton.swift */,
+				5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */,
+				B1000000 /* AddMemberOptionsModal.swift */,
+				5E0058082EC3C7A400024F7E /* RewardsQuickModal.swift */,
+				5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */,
+				5E0C30AF2EAE71A100FD6647 /* MemberSettingsModalView.swift */,
+				B1000010 /* RecoveryCodeModal.swift */,
+				B1000020 /* CollapsibleSection.swift */,
+				B1000140B1000140B1000140 /* InvitationCodeInputModal.swift */,
+				5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */,
+				5E3200022EAD26CE000574C4 /* ConsentModal.swift */,
+				5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */,
+				B1000150B1000150B1000150 /* ProtectionLevelExplanationModal.swift */,
+				B1000160B1000160B1000160 /* ProtectionLevelHistoryModal.swift */,
+				5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */,
+				5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */,
+				5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */,
+				B1000100B1000100B1000100 /* ProtectionFeature.swift */,
+				B1000110B1000110B1000110 /* ProtectionLevelHistory.swift */,
+				5E32FFF82EAD24D2000574C4 /* InfoRow.swift */,
+				5E32FFF62EAD23BB000574C4 /* PrimaryButton.swift */,
+				5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */,
+				B1000120B1000120B1000120 /* Toast.swift */,
+				5E32FFF22EAD1915000574C4 /* RecoveryOptionsModal.swift */,
+				5E32FFF02EAD18D4000574C4 /* QRScannerModal.swift */,
+				5E32FFEE2EAD18B2000574C4 /* ProfileEditView.swift */,
+				5E32FFEC2EAD1876000574C4 /* FamilyMemberCard.swift */,
+				B1000130B1000130B1000130 /* AddMoreMemberCard.swift */,
+				5E32FFEA2EAD1852000574C4 /* NetworkError.swift */,
+				5E32FFE82EAD1836000574C4 /* StatItem.swift */,
+				5E32FFD62EACFA62000574C4 /* ViewModifiers.swift */,
+				5EC308E12EA6AB8B00C7D34B /* Screens */,
+				B5001300 /* Tests */,
+				A0FFFFFF,
+				B5003000 /* Products */,
+				5E0057FF2EC3B4DC00024F7E /* Recovered References */,
+				5E709CE42ED8E6010046FFD5 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		A0FFFFFF = {
+			isa = PBXGroup;
+			children = (
+				A1000000 /* ALADDINApp.swift */,
+				B6000000 /* AppDelegate.swift */,
+				B6000200 /* ALADDINWidgets/SharedDataManager.swift */,
+				A1000002 /* ContentView.swift */,
+				A1000004 /* Assets.xcassets */,
+				A1000006 /* Preview Content */,
+				A3000000 /* ViewModels/MainViewModel.swift */,
+				A3000002 /* ViewModels/VPNViewModel.swift */,
+				A3000004 /* Core/Models/APIModels.swift */,
+				A3000006 /* Core/VPN/VPNManager.swift */,
+				A3000008 /* Core/Network/APIService.swift */,
+				A3000010 /* Core/Network/NetworkManager.swift */,
+				A3000012 /* Core/Config/AppConfig.swift */,
+				A3000016 /* ViewModels/FamilyViewModel.swift */,
+				A3000018 /* ViewModels/AIAssistantViewModel.swift */,
+				A3000020 /* ViewModels/SettingsViewModel.swift */,
+				A3000022 /* ViewModels/SupportViewModel.swift */,
+				A3000024 /* ViewModels/ChildInterfaceViewModel.swift */,
+				A3000026 /* ViewModels/ElderlyInterfaceViewModel.swift */,
+				A3000028 /* ViewModels/AnalyticsViewModel.swift */,
+				A3000030 /* ViewModels/NotificationsViewModel.swift */,
+				A3000032 /* ViewModels/ProfileViewModel.swift */,
+				A3000034 /* ViewModels/ParentalControlViewModel.swift */,
+				A3000036 /* ViewModels/OnboardingViewModel.swift */,
+				A3000038 /* ViewModels/PaymentQRViewModel.swift */,
+				A3000040 /* Core/Navigation/NavigationManager.swift */,
+				A3000042 /* Core/Accessibility/AccessibilityManager.swift */,
+				A3000044 /* Core/Store/StoreManager.swift */,
+				A3000046 /* Core/Localization/LocalizationManager.swift */,
+				A3000048 /* Core/Analytics/AnalyticsManager.swift */,
+				A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */,
+				A3000052 /* ViewModels/TariffsViewModel.swift */,
+				B6000100 /* IoT */,
+				5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */,
+				5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */,
+				5EC309422EA793A000C7D34B /* HapticFeedback.swift */,
+				5EC309442EA793AE00C7D34B /* ALADDINToggle.swift */,
+				5EC309482EA793FE00C7D34B /* Shared/Components/SecondaryButton.swift */,
+				5EC3094A2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift */,
+				A4AAA007 /* ThreatProtectionCategory.swift */,
+				A4BBB100 /* RemoteNotificationsService.swift */,
+				A4BBB006 /* LocalThreatDatabase.swift */,
+				5EC3092F2EA6CCBD00C7D34B /* Styles */,
+				C0F300100000000000000001 /* ALADDIN/ALADDINPacketTunnel */,
+				C0F300130000000000000001 /* ALADDINPacketTunnel.entitlements */,
+			);
+			sourceTree = "<group>";
+		};
+		A1000006 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				A1000007 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		B5001300 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				B5001301 /* UnitTests */,
+				B5001302 /* UITests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		B5001301 /* UnitTests */ = {
+			isa = PBXGroup;
+			children = (
+				B5001100 /* ALADDINUnitTests.swift */,
+				B5001101 /* APIServiceTests.swift */,
+				B5001102 /* AppConfigTests.swift */,
+				B5001103 /* AppDelegateTests.swift */,
+				B5001104 /* FamilyRegistrationViewModelTests.swift */,
+				B5001105 /* IoTSecurityModuleTests.swift */,
+				B5001106 /* LocalizationManagerTests.swift */,
+				B5001107 /* NetworkManagerTests.swift */,
+				B5001108 /* NotificationManagerTests.swift */,
+				B5001109 /* SharedDataManagerTests.swift */,
+				B5001110 /* MockAPIServiceTests.swift */,
+			);
+			path = UnitTests;
+			sourceTree = "<group>";
+		};
+		B5001302 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				B5002100 /* ALADDINUITests.swift */,
+				B5002101 /* FamilyRegistrationUITests.swift */,
+				B5002102 /* LanguageSettingsUITests.swift */,
+				B5002103 /* NotificationSettingsUITests.swift */,
+				B5002104 /* WidgetConfigurationUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
+		B5003000 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A0FFFFFE /* ALADDIN.app */,
+				B5001010 /* ALADDINUnitTests.xctest */,
+				B5002010 /* ALADDINUITests.xctest */,
+				C0F300140000000000000001 /* ALADDINPacketTunnel.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B6000100 /* IoT */ = {
+			isa = PBXGroup;
+			children = (
+				B6000002 /* IoTSecurityModule.swift */,
+			);
+			name = IoT;
+			path = Core/IoT;
+			sourceTree = "<group>";
+		};
+		C0F300100000000000000001 /* ALADDIN/ALADDINPacketTunnel */ = {
+			isa = PBXGroup;
+			children = (
+				C0F300110000000000000001 /* PacketTunnelProvider.swift */,
+				C0F300120000000000000001 /* Info.plist */,
+			);
+			path = ALADDIN/ALADDINPacketTunnel;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A0FFFFFD /* ALADDIN */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A100000D /* Build configuration list for PBXNativeTarget "ALADDIN" */;
+			buildPhases = (
+				A0FFFFFA /* Sources */,
+				A0FFFFFB /* Frameworks */,
+				A0FFFFFC /* Resources */,
+				C0F3001D0000000000000001 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C0F300210000000000000001 /* PBXTargetDependency */,
+			);
+			name = ALADDIN;
+			productName = ALADDIN;
+			productReference = A0FFFFFE /* ALADDIN.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B5001000 /* ALADDINUnitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B5001004 /* Build configuration list for PBXNativeTarget "ALADDINUnitTests" */;
+			buildPhases = (
+				B5001002 /* Sources */,
+				B5001003 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B5001007 /* PBXTargetDependency */,
+			);
+			name = ALADDINUnitTests;
+			productName = ALADDINUnitTests;
+			productReference = B5001010 /* ALADDINUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B5002000 /* ALADDINUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B5002004 /* Build configuration list for PBXNativeTarget "ALADDINUITests" */;
+			buildPhases = (
+				B5002002 /* Sources */,
+				B5002003 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B5002007 /* PBXTargetDependency */,
+			);
+			name = ALADDINUITests;
+			productName = ALADDINUITests;
+			productReference = B5002010 /* ALADDINUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		C0F300190000000000000001 /* ALADDINPacketTunnel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C0F3001A0000000000000001 /* Build configuration list for PBXNativeTarget "ALADDINPacketTunnel" */;
+			buildPhases = (
+				C0F300150000000000000001 /* Sources */,
+				C0F300160000000000000001 /* Frameworks */,
+				C0F300170000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ALADDINPacketTunnel;
+			productName = ALADDINPacketTunnel;
+			productReference = C0F300140000000000000001 /* ALADDINPacketTunnel.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A0FFFFF6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					A0FFFFFD = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					B5001000 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = A0FFFFFD;
+					};
+					B5002000 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = A0FFFFFD;
+					};
+					C0F300190000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = A0FFFFF9 /* Build configuration list for PBXProject "ALADDIN" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A0FFFFF5;
+			productRefGroup = B5003000 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A0FFFFFD /* ALADDIN */,
+				B5001000 /* ALADDINUnitTests */,
+				B5002000 /* ALADDINUITests */,
+				C0F300190000000000000001 /* ALADDINPacketTunnel */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A0FFFFFC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1000008 /* Preview Assets.xcassets in Resources */,
+				A1000005 /* Assets.xcassets in Resources */,
+				62A51F3024E64580A0C842B2 /* aladdin_cert.cer in Resources */,
+				378E2880F83D48D7BE7D5737 /* aladdin_cert_backup.cer in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0F300170000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5EE081872ED9C63B009AD42A /* ALADDINPacketTunnel_Dev_New.mobileprovision in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A0FFFFFA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5EC309102EA6B61700C7D34B /* 08_ChildInterfaceScreen.swift in Sources */,
+				A1000003 /* ContentView.swift in Sources */,
+				B6000001 /* AppDelegate.swift in Sources */,
+				5E3200012EAD2692000574C4 /* AgeGroupSelectionModal.swift in Sources */,
+				5EB01F442ECB097500168BE9 /* ActivationCodeViewModel.swift in Sources */,
+				5E00582F2EC606BB00024F7E /* TariffCardView.swift in Sources */,
+				A1000001 /* ALADDINApp.swift in Sources */,
+				5EC3094B2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift in Sources */,
+				5EB01F462ECB09D300168BE9 /* 26_ActivationCodeScreen.swift in Sources */,
+				A3000001 /* ViewModels/MainViewModel.swift in Sources */,
+				5E0058312EC606DA00024F7E /* TariffCardSections.swift in Sources */,
+				5E32FFF72EAD23BB000574C4 /* PrimaryButton.swift in Sources */,
+				5EC309252EA6B66900C7D34B /* NotificationSettingsScreen.swift in Sources */,
+				5E0058172EC4A6E300024F7E /* TariffManager.swift in Sources */,
+				5E0C30BA2EAFC81D00FD6647 /* ChildContentScreen.swift in Sources */,
+				5E00582B2EC6062100024F7E /* AdditionalFeature.swift in Sources */,
+				5E32FFE92EAD1836000574C4 /* StatItem.swift in Sources */,
+				5E32FFED2EAD1876000574C4 /* FamilyMemberCard.swift in Sources */,
+				B2000130B2000130B2000130 /* AddMoreMemberCard.swift in Sources */,
+				5E0058272EC4FC5E00024F7E /* ChildRewardsSettingsModal.swift in Sources */,
+				A3000003 /* ViewModels/VPNViewModel.swift in Sources */,
+				A3000005 /* Core/Models/APIModels.swift in Sources */,
+				A3000007 /* Core/VPN/VPNManager.swift in Sources */,
+				5EC309292EA6B67800C7D34B /* UnicornPetView.swift in Sources */,
+				A3000009 /* Core/Network/APIService.swift in Sources */,
+				5EC309172EA6B62E00C7D34B /* 18_PrivacyPolicyScreen.swift in Sources */,
+				5EC309122EA6B61E00C7D34B /* 10_TariffsScreen.swift in Sources */,
+				5EC3090B2EA6B60500C7D34B /* 03_VPNScreen.swift in Sources */,
+				5EC309112EA6B61B00C7D34B /* 09_ElderlyInterfaceScreen.swift in Sources */,
+				5EC309132EA6B62100C7D34B /* 11_ProfileScreen.swift in Sources */,
+				A3000011 /* Core/Network/NetworkManager.swift in Sources */,
+				5EC309182EA6B63100C7D34B /* 19_TermsOfServiceScreen.swift in Sources */,
+				A3000013 /* Core/Config/AppConfig.swift in Sources */,
+				A3000017 /* ViewModels/FamilyViewModel.swift in Sources */,
+				A3000019 /* ViewModels/AIAssistantViewModel.swift in Sources */,
+				5EC3091B2EA6B63C00C7D34B /* 22_DeviceDetailScreen.swift in Sources */,
+				5EC3092C2EA6B68000C7D34B /* WidgetConfigurationScreen.swift in Sources */,
+				5E0C30BC2EAFF09800FD6647 /* SecurityEducationScreen.swift in Sources */,
+				5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */,
+				5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */,
+				B1000001 /* AddMemberOptionsModal.swift in Sources */,
+				B2000140B2000140B2000140 /* InvitationCodeInputModal.swift in Sources */,
+				5EC309352EA6CCBD00C7D34B /* Spacing.swift in Sources */,
+				5E32FFF32EAD1915000574C4 /* RecoveryOptionsModal.swift in Sources */,
+				5E00582D2EC6064100024F7E /* TariffCard.swift in Sources */,
+				A3000021 /* ViewModels/SettingsViewModel.swift in Sources */,
+				5E32FFF92EAD24D2000574C4 /* InfoRow.swift in Sources */,
+				5EC3091E2EA6B64500C7D34B /* 25_PaymentQRScreen.swift in Sources */,
+				5E0C30B22EAE71D100FD6647 /* RoleSelectionModal.swift in Sources */,
+				B2000150B2000150B2000150 /* ProtectionLevelExplanationModal.swift in Sources */,
+				B2000160B2000160B2000160 /* ProtectionLevelHistoryModal.swift in Sources */,
+				B1000011 /* RecoveryCodeModal.swift in Sources */,
+				A3000023 /* ViewModels/SupportViewModel.swift in Sources */,
+				A3000025 /* ViewModels/ChildInterfaceViewModel.swift in Sources */,
+				5EC309142EA6B62500C7D34B /* 12_NotificationsScreen.swift in Sources */,
+				A3000027 /* ViewModels/ElderlyInterfaceViewModel.swift in Sources */,
+				A3000029 /* ViewModels/AnalyticsViewModel.swift in Sources */,
+				5E32FFFF2EAD25F5000574C4 /* CacheManager.swift in Sources */,
+				B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */,
+				B2000100B2000100B2000100 /* ProtectionFeature.swift in Sources */,
+				B2000110B2000110B2000110 /* ProtectionLevelHistory.swift in Sources */,
+				A3000031 /* ViewModels/NotificationsViewModel.swift in Sources */,
+				5EC3090D2EA6B60F00C7D34B /* 06_AIAssistantScreen.swift in Sources */,
+				5E0058092EC3C7A400024F7E /* RewardsQuickModal.swift in Sources */,
+				B2000170B2000170B2000170 /* AdvancedProtectionSettingsScreen.swift in Sources */,
+				A3000033 /* ViewModels/ProfileViewModel.swift in Sources */,
+				5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */,
+				A3000035 /* ViewModels/ParentalControlViewModel.swift in Sources */,
+				A3000037 /* ViewModels/OnboardingViewModel.swift in Sources */,
+				5EC309372EA6CCBD00C7D34B /* Colors.swift in Sources */,
+				5EC3091F2EA6B64800C7D34B /* ChildRewardsScreen.swift in Sources */,
+				A4BBB005 /* ChildGoalEditorView.swift in Sources */,
+				5EB01F3E2EC9B74E00168BE9 /* RecoveryCodeStorageManager.swift in Sources */,
+				5EC3091A2EA6B63700C7D34B /* 21_ReferralScreen.swift in Sources */,
+				5E32FFF52EAD199B000574C4 /* AvatarSelector.swift in Sources */,
+				5E0058192EC4AF2500024F7E /* MotivationBanner.swift in Sources */,
+				B2000120B2000120B2000120 /* Toast.swift in Sources */,
+				5EC309392EA6CF0600C7D34B /* ALADDINNavigationBar.swift in Sources */,
+				5EC309162EA6B62B00C7D34B /* 14_OnboardingScreen.swift in Sources */,
+				5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */,
+				A3000039 /* ViewModels/PaymentQRViewModel.swift in Sources */,
+				A3000041 /* Core/Navigation/NavigationManager.swift in Sources */,
+				A3000043 /* Core/Accessibility/AccessibilityManager.swift in Sources */,
+				5EB01F422ECB092A00168BE9 /* URLHelper.swift in Sources */,
+				A3000045 /* Core/Store/StoreManager.swift in Sources */,
+				5EC3092B2EA6B67D00C7D34B /* WheelOfFortuneView.swift in Sources */,
+				5EC3092A2EA6B67B00C7D34B /* UnicornUniverseView.swift in Sources */,
+				A4BBB001 /* YoungDefenderView.swift in Sources */,
+				A3000047 /* Core/Localization/LocalizationManager.swift in Sources */,
+				5EC309152EA6B62800C7D34B /* 13_SupportScreen.swift in Sources */,
+				A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */,
+				5EC3090E2EA6B60F00C7D34B /* 07_ParentalControlScreen.swift in Sources */,
+				5EC3090F2EA6B60F00C7D34B /* 05_SettingsScreen.swift in Sources */,
+				5E0058032EC3C4F900024F7E /* ALADDINTextField.swift in Sources */,
+				5EB01F402EC9B7CD00168BE9 /* BackupRecoveryModal.swift in Sources */,
+				5EC309272EA6B66F00C7D34B /* RewardsModalView.swift in Sources */,
+				5EC3091C2EA6B63F00C7D34B /* 23_FamilyChatScreen.swift in Sources */,
+				5EB01F3C2EC8723600168BE9 /* StorageManager.swift in Sources */,
+				5E0C30B82EAFAD0B00FD6647 /* 02_FamilyScreen.swift in Sources */,
+				5EC309192EA6B63400C7D34B /* 20_DevicesScreen.swift in Sources */,
+				5E0058072EC3C52B00024F7E /* SecondaryButton.swift in Sources */,
+				5E00581B2EC4AF6D00024F7E /* EnhancedThreatCategoryCard.swift in Sources */,
+				5E32FFD72EACFAA9000574C4 /* ViewModifiers.swift in Sources */,
+				B1000021 /* CollapsibleSection.swift in Sources */,
+				5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */,
+				5EC309242EA6B66600C7D34B /* MainScreenWithRegistration.swift in Sources */,
+				5E32FFEB2EAD1852000574C4 /* NetworkError.swift in Sources */,
+				5EC309232EA6B66100C7D34B /* LanguageSettingsScreen.swift in Sources */,
+				A3000051 /* ViewModels/FamilyRegistrationViewModel.swift in Sources */,
+				5E0058292EC605FC00024F7E /* ParentalControlFeature.swift in Sources */,
+				5EC309472EA793D900C7D34B /* CornerRadius.swift in Sources */,
+				5EC309092EA6B5F600C7D34B /* 01_MainScreen.swift in Sources */,
+				5EC309212EA6B65A00C7D34B /* FamilyTournamentView.swift in Sources */,
+				A4BBB003 /* FamilyProtectorView.swift in Sources */,
+				5EC309362EA6CCBD00C7D34B /* Fonts.swift in Sources */,
+				5EC309222EA6B65D00C7D34B /* GamesParentalControlView.swift in Sources */,
+				5E32FFF12EAD18D4000574C4 /* QRScannerModal.swift in Sources */,
+				5EC3090C2EA6B60900C7D34B /* 04_AnalyticsScreen.swift in Sources */,
+				5E0058332EC6073700024F7E /* TariffFeaturesGallery.swift in Sources */,
+				5EC3091D2EA6B64200C7D34B /* 24_VPNEnergyStatsScreen.swift in Sources */,
+				5E32FFEF2EAD18B2000574C4 /* ProfileEditView.swift in Sources */,
+				A3000053 /* ViewModels/TariffsViewModel.swift in Sources */,
+				5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */,
+				5E0058132EC4A66600024F7E /* ProtectionSettings.swift in Sources */,
+				A4BBB101 /* RemoteNotificationsService.swift in Sources */,
+				5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */,
+				A4AAA002 /* ThreatProtectionScreen.swift in Sources */,
+				A4AAA004 /* ThreatProtectionCard.swift in Sources */,
+				A4AAA006 /* ThreatProtectionCategoriesView.swift in Sources */,
+				A4AAA008 /* ThreatProtectionCategory.swift in Sources */,
+				A4AAA102 /* GamesSettingsManager.swift in Sources */,
+				B1000031 /* ParentalControlManager.swift in Sources */,
+				A4AAA104 /* AnalyticsService.swift in Sources */,
+				A4AAA106 /* RemoteAnalyticsService.swift in Sources */,
+				A4AAA108 /* ProfileImageManager.swift in Sources */,
+				A4AAA200 /* RewardModels.swift in Sources */,
+				A4AAA202 /* ViewModels/ChildRewardsViewModel.swift in Sources */,
+				A4AAA210 /* AntivirusManager.swift in Sources */,
+				5EB01F3A2EC8721300168BE9 /* MockAPIService.swift in Sources */,
+				5E0058152EC4A6D700024F7E /* ProtectionSettingsManager.swift in Sources */,
+				5E0058232EC4B2EB00024F7E /* ThreatProtectionSettingsScreen.swift in Sources */,
+				5E00581F2EC4B1CF00024F7E /* ProtectionCategoryRow.swift in Sources */,
+				5E0058112EC4A65A00024F7E /* ProtectionGroup.swift in Sources */,
+				B6000003 /* IoTSecurityModule.swift in Sources */,
+				5E0058212EC4B21A00024F7E /* ProtectionGroupSection.swift in Sources */,
+				A4BBB007 /* LocalThreatDatabase.swift in Sources */,
+				5E0058052EC3C50500024F7E /* ALADDINToggle.swift in Sources */,
+				A4AAA212 /* EmptyStateView.swift in Sources */,
+				A4AAA214 /* JWTTokenManager.swift in Sources */,
+				5E0058252EC4E69100024F7E /* ThreatItemRow.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B5001002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B5001200 /* ALADDINUnitTests.swift in Sources */,
+				B5001201 /* APIServiceTests.swift in Sources */,
+				B5001202 /* AppConfigTests.swift in Sources */,
+				B5001203 /* AppDelegateTests.swift in Sources */,
+				B5001204 /* FamilyRegistrationViewModelTests.swift in Sources */,
+				B5001205 /* IoTSecurityModuleTests.swift in Sources */,
+				B5001206 /* LocalizationManagerTests.swift in Sources */,
+				B5001207 /* NetworkManagerTests.swift in Sources */,
+				B5001208 /* NotificationManagerTests.swift in Sources */,
+				B5001209 /* SharedDataManagerTests.swift in Sources */,
+				B5001210 /* MockAPIServiceTests.swift in Sources */,
+				5E00580F2EC473DA00024F7E /* PaymentQRViewModelProtectionTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B5002002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B5002200 /* ALADDINUITests.swift in Sources */,
+				B5002201 /* FamilyRegistrationUITests.swift in Sources */,
+				B5002202 /* LanguageSettingsUITests.swift in Sources */,
+				B5002203 /* NotificationSettingsUITests.swift in Sources */,
+				B5002204 /* WidgetConfigurationUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0F300150000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C0F300180000000000000001 /* PacketTunnelProvider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B5001007 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A0FFFFFD /* ALADDIN */;
+			targetProxy = B5001008 /* PBXContainerItemProxy */;
+		};
+		B5002007 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A0FFFFFD /* ALADDIN */;
+			targetProxy = B5002008 /* PBXContainerItemProxy */;
+		};
+		C0F300210000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C0F300190000000000000001 /* ALADDINPacketTunnel */;
+			targetProxy = C0F300200000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A100000B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VALID_ARCHS = "arm64 x86_64";
+			};
+			name = Debug;
+		};
+		A100000C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = "arm64 x86_64";
+			};
+			name = Release;
+		};
+		A100000E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A100000F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B5001005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.unitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ALADDIN.app/ALADDIN";
+			};
+			name = Debug;
+		};
+		B5001006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.unitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ALADDIN.app/ALADDIN";
+			};
+			name = Release;
+		};
+		B5002005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ALADDIN;
+			};
+			name = Debug;
+		};
+		B5002006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ALADDIN;
+			};
+			name = Release;
+		};
+		C0F3001B0000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ALADDINPacketTunnelDebug.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				INFOPLIST_FILE = ALADDIN/ALADDINPacketTunnel/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "ALADDINPacketTunnel Dev.";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C0F3001C0000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ALADDINPacketTunnel.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				INFOPLIST_FILE = ALADDIN/ALADDINPacketTunnel/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				"MTL_ENABLE_DEBUG_INFO[arch=*]" = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "ALADDINPacketTunnel Dev.";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A0FFFFF9 /* Build configuration list for PBXProject "ALADDIN" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100000B /* Debug */,
+				A100000C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A100000D /* Build configuration list for PBXNativeTarget "ALADDIN" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100000E /* Debug */,
+				A100000F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B5001004 /* Build configuration list for PBXNativeTarget "ALADDINUnitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B5001005 /* Debug */,
+				B5001006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B5002004 /* Build configuration list for PBXNativeTarget "ALADDINUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B5002005 /* Debug */,
+				B5002006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C0F3001A0000000000000001 /* Build configuration list for PBXNativeTarget "ALADDINPacketTunnel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C0F3001B0000000000000001 /* Debug */,
+				C0F3001C0000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A0FFFFF6 /* Project object */;
+}

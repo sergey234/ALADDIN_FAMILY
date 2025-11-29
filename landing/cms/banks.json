@@ -1,0 +1,26 @@
+[
+  { "name": "Сбербанк", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard", "SberPay"] },
+  { "name": "Тинькофф", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard", "Tinkoff Pay"] },
+  { "name": "Альфа-Банк", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "ВТБ", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Газпромбанк", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Россельхозбанк", "channels": ["QR/СБП", "Карты Мир"] },
+  { "name": "Совкомбанк", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Уралсиб", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Райффайзенбанк (RU)", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Московский кредитный банк", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Почта Банк", "channels": ["QR/СБП", "Карты Мир"] },
+  { "name": "Промсвязьбанк", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Росбанк", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Ситибанк (RU)", "channels": ["QR/СБП", "Карты Visa/Mastercard"] },
+  { "name": "Хоум Кредит", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "МТС Банк", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Банк Открытие", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Ренессанс Кредит", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Русский Стандарт", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Синара", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] },
+  { "name": "Траст", "channels": ["QR/СБП", "Карты Мир/Visa/Mastercard"] }
+]
+
+
+

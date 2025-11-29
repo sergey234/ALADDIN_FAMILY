@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Семейный чат</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            border: none;
+            color: white;
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #F59E0B;
+            white-space: nowrap;
+        }
+        
+        .chat-info-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .security-badge {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10B981;
+            border-radius: 12px;
+            padding: 8px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 12px;
+        }
+        
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.own {
+            flex-direction: row-reverse;
+        }
+        
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            opacity: 0.7;
+        }
+        
+        .message.own .message-header {
+            flex-direction: row-reverse;
+        }
+        
+        .message-bubble {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .message.own .message-bubble {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        
+        .message-text {
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        
+        .message-time {
+            font-size: 10px;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+        
+        .security-indicator {
+            font-size: 10px;
+            color: #10B981;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .input-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 25px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .attach-btn {
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+        
+        .attach-btn:hover {
+            opacity: 1;
+        }
+        
+        .message-input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .message-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            border-radius: 18px;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+        }
+        
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 6px 2px;
+            margin-top: 10px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: none;
+            border: none;
+            padding: 4px 1px;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: inherit;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .nav-icon {
+            font-size: 14px;
+        }
+        
+        .nav-label {
+            font-size: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .nav-item.active {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+        
+        .status-left {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .status-right {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #F59E0B;
+            color: #0a1128;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .date-divider {
+            text-align: center;
+            font-size: 11px;
+            opacity: 0.5;
+            margin: 15px 0;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .empty-state.show {
+            display: flex;
+        }
+        
+        .empty-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .empty-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 12px;
+        }
+        
+        .empty-description {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 28px;
+            max-width: 300px;
+            line-height: 1.6;
+        }
+        
+        .empty-action {
+            background: rgba(245, 158, 11, 0.2);
+            border: 2px solid #F59E0B;
+            color: #F59E0B;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .empty-action:hover {
+            background: rgba(245, 158, 11, 0.3);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Семейный чат</div>
+        <div class="screen">
+            <!-- Статус бар -->
+            <div class="status-bar">
+                <div class="status-left">
+                    <span>9:41</span>
+                </div>
+                <div class="status-right">
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="back-btn" onclick="window.location.href='03_family_screen.html'" style="cursor: pointer;">←</div>
+                <div class="title">💬 Семейный чат</div>
+                <div class="chat-info-btn" onclick="showChatInfo()" style="cursor: pointer;">ℹ️</div>
+            </div>
+            
+            <!-- Индикатор безопасности -->
+            <div class="security-badge">
+                <span>🔒</span>
+                <span>E2E шифрование активно</span>
+            </div>
+            
+            <!-- Сообщения -->
+            <div class="messages-container" role="region" aria-label="История семейного чата">
+                <!-- Empty State (скрыт когда есть сообщения) -->
+                <div class="empty-state" id="empty-chat">
+                    <div class="empty-icon">💬</div>
+                    <div class="empty-title">Нет сообщений</div>
+                    <div class="empty-description">
+                        Начните общение с членами семьи в защищённом чате с E2E шифрованием
+                    </div>
+                    <button class="empty-action" onclick="focusChatInput()">
+                        ✏️ Написать первое сообщение
+                    </button>
+                </div>
+                
+                <div class="date-divider">Сегодня, 9 октября</div>
+                
+                <div class="message">
+                    <div class="avatar">👨</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span>Александр (Админ)</span>
+                        </div>
+                        <div class="message-bubble">
+                            <div class="message-text">Всем привет! Не забудьте про семейный ужин сегодня в 19:00 🍽️</div>
+                            <div class="message-time">14:23 <span class="security-indicator">🔒</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message">
+                    <div class="avatar">👩</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span>Елена</span>
+                        </div>
+                        <div class="message-bubble">
+                            <div class="message-text">Хорошо, буду! А что готовим?</div>
+                            <div class="message-time">14:25 <span class="security-indicator">🔒</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message own">
+                    <div class="avatar">👤</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span>Вы</span>
+                        </div>
+                        <div class="message-bubble">
+                            <div class="message-text">Я тоже приду! 👍</div>
+                            <div class="message-time">14:26 <span class="security-indicator">🔒</span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="message">
+                    <div class="avatar">👧</div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span>Мария</span>
+                        </div>
+                        <div class="message-bubble">
+                            <div class="message-text">А можно друга пригласить? 🙏</div>
+                            <div class="message-time">14:28 <span class="security-indicator">🔒</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Поле ввода -->
+            <div class="input-container">
+                <div class="attach-btn" onclick="attachFile()">📎</div>
+                <input type="text" class="message-input" placeholder="Введите сообщение..." id="messageInput" onkeypress="if(event.key==='Enter') sendMessage()" aria-label="Поле ввода сообщения в семейный чат">
+                <button class="send-btn" onclick="sendMessage()">➤</button>
+            </div>
+            
+            <!-- Нижняя навигация -->
+            <nav class="bottom-nav" role="navigation" aria-label="Основная навигация" style="display: flex; justify-content: space-around; background: rgba(0, 0, 0, 0.4); border-radius: 20px; padding: 6px 2px; margin-top: 10px;">
+                <button class="nav-item" onclick="window.location.href='01_main_screen.html'" aria-label="Главная страница" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🏠</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center; white-space: nowrap;">Главная</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='02_protection_screen.html'" aria-label="Защита и VPN" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🛡️</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center; white-space: nowrap;">Защита</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='08_notifications_screen.html'" aria-label="Уведомления" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">🔔</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center; white-space: nowrap;">Уведомл.</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='11_profile_screen.html'" aria-label="Профиль пользователя" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">👤</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center; white-space: nowrap;">Профиль</div>
+                </button>
+                <button class="nav-item" onclick="window.location.href='12_devices_screen.html'" aria-label="Устройства семьи" style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 1px; background: none; border: none; color: rgba(255, 255, 255, 0.7); flex: 1; min-width: 0; font-family: inherit; cursor: pointer;">
+                    <div class="nav-icon" style="font-size: 14px;">📱</div>
+                    <div class="nav-label" style="font-size: 8px; font-weight: bold; text-align: center; white-space: nowrap;">Устройства</div>
+                </button>
+            </nav>
+        </div>
+    </div>
+
+<script>
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const messageText = input.value.trim();
+        
+        if (messageText) {
+            const messagesContainer = document.querySelector('.messages-container');
+            const newMessage = document.createElement('div');
+            newMessage.className = 'message own';
+            newMessage.innerHTML = `
+                <div class="avatar">👤</div>
+                <div class="message-content">
+                    <div class="message-header">
+                        <span>Вы</span>
+                    </div>
+                    <div class="message-bubble">
+                        <div class="message-text">${messageText}</div>
+                        <div class="message-time">${new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})} <span class="security-indicator">🔒</span></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(newMessage);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            input.value = '';
+        }
+    }
+    
+    function attachFile() {
+        showNotification('📎 Прикрепить файл:\n\n📷 Фото\n📹 Видео\n📄 Документ\n📍 Местоположение', 'info');
+    }
+    
+    function showChatInfo() {
+        const info = [
+            '💬 ИНФОРМАЦИЯ О ЧАТЕ',
+            '',
+            '👥 Участники: 4 человека',
+            '🔒 Шифрование: E2E (Signal Protocol)',
+            '📊 Сообщений: 1,234',
+            '📅 Создан: 15.08.2024',
+            '',
+            '⚙️ НАСТРОЙКИ:',
+            '🔕 Уведомления: Включены',
+            '🖼️ Медиа: Автосохранение',
+            '🗑️ Очистка: Через 30 дней',
+            '',
+            '🛡️ БЕЗОПАСНОСТЬ:',
+            '✅ End-to-End шифрование',
+            '✅ Верификация участников',
+            '✅ Защита от скриншотов',
+            '✅ Автоудаление сообщений'
+        ].join('\n');
+        showNotification(info, 'info');
+    }
+    
+    function showNotification(message, type) {
+        alert(message);
+    }
+    
+    function focusChatInput() {
+        const input = document.getElementById('messageInput');
+        if (input) {
+            input.focus();
+        }
+    }
+</script>
+</body>
+</html>
+

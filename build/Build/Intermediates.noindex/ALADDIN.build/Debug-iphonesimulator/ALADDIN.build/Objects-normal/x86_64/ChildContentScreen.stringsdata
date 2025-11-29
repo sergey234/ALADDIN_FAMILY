@@ -1,0 +1,88 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/ChildContentScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Назад"
+      },
+      {
+        "comment": "",
+        "key": "Выбери игрушку для игры"
+      },
+      {
+        "comment": "",
+        "key": "Нарисуй что угодно!"
+      },
+      {
+        "comment": "",
+        "key": "Песни для малышей"
+      },
+      {
+        "comment": "",
+        "key": "Волшебные сказки"
+      },
+      {
+        "comment": "",
+        "key": "Игровая зона"
+      },
+      {
+        "comment": "",
+        "key": "Учимся с удовольствием!"
+      },
+      {
+        "comment": "",
+        "key": "Твори и создавай!"
+      },
+      {
+        "comment": "",
+        "key": "Любимые мультики"
+      },
+      {
+        "comment": "",
+        "key": "Учись программированию"
+      },
+      {
+        "comment": "",
+        "key": "Общайся безопасно"
+      },
+      {
+        "comment": "",
+        "key": "Твоя музыка"
+      },
+      {
+        "comment": "",
+        "key": "Интересные видео"
+      },
+      {
+        "comment": "",
+        "key": "Развивайся и учись"
+      },
+      {
+        "comment": "",
+        "key": "Строй карьеру"
+      },
+      {
+        "comment": "",
+        "key": "Изучай мир онлайн"
+      },
+      {
+        "comment": "",
+        "key": "Смотри и наслаждайся"
+      },
+      {
+        "comment": "",
+        "key": "💡 Совет дня"
+      },
+      {
+        "comment": "",
+        "key": "🌟"
+      },
+      {
+        "comment": "",
+        "key": "Контент скоро появится!"
+      }
+    ]
+  },
+  "version": 1
+}

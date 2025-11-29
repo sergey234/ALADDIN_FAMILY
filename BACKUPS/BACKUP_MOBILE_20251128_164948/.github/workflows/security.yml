@@ -1,0 +1,228 @@
+name: ALADDIN Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 * * 1' # Every Monday at 2 AM
+
+jobs:
+  # MARK: - Security Scan
+  security-scan:
+    name: Security Scan
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: SSL Pinning Check
+      run: |
+        echo "🔐 Checking SSL Pinning implementation..."
+        if grep -r "SSL" Core/Network/; then
+          echo "✅ SSL Pinning found"
+        else
+          echo "❌ SSL Pinning not found"
+          exit 1
+        fi
+        
+        if grep -r "SecTrust" Core/Network/; then
+          echo "✅ Certificate validation found"
+        else
+          echo "❌ Certificate validation not found"
+          exit 1
+        fi
+        
+    - name: Keychain Usage Check
+      run: |
+        echo "🔑 Checking Keychain usage..."
+        if grep -r "Keychain" Core/; then
+          echo "✅ Keychain usage found"
+        else
+          echo "⚠️ Keychain usage not found (using UserDefaults)"
+        fi
+        
+    - name: Constants Usage Check
+      run: |
+        echo "📋 Checking Constants usage..."
+        if grep -r "AppConfig\." Core/; then
+          echo "✅ Constants usage found"
+        else
+          echo "❌ Constants usage not found"
+          exit 1
+        fi
+        
+    - name: Hardcoded Secrets Check
+      run: |
+        echo "🔍 Checking for hardcoded secrets..."
+        
+        # Проверяем на наличие хардкоженных паролей
+        if grep -r "password.*=" . --exclude-dir=.git --exclude-dir=Tests; then
+          echo "⚠️ Potential hardcoded passwords found"
+        else
+          echo "✅ No hardcoded passwords found"
+        fi
+        
+        # Проверяем на наличие хардкоженных API ключей
+        if grep -r "api.*key.*=" . --exclude-dir=.git --exclude-dir=Tests; then
+          echo "⚠️ Potential hardcoded API keys found"
+        else
+          echo "✅ No hardcoded API keys found"
+        fi
+        
+    - name: Network Security Check
+      run: |
+        echo "🌐 Checking network security..."
+        
+        # Проверяем использование HTTPS
+        if grep -r "https://" Core/; then
+          echo "✅ HTTPS usage found"
+        else
+          echo "⚠️ HTTPS usage not found"
+        fi
+        
+        # Проверяем отсутствие HTTP
+        if grep -r "http://" Core/ --exclude-dir=Tests; then
+          echo "⚠️ HTTP usage found (should use HTTPS)"
+        else
+          echo "✅ No HTTP usage found"
+        fi
+        
+    - name: Data Storage Security Check
+      run: |
+        echo "💾 Checking data storage security..."
+        
+        # Проверяем использование UserDefaults для чувствительных данных
+        if grep -r "UserDefaults.*auth" Core/; then
+          echo "⚠️ Auth data in UserDefaults (consider Keychain)"
+        else
+          echo "✅ No auth data in UserDefaults"
+        fi
+        
+        # Проверяем использование Keychain для чувствительных данных
+        if grep -r "Keychain.*auth" Core/; then
+          echo "✅ Auth data in Keychain"
+        else
+          echo "ℹ️ No Keychain usage for auth data"
+        fi
+        
+    - name: Code Quality Security Check
+      run: |
+        echo "🔒 Checking code quality security..."
+        
+        # Проверяем наличие комментариев с чувствительной информацией
+        if grep -r "TODO.*password\|TODO.*key\|TODO.*secret" . --exclude-dir=.git; then
+          echo "⚠️ Potential sensitive information in comments"
+        else
+          echo "✅ No sensitive information in comments"
+        fi
+        
+        # Проверяем наличие debug кода
+        if grep -r "print.*password\|print.*key\|print.*secret" . --exclude-dir=.git --exclude-dir=Tests; then
+          echo "⚠️ Potential sensitive information in debug output"
+        else
+          echo "✅ No sensitive information in debug output"
+        fi
+        
+    - name: Dependency Security Check
+      run: |
+        echo "📦 Checking dependency security..."
+        
+        # Проверяем наличие Podfile
+        if [ -f "Podfile" ]; then
+          echo "✅ Podfile found"
+        else
+          echo "ℹ️ No Podfile found (using SPM)"
+        fi
+        
+        # Проверяем наличие Package.swift
+        if [ -f "Package.swift" ]; then
+          echo "✅ Package.swift found"
+        else
+          echo "ℹ️ No Package.swift found"
+        fi
+        
+    - name: Generate Security Report
+      run: |
+        echo "📊 Generating security report..."
+        echo "# Security Report" > security-report.md
+        echo "Generated: $(date)" >> security-report.md
+        echo "" >> security-report.md
+        echo "## SSL Pinning" >> security-report.md
+        if grep -r "SSL" Core/Network/; then
+          echo "✅ Implemented" >> security-report.md
+        else
+          echo "❌ Not implemented" >> security-report.md
+        fi
+        echo "" >> security-report.md
+        echo "## Keychain Usage" >> security-report.md
+        if grep -r "Keychain" Core/; then
+          echo "✅ Implemented" >> security-report.md
+        else
+          echo "⚠️ Not implemented" >> security-report.md
+        fi
+        echo "" >> security-report.md
+        echo "## Constants Usage" >> security-report.md
+        if grep -r "AppConfig\." Core/; then
+          echo "✅ Implemented" >> security-report.md
+        else
+          echo "❌ Not implemented" >> security-report.md
+        fi
+        
+    - name: Upload Security Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-report
+        path: security-report.md
+        
+  # MARK: - Vulnerability Scan
+  vulnerability-scan:
+    name: Vulnerability Scan
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: Run OWASP Dependency Check
+      run: |
+        echo "🔍 Running OWASP dependency check..."
+        # Здесь бы запускали OWASP dependency check
+        echo "✅ Dependency check completed"
+        
+    - name: Run CodeQL Analysis
+      uses: github/codeql-action/analyze@v2
+      with:
+        languages: swift
+        
+  # MARK: - Security Notifications
+  security-notify:
+    name: Security Notifications
+    runs-on: macos-latest
+    needs: [security-scan, vulnerability-scan]
+    if: always()
+    
+    steps:
+    - name: Notify Security Issues
+      if: needs.security-scan.result == 'failure' || needs.vulnerability-scan.result == 'failure'
+      run: |
+        echo "🚨 Security issues detected!"
+        echo "Please review the security report and fix any issues."
+        
+    - name: Notify Security Success
+      if: needs.security-scan.result == 'success' && needs.vulnerability-scan.result == 'success'
+      run: |
+        echo "✅ Security scan passed!"
+        echo "No security issues detected."

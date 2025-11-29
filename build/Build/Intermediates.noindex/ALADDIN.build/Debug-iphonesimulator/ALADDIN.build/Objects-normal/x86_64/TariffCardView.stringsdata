@@ -1,0 +1,36 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Components/TariffCardView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "%@, %@, %@"
+      },
+      {
+        "comment": "",
+        "key": "Нажмите, чтобы свернуть карточку тарифа"
+      },
+      {
+        "comment": "",
+        "key": "Нажмите, чтобы развернуть карточку тарифа"
+      },
+      {
+        "comment": "",
+        "key": "•"
+      },
+      {
+        "comment": "",
+        "key": "🔒 %@"
+      },
+      {
+        "comment": "",
+        "key": "Нажмите, чтобы свернуть секцию"
+      },
+      {
+        "comment": "",
+        "key": "Нажмите, чтобы развернуть секцию"
+      }
+    ]
+  },
+  "version": 1
+}

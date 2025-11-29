@@ -1,0 +1,27 @@
+✅ КРИТИЧНЫЕ ФАЙЛЫ (ДОБАВИТЬ ПЕРВЫМИ):
+
+1. Core/Security/SecurityManager.swift
+2. Core/Security/KeychainManager.swift
+3. Core/Cache/CacheManager.swift
+4. Shared/Components/Buttons/PrimaryButton.swift
+5. Shared/Components/InfoRow.swift
+
+✅ ОПЦИОНАЛЬНЫЕ (ДОБАВИТЬ ПОТОМ):
+
+6. Components/Modals/AgeGroupSelectionModal.swift
+7. Components/Modals/ConsentModal.swift
+8. Components/Modals/FamilyCreatedModal.swift
+
+📋 ИНСТРУКЦИЯ:
+1. Открыть Xcode
+2. Найти нужную группу (например: Core → Security)
+3. Правый клик → Add Files
+4. Выбрать файл
+5. ✅ Copy items if needed
+6. ✅ Create groups
+7. ✅ Target: ALADDIN
+8. Add
+
+⚠️ ВАЖНО: Файлы уже находятся в правильных папках!
+НЕ нужно их копировать или перемещать.
+Просто добавьте их в Xcode проект!

@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALADDIN Mobile - Тарифы</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .phone {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1128 0%, #1e3a5f 50%, #2e5090 100%);
+            border-radius: 30px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .back-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            color: #F59E0B;
+            border: 2px solid #F59E0B;
+        }
+        
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #F59E0B;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .close-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            color: #fff;
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+        
+        .current-plan {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            color: #0a1128;
+        }
+        
+        .current-plan-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .current-plan-desc {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+        
+        .tariffs-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .section-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #F59E0B;
+            margin-bottom: 15px;
+        }
+        
+        .tariff-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .tariff-card:hover {
+            transform: translateY(-5px);
+            border-color: #F59E0B;
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);
+        }
+        
+        .tariff-card.recommended {
+            border-color: #F59E0B;
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .tariff-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .tariff-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #F59E0B;
+        }
+        
+        .tariff-badge {
+            background: #F59E0B;
+            color: #0a1128;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .tariff-price {
+            font-size: 32px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        
+        .tariff-period {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 20px;
+        }
+        
+        .tariff-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        
+        .tariff-features li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .tariff-features li::before {
+            content: "✅";
+            font-size: 16px;
+        }
+        
+        .tariff-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            color: #0a1128;
+            border: none;
+            border-radius: 15px;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tariff-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
+        }
+        
+        .tariff-btn.current {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            cursor: default;
+        }
+        
+        .trial-info {
+            background: rgba(16, 185, 129, 0.1);
+            border: 2px solid #10B981;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .trial-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #10B981;
+            margin-bottom: 10px;
+        }
+        
+        .trial-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .wireframe-label {
+            position: absolute;
+            top: -30px;
+            left: 0;
+            background: #F59E0B;
+            color: #0a1128;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Краткое резюме тарифов */
+        .summary-section {
+            margin-bottom: 30px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .summary-card.freemium {
+            border-color: #10B981;
+        }
+
+        .summary-card.basic {
+            border-color: #3B82F6;
+        }
+
+        .summary-card.family {
+            border-color: #F59E0B;
+        }
+
+        .summary-card.premium {
+            border-color: #8B5CF6;
+        }
+
+        .summary-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .summary-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .summary-price {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .summary-desc {
+            font-size: 12px;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        /* Сравнительная таблица */
+        .comparison-section {
+            margin-bottom: 30px;
+        }
+
+        .comparison-table {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            background: rgba(245, 158, 11, 0.2);
+            font-weight: bold;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-cell {
+            padding: 12px 8px;
+            font-size: 12px;
+            text-align: center;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table-cell:last-child {
+            border-right: none;
+        }
+
+        .table-header .table-cell {
+            font-size: 11px;
+        }
+
+        /* Детальные тарифы */
+        .tariff-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .tariff-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .tariff-card.recommended {
+            border: 2px solid #F59E0B;
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .tariff-card.freemium {
+            border-color: #10B981;
+        }
+
+        .tariff-card.basic {
+            border-color: #3B82F6;
+        }
+
+        .tariff-card.family {
+            border-color: #F59E0B;
+        }
+
+        .tariff-card.premium {
+            border-color: #8B5CF6;
+        }
+
+        .tariff-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .tariff-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        .tariff-price {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .tariff-period {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .tariff-modules {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .tariff-features {
+            margin-bottom: 25px;
+        }
+
+        .features-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+        }
+
+        .tariff-features ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .tariff-features li {
+            padding: 5px 0;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tariff-features li:last-child {
+            border-bottom: none;
+        }
+
+        .not-included {
+            opacity: 0.6;
+        }
+
+        .unique-features {
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        /* Рекомендации */
+        .recommendations-section {
+            margin-bottom: 30px;
+        }
+
+        .recommendation-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .recommendation-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .rec-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .rec-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .rec-answer {
+            font-size: 12px;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+
+        .rec-subtitle {
+            font-size: 11px;
+            opacity: 0.7;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        /* Логика выбора */
+        .selection-logic {
+            margin-bottom: 30px;
+        }
+
+        .logic-step {
+            display: flex;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: #0a1128;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-question {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #F59E0B;
+        }
+
+        .step-answers {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .answer-yes, .answer-no, .answer-option {
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .answer-yes {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10B981;
+        }
+
+        .answer-no {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #EF4444;
+        }
+
+        /* Итоговые рекомендации */
+        .final-recommendations {
+            margin-bottom: 30px;
+        }
+
+        .recommendation-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .recommendation-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .recommendation-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .recommendation-card.freemium {
+            border-color: #10B981;
+        }
+
+        .recommendation-card.basic {
+            border-color: #3B82F6;
+        }
+
+        .recommendation-card.family {
+            border-color: #F59E0B;
+        }
+
+        .recommendation-card.premium {
+            border-color: #8B5CF6;
+        }
+
+        .rec-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .rec-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .rec-subtitle {
+            font-size: 12px;
+            opacity: 0.7;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .rec-answer {
+            font-size: 11px;
+            opacity: 0.8;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        /* Выводы */
+        .conclusions {
+            margin-bottom: 30px;
+        }
+
+        .conclusion-content {
+            margin-top: 20px;
+        }
+
+        .conclusion-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .conclusion-icon {
+            font-size: 24px;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .conclusion-text {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .conclusion-text strong {
+            color: #F59E0B;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <div class="wireframe-label">Тарифные планы</div>
+        <div class="screen">
+            <!-- Заголовок -->
+            <div class="header">
+                <div class="back-btn" onclick="goBackSmart()" style="cursor: pointer;">←</div>
+                <div class="title">💎 Тарифы</div>
+                <div class="close-btn" onclick="window.location.href='01_main_screen.html'" style="cursor: pointer;">✕</div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="main-content" role="main">
+                <!-- Текущий план -->
+                <div class="current-plan">
+                    <div class="current-plan-title">🎉 Ваш текущий план</div>
+                    <div class="current-plan-desc">Premium - Полный доступ ко всем функциям</div>
+                </div>
+                
+                <!-- Пробный период -->
+                <div class="trial-info">
+                    <div class="trial-title">🆓 Бесплатный пробный период</div>
+                    <div class="trial-desc">30 дней полного доступа ко всем функциям ALADDIN</div>
+                </div>
+                
+                <!-- Краткое резюме тарифов -->
+                <div class="summary-section" role="region" aria-label="Краткое резюме тарифов">
+                    <div class="section-title">🎯 Краткое резюме тарифов</div>
+                    <div class="summary-cards">
+                        <div class="summary-card freemium">
+                            <div class="summary-icon">🆓</div>
+                            <div class="summary-name">FREEMIUM</div>
+                            <div class="summary-price">0₽</div>
+                            <div class="summary-desc">1 устройство, 25% функционала<br>Базовая защита детей</div>
+                        </div>
+                        <div class="summary-card basic">
+                            <div class="summary-icon">💎</div>
+                            <div class="summary-name">BASIC</div>
+                            <div class="summary-price">290₽</div>
+                            <div class="summary-desc">4 устройства, 58% функционала<br>Полная защита детей + AI</div>
+                        </div>
+                        <div class="summary-card family">
+                            <div class="summary-icon">👨‍👩‍👧‍👦</div>
+                            <div class="summary-name">FAMILY</div>
+                            <div class="summary-price">490₽</div>
+                            <div class="summary-desc">6 устройств, 83% функционала<br>Защита всех возрастов</div>
+                        </div>
+                        <div class="summary-card premium">
+                            <div class="summary-icon">⭐</div>
+                            <div class="summary-name">PREMIUM</div>
+                            <div class="summary-price">900₽</div>
+                            <div class="summary-desc">6 устройств, 100% функционала<br>Все функции + анонимность</div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Детальные тарифы -->
+                <div class="tariffs-section">
+                    <div class="section-title">📋 Детальное сравнение тарифов</div>
+                    
+                    <!-- FREEMIUM -->
+                    <div class="tariff-card freemium">
+                        <div class="tariff-header">
+                            <div class="tariff-name">🆓 FREEMIUM</div>
+                            <div class="tariff-subtitle">"Попробуй бесплатно"</div>
+                        </div>
+                        <div class="tariff-price">0₽</div>
+                        <div class="tariff-period">навсегда</div>
+                        <div class="tariff-modules">25% функционала</div>
+                        <div class="tariff-features">
+                            <div class="features-title">✅ Включено:</div>
+                            <ul>
+                                <li>Родительский контроль (базовая версия)</li>
+                                <li>Защита детей (базовая версия)</li>
+                                <li>Регистрация семьи</li>
+                                <li>Уведомления (базовая версия)</li>
+                                <li>Веб-интерфейс (базовая версия)</li>
+                                <li>Базовые настройки безопасности</li>
+                                <li>Детский интерфейс (1 уровень)</li>
+                                <li>Бот родительского контроля</li>
+                                <li>🛡️ VPN защита (50 МБ/день)</li>
+                            </ul>
+                            <div class="features-title">❌ НЕ включено:</div>
+                            <ul class="not-included">
+                                <li>AI-анализ угроз</li>
+                                <li>Защита пожилых</li>
+                                <li>Анонимность</li>
+                                <li>Расширенные настройки</li>
+                            </ul>
+                        </div>
+                        <button class="tariff-btn" onclick="selectTariff('FREEMIUM', 0)" style="cursor: pointer;">Выбрать бесплатно</button>
+                    </div>
+                    
+                    <!-- BASIC -->
+                    <div class="tariff-card basic">
+                        <div class="tariff-header">
+                            <div class="tariff-name">💎 BASIC</div>
+                            <div class="tariff-subtitle">"Для одного пользователя"</div>
+                        </div>
+                        <div class="tariff-price">290₽</div>
+                        <div class="tariff-period">в месяц</div>
+                        <div class="tariff-modules">55% функционала</div>
+                        <div class="tariff-features">
+                            <div class="features-title">✅ Включено:</div>
+                            <ul>
+                                <li>Все модули из Freemium</li>
+                                <li>AI-анализ поведения</li>
+                                <li>Защита от будущих угроз</li>
+                                <li>Расширенные настройки</li>
+                                <li>4 устройства</li>
+                                <li>Полная защита детей</li>
+                                <li>Семейная коммуникация</li>
+                                <li>🛡️ VPN защита (безлимит)</li>
+                            </ul>
+                            <div class="features-title">❌ НЕ включено:</div>
+                            <ul class="not-included">
+                                <li>Защита пожилых</li>
+                                <li>Семейные функции</li>
+                                <li>Анонимность</li>
+                                <li>Голосовое управление</li>
+                            </ul>
+                        </div>
+                        <button class="tariff-btn" onclick="selectTariff('BASIC', 290)" style="cursor: pointer;">Выбрать Basic</button>
+                    </div>
+                    
+                    <!-- FAMILY -->
+                    <div class="tariff-card family recommended">
+                        <div class="tariff-header">
+                            <div class="tariff-name">👨‍👩‍👧‍👦 FAMILY</div>
+                            <div class="tariff-subtitle">"Для всей семьи"</div>
+                            <div class="tariff-badge">ПОПУЛЯРНЫЙ</div>
+                        </div>
+                        <div class="tariff-price">490₽</div>
+                        <div class="tariff-period">в месяц</div>
+                        <div class="tariff-modules">83% функционала</div>
+                        <div class="tariff-features">
+                            <div class="features-title">✅ Включено:</div>
+                            <ul>
+                                <li>Все модули из Basic</li>
+                                <li>Защита людей старшего возраста</li>
+                                <li>Интерфейс для пожилых</li>
+                                <li>Голосовое управление</li>
+                                <li>Семейные функции</li>
+                                <li>Полная геймификация</li>
+                                <li>6 устройств</li>
+                                <li>🛡️ VPN защита (безлимит)</li>
+                            </ul>
+                            <div class="features-title">❌ НЕ включено:</div>
+                            <ul class="not-included">
+                                <li>Анонимные профили</li>
+                                <li>Анализ голоса и видео</li>
+                                <li>Мониторинг утечек данных</li>
+                                <li>Защита от deepfake</li>
+                            </ul>
+                        </div>
+                        <button class="tariff-btn current" onclick="showCurrentPlan()" style="cursor: pointer;">Текущий план</button>
+                    </div>
+                    
+                    <!-- PREMIUM -->
+                    <div class="tariff-card premium">
+                        <div class="tariff-header">
+                            <div class="tariff-name">⭐ PREMIUM</div>
+                            <div class="tariff-subtitle">"Максимальная защита"</div>
+                        </div>
+                        <div class="tariff-price">900₽</div>
+                        <div class="tariff-period">в месяц</div>
+                        <div class="tariff-modules">100% защита</div>
+                        <div class="tariff-features">
+                            <div class="features-title">✅ Включено:</div>
+                            <ul>
+                                <li>Все модули из Family</li>
+                                <li>Полная анонимность</li>
+                                <li>Военное шифрование AES-256</li>
+                                <li>🛡️ VPN защита (безлимит)</li>
+                                <li>Анализ голоса и видео</li>
+                                <li>Защита от deepfake</li>
+                                <li>Персональный менеджер</li>
+                                <li>Неограниченные пользователи</li>
+                            </ul>
+                            <div class="features-title">🎯 Уникальные функции:</div>
+                            <ul class="unique-features">
+                                <li>Анонимные семейные профили</li>
+                                <li>Комплексная анонимная система</li>
+                                <li>Корпоративная безопасность</li>
+                                <li>Мониторинг утечек</li>
+                            </ul>
+                        </div>
+                        <button class="tariff-btn" onclick="selectTariff('PREMIUM', 900)" style="cursor: pointer;">Обновить до Premium</button>
+                    </div>
+                </div>
+
+                <!-- Рекомендации -->
+                <div class="recommendations-section" role="region" aria-label="Рекомендации по выбору тарифа">
+                    <div class="section-title">🎯 Рекомендации по выбору тарифа</div>
+                    
+                    <!-- Логика выбора -->
+                    <div class="selection-logic">
+                        <div class="logic-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <div class="step-question">👶 Есть дети до 18 лет?</div>
+                                <div class="step-answers">
+                                    <div class="answer-yes">✅ ДА → Переходите к шагу 2</div>
+                                    <div class="answer-no">❌ НЕТ → Рассмотрите Basic или Premium</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="logic-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <div class="step-question">👴 В семье есть пожилые люди (50+ лет)?</div>
+                                <div class="step-answers">
+                                    <div class="answer-yes">✅ ДА → Выбирайте Family или Premium</div>
+                                    <div class="answer-no">❌ НЕТ → Basic может быть достаточно</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="logic-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <div class="step-question">🔒 Нужна максимальная защита и анонимность?</div>
+                                <div class="step-answers">
+                                    <div class="answer-yes">✅ ДА → Выбирайте Premium</div>
+                                    <div class="answer-no">❌ НЕТ → Family будет достаточно</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="logic-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <div class="step-question">📱 Сколько устройств нужно защитить?</div>
+                                <div class="step-answers">
+                                    <div class="answer-option">1-3 устройства → Freemium или Basic</div>
+                                    <div class="answer-option">4-6 устройств → Basic или Family</div>
+                                    <div class="answer-option">6+ устройств → Family или Premium</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="logic-step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <div class="step-question">💰 Ваш бюджет?</div>
+                                <div class="step-answers">
+                                    <div class="answer-option">0₽ → Freemium (базовая защита)</div>
+                                    <div class="answer-option">290₽ → Basic (индивидуальная защита)</div>
+                                    <div class="answer-option">490₽ → Family (семейная защита)</div>
+                                    <div class="answer-option">900₽ → Premium (максимальная защита)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Итоговые рекомендации -->
+                    <div class="final-recommendations">
+                        <div class="section-title">🎯 Итоговые рекомендации</div>
+                        <div class="recommendation-cards">
+                            <div class="recommendation-card freemium">
+                                <div class="rec-icon">🆓</div>
+                                <div class="rec-title">FREEMIUM</div>
+                                <div class="rec-subtitle">"Попробуй бесплатно"</div>
+                                <div class="rec-answer">
+                                    <strong>Для тех, кто:</strong><br>
+                                    • Хочет попробовать систему бесплатно<br>
+                                    • Имеет 1 устройство<br>
+                                    • Нужна базовая защита детей<br>
+                                    • Не готов платить за защиту
+                                </div>
+                            </div>
+                            
+                            <div class="recommendation-card basic">
+                                <div class="rec-icon">💎</div>
+                                <div class="rec-title">BASIC</div>
+                                <div class="rec-subtitle">"Для одного пользователя"</div>
+                                <div class="rec-answer">
+                                    <strong>Для тех, кто:</strong><br>
+                                    • Живет один или с партнером<br>
+                                    • Имеет до 4 устройств<br>
+                                    • Нужна полная защита детей<br>
+                                    • Не нужна защита пожилых
+                                </div>
+                            </div>
+                            
+                            <div class="recommendation-card family">
+                                <div class="rec-icon">👨‍👩‍👧‍👦</div>
+                                <div class="rec-title">FAMILY</div>
+                                <div class="rec-subtitle">"Для всей семьи"</div>
+                                <div class="rec-answer">
+                                    <strong>Для тех, кто:</strong><br>
+                                    • Имеет семью с детьми<br>
+                                    • Есть пожилые родственники<br>
+                                    • Нужна защита до 6 устройств<br>
+                                    • Хочет семейные функции
+                                </div>
+                            </div>
+                            
+                            <div class="recommendation-card premium">
+                                <div class="rec-icon">⭐</div>
+                                <div class="rec-title">PREMIUM</div>
+                                <div class="rec-subtitle">"Максимальная защита"</div>
+                                <div class="rec-answer">
+                                    <strong>Для тех, кто:</strong><br>
+                                    • Хочет максимальную защиту<br>
+                                    • Нужна анонимность<br>
+                                    • Имеет много устройств<br>
+                                    • Готов платить за премиум-функции
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Выводы -->
+                    <div class="conclusions">
+                        <div class="section-title">💡 Выводы и советы</div>
+                        <div class="conclusion-content">
+                            <div class="conclusion-item">
+                                <div class="conclusion-icon">🎯</div>
+                                <div class="conclusion-text">
+                                    <strong>Начните с Freemium</strong> - попробуйте систему бесплатно, чтобы понять, подходит ли она вам
+                                </div>
+                            </div>
+                            <div class="conclusion-item">
+                                <div class="conclusion-icon">👨‍👩‍👧‍👦</div>
+                                <div class="conclusion-text">
+                                    <strong>Family - самый популярный</strong> - идеальный баланс функций и цены для большинства семей
+                                </div>
+                            </div>
+                            <div class="conclusion-item">
+                                <div class="conclusion-icon">🔒</div>
+                                <div class="conclusion-text">
+                                    <strong>Premium для максимальной защиты</strong> - если нужна анонимность и военная защита
+                                </div>
+                            </div>
+                            <div class="conclusion-item">
+                                <div class="conclusion-icon">💡</div>
+                                <div class="conclusion-text">
+                                    <strong>Всегда можно обновить</strong> - начните с меньшего тарифа и при необходимости переходите на более высокий
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    function selectTariff(name, price) {
+        if (price === 0) {
+            showNotification(`✅ Тариф ${name} активирован бесплатно!`, 'success');
+        } else {
+            showNotification(`💎 Выбран тариф ${name} (${price}₽/мес)\n\nОткрывается страница оплаты...`, 'info');
+            setTimeout(() => {
+                showNotification('🔐 Переход к безопасной оплате через QR код', 'success');
+            }, 2000);
+        }
+    }
+
+    function showCurrentPlan() {
+        showNotification('✅ Ваш текущий тариф: FAMILY (490₽/мес)\n\n📅 Следующее списание: 25 октября 2025\n🛡️ 83% функционала активно', 'info');
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.innerHTML = message.replace(/\n/g, '<br>');
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#10B981' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
+            color: white;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            max-width: 300px;
+            text-align: center;
+            line-height: 1.8;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 4000);
+    }
+    
+    // Умная навигация назад
+    function goBackSmart() {
+        const previousPage = sessionStorage.getItem('previousPage');
+        console.log('🔍 Previous page:', previousPage);
+        
+        if (previousPage && previousPage !== '09_tariffs_screen.html') {
+            console.log('✅ Возврат на:', previousPage);
+            window.location.href = previousPage;
+        } else {
+            console.log('✅ Возврат на главную (default)');
+            window.location.href = '01_main_screen.html';
+        }
+    }
+</script>
+
+</body>
+</html>

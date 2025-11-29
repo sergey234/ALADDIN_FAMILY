@@ -1,0 +1,48 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Shared/Components/Cards/WelcomeCardForCreator.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Вы создали новую семью"
+      },
+      {
+        "comment": "",
+        "key": "🎉"
+      },
+      {
+        "comment": "",
+        "key": "Добро пожаловать!"
+      },
+      {
+        "comment": "",
+        "key": "Теперь пригласите членов семьи:"
+      },
+      {
+        "comment": "",
+        "key": "•"
+      },
+      {
+        "comment": "",
+        "key": "Введите код приглашения"
+      },
+      {
+        "comment": "",
+        "key": "Сканируйте QR-код"
+      },
+      {
+        "comment": "",
+        "key": "Создайте новую семью"
+      },
+      {
+        "comment": "",
+        "key": "➡️"
+      },
+      {
+        "comment": "",
+        "key": "Как пригласить участников"
+      }
+    ]
+  },
+  "version": 1
+}

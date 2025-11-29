@@ -1,0 +1,566 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 55;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		5EABA59A2EA98806001F4600 /* NetworkingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EABA5992EA987DF001F4600 /* NetworkingManager.swift */; };
+		5EABA5A12EA98954001F4600 /* SecurityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EABA5A02EA98953001F4600 /* SecurityManager.swift */; };
+		5EABA5A72EA98D00001F4600 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EABA5A82EA98D00001F4600 /* KeychainManager.swift */; };
+		A1000001 /* ALADDINApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000 /* ALADDINApp.swift */; };
+		A1000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002 /* ContentView.swift */; };
+		5EABA5A32EA98981001F4600 /* UtilitiesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EABA5A22EA98981001F4600 /* UtilitiesManager.swift */; };
+		5EABA5A52EA98A20001F4600 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EABA5A42EA98A20001F4600 /* StorageManager.swift */; };
+		5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */; };
+		A3000005 /* CoreModules/APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000004 /* CoreModules/APIModels.swift */; };
+		A3000007 /* Core/VPN/VPNManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000006 /* Core/VPN/VPNManager.swift */; };
+		A3000009 /* Core/Network/APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000008 /* Core/Network/APIService.swift */; };
+		A3000011 /* Core/Network/NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000010 /* Core/Network/NetworkManager.swift */; };
+		A3000013 /* CoreModules/AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000012 /* CoreModules/AppConfig.swift */; };
+		A3000041 /* Core/Navigation/NavigationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000040 /* Core/Navigation/NavigationManager.swift */; };
+		A3000043 /* Core/Accessibility/AccessibilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000042 /* Core/Accessibility/AccessibilityManager.swift */; };
+		A3000045 /* Core/Store/StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000044 /* Core/Store/StoreManager.swift */; };
+		A3000047 /* Core/Localization/LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000046 /* Core/Localization/LocalizationManager.swift */; };
+		A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000048 /* Core/Analytics/AnalyticsManager.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		5EABA5992EA987DF001F4600 /* NetworkingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = NetworkingManager.swift; path = Core/Networking/NetworkingManager.swift; sourceTree = "<group>"; };
+		5EABA5A02EA98953001F4600 /* SecurityManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityManager.swift; path = Core/Security/SecurityManager.swift; sourceTree = "<group>"; };
+		5EABA5A82EA98D00001F4600 /* KeychainManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KeychainManager.swift; path = Core/Security/KeychainManager.swift; sourceTree = "<group>"; };
+		A1000000 /* ALADDINApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINApp.swift; path = ALADDINApp.swift; sourceTree = "<group>"; };
+		A1000002 /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		5EABA5A22EA98981001F4600 /* UtilitiesManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UtilitiesManager.swift; path = Core/Utilities/UtilitiesManager.swift; sourceTree = "<group>"; };
+		5EABA5A42EA98A20001F4600 /* StorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StorageManager.swift; path = Core/Storage/StorageManager.swift; sourceTree = "<group>"; };
+		5EC308E22EA6AB8B00C7D34B /* 22_DeviceDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 22_DeviceDetailScreen.swift; sourceTree = "<group>"; };
+		5EC308E42EA6AB8B00C7D34B /* RewardsQuickModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsQuickModal.swift; sourceTree = "<group>"; };
+		5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 06_AIAssistantScreen.swift; sourceTree = "<group>"; };
+		5EC308E62EA6AB8B00C7D34B /* MainScreenWithRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainScreenWithRegistration.swift; sourceTree = "<group>"; };
+		5EC308E72EA6AB8B00C7D34B /* 08_ChildInterfaceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 08_ChildInterfaceScreen.swift; sourceTree = "<group>"; };
+		5EC308E82EA6AB8C00C7D34B /* OnboardingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingScreen.swift; sourceTree = "<group>"; };
+		5EC308E92EA6AB8C00C7D34B /* WheelOfFortuneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WheelOfFortuneView.swift; sourceTree = "<group>"; };
+		5EC308EB2EA6AB8C00C7D34B /* WidgetConfigurationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetConfigurationScreen.swift; sourceTree = "<group>"; };
+		5EC308EC2EA6AB8C00C7D34B /* ChildRewardsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildRewardsScreen.swift; sourceTree = "<group>"; };
+		5EC308ED2EA6AB8C00C7D34B /* 25_PaymentQRScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 25_PaymentQRScreen.swift; sourceTree = "<group>"; };
+		5EC308EE2EA6AB8C00C7D34B /* 12_NotificationsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 12_NotificationsScreen.swift; sourceTree = "<group>"; };
+		5EC308EF2EA6AB8C00C7D34B /* 11_ProfileScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 11_ProfileScreen.swift; sourceTree = "<group>"; };
+		5EC308F02EA6AB8C00C7D34B /* RewardsModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsModalView.swift; sourceTree = "<group>"; };
+		5EC308F12EA6AB8C00C7D34B /* 10_TariffsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 10_TariffsScreen.swift; sourceTree = "<group>"; };
+		5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 01_MainScreen.swift; sourceTree = "<group>"; };
+		5EC308F32EA6AB8C00C7D34B /* FamilyTournamentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyTournamentView.swift; sourceTree = "<group>"; };
+		5EC308F42EA6AB8C00C7D34B /* UnicornUniverseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnicornUniverseView.swift; sourceTree = "<group>"; };
+		5EC308F52EA6AB8C00C7D34B /* 03_VPNScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 03_VPNScreen.swift; sourceTree = "<group>"; };
+		5EC308F62EA6AB8C00C7D34B /* 13_SupportScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 13_SupportScreen.swift; sourceTree = "<group>"; };
+		5EC308F72EA6AB8C00C7D34B /* 07_ParentalControlScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 07_ParentalControlScreen.swift; sourceTree = "<group>"; };
+		5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 04_AnalyticsScreen.swift; sourceTree = "<group>"; };
+		5EC308FA2EA6AB8C00C7D34B /* 24_VPNEnergyStatsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 24_VPNEnergyStatsScreen.swift; sourceTree = "<group>"; };
+		5EC308FB2EA6AB8C00C7D34B /* 20_DevicesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 20_DevicesScreen.swift; sourceTree = "<group>"; };
+		5EC308FC2EA6AB8C00C7D34B /* 09_ElderlyInterfaceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 09_ElderlyInterfaceScreen.swift; sourceTree = "<group>"; };
+		5EC308FD2EA6AB8C00C7D34B /* 18_PrivacyPolicyScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 18_PrivacyPolicyScreen.swift; sourceTree = "<group>"; };
+		5EC308FE2EA6AB8C00C7D34B /* UnicornPetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnicornPetView.swift; sourceTree = "<group>"; };
+		5EC308FF2EA6AB8C00C7D34B /* GamesParentalControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GamesParentalControlView.swift; sourceTree = "<group>"; };
+		5EC309002EA6AB8C00C7D34B /* 19_TermsOfServiceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 19_TermsOfServiceScreen.swift; sourceTree = "<group>"; };
+		5EC309022EA6AB8C00C7D34B /* 21_ReferralScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 21_ReferralScreen.swift; sourceTree = "<group>"; };
+		5EC309032EA6AB8C00C7D34B /* NotificationSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsScreen.swift; sourceTree = "<group>"; };
+		5EC309042EA6AB8C00C7D34B /* 05_SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 05_SettingsScreen.swift; sourceTree = "<group>"; };
+		5EC309052EA6AB8C00C7D34B /* 23_FamilyChatScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 23_FamilyChatScreen.swift; sourceTree = "<group>"; };
+		5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageSettingsScreen.swift; sourceTree = "<group>"; };
+		5EC309072EA6AB8C00C7D34B /* 02_FamilyScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 02_FamilyScreen.swift; sourceTree = "<group>"; };
+		5EC309082EA6B33200C7D34B /* 03_VPNScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 03_VPNScreen.swift; sourceTree = "<group>"; };
+		5EC309312EA6CCBD00C7D34B /* Spacing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
+		5EC309322EA6CCBD00C7D34B /* Fonts.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Fonts.swift; sourceTree = "<group>"; };
+		5EC309332EA6CCBD00C7D34B /* Colors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINNavigationBar.swift; path = Shared/Components/Navigation/ALADDINNavigationBar.swift; sourceTree = "<group>"; };
+		5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = Core/Notifications/NotificationManager.swift; sourceTree = "<group>"; };
+		5EC309422EA793A000C7D34B /* HapticFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HapticFeedback.swift; path = Shared/Components/HapticFeedback.swift; sourceTree = "<group>"; };
+		5EC309442EA793AE00C7D34B /* ALADDINToggle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINToggle.swift; path = Shared/Components/ALADDINToggle.swift; sourceTree = "<group>"; };
+		5EC309462EA793D900C7D34B /* CornerRadius.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CornerRadius.swift; sourceTree = "<group>"; };
+		5EC309482EA793FE00C7D34B /* SecondaryButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecondaryButton.swift; path = Shared/Components/SecondaryButton.swift; sourceTree = "<group>"; };
+		5EC3094A2EA7943A00C7D34B /* FunctionStatus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FunctionStatus.swift; path = Shared/Models/FunctionStatus.swift; sourceTree = "<group>"; };
+		5EC309502EA7A00000C7D34B /* QRScannerModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerModal.swift; sourceTree = "<group>"; };
+		5EC309512EA7A00000C7D34B /* RecoveryOptionsModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryOptionsModal.swift; sourceTree = "<group>"; };
+		5EC309552EA7A00000C7D34B /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
+		A0FFFFFE /* ALADDIN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ALADDIN.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1000000 /* ALADDINApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINApp.swift; sourceTree = "<group>"; };
+		A1000002 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A1000004 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1000007 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		A3000000 /* ViewModels/MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/MainViewModel.swift; sourceTree = "<group>"; };
+		A3000002 /* ViewModels/VPNViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/VPNViewModel.swift; sourceTree = "<group>"; };
+		A3000004 /* CoreModules/APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreModules/APIModels.swift; sourceTree = "<group>"; };
+		A3000006 /* Core/VPN/VPNManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/VPN/VPNManager.swift; sourceTree = "<group>"; };
+		A3000008 /* Core/Network/APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Network/APIService.swift; sourceTree = "<group>"; };
+		A3000010 /* Core/Network/NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Network/NetworkManager.swift; sourceTree = "<group>"; };
+		A3000012 /* CoreModules/AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreModules/AppConfig.swift; sourceTree = "<group>"; };
+		A3000016 /* ViewModels/FamilyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/FamilyViewModel.swift; sourceTree = "<group>"; };
+		A3000018 /* ViewModels/AIAssistantViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/AIAssistantViewModel.swift; sourceTree = "<group>"; };
+		A3000020 /* ViewModels/SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SettingsViewModel.swift; sourceTree = "<group>"; };
+		A3000022 /* ViewModels/SupportViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SupportViewModel.swift; sourceTree = "<group>"; };
+		A3000024 /* ViewModels/ChildInterfaceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ChildInterfaceViewModel.swift; sourceTree = "<group>"; };
+		A3000026 /* ViewModels/ElderlyInterfaceViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ElderlyInterfaceViewModel.swift; sourceTree = "<group>"; };
+		A3000028 /* ViewModels/AnalyticsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/AnalyticsViewModel.swift; sourceTree = "<group>"; };
+		A3000030 /* ViewModels/NotificationsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/NotificationsViewModel.swift; sourceTree = "<group>"; };
+		A3000032 /* ViewModels/ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ProfileViewModel.swift; sourceTree = "<group>"; };
+		A3000034 /* ViewModels/ParentalControlViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/ParentalControlViewModel.swift; sourceTree = "<group>"; };
+		A3000036 /* ViewModels/OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/OnboardingViewModel.swift; sourceTree = "<group>"; };
+		A3000038 /* ViewModels/PaymentQRViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PaymentQRViewModel.swift; sourceTree = "<group>"; };
+		A3000040 /* Core/Navigation/NavigationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Navigation/NavigationManager.swift; sourceTree = "<group>"; };
+		A3000042 /* Core/Accessibility/AccessibilityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Accessibility/AccessibilityManager.swift; sourceTree = "<group>"; };
+		A3000044 /* Core/Store/StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Store/StoreManager.swift; sourceTree = "<group>"; };
+		A3000046 /* Core/Localization/LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Localization/LocalizationManager.swift; sourceTree = "<group>"; };
+		A3000048 /* Core/Analytics/AnalyticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Analytics/AnalyticsManager.swift; sourceTree = "<group>"; };
+		A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/FamilyRegistrationViewModel.swift; sourceTree = "<group>"; };
+		A3000052 /* ViewModels/TariffsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/TariffsViewModel.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A0FFFFFB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		5EABA59B2EA98895001F4600 /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Notifications;
+			path = Core/Notifications;
+			sourceTree = "<group>";
+		};
+		5EC308E12EA6AB8B00C7D34B /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */,
+				5EC309072EA6AB8C00C7D34B /* 02_FamilyScreen.swift */,
+				5EC308F52EA6AB8C00C7D34B /* 03_VPNScreen.swift */,
+				5EC309082EA6B33200C7D34B /* 03_VPNScreen.swift */,
+				5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */,
+				5EC309042EA6AB8C00C7D34B /* 05_SettingsScreen.swift */,
+				5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */,
+				5EC308F72EA6AB8C00C7D34B /* 07_ParentalControlScreen.swift */,
+				5EC308E72EA6AB8B00C7D34B /* 08_ChildInterfaceScreen.swift */,
+				5EC308FC2EA6AB8C00C7D34B /* 09_ElderlyInterfaceScreen.swift */,
+				5EC308F12EA6AB8C00C7D34B /* 10_TariffsScreen.swift */,
+				5EC308EF2EA6AB8C00C7D34B /* 11_ProfileScreen.swift */,
+				5EC308EE2EA6AB8C00C7D34B /* 12_NotificationsScreen.swift */,
+				5EC308F62EA6AB8C00C7D34B /* 13_SupportScreen.swift */,
+				5EC308FD2EA6AB8C00C7D34B /* 18_PrivacyPolicyScreen.swift */,
+				5EC309002EA6AB8C00C7D34B /* 19_TermsOfServiceScreen.swift */,
+				5EC308FB2EA6AB8C00C7D34B /* 20_DevicesScreen.swift */,
+				5EC309022EA6AB8C00C7D34B /* 21_ReferralScreen.swift */,
+				5EC308E22EA6AB8B00C7D34B /* 22_DeviceDetailScreen.swift */,
+				5EC309052EA6AB8C00C7D34B /* 23_FamilyChatScreen.swift */,
+				5EC308FA2EA6AB8C00C7D34B /* 24_VPNEnergyStatsScreen.swift */,
+				5EC308ED2EA6AB8C00C7D34B /* 25_PaymentQRScreen.swift */,
+				5EC308EC2EA6AB8C00C7D34B /* ChildRewardsScreen.swift */,
+				5EC308F32EA6AB8C00C7D34B /* FamilyTournamentView.swift */,
+				5EC308FF2EA6AB8C00C7D34B /* GamesParentalControlView.swift */,
+				5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */,
+				5EC308E62EA6AB8B00C7D34B /* MainScreenWithRegistration.swift */,
+				5EC309032EA6AB8C00C7D34B /* NotificationSettingsScreen.swift */,
+				5EC308E82EA6AB8C00C7D34B /* OnboardingScreen.swift */,
+				5EC308F02EA6AB8C00C7D34B /* RewardsModalView.swift */,
+				5EC308E42EA6AB8B00C7D34B /* RewardsQuickModal.swift */,
+				5EC308FE2EA6AB8C00C7D34B /* UnicornPetView.swift */,
+				5EC308F42EA6AB8C00C7D34B /* UnicornUniverseView.swift */,
+				5EC308E92EA6AB8C00C7D34B /* WheelOfFortuneView.swift */,
+				5EC308EB2EA6AB8C00C7D34B /* WidgetConfigurationScreen.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		5EC3092F2EA6CCBD00C7D34B /* Styles */ = {
+			isa = PBXGroup;
+			children = (
+				5EC309312EA6CCBD00C7D34B /* Spacing.swift */,
+				5EC309322EA6CCBD00C7D34B /* Fonts.swift */,
+				5EC309332EA6CCBD00C7D34B /* Colors.swift */,
+				5EC309462EA793D900C7D34B /* CornerRadius.swift */,
+			);
+			name = Styles;
+			path = Shared/Styles;
+			sourceTree = "<group>";
+		};
+		5EC309542EA7A00000C7D34B /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				5EC309502EA7A00000C7D34B /* QRScannerModal.swift */,
+				5EC309512EA7A00000C7D34B /* RecoveryOptionsModal.swift */,
+				5EC309552EA7A00000C7D34B /* ViewModifiers.swift */,
+			);
+			name = Components;
+			path = Shared/Components;
+			sourceTree = "<group>";
+		};
+		A0FFFFF5 = {
+			isa = PBXGroup;
+			children = (
+				5EABA5A42EA98A20001F4600 /* StorageManager.swift */,
+				5EABA5A22EA98981001F4600 /* UtilitiesManager.swift */,
+				5EABA5A02EA98953001F4600 /* SecurityManager.swift */,
+				5EABA59B2EA98895001F4600 /* Notifications */,
+				5EABA5992EA987DF001F4600 /* NetworkingManager.swift */,
+				5EC308E12EA6AB8B00C7D34B /* Screens */,
+				5EC3092F2EA6CCBD00C7D34B /* Styles */,
+				5EC309542EA7A00000C7D34B /* Components */,
+				A0FFFFFF,
+				A0FFFFFE /* ALADDIN.app */,
+			);
+			sourceTree = "<group>";
+		};
+		A0FFFFFF = {
+			isa = PBXGroup;
+			children = (
+				A1000000 /* ALADDINApp.swift */,
+				A1000002 /* ContentView.swift */,
+				A1000004 /* Assets.xcassets */,
+				A1000006 /* Preview Content */,
+				A3000000 /* ViewModels/MainViewModel.swift */,
+				A3000002 /* ViewModels/VPNViewModel.swift */,
+				A3000004 /* CoreModules/APIModels.swift */,
+				A3000012 /* CoreModules/AppConfig.swift */,
+				A3000006 /* Core/VPN/VPNManager.swift */,
+				A3000008 /* Core/Network/APIService.swift */,
+				A3000010 /* Core/Network/NetworkManager.swift */,
+				A3000016 /* ViewModels/FamilyViewModel.swift */,
+				A3000018 /* ViewModels/AIAssistantViewModel.swift */,
+				A3000020 /* ViewModels/SettingsViewModel.swift */,
+				A3000022 /* ViewModels/SupportViewModel.swift */,
+				A3000024 /* ViewModels/ChildInterfaceViewModel.swift */,
+				A3000026 /* ViewModels/ElderlyInterfaceViewModel.swift */,
+				A3000028 /* ViewModels/AnalyticsViewModel.swift */,
+				A3000030 /* ViewModels/NotificationsViewModel.swift */,
+				A3000032 /* ViewModels/ProfileViewModel.swift */,
+				A3000034 /* ViewModels/ParentalControlViewModel.swift */,
+				A3000036 /* ViewModels/OnboardingViewModel.swift */,
+				A3000038 /* ViewModels/PaymentQRViewModel.swift */,
+				A3000040 /* Core/Navigation/NavigationManager.swift */,
+				A3000042 /* Core/Accessibility/AccessibilityManager.swift */,
+				A3000044 /* Core/Store/StoreManager.swift */,
+				A3000046 /* Core/Localization/LocalizationManager.swift */,
+				A3000048 /* Core/Analytics/AnalyticsManager.swift */,
+				A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */,
+				A3000052 /* ViewModels/TariffsViewModel.swift */,
+				5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */,
+				5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */,
+				5EC309422EA793A000C7D34B /* HapticFeedback.swift */,
+				5EC309442EA793AE00C7D34B /* ALADDINToggle.swift */,
+				5EC309482EA793FE00C7D34B /* SecondaryButton.swift */,
+				5EC3094A2EA7943A00C7D34B /* FunctionStatus.swift */,
+			);
+			sourceTree = "<group>";
+		};
+		A1000006 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				A1000007 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A0FFFFFD /* ALADDIN */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A100000D /* Build configuration list for PBXNativeTarget "ALADDIN" */;
+			buildPhases = (
+				A0FFFFFA /* Sources */,
+				A0FFFFFB /* Frameworks */,
+				A0FFFFFC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ALADDIN;
+			productName = ALADDIN;
+			productReference = A0FFFFFE /* ALADDIN.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A0FFFFF6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					A0FFFFFD = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = A0FFFFF9 /* Build configuration list for PBXProject "ALADDIN" */;
+			compatibilityVersion = "Xcode 13.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A0FFFFF5;
+			productRefGroup = A0FFFFFE /* ALADDIN.app */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A0FFFFFD /* ALADDIN */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A0FFFFFC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+                        files = (
+                        );
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A0FFFFFA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A3000005 /* CoreModules/APIModels.swift in Sources */,
+				A3000007 /* Core/VPN/VPNManager.swift in Sources */,
+				A3000009 /* Core/Network/APIService.swift in Sources */,
+				A3000011 /* Core/Network/NetworkManager.swift in Sources */,
+				5EABA5A52EA98A20001F4600 /* StorageManager.swift in Sources */,
+				A3000013 /* CoreModules/AppConfig.swift in Sources */,
+				5EABA59A2EA98806001F4600 /* NetworkingManager.swift in Sources */,
+				A3000041 /* Core/Navigation/NavigationManager.swift in Sources */,
+				A3000043 /* Core/Accessibility/AccessibilityManager.swift in Sources */,
+				A3000045 /* Core/Store/StoreManager.swift in Sources */,
+				5EABA5A12EA98954001F4600 /* SecurityManager.swift in Sources */,
+				5EABA5A72EA98D00001F4600 /* KeychainManager.swift in Sources */,
+				A3000047 /* Core/Localization/LocalizationManager.swift in Sources */,
+				A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */,
+				5EABA5A32EA98981001F4600 /* UtilitiesManager.swift in Sources */,
+                                5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */,                                                            
+                                A1000001 /* ALADDINApp.swift in Sources */,
+                                A1000003 /* ContentView.swift in Sources */,
+                        );
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A100000B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				VALID_ARCHS = "arm64 x86_64";
+			};
+			name = Debug;
+		};
+		A100000C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = "arm64 x86_64";
+			};
+			name = Release;
+		};
+		A100000E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A100000F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A0FFFFF9 /* Build configuration list for PBXProject "ALADDIN" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100000B /* Debug */,
+				A100000C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A100000D /* Build configuration list for PBXNativeTarget "ALADDIN" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A100000E /* Debug */,
+				A100000F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A0FFFFF6 /* Project object */;
+}

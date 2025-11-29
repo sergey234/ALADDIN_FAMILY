@@ -1,0 +1,52 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Shared/Components/Modals/RecoveryCodeModal.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Код восстановления"
+      },
+      {
+        "comment": "",
+        "key": "Семья создана!"
+      },
+      {
+        "comment": "",
+        "key": "Сохраните код восстановления"
+      },
+      {
+        "comment": "",
+        "key": "Копировать"
+      },
+      {
+        "comment": "",
+        "key": "Поделиться QR-кодом"
+      },
+      {
+        "comment": "",
+        "key": "QR-код для быстрого доступа"
+      },
+      {
+        "comment": "",
+        "key": "Отсканируйте этот QR-код другим устройством"
+      },
+      {
+        "comment": "",
+        "key": "Важно! Сохраните этот код в безопасном месте. Он понадобится для восстановления доступа к вашей семье."
+      },
+      {
+        "comment": "",
+        "key": "Как работает система с QR-кодом:"
+      },
+      {
+        "comment": "",
+        "key": "Готово"
+      },
+      {
+        "comment": "",
+        "key": "Закрыть"
+      }
+    ]
+  },
+  "version": 1
+}

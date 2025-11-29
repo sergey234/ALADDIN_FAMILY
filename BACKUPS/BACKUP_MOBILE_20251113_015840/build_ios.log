@@ -1,0 +1,44 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -scheme ALADDIN -project ALADDIN.xcodeproj -configuration Debug -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 13" build
+
+User defaults from command line:
+    IDEPackageSupportUseBuiltinSCM = YES
+
+Build settings from command line:
+    SDKROOT = iphonesimulator15.2
+
+note: Using new build system
+note: Planning
+Analyze workspace
+
+Create build description
+Build description signature: bdc53333a0baae1474213d28fa231c53
+Build description path: /Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/XCBuildData/bdc53333a0baae1474213d28fa231c53-desc.xcbuild
+
+note: Build preparation complete
+note: Building targets in dependency order
+error: Multiple commands produce '/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/RewardsQuickModal.stringsdata':
+1) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+2) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+
+error: Multiple commands produce '/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ALADDINToggle.stringsdata':
+1) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+2) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+
+error: Multiple commands produce '/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/FamilyMemberCard.stringsdata':
+1) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+2) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+
+error: Multiple commands produce '/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/SecondaryButton.stringsdata':
+1) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+2) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+
+error: Multiple commands produce '/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/RoleSelectionModal.stringsdata':
+1) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+2) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+
+error: Multiple commands produce '/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Intermediates.noindex/ALADDIN.build/Debug-iphonesimulator/ALADDIN.build/Objects-normal/x86_64/ViewModifiers.stringsdata':
+1) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+2) Target 'ALADDIN' (project 'ALADDIN') has compile command for Swift source files
+
+warning: Skipping duplicate build file in Compile Sources build phase: /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/ALADDINTextField.swift (in target 'ALADDIN' from project 'ALADDIN')
