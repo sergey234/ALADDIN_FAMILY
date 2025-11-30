@@ -397,6 +397,43 @@ jobs:
           echo "App Profile Name: $APP_PROFILE_NAME"
           echo "Extension Profile Name: $EXT_PROFILE_NAME"
           
+          # Проверить capabilities профилей
+          echo "🔍 Проверка capabilities профилей..."
+          if [ -f "$HOME/Library/MobileDevice/Provisioning Profiles/${APP_PROFILE_UUID}.mobileprovision" ]; then
+            APP_PROFILE_BUNDLE_ID=$(security cms -D -i "$HOME/Library/MobileDevice/Provisioning Profiles/${APP_PROFILE_UUID}.mobileprovision" 2>/dev/null | plutil -extract Entitlements.application-identifier raw -o - - 2>/dev/null || echo "")
+            echo "App Profile Bundle ID: $APP_PROFILE_BUNDLE_ID"
+            APP_PROFILE_TYPE=$(security cms -D -i "$HOME/Library/MobileDevice/Provisioning Profiles/${APP_PROFILE_UUID}.mobileprovision" 2>/dev/null | plutil -extract ProvisionedDevices raw -o - - 2>/dev/null || echo "")
+            if [ -z "$APP_PROFILE_TYPE" ]; then
+              echo "✅ App Profile: App Store Distribution (нет ProvisionedDevices)"
+            else
+              echo "⚠️  App Profile: Development/Ad Hoc (есть ProvisionedDevices)"
+            fi
+          fi
+          
+          if [ -f "$HOME/Library/MobileDevice/Provisioning Profiles/${EXT_PROFILE_UUID}.mobileprovision" ]; then
+            EXT_PROFILE_BUNDLE_ID=$(security cms -D -i "$HOME/Library/MobileDevice/Provisioning Profiles/${EXT_PROFILE_UUID}.mobileprovision" 2>/dev/null | plutil -extract Entitlements.application-identifier raw -o - - 2>/dev/null || echo "")
+            echo "Extension Profile Bundle ID: $EXT_PROFILE_BUNDLE_ID"
+            EXT_PROFILE_TYPE=$(security cms -D -i "$HOME/Library/MobileDevice/Provisioning Profiles/${EXT_PROFILE_UUID}.mobileprovision" 2>/dev/null | plutil -extract ProvisionedDevices raw -o - - 2>/dev/null || echo "")
+            if [ -z "$EXT_PROFILE_TYPE" ]; then
+              echo "✅ Extension Profile: App Store Distribution (нет ProvisionedDevices)"
+            else
+              echo "⚠️  Extension Profile: Development/Ad Hoc (есть ProvisionedDevices)"
+            fi
+            
+            # Проверить capabilities для Extension
+            EXT_CAPABILITIES=$(security cms -D -i "$HOME/Library/MobileDevice/Provisioning Profiles/${EXT_PROFILE_UUID}.mobileprovision" 2>/dev/null | plutil -extract Entitlements raw -o - - 2>/dev/null || echo "")
+            if echo "$EXT_CAPABILITIES" | grep -q "com.apple.developer.networking.networkextension"; then
+              echo "✅ Extension Profile содержит Network Extensions capability"
+            else
+              echo "❌ Extension Profile НЕ содержит Network Extensions capability!"
+            fi
+            if echo "$EXT_CAPABILITIES" | grep -q "com.apple.developer.networking.vpn.api"; then
+              echo "✅ Extension Profile содержит Personal VPN capability"
+            else
+              echo "❌ Extension Profile НЕ содержит Personal VPN capability!"
+            fi
+          fi
+          
           # ПРОБЛЕМА: Automatic signing требует аккаунт в Xcode, которого нет в CI
           # РЕШЕНИЕ: Используем Manual signing с правильными профилями для каждого таргета
           # Xcode попытается использовать профили из keychain, даже если они не идеально связаны
@@ -412,7 +449,9 @@ jobs:
           echo "✅ Используем параметры командной строки для Manual signing"
           
           # Используем Manual signing с параметрами командной строки
-          # ВАЖНО: Xcode автоматически применит профили к правильным targets по UUID
+          # ВАЖНО: Используем правильный синтаксис для target-specific параметров
+          # Формат: TARGETNAME[setting]=value (без подчеркивания, в квадратных скобках)
+          echo "🔍 Запуск xcodebuild archive с Manual signing..."
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
@@ -422,10 +461,10 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CODE_SIGN_IDENTITY="$DIST_CERT_NAME" \
-            "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=$APP_PROFILE_UUID" \
-            "ALADDIN_PROVISIONING_PROFILE=$APP_PROFILE_UUID" \
-            "ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER=$EXT_PROFILE_UUID" \
-            "ALADDINPacketTunnel_PROVISIONING_PROFILE=$EXT_PROFILE_UUID" \
+            "ALADDIN[config=Release][sdk=iphoneos*]PROVISIONING_PROFILE_SPECIFIER=$APP_PROFILE_UUID" \
+            "ALADDIN[config=Release][sdk=iphoneos*]PROVISIONING_PROFILE=$APP_PROFILE_UUID" \
+            "ALADDINPacketTunnel[config=Release][sdk=iphoneos*]PROVISIONING_PROFILE_SPECIFIER=$EXT_PROFILE_UUID" \
+            "ALADDINPacketTunnel[config=Release][sdk=iphoneos*]PROVISIONING_PROFILE=$EXT_PROFILE_UUID" \
             -allowProvisioningUpdates \
             2>&1 | tee /tmp/xcodebuild.log || {
               echo "❌ xcodebuild archive failed with exit code $?"
