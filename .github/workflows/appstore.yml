@@ -406,34 +406,17 @@ jobs:
           echo "App Profile UUID: $APP_PROFILE_UUID"
           echo "Extension Profile UUID: $EXT_PROFILE_UUID"
           
-          # Создать временный xcconfig файл для явного указания профилей
-          # Используем printf вместо heredoc для избежания проблем с отступами
-          mkdir -p ./build
-          printf "// Temporary xcconfig for manual signing\n" > ./build/Release.xcconfig
-          printf "CODE_SIGN_STYLE = Manual\n" >> ./build/Release.xcconfig
-          printf "DEVELOPMENT_TEAM = %s\n" "$APPLE_TEAM_ID" >> ./build/Release.xcconfig
-          printf "CODE_SIGN_IDENTITY = %s\n\n" "$DIST_CERT_NAME" >> ./build/Release.xcconfig
-          printf "// App target\n" >> ./build/Release.xcconfig
-          printf "ALADDIN.CODE_SIGN_STYLE = Manual\n" >> ./build/Release.xcconfig
-          printf "ALADDIN.DEVELOPMENT_TEAM = %s\n" "$APPLE_TEAM_ID" >> ./build/Release.xcconfig
-          printf "ALADDIN.CODE_SIGN_IDENTITY = %s\n" "$DIST_CERT_NAME" >> ./build/Release.xcconfig
-          printf "ALADDIN.PROVISIONING_PROFILE_SPECIFIER = %s\n" "$APP_PROFILE_UUID" >> ./build/Release.xcconfig
-          printf "ALADDIN.PROVISIONING_PROFILE = %s\n\n" "$APP_PROFILE_UUID" >> ./build/Release.xcconfig
-          printf "// Extension target\n" >> ./build/Release.xcconfig
-          printf "ALADDINPacketTunnel.CODE_SIGN_STYLE = Manual\n" >> ./build/Release.xcconfig
-          printf "ALADDINPacketTunnel.DEVELOPMENT_TEAM = %s\n" "$APPLE_TEAM_ID" >> ./build/Release.xcconfig
-          printf "ALADDINPacketTunnel.CODE_SIGN_IDENTITY = %s\n" "$DIST_CERT_NAME" >> ./build/Release.xcconfig
-          printf "ALADDINPacketTunnel.PROVISIONING_PROFILE_SPECIFIER = %s\n" "$EXT_PROFILE_UUID" >> ./build/Release.xcconfig
-          printf "ALADDINPacketTunnel.PROVISIONING_PROFILE = %s\n" "$EXT_PROFILE_UUID" >> ./build/Release.xcconfig
+          # ВАЖНО: xcconfig не поддерживает синтаксис TARGETNAME.SETTING
+          # Используем только параметры командной строки
+          # Правильный синтаксис для target-specific: TARGETNAME_SETTING=value (подчеркивание, не точка)
+          echo "✅ Используем параметры командной строки для Manual signing"
           
-          echo "✅ Создан временный xcconfig файл"
-          
-          # Используем Manual signing с xcconfig файлом
+          # Используем Manual signing с параметрами командной строки
+          # ВАЖНО: Xcode автоматически применит профили к правильным targets по UUID
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
             -configuration Release \
-            -xcconfig ./build/Release.xcconfig \
             -archivePath ./build/ALADDIN.xcarchive \
             -destination 'generic/platform=iOS' \
             CODE_SIGN_STYLE=Manual \
