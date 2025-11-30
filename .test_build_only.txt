@@ -1,0 +1,1 @@
+test: запуск build-only.yml workflow - 20251201-015716
