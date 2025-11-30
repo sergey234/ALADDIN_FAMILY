@@ -429,23 +429,28 @@ jobs:
           echo "App Profile Name: $APP_PROFILE_NAME"
           echo "Extension Profile Name: $EXT_PROFILE_NAME"
           
-          # ПРОБЛЕМА: Профили не связаны с сертификатом в keychain
-          # РЕШЕНИЕ: Используем Automatic signing с -allowProvisioningUpdates
-          # Xcode автоматически обновит профили и свяжет их с правильным сертификатом
-          # ВАЖНО: При Automatic signing НЕ указываем CODE_SIGN_IDENTITY - Xcode выберет сам
-          echo "⚠️  Профили установлены, но могут быть не связаны с сертификатом"
-          echo "✅ Используем Automatic signing - Xcode обновит профили автоматически"
+          # ПРОБЛЕМА: Automatic signing требует аккаунт в Xcode, которого нет в CI
+          # РЕШЕНИЕ: Используем Manual signing с правильными профилями для каждого таргета
+          # Xcode попытается использовать профили из keychain, даже если они не идеально связаны
+          echo "✅ Используем Manual signing с установленными профилями"
           echo "Team ID: $APPLE_TEAM_ID"
-          echo "Certificate в keychain: $DIST_CERT_NAME (Xcode выберет автоматически)"
+          echo "Certificate: $DIST_CERT_NAME"
+          echo "App Profile UUID: $APP_PROFILE_UUID"
+          echo "Extension Profile UUID: $EXT_PROFILE_UUID"
           
+          # Используем Manual signing с указанием профилей для каждого таргета
+          # Формат: TARGETNAME_PROVISIONING_PROFILE_SPECIFIER=UUID
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
             -configuration Release \
             -archivePath ./build/ALADDIN.xcarchive \
             -destination 'generic/platform=iOS' \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_IDENTITY="$DIST_CERT_NAME" \
+            "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=$APP_PROFILE_UUID" \
+            "ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER=$EXT_PROFILE_UUID" \
             -allowProvisioningUpdates \
             2>&1 | tee /tmp/xcodebuild.log || {
               echo "❌ xcodebuild archive failed with exit code $?"
@@ -550,8 +555,8 @@ jobs:
           EXT_PROFILE_UUID="family.aladdin.ios.packetTunnel"
         fi
         
-        # Создать ExportOptions.plist для Automatic signing
-        # Xcode автоматически выберет правильные профили и сертификат
+        # Создать ExportOptions.plist для Manual signing
+        # Используем установленные профили с правильными UUID
         cat > ./build/ExportOptions.plist << EOF
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -562,7 +567,16 @@ jobs:
           <key>teamID</key>
           <string>$APPLE_TEAM_ID</string>
           <key>signingStyle</key>
-          <string>automatic</string>
+          <string>manual</string>
+          <key>signingCertificate</key>
+          <string>Apple Distribution</string>
+          <key>provisioningProfiles</key>
+          <dict>
+            <key>family.aladdin.ios</key>
+            <string>$APP_PROFILE_UUID</string>
+            <key>family.aladdin.ios.packetTunnel</key>
+            <string>$EXT_PROFILE_UUID</string>
+          </dict>
           <key>uploadBitcode</key>
           <false/>
           <key>uploadSymbols</key>
