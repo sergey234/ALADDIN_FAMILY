@@ -629,57 +629,10 @@ jobs:
         # Создать ExportOptions.plist
         if [ "$SIGNING_STYLE" = "automatic" ]; then
           # Automatic signing - Xcode выберет профили автоматически
-          cat > ./build/ExportOptions.plist << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>teamID</key>
-            <string>$APPLE_TEAM_ID</string>
-            <key>signingStyle</key>
-            <string>automatic</string>
-            <key>uploadBitcode</key>
-            <false/>
-            <key>uploadSymbols</key>
-            <true/>
-            <key>compileBitcode</key>
-            <false/>
-          </dict>
-          </plist>
-          EOF
+          printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>automatic</string>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" > ./build/ExportOptions.plist
         else
           # Manual signing - используем установленные профили
-          cat > ./build/ExportOptions.plist << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>app-store</string>
-            <key>teamID</key>
-            <string>$APPLE_TEAM_ID</string>
-            <key>signingStyle</key>
-            <string>manual</string>
-            <key>signingCertificate</key>
-            <string>Apple Distribution</string>
-            <key>provisioningProfiles</key>
-            <dict>
-              <key>family.aladdin.ios</key>
-              <string>$APP_PROFILE_UUID</string>
-              <key>family.aladdin.ios.packetTunnel</key>
-              <string>$EXT_PROFILE_UUID</string>
-            </dict>
-            <key>uploadBitcode</key>
-            <false/>
-            <key>uploadSymbols</key>
-            <true/>
-            <key>compileBitcode</key>
-            <false/>
-          </dict>
-          </plist>
-          EOF
+          printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>manual</string>\n  <key>signingCertificate</key>\n  <string>Apple Distribution</string>\n  <key>provisioningProfiles</key>\n  <dict>\n    <key>family.aladdin.ios</key>\n    <string>%s</string>\n    <key>family.aladdin.ios.packetTunnel</key>\n    <string>%s</string>\n  </dict>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" "$APP_PROFILE_UUID" "$EXT_PROFILE_UUID" > ./build/ExportOptions.plist
         fi
         
         xcodebuild -exportArchive \
