@@ -1,9 +1,10 @@
 name: ALADDIN Deploy
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # ОТКЛЮЧЕНО для тегов - используем appstore.yml вместо этого
+  # push:
+  #   tags:
+  #     - 'v*'
   workflow_dispatch:
     inputs:
       environment:
