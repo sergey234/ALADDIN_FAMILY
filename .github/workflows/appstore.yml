@@ -550,7 +550,8 @@ jobs:
           EXT_PROFILE_UUID="family.aladdin.ios.packetTunnel"
         fi
         
-        # Создать ExportOptions.plist для Manual signing
+        # Создать ExportOptions.plist для Automatic signing
+        # Xcode автоматически выберет правильные профили и сертификат
         cat > ./build/ExportOptions.plist << EOF
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -561,16 +562,7 @@ jobs:
           <key>teamID</key>
           <string>$APPLE_TEAM_ID</string>
           <key>signingStyle</key>
-          <string>manual</string>
-          <key>signingCertificate</key>
-          <string>iPhone Distribution</string>
-          <key>provisioningProfiles</key>
-          <dict>
-            <key>family.aladdin.ios</key>
-            <string>$APP_PROFILE_UUID</string>
-            <key>family.aladdin.ios.packetTunnel</key>
-            <string>$EXT_PROFILE_UUID</string>
-          </dict>
+          <string>automatic</string>
           <key>uploadBitcode</key>
           <false/>
           <key>uploadSymbols</key>
