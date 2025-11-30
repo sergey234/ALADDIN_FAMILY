@@ -1,10 +1,16 @@
 name: Build Only (No Upload)
 
 on:
-  workflow_dispatch:  # Запуск вручную через GitHub UI
-  push:
-    branches: [ main, master ]
-    # Убрали paths, чтобы workflow запускался при любом push в master
+  # ОТКЛЮЧЕН - используйте appstore.yml для App Store!
+  # Этот workflow НЕ должен запускаться автоматически
+  workflow_dispatch:
+    inputs:
+      force_run:
+        description: 'Force run (only for testing)'
+        required: true
+        default: 'false'
+        type: boolean
+  # push: ОТКЛЮЧЕН - используйте appstore.yml!
 
 jobs:
   build-only:
