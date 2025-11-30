@@ -306,45 +306,11 @@ jobs:
           exit 1
         fi
         
-        # Проверить доступность сертификата
-        # Если CERTIFICATE_AVAILABLE не установлен, используем Automatic signing с API ключами
-        if [ "${{ env.CERTIFICATE_AVAILABLE }}" != "true" ]; then
-          echo "⚠️  Certificate not in secrets, using Automatic signing with App Store Connect API"
-          
-          # Проверить наличие API ключей (если есть - используем для авторизации)
-          if [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
-             [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
-             [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
-            echo "✅ App Store Connect API keys found - will use for automatic certificate management"
-            
-            # Создать временный файл с API ключом для fastlane (если понадобится)
-            mkdir -p ~/.appstoreconnect/private_keys
-            echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
-            chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
-          else
-            echo "⚠️  App Store Connect API keys not set, but will try Automatic signing anyway"
-          fi
-          
-          # РЕШЕНИЕ: Используем Automatic signing с -allowProvisioningUpdates
-          # Xcode автоматически создаст/найдет сертификат через App Store Connect API
-          # ИЛИ использует сертификат из Developer Portal автоматически
-          echo "✅ Using Automatic signing - Xcode will manage certificates automatically"
-          echo "Team ID: $APPLE_TEAM_ID"
-          echo "Xcode will use certificates from Developer Portal via API"
-          
-          xcodebuild archive \
-            -project ALADDIN.xcodeproj \
-            -scheme ALADDIN \
-            -configuration Release \
-            -archivePath ./build/ALADDIN.xcarchive \
-            -destination 'generic/platform=iOS' \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            -allowProvisioningUpdates
-        # Проверить наличие API ключей для Automatic signing
-        elif [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
-             [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
-             [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+        # ПРИОРИТЕТ 1: Проверить наличие API ключей для Automatic signing
+        # Если есть API ключи - используем Automatic signing (предпочтительный способ)
+        if [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
+           [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
+           [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
           echo "✅ Using Automatic signing with App Store Connect API"
           echo "Team ID: $APPLE_TEAM_ID"
           
@@ -362,6 +328,8 @@ jobs:
           echo "Xcode will automatically manage certificates and profiles via API"
           
           # Используем Automatic signing - Xcode будет использовать API для управления профилями
+          # ВАЖНО: Automatic signing в CI требует авторизации через API ключи
+          # Xcode автоматически создаст/обновит профили через App Store Connect API
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
@@ -375,8 +343,12 @@ jobs:
               echo "❌ xcodebuild archive failed with exit code $?"
               echo "Последние 50 строк лога:"
               tail -50 /tmp/xcodebuild.log
+              echo ""
+              echo "⚠️  Если ошибка 'No Accounts', это означает, что Automatic signing требует аккаунт в Xcode"
+              echo "⚠️  В CI окружении это может не работать. Попробуйте использовать Manual signing с правильными профилями"
               exit 1
             }
+        # ПРИОРИТЕТ 2: Если нет API ключей, но есть сертификат - используем Manual signing
         elif [ "${{ env.CERTIFICATE_AVAILABLE }}" = "true" ]; then
           echo "✅ Using manual signing with certificate"
           
