@@ -1,12 +1,12 @@
 name: Build and Upload to App Store
 
 on:
-  workflow_dispatch:  # Запуск вручную через GitHub UI
+  workflow_dispatch:
   push:
     branches:
-      - master  # Запуск при push в master
+      - master
   tags:
-    - 'v*'  # Автоматически при создании тега v1.0.0, v1.0.1 и т.д.
+    - 'v*'
 
 jobs:
   build-and-upload:
