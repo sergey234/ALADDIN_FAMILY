@@ -448,10 +448,30 @@ jobs:
           # Правильный синтаксис для target-specific: TARGETNAME_SETTING=value (подчеркивание, не точка)
           echo "✅ Используем параметры командной строки для Manual signing"
           
+          # КРИТИЧЕСКАЯ ПРОВЕРКА: Профили должны быть App Store Distribution
+          if [ -n "$APP_PROFILE_TYPE" ] || [ -n "$EXT_PROFILE_TYPE" ]; then
+            echo ""
+            echo "❌❌❌ КРИТИЧЕСКАЯ ОШИБКА ❌❌❌"
+            echo "Профили являются Development/Ad Hoc, а не App Store Distribution!"
+            echo "Для App Store нужны профили БЕЗ ProvisionedDevices (App Store Distribution)"
+            echo ""
+            echo "РЕШЕНИЕ:"
+            echo "1. Зайдите в Apple Developer Portal: https://developer.apple.com/account/resources/profiles/list"
+            echo "2. Создайте НОВЫЕ профили типа 'App Store' (не Development, не Ad Hoc)"
+            echo "3. Для App: Bundle ID 'family.aladdin.ios', тип 'App Store'"
+            echo "4. Для Extension: Bundle ID 'family.aladdin.ios.packetTunnel', тип 'App Store'"
+            echo "5. Убедитесь, что профили связаны с сертификатом 'Apple Distribution: SERGEY KHLYSTOV'"
+            echo "6. Обновите GitHub Secrets: PROVISIONING_PROFILE_APP и PROVISIONING_PROFILE_EXTENSION"
+            echo ""
+            echo "⚠️  Продолжаем сборку с текущими профилями (может не сработать для App Store)..."
+            echo ""
+          fi
+          
           # Используем Manual signing с параметрами командной строки
-          # ВАЖНО: Используем правильный синтаксис для target-specific параметров
-          # Формат: TARGETNAME[setting]=value (без подчеркивания, в квадратных скобках)
+          # ВАЖНО: Правильный синтаксис для target-specific - просто TARGETNAME_SETTING=value
+          # Xcode автоматически применит к нужному target по имени
           echo "🔍 Запуск xcodebuild archive с Manual signing..."
+          echo "Используем простой синтаксис: TARGETNAME_PROVISIONING_PROFILE_SPECIFIER=UUID"
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
@@ -461,10 +481,12 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CODE_SIGN_IDENTITY="$DIST_CERT_NAME" \
-            "ALADDIN[config=Release][sdk=iphoneos*]PROVISIONING_PROFILE_SPECIFIER=$APP_PROFILE_UUID" \
-            "ALADDIN[config=Release][sdk=iphoneos*]PROVISIONING_PROFILE=$APP_PROFILE_UUID" \
-            "ALADDINPacketTunnel[config=Release][sdk=iphoneos*]PROVISIONING_PROFILE_SPECIFIER=$EXT_PROFILE_UUID" \
-            "ALADDINPacketTunnel[config=Release][sdk=iphoneos*]PROVISIONING_PROFILE=$EXT_PROFILE_UUID" \
+            ALADDIN_CODE_SIGN_STYLE=Manual \
+            ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
+            ALADDIN_PROVISIONING_PROFILE="$APP_PROFILE_UUID" \
+            ALADDINPacketTunnel_CODE_SIGN_STYLE=Manual \
+            ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID" \
+            ALADDINPacketTunnel_PROVISIONING_PROFILE="$EXT_PROFILE_UUID" \
             -allowProvisioningUpdates \
             2>&1 | tee /tmp/xcodebuild.log || {
               echo "❌ xcodebuild archive failed with exit code $?"
