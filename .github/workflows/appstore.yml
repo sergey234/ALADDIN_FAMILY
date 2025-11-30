@@ -306,50 +306,10 @@ jobs:
           exit 1
         fi
         
-        # ПРИОРИТЕТ 1: Проверить наличие API ключей для Automatic signing
-        # Если есть API ключи - используем Automatic signing (предпочтительный способ)
-        if [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
-           [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
-           [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
-          echo "✅ Using Automatic signing with App Store Connect API"
-          echo "Team ID: $APPLE_TEAM_ID"
-          
-          # Настроить API ключи для Xcode
-          mkdir -p ~/.appstoreconnect/private_keys
-          echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
-          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
-          
-          # Настроить переменные окружения для App Store Connect API
-          export APP_STORE_CONNECT_API_KEY="${{ secrets.APP_STORE_CONNECT_API_KEY }}"
-          export APP_STORE_CONNECT_ISSUER_ID="${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}"
-          export APP_STORE_CONNECT_API_KEY_ID="${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}"
-          
-          echo "✅ App Store Connect API keys configured"
-          echo "Xcode will automatically manage certificates and profiles via API"
-          
-          # Используем Automatic signing - Xcode будет использовать API для управления профилями
-          # ВАЖНО: Automatic signing в CI требует авторизации через API ключи
-          # Xcode автоматически создаст/обновит профили через App Store Connect API
-          xcodebuild archive \
-            -project ALADDIN.xcodeproj \
-            -scheme ALADDIN \
-            -configuration Release \
-            -archivePath ./build/ALADDIN.xcarchive \
-            -destination 'generic/platform=iOS' \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            -allowProvisioningUpdates \
-            2>&1 | tee /tmp/xcodebuild.log || {
-              echo "❌ xcodebuild archive failed with exit code $?"
-              echo "Последние 50 строк лога:"
-              tail -50 /tmp/xcodebuild.log
-              echo ""
-              echo "⚠️  Если ошибка 'No Accounts', это означает, что Automatic signing требует аккаунт в Xcode"
-              echo "⚠️  В CI окружении это может не работать. Попробуйте использовать Manual signing с правильными профилями"
-              exit 1
-            }
-        # ПРИОРИТЕТ 2: Если нет API ключей, но есть сертификат - используем Manual signing
-        elif [ "${{ env.CERTIFICATE_AVAILABLE }}" = "true" ]; then
+        # ПРИОРИТЕТ 1: Manual signing (работает в CI, если есть сертификат и профили)
+        # ВАЖНО: Automatic signing НЕ работает в CI из-за "No Accounts" ошибки
+        # Поэтому используем Manual signing как основной способ
+        if [ "${{ env.CERTIFICATE_AVAILABLE }}" = "true" ]; then
           echo "✅ Using manual signing with certificate"
           
           # Проверить что UUID профилей извлечены
@@ -503,64 +463,57 @@ jobs:
               fi
               exit 1
             }
+        # ПРИОРИТЕТ 2: Automatic signing (только если нет сертификата)
+        # ВАЖНО: Automatic signing может не работать в CI из-за "No Accounts"
         else
-          echo "⚠️  Certificate not available, using automatic signing with -allowProvisioningUpdates"
-          echo "This requires App Store Connect API access"
+          echo "⚠️  Certificate not available"
+          echo "⚠️  Пробуем Automatic signing (может не работать в CI из-за 'No Accounts')"
           
           # Проверить наличие API ключей
-          if [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] || \
-             [ -z "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] || \
-             [ -z "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
-            echo "❌ App Store Connect API keys not set!"
-            echo "Please add:"
-            echo "  - APP_STORE_CONNECT_API_KEY"
-            echo "  - APP_STORE_CONNECT_ISSUER_ID"
-            echo "  - APP_STORE_CONNECT_API_KEY_ID"
-            echo ""
-            echo "Or add signing certificate:"
-            echo "  - IOS_DISTRIBUTION_CERTIFICATE"
-            echo "  - IOS_DISTRIBUTION_CERTIFICATE_PASSWORD"
-            echo ""
-            echo "⚠️  FALLBACK: Using Manual signing with provisioning profiles only"
-            echo "Xcode will try to find certificate automatically or use Cloud Managed Certificate"
+          if [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+            echo "✅ App Store Connect API keys found, trying Automatic signing"
             
-            # Fallback: Manual signing БЕЗ сертификата (Xcode попытается найти автоматически)
+            # Настроить API ключи для Xcode
+            mkdir -p ~/.appstoreconnect/private_keys
+            echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+            chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+            
             xcodebuild archive \
               -project ALADDIN.xcodeproj \
               -scheme ALADDIN \
               -configuration Release \
               -archivePath ./build/ALADDIN.xcarchive \
               -destination 'generic/platform=iOS' \
-              CODE_SIGN_STYLE=Manual \
+              CODE_SIGN_STYLE=Automatic \
               DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-              PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
-              ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
-              ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID" \
-              -allowProvisioningUpdates || {
-              echo "⚠️  Manual signing failed, trying Automatic signing..."
-              xcodebuild archive \
-                -project ALADDIN.xcodeproj \
-                -scheme ALADDIN \
-                -configuration Release \
-                -archivePath ./build/ALADDIN.xcarchive \
-                -destination 'generic/platform=iOS' \
-                CODE_SIGN_STYLE=Automatic \
-                DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-                -allowProvisioningUpdates
-            }
-            exit 0
+              -allowProvisioningUpdates \
+              2>&1 | tee /tmp/xcodebuild.log || {
+                echo "❌ Automatic signing failed (ожидаемо в CI)"
+                echo "Последние 50 строк лога:"
+                tail -50 /tmp/xcodebuild.log
+                echo ""
+                echo "❌ РЕШЕНИЕ: Добавьте сертификат в GitHub Secrets:"
+                echo "  - IOS_DISTRIBUTION_CERTIFICATE"
+                echo "  - IOS_DISTRIBUTION_CERTIFICATE_PASSWORD"
+                exit 1
+              }
+          else
+            echo "❌ App Store Connect API keys not set!"
+            echo "❌ И сертификат отсутствует!"
+            echo ""
+            echo "Добавьте ОДИН из вариантов:"
+            echo "1. Сертификат (рекомендуется для CI):"
+            echo "   - IOS_DISTRIBUTION_CERTIFICATE"
+            echo "   - IOS_DISTRIBUTION_CERTIFICATE_PASSWORD"
+            echo ""
+            echo "2. Или API ключи (может не работать в CI):"
+            echo "   - APP_STORE_CONNECT_API_KEY"
+            echo "   - APP_STORE_CONNECT_ISSUER_ID"
+            echo "   - APP_STORE_CONNECT_API_KEY_ID"
+            exit 1
           fi
-          
-          echo "✅ Using automatic signing with provisioning updates"
-          xcodebuild archive \
-            -project ALADDIN.xcodeproj \
-            -scheme ALADDIN \
-            -configuration Release \
-            -archivePath ./build/ALADDIN.xcarchive \
-            -destination 'generic/platform=iOS' \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            -allowProvisioningUpdates
         fi
         
     - name: List Archive Contents
@@ -587,16 +540,19 @@ jobs:
           EXT_PROFILE_UUID="family.aladdin.ios.packetTunnel"
         fi
         
-        # Определить стиль подписи (Automatic или Manual)
-        # Если есть API ключи - используем Automatic, иначе Manual
-        if [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
-           [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
-           [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+        # Определить стиль подписи (Manual - приоритет, так как работает в CI)
+        # Если есть сертификат - используем Manual, иначе Automatic (может не работать)
+        if [ "${{ env.CERTIFICATE_AVAILABLE }}" = "true" ]; then
+          SIGNING_STYLE="manual"
+          echo "✅ Using Manual signing for export (работает в CI)"
+        elif [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
           SIGNING_STYLE="automatic"
-          echo "✅ Using Automatic signing for export"
+          echo "⚠️  Using Automatic signing for export (может не работать в CI)"
         else
           SIGNING_STYLE="manual"
-          echo "✅ Using Manual signing for export"
+          echo "⚠️  Using Manual signing for export (fallback)"
         fi
         
         # Создать ExportOptions.plist
