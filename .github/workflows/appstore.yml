@@ -602,3 +602,4 @@ jobs:
           security delete-keychain "${{ env.KEYCHAIN_PATH }}" 2>/dev/null || true
           echo "✅ Keychain cleaned up"
         fi
+# Trigger workflow
