@@ -1,9 +1,10 @@
-name: Build and Upload to App Store
+name: Build (Legacy - Use appstore.yml instead)
 
 on:
-  push:
-    branches: [ main, master ]
-  workflow_dispatch:
+  # ОТКЛЮЧЕН автоматический запуск при push - используйте appstore.yml для App Store
+  # push:
+  #   branches: [ main, master ]
+  workflow_dispatch:  # Только вручную
 
 jobs:
   build:
@@ -15,7 +16,7 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.0'
+          xcode-version: '16.2.0'  # Исправлено: 16.0 не существует, используем 16.2.0
       
       - name: Show Xcode version
         run: xcodebuild -version
