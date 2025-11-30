@@ -467,28 +467,55 @@ jobs:
             echo ""
           fi
           
-          # Используем Manual signing с параметрами командной строки
-          # ВАЖНО: Правильный синтаксис для target-specific - просто TARGETNAME_SETTING=value
-          # Xcode автоматически применит к нужному target по имени
-          echo "🔍 Запуск xcodebuild archive с Manual signing..."
-          echo "Используем простой синтаксис: TARGETNAME_PROVISIONING_PROFILE_SPECIFIER=UUID"
-          xcodebuild archive \
-            -project ALADDIN.xcodeproj \
-            -scheme ALADDIN \
-            -configuration Release \
-            -archivePath ./build/ALADDIN.xcarchive \
-            -destination 'generic/platform=iOS' \
-            CODE_SIGN_STYLE=Manual \
-            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CODE_SIGN_IDENTITY="$DIST_CERT_NAME" \
-            ALADDIN_CODE_SIGN_STYLE=Manual \
-            ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
-            ALADDIN_PROVISIONING_PROFILE="$APP_PROFILE_UUID" \
-            ALADDINPacketTunnel_CODE_SIGN_STYLE=Manual \
-            ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID" \
-            ALADDINPacketTunnel_PROVISIONING_PROFILE="$EXT_PROFILE_UUID" \
-            -allowProvisioningUpdates \
-            2>&1 | tee /tmp/xcodebuild.log || {
+          # КРИТИЧЕСКАЯ ПРОБЛЕМА: Проект настроен на Automatic signing
+          # Xcode игнорирует параметры командной строки, если в проекте установлен Automatic
+          # РЕШЕНИЕ: Создать xcconfig файл, который переопределит настройки проекта
+          echo "🔧 Создание xcconfig файла для переопределения Automatic signing..."
+    mkdir -p ./build
+    cat > ./build/Release.xcconfig << EOF
+// Override Automatic signing with Manual signing for CI
+CODE_SIGN_STYLE = Manual
+DEVELOPMENT_TEAM = $APPLE_TEAM_ID
+CODE_SIGN_IDENTITY = $DIST_CERT_NAME
+
+// App target
+ALADDIN_CODE_SIGN_STYLE = Manual
+ALADDIN_DEVELOPMENT_TEAM = $APPLE_TEAM_ID
+ALADDIN_CODE_SIGN_IDENTITY = $DIST_CERT_NAME
+ALADDIN_PROVISIONING_PROFILE_SPECIFIER = $APP_PROFILE_UUID
+ALADDIN_PROVISIONING_PROFILE = $APP_PROFILE_UUID
+
+// Extension target
+ALADDINPacketTunnel_CODE_SIGN_STYLE = Manual
+ALADDINPacketTunnel_DEVELOPMENT_TEAM = $APPLE_TEAM_ID
+ALADDINPacketTunnel_CODE_SIGN_IDENTITY = $DIST_CERT_NAME
+ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER = $EXT_PROFILE_UUID
+ALADDINPacketTunnel_PROVISIONING_PROFILE = $EXT_PROFILE_UUID
+EOF
+    echo "✅ xcconfig файл создан"
+    
+    # Используем Manual signing с xcconfig файлом
+    # ВАЖНО: xcconfig переопределит настройки проекта (Automatic → Manual)
+    echo "🔍 Запуск xcodebuild archive с Manual signing через xcconfig..."
+    echo "Используем xcconfig файл для переопределения Automatic signing"
+    xcodebuild archive \
+      -project ALADDIN.xcodeproj \
+      -scheme ALADDIN \
+      -configuration Release \
+      -xcconfig ./build/Release.xcconfig \
+      -archivePath ./build/ALADDIN.xcarchive \
+      -destination 'generic/platform=iOS' \
+      CODE_SIGN_STYLE=Manual \
+      DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+      CODE_SIGN_IDENTITY="$DIST_CERT_NAME" \
+      ALADDIN_CODE_SIGN_STYLE=Manual \
+      ALADDIN_PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
+      ALADDIN_PROVISIONING_PROFILE="$APP_PROFILE_UUID" \
+      ALADDINPacketTunnel_CODE_SIGN_STYLE=Manual \
+      ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER="$EXT_PROFILE_UUID" \
+      ALADDINPacketTunnel_PROVISIONING_PROFILE="$EXT_PROFILE_UUID" \
+      -allowProvisioningUpdates \
+      2>&1 | tee /tmp/xcodebuild.log || {
               echo "❌ xcodebuild archive failed with exit code $?"
               echo "Последние 50 строк лога:"
               tail -50 /tmp/xcodebuild.log
