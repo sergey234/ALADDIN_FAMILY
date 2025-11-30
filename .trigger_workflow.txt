@@ -1,0 +1,1 @@
+trigger: запуск appstore.yml - 20251201-010644
