@@ -1,0 +1,1 @@
+trigger: запуск workflow через push в master - 20251201-013817
