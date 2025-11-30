@@ -366,22 +366,22 @@ jobs:
             exit 1
           fi
           
-    # Извлечь полное имя сертификата (включая "Apple Distribution: NAME (ID)")
-    # Формат вывода security: "   1) HASH \"Apple Distribution: NAME (ID)\""
-    # Извлекаем только имя сертификата из кавычек
-    DIST_CERT_NAME=$(echo "$CERT_INFO" | grep -oE '"Apple Distribution[^"]*"' | sed 's/"//g')
-    
-    # Если не найдено, попробовать другой способ
-    if [ -z "$DIST_CERT_NAME" ]; then
-      DIST_CERT_NAME=$(echo "$CERT_INFO" | sed -E 's/.*"([^"]*Apple Distribution[^"]*)".*/\1/')
-    fi
-    
-    # Если все еще не найдено, использовать просто "Apple Distribution"
-    if [ -z "$DIST_CERT_NAME" ]; then
-      DIST_CERT_NAME="Apple Distribution"
-    fi
-    
-    echo "✅ Using certificate: $DIST_CERT_NAME"
+          # Извлечь полное имя сертификата (включая "Apple Distribution: NAME (ID)")
+          # Формат вывода security: "   1) HASH \"Apple Distribution: NAME (ID)\""
+          # Извлекаем только имя сертификата из кавычек
+          DIST_CERT_NAME=$(echo "$CERT_INFO" | grep -oE '"Apple Distribution[^"]*"' | sed 's/"//g')
+          
+          # Если не найдено, попробовать другой способ
+          if [ -z "$DIST_CERT_NAME" ]; then
+            DIST_CERT_NAME=$(echo "$CERT_INFO" | sed -E 's/.*"([^"]*Apple Distribution[^"]*)".*/\1/')
+          fi
+          
+          # Если все еще не найдено, использовать просто "Apple Distribution"
+          if [ -z "$DIST_CERT_NAME" ]; then
+            DIST_CERT_NAME="Apple Distribution"
+          fi
+          
+          echo "✅ Using certificate: $DIST_CERT_NAME"
           
           # Проверить что профили связаны с сертификатом
           echo "🔍 Verifying profile-certificate relationship..."
