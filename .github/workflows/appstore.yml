@@ -432,10 +432,11 @@ jobs:
           # ПРОБЛЕМА: Профили не связаны с сертификатом в keychain
           # РЕШЕНИЕ: Используем Automatic signing с -allowProvisioningUpdates
           # Xcode автоматически обновит профили и свяжет их с правильным сертификатом
+          # ВАЖНО: При Automatic signing НЕ указываем CODE_SIGN_IDENTITY - Xcode выберет сам
           echo "⚠️  Профили установлены, но могут быть не связаны с сертификатом"
           echo "✅ Используем Automatic signing - Xcode обновит профили автоматически"
           echo "Team ID: $APPLE_TEAM_ID"
-          echo "Certificate: $DIST_CERT_NAME"
+          echo "Certificate в keychain: $DIST_CERT_NAME (Xcode выберет автоматически)"
           
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
@@ -445,7 +446,6 @@ jobs:
             -destination 'generic/platform=iOS' \
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
-            CODE_SIGN_IDENTITY="$DIST_CERT_NAME" \
             -allowProvisioningUpdates \
             2>&1 | tee /tmp/xcodebuild.log || {
               echo "❌ xcodebuild archive failed with exit code $?"
