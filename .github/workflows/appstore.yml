@@ -1,7 +1,7 @@
 name: Build and Upload to App Store
 
 on:
-  workflow_dispatch: {}  # Запуск вручную через GitHub UI
+  workflow_dispatch:  # Запуск вручную через GitHub UI
   push:
     branches:
       - master  # Запуск при push в master
