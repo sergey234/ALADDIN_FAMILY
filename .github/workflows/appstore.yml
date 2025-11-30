@@ -341,6 +341,42 @@ jobs:
             CODE_SIGN_STYLE=Automatic \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             -allowProvisioningUpdates
+        # Проверить наличие API ключей для Automatic signing
+        elif [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+          echo "✅ Using Automatic signing with App Store Connect API"
+          echo "Team ID: $APPLE_TEAM_ID"
+          
+          # Настроить API ключи для Xcode
+          mkdir -p ~/.appstoreconnect/private_keys
+          echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+          
+          # Настроить переменные окружения для App Store Connect API
+          export APP_STORE_CONNECT_API_KEY="${{ secrets.APP_STORE_CONNECT_API_KEY }}"
+          export APP_STORE_CONNECT_ISSUER_ID="${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}"
+          export APP_STORE_CONNECT_API_KEY_ID="${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}"
+          
+          echo "✅ App Store Connect API keys configured"
+          echo "Xcode will automatically manage certificates and profiles via API"
+          
+          # Используем Automatic signing - Xcode будет использовать API для управления профилями
+          xcodebuild archive \
+            -project ALADDIN.xcodeproj \
+            -scheme ALADDIN \
+            -configuration Release \
+            -archivePath ./build/ALADDIN.xcarchive \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            -allowProvisioningUpdates \
+            2>&1 | tee /tmp/xcodebuild.log || {
+              echo "❌ xcodebuild archive failed with exit code $?"
+              echo "Последние 50 строк лога:"
+              tail -50 /tmp/xcodebuild.log
+              exit 1
+            }
         elif [ "${{ env.CERTIFICATE_AVAILABLE }}" = "true" ]; then
           echo "✅ Using manual signing with certificate"
           
@@ -438,21 +474,42 @@ jobs:
           echo "App Profile UUID: $APP_PROFILE_UUID"
           echo "Extension Profile UUID: $EXT_PROFILE_UUID"
           
-          # Используем Manual signing с указанием профилей для каждого таргета
-          # Пробуем несколько способов указания профилей одновременно
-          # 1. Общий PROVISIONING_PROFILE_SPECIFIER для основного таргета
-          # 2. Таргет-специфичные параметры
-          # 3. PROVISIONING_PROFILE (прямой UUID) для каждого таргета
+          # Создать временный xcconfig файл для явного указания профилей
+          # Это более надежный способ, чем параметры командной строки
+          cat > ./build/Release.xcconfig << EOF
+          // Temporary xcconfig for manual signing
+          CODE_SIGN_STYLE = Manual
+          DEVELOPMENT_TEAM = $APPLE_TEAM_ID
+          CODE_SIGN_IDENTITY = $DIST_CERT_NAME
+          
+          // App target
+          ALADDIN.CODE_SIGN_STYLE = Manual
+          ALADDIN.DEVELOPMENT_TEAM = $APPLE_TEAM_ID
+          ALADDIN.CODE_SIGN_IDENTITY = $DIST_CERT_NAME
+          ALADDIN.PROVISIONING_PROFILE_SPECIFIER = $APP_PROFILE_UUID
+          ALADDIN.PROVISIONING_PROFILE = $APP_PROFILE_UUID
+          
+          // Extension target
+          ALADDINPacketTunnel.CODE_SIGN_STYLE = Manual
+          ALADDINPacketTunnel.DEVELOPMENT_TEAM = $APPLE_TEAM_ID
+          ALADDINPacketTunnel.CODE_SIGN_IDENTITY = $DIST_CERT_NAME
+          ALADDINPacketTunnel.PROVISIONING_PROFILE_SPECIFIER = $EXT_PROFILE_UUID
+          ALADDINPacketTunnel.PROVISIONING_PROFILE = $EXT_PROFILE_UUID
+          EOF
+          
+          echo "✅ Создан временный xcconfig файл"
+          
+          # Используем Manual signing с xcconfig файлом
           xcodebuild archive \
             -project ALADDIN.xcodeproj \
             -scheme ALADDIN \
             -configuration Release \
+            -xcconfig ./build/Release.xcconfig \
             -archivePath ./build/ALADDIN.xcarchive \
             -destination 'generic/platform=iOS' \
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
             CODE_SIGN_IDENTITY="$DIST_CERT_NAME" \
-            PROVISIONING_PROFILE_SPECIFIER="$APP_PROFILE_UUID" \
             "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=$APP_PROFILE_UUID" \
             "ALADDIN_PROVISIONING_PROFILE=$APP_PROFILE_UUID" \
             "ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER=$EXT_PROFILE_UUID" \
@@ -561,37 +618,73 @@ jobs:
           EXT_PROFILE_UUID="family.aladdin.ios.packetTunnel"
         fi
         
-        # Создать ExportOptions.plist для Manual signing
-        # Используем установленные профили с правильными UUID
-        cat > ./build/ExportOptions.plist << EOF
-        <?xml version="1.0" encoding="UTF-8"?>
-        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-        <plist version="1.0">
-        <dict>
-          <key>method</key>
-          <string>app-store</string>
-          <key>teamID</key>
-          <string>$APPLE_TEAM_ID</string>
-          <key>signingStyle</key>
-          <string>manual</string>
-          <key>signingCertificate</key>
-          <string>Apple Distribution</string>
-          <key>provisioningProfiles</key>
+        # Определить стиль подписи (Automatic или Manual)
+        # Если есть API ключи - используем Automatic, иначе Manual
+        if [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
+           [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
+           [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+          SIGNING_STYLE="automatic"
+          echo "✅ Using Automatic signing for export"
+        else
+          SIGNING_STYLE="manual"
+          echo "✅ Using Manual signing for export"
+        fi
+        
+        # Создать ExportOptions.plist
+        if [ "$SIGNING_STYLE" = "automatic" ]; then
+          # Automatic signing - Xcode выберет профили автоматически
+          cat > ./build/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
           <dict>
-            <key>family.aladdin.ios</key>
-            <string>$APP_PROFILE_UUID</string>
-            <key>family.aladdin.ios.packetTunnel</key>
-            <string>$EXT_PROFILE_UUID</string>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>$APPLE_TEAM_ID</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+            <key>compileBitcode</key>
+            <false/>
           </dict>
-          <key>uploadBitcode</key>
-          <false/>
-          <key>uploadSymbols</key>
-          <true/>
-          <key>compileBitcode</key>
-          <false/>
-        </dict>
-        </plist>
-        EOF
+          </plist>
+          EOF
+        else
+          # Manual signing - используем установленные профили
+          cat > ./build/ExportOptions.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>teamID</key>
+            <string>$APPLE_TEAM_ID</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>signingCertificate</key>
+            <string>Apple Distribution</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>family.aladdin.ios</key>
+              <string>$APP_PROFILE_UUID</string>
+              <key>family.aladdin.ios.packetTunnel</key>
+              <string>$EXT_PROFILE_UUID</string>
+            </dict>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+            <key>compileBitcode</key>
+            <false/>
+          </dict>
+          </plist>
+          EOF
+        fi
         
         xcodebuild -exportArchive \
           -archivePath ./build/ALADDIN.xcarchive \
