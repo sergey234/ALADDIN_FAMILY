@@ -471,28 +471,28 @@ jobs:
           # Xcode игнорирует параметры командной строки, если в проекте установлен Automatic
           # РЕШЕНИЕ: Создать xcconfig файл, который переопределит настройки проекта
           echo "🔧 Создание xcconfig файла для переопределения Automatic signing..."
-    mkdir -p ./build
-    cat > ./build/Release.xcconfig << EOF
-// Override Automatic signing with Manual signing for CI
-CODE_SIGN_STYLE = Manual
-DEVELOPMENT_TEAM = $APPLE_TEAM_ID
-CODE_SIGN_IDENTITY = $DIST_CERT_NAME
-
-// App target
-ALADDIN_CODE_SIGN_STYLE = Manual
-ALADDIN_DEVELOPMENT_TEAM = $APPLE_TEAM_ID
-ALADDIN_CODE_SIGN_IDENTITY = $DIST_CERT_NAME
-ALADDIN_PROVISIONING_PROFILE_SPECIFIER = $APP_PROFILE_UUID
-ALADDIN_PROVISIONING_PROFILE = $APP_PROFILE_UUID
-
-// Extension target
-ALADDINPacketTunnel_CODE_SIGN_STYLE = Manual
-ALADDINPacketTunnel_DEVELOPMENT_TEAM = $APPLE_TEAM_ID
-ALADDINPacketTunnel_CODE_SIGN_IDENTITY = $DIST_CERT_NAME
-ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER = $EXT_PROFILE_UUID
-ALADDINPacketTunnel_PROVISIONING_PROFILE = $EXT_PROFILE_UUID
-EOF
-    echo "✅ xcconfig файл создан"
+          mkdir -p ./build
+          {
+            echo "// Override Automatic signing with Manual signing for CI"
+            echo "CODE_SIGN_STYLE = Manual"
+            echo "DEVELOPMENT_TEAM = $APPLE_TEAM_ID"
+            echo "CODE_SIGN_IDENTITY = $DIST_CERT_NAME"
+            echo ""
+            echo "// App target"
+            echo "ALADDIN_CODE_SIGN_STYLE = Manual"
+            echo "ALADDIN_DEVELOPMENT_TEAM = $APPLE_TEAM_ID"
+            echo "ALADDIN_CODE_SIGN_IDENTITY = $DIST_CERT_NAME"
+            echo "ALADDIN_PROVISIONING_PROFILE_SPECIFIER = $APP_PROFILE_UUID"
+            echo "ALADDIN_PROVISIONING_PROFILE = $APP_PROFILE_UUID"
+            echo ""
+            echo "// Extension target"
+            echo "ALADDINPacketTunnel_CODE_SIGN_STYLE = Manual"
+            echo "ALADDINPacketTunnel_DEVELOPMENT_TEAM = $APPLE_TEAM_ID"
+            echo "ALADDINPacketTunnel_CODE_SIGN_IDENTITY = $DIST_CERT_NAME"
+            echo "ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER = $EXT_PROFILE_UUID"
+            echo "ALADDINPacketTunnel_PROVISIONING_PROFILE = $EXT_PROFILE_UUID"
+          } > ./build/Release.xcconfig
+          echo "✅ xcconfig файл создан"
     
     # Используем Manual signing с xcconfig файлом
     # ВАЖНО: xcconfig переопределит настройки проекта (Automatic → Manual)
