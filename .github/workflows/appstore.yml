@@ -447,27 +447,24 @@ jobs:
           echo "Extension Profile UUID: $EXT_PROFILE_UUID"
           
           # Создать временный xcconfig файл для явного указания профилей
-          # Это более надежный способ, чем параметры командной строки
-          cat > ./build/Release.xcconfig << EOF
-          // Temporary xcconfig for manual signing
-          CODE_SIGN_STYLE = Manual
-          DEVELOPMENT_TEAM = $APPLE_TEAM_ID
-          CODE_SIGN_IDENTITY = $DIST_CERT_NAME
-          
-          // App target
-          ALADDIN.CODE_SIGN_STYLE = Manual
-          ALADDIN.DEVELOPMENT_TEAM = $APPLE_TEAM_ID
-          ALADDIN.CODE_SIGN_IDENTITY = $DIST_CERT_NAME
-          ALADDIN.PROVISIONING_PROFILE_SPECIFIER = $APP_PROFILE_UUID
-          ALADDIN.PROVISIONING_PROFILE = $APP_PROFILE_UUID
-          
-          // Extension target
-          ALADDINPacketTunnel.CODE_SIGN_STYLE = Manual
-          ALADDINPacketTunnel.DEVELOPMENT_TEAM = $APPLE_TEAM_ID
-          ALADDINPacketTunnel.CODE_SIGN_IDENTITY = $DIST_CERT_NAME
-          ALADDINPacketTunnel.PROVISIONING_PROFILE_SPECIFIER = $EXT_PROFILE_UUID
-          ALADDINPacketTunnel.PROVISIONING_PROFILE = $EXT_PROFILE_UUID
-          EOF
+          # Используем printf вместо heredoc для избежания проблем с отступами
+          mkdir -p ./build
+          printf "// Temporary xcconfig for manual signing\n" > ./build/Release.xcconfig
+          printf "CODE_SIGN_STYLE = Manual\n" >> ./build/Release.xcconfig
+          printf "DEVELOPMENT_TEAM = %s\n" "$APPLE_TEAM_ID" >> ./build/Release.xcconfig
+          printf "CODE_SIGN_IDENTITY = %s\n\n" "$DIST_CERT_NAME" >> ./build/Release.xcconfig
+          printf "// App target\n" >> ./build/Release.xcconfig
+          printf "ALADDIN.CODE_SIGN_STYLE = Manual\n" >> ./build/Release.xcconfig
+          printf "ALADDIN.DEVELOPMENT_TEAM = %s\n" "$APPLE_TEAM_ID" >> ./build/Release.xcconfig
+          printf "ALADDIN.CODE_SIGN_IDENTITY = %s\n" "$DIST_CERT_NAME" >> ./build/Release.xcconfig
+          printf "ALADDIN.PROVISIONING_PROFILE_SPECIFIER = %s\n" "$APP_PROFILE_UUID" >> ./build/Release.xcconfig
+          printf "ALADDIN.PROVISIONING_PROFILE = %s\n\n" "$APP_PROFILE_UUID" >> ./build/Release.xcconfig
+          printf "// Extension target\n" >> ./build/Release.xcconfig
+          printf "ALADDINPacketTunnel.CODE_SIGN_STYLE = Manual\n" >> ./build/Release.xcconfig
+          printf "ALADDINPacketTunnel.DEVELOPMENT_TEAM = %s\n" "$APPLE_TEAM_ID" >> ./build/Release.xcconfig
+          printf "ALADDINPacketTunnel.CODE_SIGN_IDENTITY = %s\n" "$DIST_CERT_NAME" >> ./build/Release.xcconfig
+          printf "ALADDINPacketTunnel.PROVISIONING_PROFILE_SPECIFIER = %s\n" "$EXT_PROFILE_UUID" >> ./build/Release.xcconfig
+          printf "ALADDINPacketTunnel.PROVISIONING_PROFILE = %s\n" "$EXT_PROFILE_UUID" >> ./build/Release.xcconfig
           
           echo "✅ Создан временный xcconfig файл"
           
