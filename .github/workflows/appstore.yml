@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches: [ master, main ]
-  tags:
-    - 'v*'
+    tags:
+      - 'v*'
 
 jobs:
   build-and-upload:
