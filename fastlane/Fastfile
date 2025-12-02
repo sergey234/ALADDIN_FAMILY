@@ -95,7 +95,7 @@ platform :ios do
         "-destination 'generic/platform=iOS'",
         "CODE_SIGN_STYLE=Manual",
         "DEVELOPMENT_TEAM=#{team_id}",
-        "CODE_SIGN_IDENTITY=Apple Distribution",
+        "CODE_SIGN_IDENTITY=\"Apple Distribution\"",
         "ALADDIN_CODE_SIGN_STYLE=Manual",
         "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
         "ALADDIN_PROVISIONING_PROFILE='#{app_profile_file}'",
