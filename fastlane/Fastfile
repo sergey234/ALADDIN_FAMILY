@@ -29,10 +29,21 @@ platform :ios do
                cert_info = `security find-identity -v -p codesigning "#{keychain_path}" 2>/dev/null | grep -i "distribution" | head -1`.strip
                if cert_info && !cert_info.empty?
                  # Формат: "   1) HASH \"Apple Distribution: NAME (ID)\""
-                 cert_fingerprint = cert_info.split(")")[0].strip
-                 puts "🔐 Найден fingerprint сертификата: #{cert_fingerprint}"
+                 # Извлечь SHA-1 hash (40 символов hex) между ") " и " "
+                 match = cert_info.match(/\)\s+([0-9A-Fa-f]{40})\s+/)
+                 if match
+                   cert_fingerprint = match[1]
+                   puts "🔐 Найден fingerprint сертификата: #{cert_fingerprint}"
+                 else
+                   puts "⚠️  Не удалось извлечь fingerprint из: #{cert_info}"
+                 end
                end
              end
+             
+             # Если fingerprint не найден, использовать общий тип "Apple Distribution"
+             # Xcode автоматически выберет правильный сертификат из профиля
+             code_sign_identity = cert_fingerprint || "Apple Distribution"
+             puts "🔐 Используемый CODE_SIGN_IDENTITY: #{code_sign_identity}"
       
       puts "🔐 Team ID: #{team_id}"
       puts "🔐 Certificate: #{dist_cert_name}"
@@ -59,10 +70,6 @@ platform :ios do
       # Создать xcconfig файл с полными путями
       xcconfig_path = "./build/Release.xcconfig"
       sh("mkdir -p ./build")
-      
-      # Использовать fingerprint сертификата, если доступен
-      # Xcode проверяет сертификаты по fingerprint, а не по имени
-      code_sign_identity = cert_fingerprint || "Apple Distribution"
       
       xcconfig_content = <<~XCCONFIG
       // Fastlane xcconfig for Manual signing
