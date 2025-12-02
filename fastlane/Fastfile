@@ -14,13 +14,25 @@ platform :ios do
       puts "📁 Рабочая директория: #{Dir.pwd}"
       puts "📁 Проверка наличия проекта: #{File.exist?('ALADDIN.xcodeproj') ? '✅ найден' : '❌ не найден'}"
       
-      # Переменные окружения из GitHub Secrets (уже установлены в workflow)
-      team_id = ENV["APPLE_TEAM_ID"]
-      keychain_path = ENV["KEYCHAIN_PATH"]
-      keychain_password = ENV["KEYCHAIN_PASSWORD"]
-      app_profile_uuid = ENV["APP_PROFILE_UUID"]
-      ext_profile_uuid = ENV["EXT_PROFILE_UUID"]
-      dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
+             # Переменные окружения из GitHub Secrets (уже установлены в workflow)
+             team_id = ENV["APPLE_TEAM_ID"]
+             keychain_path = ENV["KEYCHAIN_PATH"]
+             keychain_password = ENV["KEYCHAIN_PASSWORD"]
+             app_profile_uuid = ENV["APP_PROFILE_UUID"]
+             ext_profile_uuid = ENV["EXT_PROFILE_UUID"]
+             dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
+             
+             # Извлечь fingerprint сертификата из keychain для использования в CODE_SIGN_IDENTITY
+             # Xcode проверяет сертификаты по fingerprint, а не по имени
+             cert_fingerprint = nil
+             if keychain_path && File.exist?(keychain_path)
+               cert_info = `security find-identity -v -p codesigning "#{keychain_path}" 2>/dev/null | grep -i "distribution" | head -1`.strip
+               if cert_info && !cert_info.empty?
+                 # Формат: "   1) HASH \"Apple Distribution: NAME (ID)\""
+                 cert_fingerprint = cert_info.split(")")[0].strip
+                 puts "🔐 Найден fingerprint сертификата: #{cert_fingerprint}"
+               end
+             end
       
       puts "🔐 Team ID: #{team_id}"
       puts "🔐 Certificate: #{dist_cert_name}"
@@ -48,17 +60,21 @@ platform :ios do
       xcconfig_path = "./build/Release.xcconfig"
       sh("mkdir -p ./build")
       
+      # Использовать fingerprint сертификата, если доступен
+      # Xcode проверяет сертификаты по fingerprint, а не по имени
+      code_sign_identity = cert_fingerprint || "Apple Distribution"
+      
       xcconfig_content = <<~XCCONFIG
       // Fastlane xcconfig for Manual signing
-      // КРИТИЧЕСКИ ВАЖНО: НЕ указываем CODE_SIGN_IDENTITY - Xcode выберет сертификат из профиля автоматически
-      // Это позволяет Xcode автоматически выбрать правильный сертификат из provisioning profile
+      // Используем fingerprint сертификата для точного соответствия
       CODE_SIGN_STYLE = Manual
       DEVELOPMENT_TEAM = #{team_id}
+      CODE_SIGN_IDENTITY = #{code_sign_identity}
       
       // App target - ПРИНУДИТЕЛЬНО Manual signing
       ALADDIN_CODE_SIGN_STYLE = Manual
       ALADDIN_DEVELOPMENT_TEAM = #{team_id}
-      // НЕ указываем ALADDIN_CODE_SIGN_IDENTITY - Xcode выберет из профиля
+      ALADDIN_CODE_SIGN_IDENTITY = #{code_sign_identity}
       ALADDIN_PROVISIONING_PROFILE_SPECIFIER = #{app_profile_uuid}
       ALADDIN_PROVISIONING_PROFILE = #{app_profile_file}
       ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
@@ -66,7 +82,7 @@ platform :ios do
       // Extension target - ПРИНУДИТЕЛЬНО Manual signing
       ALADDINPacketTunnel_CODE_SIGN_STYLE = Manual
       ALADDINPacketTunnel_DEVELOPMENT_TEAM = #{team_id}
-      // НЕ указываем ALADDINPacketTunnel_CODE_SIGN_IDENTITY - Xcode выберет из профиля
+      ALADDINPacketTunnel_CODE_SIGN_IDENTITY = #{code_sign_identity}
       ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER = #{ext_profile_uuid}
       ALADDINPacketTunnel_PROVISIONING_PROFILE = #{ext_profile_file}
       ALADDINPacketTunnel_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel
@@ -94,7 +110,7 @@ platform :ios do
         "-destination 'generic/platform=iOS'",
         "CODE_SIGN_STYLE=Manual",
         "DEVELOPMENT_TEAM=#{team_id}",
-        # НЕ указываем CODE_SIGN_IDENTITY - позволим Xcode выбрать сертификат из профиля автоматически
+        "CODE_SIGN_IDENTITY=#{code_sign_identity}",
         "ALADDIN_CODE_SIGN_STYLE=Manual",
         "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
         "ALADDIN_PROVISIONING_PROFILE='#{app_profile_file}'",
