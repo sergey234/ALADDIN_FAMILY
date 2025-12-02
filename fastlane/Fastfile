@@ -54,12 +54,12 @@ platform :ios do
       // Это переопределяет Automatic signing из project.pbxproj
       CODE_SIGN_STYLE = Manual
       DEVELOPMENT_TEAM = #{team_id}
-      CODE_SIGN_IDENTITY = #{dist_cert_name}
+      CODE_SIGN_IDENTITY = Apple Distribution
       
       // App target - ПРИНУДИТЕЛЬНО Manual signing
       ALADDIN_CODE_SIGN_STYLE = Manual
       ALADDIN_DEVELOPMENT_TEAM = #{team_id}
-      ALADDIN_CODE_SIGN_IDENTITY = #{dist_cert_name}
+      ALADDIN_CODE_SIGN_IDENTITY = Apple Distribution
       ALADDIN_PROVISIONING_PROFILE_SPECIFIER = #{app_profile_uuid}
       ALADDIN_PROVISIONING_PROFILE = #{app_profile_file}
       ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
