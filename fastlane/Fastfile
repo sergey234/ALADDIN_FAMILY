@@ -35,38 +35,46 @@ platform :ios do
         UI.user_error!("❌ EXT_PROFILE_UUID не установлен в окружении")
       end
       
-      # Создать xcconfig файл
+      # Получить полные пути к профилям (ДО создания xcconfig)
+      profile_dir = "#{ENV['HOME']}/Library/MobileDevice/Provisioning Profiles"
+      app_profile_file = "#{profile_dir}/#{app_profile_uuid}.mobileprovision"
+      ext_profile_file = "#{profile_dir}/#{ext_profile_uuid}.mobileprovision"
+      
+      puts "📋 Проверка путей к профилям:"
+      puts "   App profile: #{app_profile_file} (#{File.exist?(app_profile_file) ? '✅' : '❌'})"
+      puts "   Extension profile: #{ext_profile_file} (#{File.exist?(ext_profile_file) ? '✅' : '❌'})"
+      
+      # Создать xcconfig файл с полными путями
       xcconfig_path = "./build/Release.xcconfig"
       sh("mkdir -p ./build")
       
       xcconfig_content = <<~XCCONFIG
       // Fastlane xcconfig for Manual signing
+      // КРИТИЧЕСКИ ВАЖНО: Используем оба параметра для принудительного Manual signing
+      // Это переопределяет Automatic signing из project.pbxproj
       CODE_SIGN_STYLE = Manual
       DEVELOPMENT_TEAM = #{team_id}
       CODE_SIGN_IDENTITY = #{dist_cert_name}
       
-      // App target
+      // App target - ПРИНУДИТЕЛЬНО Manual signing
       ALADDIN_CODE_SIGN_STYLE = Manual
       ALADDIN_DEVELOPMENT_TEAM = #{team_id}
       ALADDIN_CODE_SIGN_IDENTITY = #{dist_cert_name}
       ALADDIN_PROVISIONING_PROFILE_SPECIFIER = #{app_profile_uuid}
+      ALADDIN_PROVISIONING_PROFILE = #{app_profile_file}
       ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
       
-      // Extension target
+      // Extension target - ПРИНУДИТЕЛЬНО Manual signing
       ALADDINPacketTunnel_CODE_SIGN_STYLE = Manual
       ALADDINPacketTunnel_DEVELOPMENT_TEAM = #{team_id}
       ALADDINPacketTunnel_CODE_SIGN_IDENTITY = #{dist_cert_name}
       ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER = #{ext_profile_uuid}
+      ALADDINPacketTunnel_PROVISIONING_PROFILE = #{ext_profile_file}
       ALADDINPacketTunnel_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel
     XCCONFIG
     
       File.write(xcconfig_path, xcconfig_content)
       puts "✅ xcconfig создан: #{xcconfig_path}"
-      
-      # Получить полные пути к профилям
-      profile_dir = "#{ENV['HOME']}/Library/MobileDevice/Provisioning Profiles"
-      app_profile_file = "#{profile_dir}/#{app_profile_uuid}.mobileprovision"
-      ext_profile_file = "#{profile_dir}/#{ext_profile_uuid}.mobileprovision"
       
       # Собрать архив используя xcodebuild напрямую
       # Fastlane может иметь проблемы с Manual signing, если проект настроен на Automatic
