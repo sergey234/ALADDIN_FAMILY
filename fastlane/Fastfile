@@ -22,28 +22,10 @@ platform :ios do
              ext_profile_uuid = ENV["EXT_PROFILE_UUID"]
              dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
              
-             # Извлечь fingerprint сертификата из keychain для использования в CODE_SIGN_IDENTITY
-             # Xcode проверяет сертификаты по fingerprint, а не по имени
-             cert_fingerprint = nil
-             if keychain_path && File.exist?(keychain_path)
-               cert_info = `security find-identity -v -p codesigning "#{keychain_path}" 2>/dev/null | grep -i "distribution" | head -1`.strip
-               if cert_info && !cert_info.empty?
-                 # Формат: "   1) HASH \"Apple Distribution: NAME (ID)\""
-                 # Извлечь SHA-1 hash (40 символов hex) между ") " и " "
-                 match = cert_info.match(/\)\s+([0-9A-Fa-f]{40})\s+/)
-                 if match
-                   cert_fingerprint = match[1]
-                   puts "🔐 Найден fingerprint сертификата: #{cert_fingerprint}"
-                 else
-                   puts "⚠️  Не удалось извлечь fingerprint из: #{cert_info}"
-                 end
-               end
-             end
-             
-             # Если fingerprint не найден, использовать общий тип "Apple Distribution"
-             # Xcode автоматически выберет правильный сертификат из профиля
-             code_sign_identity = cert_fingerprint || "Apple Distribution"
-             puts "🔐 Используемый CODE_SIGN_IDENTITY: #{code_sign_identity}"
+             # ВАРИАНТ 3: НЕ указываем CODE_SIGN_IDENTITY - Xcode автоматически выберет сертификат из профиля
+             # Это решает проблему с несоответствием fingerprint между keychain и профилем
+             # Xcode сам найдет правильный сертификат, который встроен в provisioning profile
+             puts "🔐 Не указываем CODE_SIGN_IDENTITY - Xcode выберет сертификат из профиля автоматически"
       
       puts "🔐 Team ID: #{team_id}"
       puts "🔐 Certificate: #{dist_cert_name}"
