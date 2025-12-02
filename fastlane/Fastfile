@@ -67,7 +67,7 @@ platform :ios do
       // Extension target - ПРИНУДИТЕЛЬНО Manual signing
       ALADDINPacketTunnel_CODE_SIGN_STYLE = Manual
       ALADDINPacketTunnel_DEVELOPMENT_TEAM = #{team_id}
-      ALADDINPacketTunnel_CODE_SIGN_IDENTITY = #{dist_cert_name}
+      ALADDINPacketTunnel_CODE_SIGN_IDENTITY = Apple Distribution
       ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER = #{ext_profile_uuid}
       ALADDINPacketTunnel_PROVISIONING_PROFILE = #{ext_profile_file}
       ALADDINPacketTunnel_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel
@@ -95,7 +95,7 @@ platform :ios do
         "-destination 'generic/platform=iOS'",
         "CODE_SIGN_STYLE=Manual",
         "DEVELOPMENT_TEAM=#{team_id}",
-        "CODE_SIGN_IDENTITY='#{dist_cert_name}'",
+        "CODE_SIGN_IDENTITY=Apple Distribution",
         "ALADDIN_CODE_SIGN_STYLE=Manual",
         "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
         "ALADDIN_PROVISIONING_PROFILE='#{app_profile_file}'",
