@@ -7,30 +7,37 @@ default_platform(:ios)
 platform :ios do
   desc "Build archive for App Store with manual signing using existing certificates and profiles"
   lane :build_archive do |options|
-    # Переменные окружения из GitHub Secrets (уже установлены в workflow)
-    team_id = ENV["APPLE_TEAM_ID"]
-    keychain_path = ENV["KEYCHAIN_PATH"]
-    keychain_password = ENV["KEYCHAIN_PASSWORD"]
-    app_profile_uuid = ENV["APP_PROFILE_UUID"]
-    ext_profile_uuid = ENV["EXT_PROFILE_UUID"]
-    dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
-    
-    puts "🔐 Team ID: #{team_id}"
-    puts "🔐 Certificate: #{dist_cert_name}"
-    puts "📋 App Profile UUID: #{app_profile_uuid}"
-    puts "📋 Extension Profile UUID: #{ext_profile_uuid}"
-    
-    if app_profile_uuid.nil? || app_profile_uuid.empty?
-      UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении")
-    end
-    
-    if ext_profile_uuid.nil? || ext_profile_uuid.empty?
-      UI.user_error!("❌ EXT_PROFILE_UUID не установлен в окружении")
-    end
-    
-    # Создать xcconfig файл
-    xcconfig_path = "./build/Release.xcconfig"
-    sh("mkdir -p ./build")
+    # КРИТИЧЕСКИ ВАЖНО: Fastlane запускается из fastlane/ директории
+    # Нужно перейти в корень проекта, где находится ALADDIN.xcodeproj
+    project_root = File.expand_path("..", __dir__)
+    Dir.chdir(project_root) do
+      puts "📁 Рабочая директория: #{Dir.pwd}"
+      puts "📁 Проверка наличия проекта: #{File.exist?('ALADDIN.xcodeproj') ? '✅ найден' : '❌ не найден'}"
+      
+      # Переменные окружения из GitHub Secrets (уже установлены в workflow)
+      team_id = ENV["APPLE_TEAM_ID"]
+      keychain_path = ENV["KEYCHAIN_PATH"]
+      keychain_password = ENV["KEYCHAIN_PASSWORD"]
+      app_profile_uuid = ENV["APP_PROFILE_UUID"]
+      ext_profile_uuid = ENV["EXT_PROFILE_UUID"]
+      dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
+      
+      puts "🔐 Team ID: #{team_id}"
+      puts "🔐 Certificate: #{dist_cert_name}"
+      puts "📋 App Profile UUID: #{app_profile_uuid}"
+      puts "📋 Extension Profile UUID: #{ext_profile_uuid}"
+      
+      if app_profile_uuid.nil? || app_profile_uuid.empty?
+        UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении")
+      end
+      
+      if ext_profile_uuid.nil? || ext_profile_uuid.empty?
+        UI.user_error!("❌ EXT_PROFILE_UUID не установлен в окружении")
+      end
+      
+      # Создать xcconfig файл
+      xcconfig_path = "./build/Release.xcconfig"
+      sh("mkdir -p ./build")
     
     xcconfig_content = <<~XCCONFIG
       // Fastlane xcconfig for Manual signing
@@ -53,47 +60,50 @@ platform :ios do
       ALADDINPacketTunnel_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel
     XCCONFIG
     
-    File.write(xcconfig_path, xcconfig_content)
-    puts "✅ xcconfig создан: #{xcconfig_path}"
-    
-    # Получить полные пути к профилям
-    profile_dir = "#{ENV['HOME']}/Library/MobileDevice/Provisioning Profiles"
-    app_profile_file = "#{profile_dir}/#{app_profile_uuid}.mobileprovision"
-    ext_profile_file = "#{profile_dir}/#{ext_profile_uuid}.mobileprovision"
-    
-    # Собрать архив используя xcodebuild напрямую
-    # Fastlane может иметь проблемы с Manual signing, если проект настроен на Automatic
-    # Поэтому используем прямой вызов xcodebuild с полными путями к профилям
-    archive_path = "./build/ALADDIN.xcarchive"
-    
-    puts "🔨 Сборка архива с Manual signing через Fastlane..."
-    
-    xcodebuild_command = [
-      "xcodebuild archive",
-      "-project ALADDIN.xcodeproj",
-      "-scheme ALADDIN",
-      "-configuration Release",
-      "-xcconfig #{xcconfig_path}",
-      "-archivePath #{archive_path}",
-      "-destination 'generic/platform=iOS'",
-      "CODE_SIGN_STYLE=Manual",
-      "DEVELOPMENT_TEAM=#{team_id}",
-      "CODE_SIGN_IDENTITY='#{dist_cert_name}'",
-      "ALADDIN_CODE_SIGN_STYLE=Manual",
-      "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
-      "ALADDIN_PROVISIONING_PROFILE='#{app_profile_file}'",
-      "ALADDINPacketTunnel_CODE_SIGN_STYLE=Manual",
-      "ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER=#{ext_profile_uuid}",
-      "ALADDINPacketTunnel_PROVISIONING_PROFILE='#{ext_profile_file}'",
-      "-allowProvisioningUpdates"
-    ].join(" ")
-    
-    sh(xcodebuild_command)
-    
-    puts "✅ Архив создан: #{archive_path}"
-    
-    # Вернуть путь к архиву
-    archive_path
+      File.write(xcconfig_path, xcconfig_content)
+      puts "✅ xcconfig создан: #{xcconfig_path}"
+      
+      # Получить полные пути к профилям
+      profile_dir = "#{ENV['HOME']}/Library/MobileDevice/Provisioning Profiles"
+      app_profile_file = "#{profile_dir}/#{app_profile_uuid}.mobileprovision"
+      ext_profile_file = "#{profile_dir}/#{ext_profile_uuid}.mobileprovision"
+      
+      # Собрать архив используя xcodebuild напрямую
+      # Fastlane может иметь проблемы с Manual signing, если проект настроен на Automatic
+      # Поэтому используем прямой вызов xcodebuild с полными путями к профилям
+      archive_path = "./build/ALADDIN.xcarchive"
+      
+      puts "🔨 Сборка архива с Manual signing через Fastlane..."
+      puts "📁 Текущая директория: #{Dir.pwd}"
+      puts "📁 Проект существует: #{File.exist?('ALADDIN.xcodeproj') ? '✅' : '❌'}"
+      
+      xcodebuild_command = [
+        "xcodebuild archive",
+        "-project ALADDIN.xcodeproj",
+        "-scheme ALADDIN",
+        "-configuration Release",
+        "-xcconfig #{xcconfig_path}",
+        "-archivePath #{archive_path}",
+        "-destination 'generic/platform=iOS'",
+        "CODE_SIGN_STYLE=Manual",
+        "DEVELOPMENT_TEAM=#{team_id}",
+        "CODE_SIGN_IDENTITY='#{dist_cert_name}'",
+        "ALADDIN_CODE_SIGN_STYLE=Manual",
+        "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
+        "ALADDIN_PROVISIONING_PROFILE='#{app_profile_file}'",
+        "ALADDINPacketTunnel_CODE_SIGN_STYLE=Manual",
+        "ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER=#{ext_profile_uuid}",
+        "ALADDINPacketTunnel_PROVISIONING_PROFILE='#{ext_profile_file}'",
+        "-allowProvisioningUpdates"
+      ].join(" ")
+      
+      sh(xcodebuild_command)
+      
+      puts "✅ Архив создан: #{archive_path}"
+      
+      # Вернуть путь к архиву
+      archive_path
+    end
   end
   
   desc "Export IPA from archive"
