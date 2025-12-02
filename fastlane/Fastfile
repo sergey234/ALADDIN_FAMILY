@@ -38,8 +38,8 @@ platform :ios do
       # Создать xcconfig файл
       xcconfig_path = "./build/Release.xcconfig"
       sh("mkdir -p ./build")
-    
-    xcconfig_content = <<~XCCONFIG
+      
+      xcconfig_content = <<~XCCONFIG
       // Fastlane xcconfig for Manual signing
       CODE_SIGN_STYLE = Manual
       DEVELOPMENT_TEAM = #{team_id}
