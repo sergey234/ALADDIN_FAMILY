@@ -73,15 +73,16 @@ platform :ios do
       
       xcconfig_content = <<~XCCONFIG
       // Fastlane xcconfig for Manual signing
-      // Используем fingerprint сертификата для точного соответствия
+      // ВАРИАНТ 3: НЕ указываем CODE_SIGN_IDENTITY - Xcode автоматически выберет сертификат из профиля
+      // Это решает проблему с несоответствием fingerprint между keychain и профилем
       CODE_SIGN_STYLE = Manual
       DEVELOPMENT_TEAM = #{team_id}
-      CODE_SIGN_IDENTITY = #{code_sign_identity}
+      // НЕ указываем CODE_SIGN_IDENTITY - Xcode выберет из профиля
       
       // App target - ПРИНУДИТЕЛЬНО Manual signing
       ALADDIN_CODE_SIGN_STYLE = Manual
       ALADDIN_DEVELOPMENT_TEAM = #{team_id}
-      ALADDIN_CODE_SIGN_IDENTITY = #{code_sign_identity}
+      // НЕ указываем ALADDIN_CODE_SIGN_IDENTITY - Xcode выберет из профиля
       ALADDIN_PROVISIONING_PROFILE_SPECIFIER = #{app_profile_uuid}
       ALADDIN_PROVISIONING_PROFILE = #{app_profile_file}
       ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
@@ -89,7 +90,7 @@ platform :ios do
       // Extension target - ПРИНУДИТЕЛЬНО Manual signing
       ALADDINPacketTunnel_CODE_SIGN_STYLE = Manual
       ALADDINPacketTunnel_DEVELOPMENT_TEAM = #{team_id}
-      ALADDINPacketTunnel_CODE_SIGN_IDENTITY = #{code_sign_identity}
+      // НЕ указываем ALADDINPacketTunnel_CODE_SIGN_IDENTITY - Xcode выберет из профиля
       ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER = #{ext_profile_uuid}
       ALADDINPacketTunnel_PROVISIONING_PROFILE = #{ext_profile_file}
       ALADDINPacketTunnel_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel
@@ -117,7 +118,7 @@ platform :ios do
         "-destination 'generic/platform=iOS'",
         "CODE_SIGN_STYLE=Manual",
         "DEVELOPMENT_TEAM=#{team_id}",
-        "CODE_SIGN_IDENTITY=#{code_sign_identity}",
+        # НЕ указываем CODE_SIGN_IDENTITY - Xcode выберет из профиля
         "ALADDIN_CODE_SIGN_STYLE=Manual",
         "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
         "ALADDIN_PROVISIONING_PROFILE='#{app_profile_file}'",
