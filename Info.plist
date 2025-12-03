@@ -56,13 +56,6 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -92,8 +85,6 @@
 	<string>ALADDIN Family uses Bluetooth for device security and family member proximity detection.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>ALADDIN Family needs local network access for family device communication and security.</string>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>ALADDIN Family uses tracking for family safety and security monitoring.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>ALADDIN Family needs health data access for family wellness monitoring and safety.</string>
 	<key>NSHealthUpdateUsageDescription</key>
