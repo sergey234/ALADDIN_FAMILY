@@ -124,8 +124,6 @@
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
-		<string>background-processing</string>
-		<string>background-fetch</string>
 		<string>remote-notification</string>
 		<string>location</string>
 	</array>
