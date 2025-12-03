@@ -43,7 +43,7 @@ jobs:
       uses: apple-actions/upload-testflight-build@v1
       with:
         app-path: ${{ steps.find-ipa.outputs.ipa_path }}
-        api-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
         issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
 
