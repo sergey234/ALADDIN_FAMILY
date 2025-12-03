@@ -1,0 +1,49 @@
+name: Upload IPA to App Store Connect
+
+on:
+  workflow_dispatch:
+    inputs:
+      artifact_name:
+        description: 'Artifact name to download'
+        required: true
+        default: 'ALADDIN-IPA'
+      run_id:
+        description: 'GitHub Actions run ID (optional, uses latest if not provided)'
+        required: false
+        type: string
+
+jobs:
+  upload-ipa:
+    name: Upload IPA to App Store Connect
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download IPA artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ github.event.inputs.artifact_name || 'ALADDIN-IPA' }}
+        run-id: ${{ github.event.inputs.run_id || '' }}
+        path: ./ipa
+        
+    - name: Find IPA file
+      id: find-ipa
+      run: |
+        IPA_FILE=$(find ./ipa -name "*.ipa" | head -1)
+        if [ -z "$IPA_FILE" ]; then
+          echo "❌ IPA file not found in artifact!"
+          exit 1
+        fi
+        echo "✅ Found IPA: $IPA_FILE"
+        echo "ipa_path=$IPA_FILE" >> $GITHUB_OUTPUT
+        
+    - name: Upload to App Store Connect
+      uses: apple-actions/upload-testflight-build@v1
+      with:
+        app-path: ${{ steps.find-ipa.outputs.ipa_path }}
+        api-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+
