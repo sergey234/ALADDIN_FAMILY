@@ -85,10 +85,6 @@
 	<string>ALADDIN Family uses Bluetooth for device security and family member proximity detection.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>ALADDIN Family needs local network access for family device communication and security.</string>
-	<key>NSHealthShareUsageDescription</key>
-	<string>ALADDIN Family needs health data access for family wellness monitoring and safety.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>ALADDIN Family needs health data access for family wellness monitoring and safety.</string>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>ALADDIN Family needs music access for family entertainment and safety features.</string>
 	<key>NSRemindersUsageDescription</key>
@@ -116,7 +112,6 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
-		<string>location</string>
 	</array>
 	<key>UISupportsDocumentBrowser</key>
 	<true/>

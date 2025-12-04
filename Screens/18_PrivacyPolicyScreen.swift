@@ -552,7 +552,10 @@ enum PrivacyMainSection: String, CaseIterable {
             return [
                 localizationManager.localized("privacy_policy_section_auth_content_1"),
                 localizationManager.localized("privacy_policy_section_auth_content_2"),
-                localizationManager.localized("privacy_policy_section_auth_content_3")
+                localizationManager.localized("privacy_policy_section_auth_content_3"),
+                localizationManager.localized("privacy_policy_section_auth_content_4"),
+                localizationManager.localized("privacy_policy_section_auth_content_5"),
+                localizationManager.localized("privacy_policy_section_auth_content_6")
             ]
         case .notCollected:
             return [
@@ -651,7 +654,10 @@ enum PrivacyMainSection: String, CaseIterable {
             return [
                 "Анонимная регистрация: роль + возрастная группа",
                 "Локальная аутентификация: PIN, Face ID (на устройстве)",
-                "Семейные группы: через QR-код без имён"
+                "Семейные группы: через QR-код без имён",
+                "Face ID: Данные лица НЕ собираются — приложение использует только встроенную функцию iOS для локальной аутентификации",
+                "Face ID: Данные лица НЕ передаются третьим лицам — вся обработка происходит локально на устройстве в Secure Enclave",
+                "Face ID: Данные лица НЕ хранятся на наших серверах — они остаются только на устройстве пользователя и удаляются при удалении приложения"
             ]
         case .notCollected:
             return [
