@@ -269,18 +269,6 @@ struct RecoveryCodeModal: View {
     }
 }
 
-// MARK: - ShareSheet (простая версия без поддержки iPad)
-
-struct ShareSheet: UIViewControllerRepresentable {
-    let activityItems: [Any]
-    
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-    
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-
 // MARK: - Preview
 
 struct RecoveryCodeModal_Previews: PreviewProvider {
