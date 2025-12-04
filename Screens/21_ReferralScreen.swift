@@ -1064,7 +1064,17 @@ enum ClipboardType {
 
 // MARK: - Placeholder Views
 
-// ShareSheet теперь в Shared/Components/ShareSheet.swift
+// MARK: - ShareSheet (простая версия без поддержки iPad)
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
 
 struct QRCodeView: View {
     let code: String

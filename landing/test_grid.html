@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+header.hero {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 40px !important;
+  background: #0f1b2b;
+  padding: 40px;
+  align-items: start !important;
+}
+
+.hero__content {
+  background: rgba(76, 111, 255, 0.2);
+  padding: 20px;
+  grid-column: 1;
+}
+
+.hero__dashboard {
+  background: rgba(255, 215, 0, 0.2);
+  padding: 20px;
+  grid-column: 2;
+}
+
+.dashboard-cards-compact {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 12px !important;
+}
+
+.dashboard-card-compact {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 16px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="hero__content">
+    <h1>Контент слева</h1>
+    <p>Текст контента</p>
+  </div>
+  <div class="hero__dashboard">
+    <div class="dashboard-cards-compact">
+      <div class="dashboard-card-compact">🛡️ 8 Устройств</div>
+      <div class="dashboard-card-compact">🚫 47 Угроз</div>
+      <div class="dashboard-card-compact">👥 4 Пользователей</div>
+      <div class="dashboard-card-compact">⏱️ 30 Дней</div>
+    </div>
+  </div>
+</header>
+</body>
+</html>
+

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход в админ-панель — ALADDIN AI</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <h1>🔐 Админ-панель</h1>
+        <p>ALADDIN AI — Система управления</p>
+      </div>
+      
+      <form id="loginForm" class="login-form">
+        <div class="form-group">
+          <label for="adminKey">Админ-ключ</label>
+          <input 
+            type="password" 
+            id="adminKey" 
+            name="adminKey" 
+            placeholder="Введите админ-ключ"
+            required
+            autocomplete="off"
+          >
+        </div>
+        
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+        
+        <button type="submit" class="btn-primary" id="loginButton">
+          <span class="btn-text">Войти</span>
+          <span class="btn-loader" style="display: none;">⏳</span>
+        </button>
+      </form>
+      
+      <div class="login-footer">
+        <p>Только для авторизованных администраторов</p>
+      </div>
+    </div>
+  </div>
+  
+  <script src="js/admin.js"></script>
+  <script>
+    // Инициализация страницы входа
+    document.addEventListener('DOMContentLoaded', function() {
+      const loginForm = document.getElementById('loginForm');
+      const errorMessage = document.getElementById('errorMessage');
+      const loginButton = document.getElementById('loginButton');
+      const btnText = loginButton.querySelector('.btn-text');
+      const btnLoader = loginButton.querySelector('.btn-loader');
+      
+      // Проверяем, не авторизован ли уже пользователь
+      if (localStorage.getItem('adminKey')) {
+        window.location.href = 'index.html';
+        return;
+      }
+      
+      loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const adminKey = document.getElementById('adminKey').value.trim();
+        
+        if (!adminKey) {
+          showError('Введите админ-ключ');
+          return;
+        }
+        
+        // Показываем загрузку
+        loginButton.disabled = true;
+        btnText.style.display = 'none';
+        btnLoader.style.display = 'inline';
+        errorMessage.style.display = 'none';
+        
+        try {
+          // Проверяем ключ, делая тестовый запрос
+          const response = await fetch('/api/admin/metrics/system', {
+            method: 'GET',
+            headers: {
+              'X-Admin-Key': adminKey,
+              'Content-Type': 'application/json'
+            }
+          });
+          
+          if (response.ok) {
+            // Ключ правильный - сохраняем и переходим
+            localStorage.setItem('adminKey', adminKey);
+            
+            // Логируем успешный вход (опционально - можно отправить на сервер)
+            console.log('✅ Успешный вход в админ-панель:', new Date().toISOString());
+            
+            window.location.href = 'index.html';
+          } else if (response.status === 401) {
+            // Логируем неудачную попытку входа
+            console.warn('⚠️ Неудачная попытка входа:', new Date().toISOString());
+            showError('Неверный админ-ключ');
+          } else {
+            showError('Ошибка сервера. Попробуйте позже.');
+          }
+        } catch (error) {
+          console.error('Ошибка входа:', error);
+          showError('Ошибка подключения к серверу');
+        } finally {
+          // Убираем загрузку
+          loginButton.disabled = false;
+          btnText.style.display = 'inline';
+          btnLoader.style.display = 'none';
+        }
+      });
+      
+      function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
+

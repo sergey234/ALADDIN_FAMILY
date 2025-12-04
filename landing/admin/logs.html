@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Логи — Админ-панель ALADDIN AI</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>🔐 ALADDIN AI</h2>
+      <p>Админ-панель</p>
+    </div>
+    
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="index.html">📊 Главная</a></li>
+        <li><a href="users.html">👥 Пользователи</a></li>
+        <li><a href="threats.html">🛡️ Угрозы</a></li>
+        <li><a href="logs.html" class="active">📋 Логи</a></li>
+        <li><a href="settings.html">⚙️ Настройки</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="dashboard-header">
+      <h1>📋 Логи</h1>
+      <div class="header-actions">
+        <button class="btn-secondary" id="refreshBtn" onclick="loadLogs()">
+          🔄 Обновить
+        </button>
+        <button class="btn-secondary" id="autoRefreshBtn" onclick="toggleAutoRefresh()">
+          ⏸️ Автообновление
+        </button>
+        <button class="btn-secondary" id="logoutBtn">
+          🚪 Выйти
+        </button>
+      </div>
+    </div>
+    
+    <!-- Service Selector -->
+    <section class="metrics-section">
+      <h2 class="section-title">Выберите сервис</h2>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button class="btn-primary" onclick="selectService('payment_service')" id="btn-payment_service">
+          💳 Payment Service
+        </button>
+        <button class="btn-secondary" onclick="selectService('nginx')" id="btn-nginx">
+          🌐 Nginx
+        </button>
+        <button class="btn-secondary" onclick="selectService('system')" id="btn-system">
+          🖥️ System
+        </button>
+        <button class="btn-secondary" onclick="selectService('security')" id="btn-security">
+          🔐 Security
+        </button>
+        <button class="btn-secondary" onclick="selectService('mysql')" id="btn-mysql">
+          💾 MySQL
+        </button>
+        <button class="btn-secondary" onclick="selectService('postgresql')" id="btn-postgresql">
+          🐘 PostgreSQL
+        </button>
+        <button class="btn-secondary" onclick="selectService('auth')" id="btn-auth">
+          🔑 Auth
+        </button>
+      </div>
+    </section>
+    
+    <!-- Logs Display -->
+    <section class="tables-section">
+      <h2 class="section-title" id="logsTitle">Логи Payment Service</h2>
+      
+      <div class="table-container">
+        <div style="padding: 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+          <div id="logsContent" style="font-family: 'Courier New', monospace; font-size: 12px; color: var(--text-primary); line-height: 1.6; max-height: 600px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word;">
+            <p style="color: var(--text-muted);">Загрузка логов...</p>
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-top: 20px; padding: 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+        <p style="color: var(--text-muted); font-size: 14px; margin: 0;">
+          <strong>Информация:</strong> Endpoint <code>/api/admin/logs</code> работает через subprocess (выполняет команды на сервере).
+          Для централизованного логирования нужно настроить ELK Stack или Loki.
+        </p>
+        <p style="color: var(--text-muted); font-size: 12px; margin-top: 10px;">
+          <strong>Если логи не загружаются, используйте SSH:</strong><br>
+          • Payment Service: <code>journalctl -u payment_service -n 100</code><br>
+          • Nginx: <code>tail -f /var/log/nginx/error.log</code><br>
+          • System: <code>journalctl -n 100</code><br>
+          • Security: <code>tail -f /opt/aladdin-backend/security/vpn/logs/error.log</code><br>
+          • MySQL: <code>tail -f /var/log/mysql/error.log</code><br>
+          • PostgreSQL: <code>tail -f /var/log/postgresql/postgresql-16-main.log</code><br>
+          • Auth: <code>tail -f /var/log/auth.log</code>
+        </p>
+      </div>
+    </section>
+  </main>
+  
+  <script src="js/admin.js"></script>
+  <script>
+    let autoRefreshInterval = null;
+    let currentService = 'payment_service';
+    
+    async function loadLogs() {
+      const logsContent = document.getElementById('logsContent');
+      if (!logsContent) return;
+      
+      logsContent.innerHTML = '<p style="color: var(--text-muted);">Загрузка логов...</p>';
+      
+      try {
+        const data = await window.adminAPI.apiRequest(`/api/admin/logs?service=${currentService}&limit=100`);
+        
+        if (data && data.logs && data.logs.length > 0) {
+          logsContent.innerHTML = data.logs.map(log => {
+            // Определяем цвет по уровню
+            let color = 'var(--text-primary)';
+            if (log.includes('ERROR') || log.includes('error')) color = 'var(--accent-danger)';
+            else if (log.includes('WARNING') || log.includes('warning')) color = 'var(--accent-warning)';
+            else if (log.includes('INFO') || log.includes('info')) color = 'var(--accent-secondary)';
+            
+            return `<div style="color: ${color}; margin-bottom: 4px;">${log}</div>`;
+          }).join('');
+        } else if (data && data.error) {
+          logsContent.innerHTML = `
+            <p style="color: var(--accent-warning);">
+              ${data.error}
+            </p>
+            <p style="color: var(--text-muted); margin-top: 20px;">
+              <strong>Команды для просмотра логов через SSH:</strong><br>
+              <code>ssh root@149.154.65.180</code><br>
+              <code>journalctl -u payment_service -n 100</code><br>
+              <code>tail -f /var/log/nginx/error.log</code>
+            </p>
+          `;
+        } else {
+          logsContent.innerHTML = `
+            <p style="color: var(--text-muted);">
+              Логи не доступны. Используйте SSH для просмотра логов на сервере.
+            </p>
+            <p style="color: var(--text-secondary); margin-top: 20px;">
+              <strong>Команды для просмотра логов:</strong><br>
+              <code>ssh root@149.154.65.180</code><br>
+              <code>journalctl -u payment_service -n 100</code><br>
+              <code>tail -f /var/log/nginx/error.log</code>
+            </p>
+          `;
+        }
+      } catch (error) {
+        console.error('Error loading logs:', error);
+        logsContent.innerHTML = `
+          <p style="color: var(--accent-danger);">Ошибка загрузки логов: ${error.message}</p>
+          <p style="color: var(--text-muted); margin-top: 20px;">
+            Используйте SSH для просмотра логов на сервере.
+          </p>
+        `;
+      }
+    }
+    
+    function selectService(service) {
+      currentService = service;
+      
+      // Update buttons
+      document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+      });
+      document.getElementById(`btn-${service}`).classList.remove('btn-secondary');
+      document.getElementById(`btn-${service}`).classList.add('btn-primary');
+      
+      // Update title
+      const titles = {
+        'payment_service': 'Логи Payment Service',
+        'nginx': 'Логи Nginx',
+        'system': 'Системные логи',
+        'security': 'Логи системы безопасности',
+        'mysql': 'Логи MySQL',
+        'postgresql': 'Логи PostgreSQL',
+        'auth': 'Логи авторизации'
+      };
+      document.getElementById('logsTitle').textContent = titles[service] || 'Логи';
+      
+      // Загружаем логи для выбранного типа
+      loadLogs();
+      
+      // Если автообновление активно, оно продолжит работать с новым типом логов
+      // (autoRefreshInterval уже вызывает loadLogs(), которая использует currentService)
+    }
+    
+    function toggleAutoRefresh() {
+      const btn = document.getElementById('autoRefreshBtn');
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+        btn.textContent = '▶️ Автообновление';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+      } else {
+        autoRefreshInterval = setInterval(loadLogs, 5000);
+        btn.textContent = '⏸️ Автообновление';
+        btn.classList.remove('btn-secondary');
+        btn.classList.add('btn-primary');
+      }
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!localStorage.getItem('adminKey')) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      loadLogs();
+      
+      // Setup logout
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          if (confirm('Вы уверены, что хотите выйти?')) {
+            localStorage.removeItem('adminKey');
+            window.location.href = 'login.html';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+
