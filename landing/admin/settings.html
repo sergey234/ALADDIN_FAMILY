@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Настройки — Админ-панель ALADDIN AI</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>🔐 ALADDIN AI</h2>
+      <p>Админ-панель</p>
+    </div>
+    
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="index.html">📊 Главная</a></li>
+        <li><a href="users.html">👥 Пользователи</a></li>
+        <li><a href="threats.html">🛡️ Угрозы</a></li>
+        <li><a href="logs.html">📋 Логи</a></li>
+        <li><a href="settings.html" class="active">⚙️ Настройки</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="dashboard-header">
+      <h1>⚙️ Настройки</h1>
+      <div class="header-actions">
+        <button class="btn-secondary" id="logoutBtn">
+          🚪 Выйти
+        </button>
+      </div>
+    </div>
+    
+    <!-- Settings Sections -->
+    <section class="metrics-section">
+      <h2 class="section-title">Настройки админ-панели</h2>
+      
+      <div class="table-container">
+        <div style="padding: 20px;">
+          <h3 style="margin-bottom: 15px; color: var(--text-primary);">Автообновление данных</h3>
+          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+            <label style="color: var(--text-secondary);">Интервал обновления:</label>
+            <select id="refreshInterval" style="padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary);">
+              <option value="10">10 секунд</option>
+              <option value="30" selected>30 секунд</option>
+              <option value="60">1 минута</option>
+              <option value="300">5 минут</option>
+            </select>
+            <button class="btn-primary" onclick="saveRefreshInterval()">Сохранить</button>
+          </div>
+          
+          <h3 style="margin-bottom: 15px; color: var(--text-primary);">Кэширование</h3>
+          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
+            <label style="color: var(--text-secondary);">TTL кэша:</label>
+            <select id="cacheTTL" style="padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary);">
+              <option value="10">10 секунд</option>
+              <option value="30" selected>30 секунд</option>
+              <option value="60">1 минута</option>
+            </select>
+            <p style="color: var(--text-muted); font-size: 12px; margin: 0;">
+              (Настраивается на сервере в backend)
+            </p>
+          </div>
+          
+          <h3 style="margin-bottom: 15px; color: var(--text-primary);">Админ-ключ</h3>
+          <div style="margin-bottom: 30px;">
+            <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 10px;">
+              Текущий админ-ключ: <code style="background: var(--bg-secondary); padding: 4px 8px; border-radius: 4px;">${localStorage.getItem('adminKey') ? '***' : 'Не установлен'}</code>
+            </p>
+            <p style="color: var(--text-muted); font-size: 12px;">
+              Для изменения админ-ключа используйте инструкцию: <code>docs/АДМИН_КЛЮЧ_ИНСТРУКЦИЯ.md</code>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- System Info -->
+    <section class="tables-section">
+      <h2 class="section-title">Информация о системе</h2>
+      
+      <div class="table-container">
+        <div style="padding: 20px;">
+          <table class="data-table">
+            <tbody>
+              <tr>
+                <td style="font-weight: 600; color: var(--text-secondary);">Версия админ-панели</td>
+                <td>1.0.0</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600; color: var(--text-secondary);">Дата обновления</td>
+                <td>04.12.2025</td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600; color: var(--text-secondary);">API Base URL</td>
+                <td><code>${window.location.origin}</code></td>
+              </tr>
+              <tr>
+                <td style="font-weight: 600; color: var(--text-secondary);">Статус авторизации</td>
+                <td><span class="status-badge status-active">Авторизован</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <script src="js/admin.js"></script>
+  <script>
+    function saveRefreshInterval() {
+      const interval = document.getElementById('refreshInterval').value;
+      localStorage.setItem('adminRefreshInterval', interval);
+      alert('Настройка сохранена! Перезагрузите страницу для применения.');
+    }
+    
+    // Load saved settings
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!localStorage.getItem('adminKey')) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      const savedInterval = localStorage.getItem('adminRefreshInterval');
+      if (savedInterval) {
+        document.getElementById('refreshInterval').value = savedInterval;
+      }
+      
+      // Setup logout
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          if (confirm('Вы уверены, что хотите выйти?')) {
+            localStorage.removeItem('adminKey');
+            window.location.href = 'login.html';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+

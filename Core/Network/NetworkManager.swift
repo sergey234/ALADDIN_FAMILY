@@ -483,6 +483,7 @@ class NetworkManager: NSObject, ObservableObject {
                         default:
                             networkError = .httpError(httpResponse.statusCode)
                         }
+                        
                         completion(.failure(networkError))
                     } else {
                         completion(.failure(NetworkError.httpError(httpResponse.statusCode)))

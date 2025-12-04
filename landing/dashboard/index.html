@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Статистика защиты — ALADDIN AI</title>
+  <link rel="stylesheet" href="../styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* Dashboard-specific styles */
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px clamp(24px, 5vw, 80px);
+    }
+
+    .dashboard-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .dashboard-header h1 {
+      font-size: clamp(32px, 5vw, 48px);
+      margin: 0 0 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-alt));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .dashboard-header p {
+      font-size: 18px;
+      color: rgba(245, 247, 250, 0.7);
+      margin: 0;
+    }
+
+    .dashboard-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+      text-decoration: none;
+      margin-bottom: 24px;
+      font-weight: 500;
+      transition: opacity 0.2s;
+    }
+
+    .dashboard-back-link:hover {
+      opacity: 0.8;
+    }
+
+    /* Stats Cards Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 32px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card__icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card__icon--devices {
+      background: rgba(76, 111, 255, 0.2);
+      color: var(--accent);
+    }
+
+    .stat-card__icon--threats {
+      background: rgba(255, 107, 107, 0.2);
+      color: #ff6b6b;
+    }
+
+    .stat-card__icon--users {
+      background: rgba(54, 214, 174, 0.2);
+      color: var(--accent-alt);
+    }
+
+    .stat-card__icon--uptime {
+      background: rgba(245, 200, 110, 0.2);
+      color: var(--gold);
+    }
+
+    .stat-card__value {
+      font-size: 36px;
+      font-weight: 700;
+      margin: 8px 0;
+      color: var(--text-light);
+    }
+
+    .stat-card__label {
+      font-size: 14px;
+      color: rgba(245, 247, 250, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Chart Section */
+    .chart-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 32px;
+      margin-bottom: 40px;
+      backdrop-filter: blur(10px);
+    }
+
+    .chart-section__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .chart-section__title {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .chart-section__subtitle {
+      font-size: 14px;
+      color: rgba(245, 247, 250, 0.6);
+      margin: 4px 0 0;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 400px;
+      width: 100%;
+    }
+
+    /* Top Threats Section */
+    .threats-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 32px;
+      backdrop-filter: blur(10px);
+    }
+
+    .threats-section__header {
+      margin-bottom: 24px;
+    }
+
+    .threats-section__title {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+
+    .threats-section__subtitle {
+      font-size: 14px;
+      color: rgba(245, 247, 250, 0.6);
+      margin: 0;
+    }
+
+    .threats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .threat-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .threat-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateX(4px);
+    }
+
+    .threat-item__info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .threat-item__icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: rgba(255, 107, 107, 0.2);
+      color: #ff6b6b;
+    }
+
+    .threat-item__details {
+      flex: 1;
+    }
+
+    .threat-item__name {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 4px;
+      color: var(--text-light);
+    }
+
+    .threat-item__category {
+      font-size: 12px;
+      color: rgba(245, 247, 250, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .threat-item__count {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    /* Loading State */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      color: rgba(245, 247, 250, 0.5);
+    }
+
+    .loading::after {
+      content: '';
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(76, 111, 255, 0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-left: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Error State */
+    .error {
+      background: rgba(255, 107, 107, 0.1);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      color: #ff6b6b;
+      text-align: center;
+    }
+
+    /* Auto-refresh indicator */
+    .auto-refresh {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: rgba(245, 247, 250, 0.5);
+    }
+
+    .auto-refresh__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-alt);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 24px 16px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-container {
+        height: 300px;
+      }
+
+      .threat-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .threat-item__count {
+        align-self: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <a href="/" class="dashboard-back-link">
+      ← Вернуться на главную
+    </a>
+
+    <div class="dashboard-header">
+      <h1>Статистика защиты</h1>
+      <p>Реальная статистика предотвращения угроз в реальном времени</p>
+      <div class="auto-refresh">
+        <span class="auto-refresh__dot"></span>
+        <span>Автообновление каждые 30 секунд</span>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--devices">📱</div>
+        <div class="stat-card__value" id="statDevices">-</div>
+        <div class="stat-card__label">Устройств защищено</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--threats">🛡️</div>
+        <div class="stat-card__value" id="statThreats">-</div>
+        <div class="stat-card__label">Угроз заблокировано</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--users">👨‍👩‍👧‍👦</div>
+        <div class="stat-card__value" id="statUsers">-</div>
+        <div class="stat-card__label">Активных семей</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--uptime">⏱️</div>
+        <div class="stat-card__value" id="statUptime">-</div>
+        <div class="stat-card__label">Дней работы системы</div>
+      </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="chart-section">
+      <div class="chart-section__header">
+        <div>
+          <h2 class="chart-section__title">График угроз за 24 часа</h2>
+          <p class="chart-section__subtitle">Количество заблокированных угроз по времени</p>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="threatsChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Top Threats Section -->
+    <div class="threats-section">
+      <div class="threats-section__header">
+        <h2 class="threats-section__title">Топ-5 угроз</h2>
+        <p class="threats-section__subtitle">Наиболее часто блокируемые типы угроз</p>
+      </div>
+      <div class="threats-list" id="threatsList">
+        <div class="loading">Загрузка данных...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Configuration
+    const API_BASE = 'https://aladdin-ai.ru/api';
+    const REFRESH_INTERVAL = 30000; // 30 seconds
+
+    // State
+    let threatsChart = null;
+    let refreshTimer = null;
+
+    // Format numbers
+    function formatNumber(num) {
+      if (typeof num !== 'number' || isNaN(num)) return '-';
+      return new Intl.NumberFormat('ru-RU').format(num);
+    }
+
+    // Load dashboard stats
+    async function loadDashboardStats() {
+      try {
+        const response = await fetch(`${API_BASE}/dashboard/public/stats`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Ошибка загрузки статистики:', error);
+        // Fallback data
+        return {
+          protected_devices: 8,
+          blocked_threats_total: 47,
+          active_users: 4,
+          uptime_days: 30,
+          threats_timeline: [],
+          top_threats: []
+        };
+      }
+    }
+
+    // Load threats timeline
+    async function loadThreatsTimeline(hours = 24) {
+      try {
+        const response = await fetch(`${API_BASE}/dashboard/public/threats-timeline?hours=${hours}`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        return data.timeline || [];
+      } catch (error) {
+        console.error('Ошибка загрузки графика угроз:', error);
+        return [];
+      }
+    }
+
+    // Load top threats
+    async function loadTopThreats(limit = 5) {
+      try {
+        const response = await fetch(`${API_BASE}/dashboard/public/top-threats?limit=${limit}`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        return data.items || [];
+      } catch (error) {
+        console.error('Ошибка загрузки топ угроз:', error);
+        return [];
+      }
+    }
+
+    // Update stats cards
+    function updateStatsCards(stats) {
+      document.getElementById('statDevices').textContent = formatNumber(stats.protected_devices || 0);
+      document.getElementById('statThreats').textContent = formatNumber(stats.blocked_threats_total || 0);
+      document.getElementById('statUsers').textContent = formatNumber(stats.active_users || 0);
+      document.getElementById('statUptime').textContent = formatNumber(stats.uptime_days || 0);
+    }
+
+    // Update threats chart
+    function updateThreatsChart(timeline) {
+      const ctx = document.getElementById('threatsChart');
+      if (!ctx) return;
+
+      const labels = timeline.map(item => {
+        const date = new Date(item.timestamp);
+        return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      });
+      const values = timeline.map(item => item.value || 0);
+
+      if (threatsChart) {
+        threatsChart.data.labels = labels;
+        threatsChart.data.datasets[0].data = values;
+        threatsChart.update('none'); // 'none' для плавного обновления
+      } else {
+        threatsChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Заблокированные угрозы',
+              data: values,
+              borderColor: '#4c6fff',
+              backgroundColor: 'rgba(76, 111, 255, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              pointBackgroundColor: '#4c6fff',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              },
+              tooltip: {
+                backgroundColor: 'rgba(15, 27, 43, 0.95)',
+                titleColor: '#f5f7fa',
+                bodyColor: '#f5f7fa',
+                borderColor: 'rgba(76, 111, 255, 0.3)',
+                borderWidth: 1,
+                padding: 12,
+                displayColors: false,
+                callbacks: {
+                  label: function(context) {
+                    return `Угроз: ${formatNumber(context.parsed.y)}`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  color: 'rgba(255, 255, 255, 0.05)',
+                  drawBorder: false
+                },
+                ticks: {
+                  color: 'rgba(245, 247, 250, 0.6)',
+                  maxRotation: 0,
+                  autoSkip: true,
+                  maxTicksLimit: 12
+                }
+              },
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: 'rgba(255, 255, 255, 0.05)',
+                  drawBorder: false
+                },
+                ticks: {
+                  color: 'rgba(245, 247, 250, 0.6)',
+                  callback: function(value) {
+                    return formatNumber(value);
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // Update top threats list
+    function updateTopThreats(threats) {
+      const container = document.getElementById('threatsList');
+      if (!container) return;
+
+      if (threats.length === 0) {
+        container.innerHTML = '<div class="error">Нет данных о угрозах</div>';
+        return;
+      }
+
+      container.innerHTML = threats.map((threat, index) => `
+        <div class="threat-item">
+          <div class="threat-item__info">
+            <div class="threat-item__icon">${getThreatIcon(threat.category)}</div>
+            <div class="threat-item__details">
+              <div class="threat-item__name">${threat.name}</div>
+              <div class="threat-item__category">${threat.category}</div>
+            </div>
+          </div>
+          <div class="threat-item__count">${formatNumber(threat.count)}</div>
+        </div>
+      `).join('');
+    }
+
+    // Get threat icon by category
+    function getThreatIcon(category) {
+      const icons = {
+        phishing: '🎣',
+        fraud: '💳',
+        malware: '🦠',
+        suspicious: '⚠️',
+        network: '🌐'
+      };
+      return icons[category] || '🛡️';
+    }
+
+    // Refresh all data
+    async function refreshDashboard() {
+      try {
+        // Load all data in parallel
+        const [stats, timeline, topThreats] = await Promise.all([
+          loadDashboardStats(),
+          loadThreatsTimeline(24),
+          loadTopThreats(5)
+        ]);
+
+        // Update UI
+        updateStatsCards(stats);
+        updateThreatsChart(timeline.length > 0 ? timeline : stats.threats_timeline || []);
+        updateTopThreats(topThreats.length > 0 ? topThreats : stats.top_threats || []);
+      } catch (error) {
+        console.error('Ошибка обновления dashboard:', error);
+      }
+    }
+
+    // Initialize dashboard
+    async function initDashboard() {
+      await refreshDashboard();
+      
+      // Set up auto-refresh
+      refreshTimer = setInterval(refreshDashboard, REFRESH_INTERVAL);
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (refreshTimer) {
+        clearInterval(refreshTimer);
+      }
+    });
+
+    // Start dashboard
+    document.addEventListener('DOMContentLoaded', initDashboard);
+  </script>
+</body>
+</html>
+

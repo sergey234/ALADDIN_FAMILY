@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Угрозы — Админ-панель ALADDIN AI</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="dashboard-page">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>🔐 ALADDIN AI</h2>
+      <p>Админ-панель</p>
+    </div>
+    
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="index.html">📊 Главная</a></li>
+        <li><a href="users.html">👥 Пользователи</a></li>
+        <li><a href="threats.html" class="active">🛡️ Угрозы</a></li>
+        <li><a href="logs.html">📋 Логи</a></li>
+        <li><a href="settings.html">⚙️ Настройки</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="dashboard-header">
+      <h1>🛡️ Угрозы</h1>
+      <div class="header-actions">
+        <button class="btn-secondary" id="refreshBtn" onclick="loadThreats()">
+          🔄 Обновить
+        </button>
+        <button class="btn-secondary" id="logoutBtn">
+          🚪 Выйти
+        </button>
+      </div>
+    </div>
+    
+    <!-- Threats Stats -->
+    <section class="metrics-section">
+      <h2 class="section-title">Статистика угроз</h2>
+      <div class="metrics-grid">
+        <div class="metric-card" id="metric-total-threats">
+          <div class="metric-header">
+            <span class="metric-title">Всего заблокировано</span>
+            <div class="metric-icon cpu" style="background: rgba(239, 68, 68, 0.2); color: var(--accent-danger);">🛡️</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">Всего угроз</div>
+        </div>
+        
+        <div class="metric-card" id="metric-threats-24h">
+          <div class="metric-header">
+            <span class="metric-title">За 24 часа</span>
+            <div class="metric-icon ram" style="background: rgba(245, 158, 11, 0.2); color: var(--accent-warning);">⚠️</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">За сутки</div>
+        </div>
+        
+        <div class="metric-card" id="metric-threats-7d">
+          <div class="metric-header">
+            <span class="metric-title">За 7 дней</span>
+            <div class="metric-icon disk">📊</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">За неделю</div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Top Threats Chart -->
+    <section class="charts-section">
+      <h2 class="section-title">Топ угроз</h2>
+      
+      <div class="chart-container">
+        <h3 class="chart-title">Топ-5 угроз</h3>
+        <div class="chart-wrapper">
+          <canvas id="topThreatsChart"></canvas>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Top Threats Table -->
+    <section class="tables-section">
+      <h2 class="section-title">Детальный список угроз</h2>
+      
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Название</th>
+                <th>Количество</th>
+                <th>Категория</th>
+                <th>Последнее</th>
+              </tr>
+            </thead>
+            <tbody id="threatsListBody">
+              <tr>
+                <td colspan="4" class="table-loading">Загрузка данных...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div style="margin-top: 20px; padding: 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+        <p style="color: var(--text-muted); font-size: 14px; margin: 0;">
+          <strong>Примечание:</strong> Детальный список угроз будет доступен после подключения к системе логирования угроз.
+          Сейчас отображается статистика на основе данных пользователей.
+        </p>
+      </div>
+    </section>
+  </main>
+  
+  <script src="js/admin.js"></script>
+  <script>
+    let topThreatsChart = null;
+    
+    // Load threats data
+    async function loadThreats() {
+      try {
+        // Load metrics
+        const metricsData = await window.adminAPI.apiRequest('/api/admin/metrics/threats');
+        if (metricsData) {
+          const totalThreatsCard = document.getElementById('metric-total-threats');
+          if (totalThreatsCard) {
+            totalThreatsCard.querySelector('.metric-value').textContent = metricsData.total_threats || 0;
+          }
+          
+          const threats24hCard = document.getElementById('metric-threats-24h');
+          if (threats24hCard) {
+            threats24hCard.querySelector('.metric-value').textContent = metricsData.threats_24h || 0;
+          }
+          
+          const threats7dCard = document.getElementById('metric-threats-7d');
+          if (threats7dCard) {
+            threats7dCard.querySelector('.metric-value').textContent = metricsData.threats_7d || 0;
+          }
+        }
+        
+        // Load top threats from admin endpoint
+        try {
+          const threatsData = await window.adminAPI.apiRequest('/api/admin/threats/list?limit=5');
+          if (threatsData && threatsData.threats) {
+            updateThreatsTable(threatsData.threats);
+            updateThreatsChart(threatsData.threats);
+          } else {
+            // Fallback to public endpoint
+            const response = await fetch('/api/dashboard/public/top-threats');
+            if (response.ok) {
+              const data = await response.json();
+              if (data && data.items) {
+                updateThreatsTable(data.items);
+                updateThreatsChart(data.items);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error loading threats:', error);
+          const tbody = document.getElementById('threatsListBody');
+          if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="4" class="table-error">Ошибка загрузки данных: ' + error.message + '</td></tr>';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading threats:', error);
+        const tbody = document.getElementById('threatsListBody');
+        if (tbody) {
+          tbody.innerHTML = '<tr><td colspan="4" class="table-error">Ошибка загрузки данных</td></tr>';
+        }
+      }
+    }
+    
+    function updateThreatsTable(items) {
+      const tbody = document.getElementById('threatsListBody');
+      if (!tbody) return;
+      
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="table-empty">Нет угроз</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = items.map((threat, index) => `
+        <tr>
+          <td>${threat.name || 'Неизвестно'}</td>
+          <td><strong>${threat.count || 0}</strong></td>
+          <td><span class="category-badge">${threat.category_name || threat.category || 'other'}</span></td>
+          <td>${threat.last_seen ? new Date(threat.last_seen).toLocaleString('ru-RU') : 'Неизвестно'}</td>
+        </tr>
+      `).join('');
+    }
+    
+    function updateThreatsChart(items) {
+      const ctx = document.getElementById('topThreatsChart');
+      if (!ctx) return;
+      
+      if (!topThreatsChart) {
+        topThreatsChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: [],
+            datasets: [{
+              label: 'Количество',
+              data: [],
+              backgroundColor: 'rgba(239, 68, 68, 0.5)',
+              borderColor: 'rgb(239, 68, 68)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                labels: { color: '#e4e7eb' }
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: '#9ca3af' },
+                grid: { color: '#2d3748' }
+              },
+              y: {
+                ticks: { color: '#9ca3af' },
+                grid: { color: '#2d3748' },
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      }
+      
+      if (items && items.length > 0) {
+        topThreatsChart.data.labels = items.map(t => t.name || 'Неизвестно');
+        topThreatsChart.data.datasets[0].data = items.map(t => t.count || 0);
+        topThreatsChart.update();
+      }
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!localStorage.getItem('adminKey')) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      loadThreats();
+      
+      // Setup logout
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          if (confirm('Вы уверены, что хотите выйти?')) {
+            localStorage.removeItem('adminKey');
+            window.location.href = 'login.html';
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+

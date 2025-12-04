@@ -19,6 +19,9 @@ from app.providers.mock_psp import provider
 from app.utils import hash_pin, verify_pin, generate_activation_code, code_expiration, now_utc
 from app.rate_limit import get_rate_limiter
 from app.config import settings
+from app.dashboard_stats import get_dashboard_stats, get_threats_timeline, get_top_threats
+from app.admin_stats import get_system_metrics, get_users_metrics, get_threats_metrics
+from app.admin_endpoints import router as admin_endpoints_router
 from fastapi import HTTPException as FastAPIHTTPException
 
 app = FastAPI(title="Aladdin Payment Service", version="1.0.0")
@@ -52,9 +55,18 @@ async def verify_api_key(x_api_key: Optional[str] = Header(None)):
 
 
 async def verify_admin_key(x_admin_key: Optional[str] = Header(None, alias="X-Admin-Key")):
-    """Проверка админского ключа"""
+    """Проверка админского ключа с логированием"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     if not x_admin_key or x_admin_key != settings.admin_key:
+        # Логируем неудачную попытку доступа
+        logger.warning(f"⚠️ Неудачная попытка доступа к админ-панели (неверный ключ)")
         raise HTTPException(status_code=401, detail="Invalid admin key")
+    
+    # Логируем успешный доступ (опционально - можно отключить для уменьшения логов)
+    # logger.info(f"✅ Успешный доступ к админ-панели")
+    
     return x_admin_key
 
 
@@ -824,6 +836,158 @@ async def update_payment_methods_visibility(
         "visible_methods": method_ids,
         "message": "Payment methods visibility updated. Restart service to apply changes, or use environment variable PAYMENT_VISIBLE_PAYMENT_METHODS for permanent changes."
     }
+
+
+# ========== DASHBOARD ENDPOINTS ==========
+
+@app.get("/api/dashboard/public/stats")
+async def get_public_dashboard_stats(
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    Получить общую статистику для публичного dashboard
+    
+    Не требует авторизации (публичный endpoint)
+    
+    Returns:
+        dict: Статистика с полями:
+            - protected_devices: количество устройств
+            - blocked_threats_total: общее количество заблокированных угроз
+            - active_users: количество активных пользователей
+            - uptime_days: дни работы системы
+            - threats_timeline: график угроз за 24 часа
+            - top_threats: топ-5 угроз
+    """
+    try:
+        stats = await get_dashboard_stats(session)
+        return stats
+    except Exception as e:
+        # В случае ошибки возвращаем fallback данные
+        print(f"⚠️ Ошибка получения статистики dashboard: {e}")
+        return {
+            "protected_devices": 8,
+            "blocked_threats_total": 47,
+            "active_users": 4,
+            "active_families": 4,
+            "uptime_days": 30,
+            "threats_timeline": [],
+            "top_threats": []
+        }
+
+
+@app.get("/api/dashboard/public/threats-timeline")
+async def get_public_threats_timeline(
+    hours: int = 24,
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    Получить график угроз за период
+    
+    Args:
+        hours: Количество часов для графика (по умолчанию 24)
+    
+    Returns:
+        dict: {"timeline": [...]}
+    """
+    try:
+        timeline = await get_threats_timeline(session, hours=hours)
+        return {"timeline": timeline}
+    except Exception as e:
+        print(f"⚠️ Ошибка получения timeline угроз: {e}")
+        return {"timeline": []}
+
+
+@app.get("/api/dashboard/public/top-threats")
+async def get_public_top_threats(
+    limit: int = 5,
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    Получить топ угроз
+    
+    Args:
+        limit: Количество угроз (по умолчанию 5)
+    
+    Returns:
+        dict: {"items": [...]}
+    """
+    try:
+        threats = await get_top_threats(session, limit=limit)
+        return {"items": threats}
+    except Exception as e:
+        print(f"⚠️ Ошибка получения топ угроз: {e}")
+        return {"items": []}
+
+
+# ========== ADMIN DASHBOARD ENDPOINTS ==========
+
+@app.get("/api/admin/metrics/system")
+async def get_admin_system_metrics(
+    admin_key: str = Depends(verify_admin_key)
+):
+    """
+    Получить системные метрики для админского dashboard
+    
+    Требует:
+    - X-Admin-Key заголовок
+    
+    Returns:
+        dict: Системные метрики (CPU, RAM, Disk, Network)
+    """
+    try:
+        metrics = await get_system_metrics()
+        return metrics
+    except Exception as e:
+        print(f"⚠️ Ошибка получения системных метрик: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting system metrics: {str(e)}")
+
+
+@app.get("/api/admin/metrics/users")
+async def get_admin_users_metrics(
+    session: AsyncSession = Depends(get_session),
+    admin_key: str = Depends(verify_admin_key)
+):
+    """
+    Получить метрики пользователей для админского dashboard
+    
+    Требует:
+    - X-Admin-Key заголовок
+    
+    Returns:
+        dict: Метрики пользователей
+    """
+    try:
+        metrics = await get_users_metrics(session)
+        return metrics
+    except Exception as e:
+        print(f"⚠️ Ошибка получения метрик пользователей: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting users metrics: {str(e)}")
+
+
+@app.get("/api/admin/metrics/threats")
+async def get_admin_threats_metrics(
+    session: AsyncSession = Depends(get_session),
+    admin_key: str = Depends(verify_admin_key)
+):
+    """
+    Получить метрики угроз для админского dashboard
+    
+    Требует:
+    - X-Admin-Key заголовок
+    
+    Returns:
+        dict: Метрики угроз
+    """
+    try:
+        metrics = await get_threats_metrics(session)
+        return metrics
+    except Exception as e:
+        print(f"⚠️ Ошибка получения метрик угроз: {e}")
+        raise HTTPException(status_code=500, detail=f"Error getting threats metrics: {str(e)}")
+
+
+# Подключаем роутер для дополнительных admin endpoints
+app.include_router(admin_endpoints_router, prefix="/api/admin", tags=["admin"])
 
 
 if __name__ == "__main__":

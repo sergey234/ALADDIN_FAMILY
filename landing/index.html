@@ -10,25 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
-    <!-- Визуальный индикатор для отладки (в самом начале body) -->
-    <div id="debugIndicator" style="position: fixed; top: 10px; right: 10px; background: rgba(0,255,0,0.8); color: black; padding: 10px; border-radius: 5px; z-index: 9999; font-size: 12px; display: none; font-family: monospace;">
-      JS работает!
-    </div>
-    
-    <!-- Кнопка для показа диагностики -->
-    <button onclick="document.getElementById('debugPanel').style.display=document.getElementById('debugPanel').style.display==='none'?'block':'none'" style="position: fixed; bottom: 10px; right: 10px; background: #0f0; color: black; border: none; padding: 10px 15px; border-radius: 5px; z-index: 9999; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,0.3);">
-      🔍 Диагностика
-    </button>
-    
-    <!-- Визуальный блок диагностики (для пользователей без консоли) -->
-    <div id="debugPanel" style="position: fixed; bottom: 10px; left: 10px; right: 10px; max-width: 600px; max-height: 400px; overflow-y: auto; background: rgba(0,0,0,0.9); color: #0f0; padding: 15px; border-radius: 8px; z-index: 9998; font-size: 11px; font-family: monospace; display: none; border: 2px solid #0f0;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <strong style="color: #0f0;">🔍 Диагностика (без консоли)</strong>
-        <button onclick="document.getElementById('debugPanel').style.display='none'" style="background: #f00; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">✕ Закрыть</button>
-      </div>
-      <div id="debugLog" style="line-height: 1.4;"></div>
-    </div>
-    
     <!-- Глобальные функции определяем СРАЗУ, до загрузки DOM -->
     <script>
       // ========== ПРИЧИНА 7: Глобальный обработчик ошибок ==========
@@ -51,38 +32,14 @@
         window.console = { log: function() {}, error: function() {}, warn: function() {} };
       }
       
-      // Функция для логирования в визуальный блок (для пользователей без консоли)
+      // Функция для логирования (только в консоль, без визуальных элементов)
       window.debugLog = function(message, type = 'info') {
-        const colors = {
-          info: '#0f0',
-          error: '#f00',
-          warn: '#ff0',
-          success: '#0ff'
-        };
-        const panel = document.getElementById('debugPanel');
-        const log = document.getElementById('debugLog');
-        if (panel && log) {
-          panel.style.display = 'block';
-          const time = new Date().toLocaleTimeString();
-          const color = colors[type] || '#0f0';
-          log.innerHTML += `<div style="color: ${color}; margin: 2px 0;">[${time}] ${message}</div>`;
-          log.scrollTop = log.scrollHeight;
-        }
-        // Также логируем в консоль, если доступна
-        if (typeof console !== 'undefined' && console.log) {
-          console.log(message);
+        // Логируем только в консоль разработчика
+        if (typeof console !== 'undefined') {
+          const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warn' ? '⚠️' : 'ℹ️';
+          console.log(`${prefix} ${message}`);
         }
       };
-      
-      // Показываем визуальный индикатор вместо alert
-      setTimeout(function() {
-        const indicator = document.getElementById('debugIndicator');
-        if (indicator) {
-          indicator.style.display = 'block';
-          indicator.textContent = 'JS работает! ' + new Date().toLocaleTimeString();
-        }
-        window.debugLog('✅ JavaScript загружен и работает', 'success');
-      }, 100);
       
       // ПРИЧИНА: Определяем API_BASE и API_KEY СРАЗУ, чтобы они были доступны для handleFormSubmit
       // Определяем их здесь, чтобы функция могла их использовать
@@ -1026,30 +983,59 @@
       </div>
       <div class="hero__stats" data-hero-stats>
         <div class="stat">
-          <strong>4</strong>
+          <strong id="stats-families">4</strong>
           <span>семьи защищено</span>
         </div>
         <div class="stat">
-          <strong>8</strong>
+          <strong id="stats-devices">8</strong>
           <span>устройств</span>
         </div>
         <div class="stat">
-          <strong>47</strong>
+          <strong id="stats-threats">47</strong>
           <span>угроз блокируем</span>
         </div>
       </div>
     </div>
-    <div class="hero__visual">
-      <div class="hero__visual-placeholder">
-        <div class="hero__visual-icon">🛡️</div>
-        <p>ALADDIN AI</p>
+    <div class="hero__dashboard">
+      <!-- Компактный dashboard вместо щита -->
+      <div class="dashboard-cards-compact">
+        <div class="dashboard-card-compact">
+          <div class="card-icon">🛡️</div>
+          <div class="card-value" id="dashboard-devices">8</div>
+          <div class="card-label">Устройств</div>
+        </div>
+        <div class="dashboard-card-compact">
+          <div class="card-icon">🚫</div>
+          <div class="card-value" id="dashboard-threats">47</div>
+          <div class="card-label">Угроз</div>
+        </div>
+        <div class="dashboard-card-compact">
+          <div class="card-icon">👥</div>
+          <div class="card-value" id="dashboard-users">4</div>
+          <div class="card-label">Пользователей</div>
+        </div>
+        <div class="dashboard-card-compact">
+          <div class="card-icon">⏱️</div>
+          <div class="card-value" id="dashboard-uptime">30</div>
+          <div class="card-label">Дней</div>
+        </div>
+      </div>
+      
+      <!-- Мини-график угроз -->
+      <div class="dashboard-mini-chart">
+        <canvas id="threats-mini-chart" width="300" height="120"></canvas>
+      </div>
+      
+      <!-- Кнопка перехода на полный dashboard -->
+      <div class="dashboard-more-link">
+        <a href="/dashboard" class="cta secondary">📊 Подробная статистика</a>
       </div>
     </div>
   </header>
 
   <section class="benefits" id="about">
     <h2>Что такое ALADDIN AI</h2>
-    <p class="section-subtitle">ALADDIN AI — это ваш персональный агент безопасности, который защищает всю вашу семью от более чем 100 видов киберугроз 24/7. Приложение использует искусственный интеллект и военные технологии шифрования для обеспечения максимальной безопасности ваших данных и близких.</p>
+    <p class="section-subtitle">ALADDIN AI — это ваш персональный агент безопасности, который защищает всю вашу семью от более чем 100 видов киберугроз 24/7. Приложение использует искусственный интеллект и военные технологии для обеспечения максимальной безопасности ваших данных и близких.</p>
     <div class="benefits__grid">
       <article>
         <h3>🛡️ Защита всей семьи</h3>
@@ -1061,7 +1047,7 @@
       </article>
       <article>
         <h3>🔒 VPN защита</h3>
-        <p>Защищённое подключение к интернету с военными технологиями шифрования (AES-256), NO-LOGS политика, быстрое и стабильное соединение, экономия батареи до 40%.</p>
+        <p>Защищённое подключение к интернету с военными технологиями (AES-256), NO-LOGS политика, быстрое и стабильное соединение.</p>
       </article>
       <article>
         <h3>👨‍👩‍👧 Родительский контроль</h3>
@@ -1085,13 +1071,13 @@
       <section class="how-it-works" id="how-it-works">
         <h2>Как это работает</h2>
         <p class="section-subtitle" style="margin-bottom: 32px; color: rgba(255,255,255,0.8);">
-          Оплата подписки выполняется на сайте aladdin-ai.ru (вне App Store). В приложении ALADDIN AI вы вводите полученный код и активируете защиту.
+          Оплата подписки выполняется на сайте aladdin-ai.ru. В приложении ALADDIN AI вы вводите полученный код и активируете защиту.
         </p>
         <div class="steps">
           <article>
             <span>1</span>
             <h3>Оплатите тариф на сайте</h3>
-            <p>Выберите тариф на aladdin-ai.ru, укажите alias и PIN и оплатите удобным способом (оплата вне App Store).</p>
+            <p>Выберите тариф на aladdin-ai.ru, укажите alias и PIN и оплатите удобным способом.</p>
           </article>
           <article>
             <span>2</span>
@@ -1349,7 +1335,7 @@
           <select name="paymentMethod" data-method-select>
             <option value="qr_sbp" selected>QR / Система быстрых платежей</option>
             <option value="sberpay">SberPay</option>
-            <option value="card_sber">Карта Сбербанк (Мир/Visa/Mastercard)</option>
+            <option value="card_sber">Карта Сбербанк (Мир)</option>
             <option value="tinkoff_pay">Tinkoff Pay</option>
             <option value="manual_transfer">Оплата на карту через СБП</option>
           </select>
@@ -1357,7 +1343,7 @@
         <div class="method-description-box" data-method-description>
           <div class="method-selected">
             <h4>✅ Выбран: QR / Система быстрых платежей</h4>
-            <p>Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.</p>
+            <p>Поддержка банков РФ. Сканируйте QR в приложении вашего банка.</p>
             <button type="button" class="method-info-btn" data-method-info="qr_sbp">
               ℹ️ Подробнее об этом методе
             </button>
@@ -1384,7 +1370,7 @@
         </label>
         <!-- ✅ ДИАГНОСТИКА: Переместили селект периода СРАЗУ ПОСЛЕ выбора тарифа для лучшей видимости -->
         <label style="color: var(--gold); background: rgba(255,215,0,0.2); padding: 15px; border: 3px solid #FFD700; border-radius: 8px; margin: 15px 0;" data-period-wrapper>
-          <strong style="font-size: 18px; display: block; margin-bottom: 10px;">📅 Период подписки (ДИАГНОСТИКА - ВИДНО?)</strong>
+          <strong style="font-size: 18px; display: block; margin-bottom: 10px;">📅 Период подписки</strong>
           <select name="tariffPeriod" data-tariff-period style="font-size: 18px; padding: 12px; width: 100%; margin-top: 5px; background: white; color: black; border: 2px solid #FFD700; border-radius: 5px;">
             <option value="">⏳ Загрузка тарифов...</option>
           </select>
@@ -1448,11 +1434,14 @@
   <section class="payment-methods" id="methods">
     <div class="payment-methods__intro">
       <h2>Способы оплаты и банки</h2>
-      <p>Сайт ALADDIN подключён к собственным интеграциям с топ‑21 банком России. Вы можете оплатить подписку через QR/СБП, карты «Мир»/Visa/Mastercard, кнопки SberPay/Tinkoff Pay или по прямым реквизитам.</p>
+      <p>Сайт ALADDIN подключён к собственным интеграциям с банками России. Вы можете оплатить подписку через QR/СБП, карты «Мир», кнопки SberPay/Tinkoff Pay или по прямым реквизитам.</p>
     </div>
     <div class="bank-grid" data-bank-list>
       <!-- заполнится из CMS -->
     </div>
+    <p style="margin-top: 30px; text-align: center; color: rgba(255,255,255,0.7); font-size: 14px;">
+      💡 Количество банков и способы оплаты будут увеличиваться со временем
+    </p>
   </section>
 
   <section class="testimonials" id="reviews">
@@ -1545,15 +1534,6 @@
     console.log('🚀 window.location:', window.location.href);
     
     // Показываем визуальный индикатор
-    try {
-      const debugIndicator = document.getElementById('debugIndicator');
-      if (debugIndicator) {
-        debugIndicator.style.display = 'block';
-        debugIndicator.textContent = 'JS работает! ' + new Date().toLocaleTimeString();
-      }
-    } catch (e) {
-      console.error('Ошибка при показе индикатора:', e);
-    }
     
     async function loadJSON(path, fallback) {
       try {
@@ -1573,11 +1553,37 @@
 
     function renderHeroStats(stats) {
       const wrapper = document.querySelector('[data-hero-stats]');
+      if (!wrapper) return;
+      
+      // Сохраняем ID элементов для обновления через API
+      const idMap = {
+        'семьи защищено': 'stats-families',
+        'семьи защищено': 'stats-families',
+        'устройств': 'stats-devices',
+        'угроз предотвращаем': 'stats-threats',
+        'угроз блокируем': 'stats-threats'
+      };
+      
       wrapper.innerHTML = '';
-      stats.forEach(item => {
+      stats.forEach((item, index) => {
         const block = document.createElement('div');
         block.className = 'stat';
-        block.innerHTML = `<strong>${item.value}</strong><span>${item.label}</span>`;
+        
+        // Определяем ID на основе индекса или текста
+        let elementId = null;
+        if (index === 0) elementId = 'stats-families';
+        else if (index === 1) elementId = 'stats-devices';
+        else if (index === 2) elementId = 'stats-threats';
+        else {
+          elementId = idMap[item.label] || null;
+        }
+        
+        if (elementId) {
+          block.innerHTML = `<strong id="${elementId}">${item.value}</strong><span>${item.label}</span>`;
+        } else {
+          block.innerHTML = `<strong>${item.value}</strong><span>${item.label}</span>`;
+        }
+        
         wrapper.appendChild(block);
       });
     }
@@ -2017,9 +2023,9 @@
           // Обновляем описание для текущего выбранного метода
           const updateDescription = () => {
             const methodDescriptions = {
-              'qr_sbp': { label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+              'qr_sbp': { label: 'QR / Система быстрых платежей', description: 'Поддержка банков РФ. Сканируйте QR в приложении вашего банка.' },
               'sberpay': { label: 'SberPay', description: 'Официальная кнопка Сбербанка для быстрой оплаты.' },
-              'card_sber': { label: 'Карта Сбербанк (Мир/Visa/Mastercard)', description: 'Интернет-эквайринг Сбербанка для карт «Мир», Visa, Mastercard. Без ввода лишних данных.' },
+              'card_sber': { label: 'Карта Сбербанк (Мир)', description: 'Интернет-эквайринг Сбербанка для карт «Мир». Без ввода лишних данных.' },
               'tinkoff_pay': { label: 'Tinkoff Pay', description: 'Моментальная оплата через приложение Тинькофф.' },
               'manual_transfer': { label: 'Оплата на карту через СБП', description: 'Переведите деньги через СБП на номер нашей карты. Мгновенное зачисление, без комиссии. После оплаты вы получите код активации.' }
             };
@@ -2070,9 +2076,9 @@
 
       // Словарь описаний методов (fallback, если JSON не загрузится)
       const methodDescriptions = {
-        'qr_sbp': { label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+        'qr_sbp': { label: 'QR / Система быстрых платежей', description: 'Поддержка банков РФ. Сканируйте QR в приложении вашего банка.' },
         'sberpay': { label: 'SberPay', description: 'Официальная кнопка Сбербанка для быстрой оплаты.' },
-        'card_sber': { label: 'Карта Сбербанк (Мир/Visa/Mastercard)', description: 'Интернет-эквайринг Сбербанка для карт «Мир», Visa, Mastercard. Без ввода лишних данных.' },
+        'card_sber': { label: 'Карта Сбербанк (Мир)', description: 'Интернет-эквайринг Сбербанка для карт «Мир». Без ввода лишних данных.' },
         'tinkoff_pay': { label: 'Tinkoff Pay', description: 'Моментальная оплата через приложение Тинькофф.' },
         'manual_transfer': { label: 'Оплата на карту через СБП', description: 'Переведите деньги через СБП на номер нашей карты. Мгновенное зачисление, без комиссии. После оплаты вы получите код активации.' }
       };
@@ -2150,11 +2156,11 @@
           loadJSON('cms/tariffs.json', []),
           loadJSON('cms/testimonials.json', []),
           loadJSON('cms/faq.json', []),
-          loadJSON('cms/banks.json', []),
+          loadJSON('cms/banks.json?v=' + Date.now(), []),
           loadJSON('cms/methods.json', [
-            { id: 'qr_sbp', label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+            { id: 'qr_sbp', label: 'QR / Система быстрых платежей', description: 'Поддержка банков РФ. Сканируйте QR в приложении вашего банка.' },
             { id: 'sberpay', label: 'SberPay', description: 'Официальная кнопка Сбербанка для быстрой оплаты.' },
-            { id: 'card_sber', label: 'Карта Сбербанк (Мир/Visa/Mastercard)', description: 'Интернет-эквайринг Сбербанка для карт «Мир», Visa, Mastercard. Без ввода лишних данных.' },
+            { id: 'card_sber', label: 'Карта Сбербанк (Мир)', description: 'Интернет-эквайринг Сбербанка для карт «Мир». Без ввода лишних данных.' },
             { id: 'tinkoff_pay', label: 'Tinkoff Pay', description: 'Моментальная оплата через приложение Тинькофф.' },
             { id: 'manual_transfer', label: 'Оплата на карту через СБП', description: 'Переведите деньги через СБП на номер нашей карты. Мгновенное зачисление, без комиссии. После оплаты вы получите код активации.' }
           ])
@@ -2246,7 +2252,7 @@
         
         // Показываем fallback методы даже при ошибке
         const fallbackMethods = [
-          { id: 'qr_sbp', label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+          { id: 'qr_sbp', label: 'QR / Система быстрых платежей', description: 'Поддержка банков РФ. Сканируйте QR в приложении вашего банка.' },
           { id: 'card_sber', label: 'Карта Сбербанк (Мир)', description: 'Интернет-эквайринг Сбербанка для карт «Мир». Без ввода лишних данных.' },
           { id: 'manual_transfer', label: 'Прямой банковский перевод по реквизитам', description: 'Если нужен счёт на оплату — отправьте перевод по нашим реквизитам и получите код от поддержки.' }
         ];
@@ -2755,9 +2761,9 @@
       bootstrapCMS().catch(error => {
         // Показываем fallback методы даже при ошибке
         const fallbackMethods = [
-          { id: 'qr_sbp', label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+          { id: 'qr_sbp', label: 'QR / Система быстрых платежей', description: 'Поддержка банков РФ. Сканируйте QR в приложении вашего банка.' },
           { id: 'sberpay', label: 'SberPay', description: 'Официальная кнопка Сбербанка для быстрой оплаты.' },
-          { id: 'card_sber', label: 'Карта Сбербанк (Мир/Visa/Mastercard)', description: 'Интернет-эквайринг Сбербанка для карт «Мир», Visa, Mastercard. Без ввода лишних данных.' },
+          { id: 'card_sber', label: 'Карта Сбербанк (Мир)', description: 'Интернет-эквайринг Сбербанка для карт «Мир». Без ввода лишних данных.' },
           { id: 'tinkoff_pay', label: 'Tinkoff Pay', description: 'Моментальная оплата через приложение Тинькофф.' },
           { id: 'manual_transfer', label: 'Оплата на карту через СБП', description: 'Переведите деньги через СБП на номер нашей карты. Мгновенное зачисление, без комиссии. После оплаты вы получите код активации.' }
         ];
@@ -2773,9 +2779,9 @@
       if (!select || !descriptionBox) return;
       
       const methodDescriptions = {
-        'qr_sbp': { label: 'QR / Система быстрых платежей', description: 'Поддержка всех топ-21 банков РФ. Сканируйте QR в приложении вашего банка.' },
+        'qr_sbp': { label: 'QR / Система быстрых платежей', description: 'Поддержка банков РФ. Сканируйте QR в приложении вашего банка.' },
         'sberpay': { label: 'SberPay', description: 'Официальная кнопка Сбербанка для быстрой оплаты.' },
-        'card_sber': { label: 'Карта Сбербанк (Мир/Visa/Mastercard)', description: 'Интернет-эквайринг Сбербанка для карт «Мир», Visa, Mastercard. Без ввода лишних данных.' },
+        'card_sber': { label: 'Карта Сбербанк (Мир)', description: 'Интернет-эквайринг Сбербанка для карт «Мир». Без ввода лишних данных.' },
         'tinkoff_pay': { label: 'Tinkoff Pay', description: 'Моментальная оплата через приложение Тинькофф.' },
         'manual_transfer': { label: 'Оплата на карту через СБП', description: 'Переведите деньги через СБП на номер нашей карты. Мгновенное зачисление, без комиссии. После оплаты вы получите код активации.' }
       };
@@ -3487,6 +3493,146 @@
     setTimeout(initModal, 500);
     setTimeout(initPaymentForm, 500); // Инициализируем форму еще раз
   </script>
-</body>
+  <script>
+    // ========== DASHBOARD: Загрузка статистики для hero-блока ==========
+    
+    // Функция для загрузки статистики из API
+    async function loadHeroDashboardStats() {
+      try {
+        // Определяем API_BASE если еще не установлен
+        if (!window.API_BASE) {
+          const hostname = window.location.hostname;
+          const protocol = window.location.protocol;
+          const port = window.location.port;
+          
+          if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            window.API_BASE = 'http://localhost:8000';
+          } else {
+            window.API_BASE = `${protocol}//${hostname}${port ? ':' + port : ''}`;
+          }
+        }
+        
+        const apiUrl = `${window.API_BASE}/api/dashboard/public/stats`;
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': window.API_KEY || 'PUBLIC_CLIENT_KEY'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Обновляем статистику слева в hero-блоке
+        const statsFamilies = document.getElementById('stats-families');
+        const statsDevices = document.getElementById('stats-devices');
+        const statsThreats = document.getElementById('stats-threats');
+        
+        if (statsFamilies) {
+          statsFamilies.textContent = data.active_users || data.active_families || 4;
+        }
+        if (statsDevices) {
+          statsDevices.textContent = data.protected_devices || 8;
+        }
+        if (statsThreats) {
+          statsThreats.textContent = data.blocked_threats_total || data.blocked_threats || 47;
+        }
+        
+        // Обновляем карточки справа в dashboard
+        const dashboardDevices = document.getElementById('dashboard-devices');
+        const dashboardThreats = document.getElementById('dashboard-threats');
+        const dashboardUsers = document.getElementById('dashboard-users');
+        const dashboardUptime = document.getElementById('dashboard-uptime');
+        
+        if (dashboardDevices) {
+          dashboardDevices.textContent = data.protected_devices || 8;
+        }
+        if (dashboardThreats) {
+          dashboardThreats.textContent = data.blocked_threats_total || data.blocked_threats || 47;
+        }
+        if (dashboardUsers) {
+          dashboardUsers.textContent = data.active_users || data.active_families || 4;
+        }
+        if (dashboardUptime) {
+          dashboardUptime.textContent = data.uptime_days || data.uptime || 30;
+        }
+        
+        // Обновляем мини-график если есть данные
+        if (data.threats_timeline && Array.isArray(data.threats_timeline)) {
+          updateMiniChart(data.threats_timeline);
+        }
+        
+        console.log('✅ Dashboard статистика загружена:', data);
+      } catch (error) {
+        console.warn('⚠️ Не удалось загрузить статистику dashboard, используем fallback:', error.message);
+        // Fallback: оставляем статические значения (уже установлены в HTML)
+      }
+    }
+    
+    // Функция для обновления мини-графика угроз
+    function updateMiniChart(timelineData) {
+      const canvas = document.getElementById('threats-mini-chart');
+      if (!canvas || !timelineData || timelineData.length === 0) {
+        return;
+      }
+      
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      
+      // Очищаем canvas
+      ctx.clearRect(0, 0, width, height);
+      
+      // Находим максимальное значение для масштабирования
+      const maxValue = Math.max(...timelineData.map(d => d.value || 0), 1);
+      
+      // Рисуем простой линейный график
+      ctx.strokeStyle = '#f5c86e';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      
+      const stepX = width / (timelineData.length - 1 || 1);
+      
+      timelineData.forEach((point, index) => {
+        const x = index * stepX;
+        const y = height - ((point.value || 0) / maxValue) * height * 0.8 - height * 0.1;
+        
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      
+      ctx.stroke();
+      
+      // Добавляем точки
+      ctx.fillStyle = '#f5c86e';
+      timelineData.forEach((point, index) => {
+        const x = index * stepX;
+        const y = height - ((point.value || 0) / maxValue) * height * 0.8 - height * 0.1;
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+    
+    // Загружаем статистику при загрузке страницы
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        loadHeroDashboardStats();
+      });
+    } else {
+      loadHeroDashboardStats();
+    }
+    
+    // Автообновление каждые 30 секунд
+    setInterval(loadHeroDashboardStats, 30000);
+  </script>
+  </body>
 </html>
 

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель — ALADDIN AI</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="dashboard-page">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>🔐 ALADDIN AI</h2>
+      <p>Админ-панель</p>
+    </div>
+    
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="index.html" class="active">📊 Главная</a></li>
+        <li><a href="users.html">👥 Пользователи</a></li>
+        <li><a href="threats.html">🛡️ Угрозы</a></li>
+        <li><a href="logs.html">📋 Логи</a></li>
+        <li><a href="settings.html">⚙️ Настройки</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="dashboard-header">
+      <h1>Панель управления</h1>
+      <div class="header-actions">
+        <button class="btn-secondary" id="refreshBtn" onclick="window.adminAPI.loadAllMetrics()">
+          🔄 Обновить
+        </button>
+        <button class="btn-secondary" id="logoutBtn">
+          🚪 Выйти
+        </button>
+      </div>
+    </div>
+    
+    <!-- System Metrics -->
+    <section class="metrics-section">
+      <h2 class="section-title">Системные метрики</h2>
+      <div class="metrics-grid">
+        <!-- CPU -->
+        <div class="metric-card" id="metric-cpu">
+          <div class="metric-header">
+            <span class="metric-title">CPU</span>
+            <div class="metric-icon cpu">💻</div>
+          </div>
+          <div class="metric-value">0%</div>
+          <div class="metric-label">Загрузка процессора</div>
+          <div class="metric-progress">
+            <div class="metric-progress-bar" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <!-- RAM -->
+        <div class="metric-card" id="metric-ram">
+          <div class="metric-header">
+            <span class="metric-title">RAM</span>
+            <div class="metric-icon ram">🧠</div>
+          </div>
+          <div class="metric-value">0 GB</div>
+          <div class="metric-label">Использовано</div>
+          <div class="metric-progress">
+            <div class="metric-progress-bar" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <!-- Disk -->
+        <div class="metric-card" id="metric-disk">
+          <div class="metric-header">
+            <span class="metric-title">Disk</span>
+            <div class="metric-icon disk">💾</div>
+          </div>
+          <div class="metric-value">0 GB</div>
+          <div class="metric-label">Использовано</div>
+          <div class="metric-progress">
+            <div class="metric-progress-bar" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <!-- Network -->
+        <div class="metric-card" id="metric-network">
+          <div class="metric-header">
+            <span class="metric-title">Network</span>
+            <div class="metric-icon network">🌐</div>
+          </div>
+          <div class="metric-value">0 MB</div>
+          <div class="metric-label">Трафик</div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Users Metrics -->
+    <section class="metrics-section">
+      <h2 class="section-title">Пользователи</h2>
+      <div class="metrics-grid">
+        <!-- Total Users -->
+        <div class="metric-card" id="metric-users">
+          <div class="metric-header">
+            <span class="metric-title">Пользователи</span>
+            <div class="metric-icon ram">👥</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">Всего пользователей</div>
+        </div>
+        
+        <!-- Subscriptions -->
+        <div class="metric-card" id="metric-subscriptions">
+          <div class="metric-header">
+            <span class="metric-title">Подписки</span>
+            <div class="metric-icon cpu">📱</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">Активных подписок</div>
+        </div>
+        
+        <!-- Activated Codes -->
+        <div class="metric-card" id="metric-codes">
+          <div class="metric-header">
+            <span class="metric-title">Коды</span>
+            <div class="metric-icon disk">🔑</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">Активированных кодов</div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Threats Metrics -->
+    <section class="metrics-section">
+      <h2 class="section-title">Угрозы</h2>
+      <div class="metrics-grid">
+        <!-- Total Threats -->
+        <div class="metric-card" id="metric-threats">
+          <div class="metric-header">
+            <span class="metric-title">Угрозы</span>
+            <div class="metric-icon cpu" style="background: rgba(239, 68, 68, 0.2); color: var(--accent-danger);">🛡️</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">Всего заблокировано</div>
+        </div>
+        
+        <!-- Threats 24h -->
+        <div class="metric-card" id="metric-threats-24h">
+          <div class="metric-header">
+            <span class="metric-title">За 24 часа</span>
+            <div class="metric-icon ram" style="background: rgba(245, 158, 11, 0.2); color: var(--accent-warning);">⚠️</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">Заблокировано за сутки</div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Charts Section -->
+    <section class="charts-section">
+      <h2 class="section-title">Графики</h2>
+      
+      <!-- System Metrics Chart -->
+      <div class="chart-container">
+        <h3 class="chart-title">Системные метрики за 24 часа</h3>
+        <div class="chart-wrapper">
+          <canvas id="systemChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- Users Growth Chart -->
+      <div class="chart-container">
+        <h3 class="chart-title">Рост пользователей</h3>
+        <div class="chart-wrapper">
+          <canvas id="usersChart"></canvas>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Tables Section -->
+    <section class="tables-section">
+      <h2 class="section-title">Данные</h2>
+      
+      <!-- Top Users Table -->
+      <div class="table-container">
+        <h3 class="table-title">Активные пользователи</h3>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Пользователь</th>
+                <th>Подписок</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr>
+                <td colspan="4" class="table-loading">Загрузка данных...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Top Threats Table -->
+      <div class="table-container">
+        <h3 class="table-title">Топ угроз</h3>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Название</th>
+                <th>Количество</th>
+                <th>Категория</th>
+              </tr>
+            </thead>
+            <tbody id="threatsTableBody">
+              <tr>
+                <td colspan="3" class="table-loading">Загрузка данных...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <script src="js/admin.js"></script>
+  <script>
+    // Initialize dashboard when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      window.adminAPI.initDashboard();
+    });
+  </script>
+</body>
+</html>
+

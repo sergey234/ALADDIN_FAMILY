@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Пользователи — Админ-панель ALADDIN AI</title>
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dashboard-page">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>🔐 ALADDIN AI</h2>
+      <p>Админ-панель</p>
+    </div>
+    
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="index.html">📊 Главная</a></li>
+        <li><a href="users.html" class="active">👥 Пользователи</a></li>
+        <li><a href="threats.html">🛡️ Угрозы</a></li>
+        <li><a href="logs.html">📋 Логи</a></li>
+        <li><a href="settings.html">⚙️ Настройки</a></li>
+      </ul>
+    </nav>
+  </aside>
+  
+  <!-- Main Content -->
+  <main class="main-content">
+    <div class="dashboard-header">
+      <h1>👥 Пользователи</h1>
+      <div class="header-actions">
+        <button class="btn-primary" id="createFreeSubBtn" onclick="showCreateFreeSubModal()">
+          🎁 Создать бесплатную подписку
+        </button>
+        <button class="btn-secondary" id="refreshBtn" onclick="loadUsers()">
+          🔄 Обновить
+        </button>
+        <button class="btn-secondary" id="logoutBtn">
+          🚪 Выйти
+        </button>
+      </div>
+    </div>
+    
+    <!-- Modal for creating free subscription -->
+    <div id="freeSubModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+      <div style="background: var(--bg-card); border-radius: var(--radius-lg); padding: 30px; max-width: 500px; width: 90%; border: 1px solid var(--border-color);">
+        <h2 style="margin-top: 0; color: var(--text-primary);">🎁 Создать бесплатную подписку</h2>
+        <form id="freeSubForm" onsubmit="createFreeSubscription(event)">
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 500;">ID пользователя (alias):</label>
+            <input type="text" id="freeSubAlias" required style="width: 100%; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary);" placeholder="friend123">
+          </div>
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 500;">Срок подписки:</label>
+            <select id="freeSubTariff" required style="width: 100%; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary);">
+              <option value="yearly">1 год</option>
+              <option value="lifetime">Навсегда</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; color: var(--text-secondary); font-weight: 500;">Количество лет (если выбрано "1 год"):</label>
+            <input type="number" id="freeSubDuration" min="1" max="10" value="1" style="width: 100%; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary);">
+          </div>
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn-secondary" onclick="closeFreeSubModal()">Отмена</button>
+            <button type="submit" class="btn-primary">Создать</button>
+          </div>
+        </form>
+        <div id="freeSubResult" style="margin-top: 20px; display: none;"></div>
+      </div>
+    </div>
+    
+    <!-- Users Stats -->
+    <section class="metrics-section">
+      <h2 class="section-title">Статистика пользователей</h2>
+      <div class="metrics-grid">
+        <div class="metric-card" id="metric-total-users">
+          <div class="metric-header">
+            <span class="metric-title">Всего пользователей</span>
+            <div class="metric-icon cpu">👥</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">Зарегистрировано</div>
+        </div>
+        
+        <div class="metric-card" id="metric-active-subscriptions">
+          <div class="metric-header">
+            <span class="metric-title">Активных подписок</span>
+            <div class="metric-icon ram">📱</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">Оплачено</div>
+        </div>
+        
+        <div class="metric-card" id="metric-activated-codes">
+          <div class="metric-header">
+            <span class="metric-title">Активированных кодов</span>
+            <div class="metric-icon disk">🔑</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">Использовано</div>
+        </div>
+        
+        <div class="metric-card" id="metric-new-users">
+          <div class="metric-header">
+            <span class="metric-title">Новых за 7 дней</span>
+            <div class="metric-icon network">📈</div>
+          </div>
+          <div class="metric-value">0</div>
+          <div class="metric-label">За неделю</div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Users List -->
+    <section class="tables-section">
+      <h2 class="section-title">Список пользователей</h2>
+      
+      <div class="table-container">
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Пользователь</th>
+                <th>Подписок</th>
+                <th>Кодов активировано</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody id="usersListBody">
+              <tr>
+                <td colspan="5" class="table-loading">Загрузка данных...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div style="margin-top: 20px; padding: 20px; background: var(--bg-card); border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
+        <p style="color: var(--text-muted); font-size: 14px; margin: 0;">
+          <strong>Примечание:</strong> Детальный список пользователей будет доступен после добавления endpoint <code>/api/admin/users/list</code> в backend.
+          Сейчас отображается общая статистика.
+        </p>
+      </div>
+    </section>
+  </main>
+  
+  <script src="js/admin.js"></script>
+  <script>
+    // Load users list
+    async function loadUsersList() {
+      try {
+        const data = await window.adminAPI.apiRequest('/api/admin/users/list?limit=50');
+        const tbody = document.getElementById('usersListBody');
+        if (!tbody) return;
+        
+        if (!data || !data.users || data.users.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="table-empty">Нет пользователей</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = data.users.map((user, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${user.alias || 'Неизвестно'}</td>
+            <td>${user.paid_payments || 0}</td>
+            <td>${user.is_active ? '<span class="status-badge status-active">Активен</span>' : '<span class="status-badge" style="background: rgba(239, 68, 68, 0.2); color: var(--accent-danger);">Неактивен</span>'}</td>
+            <td>${user.last_payment_date ? new Date(user.last_payment_date).toLocaleDateString('ru-RU') : '-'}</td>
+          </tr>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading users list:', error);
+        const tbody = document.getElementById('usersListBody');
+        if (tbody) {
+          tbody.innerHTML = '<tr><td colspan="5" class="table-error">Ошибка загрузки данных</td></tr>';
+        }
+      }
+    }
+    
+    // Load users data
+    async function loadUsers() {
+      try {
+        const data = await window.adminAPI.apiRequest('/api/admin/metrics/users');
+        if (data) {
+          // Update stats
+          const totalUsersCard = document.getElementById('metric-total-users');
+          if (totalUsersCard) {
+            totalUsersCard.querySelector('.metric-value').textContent = data.total_users || 0;
+          }
+          
+          const activeSubsCard = document.getElementById('metric-active-subscriptions');
+          if (activeSubsCard) {
+            activeSubsCard.querySelector('.metric-value').textContent = data.active_subscriptions || 0;
+          }
+          
+          const activatedCodesCard = document.getElementById('metric-activated-codes');
+          if (activatedCodesCard) {
+            activatedCodesCard.querySelector('.metric-value').textContent = data.activated_codes || 0;
+          }
+          
+          const newUsersCard = document.getElementById('metric-new-users');
+          if (newUsersCard) {
+            newUsersCard.querySelector('.metric-value').textContent = data.new_users_7d || 0;
+          }
+          
+          // Update table - try to load detailed list
+          await loadUsersList();
+        }
+      } catch (error) {
+        console.error('Error loading users:', error);
+        const tbody = document.getElementById('usersListBody');
+        if (tbody) {
+          tbody.innerHTML = '<tr><td colspan="5" class="table-error">Ошибка загрузки данных</td></tr>';
+        }
+      }
+    }
+    
+    // Free subscription modal
+    function showCreateFreeSubModal() {
+      document.getElementById('freeSubModal').style.display = 'flex';
+    }
+    
+    function closeFreeSubModal() {
+      document.getElementById('freeSubModal').style.display = 'none';
+      document.getElementById('freeSubForm').reset();
+      document.getElementById('freeSubResult').style.display = 'none';
+    }
+    
+    async function createFreeSubscription(event) {
+      event.preventDefault();
+      
+      const alias = document.getElementById('freeSubAlias').value.trim();
+      const tariff_id = document.getElementById('freeSubTariff').value;
+      const duration_years = tariff_id === 'yearly' ? parseInt(document.getElementById('freeSubDuration').value) : null;
+      
+      const resultDiv = document.getElementById('freeSubResult');
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = '<p style="color: var(--text-muted);">Создание подписки...</p>';
+      
+      try {
+        const response = await fetch('/api/admin/subscriptions/create-free', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Key': localStorage.getItem('adminKey')
+          },
+          body: JSON.stringify({
+            alias: alias,
+            tariff_id: tariff_id,
+            duration_years: duration_years
+          })
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || 'Ошибка создания подписки');
+        }
+        
+        const data = await response.json();
+        
+        resultDiv.innerHTML = `
+          <div style="background: var(--bg-secondary); padding: 15px; border-radius: var(--radius-sm); border: 1px solid var(--accent-secondary);">
+            <p style="color: var(--accent-secondary); font-weight: 600; margin: 0 0 10px 0;">✅ Подписка создана!</p>
+            <p style="color: var(--text-primary); margin: 5px 0;"><strong>Код активации:</strong></p>
+            <p style="background: var(--bg-primary); padding: 10px; border-radius: var(--radius-sm); font-family: monospace; font-size: 18px; font-weight: 600; color: var(--accent-primary); margin: 10px 0; text-align: center;">${data.activation_code}</p>
+            <p style="color: var(--text-secondary); font-size: 12px; margin: 5px 0;">Срок действия: ${data.expires_at ? new Date(data.expires_at).toLocaleString('ru-RU') : 'Навсегда'}</p>
+            <button onclick="navigator.clipboard.writeText('${data.activation_code}')" class="btn-primary" style="width: 100%; margin-top: 10px;">📋 Копировать код</button>
+          </div>
+        `;
+        
+        // Обновляем список пользователей
+        setTimeout(() => loadUsers(), 1000);
+      } catch (error) {
+        console.error('Error creating free subscription:', error);
+        resultDiv.innerHTML = `<p style="color: var(--accent-danger);">Ошибка: ${error.message}</p>`;
+      }
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!localStorage.getItem('adminKey')) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      loadUsers();
+      
+      // Setup logout
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+          if (confirm('Вы уверены, что хотите выйти?')) {
+            localStorage.removeItem('adminKey');
+            window.location.href = 'login.html';
+          }
+        });
+      }
+      
+      // Close modal on outside click
+      document.getElementById('freeSubModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeFreeSubModal();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
+

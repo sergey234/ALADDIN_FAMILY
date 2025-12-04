@@ -27,7 +27,7 @@ PAYMENT_METHODS = [
         ],
         "type": "qr"
     },
-    {"id": "card_sber", "label": "Карта Сбербанк (Мир/Visa/Mastercard)", "banks": ["Сбербанк"], "type": "card"},
+    {"id": "card_sber", "label": "Карта Сбербанк (Мир)", "banks": ["Сбербанк"], "type": "card"},
     {"id": "card_tinkoff", "label": "Карта Тинькофф", "banks": ["Тинькофф"], "type": "card"},
     {"id": "card_alfa", "label": "Карта Альфа-Банк", "banks": ["Альфа-Банк"], "type": "card"},
     {"id": "card_vtb", "label": "Карта ВТБ", "banks": ["ВТБ"], "type": "card"},
