@@ -1308,7 +1308,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.unitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ALADDIN.app/ALADDIN";
 			};
 			name = Debug;
@@ -1333,7 +1333,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.unitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ALADDIN.app/ALADDIN";
 			};
 			name = Release;
@@ -1356,7 +1356,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1";
 				TEST_TARGET_NAME = ALADDIN;
 			};
 			name = Debug;
@@ -1380,7 +1380,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1";
 				TEST_TARGET_NAME = ALADDIN;
 			};
 			name = Release;
@@ -1406,7 +1406,7 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1";
 			};
 			name = Debug;
 		};
@@ -1433,7 +1433,7 @@
 			SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1";
 			};
 			name = Release;
 		};
