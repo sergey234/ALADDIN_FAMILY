@@ -99,6 +99,7 @@
 		5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309422EA793A000C7D34B /* HapticFeedback.swift */; };
 		5EC309472EA793D900C7D34B /* CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309462EA793D900C7D34B /* CornerRadius.swift */; };
 		5EC3094B2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC3094A2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift */; };
+		5EE081892EE239FE009AD42A /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EE081882EE239FE009AD42A /* ShareSheet.swift */; };
 		62A51F3024E64580A0C842B2 /* aladdin_cert.cer in Resources */ = {isa = PBXBuildFile; fileRef = 9136C4EF975B4172830C175D /* aladdin_cert.cer */; };
 		A1000001 /* ALADDINApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000000 /* ALADDINApp.swift */; };
 		A1000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000002 /* ContentView.swift */; };
@@ -321,6 +322,7 @@
 		5EC309462EA793D900C7D34B /* CornerRadius.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CornerRadius.swift; sourceTree = "<group>"; };
 		5EC309482EA793FE00C7D34B /* Shared/Components/SecondaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Components/SecondaryButton.swift; sourceTree = "<group>"; };
 		5EC3094A2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/Models/FunctionStatus.swift; sourceTree = "<group>"; };
+		5EE081882EE239FE009AD42A /* ShareSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShareSheet.swift; path = Shared/Components/ShareSheet.swift; sourceTree = "<group>"; };
 		9136C4EF975B4172830C175D /* aladdin_cert.cer */ = {isa = PBXFileReference; lastKnownFileType = text; path = aladdin_cert.cer; sourceTree = "<group>"; };
 		A0FFFFFE /* ALADDIN.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ALADDIN.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1000000 /* ALADDINApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINApp.swift; sourceTree = "<group>"; };
@@ -549,6 +551,7 @@
 				5E709CE32ED8E5FF0046FFD5 /* ALADDINPacketTunnelDebug.entitlements */,
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5EE081882EE239FE009AD42A /* ShareSheet.swift */,
 				5E46BE832ED9B6ED003FE7C9 /* ALADDINPacketTunnel_Dev.mobileprovision */,
 				5EB01F432ECB097500168BE9 /* ActivationCodeViewModel.swift */,
 				5EB01F3F2EC9B7CD00168BE9 /* BackupRecoveryModal.swift */,
@@ -934,6 +937,7 @@
 				B2000140B2000140B2000140 /* InvitationCodeInputModal.swift in Sources */,
 				5EC309352EA6CCBD00C7D34B /* Spacing.swift in Sources */,
 				5E32FFF32EAD1915000574C4 /* RecoveryOptionsModal.swift in Sources */,
+				5EE081892EE239FE009AD42A /* ShareSheet.swift in Sources */,
 				5E00582D2EC6064100024F7E /* TariffCard.swift in Sources */,
 				A3000021 /* ViewModels/SettingsViewModel.swift in Sources */,
 				5E32FFF92EAD24D2000574C4 /* InfoRow.swift in Sources */,
@@ -1239,10 +1243,10 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Info.plist;
-			INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-			INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-			INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-			IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1262,26 +1266,26 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-			CODE_SIGN_IDENTITY = "Apple Distribution";
-			CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 4;
-			DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
-			DEVELOPMENT_TEAM = 6CJVBBUGSN;
-			ENABLE_PREVIEWS = YES;
-			GENERATE_INFOPLIST_FILE = NO;
-			INFOPLIST_FILE = Info.plist;
-			INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-			INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-			INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-			IPHONEOS_DEPLOYMENT_TARGET = 15.2;
-			LD_RUNPATH_SEARCH_PATHS = (
-				"$(inherited)",
-				"@executable_path/Frameworks",
-			);
-			MARKETING_VERSION = 1.0.0;
-			PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios;
-			PRODUCT_NAME = "$(TARGET_NAME)";
-			PROVISIONING_PROFILE_SPECIFIER = "4dc2e0ff-f7bd-4ac0-aca8-98143ea99e7f";
+				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "4dc2e0ff-f7bd-4ac0-aca8-98143ea99e7f";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -1308,7 +1312,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.unitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ALADDIN.app/ALADDIN";
 			};
 			name = Debug;
@@ -1333,7 +1337,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.unitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ALADDIN.app/ALADDIN";
 			};
 			name = Release;
@@ -1356,7 +1360,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = ALADDIN;
 			};
 			name = Debug;
@@ -1380,7 +1384,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = ALADDIN;
 			};
 			name = Release;
@@ -1406,7 +1410,7 @@
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -1427,13 +1431,13 @@
 				);
 				MARKETING_VERSION = 1.0.0;
 				"MTL_ENABLE_DEBUG_INFO[arch=*]" = NO;
-			PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel;
-			PRODUCT_NAME = "$(TARGET_NAME)";
-			PROVISIONING_PROFILE_SPECIFIER = "d1e59dc9-2171-4eca-a316-1bf714c895ec";
-			SDKROOT = iphoneos;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "d1e59dc9-2171-4eca-a316-1bf714c895ec";
+				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
