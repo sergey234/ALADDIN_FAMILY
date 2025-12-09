@@ -20,8 +20,8 @@ class StoreManager: ObservableObject {
     // MARK: - Product IDs
     
     enum ProductID: String, CaseIterable {
-        case basic = "family.aladdin.ios.subscription.basic"
-        case individual = "family.aladdin.ios.subscription.individual"
+        case basic = "family.aladdin.ios.subscription.basic.v2"
+        case individual = "family.aladdin.ios.subscription.individual.v2"
         case family = "family.aladdin.ios.subscription.family"
         case premium = "family.aladdin.ios.subscription.premium"
         
