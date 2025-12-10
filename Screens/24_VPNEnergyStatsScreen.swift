@@ -1,8 +1,8 @@
 import SwiftUI
 
 /**
- * 🔋 VPN Energy Stats Screen
- * Статистика энергопотребления VPN
+ * 🔋 Network Protection Energy Stats Screen
+ * Статистика энергопотребления защиты сети
  * 18_vpn_energy_stats из HTML
  */
 
@@ -117,7 +117,7 @@ struct VPNEnergyStatsScreen: View {
                         .accessibilityAddTraits(.isHeader)
                     
                     VStack(spacing: Spacing.s) {
-                        ComparisonRow(name: "ALADDIN VPN", usage: 12.5, color: .successGreen)
+                        ComparisonRow(name: "ALADDIN", usage: 12.5, color: .successGreen)
                         ComparisonRow(name: "NordVPN", usage: 18.3, color: .warningOrange)
                         ComparisonRow(name: "ExpressVPN", usage: 22.1, color: .dangerRed)
                     }

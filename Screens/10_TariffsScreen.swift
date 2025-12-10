@@ -128,8 +128,10 @@ struct TariffsScreen: View {
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
-                        // ✅ Кнопка активации кода подписки (сверху)
-                        activationCodeButton
+                        // ✅ Кнопка активации кода подписки (сверху) - ТОЛЬКО для России
+                        if AppConfig.isRussianRegion {
+                            activationCodeButton
+                        }
                         
                         // Карточки тарифов
                         tariffCard(.free)
@@ -137,9 +139,11 @@ struct TariffsScreen: View {
                         tariffCard(.family)
                         tariffCard(.premium)
                         
-                        // Флоу активации
-                        activationFlowInfoCard
-                            .padding(.top, Spacing.s)
+                        // Флоу активации - ТОЛЬКО для России
+                        if AppConfig.isRussianRegion {
+                            activationFlowInfoCard
+                                .padding(.top, Spacing.s)
+                        }
                         
                         // Уровень защиты по тарифам
                         TariffFeaturesGallery()
@@ -192,8 +196,11 @@ struct TariffsScreen: View {
         } else if selectedTariff == tariff {
             return localizationManager.localized("tariffs_selected")
         } else {
-            // ✅ Оплата вынесена на лендинг, поэтому предлагаем переход на сайт
-            return localizationManager.localized("tariffs_website_button")
+            // ✅ ВАРИАНТ Б: Всегда показываем "Subscribe" / "Оформить подписку"
+            // Логика проверки региона находится в обработчике кнопки (строки 313-345)
+            // Для России → открывается сайт (QR оплата)
+            // Для остальных стран → открывается IAP (App Store)
+            return localizationManager.localized("tariffs_purchase_button")
         }
     }
     
@@ -302,7 +309,14 @@ struct TariffsScreen: View {
                     )
                 }()
                 
+                // ✅ ОТЛАДКА: Проверяем регион
+                let regionCode = Locale.current.regionCode ?? "nil"
+                let useAltPayments = AppConfig.useAlternativePayments
+                print("🔍 DEBUG Payment: regionCode = '\(regionCode)', useAlternativePayments = \(useAltPayments)")
+                
                 if AppConfig.useAlternativePayments {
+                    // Россия → QR оплата на сайте
+                    print("🇷🇺 Российский регион: открываем сайт для QR оплаты")
                     guard !tariffObj.id.isEmpty,
                           !tariffObj.title.isEmpty,
                           !tariffObj.price.isEmpty else {
@@ -314,12 +328,15 @@ struct TariffsScreen: View {
                     // ✅ Получаем referralCode из UserDefaults (если есть)
                     let referralCode = UserDefaults.standard.string(forKey: "referral_code")
                     
+                    print("🌐 Открываем сайт: \(AppConfig.subscriptionWebsiteURL) с тарифом: \(tariffObj.id)")
                     URLHelper.openWebsite(
                         urlString: AppConfig.subscriptionWebsiteURL,
                         tariffId: tariffObj.id,
                         referralCode: referralCode
                     )
                 } else {
+                    // Не Россия → IAP (App Store)
+                    print("🌍 Не российский регион: открываем IAP")
                     guard !tariffObj.id.isEmpty,
                           !tariffObj.title.isEmpty else {
                         viewModel.errorMessage = localizationManager.localized("tariffs_error_purchase_tariff")
@@ -413,11 +430,11 @@ struct TariffsScreen: View {
                     .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 2)
                 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text("Активировать код подписки")
+                    Text(localizationManager.localized("tariffs_activation_code"))
                         .font(.body)
                         .foregroundColor(.white)
                     
-                    Text("Введите код, полученный после оплаты")
+                    Text(localizationManager.localized("activation_code_subtitle"))
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.8))
                 }
