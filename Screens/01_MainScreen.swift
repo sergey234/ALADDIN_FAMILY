@@ -7,10 +7,12 @@ struct MainScreen: View {
     @StateObject private var vpnViewModel = VPNViewModel.shared
     @StateObject private var mainViewModel = MainViewModel()
     @StateObject private var tariffManager = TariffManager.shared
+    @StateObject private var antivirusManager = AntivirusManager.shared
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
     @State private var profileImage: UIImage? = nil
     @AppStorage("subscription_expires_at_iso") private var subscriptionExpiresAtIso: String = ""
+    @AppStorage("antivirusEnabled") private var antivirusEnabled = true
     
     private var vpnConnected: Bool {
         vpnViewModel.isVPNEnabled
@@ -244,27 +246,27 @@ struct MainScreen: View {
                             GridItem(.flexible()),
                             GridItem(.flexible())
                         ], spacing: 15) {
-                            // VPN карточка
+                            // Антивирус карточка (вместо VPN)
                             NavigationLink(destination: VPNScreen()) {
                                 VStack(spacing: 8) {
                                     HStack(spacing: 8) {
                                         Text("🛡️")
                                             .font(.system(size: 20))
-                                            .accessibilityLabel("Иконка защиты")
-                                        Text(vpnConnected ? "🟢" : "🔴")
+                                            .accessibilityLabel("Иконка антивируса")
+                                        Text(antivirusEnabled ? "🟢" : "🔴")
                                             .font(.system(size: 24))
-                                            .accessibilityLabel(vpnConnected ? "Статус: Подключено" : "Статус: Отключено")
+                                            .accessibilityLabel(antivirusEnabled ? "Статус: Активен" : "Статус: Отключен")
                                     }
                                     
-                                    Text(localizationManager.localized("main_vpn_title"))
+                                    Text(localizationManager.localized("main_antivirus_title"))
                                         .font(.system(size: 12, weight: .semibold))
                                         .foregroundColor(.white)
-                                        .accessibilityLabel("Название: ALADDIN VPN")
+                                        .accessibilityLabel("Название: Антивирус Аладин")
                                     
-                                    Text(localizationManager.localized("main_vpn_subtitle"))
+                                    Text(localizationManager.localized("main_antivirus_subtitle"))
                                         .font(.system(size: 10))
                                         .foregroundColor(.white.opacity(0.8))
-                                        .accessibilityLabel("Описание: VPN защита")
+                                        .accessibilityLabel("Описание: Защита устройств")
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 80)
@@ -277,8 +279,8 @@ struct MainScreen: View {
                                         )
                                 )
                             }
-                            .accessibilityLabel("ALADDIN VPN - \(vpnConnected ? "Подключено" : "Отключено")")
-                            .accessibilityHint("Нажмите для открытия VPN экрана")
+                            .accessibilityLabel("Антивирус Аладин - \(antivirusEnabled ? "Активен" : "Отключен")")
+                            .accessibilityHint("Нажмите для открытия экрана защиты")
                             
                             // Тарифы карточка
                             Button(action: {

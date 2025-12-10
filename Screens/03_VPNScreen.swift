@@ -1,8 +1,8 @@
 import SwiftUI
 
 /**
- * 🔒 VPN Protection Screen
- * Полноценный экран VPN защиты
+ * 🔒 Network Protection Screen
+ * Полноценный экран защиты сети
  * Источник: 02_protection_screen.html (38KB)
  */
 
@@ -14,11 +14,9 @@ struct VPNScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var viewModel = VPNViewModel.shared
     @StateObject private var antivirusManager = AntivirusManager.shared
-    @State private var showingServerSelection = false
     @State private var showingSettings = false
     @State private var showingStatistics = false
     @State private var showingHelp = false
-    @State private var isThirdPartyVPNDetectionEnabled: Bool = true
     
     // MARK: - Helper Views
     
@@ -42,8 +40,8 @@ struct VPNScreen: View {
             VStack(spacing: 0) {
                 // Navigation Bar с кнопкой назад
                 ALADDINNavigationBar(
-                    title: localizationManager.localized("vpn_title"),
-                    subtitle: localizationManager.localized("vpn_subtitle"),
+                    title: localizationManager.localized("secure_connection_title"),
+                    subtitle: localizationManager.localized("secure_connection_subtitle"),
                     showBackButton: true,
                     onBack: {
                         dismiss()
@@ -55,32 +53,20 @@ struct VPNScreen: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
                         
-                        // VPN Status Card
-                        vpnStatusCard
-                        
-                        // Connection Info
-                        connectionInfoCard
+                        // Antivirus Section (1-я позиция - СВЕРХУ)
+                        antivirusCard
                         
                         // Battery Saving Tip
                         batterySavingTipCard
                         
-                        // Server Selection
-                        serverSelectionCard
-                        
                         // Security Features
                         securityFeaturesCard
-                        
-                        // Statistics
-                        statisticsCard
                         
                         // Quick Actions
                         quickActionsCard
                         
-                        // Antivirus Section
-                        antivirusCard
-                        
-                        // Third-Party VPN Detection Section
-                        thirdPartyVPNDetectionCard
+                        // Безопасное соединение Status Card (5-я позиция - СНИЗУ)
+                        secureConnectionStatusCard
                         
                         Spacer(minLength: 100)
                     }
@@ -93,46 +79,29 @@ struct VPNScreen: View {
         .navigationBarHidden(true)
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("vpn_screen_lang_\(localizationManager.currentLanguage.rawValue)")
-        .sheet(isPresented: $showingServerSelection) {
-            ServerSelectionView(selectedServer: $viewModel.selectedServer)
-        }
         .sheet(isPresented: $showingSettings) {
             VPNSettingsView()
         }
     }
     
-    // MARK: - VPN Status Card
+    // MARK: - Безопасное соединение Status Card (компактная версия)
     
-    private var vpnStatusCard: some View {
+    private var secureConnectionStatusCard: some View {
         VStack(spacing: Spacing.m) {
-            // Status Icon
-            ZStack {
+            // Заголовок и индикатор
+            HStack {
+                Text(localizationManager.localized("secure_connection_title"))
+                    .font(.h3)
+                    .foregroundColor(.textPrimary)
+                    .accessibilityAddTraits(.isHeader)
+                
+                Spacer()
+                
+                // Индикатор (красный/зеленый) небольшого размера
                 Circle()
                     .fill(viewModel.isVPNEnabled ? Color.successGreen : Color.dangerRed)
-                    .frame(width: 120, height: 120)
-                    .opacity(0.2)
-                
-                Image(systemName: viewModel.isVPNEnabled ? "shield.fill" : "shield.slash.fill")
-                    .font(.system(size: 48))
-                    .foregroundColor(viewModel.isVPNEnabled ? .successGreen : .dangerRed)
-            }
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(viewModel.isVPNEnabled ? localizationManager.localized("vpn_protection_active") : localizationManager.localized("vpn_protection_inactive"))
-            .accessibilityHint(localizationManager.localized("vpn_status_hint"))
-            
-            // Status Text
-            VStack(spacing: Spacing.s) {
-                Text(viewModel.isVPNEnabled ? localizationManager.localized("vpn_protected") : localizationManager.localized("vpn_not_protected"))
-                    .font(.h1)
-                    .fontWeight(.bold)
-                    .foregroundColor(viewModel.isVPNEnabled ? .successGreen : .dangerRed)
-                    .accessibilityLabel(viewModel.isVPNEnabled ? localizationManager.localized("vpn_status_protected") : localizationManager.localized("vpn_status_not_protected"))
-                
-                Text(viewModel.isVPNEnabled ? localizationManager.localized("vpn_connection_protected") : localizationManager.localized("vpn_connect_for_protection"))
-                    .font(.body)
-                    .foregroundColor(.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .accessibilityLabel(viewModel.isVPNEnabled ? localizationManager.localized("vpn_connection_protected") : localizationManager.localized("vpn_connect_for_protection"))
+                    .frame(width: 20, height: 20)
+                    .accessibilityLabel(viewModel.isVPNEnabled ? localizationManager.localized("secure_connection_active") : localizationManager.localized("secure_connection_inactive"))
             }
             
             // Connection Button
@@ -173,86 +142,6 @@ struct VPNScreen: View {
         .padding(.horizontal, Spacing.screenPadding)
     }
     
-    // MARK: - Connection Info Card
-    
-    private var connectionInfoCard: some View {
-        VStack(spacing: Spacing.m) {
-            HStack {
-                Text(localizationManager.localized("vpn_connection_info"))
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                    .accessibilityAddTraits(.isHeader)
-                
-                Spacer()
-            }
-            
-            VStack(spacing: Spacing.s) {
-                HStack {
-                    Image(systemName: "globe")
-                        .font(.system(size: 16))
-                        .foregroundColor(.primaryBlue)
-                    Text(localizationManager.localized("vpn_server"))
-                        .font(.body)
-                        .foregroundColor(.textSecondary)
-                    Spacer()
-                    Text(viewModel.selectedServer.localizedName(localizationManager))
-                        .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(localizationManager.localized("vpn_server")): \(viewModel.selectedServer.localizedName(localizationManager))")
-                
-                HStack {
-                    Image(systemName: "speedometer")
-                        .font(.system(size: 16))
-                        .foregroundColor(.successGreen)
-                    Text(localizationManager.localized("vpn_speed"))
-                        .font(.body)
-                        .foregroundColor(.textSecondary)
-                    Spacer()
-                    Text(localizationManager.localized("vpn_speed_value"))
-                        .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(localizationManager.localized("vpn_speed")): \(localizationManager.localized("vpn_speed_value"))")
-                
-                HStack {
-                    Image(systemName: "clock")
-                        .font(.system(size: 16))
-                        .foregroundColor(.textSecondary)
-                    Text(localizationManager.localized("vpn_connection_time"))
-                        .font(.body)
-                        .foregroundColor(.textSecondary)
-                    Spacer()
-                    Text(viewModel.connectionTime)
-                        .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(localizationManager.localized("vpn_connection_time")): \(viewModel.connectionTime)")
-                
-                HStack {
-                    Image(systemName: "arrow.up.arrow.down")
-                        .font(.system(size: 16))
-                        .foregroundColor(.textSecondary)
-                    Text(localizationManager.localized("vpn_data_transferred"))
-                        .font(.body)
-                        .foregroundColor(.textSecondary)
-                    Spacer()
-                    Text("\(viewModel.downloadedToday) / \(viewModel.uploadedToday)")
-                        .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
-                }
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(localizationManager.localized("vpn_data_transferred")): \(viewModel.downloadedToday) / \(viewModel.uploadedToday)")
-            }
-        }
-        .padding(Spacing.cardPadding)
-        .background(backgroundShape)
-        .cardShadow()
-        .padding(.horizontal, Spacing.screenPadding)
-    }
     
     // MARK: - Battery Saving Tip Card
     
@@ -268,7 +157,7 @@ struct VPNScreen: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.textPrimary)
                 
-                Text(localizationManager.localized("vpn_battery_saving_desc"))
+                Text(localizationManager.localized("secure_connection_battery_saving_desc"))
                     .font(.system(size: 11))
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -288,110 +177,9 @@ struct VPNScreen: View {
         .cardShadow()
         .padding(.horizontal, Spacing.screenPadding)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(localizationManager.localized("vpn_battery_saving_desc"))
+        .accessibilityLabel(localizationManager.localized("secure_connection_battery_saving_desc"))
     }
     
-    // MARK: - Server Selection Card
-    
-    private var serverSelectionCard: some View {
-        VStack(spacing: Spacing.m) {
-            serverSelectionHeader
-            serverSelectionContent
-        }
-        .padding(Spacing.cardPadding)
-        .background(backgroundShape)
-        .cardShadow()
-        .padding(.horizontal, Spacing.screenPadding)
-    }
-    
-    private var serverSelectionHeader: some View {
-        HStack {
-            Text(localizationManager.localized("vpn_server_selection"))
-                .font(.h3)
-                .foregroundColor(.textPrimary)
-                .accessibilityAddTraits(.isHeader)
-            
-            Spacer()
-            
-            Button(action: {
-                showingServerSelection = true
-            }) {
-                Text(localizationManager.localized("vpn_change"))
-                    .font(.body)
-                    .foregroundColor(.primaryBlue)
-            }
-                .accessibilityLabel(localizationManager.localized("vpn_change_server"))
-                .accessibilityHint(localizationManager.localized("vpn_change_server_hint"))
-            .accessibilityAddTraits(.isButton)
-        }
-    }
-    
-    private var serverSelectionContent: some View {
-        HStack(spacing: Spacing.m) {
-            // Flag
-            Text(viewModel.selectedServer.flag)
-                .font(.system(size: 32))
-                .accessibilityLabel("\(localizationManager.localized("vpn_country_flag")) \(viewModel.selectedServer.localizedName(localizationManager))")
-            
-            serverInfoStack
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14))
-                .foregroundColor(.textSecondary)
-        }
-        .padding(Spacing.m)
-        .background(serverInfoBackground)
-    }
-    
-    private var serverInfoStack: some View {
-        VStack(alignment: .leading, spacing: Spacing.xxs) {
-            Text(viewModel.selectedServer.localizedName(localizationManager))
-                .font(.headline)
-                .foregroundColor(.textPrimary)
-                .accessibilityLabel("\(localizationManager.localized("vpn_server_name")): \(viewModel.selectedServer.localizedName(localizationManager))")
-            
-            Text(viewModel.selectedServer.location)
-                .font(.body)
-                .foregroundColor(.textSecondary)
-                .accessibilityLabel("\(localizationManager.localized("vpn_location")): \(viewModel.selectedServer.location)")
-            
-            serverStatusIndicator
-        }
-    }
-    
-    private var serverStatusIndicator: some View {
-        HStack(spacing: Spacing.xs) {
-            Circle()
-                .fill(serverStatusColor)
-                .frame(width: 8, height: 8)
-                .accessibilityLabel(serverStatusAccessibilityLabel)
-            
-            Text(serverStatusText)
-                .font(.caption)
-                .foregroundColor(.textSecondary)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(serverStatusAccessibilityLabel)
-    }
-    
-    private var serverStatusColor: Color {
-        viewModel.selectedServer.status == .optimal ? Color.successGreen : Color.warningOrange
-    }
-    
-    private var serverStatusText: String {
-        viewModel.selectedServer.status == .optimal ? localizationManager.localized("vpn_server_optimal") : localizationManager.localized("vpn_server_loaded")
-    }
-    
-    private var serverStatusAccessibilityLabel: String {
-        "\(localizationManager.localized("vpn_server_status")): \(serverStatusText)"
-    }
-    
-    private var serverInfoBackground: some View {
-        RoundedRectangle(cornerRadius: CornerRadius.medium)
-            .fill(Color.backgroundMedium.opacity(0.3))
-    }
     
     // MARK: - Security Features Card
     
@@ -425,13 +213,6 @@ struct VPNScreen: View {
                 )
                 
                 SecurityFeatureCard(
-                    icon: "lock.fill",
-                    title: localizationManager.localized("vpn_encryption"),
-                    isEnabled: true,
-                    color: .successGreen
-                )
-                
-                SecurityFeatureCard(
                     icon: "exclamationmark.triangle.fill",
                     title: localizationManager.localized("vpn_threat_protection"),
                     isEnabled: true,
@@ -445,78 +226,6 @@ struct VPNScreen: View {
         .padding(.horizontal, Spacing.screenPadding)
     }
     
-    // MARK: - Statistics Card
-    
-    private var statisticsCard: some View {
-        VStack(spacing: Spacing.m) {
-            HStack {
-                Text(localizationManager.localized("vpn_statistics"))
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                
-                Spacer()
-            }
-            
-            HStack(spacing: Spacing.l) {
-                VStack(spacing: 5) {
-                    Text("🛡️")
-                        .font(.system(size: 24))
-                    Text("\(viewModel.threatsBlocked)")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
-                    Text(localizationManager.localized("vpn_threats_blocked"))
-                        .font(.system(size: 10))
-                        .foregroundColor(.white.opacity(0.8))
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
-                }
-                .frame(maxWidth: .infinity)
-                
-                Rectangle()
-                    .fill(Color.white.opacity(0.2))
-                    .frame(width: 1, height: 40)
-                
-                VStack(spacing: 5) {
-                    Text("📊")
-                        .font(.system(size: 24))
-                    Text("2.4 GB")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
-                    Text(localizationManager.localized("vpn_data_saved"))
-                        .font(.system(size: 10))
-                        .foregroundColor(.white.opacity(0.8))
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
-                }
-                .frame(maxWidth: .infinity)
-                
-                Rectangle()
-                    .fill(Color.white.opacity(0.2))
-                    .frame(width: 1, height: 40)
-                
-                VStack(spacing: 5) {
-                    Text("⏰")
-                        .font(.system(size: 24))
-                    Text("24:00")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(.white)
-                    Text(localizationManager.localized("vpn_protection_time"))
-                        .font(.system(size: 10))
-                        .foregroundColor(.white.opacity(0.8))
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
-                }
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .padding(Spacing.cardPadding)
-        .background(backgroundShape)
-        .cardShadow()
-        .padding(.horizontal, Spacing.screenPadding)
-    }
     
     // MARK: - Quick Actions Card
     
@@ -722,51 +431,6 @@ struct VPNScreen: View {
         print("✅ Сканирование завершено")
     }
     
-    // MARK: - Third-Party VPN Detection Card
-    
-    private var thirdPartyVPNDetectionCard: some View {
-        VStack(spacing: Spacing.m) {
-            // Header
-            HStack {
-                Text(localizationManager.localized("vpn_third_party_detection"))
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                
-                Spacer()
-            }
-            
-            // Description
-            VStack(alignment: .leading, spacing: Spacing.s) {
-                Text(localizationManager.localized("vpn_third_party_desc"))
-                    .font(.body)
-                    .foregroundColor(.textPrimary)
-                
-                Text(localizationManager.localized("vpn_third_party_examples"))
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            
-            // Toggle
-            HStack {
-                Text(isThirdPartyVPNDetectionEnabled ? localizationManager.localized("vpn_enabled") : localizationManager.localized("vpn_disabled"))
-                    .font(.body)
-                    .foregroundColor(isThirdPartyVPNDetectionEnabled ? .successGreen : .textSecondary)
-                
-                Spacer()
-                
-                Toggle("", isOn: $isThirdPartyVPNDetectionEnabled)
-                    .toggleStyle(SwitchToggleStyle(tint: .successGreen))
-            }
-            .padding(Spacing.m)
-            .background(Color.backgroundMedium.opacity(0.3))
-            .cornerRadius(CornerRadius.medium)
-        }
-        .padding(Spacing.cardPadding)
-        .background(backgroundShape)
-        .cardShadow()
-        .padding(.horizontal, Spacing.screenPadding)
-    }
 }
 
 // MARK: - Supporting Views
