@@ -11,6 +11,10 @@ struct TariffsScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var viewModel = TariffsViewModel()
     
+    // Состояние для показа Privacy Policy и Terms
+    @State private var showPrivacyPolicy = false
+    @State private var showTermsOfService = false
+    
     // Сохраняем выбранный тариф в AppStorage
     @AppStorage("selected_tariff_type") private var selectedTariffRaw: String = "family"
     var selectedTariff: TariffType {
@@ -61,7 +65,11 @@ struct TariffsScreen: View {
                 localizationManager.localized("tariffs_free_features_3"),
                 localizationManager.localized("tariffs_free_features_4"),
                 localizationManager.localized("tariffs_free_features_5"),
-                localizationManager.localized("tariffs_free_features_6")
+                localizationManager.localized("tariffs_free_features_6"),
+                localizationManager.localized("tariffs_free_features_7"),
+                localizationManager.localized("tariffs_free_features_8"),
+                localizationManager.localized("tariffs_free_features_9"),
+                localizationManager.localized("tariffs_free_features_10")
             ]
             case .personal: return [
                 localizationManager.localized("tariffs_personal_features_1"),
@@ -139,11 +147,11 @@ struct TariffsScreen: View {
                         tariffCard(.family)
                         tariffCard(.premium)
                         
-                        // Флоу активации - ТОЛЬКО для России
-                        if AppConfig.isRussianRegion {
-                            activationFlowInfoCard
-                                .padding(.top, Spacing.s)
-                        }
+                        // ✅ СКРЫТО: Флоу активации - убрано по требованию
+                        // if AppConfig.isRussianRegion {
+                        //     activationFlowInfoCard
+                        //         .padding(.top, Spacing.s)
+                        // }
                         
                         // Уровень защиты по тарифам
                         TariffFeaturesGallery()
@@ -354,25 +362,69 @@ struct TariffsScreen: View {
                     #endif
                 }
             }) {
-                Text(getButtonText(for: tariff))
-                    .font(.buttonText)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: Size.buttonHeight)
-                    .background(
-                        selectedTariff == tariff ?
-                        LinearGradient(
-                            colors: [Color.successGreen, Color(hex: "#16A34A")],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ) :
-                        LinearGradient(
-                            colors: [tariff.color, tariff.color.opacity(0.8)],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                VStack(spacing: Spacing.xs) {
+                    // ✅ Ссылки на Privacy Policy и Terms of Use (требование Apple)
+                    if tariff != .free {
+                        VStack(spacing: Spacing.xxs) {
+                            Text(localizationManager.localized("tariffs_subscribe_agreement_text"))
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                                .multilineTextAlignment(.center)
+                            
+                            HStack(spacing: Spacing.xxs) {
+                                Button(action: {
+                                    showTermsOfService = true
+                                }) {
+                                    Text(localizationManager.localized("terms_of_service"))
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                        .underline()
+                                }
+                                
+                                Text(localizationManager.localized("tariffs_subscribe_agreement_and"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                
+                                Button(action: {
+                                    showPrivacyPolicy = true
+                                }) {
+                                    Text(localizationManager.localized("privacy_policy"))
+                                        .font(.caption)
+                                        .foregroundColor(.blue)
+                                        .underline()
+                                }
+                            }
+                        }
+                        .padding(.bottom, Spacing.xs)
+                    }
+                    
+                    // Кнопка Subscribe
+                    Text(getButtonText(for: tariff))
+                        .font(.buttonText)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: Size.buttonHeight)
+                        .background(
+                            selectedTariff == tariff ?
+                            LinearGradient(
+                                colors: [Color.successGreen, Color(hex: "#16A34A")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ) :
+                            LinearGradient(
+                                colors: [tariff.color, tariff.color.opacity(0.8)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                    )
-                    .cornerRadius(CornerRadius.large)
+                        .cornerRadius(CornerRadius.large)
+                }
+            }
+            .sheet(isPresented: $showPrivacyPolicy) {
+                PrivacyPolicyScreen()
+            }
+            .sheet(isPresented: $showTermsOfService) {
+                TermsOfServiceScreen()
             }
         }
         .padding(Spacing.cardPadding)
