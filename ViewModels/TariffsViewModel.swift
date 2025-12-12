@@ -216,7 +216,7 @@ class TariffsViewModel: ObservableObject {
         }
         
         // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что продукты загружены
-        guard !storeManager.products.isEmpty else {
+        if storeManager.products.isEmpty {
             errorMessage = "Продукты не загружены. Попытка перезагрузки..."
             print("⚠️ Продукты не загружены, пытаемся загрузить...")
             await storeManager.loadProducts()
@@ -377,12 +377,7 @@ class TariffsViewModel: ObservableObject {
             "TariffsScreen.TariffType.free": .basic,
             "TariffsScreen.TariffType.personal": .individual,
             "TariffsScreen.TariffType.family": .family,
-            "TariffsScreen.TariffType.premium": .premium,
-            // И через String(describing:) может быть просто название
-            "free": .basic,
-            "personal": .individual,
-            "family": .family,
-            "premium": .premium
+            "TariffsScreen.TariffType.premium": .premium
         ]
         
         let lowercasedId = tariffId.lowercased()
