@@ -65,8 +65,8 @@ struct VPNScreen: View {
                         // Quick Actions
                         quickActionsCard
                         
-                        // Безопасное соединение Status Card (5-я позиция - СНИЗУ)
-                        secureConnectionStatusCard
+                        // ✅ УДАЛЕНО: Безопасное соединение Status Card (5-я позиция - СНИЗУ)
+                        // secureConnectionStatusCard
                         
                         Spacer(minLength: 100)
                     }

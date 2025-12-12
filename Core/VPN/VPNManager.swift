@@ -1,13 +1,14 @@
 import Foundation
-import NetworkExtension
+// import NetworkExtension  // ✅ ЗАКОММЕНТИРОВАНО: Apple не разрешает VPN от индивидуальных разработчиков
 import SwiftUI
 
 /// Менеджер VPN для ALADDIN
 class VPNManager: ObservableObject {
     static let shared = VPNManager()
     
-    private let packetTunnelIdentifier = "family.aladdin.ios.packetTunnel"
-    private let defaultServerAddress = "vpn.aladdin.family"
+    // ✅ ЗАКОММЕНТИРОВАНО: PacketTunnel больше не используется
+    // private let packetTunnelIdentifier = "family.aladdin.ios.packetTunnel"
+    // private let defaultServerAddress = "vpn.aladdin.family"
     
     @Published var isConnected = false
     @Published var isConnecting = false
@@ -15,8 +16,9 @@ class VPNManager: ObservableObject {
     @Published var currentServer: VPNServer?
     @Published var connectionTime: TimeInterval = 0
     
+    // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension больше не используется
     // NetworkExtension
-    private var tunnelManager: NETunnelProviderManager?
+    // private var tunnelManager: NETunnelProviderManager?
     private var connectionTimer: Timer?
     private var startTime: Date?
     private var batteryMonitorTimer: Timer?
@@ -56,11 +58,14 @@ class VPNManager: ObservableObject {
     }
     
     private init() {
-        refreshTunnelManager()
+        // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension больше не используется
+        // refreshTunnelManager()
         startBatteryMonitoring()
     }
     
+    // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension методы
     // MARK: - VPN Configuration
+    /*
     private func refreshTunnelManager() {
         NETunnelProviderManager.loadAllFromPreferences { [weak self] managers, error in
             if let error = error {
@@ -124,6 +129,7 @@ class VPNManager: ObservableObject {
             }
         }
     }
+    */
     
     // MARK: - Battery Monitoring
     func startBatteryMonitoring() {
@@ -148,6 +154,8 @@ class VPNManager: ObservableObject {
         }
     }
     
+    // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension методы
+    /*
     private func prepareTunnelForConnection(server: VPNServer?, completion: @escaping (NETunnelProviderManager) -> Void) {
         guard let manager = tunnelManager else {
             log("Tunnel manager not ready, refreshing…")
@@ -184,6 +192,7 @@ class VPNManager: ObservableObject {
             completion(manager)
         }
     }
+    */
     
     private func makeTunnelOptions(for server: VPNServer?) -> [String: NSObject]? {
         guard let server = server else {
@@ -198,9 +207,17 @@ class VPNManager: ObservableObject {
     }
     
     // MARK: - Connection Management
+    // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension методы заменены на заглушки
     func connect(to server: VPNServer? = nil) {
         guard !isConnecting else { return }
         
+        // ✅ ЗАГЛУШКА: NetworkExtension больше не используется
+        log("⚠️ VPN подключение отключено: Apple не разрешает VPN от индивидуальных разработчиков")
+        connectionStatus = .error("VPN недоступен")
+        isConnecting = false
+        
+        /*
+        // ОРИГИНАЛЬНЫЙ КОД (закомментирован):
         isConnecting = true
         connectionStatus = .connecting
         startTime = Date()
@@ -219,6 +236,7 @@ class VPNManager: ObservableObject {
                 self.isConnecting = false
             }
         }
+        */
     }
     
     func disconnect() {
@@ -226,10 +244,10 @@ class VPNManager: ObservableObject {
         
         connectionStatus = .disconnecting
         stopConnectionTimer()
-        stopAdaptivePolling() // Останавливаем Adaptive Polling
+        stopAdaptivePolling()
         
-        // Отключение через Packet Tunnel
-        tunnelManager?.connection.stopVPNTunnel()
+        // ✅ ЗАГЛУШКА: NetworkExtension больше не используется
+        // tunnelManager?.connection.stopVPNTunnel()
         log("Отключение от VPN...")
         
         // Обновляем состояние
@@ -242,6 +260,8 @@ class VPNManager: ObservableObject {
     }
     
     // MARK: - VPN Status Monitoring
+    // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension методы
+    /*
     private func checkVPNStatus(server: VPNServer?) {
         // Проверяем статус каждые 0.5 секунды
         let timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
@@ -303,6 +323,7 @@ class VPNManager: ObservableObject {
             }
         }
     }
+    */
     
     // MARK: - Connection Timer
     private func startConnectionTimer() {
@@ -347,7 +368,11 @@ class VPNManager: ObservableObject {
     }
     
     // MARK: - Security Features
+    // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension методы
     func enableKillSwitch() {
+        // ✅ ЗАГЛУШКА: NetworkExtension больше не используется
+        log("⚠️ Kill Switch недоступен: VPN отключен")
+        /*
         guard let manager = tunnelManager else { return }
         
         // Настройка On Demand для Kill Switch
@@ -364,9 +389,13 @@ class VPNManager: ObservableObject {
                 self?.log("✅ Kill Switch enabled")
             }
         }
+        */
     }
     
     func disableKillSwitch() {
+        // ✅ ЗАГЛУШКА: NetworkExtension больше не используется
+        log("⚠️ Kill Switch недоступен: VPN отключен")
+        /*
         guard let manager = tunnelManager else { return }
         
         manager.isOnDemandEnabled = false
@@ -377,6 +406,7 @@ class VPNManager: ObservableObject {
                 self?.log("Kill Switch disabled")
             }
         }
+        */
     }
     
     // MARK: - Battery Optimization
@@ -526,9 +556,15 @@ class VPNManager: ObservableObject {
     }
     
     private func checkVPNStatusForPolling() {
+        // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension больше не используется
         // Проверка состояния VPN для адаптивного polling
-        guard let connection = tunnelManager?.connection else { return }
+        // guard let connection = tunnelManager?.connection else { return }
         
+        // ✅ ЗАГЛУШКА: всегда считаем что не подключено
+        stopAdaptivePolling()
+        adjustPollingInterval(success: false)
+        
+        /*
         switch connection.status {
         case .connected:
             adjustPollingInterval(success: true)
@@ -544,6 +580,7 @@ class VPNManager: ObservableObject {
         @unknown default:
             break
         }
+        */
     }
     
     func sendStatsToServer() {

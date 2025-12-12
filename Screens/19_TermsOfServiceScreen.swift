@@ -30,16 +30,9 @@ struct TermsOfServiceScreen: View {
                     showProfileButton: false,
                     showListButton: false,
                     onBack: {
-                        // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                        // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
+                        // ✅ ИСПРАВЛЕНО: Правильная навигация назад для sheet
+                        // dismiss() закрывает sheet и возвращает на предыдущий экран
                         dismiss()
-                        
-                        // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                        DispatchQueue.main.async {
-                            if navigationManager.canGoBack {
-                                navigationManager.goBack()
-                            }
-                        }
                     }
                 )
                 

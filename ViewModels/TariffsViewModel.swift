@@ -199,6 +199,7 @@ class TariffsViewModel: ObservableObject {
         print("🌍 Запуск IAP покупки для тарифа: \(tariff.title) (ID: \(tariff.id))")
         print("🔍 DEBUG: Проверяем storeManager...")
         print("   - storeManager.products.count: \(storeManager.products.count)")
+        print("   - storeManager.isLoading: \(storeManager.isLoading)")
         
         // ✅ КРИТИЧЕСКАЯ ПРОВЕРКА: StoreKit может быть недоступен
         // Проверяем доступность StoreKit перед использованием
@@ -207,6 +208,27 @@ class TariffsViewModel: ObservableObject {
         errorMessage = "StoreKit недоступен в симуляторе. Используйте реальное устройство."
         return
         #else
+        // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что StoreManager не выполняет другую операцию
+        guard !storeManager.isLoading else {
+            errorMessage = "Идет загрузка продуктов. Пожалуйста, подождите."
+            print("⚠️ StoreManager уже загружает продукты")
+            return
+        }
+        
+        // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что продукты загружены
+        guard !storeManager.products.isEmpty else {
+            errorMessage = "Продукты не загружены. Попытка перезагрузки..."
+            print("⚠️ Продукты не загружены, пытаемся загрузить...")
+            await storeManager.loadProducts()
+            
+            // Проверяем снова после загрузки
+            guard !storeManager.products.isEmpty else {
+                errorMessage = "Не удалось загрузить продукты. Проверьте подключение к интернету."
+                print("❌ Продукты все еще не загружены после попытки перезагрузки")
+                return
+            }
+        }
+        
         isLoading = true
         errorMessage = nil
         isPurchaseSuccessful = false
@@ -270,6 +292,15 @@ class TariffsViewModel: ObservableObject {
             
             if let product = storeManager.product(for: productID) {
                 print("✅ Продукт найден: \(product.id)")
+                
+                // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Дополнительная проверка продукта
+                guard !product.id.isEmpty else {
+                    isLoading = false
+                    errorMessage = "Ошибка: невалидный продукт"
+                    print("❌ КРИТИЧЕСКАЯ ОШИБКА: Product ID пустой!")
+                    return
+                }
+                
                 do {
                     let transaction = try await storeManager.purchase(product)
                     

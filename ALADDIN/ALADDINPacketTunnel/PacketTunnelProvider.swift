@@ -1,5 +1,8 @@
-import NetworkExtension
+// ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension больше не используется (Apple не разрешает VPN от индивидуальных разработчиков)
+// import NetworkExtension
 
+// ✅ ЗАКОММЕНТИРОВАНО: PacketTunnelProvider больше не используется
+/*
 final class PacketTunnelProvider: NEPacketTunnelProvider {
     private let vpnServerAddress = "vpn.aladdin-ai.ru"
 
@@ -37,3 +40,4 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         }
     }
 }
+*/

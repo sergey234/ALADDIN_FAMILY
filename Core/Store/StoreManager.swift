@@ -114,10 +114,29 @@ class StoreManager: ObservableObject {
         #if targetEnvironment(simulator)
         throw StoreError.simulatorNotSupported
         #else
+        // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что продукт валиден
+        guard !product.id.isEmpty else {
+            print("❌ КРИТИЧЕСКАЯ ОШИБКА: Product ID пустой!")
+            throw StoreError.productNotFound
+        }
+        
+        // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что StoreKit готов
+        guard !isLoading else {
+            print("❌ КРИТИЧЕСКАЯ ОШИБКА: StoreKit уже выполняет операцию!")
+            throw StoreError.storeNotReady
+        }
+        
         isLoading = true
         errorMessage = nil
         
         do {
+            // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что продукт существует перед покупкой
+            guard products.contains(where: { $0.id == product.id }) else {
+                isLoading = false
+                print("❌ КРИТИЧЕСКАЯ ОШИБКА: Продукт не найден в списке загруженных продуктов!")
+                throw StoreError.productNotFound
+            }
+            
             let result = try await product.purchase()
             
             switch result {
@@ -265,6 +284,8 @@ enum StoreError: LocalizedError {
     case failedVerification
     case productNotFound
     case simulatorNotSupported
+    case storeNotReady
+    case purchaseInProgress
     
     var errorDescription: String? {
         switch self {
@@ -274,6 +295,10 @@ enum StoreError: LocalizedError {
             return "Продукт не найден"
         case .simulatorNotSupported:
             return "In-App Purchase недоступен в симуляторе. Используйте реальное устройство."
+        case .storeNotReady:
+            return "StoreKit не готов. Пожалуйста, подождите."
+        case .purchaseInProgress:
+            return "Покупка уже выполняется. Пожалуйста, подождите."
         }
     }
 }
