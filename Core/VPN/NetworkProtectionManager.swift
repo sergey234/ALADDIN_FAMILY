@@ -13,7 +13,7 @@ class NetworkProtectionManager: ObservableObject {
     @Published var isConnected = false
     @Published var isConnecting = false
     @Published var connectionStatus: VPNStatus = .disconnected
-    @Published var currentServer: VPNServer?
+    @Published var currentServer: NetworkProtectionServer?
     @Published var connectionTime: TimeInterval = 0
     
     // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension больше не используется
@@ -27,7 +27,7 @@ class NetworkProtectionManager: ObservableObject {
     @Published var batteryOptimizationEnabled: Bool = true
     
     // Smart Caching
-    private var cachedConfig: VPNConfigResponse?
+    private var cachedConfig: NetworkProtectionConfigResponse?
     private var configCacheExpiry: Date?
     private let configCacheTTL: TimeInterval = 300.0 // 5 минут
     
@@ -47,15 +47,7 @@ class NetworkProtectionManager: ObservableObject {
         case error(String)
     }
     
-    struct VPNServer {
-        let id: String
-        let name: String
-        let country: String
-        let flag: String
-        let ping: Int
-        let load: Int
-        let isPremium: Bool
-    }
+    // ✅ УДАЛЕНО: Внутренняя структура VPNServer - используем NetworkProtectionServer из APIModels
     
     private init() {
         // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension больше не используется
@@ -156,7 +148,7 @@ class NetworkProtectionManager: ObservableObject {
     
     // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension методы
     /*
-    private func prepareTunnelForConnection(server: VPNServer?, completion: @escaping (NETunnelProviderManager) -> Void) {
+    private func prepareTunnelForConnection(server: NetworkProtectionServer?, completion: @escaping (NETunnelProviderManager) -> Void) {
         guard let manager = tunnelManager else {
             log("Tunnel manager not ready, refreshing…")
             refreshTunnelManager()
@@ -194,7 +186,7 @@ class NetworkProtectionManager: ObservableObject {
     }
     */
     
-    private func makeTunnelOptions(for server: VPNServer?) -> [String: NSObject]? {
+    private func makeTunnelOptions(for server: NetworkProtectionServer?) -> [String: NSObject]? {
         guard let server = server else {
             return ["connectionMode": "auto" as NSString]
         }
@@ -202,13 +194,13 @@ class NetworkProtectionManager: ObservableObject {
         return [
             "serverId": server.id as NSString,
             "country": server.country as NSString,
-            "isPremium": NSNumber(value: server.isPremium)
+            "isPremium": NSNumber(value: false) // NetworkProtectionServer не имеет isPremium
         ]
     }
     
     // MARK: - Connection Management
     // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension методы заменены на заглушки
-    func connect(to server: VPNServer? = nil) {
+    func connect(to server: NetworkProtectionServer? = nil) {
         guard !isConnecting else { return }
         
         // ✅ ЗАГЛУШКА: NetworkExtension больше не используется
@@ -262,7 +254,7 @@ class NetworkProtectionManager: ObservableObject {
     // MARK: - VPN Status Monitoring
     // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension методы
     /*
-    private func checkVPNStatus(server: VPNServer?) {
+    private func checkVPNStatus(server: NetworkProtectionServer?) {
         // Проверяем статус каждые 0.5 секунды
         let timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] timer in
             guard let self = self else {
@@ -340,18 +332,18 @@ class NetworkProtectionManager: ObservableObject {
     }
     
     // MARK: - Server Management
-    func getAvailableServers() -> [VPNServer] {
+    func getAvailableServers() -> [NetworkProtectionServer] {
         return [
-            VPNServer(id: "us-1", name: "United States", country: "US", flag: "🇺🇸", ping: 45, load: 23, isPremium: false),
-            VPNServer(id: "uk-1", name: "United Kingdom", country: "UK", flag: "🇬🇧", ping: 52, load: 67, isPremium: false),
-            VPNServer(id: "de-1", name: "Germany", country: "DE", flag: "🇩🇪", ping: 38, load: 45, isPremium: false),
-            VPNServer(id: "jp-1", name: "Japan", country: "JP", flag: "🇯🇵", ping: 89, load: 12, isPremium: true),
-            VPNServer(id: "au-1", name: "Australia", country: "AU", flag: "🇦🇺", ping: 156, load: 34, isPremium: true),
-            VPNServer(id: "ca-1", name: "Canada", country: "CA", flag: "🇨🇦", ping: 67, load: 56, isPremium: false)
+            NetworkProtectionServer(id: "us-1", country: "United States", city: "New York", flag: "🇺🇸", ping: 45, load: 23, status: .optimal),
+            NetworkProtectionServer(id: "uk-1", country: "United Kingdom", city: "London", flag: "🇬🇧", ping: 52, load: 67, status: .optimal),
+            NetworkProtectionServer(id: "de-1", country: "Germany", city: "Berlin", flag: "🇩🇪", ping: 38, load: 45, status: .optimal),
+            NetworkProtectionServer(id: "jp-1", country: "Japan", city: "Tokyo", flag: "🇯🇵", ping: 89, load: 12, status: .optimal),
+            NetworkProtectionServer(id: "au-1", country: "Australia", city: "Sydney", flag: "🇦🇺", ping: 156, load: 34, status: .optimal),
+            NetworkProtectionServer(id: "ca-1", country: "Canada", city: "Toronto", flag: "🇨🇦", ping: 67, load: 56, status: .optimal)
         ]
     }
     
-    func getBestServer() -> VPNServer? {
+    func getBestServer() -> NetworkProtectionServer? {
         let servers = getAvailableServers()
         return servers.min { $0.ping < $1.ping }
     }
@@ -460,7 +452,7 @@ class NetworkProtectionManager: ObservableObject {
     }
     
     // MARK: - Server Integration
-    func loadConfigFromServer(completion: @escaping (Result<VPNConfigResponse, Error>) -> Void) {
+    func loadConfigFromServer(completion: @escaping (Result<NetworkProtectionConfigResponse, Error>) -> Void) {
         // Smart Caching: проверяем кэш
         if let cachedConfig = cachedConfig,
            let cacheExpiry = configCacheExpiry,
@@ -596,11 +588,11 @@ class NetworkProtectionManager: ObservableObject {
         }
     }
     
-    private func collectStats() -> VPNStats {
+    private func collectStats() -> NetworkProtectionStats {
         let connectionStats = getConnectionStats()
         let dataUsage = getDataUsage()
         
-        return VPNStats(
+        return NetworkProtectionStats(
             bytesIn: connectionStats.bytesIn,
             bytesOut: connectionStats.bytesOut,
             packetsIn: connectionStats.packetsIn,

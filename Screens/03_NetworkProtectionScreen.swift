@@ -12,7 +12,7 @@ struct NetworkProtectionScreen: View {
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var viewModel = VPNViewModel.shared
+    @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
     @StateObject private var antivirusManager = AntivirusManager.shared
     @State private var showingSettings = false
     @State private var showingStatistics = false
@@ -99,20 +99,24 @@ struct NetworkProtectionScreen: View {
                 
                 // Индикатор (красный/зеленый) небольшого размера
                 Circle()
-                    .fill(viewModel.isVPNEnabled ? Color.successGreen : Color.dangerRed)
+                    .fill(networkProtectionManager.isConnected ? Color.successGreen : Color.dangerRed)
                     .frame(width: 20, height: 20)
-                    .accessibilityLabel(viewModel.isVPNEnabled ? localizationManager.localized("secure_connection_active") : localizationManager.localized("secure_connection_inactive"))
+                    .accessibilityLabel(networkProtectionManager.isConnected ? localizationManager.localized("secure_connection_active") : localizationManager.localized("secure_connection_inactive"))
             }
             
             // Connection Button
             Button(action: {
-                viewModel.toggleVPN()
+                if networkProtectionManager.isConnected {
+                    networkProtectionManager.disconnect()
+                } else {
+                    networkProtectionManager.connect()
+                }
             }) {
                 HStack(spacing: Spacing.s) {
-                    Image(systemName: viewModel.isVPNEnabled ? "stop.fill" : "play.fill")
+                    Image(systemName: networkProtectionManager.isConnected ? "stop.fill" : "play.fill")
                         .font(.title2)
                     
-                    Text(viewModel.isVPNEnabled ? localizationManager.localized("vpn_disconnect") : localizationManager.localized("vpn_connect"))
+                    Text(networkProtectionManager.isConnected ? localizationManager.localized("vpn_disconnect") : localizationManager.localized("vpn_connect"))
                         .font(.headline)
                         .fontWeight(.semibold)
                 }
@@ -121,10 +125,10 @@ struct NetworkProtectionScreen: View {
                 .frame(height: Size.buttonHeight)
                 .background(
                     RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .fill(viewModel.isConnected ? Color.dangerRed : Color.successGreen)
+                        .fill(networkProtectionManager.isConnected ? Color.dangerRed : Color.successGreen)
                 )
             }
-            .accessibilityLabel(viewModel.isVPNEnabled ? localizationManager.localized("vpn_disconnect_action") : localizationManager.localized("vpn_connect_action"))
+            .accessibilityLabel(networkProtectionManager.isConnected ? localizationManager.localized("vpn_disconnect_action") : localizationManager.localized("vpn_connect_action"))
             .accessibilityHint(localizationManager.localized("vpn_toggle_hint"))
             .accessibilityAddTraits(.isButton)
             .buttonStyle(PlainButtonStyle())
@@ -522,11 +526,11 @@ struct AntivirusStatItem: View {
 // MARK: - Placeholder Views
 
 struct ServerSelectionView: View {
-    @Binding var selectedServer: VPNServer
+    @Binding var selectedServer: NetworkProtectionServer
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
     private let apiService = APIService.shared
-    @State private var availableServers: [VPNServer] = []
+    @State private var availableServers: [NetworkProtectionServer] = []
     @State private var isLoading = true
     @State private var errorMessage: String?
     
@@ -593,9 +597,9 @@ struct ServerSelectionView: View {
                     // Fallback на локальные серверы
                     let vpnManager = NetworkProtectionManager.shared
                     let vpnManagerServers = vpnManager.getAvailableServers()
-                    // Конвертируем NetworkProtectionManager.VPNServer в VPNServer из APIModels
+                    // Используем NetworkProtectionServer из APIModels
                     self.availableServers = vpnManagerServers.map { vpnServer in
-                        VPNServer(
+                        NetworkProtectionServer(
                             id: vpnServer.id,
                             country: vpnServer.country,
                             city: vpnServer.name,
@@ -613,7 +617,7 @@ struct ServerSelectionView: View {
 }
 
 struct ServerRowView: View {
-    let server: VPNServer
+    let server: NetworkProtectionServer
     let isSelected: Bool
     let onSelect: () -> Void
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -670,7 +674,7 @@ struct ServerRowView: View {
 struct VPNSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var viewModel = VPNViewModel.shared
+    @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
     @AppStorage("vpn_auto_select_server") private var autoSelectServer = true
     @AppStorage("vpn_auto_connect_wifi") private var autoConnectWiFi = true
     @AppStorage("vpn_auto_connect_mobile") private var autoConnectMobile = false
@@ -724,7 +728,7 @@ struct VPNSettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                         Spacer()
-                        Toggle("", isOn: $viewModel.autoDisconnectEnabled)
+                        Toggle("", isOn: $networkProtectionManager.batteryOptimizationEnabled)
                     }
                 }
             }

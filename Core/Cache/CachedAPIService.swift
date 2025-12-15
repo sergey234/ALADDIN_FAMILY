@@ -37,11 +37,11 @@ class CachedAPIService: ObservableObject {
     /**
      * Получает статус VPN с кэшированием
      */
-    func getVPNStatus() async -> Result<VPNStatusResponse, NetworkError> {
+    func getVPNStatus() async -> Result<NetworkProtectionStatusResponse, NetworkError> {
         let cacheKey = "vpn_status"
         
         // Пытаемся получить из кэша (асинхронно)
-        if isCachingEnabled, let cachedStatus: VPNStatusResponse = await cacheManager.retrieve(VPNStatusResponse.self, forKey: cacheKey) {
+        if isCachingEnabled, let cachedStatus: NetworkProtectionStatusResponse = await cacheManager.retrieve(NetworkProtectionStatusResponse.self, forKey: cacheKey) {
             print("💾 CachedAPI: VPN статус получен из кэша")
             return .success(cachedStatus)
         }

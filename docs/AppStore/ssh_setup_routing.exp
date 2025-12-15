@@ -1,0 +1,76 @@
+#!/usr/bin/expect -f
+
+# Скрипт для автоматической настройки роутинга на сервере
+# Пользователь: sergio675
+# Сервер: 149.154.65.180
+
+set timeout 30
+set user "sergio675"
+set host "149.154.65.180"
+set password "Sergio675"
+
+# Подключение к серверу
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+
+expect {
+    "password:" {
+        send "$password\r"
+    }
+    "Password:" {
+        send "$password\r"
+    }
+    "(yes/no)?" {
+        send "yes\r"
+        expect "password:"
+        send "$password\r"
+    }
+}
+
+expect {
+    "$ " { }
+    "# " { }
+    timeout {
+        puts "Timeout waiting for prompt"
+        exit 1
+    }
+}
+
+# Выполнить команды
+send "echo '=== ПРОВЕРКА ФАЙЛОВ ==='\r"
+expect "$ "
+
+send "ls -la /var/www/aladdin-ai.ru/privacy.html /var/www/aladdin-ai.ru/terms.html\r"
+expect "$ "
+
+send "echo '=== СОЗДАНИЕ РЕЗЕРВНОЙ КОПИИ ==='\r"
+expect "$ "
+
+send "sudo cp /etc/nginx/sites-available/aladdin-ai.ru /etc/nginx/sites-available/aladdin-ai.ru.backup.$(date +%Y%m%d_%H%M%S)\r"
+expect {
+    "password:" {
+        send "$password\r"
+    }
+    "$ " { }
+}
+
+expect "$ "
+
+send "echo '=== ПРОВЕРКА ТЕКУЩЕГО КОНФИГА ==='\r"
+expect "$ "
+
+send "sudo cat /etc/nginx/sites-available/aladdin-ai.ru | grep -A 5 'server {' | head -20\r"
+expect {
+    "password:" {
+        send "$password\r"
+    }
+    "$ " { }
+}
+
+expect "$ "
+
+send "echo '=== КОНФИГ ПРОВЕРЕН ==='\r"
+expect "$ "
+
+# Выход
+send "exit\r"
+expect eof

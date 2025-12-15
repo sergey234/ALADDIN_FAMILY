@@ -1,0 +1,688 @@
+================================================================================
+ОТВЕТЫ ДЛЯ APPLE - РУССКИЙ И АНГЛИЙСКИЙ ВАРИАНТЫ
+Дата: 05.12.2025
+Для: App Store Connect → App Review Information → Notes / Attachment
+================================================================================
+
+================================================================================
+РУССКИЙ ВАРИАНТ
+================================================================================
+
+ПУНКТ 1: FACE DATA (ДАННЫЕ ЛИЦА)
+
+Замечание Apple:
+
+"Мы нуждаемся в дополнительной информации о том, как приложение использует данные лица. Предоставьте ответы на 6 вопросов о сборе, использовании, хранении и передаче данных лица."
+
+Что сделали:
+
+Обновили Privacy Policy в приложении (раздел 7 "Face ID (Распознавание лица)") и в приложении.
+
+Ответы на все 6 вопросов Apple:
+
+1. Какие данные лица собирает приложение?
+
+Приложение не собирает данные лица (face data). Мы используем только Face ID — встроенную функцию iOS для локальной аутентификации. Данные лица обрабатываются исключительно операционной системой iOS в Secure Enclave устройства. Мы не имеем доступа к данным лица пользователя.
+
+2. Как используются эти данные?
+
+Face ID используется только для аутентификации пользователя при входе в приложение. Данные лица не используются для каких-либо других целей. Обработка происходит локально на устройстве без передачи данных.
+
+3. Передаются ли третьим лицам? Где хранятся?
+
+Нет, данные лица не передаются третьим лицам. Данные хранятся только локально на устройстве в Secure Enclave — защищённой области процессора, к которой мы не имеем доступа. Данные не передаются на наши серверы или третьим лицам.
+
+4. Как долго хранятся?
+
+Данные лица хранятся только на устройстве до тех пор, пока:
+- Пользователь не удалит приложение
+- Пользователь не отключит Face ID в настройках устройства
+- Пользователь не сбросит настройки устройства
+
+Мы не храним данные лица на наших серверах.
+
+5. Где в Privacy Policy это описано?
+
+Раздел "Регистрация и аутентификация" (Registration and authentication) в Privacy Policy приложения, пункты 4-6. Также доступно на сайте: https://aladdin-ai.ru/privacy.html (раздел 7 "Face ID (Распознавание лица)").
+
+6. Процитируйте конкретный текст из Privacy Policy:
+
+Раздел 7 "Face ID (Распознавание лица)":
+- Приложение использует Face ID для безопасной аутентификации пользователя.
+- Данные лица НЕ собираются — приложение использует только встроенную функцию iOS для локальной аутентификации.
+- Данные лица НЕ передаются третьим лицам — вся обработка происходит локально на устройстве в Secure Enclave.
+- Данные лица НЕ хранятся на наших серверах — они остаются только на устройстве пользователя.
+- Данные лица удаляются при удалении приложения или отключении Face ID в настройках устройства.
+- Мы не имеем доступа к данным лица пользователя — они обрабатываются исключительно операционной системой iOS.
+
+ПУНКТ 2: КОД ПРИГЛАШЕНИЯ
+
+Замечание Apple:
+
+"Нужна информация о том, как пользователи получают код. Есть ли плата за код? Можно ли предоставить пример кода?"
+
+Что сделали:
+
+Код приглашения (Recovery Code) создаётся автоматически при создании новой семьи в приложении. Приложение использует анонимную регистрацию без сбора персональных данных (email, телефон, имя) для защиты приватности пользователей в соответствии с нашей политикой конфиденциальности.
+
+Результат:
+
+1. Как пользователи получают код?
+
+Код приглашения создаётся автоматически при создании новой семьи в приложении:
+- Пользователь нажимает "Добавить участника" → "Создать новую семью"
+- После регистрации семьи система генерирует уникальный код в формате: FAM-XXXX-XXXX-XXXX
+- Код отображается в модальном окне с возможностью копирования
+- Пользователь может поделиться кодом через QR-код или скопировать текст
+
+Важно: Наше приложение использует анонимную регистрацию без сбора персональных данных (email, телефон, имя) для защиты приватности пользователей. Регистрация происходит через:
+- Выбор роли (родитель/ребёнок/пожилой)
+- Выбор возрастной группы
+- Код приглашения (QR-код) для присоединения к семье
+
+Это позволяет пользователям использовать приложение без предоставления персональных данных, что соответствует нашей политике приватности.
+
+2. Есть ли плата за код?
+
+НЕТ, код приглашения бесплатный. Не требуется никакой оплаты для получения кода. Код создаётся автоматически при создании семьи.
+
+3. Можно ли предоставить пример кода?
+
+Да, пример кода для тестирования:
+FAM-DEMO-CODE-2025
+
+Этот код можно использовать для тестирования функции присоединения к семье в приложении.
+
+ПУНКТ 3: ДЕМО QR-КОД
+
+Замечание Apple:
+
+"Нужен демо QR-код или AR маркер (изображение) для полной оценки функций приложения."
+
+Что сделали:
+
+Создали демо QR-код с кодом приглашения для тестирования функции присоединения к семье. QR-код содержит текст FAM-DEMO-CODE-2025 в соответствии с форматом кодов приглашения приложения.
+
+Результат:
+
+Демо QR-код:
+- QR-код содержит текст: FAM-DEMO-CODE-2025
+- Изображение QR-кода приложено к этому ответу в разделе App Review Information
+
+Инструкция по использованию:
+1. Откройте приложение ALADDIN на устройстве
+2. Нажмите "Добавить участника" → "Сканировать QR-код"
+3. Отсканируйте приложенный QR-код камерой устройства
+4. Код автоматически заполнится в поле ввода: FAM-DEMO-CODE-2025
+5. Нажмите "Присоединиться к семье" для завершения процесса
+
+ПУНКТ 4: КРАШ НА IPAD
+
+Замечание Apple:
+
+"Приложение крашится во время проверки. Шаги, приводящие к крашу: нажатие на кнопку 'Поделиться'. Устройство: iPad Air 11-inch (M3), OS: iPadOS 26.1"
+
+Что сделали:
+
+1. Отключили поддержку iPad в проекте, установив TARGETED_DEVICE_FAMILY = "1" (только iPhone) в настройках проекта Xcode.
+2. Исправили ShareSheet компонент для корректной работы на iPhone.
+
+Решение проблемы:
+
+Приложение в текущей версии оптимизировано только для iPhone. Мы установили следующие настройки:
+- TARGETED_DEVICE_FAMILY = "1" (только iPhone) в настройках проекта Xcode
+
+Результат:
+- Приложение не устанавливается на iPad устройства
+- Приложение недоступно для iPad в текущей версии
+
+Технические детали исправления:
+- Изменена настройка TARGETED_DEVICE_FAMILY в project.pbxproj
+- Создан общий компонент ShareSheet для iPhone
+
+ПУНКТ 5: UIBACKGROUNDMODES LOCATION
+
+Замечание Apple:
+
+"Приложение объявляет поддержку location в UIBackgroundModes key в Info.plist, но мы не можем найти никаких функций, которые требуют постоянного местоположения. Apps that declare support for location in the UIBackgroundModes key must have features that require persistent location."
+
+Что сделали:
+
+Удалили location из UIBackgroundModes в Info.plist. Оставили только remote-notification для push-уведомлений. Приложение использует Significant-Change Location Service и Region Monitoring для функций родительского контроля, которые не требуют persistent location updates согласно документации Apple.
+
+Результат:
+
+UIBackgroundModes location:
+Мы удалили location из UIBackgroundModes, так как приложение использует методы отслеживания местоположения, которые не требуют persistent location updates.
+
+Объяснение использования методов:
+
+Приложение использует следующие методы для функций родительского контроля:
+1. Significant-Change Location Service — обновления при изменении местоположения на 500+ метров. Этот метод не требует location в UIBackgroundModes, так как обновления происходят только при значительных изменениях местоположения, а не постоянно.
+
+2. Region Monitoring — отслеживание входов/выходов из геозон (дом, школа, секция). Этот метод также не требует location в UIBackgroundModes, так как система iOS автоматически отслеживает регионы в фоне.
+
+Функции родительского контроля, использующие местоположение:
+- Отслеживание местоположения детей (через Significant-Change Location Service)
+- Геозоны (дом, школа, секция) — через Region Monitoring
+- История перемещений
+- Уведомления о перемещениях
+- SOS-кнопка для экстренных ситуаций
+
+Техническая реализация:
+- Приложение использует NSLocationWhenInUseUsageDescription для получения местоположения когда приложение активно
+- Для фонового отслеживания используется Significant-Change Location Service (обновления только при значительных изменениях местоположения, 500+ метров)
+- Для геозон используется Region Monitoring (обновления при входе/выходе из зон)
+- Оба метода работают в фоновом режиме без требования location в UIBackgroundModes
+
+Изменения в коде:
+- Info.plist — удалена строка location из UIBackgroundModes
+- Теперь UIBackgroundModes содержит только remote-notification для push-уведомлений
+
+ПУНКТ 6: AGE RATING
+
+Замечание Apple:
+
+"Описание контента, выбранное для Age Rating приложения, указывает, что приложение включает In-App Controls. Однако мы не смогли найти ни Parental Controls, ни Age Assurance механизмы в приложении."
+
+Что сделали:
+
+Обновили настройки Age Rating в App Store Connect. Установили Parental Controls (In-App) и Age Assurance в "None", так как приложение не содержит встроенных инструментов управления контентом (In-App Controls) в соответствии с определением Apple.
+
+Результат:
+
+Age Rating - In-App Controls:
+Мы обновили настройки Age Rating в App Store Connect в соответствии с вашими рекомендациями.
+
+Изменения:
+- Parental Controls (In-App): установлено "None"
+- Age Assurance: установлено "None"
+
+Объяснение:
+
+В приложении есть родительский контроль как функция приложения, но нет встроенных инструментов управления контентом (In-App Controls) согласно определению Apple.
+
+Что есть в приложении (Родительский контроль как функция):
+- Отслеживание местоположения детей
+- Блокировка приложений
+- Контроль экранного времени
+- Геозоны (дом, школа, секция)
+- История перемещений
+- SOS-кнопка
+
+Чего нет в приложении (In-App Controls):
+- Встроенный браузер с фильтрацией контента
+- Встроенный видеоплеер с ограничениями
+- Встроенные инструменты блокировки контента внутри приложения
+
+Разница:
+- Родительский контроль как функция — родитель настраивает блокировки и контролирует устройство ребёнка через внешние фильтры и настройки системы
+- In-App Controls — встроенные инструменты управления контентом прямо внутри приложения (встроенный браузер, видеоплеер)
+
+Наше приложение использует родительский контроль как функцию (внешние блокировки и мониторинг), а не In-App Controls (встроенные инструменты), поэтому мы установили эти параметры в "None" в соответствии с рекомендациями Apple.
+
+ПУНКТ 7: HEALTHKIT
+
+Замечание Apple:
+
+"Бинарный файл приложения включает ссылки на компоненты HealthKit, но приложение не содержит основных функций, которые требуют данных о здоровье или фитнесе."
+
+Что сделали:
+
+Удалили все ссылки на HealthKit из приложения. Удалили ключи NSHealthShareUsageDescription и NSHealthUpdateUsageDescription из Info.plist. Провели полную проверку кода на наличие импортов HealthKit, вызовов HealthKit API и использования HealthKit framework. Убедились, что приложение полностью очищено от всех упоминаний HealthKit.
+
+Результат:
+
+HealthKit:
+Мы удалили все ссылки на HealthKit из приложения в соответствии с вашими рекомендациями по Guideline 2.5.1.
+
+Что было сделано:
+
+1. Удалены ключи из Info.plist:
+- NSHealthShareUsageDescription — удален
+- NSHealthUpdateUsageDescription — удален
+
+2. Проверен весь код приложения:
+- Нет импортов import HealthKit
+- Нет вызовов HealthKit API
+- Нет использования HealthKit framework
+- Нет ссылок на HealthKit в метаданных приложения
+
+3. Проверка бинарного файла:
+- Приложение больше не включает ссылки на компоненты HealthKit
+- Бинарный файл очищен от всех упоминаний HealthKit
+
+Результат:
+Приложение больше не заявляет о функциях здоровья, которых у него нет. Приложение полностью очищено от HealthKit и соответствует требованиям Guideline 2.5.1.
+
+Статус: Исправлено в коде. HealthKit полностью удален из приложения.
+
+ПУНКТ 8: БИЗНЕС-МОДЕЛЬ SaaS
+
+Замечание Apple:
+
+"Похоже, ваше приложение может получать доступ или включать платный цифровой контент или услуги, и мы хотим понять вашу бизнес-модель перед завершением проверки."
+
+Что сделали:
+
+Настроили два способа оплаты подписки: через IAP в App Store и через оплату на сайте с последующей активацией кода в приложении. Оба способа предоставляют одинаковый доступ к премиум функциям. Код активации используется только для активации уже оплаченной подписки, а не для покупки через приложение.
+
+Результат:
+
+1. Кто использует платный контент и подписки?
+
+Все пользователи, в основном семьи 23-60+ лет, которые хотят получить доступ к премиум функциям безопасности приложения:
+- Расширенная защита семьи
+- Дополнительные функции безопасности в сети интернет
+- VPN защита от вирусов, фишинга
+- AI помощник по безопасности
+- Расширенная статистика и аналитика
+- Дополнительные функции родительского контроля
+- Приоритетная поддержка
+
+2. Где можно купить?
+
+Подписка доступна двумя способами:
+
+Вариант 1: App Store In-App Purchase (IAP) — основной способ
+- Покупка напрямую в приложении через App Store
+- Автоматическая активация подписки после оплаты
+- Управление подпиской через настройки Apple ID
+- Автоматическое продление подписки
+- Доступен для всех пользователей независимо от региона
+
+Вариант 2: Код активации для подписок, приобретённых вне приложения
+
+Процесс:
+1. Пользователь самостоятельно приобретает подписку на нашем сайте https://aladdin-ai.ru/ (вне приложения)
+2. После успешной оплаты на сайте пользователь получает код активации на странице подтверждения оплаты (формат: ACT-XXXX-XXXX-XXXX)
+3. Пользователь вводит код вручную в приложении для активации уже оплаченной подписки
+
+3. Какой контент доступен?
+
+После активации подписки (любым из способов) пользователь получает доступ к одинаковому набору премиум функций:
+- Премиум функциям безопасности
+- Расширенной защите семьи
+- VPN защите от вирусов, фишинга
+- AI помощнику по безопасности
+- Образовательному контенту для детей
+- Дополнительным функциям родительского контроля
+- Расширенной статистике угроз и оповещений
+- Приоритетной поддержке
+
+4. Какие платные функции не используют in-app purchase?
+
+Код активации для подписок, приобретённых вне приложения:
+
+Процесс:
+1. Пользователь самостоятельно приобретает подписку на нашем сайте https://aladdin-ai.ru/ (вне приложения)
+2. После успешной оплаты на сайте пользователь получает код активации на странице подтверждения оплаты
+3. Пользователь вводит код вручную в приложении для активации уже оплаченной подписки
+
+Обоснование - Мультиплатформенные сервисы:
+
+Приложение предоставляет доступ к подпискам, приобретённым пользователем вне приложения. Это позволяет пользователям использовать подписки, купленные на других платформах (веб-сайт), для доступа к контенту в iOS приложении.
+
+Важно:
+- IAP доступен в приложении как основной способ оплаты для всех пользователей
+- Код активации используется только для активации уже оплаченной подписки, а не для совершения покупки через приложение
+- После покупки на сайте пользователь получает код активации и вводит его в приложении для доступа к уже оплаченной подписке
+
+Что сделали в коде:
+
+1. Настроили IAP через App Store:
+- Подписки доступны для покупки напрямую в приложении
+- Автоматическая активация после оплаты
+- Управление через настройки Apple ID
+
+2. Добавили функцию активации кода:
+- Пользователь может ввести код активации для подписок, купленных на сайте
+- Код используется только для активации уже оплаченной подписки
+- Приложение не направляет пользователей на сайт для покупки
+
+3. Оба способа предоставляют одинаковый доступ:
+- Независимо от способа оплаты (IAP или код активации), пользователь получает доступ к одинаковому набору премиум функций.
+
+================================================================================
+ENGLISH VERSION
+================================================================================
+
+POINT 1: FACE DATA
+
+Apple's Note:
+
+"We need additional information about how the app uses face data. Please provide answers to 6 questions about the collection, use, storage, and sharing of face data."
+
+What we did:
+
+Updated Privacy Policy in the app (Section 7 "Face ID (Face Recognition)") and in the app.
+
+Answers to all 6 Apple questions:
+
+1. What face data does the app collect?
+
+The app does NOT collect face data. We only use Face ID — a built-in iOS function for local authentication. Face data is processed exclusively by the iOS operating system in the device's Secure Enclave. We do not have access to the user's face data.
+
+2. How is this data used?
+
+Face ID is used only for user authentication when logging into the app. Face data is not used for any other purposes. Processing occurs locally on the device without data transmission.
+
+3. Is it shared with third parties? Where is it stored?
+
+No, face data is NOT shared with third parties. Data is stored only locally on the device in Secure Enclave — a protected area of the processor to which we do not have access. Data is not transmitted to our servers or third parties.
+
+4. How long is it retained?
+
+Face data is stored only on the device until:
+- The user deletes the app
+- The user disables Face ID in device settings
+- The user resets device settings
+
+We do not store face data on our servers.
+
+5. Where in the Privacy Policy is this described?
+
+Section "Registration and authentication" in the app's Privacy Policy, points 4-6. Also available on the website: https://aladdin-ai.ru/privacy.html (Section 7 "Face ID (Face Recognition)").
+
+6. Quote the specific text from the Privacy Policy:
+
+Section 7 "Face ID (Face Recognition)":
+- The app uses Face ID for secure user authentication.
+- Face data is NOT collected — the app uses only the built-in iOS function for local authentication.
+- Face data is NOT shared with third parties — all processing occurs locally on the device in Secure Enclave.
+- Face data is NOT stored on our servers — it remains only on the user's device.
+- Face data is deleted when the app is removed or Face ID is disabled in device settings.
+- We do not have access to the user's face data — it is processed exclusively by the iOS operating system.
+
+POINT 2: INVITATION CODE
+
+Apple's Note:
+
+"We need information about how users obtain the code. Is there a fee for the code? Can a sample code be provided?"
+
+What we did:
+
+The invitation code (Recovery Code) is created automatically when creating a new family in the app. The app uses anonymous registration without collecting personal data (email, phone, name) to protect user privacy in accordance with our privacy policy.
+
+Result:
+
+1. How do users obtain the code?
+
+The invitation code is created automatically when creating a new family in the app:
+- User taps "Add Member" → "Create New Family"
+- After family registration, the system generates a unique code in the format: FAM-XXXX-XXXX-XXXX
+- The code is displayed in a modal window with copy capability
+- User can share the code via QR code or copy the text
+
+Important: Our app uses anonymous registration without collecting personal data (email, phone, name) to protect user privacy. Registration occurs through:
+- Role selection (parent/child/elderly)
+- Age group selection
+- Invitation code (QR code) to join the family
+
+This allows users to use the app without providing personal data, which complies with our privacy policy.
+
+2. Is there a fee for the code?
+
+NO, the invitation code is free. No payment is required to obtain the code. The code is created automatically when creating a family.
+
+3. Can a sample code be provided?
+
+Yes, sample code for testing:
+FAM-DEMO-CODE-2025
+
+This code can be used to test the family joining function in the app.
+
+POINT 3: DEMO QR CODE
+
+Apple's Note:
+
+"We need a demo QR code or AR marker (image) to fully assess the app features."
+
+What we did:
+
+Created a demo QR code with an invitation code for testing the family joining function. The QR code contains the text FAM-DEMO-CODE-2025 in accordance with the app's invitation code format.
+
+Result:
+
+Demo QR code:
+- QR code contains text: FAM-DEMO-CODE-2025
+- QR code image is attached to this response in the App Review Information section
+
+Usage instructions:
+1. Open the ALADDIN app on the device
+2. Tap "Add Member" → "Scan QR Code"
+3. Scan the attached QR code with the device camera
+4. The code will automatically fill in the input field: FAM-DEMO-CODE-2025
+5. Tap "Join Family" to complete the process
+
+POINT 4: CRASH ON IPAD
+
+Apple's Note:
+
+"The app crashed during review. Steps leading to crash: tapping the 'Share' button. Device: iPad Air 11-inch (M3), OS: iPadOS 26.1"
+
+What we did:
+
+1. Disabled iPad support in the project by setting TARGETED_DEVICE_FAMILY = "1" (iPhone only) in Xcode project settings.
+2. Fixed ShareSheet component for correct operation on iPhone.
+
+Solution:
+
+The app in the current version is optimized only for iPhone. We set the following settings:
+- TARGETED_DEVICE_FAMILY = "1" (iPhone only) in Xcode project settings
+
+Result:
+- The app does not install on iPad devices
+- The app is not available for iPad in the current version
+
+Technical details of the fix:
+- Changed TARGETED_DEVICE_FAMILY setting in project.pbxproj
+- Created a shared ShareSheet component for iPhone
+
+POINT 5: UIBACKGROUNDMODES LOCATION
+
+Apple's Note:
+
+"The app declares support for location in the UIBackgroundModes key in your Info.plist file but we are unable to locate any features that require persistent location. Apps that declare support for location in the UIBackgroundModes key must have features that require persistent location."
+
+What we did:
+
+Removed location from UIBackgroundModes in Info.plist. Left only remote-notification for push notifications. The app uses Significant-Change Location Service and Region Monitoring for parental control features, which do not require persistent location updates according to Apple documentation.
+
+Result:
+
+UIBackgroundModes location:
+We removed location from UIBackgroundModes because the app uses location tracking methods that do not require persistent location updates.
+
+Explanation of method usage:
+
+The app uses the following methods for parental control features:
+1. Significant-Change Location Service — updates when location changes by 500+ meters. This method does not require location in UIBackgroundModes because updates occur only with significant location changes, not continuously.
+
+2. Region Monitoring — tracking entry/exit from geofences (home, school, activities). This method also does not require location in UIBackgroundModes because iOS automatically tracks regions in the background.
+
+Parental control features using location:
+- Tracking children's location (via Significant-Change Location Service)
+- Geofences (home, school, activities) — via Region Monitoring
+- Movement history
+- Movement notifications
+- SOS button for emergencies
+
+Technical implementation:
+- The app uses NSLocationWhenInUseUsageDescription to obtain location when the app is active
+- For background tracking, Significant-Change Location Service is used (updates only with significant location changes, 500+ meters)
+- For geofences, Region Monitoring is used (updates on entry/exit from zones)
+- Both methods work in the background without requiring location in UIBackgroundModes
+
+Code changes:
+- Info.plist — removed location string from UIBackgroundModes
+- UIBackgroundModes now contains only remote-notification for push notifications
+
+POINT 6: AGE RATING
+
+Apple's Note:
+
+"The content description selected for the app's Age Rating indicates that the app includes In-App Controls. However, we were unable to find either Parental Controls or Age Assurance mechanisms in the app."
+
+What we did:
+
+Updated Age Rating settings in App Store Connect. Set Parental Controls (In-App) and Age Assurance to "None" because the app does not contain built-in content management tools (In-App Controls) in accordance with Apple's definition.
+
+Result:
+
+Age Rating - In-App Controls:
+We updated Age Rating settings in App Store Connect in accordance with your recommendations.
+
+Changes:
+- Parental Controls (In-App): set to "None"
+- Age Assurance: set to "None"
+
+Explanation:
+
+The app has parental control as an app feature, but does not have built-in content management tools (In-App Controls) according to Apple's definition.
+
+What the app has (Parental control as a feature):
+- Tracking children's location
+- App blocking
+- Screen time control
+- Geofences (home, school, activities)
+- Movement history
+- SOS button
+
+What the app does not have (In-App Controls):
+- Built-in browser with content filtering
+- Built-in video player with restrictions
+- Built-in content blocking tools within the app
+
+Difference:
+- Parental control as a feature — parent configures blocks and controls the child's device through external filters and system settings
+- In-App Controls — built-in content management tools directly within the app (built-in browser, video player)
+
+Our app uses parental control as a feature (external blocks and monitoring), not In-App Controls (built-in tools), so we set these parameters to "None" in accordance with Apple's recommendations.
+
+POINT 7: HEALTHKIT
+
+Apple's Note:
+
+"Your app's binary includes references to HealthKit components, but the app does not appear to include any primary features that require health or fitness data."
+
+What we did:
+
+Removed all references to HealthKit from the app. Removed NSHealthShareUsageDescription and NSHealthUpdateUsageDescription keys from Info.plist. Conducted a full code check for HealthKit imports, HealthKit API calls, and HealthKit framework usage. Ensured the app is completely cleared of all HealthKit mentions.
+
+Result:
+
+HealthKit:
+We removed all references to HealthKit from the app in accordance with your recommendations under Guideline 2.5.1.
+
+What was done:
+
+1. Removed keys from Info.plist:
+- NSHealthShareUsageDescription — removed
+- NSHealthUpdateUsageDescription — removed
+
+2. Checked the entire app code:
+- No import HealthKit imports
+- No HealthKit API calls
+- No HealthKit framework usage
+- No HealthKit references in app metadata
+
+3. Binary file check:
+- The app no longer includes references to HealthKit components
+- The binary file is cleared of all HealthKit mentions
+
+Result:
+The app no longer claims health features it does not have. The app is completely cleared of HealthKit and complies with Guideline 2.5.1 requirements.
+
+Status: Fixed in code. HealthKit completely removed from the app.
+
+POINT 8: BUSINESS MODEL SaaS
+
+Apple's Note:
+
+"It appears your app may access or include paid digital content or services, and we want to understand your business model before completing the review."
+
+What we did:
+
+Set up two subscription payment methods: through IAP in the App Store and through website payment with subsequent code activation in the app. Both methods provide the same access to premium features. The activation code is used only to activate an already paid subscription, not to purchase through the app.
+
+Result:
+
+1. Who uses paid content and subscriptions?
+
+All users, mainly families aged 23-60+, who want access to the app's premium security features:
+- Extended family protection
+- Additional internet security features
+- VPN protection against viruses, phishing
+- AI security assistant
+- Extended statistics and analytics
+- Additional parental control features
+- Priority support
+
+2. Where can users purchase?
+
+Subscription is available in two ways:
+
+Option 1: App Store In-App Purchase (IAP) — primary method
+- Purchase directly in the app through the App Store
+- Automatic subscription activation after payment
+- Subscription management through Apple ID settings
+- Automatic subscription renewal
+- Available to all users regardless of region
+
+Option 2: Activation code for subscriptions purchased outside the app
+
+Process:
+1. User independently purchases a subscription on our website https://aladdin-ai.ru/ (outside the app)
+2. After successful payment on the website, the user receives an activation code on the payment confirmation page (format: ACT-XXXX-XXXX-XXXX)
+3. User manually enters the code in the app to activate the already paid subscription
+
+3. What content is available?
+
+After subscription activation (by either method), the user gets access to the same set of premium features:
+- Premium security features
+- Extended family protection
+- VPN protection against viruses, phishing
+- AI security assistant
+- Educational content for children
+- Additional parental control features
+- Extended threat statistics and alerts
+- Priority support
+
+4. What paid features do not use in-app purchase?
+
+Activation code for subscriptions purchased outside the app:
+
+Process:
+1. User independently purchases a subscription on our website https://aladdin-ai.ru/ (outside the app)
+2. After successful payment on the website, the user receives an activation code on the payment confirmation page
+3. User manually enters the code in the app to activate the already paid subscription
+
+Justification - Multi-platform services:
+
+The app provides access to subscriptions purchased by the user outside the app. This allows users to use subscriptions purchased on other platforms (website) to access content in the iOS app.
+
+Important:
+- IAP is available in the app as the primary payment method for all users
+- The activation code is used only to activate an already paid subscription, not to make a purchase through the app
+- After purchasing on the website, the user receives an activation code and enters it in the app to access the already paid subscription
+
+What we did in code:
+
+1. Set up IAP through App Store:
+- Subscriptions available for purchase directly in the app
+- Automatic activation after payment
+- Management through Apple ID settings
+
+2. Added code activation function:
+- User can enter an activation code for subscriptions purchased on the website
+- Code is used only to activate an already paid subscription
+- The app does not direct users to the website for purchase
+
+3. Both methods provide the same access:
+- Regardless of payment method (IAP or activation code), the user gets access to the same set of premium features.
+
+================================================================================
+END OF DOCUMENT
+================================================================================
+

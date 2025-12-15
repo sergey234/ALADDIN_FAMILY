@@ -105,7 +105,6 @@
 		A1000005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000004 /* Assets.xcassets */; };
 		A1000008 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1000007 /* Preview Assets.xcassets */; };
 		A3000001 /* ViewModels/MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000000 /* ViewModels/MainViewModel.swift */; };
-		A3000003 /* ViewModels/VPNViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000002 /* ViewModels/VPNViewModel.swift */; };
 		A3000005 /* Core/Models/APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000004 /* Core/Models/APIModels.swift */; };
 		A3000007 /* Core/VPN/NetworkProtectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000006 /* Core/VPN/NetworkProtectionManager.swift */; };
 		A3000009 /* Core/Network/APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000008 /* Core/Network/APIService.swift */; };
@@ -584,7 +583,6 @@
 				A1000004 /* Assets.xcassets */,
 				A1000006 /* Preview Content */,
 				A3000000 /* ViewModels/MainViewModel.swift */,
-				A3000002 /* ViewModels/VPNViewModel.swift */,
 				A3000004 /* Core/Models/APIModels.swift */,
 				A3000006 /* Core/VPN/NetworkProtectionManager.swift */,
 				A3000008 /* Core/Network/APIService.swift */,
@@ -824,7 +822,6 @@
 				5E32FFED2EAD1876000574C4 /* FamilyMemberCard.swift in Sources */,
 				B2000130B2000130B2000130 /* AddMoreMemberCard.swift in Sources */,
 				5E0058272EC4FC5E00024F7E /* ChildRewardsSettingsModal.swift in Sources */,
-				A3000003 /* ViewModels/VPNViewModel.swift in Sources */,
 				A3000005 /* Core/Models/APIModels.swift in Sources */,
 				A3000007 /* Core/VPN/NetworkProtectionManager.swift in Sources */,
 				5EC309292EA6B67800C7D34B /* UnicornPetView.swift in Sources */,
@@ -1135,7 +1132,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1166,7 +1163,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1197,7 +1194,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1222,7 +1219,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1245,7 +1242,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1269,7 +1266,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;

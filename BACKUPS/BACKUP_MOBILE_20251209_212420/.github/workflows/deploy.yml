@@ -1,0 +1,167 @@
+name: ALADDIN Deploy
+
+on:
+  # ОТКЛЮЧЕНО для тегов - используем appstore.yml вместо этого
+  # push:
+  #   tags:
+  #     - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+
+jobs:
+  # MARK: - Staging Deployment
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: macos-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/Library/Developer/Xcode/DerivedData
+          ~/Library/Caches/CocoaPods
+        key: ${{ runner.os }}-xcode-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-xcode-
+          
+    - name: Build for Staging
+      run: |
+        xcodebuild archive \
+          -project ALADDIN.xcodeproj \
+          -scheme ALADDIN \
+          -configuration Debug \
+          -archivePath ALADDIN-Staging.xcarchive \
+          -destination 'generic/platform=iOS'
+          
+    - name: Export Staging IPA
+      run: |
+        xcodebuild -exportArchive \
+          -archivePath ALADDIN-Staging.xcarchive \
+          -exportPath Export-Staging \
+          -exportOptionsPlist ExportOptions-Staging.plist
+          
+    - name: Upload to Staging
+      run: |
+        echo "Uploading to staging environment..."
+        # Здесь бы загружали в staging среду
+        
+  # MARK: - Production Deployment
+  deploy-production:
+    name: Deploy to Production
+    # ОТКЛЮЧЕНО для тегов - используем appstore.yml вместо этого
+    # Для App Store используйте workflow "Build and Upload to App Store" (appstore.yml)
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.2.0'
+        
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/Library/Developer/Xcode/DerivedData
+          ~/Library/Caches/CocoaPods
+        key: ${{ runner.os }}-xcode-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-xcode-
+    
+    - name: Setup Provisioning Profiles
+      run: |
+        echo "⚠️  This workflow (deploy.yml) is for manual deployment only"
+        echo "⚠️  For App Store builds, use 'Build and Upload to App Store' workflow (appstore.yml)"
+        echo "Setting up provisioning profiles..."
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles/
+        
+        if [ -z "${{ secrets.PROVISIONING_PROFILE_APP }}" ] || [ -z "${{ secrets.PROVISIONING_PROFILE_EXTENSION }}" ]; then
+          echo "⚠️  Provisioning profiles not set in secrets"
+          echo "⚠️  Will try automatic signing with -allowProvisioningUpdates"
+        else
+          echo "${{ secrets.PROVISIONING_PROFILE_APP }}" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision
+          echo "${{ secrets.PROVISIONING_PROFILE_EXTENSION }}" | base64 -d > ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision
+          
+          # Извлечь UUID и переименовать
+          APP_UUID=$(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision 2>/dev/null | plutil -extract UUID raw -o - - 2>/dev/null || strings ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
+          EXT_UUID=$(security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision 2>/dev/null | plutil -extract UUID raw -o - - 2>/dev/null || strings ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision | grep -oE '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' | head -1)
+          
+          if [ -n "$APP_UUID" ]; then
+            mv ~/Library/MobileDevice/Provisioning\ Profiles/app.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/${APP_UUID}.mobileprovision
+            echo "APP_PROFILE_UUID=$APP_UUID" >> $GITHUB_ENV
+          fi
+          if [ -n "$EXT_UUID" ]; then
+            mv ~/Library/MobileDevice/Provisioning\ Profiles/extension.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/${EXT_UUID}.mobileprovision
+            echo "EXT_PROFILE_UUID=$EXT_UUID" >> $GITHUB_ENV
+          fi
+        fi
+          
+    - name: Build for Production
+      env:
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        if [ -n "${{ env.APP_PROFILE_UUID }}" ] && [ -n "${{ env.EXT_PROFILE_UUID }}" ]; then
+          echo "Using manual signing with profiles"
+          xcodebuild archive \
+            -project ALADDIN.xcodeproj \
+            -scheme ALADDIN \
+            -configuration Release \
+            -archivePath ALADDIN-Production.xcarchive \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=${{ env.APP_PROFILE_UUID }}" \
+            "ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER=${{ env.EXT_PROFILE_UUID }}" \
+            -allowProvisioningUpdates
+        else
+          echo "Using automatic signing"
+          xcodebuild archive \
+            -project ALADDIN.xcodeproj \
+            -scheme ALADDIN \
+            -configuration Release \
+            -archivePath ALADDIN-Production.xcarchive \
+            -destination 'generic/platform=iOS' \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            -allowProvisioningUpdates
+        fi
+          
+    - name: Export Production IPA
+      run: |
+        xcodebuild -exportArchive \
+          -archivePath ALADDIN-Production.xcarchive \
+          -exportPath Export-Production \
+          -exportOptionsPlist ExportOptions-Production.plist
+          
+    - name: Deploy to TestFlight
+      run: |
+        echo "Deploying to TestFlight..."
+        # Здесь бы использовали fastlane для деплоя в TestFlight
+        
+    - name: Deploy to App Store
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        echo "Deploying to App Store..."
+        # Здесь бы использовали fastlane для деплоя в App Store

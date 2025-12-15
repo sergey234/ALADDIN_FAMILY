@@ -1,0 +1,112 @@
+#!/usr/bin/expect -f
+
+# Автоматическое подключение и настройка роутинга
+# Пользователь: sergio675
+# Пароль: Sergio675
+
+set timeout 60
+set user "sergio675"
+set host "149.154.65.180"
+set password "Sergio675"
+
+puts "=== ПОДКЛЮЧЕНИЕ К СЕРВЕРУ ==="
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+
+expect {
+    "password:" {
+        send "$password\r"
+    }
+    "Password:" {
+        send "$password\r"
+    }
+    "(yes/no)?" {
+        send "yes\r"
+        expect "password:"
+        send "$password\r"
+    }
+    timeout {
+        puts "ОШИБКА: Timeout при подключении"
+        exit 1
+    }
+}
+
+# Ждем промпт
+expect {
+    "$ " { }
+    "# " { }
+    ">" { }
+    timeout {
+        puts "ОШИБКА: Timeout ожидания промпта"
+        exit 1
+    }
+}
+
+puts "✅ Подключено к серверу"
+
+# ШАГ 1: Проверка файлов
+send "echo '=== ШАГ 1: ПРОВЕРКА ФАЙЛОВ ==='\r"
+expect "$ "
+
+send "ls -la /var/www/aladdin-ai.ru/privacy.html /var/www/aladdin-ai.ru/terms.html 2>&1\r"
+expect "$ "
+
+# ШАГ 2: Создание резервной копии
+send "echo '=== ШАГ 2: РЕЗЕРВНАЯ КОПИЯ ==='\r"
+expect "$ "
+
+send "sudo cp /etc/nginx/sites-available/aladdin-ai.ru /etc/nginx/sites-available/aladdin-ai.ru.backup.$(date +%Y%m%d_%H%M%S) 2>&1\r"
+expect {
+    "password" {
+        send "$password\r"
+        expect "$ "
+    }
+    "$ " { }
+}
+
+# ШАГ 3: Просмотр текущего конфига
+send "echo '=== ШАГ 3: ТЕКУЩИЙ КОНФИГ ==='\r"
+expect "$ "
+
+send "sudo cat /etc/nginx/sites-available/aladdin-ai.ru | grep -n 'server {' | head -5\r"
+expect {
+    "password" {
+        send "$password\r"
+        expect "$ "
+    }
+    "$ " { }
+}
+
+# ШАГ 4: Проверка что location блоков еще нет
+send "echo '=== ШАГ 4: ПРОВЕРКА СУЩЕСТВУЮЩИХ LOCATION ==='\r"
+expect "$ "
+
+send "sudo grep -n 'location.*privacy\\|location.*terms' /etc/nginx/sites-available/aladdin-ai.ru 2>&1\r"
+expect {
+    "password" {
+        send "$password\r"
+        expect "$ "
+    }
+    "$ " { }
+}
+
+puts "\n=== ИНСТРУКЦИЯ ==="
+puts "Теперь нужно вручную отредактировать конфиг:"
+puts "1. sudo nano /etc/nginx/sites-available/aladdin-ai.ru"
+puts "2. Найти блок server { ... }"
+puts "3. Добавить перед location / { :"
+puts ""
+puts "   location = /privacy {"
+puts "       return 301 /privacy.html;"
+puts "   }"
+puts ""
+puts "   location = /terms {"
+puts "       return 301 /terms.html;"
+puts "   }"
+puts ""
+puts "4. Сохранить (Ctrl+O, Enter, Ctrl+X)"
+puts "5. sudo nginx -t"
+puts "6. sudo systemctl reload nginx"
+
+# Выход
+send "exit\r"
+expect eof

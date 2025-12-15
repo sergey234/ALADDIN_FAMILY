@@ -34,7 +34,7 @@ class APIService {
     
     // MARK: - VPN API
     
-    func getVPNStatus(completion: @escaping (Result<VPNStatusResponse, Error>) -> Void) {
+    func getVPNStatus(completion: @escaping (Result<NetworkProtectionStatusResponse, Error>) -> Void) {
         networkManager.get(endpoint: AppConfig.Endpoint.vpnStatus, completion: completion)
     }
     
@@ -48,15 +48,15 @@ class APIService {
         networkManager.post(endpoint: AppConfig.Endpoint.vpnDisconnect, body: EmptyBody(), completion: completion)
     }
     
-    func getVPNServers(completion: @escaping (Result<[VPNServer], Error>) -> Void) {
+    func getVPNServers(completion: @escaping (Result<[NetworkProtectionServer], Error>) -> Void) {
         networkManager.get(endpoint: AppConfig.Endpoint.vpnServers, completion: completion)
     }
     
-    func getVPNConfig(completion: @escaping (Result<VPNConfigResponse, Error>) -> Void) {
+    func getVPNConfig(completion: @escaping (Result<NetworkProtectionConfigResponse, Error>) -> Void) {
         networkManager.get(endpoint: "/vpn/config", completion: completion)
     }
     
-    func sendVPNStats(_ stats: VPNStats, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+    func sendVPNStats(_ stats: NetworkProtectionStats, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
         networkManager.post(endpoint: "/vpn/stats", body: stats, completion: completion)
     }
     

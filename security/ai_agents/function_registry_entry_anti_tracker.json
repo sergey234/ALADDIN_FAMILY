@@ -1,0 +1,202 @@
+{
+  "name": "anti_tracker_agent",
+  "type": "ai_agent",
+  "path": "security/ai_agents/anti_tracker_agent.py",
+  "class": "AntiTrackerAgent",
+  "version": "1.0.0",
+  "description": "Агент для блокировки трекеров и рекламы. Блокировка известных трекеров и рекламных сетей (Google Analytics, Yandex Metrica, VK Pixel, Одноклассники Pixel, MAX Pixel). Проверка запросов через backend API (гибридный подход). Локальный кэш списков трекеров для быстрой проверки. Настройки блокировки (белые/черные списки). Статистика заблокированных запросов. ⚠️ ВАЖНО: Работает БЕЗ VPN.",
+  "author": "ALADDIN Security Team",
+  "created_at": "2025-12-12",
+  "status": "sleep",
+  "sleep_since": "2025-12-13T15:29:16",
+  "functions": [
+    {
+      "name": "check_request",
+      "description": "Проверка запроса на наличие трекеров (основной метод)",
+      "parameters": {
+        "url": "string",
+        "headers": "dict (optional)"
+      },
+      "returns": "dict"
+    },
+    {
+      "name": "is_tracker_domain",
+      "description": "Проверка домена на наличие в списках трекеров",
+      "parameters": {
+        "domain": "string"
+      },
+      "returns": "TrackerType or None"
+    },
+    {
+      "name": "matches_tracker_pattern",
+      "description": "Проверка URL на соответствие паттернам трекеров",
+      "parameters": {
+        "url": "string"
+      },
+      "returns": "bool"
+    },
+    {
+      "name": "block_tracker",
+      "description": "Блокировка трекера",
+      "parameters": {
+        "domain": "string",
+        "tracker_type": "TrackerType",
+        "reason": "string (optional)"
+      },
+      "returns": "bool"
+    },
+    {
+      "name": "unblock_tracker",
+      "description": "Разблокировка трекера",
+      "parameters": {
+        "domain": "string"
+      },
+      "returns": "bool"
+    },
+    {
+      "name": "is_blocked",
+      "description": "Проверка, заблокирован ли домен",
+      "parameters": {
+        "domain": "string"
+      },
+      "returns": "bool"
+    },
+    {
+      "name": "get_statistics",
+      "description": "Получение статистики блокировок",
+      "parameters": [],
+      "returns": "dict"
+    },
+    {
+      "name": "get_tracker_lists",
+      "description": "Получение списков трекеров (для синхронизации с iOS)",
+      "parameters": [],
+      "returns": "dict"
+    },
+    {
+      "name": "collect_threats",
+      "description": "Сбор угроз (заблокированные трекеры) (ThreatMonitoringInterface)",
+      "parameters": [],
+      "returns": "List[ThreatEvent]"
+    },
+    {
+      "name": "analyze_threats",
+      "description": "Анализ угроз (ThreatMonitoringInterface)",
+      "parameters": {
+        "threats": "List[ThreatEvent]"
+      },
+      "returns": "dict"
+    },
+    {
+      "name": "send_alert",
+      "description": "Отправка уведомления об угрозе (ThreatMonitoringInterface)",
+      "parameters": {
+        "threat": "ThreatEvent"
+      },
+      "returns": "bool"
+    }
+  ],
+  "dependencies": [
+    "security.base.SecurityBase",
+    "security.ai_agents.threat_monitoring_interface.ThreatMonitoringInterface"
+  ],
+  "config": {
+    "strict_mode": true,
+    "enable_analytics_blocking": true,
+    "enable_advertising_blocking": true,
+    "enable_social_blocking": true,
+    "whitelist": [],
+    "blacklist": []
+  },
+  "events": [
+    {
+      "type": "tracker_blocked",
+      "severity": ["low", "medium"],
+      "description": "Обнаружен и заблокирован трекер"
+    }
+  ],
+  "api_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/anti-tracker/check",
+      "description": "Проверка URL на трекеры",
+      "request_body": "CheckRequestRequest",
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/anti-tracker/stats",
+      "description": "Статистика блокировок",
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/anti-tracker/trackers",
+      "description": "Список известных трекеров (для синхронизации с iOS)",
+      "response": "dict"
+    },
+    {
+      "method": "POST",
+      "path": "/api/anti-tracker/block",
+      "description": "Блокировка трекера",
+      "request_body": "BlockTrackerRequest",
+      "response": "dict"
+    },
+    {
+      "method": "POST",
+      "path": "/api/anti-tracker/unblock",
+      "description": "Разблокировка трекера",
+      "request_body": "UnblockTrackerRequest",
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/anti-tracker/status",
+      "description": "Статус блокировки домена",
+      "query_params": ["domain"],
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/anti-tracker/settings",
+      "description": "Получение настроек блокировки",
+      "response": "dict"
+    },
+    {
+      "method": "POST",
+      "path": "/api/anti-tracker/settings",
+      "description": "Обновление настроек блокировки",
+      "request_body": "SettingsRequest",
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/anti-tracker/health",
+      "description": "Health check",
+      "response": "dict"
+    }
+  ],
+  "monitoring": {
+    "enabled": true,
+    "metrics": [
+      "trackers_blocked_total",
+      "requests_checked_total",
+      "analytics_blocked_total",
+      "advertising_blocked_total",
+      "social_blocked_total"
+    ]
+  },
+  "security": {
+    "requires_auth": true,
+    "rate_limit": 200,
+    "data_encryption": true
+  },
+  "metadata": {
+    "platforms": ["ios"],
+    "tracker_types": ["analytics", "advertising", "social", "pattern", "unknown"],
+    "analytics_trackers": ["google-analytics.com", "mc.yandex.ru", "adobe.com"],
+    "advertising_trackers": ["googleadservices.com", "yandex.ru/ads", "vk.com/ads"],
+    "social_trackers": ["vk.com/rtrg", "ok.ru/js/sdk", "max.ru/pixel"],
+    "works_without_vpn": true
+  }
+}

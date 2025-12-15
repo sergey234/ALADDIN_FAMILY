@@ -1,0 +1,15 @@
+./site_backup_20251209_220433/dashboard_backup.tar.gz
+./site_backup_20251209_220433/payment_service_backup.tar.gz
+./site_backup_20251209_220433/database_backup.sql
+./site_backup_20251209_220433/admin_backup.tar.gz
+./site_backup_20251209_220433/nginx/sites-available/aladdin-ai.ru.backup_20251203_232920
+./site_backup_20251209_220433/nginx/sites-available/aladdin-ai.ru.backup_20251203_233051
+./site_backup_20251209_220433/nginx/sites-available/aladdin-ai.ru
+./site_backup_20251209_220433/nginx/sites-available/aladdin-ai.ru.backup_before_update
+./site_backup_20251209_220433/nginx/sites-available/default
+./site_backup_20251209_220433/nginx/sites-available/www.aladdin-ai.ru
+./site_backup_20251209_220433/nginx/sites-available/aladdin-ai.ru.backup_before_gateway
+./site_backup_20251209_220433/nginx/sites-available/aladdin-ai.ru.backup.51122_170126
+./site_backup_20251209_220433/nginx/sites-available/aladdin-ai.ru.backup_fix
+./site_backup_20251209_220433/nginx/nginx.conf
+./site_backup_20251209_220433/landing_backup.tar.gz

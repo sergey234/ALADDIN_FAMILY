@@ -1,0 +1,49 @@
+===========================================
+ПОЛНЫЙ BACKUP СЕРВЕРА
+===========================================
+Дата: 9 декабря 2025, 22:04
+Backup директория: /root/backups/site_backup_20251209_220433
+
+СОЗДАННЫЕ BACKUP'Ы:
+✅ Лендинг: landing_backup.tar.gz (217 KB)
+✅ Админка: admin_backup.tar.gz (16 KB)
+✅ Dashboard: dashboard_backup.tar.gz (4.7 KB)
+✅ Nginx: nginx/ (конфигурации)
+✅ Payment Service: payment_service_backup.tar.gz (26 KB)
+✅ База данных: database_backup.sql (128 байт)
+
+РАСПОЛОЖЕНИЕ:
+
+На сервере:
+- Директория: /root/backups/site_backup_20251209_220433/
+- Архив: /root/backups/site_backup_20251209_220433.tar.gz
+
+В Downloads:
+- Директория: ~/Downloads/site_backup_20251209_220433/
+- Архив: ~/Downloads/site_backup_20251209_220433.tar.gz
+- Список файлов: ~/Downloads/site_backup_20251209_220433.files.txt
+
+ВОССТАНОВЛЕНИЕ:
+
+1. Лендинг:
+   tar -xzf landing_backup.tar.gz -C /var/www/
+
+2. Админка:
+   tar -xzf admin_backup.tar.gz -C /var/www/aladdin-ai.ru/
+
+3. Dashboard:
+   tar -xzf dashboard_backup.tar.gz -C /var/www/aladdin-ai.ru/
+
+4. Nginx:
+   cp -r nginx/sites-available/* /etc/nginx/sites-available/
+   cp nginx/nginx.conf /etc/nginx/nginx.conf
+   nginx -t && systemctl reload nginx
+
+5. Payment Service:
+   tar -xzf payment_service_backup.tar.gz -C /root/
+
+6. База данных:
+   psql -h localhost -U postgres -d aladdin < database_backup.sql
+
+===========================================
+✅ Весь сервер сохранен!

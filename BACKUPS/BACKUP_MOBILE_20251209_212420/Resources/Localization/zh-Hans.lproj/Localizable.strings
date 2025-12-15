@@ -1,0 +1,158 @@
+/* 
+ * Localizable.strings (Chinese Simplified)
+ * ALADDIN - AI Family Protection
+ * Chinese Simplified localization
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+ * COMMON
+ * ═══════════════════════════════════════════════════════════════ */
+
+"app.name" = "ALADDIN AI";
+"app.tagline" = "AI家庭保护";
+"common.ok" = "确定";
+"common.cancel" = "取消";
+"common.done" = "完成";
+"common.save" = "保存";
+"common.delete" = "删除";
+"common.edit" = "编辑";
+"common.close" = "关闭";
+"common.back" = "返回";
+"common.next" = "下一步";
+"common.loading" = "加载中...";
+"common.error" = "错误";
+"common.success" = "成功";
+"common.warning" = "警告";
+
+/* ═══════════════════════════════════════════════════════════════
+ * MAIN SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"main.title" = "ALADDIN AI";
+"main.subtitle" = "AI家庭保护";
+"main.vpn.title" = "VPN保护";
+"main.functions.title" = "主要功能";
+"main.quick.actions" = "快速操作";
+"main.emergency" = "紧急帮助";
+"main.parental.control" = "家长控制";
+"main.device.security" = "设备安全";
+
+/* ═══════════════════════════════════════════════════════════════
+ * FAMILY SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"family.title" = "ALADDIN AI家庭";
+"family.subtitle" = "保护您的家人";
+"family.members" = "家庭成员";
+"family.add.member" = "添加成员";
+"family.invite" = "邀请家人";
+"family.settings" = "家庭设置";
+"family.protection" = "家庭保护";
+"family.status" = "状态";
+"family.online" = "在线";
+"family.offline" = "离线";
+
+/* ═══════════════════════════════════════════════════════════════
+ * VPN SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"vpn.title" = "VPN保护";
+"vpn.status" = "VPN状态";
+"vpn.connected" = "已连接";
+"vpn.disconnected" = "已断开";
+"vpn.connect" = "连接";
+"vpn.disconnect" = "断开";
+"vpn.server" = "服务器";
+"vpn.location" = "位置";
+"vpn.speed" = "速度";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ANALYTICS SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"analytics.title" = "分析";
+"analytics.threats" = "威胁";
+"analytics.blocked" = "已阻止";
+"analytics.today" = "今天";
+"analytics.week" = "本周";
+"analytics.month" = "本月";
+"analytics.top.threats" = "主要威胁";
+"analytics.protection.level" = "保护级别";
+
+/* ═══════════════════════════════════════════════════════════════
+ * SETTINGS SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"settings.title" = "设置";
+"settings.account" = "账户";
+"settings.privacy" = "隐私";
+"settings.notifications" = "通知";
+"settings.language" = "语言";
+"settings.about" = "关于";
+"settings.support" = "支持";
+"settings.logout" = "退出登录";
+
+/* ═══════════════════════════════════════════════════════════════
+ * AI ASSISTANT SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"ai.title" = "AI助手";
+"ai.ask.question" = "问问题";
+"ai.typing" = "正在输入...";
+"ai.suggestions" = "建议";
+"ai.help" = "帮助";
+"ai.security.tips" = "安全提示";
+"ai.family.tips" = "家庭提示";
+
+/* ═══════════════════════════════════════════════════════════════
+ * PARENTAL CONTROL SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"parental.title" = "家长控制";
+"parental.children" = "孩子";
+"parental.time.limits" = "时间限制";
+"parental.content.filter" = "内容过滤";
+"parental.app.blocking" = "应用阻止";
+"parental.location.tracking" = "位置跟踪";
+"parental.screen.time" = "屏幕时间";
+
+/* ═══════════════════════════════════════════════════════════════
+ * CHILD INTERFACE SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child.title" = "你好，%@！";
+"child.subtitle" = "你的保护已激活";
+"child.all.ok" = "一切都好！";
+"child.need.help" = "需要帮助！";
+"child.protected" = "你的保护已激活";
+"child.contact.parents" = "联系父母";
+"child.sos" = "SOS - 求助";
+"child.call" = "联系%@";
+"child.settings" = "我的设置";
+"child.achievements" = "我的成就";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ELDERLY INTERFACE SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"elderly.title" = "你好，%@！";
+"elderly.subtitle" = "你的保护已激活";
+"elderly.all.ok" = "一切都好！";
+"elderly.need.help" = "需要帮助！";
+"elderly.protected" = "你的保护已激活";
+"elderly.contact.family" = "联系家人";
+"elderly.sos" = "SOS - 求助";
+"elderly.call" = "联系%@";
+"elderly.settings" = "我的设置";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ERRORS AND MESSAGES
+ * ═══════════════════════════════════════════════════════════════ */
+
+"error.network" = "网络错误。请检查您的互联网连接。";
+"error.unknown" = "发生未知错误。";
+"error.invalid.credentials" = "邮箱或密码无效。";
+"error.password.mismatch" = "密码不匹配。";
+"success.saved" = "数据保存成功！";
+"success.purchase" = "订阅购买成功！";
+"success.email.sent" = "邮件已发送到您的地址。";
