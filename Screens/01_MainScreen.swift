@@ -4,7 +4,6 @@ import UIKit
 struct MainScreen: View {
     @State private var aiQuestion: String = ""
     @State private var showAddMemberModal: Bool = false
-    @StateObject private var vpnViewModel = VPNViewModel.shared
     @StateObject private var mainViewModel = MainViewModel()
     @StateObject private var tariffManager = TariffManager.shared
     @StateObject private var antivirusManager = AntivirusManager.shared
@@ -13,10 +12,6 @@ struct MainScreen: View {
     @State private var profileImage: UIImage? = nil
     @AppStorage("subscription_expires_at_iso") private var subscriptionExpiresAtIso: String = ""
     @AppStorage("antivirusEnabled") private var antivirusEnabled = true
-    
-    private var vpnConnected: Bool {
-        vpnViewModel.isVPNEnabled
-    }
     
     var body: some View {
         ZStack {

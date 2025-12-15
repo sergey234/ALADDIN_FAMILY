@@ -1,0 +1,186 @@
+{
+  "name": "ai_categories_agent",
+  "type": "ai_agent",
+  "path": "/opt/aladdin-backend/security/ai_agents/ai_categories_agent.py",
+  "class": "AICategoriesAgent",
+  "version": "1.0.0",
+  "description": "Агент для родительского контроля AI-сайтов и приложений. Блокировка/разрешение доступа к AI-сервисам (Алиса, YandexGPT, GigaChat, ChatGPT, Claude, Gemini и др.) с настройками по времени и возрасту. Уведомления родителям о попытках доступа.",
+  "author": "ALADDIN Security Team",
+  "created_at": "2025-12-11",
+  "last_updated": "2025-12-11",
+  "status": "active",
+  "functions": [
+    {
+      "name": "get_ai_sites",
+      "description": "Получить список всех доступных AI-сайтов с информацией о категориях, ограничениях по возрасту и других параметрах",
+      "parameters": [],
+      "returns": "List[Dict[str, Any]] - Список AI-сайтов в формате словарей",
+      "async": false,
+      "requires_auth": false
+    },
+    {
+      "name": "get_site_by_id",
+      "description": "Получить информацию о конкретном AI-сайте по его ID",
+      "parameters": [
+        "site_id: str - ID сайта (например, 'chatgpt', 'alice', 'yandexgpt')"
+      ],
+      "returns": "Optional[AISite] - Информация о сайте или None если не найден",
+      "async": false,
+      "requires_auth": false
+    },
+    {
+      "name": "block_sites",
+      "description": "Заблокировать AI-сайты для пользователя. Поддерживает ограничения по времени (блокировка в определенное время суток и дни недели)",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "site_ids: List[str] - Список ID сайтов для блокировки",
+        "time_restriction: Optional[TimeRestriction] - Ограничение по времени (опционально)"
+      ],
+      "returns": "Dict[str, Any] - Результат блокировки с количеством заблокированных сайтов",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "allow_sites",
+      "description": "Разрешить доступ к AI-сайтам для пользователя. Снимает блокировку и ограничения по времени",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "site_ids: List[str] - Список ID сайтов для разрешения"
+      ],
+      "returns": "Dict[str, Any] - Результат разрешения с количеством разрешенных сайтов",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "check_access",
+      "description": "Проверить доступ пользователя к AI-сайту. Учитывает блокировки, ограничения по времени и возрасту. Записывает попытку доступа в историю",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "site_id: str - ID сайта",
+        "user_age: Optional[int] - Возраст пользователя (опционально, для проверки возрастных ограничений)"
+      ],
+      "returns": "Dict[str, Any] - Результат проверки (allowed, blocked, reason, message)",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_status",
+      "description": "Получить статус всех AI-сайтов для пользователя. Включает информацию о блокировках, разрешениях, ограничениях по времени и возрасту, статистику доступа",
+      "parameters": [
+        "user_id: str - ID пользователя"
+      ],
+      "returns": "Dict[str, Any] - Статус всех сайтов с детальной информацией",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_access_history",
+      "description": "Получить историю попыток доступа к AI-сайтам. Отсортирована по времени (новые первыми)",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "limit: int = 50 - Максимальное количество записей (1-100)"
+      ],
+      "returns": "List[Dict[str, Any]] - Список попыток доступа с информацией о блокировках",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "set_age_restriction",
+      "description": "Установить ограничение по возрасту для AI-сайта. Автоматически блокирует доступ для пользователей младше указанного возраста",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "site_id: str - ID сайта",
+        "age_restriction: AgeRestriction - Ограничение по возрасту (минимальный возраст, требуется ли одобрение родителей, полная блокировка)"
+      ],
+      "returns": "Dict[str, Any] - Результат установки ограничения",
+      "async": false,
+      "requires_auth": true
+    }
+  ],
+  "dependencies": [
+    "threat_monitoring_interface",
+    "security.base"
+  ],
+  "config": {
+    "notify_parents": true,
+    "default_block_all": false
+  },
+  "events": {
+    "subscribe": ["ai_access", "*"],
+    "publish": ["ai_access_blocked", "parental_notification"]
+  },
+  "api_endpoints": [
+    {
+      "path": "/api/ai-categories/sites",
+      "method": "GET",
+      "function": "get_ai_sites",
+      "description": "Получить список всех AI-сайтов"
+    },
+    {
+      "path": "/api/ai-categories/block",
+      "method": "POST",
+      "function": "block_sites",
+      "description": "Заблокировать AI-сайты для пользователя"
+    },
+    {
+      "path": "/api/ai-categories/allow",
+      "method": "POST",
+      "function": "allow_sites",
+      "description": "Разрешить доступ к AI-сайтам"
+    },
+    {
+      "path": "/api/ai-categories/check",
+      "method": "POST",
+      "function": "check_access",
+      "description": "Проверить доступ пользователя к AI-сайту"
+    },
+    {
+      "path": "/api/ai-categories/status",
+      "method": "GET",
+      "function": "get_status",
+      "description": "Получить статус всех AI-сайтов для пользователя"
+    },
+    {
+      "path": "/api/ai-categories/history",
+      "method": "GET",
+      "function": "get_access_history",
+      "description": "Получить историю попыток доступа"
+    },
+    {
+      "path": "/api/ai-categories/age-restriction",
+      "method": "POST",
+      "function": "set_age_restriction",
+      "description": "Установить ограничение по возрасту"
+    },
+    {
+      "path": "/api/ai-categories/health",
+      "method": "GET",
+      "function": null,
+      "description": "Проверка здоровья сервиса"
+    }
+  ],
+  "monitoring": {
+    "enabled": true,
+    "interval_minutes": 60,
+    "auto_start": false,
+    "alert_on_blocked_access": true,
+    "alert_severity_threshold": "low",
+    "notify_parents_on_block": true
+  },
+  "security": {
+    "requires_encryption": false,
+    "data_retention_days": 90,
+    "log_level": "INFO",
+    "compliance": [],
+    "personal_data_logging": false
+  },
+  "metadata": {
+    "total_functions": 8,
+    "total_api_endpoints": 8,
+    "total_ai_sites": 9,
+    "russian_sites": 5,
+    "international_sites": 4,
+    "flake8_status": "passed",
+    "code_coverage": "medium"
+  }
+}

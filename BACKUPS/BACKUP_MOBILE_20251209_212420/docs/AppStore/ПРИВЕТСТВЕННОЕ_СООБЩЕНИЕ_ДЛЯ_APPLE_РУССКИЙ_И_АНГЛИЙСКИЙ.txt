@@ -1,0 +1,79 @@
+================================================================================
+ПРИВЕТСТВЕННОЕ СООБЩЕНИЕ ДЛЯ APPLE
+РУССКИЙ И АНГЛИЙСКИЙ ВАРИАНТЫ
+================================================================================
+
+================================================================================
+РУССКИЙ ВАРИАНТ
+================================================================================
+
+Добрый день!
+
+Мы внимательно изучили все замечания по проверке приложения ALADDIN и выполнили все необходимые исправления.
+
+В прикрепленном файле "ОТВЕТЫ_ДЛЯ_APPLE_РУССКИЙ_И_АНГЛИЙСКИЙ.docx" содержатся подробные ответы на все 8 пунктов ваших замечаний на русском и английском языках.
+
+Краткое резюме выполненных исправлений:
+
+1. Face Data (Данные лица) - Обновлена Privacy Policy, добавлен раздел 7 "Face ID" с полным описанием использования данных лица.
+
+2. Код приглашения - Подготовлена информация о том, как пользователи получают код (автоматически, бесплатно), предоставлен пример кода для тестирования.
+
+3. Демо QR-код - Создан и приложен QR-код с кодом FAM-DEMO-CODE-2025 для тестирования функции присоединения к семье.
+
+4. Краш на iPad - Отключена поддержка iPad в текущей версии (TARGETED_DEVICE_FAMILY = "1"), приложение оптимизировано только для iPhone.
+
+5. UIBackgroundModes location - Удален location из UIBackgroundModes, приложение использует Significant-Change Location Service и Region Monitoring, которые не требуют persistent location.
+
+6. Age Rating - Обновлены настройки в App Store Connect: Parental Controls и Age Assurance установлены в "None".
+
+7. HealthKit - Удалены все ссылки на HealthKit из приложения (ключи из Info.plist, проверен код, очищен бинарный файл).
+
+8. Бизнес-модель - Настроены два способа оплаты: IAP через App Store и код активации для подписок, приобретенных на сайте.
+
+Все изменения внесены в код приложения, новая сборка (build 5) готова к проверке.
+
+Все ответы на ваши вопросы подробно изложены в прикрепленном текстовом файле.
+
+С уважением,
+Команда разработки ALADDIN
+
+================================================================================
+ENGLISH VERSION
+================================================================================
+
+Good day!
+
+We have carefully reviewed all the feedback on the ALADDIN app review and have completed all necessary fixes.
+
+The attached file "ОТВЕТЫ_ДЛЯ_APPLE_РУССКИЙ_И_АНГЛИЙСКИЙ.docx" contains detailed answers to all 8 points of your feedback in Russian and English.
+
+Brief summary of completed fixes:
+
+1. Face Data - Updated Privacy Policy, added Section 7 "Face ID" with complete description of face data usage.
+
+2. Invitation Code - Prepared information on how users obtain the code (automatically, free), provided sample code for testing.
+
+3. Demo QR Code - Created and attached QR code with code FAM-DEMO-CODE-2025 for testing the family joining function.
+
+4. Crash on iPad - Disabled iPad support in current version (TARGETED_DEVICE_FAMILY = "1"), app optimized for iPhone only.
+
+5. UIBackgroundModes location - Removed location from UIBackgroundModes, app uses Significant-Change Location Service and Region Monitoring, which do not require persistent location.
+
+6. Age Rating - Updated settings in App Store Connect: Parental Controls and Age Assurance set to "None".
+
+7. HealthKit - Removed all HealthKit references from the app (keys from Info.plist, code checked, binary file cleaned).
+
+8. Business Model - Set up two payment methods: IAP through App Store and activation code for subscriptions purchased on the website.
+
+All changes have been made to the app code, new build (build 5) is ready for review.
+
+All answers to your questions are detailed in the attached text file.
+
+Best regards,
+ALADDIN Development Team
+
+================================================================================
+END OF DOCUMENT
+================================================================================
+

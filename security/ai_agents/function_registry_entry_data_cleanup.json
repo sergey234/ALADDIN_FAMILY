@@ -1,0 +1,177 @@
+{
+  "name": "personal_data_cleanup_agent",
+  "type": "ai_agent",
+  "path": "/opt/aladdin-backend/security/ai_agents/personal_data_cleanup_agent.py",
+  "class": "PersonalDataCleanupAgent",
+  "version": "1.0.0",
+  "description": "Агент для автоматического поиска и удаления персональных данных с брокерских сайтов. Поддерживает поиск данных на 100+ брокерских сайтах (Россия, Европа, США), автоматическую отправку запросов на удаление, отслеживание процесса удаления и генерацию отчетов.",
+  "author": "ALADDIN Security Team",
+  "created_at": "2025-12-13",
+  "last_updated": "2025-12-13",
+  "status": "active",
+  "functions": [
+    {
+      "name": "find_data_on_broker_sites",
+      "description": "Поиск персональных данных пользователя на брокерских сайтах. Проходит по списку брокерских сайтов (100+ сайтов) и проверяет наличие данных пользователя (email, телефон, имя, адрес)",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "user_data: UserData - Персональные данные для поиска (email, phone, name, address, date_of_birth)"
+      ],
+      "returns": "List[FoundData] - Список найденных данных на сайтах (site, url, data_found, found_at)",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "remove_data_from_broker_sites",
+      "description": "Автоматическая отправка запросов на удаление данных с указанных брокерских сайтов. Поддерживает различные методы удаления: opt-out формы, GDPR запросы, API, email запросы, через родительские компании",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "sites: List[str] - Список названий сайтов для удаления",
+        "user_data: UserData - Персональные данные пользователя"
+      ],
+      "returns": "List[RemovalRequest] - Список созданных запросов на удаление с их статусами",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "track_removal_progress",
+      "description": "Отслеживание статуса удаления данных. Проверяет текущий статус запросов на удаление, обновляет статусы (pending, processing, completed, failed), автоматически повторяет запросы при необходимости",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "request_id: Optional[str] - ID конкретного запроса (опционально, если не указан - возвращает все запросы пользователя)"
+      ],
+      "returns": "List[RemovalRequest] - Список запросов с актуальным статусом",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_cleanup_report",
+      "description": "Генерация отчета о процессе очистки данных. Возвращает статистику: количество проверенных сайтов, сайтов с найденными данными, отправленных запросов, завершенных удалений, процент завершения",
+      "parameters": [
+        "user_id: str - ID пользователя"
+      ],
+      "returns": "CleanupReport - Отчет с полной статистикой процесса очистки",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "set_user_preferences",
+      "description": "Установить настройки пользователя для поиска данных. Позволяет включить/выключить автоматический поиск и установить интервал поиска",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "enable_auto_scan: Optional[bool] - Включить автоматический поиск",
+        "scan_interval_days: Optional[int] - Интервал поиска в днях (7-365)"
+      ],
+      "returns": "Dict[str, Any] - Текущие настройки пользователя",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_user_preferences",
+      "description": "Получить настройки пользователя для поиска данных",
+      "parameters": [
+        "user_id: str - ID пользователя"
+      ],
+      "returns": "Dict[str, Any] - Настройки пользователя",
+      "async": false,
+      "requires_auth": true
+    }
+  ],
+  "dependencies": [
+    "threat_monitoring_interface",
+    "security.base"
+  ],
+  "config": {
+    "max_retries": 3,
+    "retry_delay_days": 7,
+    "scan_timeout_seconds": 30,
+    "enable_auto_retry": true,
+    "enable_periodic_scan": false,
+    "scan_interval_days": 30,
+    "reminder_interval_days": 45
+  },
+  "events": {
+    "subscribe": ["data_cleanup", "*"],
+    "publish": ["data_cleanup_progress", "data_cleanup_completed"]
+  },
+  "api_endpoints": [
+    {
+      "path": "/api/data-cleanup/scan",
+      "method": "POST",
+      "function": "find_data_on_broker_sites",
+      "description": "Сканировать брокерские сайты на наличие данных пользователя"
+    },
+    {
+      "path": "/api/data-cleanup/remove",
+      "method": "POST",
+      "function": "remove_data_from_broker_sites",
+      "description": "Отправить запросы на удаление данных с указанных сайтов"
+    },
+    {
+      "path": "/api/data-cleanup/status",
+      "method": "GET",
+      "function": "track_removal_progress",
+      "description": "Получить статус запросов на удаление данных"
+    },
+    {
+      "path": "/api/data-cleanup/report",
+      "method": "GET",
+      "function": "get_cleanup_report",
+      "description": "Получить отчет о процессе очистки данных"
+    },
+    {
+      "path": "/api/data-cleanup/scan-status",
+      "method": "GET",
+      "function": "get_scan_status",
+      "description": "Получить статус последнего поиска данных (включая напоминания)"
+    },
+    {
+      "path": "/api/data-cleanup/preferences",
+      "method": "GET",
+      "function": "get_user_preferences",
+      "description": "Получить настройки пользователя (автоматический поиск, интервал)"
+    },
+    {
+      "path": "/api/data-cleanup/preferences",
+      "method": "POST",
+      "function": "set_user_preferences",
+      "description": "Обновить настройки пользователя (включить/выключить авто-поиск, установить интервал)"
+    },
+    {
+      "path": "/api/data-cleanup/periodic-scan",
+      "method": "POST",
+      "function": "check_periodic_scan",
+      "description": "Запустить периодический поиск (если нужно)"
+    },
+    {
+      "path": "/api/data-cleanup/health",
+      "method": "GET",
+      "function": null,
+      "description": "Проверка здоровья сервиса"
+    }
+  ],
+  "monitoring": {
+    "enabled": true,
+    "interval_minutes": 60,
+    "auto_start": false
+  },
+  "security": {
+    "requires_encryption": true,
+    "data_retention_days": 90,
+    "log_level": "INFO",
+    "compliance": ["GDPR", "152-ФЗ", "CCPA"],
+    "personal_data_logging": false
+  },
+  "metadata": {
+    "total_functions": 8,
+    "total_api_endpoints": 9,
+    "supported_regions": ["RU", "EU", "US", "GLOBAL"],
+    "broker_sites_count": 100,
+    "periodic_scan_enabled": false,
+    "default_scan_interval_days": 30,
+    "reminder_interval_days": 45,
+    "user_preferences_enabled": true,
+    "flake8_status": "passed",
+    "code_coverage": "medium"
+  }
+}

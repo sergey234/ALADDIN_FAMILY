@@ -1,0 +1,44 @@
+=== ENGLISH VERSION ===
+
+Good day!
+
+We have carefully reviewed all the feedback on the ALADDIN app review and have completed all necessary fixes.
+
+The attached file "ОБЪЕДИНЕННОЕ_ПИСЬМО_APPLE_IAP_И_VPN_АНГЛИЙСКИЙ_И_РУССКИЙ_07_12_2025.txt" contains detailed answers to both points of your feedback in Russian and English.
+
+Brief summary of completed fixes:
+
+1. Guideline 3.1.1 - In-App Purchase - We have implemented In-App Purchase for full compliance with Guideline 3.1.1. All 4 subscriptions (Basic, Individual, Family, Premium) are now available for purchase via IAP using StoreKit 2. Product IDs registered in App Store Connect: family.aladdin.ios.subscription.basic.v2, family.aladdin.ios.subscription.individual.v2, family.aladdin.ios.subscription.family, and family.aladdin.ios.subscription.premium. IAP is the primary payment method for all countries except Russia. The app supports multiplatform services per Guideline 3.1.3(b), allowing users to activate subscriptions purchased on the website using activation codes.
+
+2. Guideline 5.4 - VPN Apps - We are requesting an exception from Guideline 5.4. Our app is a family safety and parental control platform where VPN is integrated as an additional security layer, not as the primary function. VPN represents less than 10% of the codebase and less than 5% of the interface. Primary functions are parental control, children geofencing, blocking scam links, screen time management, and family safety monitoring. VPN is optional, and the app fully functions without it. We propose conditional exception with monitoring or UI restructuring. We are ready to provide quarterly usage reports demonstrating that VPN remains secondary.
+
+All changes have been made to the app code, new build (build 6) is ready for review.
+
+All answers to your questions are detailed in the attached text file.
+
+Best regards,
+
+Sergey Khlystov ALADDIN
+
+
+=== РУССКИЙ ВАРИАНТ ===
+
+Добрый день!
+
+Мы внимательно изучили все замечания по проверке приложения ALADDIN и выполнили все необходимые исправления.
+
+В прикрепленном файле "ОБЪЕДИНЕННОЕ_ПИСЬМО_APPLE_IAP_И_VPN_АНГЛИЙСКИЙ_И_РУССКИЙ_07_12_2025.txt" содержатся подробные ответы на оба пункта ваших замечаний на русском и английском языках.
+
+Краткое резюме выполненных исправлений:
+
+1. Guideline 3.1.1 - In-App Purchase - Мы реализовали In-App Purchase для полного соответствия Guideline 3.1.1. Все 4 подписки (Базовый, Индивидуальный, Семейный, Премиум) теперь доступны для покупки через IAP с использованием StoreKit 2. Product IDs зарегистрированы в App Store Connect: family.aladdin.ios.subscription.basic.v2, family.aladdin.ios.subscription.individual.v2, family.aladdin.ios.subscription.family и family.aladdin.ios.subscription.premium. IAP является основным способом оплаты для всех стран кроме России. Приложение поддерживает мультиплатформенные сервисы согласно Guideline 3.1.3(b), позволяя пользователям активировать подписки, купленные на сайте, используя коды активации.
+
+2. Guideline 5.4 - VPN Apps - Мы обращаемся с запросом об исключении из Guideline 5.4. Наше приложение представляет собой платформу безопасности семьи и родительского контроля, где VPN интегрирован как дополнительный слой защиты, а не как основная функция. VPN представляет менее 10% кодовой базы и менее 5% интерфейса. Основными функциями являются родительский контроль, геозоны детей, блокировка скам ссылок, управление экранным временем и мониторинг безопасности семьи. VPN является опциональной функцией, и приложение полностью функционирует без него. Мы предлагаем условное исключение с мониторингом или реструктуризацию UI. Мы готовы предоставлять ежеквартальные отчеты об использовании, демонстрирующие, что VPN остается вторичным.
+
+Все изменения внесены в код приложения, новая сборка (build 6) готова к проверке.
+
+Все ответы на ваши вопросы подробно изложены в прикрепленном текстовом файле.
+
+С уважением,
+
+Sergey Khlystov ALADDIN

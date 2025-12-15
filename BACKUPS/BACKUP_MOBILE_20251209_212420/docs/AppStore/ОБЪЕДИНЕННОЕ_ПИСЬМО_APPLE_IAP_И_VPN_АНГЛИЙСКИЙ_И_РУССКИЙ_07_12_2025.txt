@@ -1,0 +1,845 @@
+=== ENGLISH VERSION ===
+
+Dear App Review Team,
+
+Thank you for your recommendations. Below are our responses to both issues.
+
+---
+
+ISSUE 1: GUIDELINE 3.1.1 - BUSINESS - PAYMENTS - IN-APP PURCHASE
+
+Your feedback:
+
+We noticed that your app includes or accesses paid digital content, services, or functionality by means other than in-app purchase, which is not appropriate for the App Store. Specifically:
+
+- Your app accesses digital content purchased outside the app, such as subscription, but that content isn't available to purchase using in-app purchase.
+
+Apps on the United States storefront may link out to the default browser, using buttons, external links, or other calls to action, for payment mechanisms other than in-app purchase. To learn more, see the News post on Apple Developer. For storefronts where there are not alternative options for qualifying apps, the app must use in-app purchase.
+
+Next Steps
+
+The paid digital content, services, or subscriptions included in or accessed by your app must be available for purchase in the app using only in-app purchase.
+
+Apps that offer paid digital services and content across multiple platforms may allow customers to access the content they acquired outside the app as long as it is also available for purchase using in-app purchase. See Guideline 3.1.3(b) Multiplatform Services for more information.
+
+---
+
+OUR RESPONSE: IN-APP PURCHASE IMPLEMENTATION - COMPLIANCE WITH GUIDELINE 3.1.1
+
+We have implemented In-App Purchase to fully comply with Guideline 3.1.1, creating a model that combines App Store requirements with the flexibility of multiplatform services.
+
+1. TECHNICAL IMPLEMENTATION
+
+Framework and architecture:
+
+- StoreKit 2 (modern Apple standard)
+
+- Implementation file: StoreManager.swift
+
+- Functionality: Purchase, restore, subscription verification fully implemented
+
+Architecture:
+
+StoreManager (StoreKit 2)
+
+├── Product Loading → Product.products(for: productIDs)
+
+├── Purchase Flow → product.purchase()
+
+├── Transaction Verification → checkVerified(verification)
+
+└── Subscription Management → Transaction.currentEntitlements
+
+Registered Product IDs in App Store Connect:
+
+- family.aladdin.ios.subscription.basic.v2 - Basic plan
+
+- family.aladdin.ios.subscription.individual.v2 - Individual plan
+
+- family.aladdin.ios.subscription.family - Family plan
+
+- family.aladdin.ios.subscription.premium - Premium plan
+
+Subscription settings:
+
+- Type: Auto-Renewable Subscription
+
+- Period: 1 month
+
+- Prices: Configured for all countries
+
+- Status: Submitted for Apple review
+
+2. PAYMENT MODEL
+
+Dual-channel system:
+
+Primary channel - IAP in-app:
+
+- All 4 subscriptions available for purchase via IAP
+
+- Direct integration with App Store
+
+- Automatic subscription management
+
+- Standard Apple user experience
+
+Additional channel - Multiplatform activation:
+
+- Users can purchase subscription on the website
+
+- Activate in-app via activation code
+
+- Same subscriptions available via IAP
+
+- Equal access to features
+
+Model benefits:
+
+- Compliance with Guideline 3.1.1 (all subscriptions available via IAP)
+
+- Compliance with Guideline 3.1.3(b) (multiplatform services)
+
+3. COMPLIANCE WITH REQUIREMENTS
+
+Guideline 3.1.1:
+
+- All subscriptions available on the website are available for purchase via IAP in-app
+
+- Users can purchase subscriptions directly in-app through App Store
+
+- IAP is the primary payment method in-app
+
+Guideline 3.1.3(b) - Multiplatform services:
+
+- App works on multiple platforms (iOS, website)
+
+- Users can purchase subscription on the website and activate in-app via activation code
+
+- Same subscriptions available for purchase via IAP in-app
+
+- Both methods provide equal access to features
+
+Activation code:
+
+- Used only for activating already paid subscription purchased on the website
+
+- Not used for making purchases through the app
+
+- Complies with Guideline 3.1.3(b) for multiplatform services
+
+4. IMPLEMENTED PAYMENT METHODS
+
+The app supports two methods of subscription activation:
+
+Method 1: Purchase via IAP
+
+- Select plan in-app
+
+- Payment through App Store
+
+- Automatic subscription activation after successful transaction
+
+Method 2: Activation of subscription purchased on website
+
+- Purchase subscription on website aladdin-ai.ru
+
+- Receive activation code after payment
+
+- Enter code in-app via activation screen
+
+- Subscription activation after code verification on server
+
+Technical details:
+
+- Both methods provide equal access to app features
+
+- Subscription status synchronized between platforms
+
+- Activation code used only for activating already paid subscription
+
+5. COMPLIANCE WITH APP STORE REQUIREMENTS
+
+- All subscriptions available for purchase via IAP in-app
+
+- IAP is the primary payment method in-app
+
+- Activation code used only for multiplatform services per Guideline 3.1.3(b)
+
+6. TECHNICAL IMPLEMENTATION
+
+IAP transaction processing:
+
+- Using StoreKit 2 for product loading and purchase processing
+
+- Transaction verification via checkVerified(verification)
+
+- State handling: success, cancelled, pending
+
+- Automatic subscription status updates via Transaction.currentEntitlements
+
+Code activation:
+
+- Activation code verification via API endpoint /subscription/activate
+
+- Code verification on server before activation
+
+- Subscription status synchronization between iOS and web platform
+
+7. OUR COMMITMENT
+
+- Maintain all subscriptions available via IAP
+
+- Ensure compliance with all App Store requirements
+
+- Continue improving user experience
+
+- Maintain transparency in subscription operations
+
+IAP CONCLUSION
+
+We have implemented In-App Purchase that:
+
+- Fully complies with Guideline 3.1.1
+
+- Supports multiplatform services per Guideline 3.1.3(b)
+
+- Provides flexibility for users
+
+- Ensures equal access to features regardless of payment method
+
+---
+
+ISSUE 2: GUIDELINE 5.4 - LEGAL - VPN APPS
+
+Your feedback:
+
+Your VPN app was submitted by an Apple Developer Program account registered to an individual.
+
+All VPN apps must be submitted from an Apple Developer Program account registered to a company or organization.
+
+Next Steps
+
+To resolve this issue, the app will need to be submitted by an Apple Developer Program account registered to a company or organization.
+
+---
+
+OUR RESPONSE: REQUEST FOR EXCEPTION FROM GUIDELINE 5.4 - VPN AS SECONDARY FUNCTION
+
+Dear App Review Team,
+
+We are requesting an exception from Guideline 5.4 regarding VPN functionality in our ALADDIN app. Our app is a comprehensive family safety and parental control platform where VPN is integrated as an additional security layer, not as the primary function.
+
+1. APPLICATION CLASSIFICATION AND STRUCTURE
+
+Application classification:
+
+- Primary classification: Parental control application
+
+- Secondary classification: Family safety platform
+
+- Tertiary function: VPN (Security layer)
+
+Application structure:
+
+- VPN: (less than 5% of total interface)
+
+Function distribution:
+
+- Primary functions: Parental control, children geofencing, blocking scam links-apps, screen time management, family safety monitoring, protection of children from payments on scam gaming platforms-streaming services and pornography.
+
+- Secondary functions: VPN (integrated as security layer), threat alerts, analytics
+
+2. QUANTITATIVE FUNCTIONALITY ASSESSMENT
+
+3. TECHNICAL IMPLEMENTATION AND ARCHITECTURE
+
+Technical implementation:
+
+- VPN uses NetworkExtension framework (standard iOS API)
+
+- VPN is an optional function, app fully functions without VPN enabled
+
+- VPN represents less than 10% of total codebase
+
+- VPN is not required for core functionality
+
+Architectural analysis:
+
+Core app modules (Family management, Parental control, Safety monitoring) function independently of VPN. The app can be fully functional with VPN disabled.
+
+Dependencies:
+
+- Core modules: Independent, function without VPN
+
+- VPN module: Depends on core modules
+
+- VPN can be completely removed without breaking core functionality
+
+- Core functionality cannot function without core modules
+
+4. COMPLIANCE WITH APP STORE REQUIREMENTS
+
+Compliance:
+
+- App fully complies with Guideline 3.1.3(b) for multiplatform services
+
+- IAP implemented and available for all subscriptions
+
+5. JUSTIFICATION FOR EXCEPTION
+
+Quantitative evidence:
+
+1. App functions identically without VPN
+
+2. VPN serves as security enhancement, not the primary product
+
+6. BENEFITS OF GRANTING EXCEPTION
+
+For Apple:
+
+- Strengthens family safety category in App Store
+
+- Demonstrates flexible application of guidelines
+
+- Encourages innovation in parental control
+
+- Generates ongoing revenue from IAP subscriptions through App Store
+
+- Demonstrates Apple's support for comprehensive family safety solutions
+
+For users:
+
+- Families maintain uninterrupted access to safety features
+
+- Faster feature updates and security patches
+
+- Comprehensive protection: One app provides multiple security layers (location, content filtering, VPN)
+
+- Simplified experience: Families don't need separate apps for each safety function
+
+- Economic efficiency: Combined features provide better value than separate subscriptions
+
+Our unique value proposition:
+
+Unlike pure VPN apps, we provide integrated family safety: geofencing for children, analysis and blocking of SCAM links and transitions to scammers, prevention of children's payments on gaming resources, online casinos, streaming services, adult content. All this together with threat detection and VPN in one cohesive platform. This integration is our main differentiator.
+
+Technical excellence:
+
+- Our app demonstrates best practices in iOS development
+
+- Effectively integrates multiple Apple frameworks (CoreLocation, ScreenTime API, NetworkExtension)
+
+7. We Request
+
+We understand the importance of Guideline 5.4 and propose solutions that support compliance while considering our unique use case.
+
+Option 1: Conditional exception with monitoring
+
+- Grant exception with requirement to provide quarterly usage reports
+
+- If VPN usage exceeds 30% of active functions, we commit to take necessary measures for compliance
+
+- Implement quarterly usage monitoring
+
+- Conduct review after 3-6 months
+
+- Revoke if VPN usage exceeds 30% threshold
+
+- Ensure clear metrics and transparency
+
+Option 2: Function access restriction
+
+- Make VPN available only to users with active subscriptions
+
+- This ensures VPN remains secondary to core functionality
+
+- VPN becomes an addition, not a standalone function
+
+- VPN cannot be purchased or used independently
+
+- This ensures VPN is always secondary to core safety functions
+
+Option 3: UI restructuring and renaming
+
+- We commit to restructure the app to further reduce VPN emphasis
+
+- Move VPN to Advanced settings instead of main navigation
+
+- Add disclaimer: VPN is an additional security function
+
+- Alternative: Hybrid model - maintain VPN functionality but rename as Secure Connection function
+
+- Remove explicit VPN terminology from App Store listing
+
+- Maintain technical VPN functionality without marketing as VPN
+
+Solution - Family safety layer:
+
+Instead of calling it VPN, we propose renaming it as Secure Family Connection - a function that:
+
+- Protects family data in public networks
+
+- Automatically activates when children connect to unreliable Wi-Fi
+
+- Works seamlessly with threat detection
+
+- Presented as part of our safety ecosystem, not as a separate VPN
+
+We are open to discussing any of these approaches or developing new solutions together.
+
+8. OUR COMMITMENTS
+
+Our commitment:
+
+- Provide quarterly usage reports demonstrating VPN remains secondary
+
+- Maintain VPN as optional, non-promoted function
+
+- Never market VPN as primary function
+
+- Maintain VPN as integrated security layer
+
+- Ensure transparency in usage statistics
+
+- Continue primary focus on parental control innovation
+
+Additional measures:
+
+- Ready to provide detailed usage analytics every 3 months showing VPN is secondary
+
+- Can implement additional UI changes to reduce VPN emphasis
+
+9. CONCLUSION
+
+We are ready to work with you on any solution option that will ensure compliance while maintaining our ability to serve families. We ask to consider providing an exception with the understanding that VPN is part of our family safety platform, not a standalone service.
+
+We believe that granting this exception aligns with Apple's mission of empowering developers while protecting users and strengthens iOS position for comprehensive family safety solutions.
+
+Best regards,
+
+Sergey Khlystov ALADDIN
+
+
+=== РУССКИЙ ВАРИАНТ ===
+
+Уважаемая команда App Review,
+
+Благодарим за ваши рекомендации. Ниже представлены наши ответы на оба замечания.
+
+---
+
+ЗАМЕЧАНИЕ 1: GUIDELINE 3.1.1 - BUSINESS - PAYMENTS - IN-APP PURCHASE
+
+Ваше замечание:
+
+We noticed that your app includes or accesses paid digital content, services, or functionality by means other than in-app purchase, which is not appropriate for the App Store. Specifically:
+
+- Your app accesses digital content purchased outside the app, such as subscription, but that content isn't available to purchase using in-app purchase.
+
+Apps on the United States storefront may link out to the default browser, using buttons, external links, or other calls to action, for payment mechanisms other than in-app purchase. To learn more, see the News post on Apple Developer. For storefronts where there are not alternative options for qualifying apps, the app must use in-app purchase.
+
+Next Steps
+
+The paid digital content, services, or subscriptions included in or accessed by your app must be available for purchase in the app using only in-app purchase.
+
+Apps that offer paid digital services and content across multiple platforms may allow customers to access the content they acquired outside the app as long as it is also available for purchase using in-app purchase. See Guideline 3.1.3(b) Multiplatform Services for more information.
+
+---
+
+НАШ ОТВЕТ: РЕАЛИЗАЦИЯ IN-APP PURCHASE - СООТВЕТСТВИЕ GUIDELINE 3.1.1
+
+Мы реализовали In-App Purchase для полного соответствия Guideline 3.1.1, создав модель, которая сочетает требования App Store с гибкостью мультиплатформенных сервисов.
+
+1. ТЕХНИЧЕСКАЯ РЕАЛИЗАЦИЯ
+
+Фреймворк и архитектура:
+
+- StoreKit 2 (современный стандарт Apple)
+
+- Файл реализации: StoreManager.swift
+
+- Функциональность: Покупка, восстановление, проверка подписок полностью реализованы
+
+Архитектура:
+
+StoreManager (StoreKit 2)
+
+├── Product Loading → Product.products(for: productIDs)
+
+├── Purchase Flow → product.purchase()
+
+├── Transaction Verification → checkVerified(verification)
+
+└── Subscription Management → Transaction.currentEntitlements
+
+Зарегистрированные Product IDs в App Store Connect:
+
+- family.aladdin.ios.subscription.basic.v2 - Базовый тариф
+
+- family.aladdin.ios.subscription.individual.v2 - Индивидуальный тариф
+
+- family.aladdin.ios.subscription.family - Семейный тариф
+
+- family.aladdin.ios.subscription.premium - Премиум тариф
+
+Настройки подписок:
+
+- Тип: Auto-Renewable Subscription
+
+- Период: 1 месяц
+
+- Цены: Настроены для всех стран
+
+- Статус: Отправлены на ревью Apple
+
+2. МОДЕЛЬ ОПЛАТЫ
+
+Двухканальная система:
+
+Основной канал - IAP в приложении:
+
+- Все 4 подписки доступны для покупки через IAP
+
+- Прямая интеграция с App Store
+
+- Автоматическое управление подпиской
+
+- Стандартный пользовательский опыт Apple
+
+Дополнительный канал - Мультиплатформенная активация:
+
+- Пользователи могут купить подписку на сайте
+
+- Активировать в приложении через код активации
+
+- Те же подписки доступны через IAP
+
+- Одинаковый доступ к функциям
+
+Преимущества модели:
+
+- Соответствие Guideline 3.1.1 (все подписки доступны через IAP)
+
+- Соответствие Guideline 3.1.3(b) (мультиплатформенные сервисы)
+
+3. СООТВЕТСТВИЕ ТРЕБОВАНИЯМ
+
+Guideline 3.1.1:
+
+- Все подписки, доступные на сайте, доступны для покупки через IAP в приложении
+
+- Пользователи могут приобретать подписки непосредственно в приложении через App Store
+
+- IAP является основным способом оплаты в приложении
+
+Guideline 3.1.3(b) - Мультиплатформенные сервисы:
+
+- Приложение работает на нескольких платформах (iOS, веб-сайт)
+
+- Пользователи могут купить подписку на сайте и активировать в приложении через код активации
+
+- Те же подписки доступны для покупки через IAP в приложении
+
+- Оба способа предоставляют одинаковый доступ к функциям
+
+Код активации:
+
+- Используется только для активации уже оплаченной подписки, купленной на сайте
+
+- Не используется для совершения покупки через приложение
+
+- Соответствует Guideline 3.1.3(b) для мультиплатформенных сервисов
+
+4. РЕАЛИЗОВАННЫЕ СПОСОБЫ ОПЛАТЫ
+
+Приложение поддерживает два способа активации подписки:
+
+Способ 1: Покупка через IAP
+
+- Выбор тарифа в приложении
+
+- Оплата через App Store
+
+- Автоматическая активация подписки после успешной транзакции
+
+Способ 2: Активация подписки, купленной на сайте
+
+- Покупка подписки на веб-сайте aladdin-ai.ru
+
+- Получение кода активации после оплаты
+
+- Ввод кода в приложении через экран активации
+
+- Активация подписки после проверки кода на сервере
+
+Технические детали:
+
+- Оба способа предоставляют одинаковый доступ к функциям приложения
+
+- Статус подписки синхронизируется между платформами
+
+- Код активации используется только для активации уже оплаченной подписки
+
+5. СООТВЕТСТВИЕ ТРЕБОВАНИЯМ APP STORE
+
+- Все подписки доступны для покупки через IAP в приложении
+
+- IAP является основным способом оплаты в приложении
+
+- Код активации используется только для мультиплатформенных сервисов согласно Guideline 3.1.3(b)
+
+6. ТЕХНИЧЕСКАЯ РЕАЛИЗАЦИЯ
+
+Обработка IAP транзакций:
+
+- Использование StoreKit 2 для загрузки продуктов и обработки покупок
+
+- Верификация транзакций через checkVerified(verification)
+
+- Обработка состояний: success, cancelled, pending
+
+- Автоматическое обновление статуса подписки через Transaction.currentEntitlements
+
+Активация кода:
+
+- Проверка кода активации через API endpoint /subscription/activate
+
+- Верификация кода на сервере перед активацией
+
+- Синхронизация статуса подписки между iOS и веб-платформой
+
+7. НАШЕ ОБЯЗАТЕЛЬСТВО
+
+- Поддерживать все подписки доступными через IAP
+
+- Обеспечивать соответствие всем требованиям App Store
+
+- Продолжать улучшать пользовательский опыт
+
+- Поддерживать прозрачность в работе с подписками
+
+ЗАКЛЮЧЕНИЕ ПО IAP
+
+Мы реализовали In-App Purchase, который:
+
+- Полностью соответствует Guideline 3.1.1
+
+- Поддерживает мультиплатформенные сервисы согласно Guideline 3.1.3(b)
+
+- Предоставляет гибкость для пользователей
+
+- Обеспечивает одинаковый доступ к функциям независимо от способа оплаты
+
+---
+
+ЗАМЕЧАНИЕ 2: GUIDELINE 5.4 - LEGAL - VPN APPS
+
+Ваше замечание:
+
+Your VPN app was submitted by an Apple Developer Program account registered to an individual.
+
+All VPN apps must be submitted from an Apple Developer Program account registered to a company or organization.
+
+Next Steps
+
+To resolve this issue, the app will need to be submitted by an Apple Developer Program account registered to a company or organization.
+
+---
+
+НАШ ОТВЕТ: ЗАПРОС ИСКЛЮЧЕНИЯ ИЗ РУКОВОДСТВА 5.4 - VPN КАК ВТОРИЧНАЯ ФУНКЦИЯ
+
+Уважаемая команда App Review,
+
+Мы обращаемся с запросом об исключении из Руководства 5.4 в отношении функциональности VPN в нашем приложении ALADDIN. Наше приложение представляет собой комплексную платформу безопасности семьи и родительского контроля, где VPN интегрирован как дополнительный слой защиты, а не как основная функция.
+
+1. КЛАССИФИКАЦИЯ И СТРУКТУРА ПРИЛОЖЕНИЯ
+
+Классификация приложения:
+
+- Основная классификация: Приложение родительского контроля
+
+- Вторичная классификация: Платформа безопасности семьи
+
+- Третичная функция: VPN (Слой безопасности)
+
+Структура приложения:
+
+- VPN: (менее 5% от общего интерфейса)
+
+Распределение функций:
+
+- Основные функции: Родительский контроль, геозоны детей, блокировка сакам сылок-приложений, управление экранным временем, мониторинг безопасности семьи, защита детей от оплаты на скам игровых платформах-стриминговых сервисах и порнографии.
+
+- Вторичные функции: VPN (интегрирован как слой безопасности), оповещения об угрозах, аналитика
+
+2. КОЛИЧЕСТВЕННАЯ ОЦЕНКА ФУНКЦИОНАЛЬНОСТИ
+
+3. ТЕХНИЧЕСКАЯ РЕАЛИЗАЦИЯ И АРХИТЕКТУРА
+
+Техническая реализация:
+
+- VPN использует фреймворк NetworkExtension (стандартный iOS API)
+
+- VPN является опциональной функцией, приложение полностью функционирует без включенного VPN
+
+- VPN представляет менее 10% от общего кодовой базы
+
+- VPN не требуется для основной функциональности
+
+Архитектурный анализ:
+
+Основные модули приложения (Управление семьей, Родительский контроль, Мониторинг безопасности) функционируют независимо от VPN. Приложение может быть полностью функциональным с отключенным VPN.
+
+Зависимости:
+
+- Основные модули: Независимы, функционируют без VPN
+
+- Модуль VPN: Зависит от основных модулей
+
+- VPN может быть полностью удален без нарушения основной функциональности
+
+- Основная функциональность не может функционировать без основных модулей
+
+4. СООТВЕТСТВИЕ ТРЕБОВАНИЯМ APP STORE
+
+Соответствие требованиям:
+
+- Приложение полностью соответствует Руководству 3.1.3(b) для мультиплатформенных сервисов
+
+- IAP реализован и доступен для всех подписок
+
+5. ОБОСНОВАНИЕ ИСКЛЮЧЕНИЯ
+
+Количественные доказательства:
+
+1. Приложение функционирует идентично без VPN
+
+2. VPN служит усилением безопасности, а не основным продуктом
+
+6. ПРЕИМУЩЕСТВА ПРЕДОСТАВЛЕНИЯ ИСКЛЮЧЕНИЯ
+
+Для Apple:
+
+- Укрепляет категорию безопасности семьи в App Store
+
+- Демонстрирует гибкое применение руководящих принципов
+
+- Поощряет инновации в области родительского контроля
+
+- Генерирует постоянный доход от IAP подписок через App Store
+
+- Демонстрирует поддержку Apple комплексных решений безопасности семьи
+
+Для пользователей:
+
+- Семьи сохраняют бесперебойный доступ к функциям безопасности
+
+- Более быстрые обновления функций и патчи безопасности
+
+- Комплексная защита: Одно приложение предоставляет несколько слоев безопасности (местоположение, фильтрация контента, VPN)
+
+- Упрощенный опыт: Семьям не нужны отдельные приложения для каждой функции безопасности
+
+- Экономическая эффективность: Объединенные функции предоставляют лучшую ценность, чем отдельные подписки
+
+Наше уникальное ценностное предложение:
+
+В отличие от чистых VPN приложений, мы предоставляем интегрированную безопасность семьи: геозоны для детей, анализ и блокировку SCAM ссылок и переходов к мошенникам, предотвращение оплаты детей на игровых ресурсах, онлайн казино, стриминговых сервисах, контент для взрослых. Все это вместе с обнаружением угроз и VPN в одной связной платформе. Эта интеграция является нашим основным отличием.
+
+Техническое превосходство:
+
+- Наше приложение демонстрирует лучшие практики в разработке iOS
+
+- Эффективно интегрирует несколько фреймворков Apple (CoreLocation, ScreenTime API, NetworkExtension)
+
+7. Мы просим Вас
+
+Мы понимаем важность Руководства 5.4 и предлагаем решения, которые поддерживают соответствие требованиям, при этом учитывая наш уникальный случай использования.
+
+Вариант 1: Условное исключение с мониторингом
+
+- Предоставить исключение с требованием предоставлять квартальные отчеты об использовании
+
+- Если использование VPN превысит 30% активных функций, мы обязуемся принять необходимые меры для соответствия требованиям
+
+- Внедрить ежеквартальный мониторинг использования
+
+- Провести обзор через 3-6 месяцев
+
+- Отозвать, если использование VPN превысит порог 30%
+
+- Обеспечить четкие метрики и прозрачность
+
+Вариант 2: Ограничение доступа к функции
+
+- Сделать VPN доступным только для пользователей с активными подписками
+
+- Это гарантирует, что VPN остается вторичным по отношению к основной функциональности
+
+- VPN становится дополнением, а не самостоятельной функцией
+
+- VPN не может быть приобретен или использован независимо
+
+- Это гарантирует, что VPN всегда вторичен по отношению к основным функциям безопасности
+
+Вариант 3: Реструктуризация UI и переименование
+
+- Мы обязуемся реструктурировать приложение для дальнейшего уменьшения акцента на VPN
+
+- Переместить VPN в Расширенные настройки вместо основной навигации
+
+- Добавить отказ от ответственности: VPN является дополнительной функцией безопасности
+
+- Альтернатива: Гибридная модель - сохранить функциональность VPN, но переименовать как функцию Безопасное соединение
+
+- Удалить явную терминологию VPN из листинга App Store
+
+- Сохранить техническую функциональность VPN без маркетинга как VPN
+
+ решение - Слой безопасности семьи:
+
+Вместо того, чтобы называть это VPN, мы предлагаем переименовать как Безопасное семейное соединение - функция, которая:
+
+- Защищает семейные данные в публичных сетях
+
+- Автоматически включается, когда дети подключаются к ненадежному Wi-Fi
+
+- Работает бесшовно с обнаружением угроз
+
+- Представляется как часть нашей экосистемы безопасности, а не как отдельный VPN
+
+Мы открыты для обсуждения любого из подходов или разработки новых решений вместе.
+
+8. НАШИ ОБЯЗАТЕЛЬСТВА
+
+Наше обязательство:
+
+- Предоставлять ежеквартальные отчеты об использовании, демонстрирующие, что VPN остается вторичным
+
+- Поддерживать VPN как опциональную, непродвигаемую функцию
+
+- Никогда не маркетингово продвигать VPN как основную функцию
+
+- Поддерживать VPN как интегрированный слой безопасности
+
+- Обеспечивать прозрачность в статистике использования
+
+- Продолжать основной фокус на инновациях в родительском контроле
+
+Дополнительные меры:
+
+- Готовы предоставлять раз в 3 месяца детальную аналитику использования, показывающую, что VPN является вторичной
+
+- Можем внедрить дополнительные изменения в UI для уменьшения акцента на VPN
+
+9. ЗАКЛЮЧЕНИЕ
+
+Мы готовы работать с вами над любым вариантом решения, которые обеспечат соответствие требованиям при сохранении нашей способности служить семьям. Мы просим рассмотреть возможность предоставить исключение с пониманием того, что VPN является частью нашей платформы безопасности семьи, а не самостоятельным сервисом.
+
+Мы считаем, что предоставление этого исключения соответствует миссии Apple по расширению возможностей разработчиков при защите пользователей и укрепляет позицию iOS для комплексных решений безопасности семьи.
+
+С уважением,
+
+Sergey Khlystov ALADDIN
+

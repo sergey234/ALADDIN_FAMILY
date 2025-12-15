@@ -1,0 +1,19 @@
+БЭКАП ПЕРЕД ПЕРЕИМЕНОВАНИЕМ VPN → NETWORK PROTECTION
+Дата создания: 15 декабря 2025
+
+СОХРАНЕННЫЕ ФАЙЛЫ:
+1. Screens/03_VPNScreen.swift (или 03_NetworkProtectionScreen.swift)
+2. Core/VPN/VPNManager.swift (или NetworkProtectionManager.swift)
+3. ALADDINApp.swift
+4. Core/Navigation/NavigationManager.swift
+5. Screens/01_MainScreen.swift
+6. Screens/24_VPNEnergyStatsScreen.swift
+7. ViewModels/VPNViewModel.swift
+8. ALADDIN.xcodeproj/project.pbxproj
+
+ЦЕЛЬ ПЕРЕИМЕНОВАНИЯ:
+- VPNScreen → NetworkProtectionScreen
+- VPNManager → NetworkProtectionManager
+
+ВОССТАНОВЛЕНИЕ:
+См. документ: docs/AppStore/БЭКАП_ПЕРЕД_ПЕРЕИМЕНОВАНИЕМ_VPN_15_12_2025.md

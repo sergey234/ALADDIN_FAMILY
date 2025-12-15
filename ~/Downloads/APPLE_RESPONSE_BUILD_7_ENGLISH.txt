@@ -1,0 +1,169 @@
+Hello,
+
+Thank you for your feedback. We have carefully reviewed and addressed both guidelines. Below are our detailed responses.
+
+---
+
+GUIDELINE 3.1.1 - BUSINESS - PAYMENTS - IN-APP PURCHASE
+
+Your Remark:
+We noticed that your app includes or accesses paid digital content, services, or functionality by means other than in-app purchase, which is not appropriate for the App Store. Specifically:
+- Your app accesses digital content purchased outside the app, such as subscription, but that content isn't available to purchase using in-app purchase.
+
+Apps on the United States storefront may link out to the default browser, using buttons, external links, or other calls to action, for payment mechanisms other than in-app purchase. To learn more, see the News post on Apple Developer. For storefronts where there are not alternative options for qualifying apps, the app must use in-app purchase.
+
+Next Steps:
+The paid digital content, services, or subscriptions included in or accessed by your app must be available for purchase in the app using only in-app purchase.
+
+Apps that offer paid digital services and content across multiple platforms may allow customers to access the content they acquired outside the app as long as it is also available for purchase using in-app purchase. See Guideline 3.1.3(b) Multiplatform Services for more information.
+
+---
+
+OUR RESPONSE: IN-APP PURCHASE IMPLEMENTATION - COMPLIANCE WITH GUIDELINE 3.1.1
+
+We have implemented In-App Purchase (IAP) using StoreKit 2 to fully comply with Guideline 3.1.1, while maintaining support for multiplatform services per Guideline 3.1.3(b).
+
+1. TECHNICAL IMPLEMENTATION
+
+Framework: StoreKit 2
+Implementation file: StoreManager.swift
+Functionality: Purchase, restore, subscription verification
+
+Architecture:
+- Product Loading → Product.products(for: productIDs)
+- Purchase Flow → product.purchase()
+- Transaction Verification → checkVerified(verification)
+- Subscription Management → Transaction.currentEntitlements
+
+Product IDs in App Store Connect:
+- family.aladdin.ios.subscription.basic.v2
+- family.aladdin.ios.subscription.individual.v2
+- family.aladdin.ios.subscription.family
+- family.aladdin.ios.subscription.premium
+
+Settings: Auto-Renewable Subscription, period 1 month, prices configured for all countries
+
+2. PAYMENT MODEL
+
+Primary Channel - IAP in App:
+- All 4 subscriptions available for purchase via IAP
+- Direct integration with App Store
+- Automatic subscription management
+
+Additional Channel - Multiplatform Activation:
+- Users can purchase subscription on website and activate in app via activation code
+- Same subscriptions available via IAP
+- Both methods provide equal access to features
+
+3. COMPLIANCE WITH REQUIREMENTS
+
+Guideline 3.1.1:
+- All subscriptions available on website are available for purchase via IAP in app
+- Users can purchase subscriptions directly in app through App Store
+- IAP is the primary payment method in app
+- IAP is available for all countries where it is technically available
+
+Guideline 3.1.3(b) - Multiplatform Services:
+- App complies with Guideline 3.1.3(b) for multiplatform services
+- Activation code is used only for activating already paid subscription purchased on website
+
+CONCLUSION ON IAP
+
+We have implemented In-App Purchase that complies with Guideline 3.1.1 and supports multiplatform services per Guideline 3.1.3(b).
+
+---
+
+GUIDELINE 5.4 - LEGAL - VPN APPS
+
+Your Remark:
+Your VPN app was submitted by an Apple Developer Program account registered to an individual.
+All VPN apps must be submitted from an Apple Developer Program account registered to a company or organization.
+
+Next Steps:
+To resolve this issue, the app will need to be submitted by an Apple Developer Program account registered to a company or organization.
+
+---
+
+OUR RESPONSE: NETWORK PROTECTION AS SECONDARY FUNCTION - UI RESTRUCTURING COMPLETED
+
+Dear App Review Team,
+
+We request consideration for an exception from Guideline 5.4, as Network Protection functionality in our ALADDIN app is a secondary security function, not a primary VPN service. Our app is a comprehensive family safety and parental control platform where Network Protection is integrated as an additional security layer, not as the primary function.
+
+We have already completed UI restructuring to reduce emphasis on VPN and present it as a secondary security function.
+
+1. APPLICATION CLASSIFICATION AND STRUCTURE
+
+Classification:
+- Primary: Parental Control App
+- Secondary: Family Safety Platform
+- Tertiary: Network Protection (Security Layer) — less than 5% of interface
+
+Function Distribution:
+- Primary (over 90%): Parental control, children geofencing, scam link blocking, screen time management, family safety monitoring, protection from unauthorized payments
+- Secondary: Network Protection (integrated as security layer), threat alerts, analytics
+
+2. TECHNICAL IMPLEMENTATION
+
+- Network Protection uses NetworkExtension (standard iOS API)
+- Optional function — app is fully functional without it
+- Less than 10% of codebase
+- Core modules (Family Management, Parental Control, Safety Monitoring) function independently of Network Protection
+- Network Protection can be completely removed without breaking core functionality
+
+3. UI RESTRUCTURING - COMPLETED IN BUILD 7
+
+Completed Changes:
+- Removed Network Protection card from main screen, replaced with "ALADDIN Antivirus" card
+- Renamed from "VPN" to "Network Protection" / "Защита сети" throughout the app
+- Simplified Network Protection screen interface — compact status card with toggle only
+- Updated terminology in all screens, FAQ, privacy policy, and terms of service — removed word VPN
+
+4. WHY NETWORK PROTECTION IS A SECONDARY FUNCTION
+
+1. App functions identically without Network Protection
+2. Network Protection serves as security enhancement, not primary product
+3. Network Protection is optional and not required for core functionality
+4. Network Protection represents less than 5% of user interface
+
+5. OUR COMMITMENT
+
+- Provide quarterly usage reports demonstrating that Network Protection remains secondary
+- Maintain Network Protection as optional, non-promoted function
+- Never market Network Protection as primary function
+- Continue primary focus on parental control innovations
+
+6. CONCLUSION
+
+We are ready to work with you on any solution that ensures compliance while maintaining our ability to serve families. We request consideration for an exception with the understanding that Network Protection is part of our family safety platform, not a standalone service.
+
+---
+
+SUMMARY OF CHANGES IN BUILD 7
+
+IAP Implementation (Guideline 3.1.1):
+- StoreKit 2 fully integrated
+- All 4 subscriptions available via IAP for all countries (except Russia where IAP is restricted)
+- Regional payment logic correctly implemented (IAP for non-Russia, QR for Russia)
+- Activation code flow for multiplatform services (Guideline 3.1.3(b))
+- Button text always shows "Subscribe" / "Оформить подписку" (underlying logic handles region)
+- Activation code button shown only for Russia (where QR payment is used)
+
+Network Protection Changes (Guideline 5.4):
+- Removed Network Protection card from main screen
+- Replaced with "ALADDIN Antivirus" card (primary security feature)
+- Renamed from "VPN" to "Network Protection" / "Защита сети" throughout entire app
+- Simplified interface - compact status card with toggle only
+- Over 110 localization keys updated (Russian + English)
+- All screens, FAQ, privacy policy, terms of service updated
+- Presented as secondary security feature, not primary VPN service
+- App Store listing reflects security focus, not VPN focus
+
+All changes are included in Build 7, which is ready for review.
+
+Thank you for your thorough review. We look forward to your response.
+
+Best regards,
+Sergey Khlystov
+ALADDIN Development Team
+

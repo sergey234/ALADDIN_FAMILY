@@ -1,0 +1,16 @@
+name: Test App Store Workflow
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  tags:
+    - 'v*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: echo "Workflow works!"

@@ -1,0 +1,218 @@
+{
+  "name": "driving_reports_agent",
+  "type": "ai_agent",
+  "path": "security/ai_agents/driving_reports_agent.py",
+  "class": "DrivingReportsAgent",
+  "version": "1.0.0",
+  "description": "Агент для генерации отчетов о вождении и оценки безопасности вождения. Отслеживание скорости, использования телефона, резкого торможения. Генерация отчетов (дневные, недельные, месячные). Оценка безопасности вождения с балльной системой и рейтингом.",
+  "author": "ALADDIN Security Team",
+  "created_at": "2025-12-12",
+  "status": "active",
+  "functions": [
+    {
+      "name": "start_monitoring",
+      "description": "Запустить мониторинг вождения для пользователя",
+      "parameters": {
+        "user_id": "string"
+      },
+      "returns": "dict"
+    },
+    {
+      "name": "stop_monitoring",
+      "description": "Остановить мониторинг вождения для пользователя",
+      "parameters": {
+        "user_id": "string"
+      },
+      "returns": "dict"
+    },
+    {
+      "name": "record_driving_event",
+      "description": "Записать событие вождения (скорость, нарушение, местоположение)",
+      "parameters": {
+        "user_id": "string",
+        "event_type": "string",
+        "speed": "float (optional)",
+        "location": "dict (optional)",
+        "violation_type": "DrivingViolation (optional)",
+        "metadata": "dict (optional)"
+      },
+      "returns": "dict"
+    },
+    {
+      "name": "generate_report",
+      "description": "Генерация отчета о вождении за период (день, неделя, месяц)",
+      "parameters": {
+        "user_id": "string",
+        "start_date": "datetime (optional)",
+        "end_date": "datetime (optional)",
+        "period": "string (day/week/month)"
+      },
+      "returns": "dict"
+    },
+    {
+      "name": "calculate_safety_score",
+      "description": "Расчет оценки безопасности вождения (баллы 0-100, рейтинг)",
+      "parameters": {
+        "user_id": "string",
+        "start_date": "datetime (optional)",
+        "end_date": "datetime (optional)"
+      },
+      "returns": "SafetyScore or None"
+    },
+    {
+      "name": "get_violations_statistics",
+      "description": "Получить статистику нарушений за период",
+      "parameters": {
+        "user_id": "string",
+        "period": "string (day/week/month)"
+      },
+      "returns": "dict"
+    },
+    {
+      "name": "get_recommendations",
+      "description": "Получить рекомендации по улучшению безопасности вождения",
+      "parameters": {
+        "user_id": "string"
+      },
+      "returns": "List[str]"
+    },
+    {
+      "name": "collect_threats",
+      "description": "Сбор угроз из нарушений вождения (ThreatMonitoringInterface)",
+      "parameters": [],
+      "returns": "List[ThreatEvent]"
+    },
+    {
+      "name": "analyze_threats",
+      "description": "Анализ угроз вождения (ThreatMonitoringInterface)",
+      "parameters": {
+        "threats": "List[ThreatEvent]"
+      },
+      "returns": "List[ThreatEvent]"
+    },
+    {
+      "name": "send_alert",
+      "description": "Отправка уведомления о нарушении (ThreatMonitoringInterface)",
+      "parameters": {
+        "alert": "dict"
+      },
+      "returns": "bool"
+    }
+  ],
+  "dependencies": [
+    "security.base.SecurityBase",
+    "security.ai_agents.threat_monitoring_interface.ThreatMonitoringInterface"
+  ],
+  "config": {
+    "speed_limit": 60.0,
+    "hard_braking_threshold": 0.4,
+    "hard_acceleration_threshold": 0.4,
+    "sharp_turn_threshold": 0.5,
+    "notify_parents": true
+  },
+  "events": [
+    {
+      "type": "driving_violation",
+      "severity": ["low", "medium", "high"],
+      "description": "Обнаружено нарушение при вождении"
+    }
+  ],
+  "api_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/driving-reports/start",
+      "description": "Запуск мониторинга вождения",
+      "request_body": "StartMonitoringRequest",
+      "response": "dict"
+    },
+    {
+      "method": "POST",
+      "path": "/api/driving-reports/stop",
+      "description": "Остановка мониторинга вождения",
+      "request_body": "StopMonitoringRequest",
+      "response": "dict"
+    },
+    {
+      "method": "POST",
+      "path": "/api/driving-reports/event",
+      "description": "Запись события вождения",
+      "request_body": "DrivingEventRequest",
+      "response": "dict"
+    },
+    {
+      "method": "POST",
+      "path": "/api/driving-reports/generate",
+      "description": "Генерация отчета о вождении",
+      "request_body": "GenerateReportRequest",
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/driving-reports/report/{report_id}",
+      "description": "Получение отчета по ID",
+      "query_params": ["report_id"],
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/driving-reports/weekly/{user_id}",
+      "description": "Недельный отчет",
+      "query_params": ["user_id"],
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/driving-reports/monthly/{user_id}",
+      "description": "Месячный отчет",
+      "query_params": ["user_id"],
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/driving-reports/safety-score/{user_id}",
+      "description": "Оценка безопасности вождения",
+      "query_params": ["user_id"],
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/driving-reports/violations/{user_id}",
+      "description": "Статистика нарушений",
+      "query_params": ["user_id", "period"],
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/driving-reports/recommendations/{user_id}",
+      "description": "Рекомендации по улучшению",
+      "query_params": ["user_id"],
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/driving-reports/health",
+      "description": "Health check",
+      "response": "dict"
+    }
+  ],
+  "monitoring": {
+    "enabled": true,
+    "metrics": [
+      "driving_events_total",
+      "violations_detected_total",
+      "reports_generated_total",
+      "safety_scores_calculated_total"
+    ]
+  },
+  "security": {
+    "requires_auth": true,
+    "rate_limit": 100,
+    "data_encryption": true
+  },
+  "metadata": {
+    "platforms": ["ios"],
+    "violation_types": ["speeding", "phone_use", "hard_braking", "hard_acceleration", "sharp_turn", "lane_change", "distraction"],
+    "safety_ratings": ["excellent", "good", "fair", "poor", "critical"],
+    "report_periods": ["day", "week", "month"]
+  }
+}

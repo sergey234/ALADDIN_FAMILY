@@ -294,9 +294,9 @@ class MockAPIService: APIService {
     
     // MARK: - VPN API
     
-    override func getVPNStatus(completion: @escaping (Result<VPNStatusResponse, Error>) -> Void) {
+    override func getVPNStatus(completion: @escaping (Result<NetworkProtectionStatusResponse, Error>) -> Void) {
         simulateNetworkDelay {
-            let status = VPNStatusResponse(
+            let status = NetworkProtectionStatusResponse(
                 isConnected: false,
                 serverLocation: "Германия",
                 ipAddress: "192.168.1.1",
@@ -334,10 +334,10 @@ class MockAPIService: APIService {
         }
     }
     
-    override func getVPNServers(completion: @escaping (Result<[VPNServer], Error>) -> Void) {
+    override func getVPNServers(completion: @escaping (Result<[NetworkProtectionServer], Error>) -> Void) {
         simulateNetworkDelay {
             let servers = [
-                VPNServer(
+                NetworkProtectionServer(
                     id: "server_1",
                     country: "Германия",
                     city: "Берлин",
@@ -346,7 +346,7 @@ class MockAPIService: APIService {
                     load: 30,
                     status: .optimal
                 ),
-                VPNServer(
+                NetworkProtectionServer(
                     id: "server_2",
                     country: "США",
                     city: "Нью-Йорк",
@@ -355,7 +355,7 @@ class MockAPIService: APIService {
                     load: 50,
                     status: .optimal
                 ),
-                VPNServer(
+                NetworkProtectionServer(
                     id: "server_3",
                     country: "Япония",
                     city: "Токио",
@@ -364,7 +364,7 @@ class MockAPIService: APIService {
                     load: 70,
                     status: .loaded
                 ),
-                VPNServer(
+                NetworkProtectionServer(
                     id: "server_4",
                     country: "Россия",
                     city: "Москва",

@@ -1,0 +1,20 @@
+БЭКАП ПЕРЕД УДАЛЕНИЕМ VPN
+Дата: 11 декабря 2025, 23:47:08
+Цель: Сохранение VPN файлов перед минимальными изменениями (Вариант 2)
+
+СОХРАНЕННЫЕ ФАЙЛЫ:
+1. ALADDIN/ALADDINPacketTunnel/ - папка с PacketTunnelProvider
+2. ALADDINPacketTunnel.entitlements - entitlements файл
+3. ALADDINPacketTunnelDebug.entitlements - debug entitlements
+4. Core/VPN/VPNManager.swift - VPN менеджер
+5. ALADDIN.xcodeproj/project.pbxproj - проект файл
+
+ПЛАН ИЗМЕНЕНИЙ (Вариант 2 - Минимальные):
+1. Удалить target ALADDINPacketTunnel из проекта
+2. Удалить import NetworkExtension из кода
+3. Удалить VPN capability из Entitlements
+4. Закомментировать VPN код
+
+ВОССТАНОВЛЕНИЕ:
+- Все файлы можно восстановить из этой папки
+- project.pbxproj можно восстановить из backup

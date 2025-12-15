@@ -1,0 +1,175 @@
+#!/usr/bin/expect -f
+
+# Автоматическая настройка роутинга для /privacy и /terms
+# Пользователь: Sergio675
+# Пароль: Sergio675
+
+set timeout 60
+set user "Sergio675"
+set host "149.154.65.180"
+set password "Sergio675"
+
+puts "=== ПОДКЛЮЧЕНИЕ К СЕРВЕРУ ==="
+spawn ssh -o StrictHostKeyChecking=no $user@$host
+
+expect {
+    "password:" {
+        send "$password\r"
+    }
+    "Password:" {
+        send "$password\r"
+    }
+    "(yes/no)?" {
+        send "yes\r"
+        expect "password:"
+        send "$password\r"
+    }
+    timeout {
+        puts "ОШИБКА: Timeout при подключении"
+        exit 1
+    }
+}
+
+# Ждем промпт
+expect {
+    "$ " { }
+    "# " { }
+    ">" { }
+    timeout {
+        puts "ОШИБКА: Timeout ожидания промпта"
+        exit 1
+    }
+}
+
+puts "✅ Подключено к серверу"
+
+# ШАГ 1: Проверка файлов
+send "echo '=== ШАГ 1: ПРОВЕРКА ФАЙЛОВ ==='\r"
+expect "$ "
+
+send "ls -la /var/www/aladdin-ai.ru/privacy.html /var/www/aladdin-ai.ru/terms.html 2>&1\r"
+expect "$ "
+
+# ШАГ 2: Создание резервной копии
+send "echo '=== ШАГ 2: РЕЗЕРВНАЯ КОПИЯ ==='\r"
+expect "$ "
+
+send "sudo cp /etc/nginx/sites-available/aladdin-ai.ru /etc/nginx/sites-available/aladdin-ai.ru.backup.$(date +%Y%m%d_%H%M%S) 2>&1\r"
+expect {
+    "password" {
+        send "$password\r"
+        expect "$ "
+    }
+    "$ " { }
+}
+
+# ШАГ 3: Просмотр текущего конфига (найти server блок)
+send "echo '=== ШАГ 3: ТЕКУЩИЙ КОНФИГ ==='\r"
+expect "$ "
+
+send "sudo grep -n 'server {' /etc/nginx/sites-available/aladdin-ai.ru | head -3\r"
+expect {
+    "password" {
+        send "$password\r"
+        expect "$ "
+    }
+    "$ " { }
+}
+
+# ШАГ 4: Проверка существующих location блоков
+send "echo '=== ШАГ 4: ПРОВЕРКА СУЩЕСТВУЮЩИХ LOCATION ==='\r"
+expect "$ "
+
+send "sudo grep -n 'location.*privacy\\|location.*terms' /etc/nginx/sites-available/aladdin-ai.ru 2>&1 || echo 'Location блоки не найдены'\r"
+expect {
+    "password" {
+        send "$password\r"
+        expect "$ "
+    }
+    "$ " { }
+}
+
+# ШАГ 5: Добавление location блоков через sed
+send "echo '=== ШАГ 5: ДОБАВЛЕНИЕ LOCATION БЛОКОВ ==='\r"
+expect "$ "
+
+# Создаем временный файл с location блоками
+send "cat > /tmp/nginx_locations.txt << 'LOCEOF'\r"
+expect "$ "
+send "    # Редирект /privacy на privacy.html\r"
+expect "$ "
+send "    location = /privacy {\r"
+expect "$ "
+send "        return 301 /privacy.html;\r"
+expect "$ "
+send "    }\r"
+expect "$ "
+send "\r"
+expect "$ "
+send "    # Редирект /terms на terms.html\r"
+expect "$ "
+send "    location = /terms {\r"
+expect "$ "
+send "        return 301 /terms.html;\r"
+expect "$ "
+send "    }\r"
+expect "$ "
+send "\r"
+expect "$ "
+send "LOCEOF\r"
+expect "$ "
+
+# Добавляем перед "location / {"
+send "sudo sed -i '/location \\/ {/i\\    # Редирект /privacy на privacy.html\\n    location = /privacy {\\n        return 301 /privacy.html;\\n    }\\n\\n    # Редирект /terms на terms.html\\n    location = /terms {\\n        return 301 /terms.html;\\n    }' /etc/nginx/sites-available/aladdin-ai.ru 2>&1\r"
+expect {
+    "password" {
+        send "$password\r"
+        expect "$ "
+    }
+    "$ " { }
+}
+
+# ШАГ 6: Проверка синтаксиса
+send "echo '=== ШАГ 6: ПРОВЕРКА СИНТАКСИСА ==='\r"
+expect "$ "
+
+send "sudo nginx -t 2>&1\r"
+expect {
+    "password" {
+        send "$password\r"
+        expect "$ "
+    }
+    "$ " { }
+}
+
+# ШАГ 7: Перезагрузка nginx
+send "echo '=== ШАГ 7: ПЕРЕЗАГРУЗКА NGINX ==='\r"
+expect "$ "
+
+send "sudo systemctl reload nginx 2>&1\r"
+expect {
+    "password" {
+        send "$password\r"
+        expect "$ "
+    }
+    "$ " { }
+}
+
+# ШАГ 8: Проверка работы
+send "echo '=== ШАГ 8: ПРОВЕРКА РАБОТЫ ==='\r"
+expect "$ "
+
+send "curl -I http://localhost/privacy 2>&1 | head -5\r"
+expect "$ "
+
+send "curl -I http://localhost/terms 2>&1 | head -5\r"
+expect "$ "
+
+puts "\n=== ГОТОВО ==="
+puts "Проверьте в браузере:"
+puts "- https://aladdin-ai.ru/privacy"
+puts "- https://aladdin-ai.ru/terms"
+
+# Выход
+send "exit\r"
+expect eof

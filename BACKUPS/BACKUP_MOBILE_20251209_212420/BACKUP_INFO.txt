@@ -1,0 +1,40 @@
+Полный бэкап мобильного приложения ALADDIN iOS
+Дата создания: Tue Dec  9 21:24:21 +04 2025
+Версия: Актуальная версия с workflow check-secrets.yml
+
+Включенные компоненты:
+1. Проектные папки:
+   - ALADDIN.xcodeproj
+   - Assets.xcassets
+   - Components
+   - Core
+   - LocalizedVersions
+   - Screens
+   - Shared
+   - Tests
+   - ViewModels
+   - docs
+   - Resources/resources
+   - scripts
+
+2. Файлы для сборки IPA:
+   - .github/workflows (все workflow файлы, включая check-secrets.yml)
+   - ExportOptions.plist
+   - Podfile
+   - ALADDIN/ (Info.plist, сертификаты)
+   - ALADDINWidgets/
+   - ALADDINApp.swift
+   - Entitlements файлы
+   - fastlane/Fastfile
+   - .gitignore
+
+Этот бэкап содержит все необходимые файлы для:
+- Восстановления проекта на 100%
+- Сборки IPA архива для Apple App Store
+- Запуска GitHub Actions workflows
+
+Для восстановления:
+1. Распакуйте архив
+2. Скопируйте все файлы в корень проекта
+3. Установите зависимости: pod install
+4. Откройте проект в Xcode: open ALADDIN.xcodeproj

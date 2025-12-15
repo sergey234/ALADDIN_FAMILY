@@ -7,9 +7,9 @@ import SwiftUI
  * Соответствуют структуре вашего Python backend
  */
 
-// MARK: - VPN Models
+// MARK: - Network Protection Models
 
-struct VPNStatusResponse: Codable {
+struct NetworkProtectionStatusResponse: Codable {
     let isConnected: Bool
     let serverLocation: String
     let ipAddress: String
@@ -20,7 +20,7 @@ struct VPNStatusResponse: Codable {
     let threatsBlocked: Int
 }
 
-struct VPNServer: Codable, Identifiable {
+struct NetworkProtectionServer: Codable, Identifiable {
     let id: String
     let country: String
     let city: String
@@ -53,7 +53,7 @@ enum ServerStatus: String, Codable, CaseIterable {
 
 // MARK: - VPN Stats Models
 
-struct VPNStats: Codable {
+struct NetworkProtectionStats: Codable {
     let bytesIn: Int64
     let bytesOut: Int64
     let packetsIn: Int64
@@ -64,11 +64,11 @@ struct VPNStats: Codable {
     let threatsBlocked: Int
 }
 
-struct VPNConfigResponse: Codable {
+struct NetworkProtectionConfigResponse: Codable {
     let encryption: EncryptionConfig
-    let servers: [VPNServer]
-    let features: VPNFeatures
-    let settings: VPNSettings
+    let servers: [NetworkProtectionServer]
+    let features: NetworkProtectionFeatures
+    let settings: NetworkProtectionSettings
 }
 
 struct EncryptionConfig: Codable {
@@ -77,14 +77,14 @@ struct EncryptionConfig: Codable {
     let recommendedLevel: String // "light", "normal", "maximum"
 }
 
-struct VPNFeatures: Codable {
+struct NetworkProtectionFeatures: Codable {
     let killSwitch: Bool
     let autoConnect: Bool
     let dnsLeakProtection: Bool
     let splitTunneling: Bool
 }
 
-struct VPNSettings: Codable {
+struct NetworkProtectionSettings: Codable {
     let autoDisconnectEnabled: Bool
     let autoDisconnectTimeout: TimeInterval
     let batteryOptimizationEnabled: Bool
