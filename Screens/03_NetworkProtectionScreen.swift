@@ -6,7 +6,7 @@ import SwiftUI
  * Источник: 02_protection_screen.html (38KB)
  */
 
-struct VPNScreen: View {
+struct NetworkProtectionScreen: View {
     
     // MARK: - State
     
@@ -591,9 +591,9 @@ struct ServerSelectionView: View {
                     self.availableServers = servers.sorted { $0.ping < $1.ping }
                 case .failure(let error):
                     // Fallback на локальные серверы
-                    let vpnManager = VPNManager.shared
+                    let vpnManager = NetworkProtectionManager.shared
                     let vpnManagerServers = vpnManager.getAvailableServers()
-                    // Конвертируем VPNManager.VPNServer в VPNServer из APIModels
+                    // Конвертируем NetworkProtectionManager.VPNServer в VPNServer из APIModels
                     self.availableServers = vpnManagerServers.map { vpnServer in
                         VPNServer(
                             id: vpnServer.id,
@@ -948,9 +948,9 @@ struct HelpCard: View {
 }
 
 #if DEBUG
-struct VPNScreen_Previews: PreviewProvider {
+struct NetworkProtectionScreen_Previews: PreviewProvider {
     static var previews: some View {
-        VPNScreen()
+        NetworkProtectionScreen()
     }
 }
 #endif

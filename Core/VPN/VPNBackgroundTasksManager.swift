@@ -62,13 +62,13 @@ class VPNBackgroundTasksManager: ObservableObject {
         Task {
             do {
                 // 1. Отправляем статистику
-                if VPNManager.shared.isConnected {
-                    VPNManager.shared.sendStatsToServer()
+                if NetworkProtectionManager.shared.isConnected {
+                    NetworkProtectionManager.shared.sendStatsToServer()
                     print("✅ Статистика отправлена из Background Task")
                 }
                 
                 // 2. Загружаем конфигурацию если нужно
-                VPNManager.shared.loadConfigFromServer { result in
+                NetworkProtectionManager.shared.loadConfigFromServer { result in
                     switch result {
                     case .success:
                         print("✅ Конфигурация загружена из Background Task")
@@ -101,8 +101,8 @@ class VPNBackgroundTasksManager: ObservableObject {
     func startPeriodicScheduling() {
         // Отправляем статистику каждые 5 минут когда приложение активно
         let timer = Timer.scheduledTimer(withTimeInterval: 300.0, repeats: true) { _ in
-            if VPNManager.shared.isConnected {
-                VPNManager.shared.sendStatsToServer()
+            if NetworkProtectionManager.shared.isConnected {
+                NetworkProtectionManager.shared.sendStatsToServer()
             }
         }
         

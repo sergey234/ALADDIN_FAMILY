@@ -20,7 +20,7 @@ class NavigationManager: ObservableObject {
         // Основные экраны
         case main = "01_MainScreen"
         case family = "02_FamilyScreen"
-        case vpn = "03_VPNScreen"
+        case vpn = "03_NetworkProtectionScreen"
         case analytics = "04_AnalyticsScreen"
         case settings = "05_SettingsScreen"
         case aiAssistant = "06_AIAssistantScreen"
@@ -75,7 +75,7 @@ class NavigationManager: ObservableObject {
             switch self {
             case .main: return "Главная"
             case .family: return "Семья"
-            case .vpn: return "VPN"
+            case .vpn: return "Защита сети"
             case .analytics: return "Аналитика"
             case .settings: return "Настройки"
             case .aiAssistant: return "AI Помощник"
@@ -94,7 +94,7 @@ class NavigationManager: ObservableObject {
             case .referral: return "Реферальная программа"
             case .deviceDetail: return "Детали устройства"
             case .familyChat: return "Семейный чат"
-            case .vpnEnergyStats: return "Статистика VPN"
+            case .vpnEnergyStats: return "Статистика защиты сети"
             case .paymentQR: return "Оплата QR"
             case .childRewards: return "Детские награды"
             case .familyTournament: return "Семейный турнир"
@@ -392,8 +392,14 @@ class NavigationManager: ObservableObject {
         navigateToRoot(.family)
     }
     
-    func switchToVPNScreen() {
+    func switchToNetworkProtectionScreen() {
         navigateToRoot(.vpn)
+    }
+    
+    // Оставляем старую функцию для обратной совместимости
+    @available(*, deprecated, renamed: "switchToNetworkProtectionScreen")
+    func switchToVPNScreen() {
+        switchToNetworkProtectionScreen()
     }
     
     func switchToAnalyticsScreen() {

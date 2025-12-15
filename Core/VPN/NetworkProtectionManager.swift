@@ -2,9 +2,9 @@ import Foundation
 // import NetworkExtension  // ✅ ЗАКОММЕНТИРОВАНО: Apple не разрешает VPN от индивидуальных разработчиков
 import SwiftUI
 
-/// Менеджер VPN для ALADDIN
-class VPNManager: ObservableObject {
-    static let shared = VPNManager()
+/// Менеджер защиты сети для ALADDIN
+class NetworkProtectionManager: ObservableObject {
+    static let shared = NetworkProtectionManager()
     
     // ✅ ЗАКОММЕНТИРОВАНО: PacketTunnel больше не используется
     // private let packetTunnelIdentifier = "family.aladdin.ios.packetTunnel"
@@ -614,7 +614,7 @@ class VPNManager: ObservableObject {
     
     // MARK: - Logging
     private func log(_ message: String) {
-        print("[VPNManager] \(message)")
+        print("[NetworkProtectionManager] \(message)")
     }
     
     deinit {
