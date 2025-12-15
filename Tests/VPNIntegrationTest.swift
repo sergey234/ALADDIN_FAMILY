@@ -1,15 +1,15 @@
 import XCTest
-import NetworkExtension
+// import NetworkExtension  // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension больше не используется
 @testable import ALADDIN
 
-/// Интеграционный тест VPN после всех изменений
-/// Проверяет работу VPNManager с NetworkExtension
+/// Интеграционный тест Network Protection после всех изменений
+/// Проверяет работу NetworkProtectionManager (бывший VPNManager)
 final class VPNIntegrationTest: XCTestCase {
     
-    var vpnManager: VPNManager!
+    var networkProtectionManager: NetworkProtectionManager!
     
     override func setUpWithError() throws {
-        vpnManager = VPNManager.shared
+        networkProtectionManager = NetworkProtectionManager.shared
     }
     
     override func tearDownWithError() throws {
@@ -18,49 +18,49 @@ final class VPNIntegrationTest: XCTestCase {
     
     // MARK: - Инициализация
     
-    func testVPNManagerInitialization() {
-        XCTAssertNotNil(vpnManager, "VPNManager должен быть инициализирован")
-        XCTAssertFalse(vpnManager.isConnected, "VPN должен быть отключен при инициализации")
-        XCTAssertFalse(vpnManager.isConnecting, "VPN не должен подключаться при инициализации")
-        XCTAssertEqual(vpnManager.connectionStatus, .disconnected, "Статус должен быть disconnected")
+    func testNetworkProtectionManagerInitialization() {
+        XCTAssertNotNil(networkProtectionManager, "NetworkProtectionManager должен быть инициализирован")
+        XCTAssertFalse(networkProtectionManager.isConnected, "Network Protection должен быть отключен при инициализации")
+        XCTAssertFalse(networkProtectionManager.isConnecting, "Network Protection не должен подключаться при инициализации")
+        XCTAssertEqual(networkProtectionManager.connectionStatus, .disconnected, "Статус должен быть disconnected")
     }
     
     func testTunnelManagerConfiguration() {
-        // Проверяем, что tunnel manager настроен
-        // В реальном тесте здесь будет проверка NETunnelProviderManager
-        XCTAssertNotNil(vpnManager, "VPNManager должен существовать")
+        // ✅ ОБНОВЛЕНО: NetworkExtension больше не используется
+        // Проверяем, что manager существует
+        XCTAssertNotNil(networkProtectionManager, "NetworkProtectionManager должен существовать")
     }
     
     // MARK: - Конфигурация
     
     func testBatteryOptimizationEnabled() {
-        XCTAssertTrue(vpnManager.batteryOptimizationEnabled, "Battery optimization должен быть включен по умолчанию")
+        XCTAssertTrue(networkProtectionManager.batteryOptimizationEnabled, "Battery optimization должен быть включен по умолчанию")
     }
     
     func testAdaptivePollingEnabled() {
-        XCTAssertTrue(vpnManager.adaptivePollingEnabled, "Adaptive polling должен быть включен по умолчанию")
+        XCTAssertTrue(networkProtectionManager.adaptivePollingEnabled, "Adaptive polling должен быть включен по умолчанию")
     }
     
     // MARK: - Статус подключения
     
     func testConnectionStatusInitialState() {
-        XCTAssertEqual(vpnManager.connectionStatus, .disconnected)
-        XCTAssertFalse(vpnManager.isConnected)
-        XCTAssertFalse(vpnManager.isConnecting)
+        XCTAssertEqual(networkProtectionManager.connectionStatus, .disconnected)
+        XCTAssertFalse(networkProtectionManager.isConnected)
+        XCTAssertFalse(networkProtectionManager.isConnecting)
     }
     
     // MARK: - Kill Switch
     
     func testKillSwitchFunctionality() {
-        // Проверяем, что методы kill switch доступны
-        // В реальном тесте здесь будет проверка enableKillSwitch/disableKillSwitch
-        XCTAssertNotNil(vpnManager, "VPNManager должен поддерживать kill switch")
+        // ✅ ОБНОВЛЕНО: NetworkExtension больше не используется
+        // Проверяем, что manager существует
+        XCTAssertNotNil(networkProtectionManager, "NetworkProtectionManager должен поддерживать kill switch")
     }
     
     // MARK: - Серверы
     
     func testServerSelection() {
-        let testServer = VPNManager.VPNServer(
+        let testServer = NetworkProtectionManager.VPNServer(
             id: "test-1",
             name: "Test Server",
             country: "Test Country",
@@ -79,17 +79,17 @@ final class VPNIntegrationTest: XCTestCase {
     // MARK: - Network Extension
     
     func testPacketTunnelIdentifier() {
-        // Проверяем, что идентификатор правильный
-        // В реальном тесте здесь будет проверка bundle identifier
-        XCTAssertNotNil(vpnManager, "VPNManager должен иметь packetTunnelIdentifier")
+        // ✅ ОБНОВЛЕНО: NetworkExtension больше не используется
+        // PacketTunnel был удален
+        XCTAssertNotNil(networkProtectionManager, "NetworkProtectionManager должен существовать")
     }
     
     // MARK: - Интеграция с API
     
-    func testVPNStatusCheck() {
-        // Проверяем, что можно проверить статус VPN
+    func testNetworkProtectionStatusCheck() {
+        // Проверяем, что можно проверить статус Network Protection
         // В реальном тесте здесь будет проверка API вызова
-        let expectation = expectation(description: "VPN status check")
+        let expectation = expectation(description: "Network Protection status check")
         
         // Симуляция проверки статуса
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -101,10 +101,10 @@ final class VPNIntegrationTest: XCTestCase {
     
     // MARK: - Производительность
     
-    func testVPNManagerPerformance() {
+    func testNetworkProtectionManagerPerformance() {
         measure {
             // Проверяем производительность инициализации
-            let manager = VPNManager.shared
+            let manager = NetworkProtectionManager.shared
             _ = manager.isConnected
             _ = manager.connectionStatus
         }

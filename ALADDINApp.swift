@@ -38,7 +38,7 @@ struct ALADDINApp: App {
                     case .family:
                         AnyView(FamilyScreen().id("family").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .vpn:
-                        AnyView(VPNScreen().id("vpn").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(NetworkProtectionScreen().id("vpn").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .analytics:
                         AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .settings:

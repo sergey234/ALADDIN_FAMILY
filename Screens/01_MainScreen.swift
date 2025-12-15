@@ -247,7 +247,7 @@ struct MainScreen: View {
                             GridItem(.flexible())
                         ], spacing: 15) {
                             // Антивирус карточка (вместо VPN)
-                            NavigationLink(destination: VPNScreen()) {
+                            NavigationLink(destination: NetworkProtectionScreen()) {
                                 VStack(spacing: 8) {
                                     HStack(spacing: 8) {
                                         Text("🛡️")

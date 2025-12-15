@@ -59,7 +59,7 @@
 		5EB01F442ECB097500168BE9 /* ActivationCodeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F432ECB097500168BE9 /* ActivationCodeViewModel.swift */; };
 		5EB01F462ECB09D300168BE9 /* 26_ActivationCodeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F452ECB09D300168BE9 /* 26_ActivationCodeScreen.swift */; };
 		5EC309092EA6B5F600C7D34B /* 01_MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */; };
-		5EC3090B2EA6B60500C7D34B /* 03_VPNScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F52EA6AB8C00C7D34B /* 03_VPNScreen.swift */; };
+		5EC3090B2EA6B60500C7D34B /* 03_NetworkProtectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F52EA6AB8C00C7D34B /* 03_NetworkProtectionScreen.swift */; };
 		5EC3090C2EA6B60900C7D34B /* 04_AnalyticsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */; };
 		5EC3090D2EA6B60F00C7D34B /* 06_AIAssistantScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */; };
 		5EC3090E2EA6B60F00C7D34B /* 07_ParentalControlScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F72EA6AB8C00C7D34B /* 07_ParentalControlScreen.swift */; };
@@ -107,7 +107,7 @@
 		A3000001 /* ViewModels/MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000000 /* ViewModels/MainViewModel.swift */; };
 		A3000003 /* ViewModels/VPNViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000002 /* ViewModels/VPNViewModel.swift */; };
 		A3000005 /* Core/Models/APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000004 /* Core/Models/APIModels.swift */; };
-		A3000007 /* Core/VPN/VPNManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000006 /* Core/VPN/VPNManager.swift */; };
+		A3000007 /* Core/VPN/NetworkProtectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000006 /* Core/VPN/NetworkProtectionManager.swift */; };
 		A3000009 /* Core/Network/APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000008 /* Core/Network/APIService.swift */; };
 		A3000011 /* Core/Network/NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000010 /* Core/Network/NetworkManager.swift */; };
 		A3000013 /* Core/Config/AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000012 /* Core/Config/AppConfig.swift */; };
@@ -245,9 +245,6 @@
 		5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityManager.swift; path = Core/Security/SecurityManager.swift; sourceTree = "<group>"; };
 		5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KeychainManager.swift; path = Core/Security/KeychainManager.swift; sourceTree = "<group>"; };
 		5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CacheManager.swift; path = Core/Cache/CacheManager.swift; sourceTree = "<group>"; };
-		5E46BE832ED9B6ED003FE7C9 /* ALADDINPacketTunnel_Dev.mobileprovision */ = {isa = PBXFileReference; lastKnownFileType = file; name = ALADDINPacketTunnel_Dev.mobileprovision; path = ../../../../Downloads/ALADDINPacketTunnel_Dev.mobileprovision; sourceTree = "<group>"; };
-		5E709CE32ED8E5FF0046FFD5 /* ALADDINPacketTunnelDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINPacketTunnelDebug.entitlements; sourceTree = "<group>"; };
-		5E709CE52ED8E6010046FFD5 /* NetworkExtension.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = NetworkExtension.framework; path = System/Library/Frameworks/NetworkExtension.framework; sourceTree = SDKROOT; };
 		5EB01F392EC8721300168BE9 /* MockAPIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MockAPIService.swift; path = Core/Network/MockAPIService.swift; sourceTree = "<group>"; };
 		5EB01F3B2EC8723600168BE9 /* StorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StorageManager.swift; path = Core/Storage/StorageManager.swift; sourceTree = "<group>"; };
 		5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecoveryCodeStorageManager.swift; path = Core/Security/RecoveryCodeStorageManager.swift; sourceTree = "<group>"; };
@@ -272,7 +269,7 @@
 		5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 01_MainScreen.swift; sourceTree = "<group>"; };
 		5EC308F32EA6AB8C00C7D34B /* FamilyTournamentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyTournamentView.swift; sourceTree = "<group>"; };
 		5EC308F42EA6AB8C00C7D34B /* UnicornUniverseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnicornUniverseView.swift; sourceTree = "<group>"; };
-		5EC308F52EA6AB8C00C7D34B /* 03_VPNScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 03_VPNScreen.swift; sourceTree = "<group>"; };
+		5EC308F52EA6AB8C00C7D34B /* 03_NetworkProtectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 03_NetworkProtectionScreen.swift; sourceTree = "<group>"; };
 		5EC308F62EA6AB8C00C7D34B /* 13_SupportScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 13_SupportScreen.swift; sourceTree = "<group>"; };
 		5EC308F72EA6AB8C00C7D34B /* 07_ParentalControlScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 07_ParentalControlScreen.swift; sourceTree = "<group>"; };
 		5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 04_AnalyticsScreen.swift; sourceTree = "<group>"; };
@@ -310,7 +307,7 @@
 		A3000000 /* ViewModels/MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/MainViewModel.swift; sourceTree = "<group>"; };
 		A3000002 /* ViewModels/VPNViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/VPNViewModel.swift; sourceTree = "<group>"; };
 		A3000004 /* Core/Models/APIModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Models/APIModels.swift; sourceTree = "<group>"; };
-		A3000006 /* Core/VPN/VPNManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/VPN/VPNManager.swift; sourceTree = "<group>"; };
+		A3000006 /* Core/VPN/NetworkProtectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/VPN/NetworkProtectionManager.swift; sourceTree = "<group>"; };
 		A3000008 /* Core/Network/APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Network/APIService.swift; sourceTree = "<group>"; };
 		A3000010 /* Core/Network/NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Network/NetworkManager.swift; sourceTree = "<group>"; };
 		A3000012 /* Core/Config/AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Config/AppConfig.swift; sourceTree = "<group>"; };
@@ -384,10 +381,6 @@
 		B6000000 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B6000002 /* IoTSecurityModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IoTSecurityModule.swift; sourceTree = "<group>"; };
 		B6000200 /* ALADDINWidgets/SharedDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINWidgets/SharedDataManager.swift; sourceTree = "<group>"; };
-		C0F300110000000000000001 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
-		C0F300120000000000000001 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		C0F300130000000000000001 /* ALADDINPacketTunnel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINPacketTunnel.entitlements; sourceTree = "<group>"; };
-		C0F300140000000000000001 /* ALADDINPacketTunnel.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINPacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD10070F12CB43428ABC432E /* aladdin_cert_backup.cer */ = {isa = PBXFileReference; lastKnownFileType = text; path = aladdin_cert_backup.cer; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -433,14 +426,6 @@
 			name = "Recovered References";
 			sourceTree = "<group>";
 		};
-		5E709CE42ED8E6010046FFD5 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				5E709CE52ED8E6010046FFD5 /* NetworkExtension.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		5EC308E12EA6AB8B00C7D34B /* Screens */ = {
 			isa = PBXGroup;
 			children = (
@@ -448,8 +433,8 @@
 				5E0C30B92EAFC81D00FD6647 /* ChildContentScreen.swift */,
 				5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */,
 				5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */,
-				5EC308F52EA6AB8C00C7D34B /* 03_VPNScreen.swift */,
-				5EC309082EA6B33200C7D34B /* 03_VPNScreen.swift */,
+				5EC308F52EA6AB8C00C7D34B /* 03_NetworkProtectionScreen.swift */,
+				5EC309082EA6B33200C7D34B /* 03_NetworkProtectionScreen.swift */,
 				5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */,
 				5EC309042EA6AB8C00C7D34B /* 05_SettingsScreen.swift */,
 				5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */,
@@ -518,11 +503,9 @@
 		A0FFFFF5 = {
 			isa = PBXGroup;
 			children = (
-				5E709CE32ED8E5FF0046FFD5 /* ALADDINPacketTunnelDebug.entitlements */,
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
 				5EE081882EE239FE009AD42A /* ShareSheet.swift */,
-				5E46BE832ED9B6ED003FE7C9 /* ALADDINPacketTunnel_Dev.mobileprovision */,
 				5EB01F432ECB097500168BE9 /* ActivationCodeViewModel.swift */,
 				5EB01F3F2EC9B7CD00168BE9 /* BackupRecoveryModal.swift */,
 				5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */,
@@ -603,7 +586,7 @@
 				A3000000 /* ViewModels/MainViewModel.swift */,
 				A3000002 /* ViewModels/VPNViewModel.swift */,
 				A3000004 /* Core/Models/APIModels.swift */,
-				A3000006 /* Core/VPN/VPNManager.swift */,
+				A3000006 /* Core/VPN/NetworkProtectionManager.swift */,
 				A3000008 /* Core/Network/APIService.swift */,
 				A3000010 /* Core/Network/NetworkManager.swift */,
 				A3000012 /* Core/Config/AppConfig.swift */,
@@ -637,8 +620,6 @@
 				A4BBB100 /* RemoteNotificationsService.swift */,
 				A4BBB006 /* LocalThreatDatabase.swift */,
 				5EC3092F2EA6CCBD00C7D34B /* Styles */,
-				C0F300100000000000000001 /* ALADDIN/ALADDINPacketTunnel */,
-				C0F300130000000000000001 /* ALADDINPacketTunnel.entitlements */,
 			);
 			sourceTree = "<group>";
 		};
@@ -695,7 +676,6 @@
 				A0FFFFFE /* ALADDIN.app */,
 				B5001010 /* ALADDINUnitTests.xctest */,
 				B5002010 /* ALADDINUITests.xctest */,
-				C0F300140000000000000001 /* ALADDINPacketTunnel.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -707,15 +687,6 @@
 			);
 			name = IoT;
 			path = Core/IoT;
-			sourceTree = "<group>";
-		};
-		C0F300100000000000000001 /* ALADDIN/ALADDINPacketTunnel */ = {
-			isa = PBXGroup;
-			children = (
-				C0F300110000000000000001 /* PacketTunnelProvider.swift */,
-				C0F300120000000000000001 /* Info.plist */,
-			);
-			path = ALADDIN/ALADDINPacketTunnel;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -855,7 +826,7 @@
 				5E0058272EC4FC5E00024F7E /* ChildRewardsSettingsModal.swift in Sources */,
 				A3000003 /* ViewModels/VPNViewModel.swift in Sources */,
 				A3000005 /* Core/Models/APIModels.swift in Sources */,
-				A3000007 /* Core/VPN/VPNManager.swift in Sources */,
+				A3000007 /* Core/VPN/NetworkProtectionManager.swift in Sources */,
 				5EC309292EA6B67800C7D34B /* UnicornPetView.swift in Sources */,
 				A3000009 /* Core/Network/APIService.swift in Sources */,
 				5EC309172EA6B62E00C7D34B /* 18_PrivacyPolicyScreen.swift in Sources */,
@@ -1164,7 +1135,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1195,7 +1166,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1226,7 +1197,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1251,7 +1222,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1274,7 +1245,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1298,7 +1269,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;

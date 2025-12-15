@@ -11,7 +11,7 @@ struct VPNEnergyStatsScreen: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var vpnManager = VPNManager.shared
+    @StateObject private var vpnManager = NetworkProtectionManager.shared
     @State private var selectedPeriod: String = "today"
     @State private var batteryUsage: Double = 12.5 // %
     @State private var dataUsage: String = "0 GB"
@@ -260,7 +260,7 @@ struct TipCard: View {
 
 extension VPNEnergyStatsScreen {
     private func loadEnergyStats() {
-        // Загружаем данные из VPNManager
+        // Загружаем данные из NetworkProtectionManager
         let dataUsage = vpnManager.getDataUsage()
         
         // Форматируем данные
