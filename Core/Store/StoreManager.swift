@@ -17,6 +17,25 @@ class StoreManager: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
+    // MARK: - Free Tariff
+    
+    /// ID бесплатного тарифа
+    static let FREE_TARIFF_ID = "free"
+    
+    /// Ключ для хранения статуса бесплатного тарифа в UserDefaults
+    private let FREE_TARIFF_KEY = "hasFreeTariffActivated"
+    
+    /// Проверить активирован ли бесплатный тариф
+    var hasFreeTariff: Bool {
+        UserDefaults.standard.bool(forKey: FREE_TARIFF_KEY)
+    }
+    
+    /// Активировать бесплатный тариф
+    func activateFreeTariff() {
+        UserDefaults.standard.set(true, forKey: FREE_TARIFF_KEY)
+        print("✅ Free tariff activated")
+    }
+    
     // MARK: - Product IDs
     
     enum ProductID: String, CaseIterable {
@@ -275,6 +294,37 @@ class StoreManager: ObservableObject {
      */
     var activeSubscription: Product? {
         products.first { isPurchased($0.id) }
+    }
+    
+    /**
+     * Проверить есть ли активная подписка (платная или бесплатная)
+     */
+    func hasActiveSubscription() -> Bool {
+        // Сначала проверяем платную подписку
+        if !purchasedProductIDs.isEmpty {
+            return true
+        }
+        
+        // Если платной нет → проверяем бесплатный тариф
+        return hasFreeTariff
+    }
+    
+    /**
+     * Получить тип текущего тарифа
+     */
+    func currentTariffType() -> String {
+        // Если есть платная подписка → возвращаем её ID
+        if let active = activeSubscription {
+            return active.id
+        }
+        
+        // Если есть бесплатный тариф → возвращаем "free"
+        if hasFreeTariff {
+            return StoreManager.FREE_TARIFF_ID
+        }
+        
+        // По умолчанию → нет тарифа
+        return ""
     }
 }
 
