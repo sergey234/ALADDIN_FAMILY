@@ -329,6 +329,13 @@ struct ALADDINApp: App {
         ALADDINApp.hasInitialized = true
         print("🛠️ [ALADDINApp.initializeNavigation] Начинаем инициализацию...")
         
+        // ✅ Активируем бесплатный тариф при первом запуске
+        let storeManager = StoreManager()
+        if !storeManager.hasFreeTariff && !storeManager.hasActiveSubscription() {
+            storeManager.activateFreeTariff()
+            print("✅ First launch: Free tariff activated automatically")
+        }
+        
         let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
         print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")
         
