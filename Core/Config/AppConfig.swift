@@ -90,11 +90,11 @@ struct AppConfig {
     // MARK: - API Endpoints
     
     enum Endpoint {
-        // VPN
-        static let vpnStatus = "/vpn/status"
-        static let vpnConnect = "/vpn/connect"
-        static let vpnDisconnect = "/vpn/disconnect"
-        static let vpnServers = "/vpn/servers"
+        // Network Protection
+        static let networkProtectionStatus = "/network-protection/status"
+        static let networkProtectionConnect = "/network-protection/connect"
+        static let networkProtectionDisconnect = "/network-protection/disconnect"
+        static let networkProtectionServers = "/network-protection/servers"
         
         // Family
         static let familyMembers = "/family/members"
@@ -172,7 +172,7 @@ struct AppConfig {
     
     // MARK: - Feature Flags
     
-    static let isVPNEnabled = true
+    static let isNetworkProtectionEnabled = true
     static let isAIEnabled = true
     static let isParentalControlEnabled = true
     static let isAnalyticsEnabled = true

@@ -32,32 +32,32 @@ class APIService {
         self.networkManager = networkManager
     }
     
-    // MARK: - VPN API
+    // MARK: - Network Protection API
     
-    func getVPNStatus(completion: @escaping (Result<NetworkProtectionStatusResponse, Error>) -> Void) {
-        networkManager.get(endpoint: AppConfig.Endpoint.vpnStatus, completion: completion)
+    func getNetworkProtectionStatus(completion: @escaping (Result<NetworkProtectionStatusResponse, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.networkProtectionStatus, completion: completion)
     }
     
-    func connectVPN(completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+    func connectNetworkProtection(completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
         struct EmptyBody: Codable {}
-        networkManager.post(endpoint: AppConfig.Endpoint.vpnConnect, body: EmptyBody(), completion: completion)
+        networkManager.post(endpoint: AppConfig.Endpoint.networkProtectionConnect, body: EmptyBody(), completion: completion)
     }
     
-    func disconnectVPN(completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+    func disconnectNetworkProtection(completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
         struct EmptyBody: Codable {}
-        networkManager.post(endpoint: AppConfig.Endpoint.vpnDisconnect, body: EmptyBody(), completion: completion)
+        networkManager.post(endpoint: AppConfig.Endpoint.networkProtectionDisconnect, body: EmptyBody(), completion: completion)
     }
     
-    func getVPNServers(completion: @escaping (Result<[NetworkProtectionServer], Error>) -> Void) {
-        networkManager.get(endpoint: AppConfig.Endpoint.vpnServers, completion: completion)
+    func getNetworkProtectionServers(completion: @escaping (Result<[NetworkProtectionServer], Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.networkProtectionServers, completion: completion)
     }
     
-    func getVPNConfig(completion: @escaping (Result<NetworkProtectionConfigResponse, Error>) -> Void) {
-        networkManager.get(endpoint: "/vpn/config", completion: completion)
+    func getNetworkProtectionConfig(completion: @escaping (Result<NetworkProtectionConfigResponse, Error>) -> Void) {
+        networkManager.get(endpoint: "/network-protection/config", completion: completion)
     }
     
-    func sendVPNStats(_ stats: NetworkProtectionStats, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
-        networkManager.post(endpoint: "/vpn/stats", body: stats, completion: completion)
+    func sendNetworkProtectionStats(_ stats: NetworkProtectionStats, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        networkManager.post(endpoint: "/network-protection/stats", body: stats, completion: completion)
     }
     
     // MARK: - Family API

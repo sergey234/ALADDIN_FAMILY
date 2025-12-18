@@ -37,8 +37,8 @@ struct ALADDINApp: App {
                         AnyView(MainScreen().id("main").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .family:
                         AnyView(FamilyScreen().id("family").environmentObject(navigationManager).environmentObject(localizationManager))
-                    case .vpn:
-                        AnyView(NetworkProtectionScreen().id("vpn").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .networkProtection:
+                        AnyView(NetworkProtectionScreen().id("network_protection").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .analytics:
                         AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .settings:
@@ -194,8 +194,8 @@ struct ALADDINApp: App {
                         .environmentObject(localizationManager))
                     case .familyChat:
                         AnyView(FamilyChatScreen().id("familyChat").environmentObject(navigationManager).environmentObject(localizationManager))
-                    case .vpnEnergyStats:
-                        AnyView(VPNEnergyStatsScreen().id("vpnEnergyStats").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .networkProtectionEnergyStats:
+                        AnyView(NetworkProtectionEnergyStatsScreen().id("networkProtectionEnergyStats").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .support:
                         AnyView(SupportScreen().id("support").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .childRewards:

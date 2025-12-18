@@ -155,10 +155,10 @@ enum AccessibilityLabels {
     static let saveButton = "Сохранить"
     static let cancelButton = "Отмена"
     
-    // VPN
-    static let vpnToggle = "VPN переключатель"
-    static let vpnStatusProtected = "VPN подключён, соединение защищено"
-    static let vpnStatusNotProtected = "VPN отключён, соединение не защищено"
+    // Network Protection
+    static let networkProtectionToggle = "Переключатель защиты сети"
+    static let networkProtectionStatusProtected = "Защита сети подключена, соединение защищено"
+    static let networkProtectionStatusNotProtected = "Защита сети отключена, соединение не защищено"
     
     // Family
     static let familyMemberCard = "Карточка члена семьи"

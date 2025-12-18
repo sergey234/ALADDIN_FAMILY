@@ -205,7 +205,8 @@ class TariffsViewModel: ObservableObject {
         // Проверяем доступность StoreKit перед использованием
         #if targetEnvironment(simulator)
         print("❌ КРИТИЧЕСКАЯ ОШИБКА: StoreKit вызывается в симуляторе!")
-        errorMessage = "StoreKit недоступен в симуляторе. Используйте реальное устройство."
+        let localizationManager = LocalizationManager()
+        errorMessage = localizationManager.localized("store.error.simulator.not.supported")
         return
         #else
         // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что StoreManager не выполняет другую операцию
@@ -241,6 +242,8 @@ class TariffsViewModel: ObservableObject {
         // Способ 1: Если тариф уже имеет продукт (из StoreKit), используем его
         if let existingProduct = tariff.product {
             print("✅ Найден продукт напрямую из тарифа: \(existingProduct.id)")
+            print("🔍 [TariffsViewModel] Device: \(UIDevice.current.model)")
+            print("🔍 [TariffsViewModel] Is iPad: \(UIDevice.current.userInterfaceIdiom == .pad)")
             do {
                 let transaction = try await storeManager.purchase(existingProduct)
                 
@@ -278,9 +281,25 @@ class TariffsViewModel: ObservableObject {
                     print("⚠️ IAP Purchase cancelled or pending")
                 }
             } catch {
-                errorMessage = "Ошибка покупки: \(error.localizedDescription)"
                 isLoading = false
-                print("❌ IAP Purchase failed: \(error.localizedDescription)")
+                
+                // ✅ УЛУЧШЕНИЕ: Специальная обработка для productsNotLoaded
+                let localizationManager = LocalizationManager()
+                if let storeError = error as? StoreError, storeError == .productsNotLoaded {
+                    errorMessage = localizationManager.localized("store.error.tariffs.not.loaded")
+                    print("❌ [TariffsViewModel] Products not loaded error")
+                } else {
+                    let errorDesc = error.localizedDescription
+                    errorMessage = "Ошибка покупки: \(errorDesc)"
+                    print("❌ [TariffsViewModel] IAP Purchase failed: \(errorDesc)")
+                }
+                
+                print("❌ [TariffsViewModel] Error type: \(type(of: error))")
+                print("❌ [TariffsViewModel] Device: \(UIDevice.current.model)")
+                print("❌ [TariffsViewModel] Is iPad: \(UIDevice.current.userInterfaceIdiom == .pad)")
+                if let storeError = error as? StoreError {
+                    print("❌ [TariffsViewModel] StoreError: \(storeError)")
+                }
             }
             return
         }
@@ -302,6 +321,8 @@ class TariffsViewModel: ObservableObject {
                 }
                 
                 do {
+                    print("🔍 [TariffsViewModel] Device: \(UIDevice.current.model)")
+                    print("🔍 [TariffsViewModel] Is iPad: \(UIDevice.current.userInterfaceIdiom == .pad)")
                     let transaction = try await storeManager.purchase(product)
                     
                     if transaction != nil {
@@ -338,9 +359,25 @@ class TariffsViewModel: ObservableObject {
                         print("⚠️ IAP Purchase cancelled or pending")
                     }
                 } catch {
-                    errorMessage = "Ошибка покупки: \(error.localizedDescription)"
                     isLoading = false
-                    print("❌ IAP Purchase failed: \(error.localizedDescription)")
+                    
+                    // ✅ УЛУЧШЕНИЕ: Специальная обработка для productsNotLoaded
+                    let localizationManager = LocalizationManager()
+                    if let storeError = error as? StoreError, storeError == .productsNotLoaded {
+                        errorMessage = localizationManager.localized("store.error.tariffs.not.loaded")
+                        print("❌ [TariffsViewModel] Products not loaded error")
+                    } else {
+                        let errorDesc = error.localizedDescription
+                        errorMessage = "Ошибка покупки: \(errorDesc)"
+                        print("❌ [TariffsViewModel] IAP Purchase failed: \(errorDesc)")
+                    }
+                    
+                    print("❌ [TariffsViewModel] Error type: \(type(of: error))")
+                    print("❌ [TariffsViewModel] Device: \(UIDevice.current.model)")
+                    print("❌ [TariffsViewModel] Is iPad: \(UIDevice.current.userInterfaceIdiom == .pad)")
+                    if let storeError = error as? StoreError {
+                        print("❌ [TariffsViewModel] StoreError: \(storeError)")
+                    }
                 }
             } else {
                 // Продукт не загружен из App Store

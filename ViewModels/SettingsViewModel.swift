@@ -5,7 +5,7 @@ import Combine
 /// Логика для экрана настроек
 class SettingsViewModel: ObservableObject {
     
-    @Published var isVPNEnabled: Bool = true
+    @Published var isNetworkProtectionEnabled: Bool = true
     @Published var isNotificationsEnabled: Bool = true
     @Published var isBiometricEnabled: Bool = true
     @Published var protectionLevel: Double = 75
@@ -13,8 +13,8 @@ class SettingsViewModel: ObservableObject {
     @Published var selectedTheme: String = "Тёмная"
     @Published var cacheSize: String = "47 MB"
     
-    func toggleVPN() {
-        isVPNEnabled.toggle()
+    func toggleNetworkProtection() {
+        isNetworkProtectionEnabled.toggle()
     }
     
     func toggleNotifications() {

@@ -30,7 +30,7 @@
 
 "main.title" = "ALADDIN AI";
 "main.subtitle" = "حماية الأسرة بالذكاء الاصطناعي";
-"main.vpn.title" = "حماية VPN";
+"main.network_protection.title" = "حماية الشبكة";
 "main.functions.title" = "الوظائف الرئيسية";
 "main.quick.actions" = "الإجراءات السريعة";
 "main.emergency" = "المساعدة الطارئة";
@@ -53,18 +53,18 @@
 "family.offline" = "غير متصل";
 
 /* ═══════════════════════════════════════════════════════════════
- * VPN SCREEN
+ * Network Protection Screen
  * ═══════════════════════════════════════════════════════════════ */
 
-"vpn.title" = "حماية VPN";
-"vpn.status" = "حالة VPN";
-"vpn.connected" = "متصل";
-"vpn.disconnected" = "غير متصل";
-"vpn.connect" = "اتصال";
-"vpn.disconnect" = "قطع الاتصال";
-"vpn.server" = "الخادم";
-"vpn.location" = "الموقع";
-"vpn.speed" = "السرعة";
+"network_protection.title" = "حماية الشبكة";
+"network_protection.status" = "حالة حماية الشبكة";
+"network_protection.connected" = "متصل";
+"network_protection.disconnected" = "غير متصل";
+"network_protection.connect" = "اتصال";
+"network_protection.disconnect" = "قطع الاتصال";
+"network_protection.server" = "الخادم";
+"network_protection.location" = "الموقع";
+"network_protection.speed" = "السرعة";
 
 /* ═══════════════════════════════════════════════════════════════
  * ANALYTICS SCREEN

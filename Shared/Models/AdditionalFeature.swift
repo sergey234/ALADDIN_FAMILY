@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Дополнительная функция тарифа
 
-/// Модель дополнительной функции тарифа (VPN, устройства, реклама, AI и т.д.)
+/// Модель дополнительной функции тарифа (Защита сети, устройства, реклама, AI и т.д.)
 struct AdditionalFeature: Identifiable {
     let id: String
     let titleKey: String
@@ -47,8 +47,8 @@ extension TariffType {
         [
             .free: [
                 AdditionalFeature(
-                    id: "vpn_free",
-                    titleKey: "tariff_additional_vpn_free",
+                    id: "network_protection_free",
+                    titleKey: "tariff_additional_network_protection_free",
                     descriptionKey: nil,
                     requiredTariff: .free,
                     icon: "🛡️"
@@ -63,8 +63,8 @@ extension TariffType {
             ],
             .personal: [
                 AdditionalFeature(
-                    id: "vpn_personal",
-                    titleKey: "tariff_additional_vpn_personal",
+                    id: "network_protection_personal",
+                    titleKey: "tariff_additional_network_protection_personal",
                     descriptionKey: nil,
                     requiredTariff: .personal,
                     icon: "🛡️"
@@ -79,8 +79,8 @@ extension TariffType {
             ],
             .family: [
                 AdditionalFeature(
-                    id: "vpn_family",
-                    titleKey: "tariff_additional_vpn_family",
+                    id: "network_protection_family",
+                    titleKey: "tariff_additional_network_protection_family",
                     descriptionKey: nil,
                     requiredTariff: .family,
                     icon: "🛡️"
@@ -109,8 +109,8 @@ extension TariffType {
             ],
             .premium: [
                 AdditionalFeature(
-                    id: "vpn_premium",
-                    titleKey: "tariff_additional_vpn_premium",
+                    id: "network_protection_premium",
+                    titleKey: "tariff_additional_network_protection_premium",
                     descriptionKey: nil,
                     requiredTariff: .premium,
                     icon: "🛡️"
@@ -135,28 +135,28 @@ extension TariffType {
             // Free: только свои функции
             features = Self.additionalFeatures[.free] ?? []
         case .personal:
-            // Personal: только свои функции (без Free, чтобы не дублировать VPN)
+            // Personal: только свои функции (без Free, чтобы не дублировать защиту сети)
             features = Self.additionalFeatures[.personal] ?? []
         case .family:
-            // Family: только свои функции (без предыдущих, чтобы не дублировать VPN)
+            // Family: только свои функции (без предыдущих, чтобы не дублировать защиту сети)
             features = Self.additionalFeatures[.family] ?? []
         case .premium:
-            // Premium: ВСЕ функции из всех тарифов (но VPN только Premium версия)
-            // Собираем все уникальные функции, исключая дубликаты VPN
+            // Premium: ВСЕ функции из всех тарифов (но защита сети только Premium версия)
+            // Собираем все уникальные функции, исключая дубликаты защиты сети
             var allFeatures: [AdditionalFeature] = []
             
             // Добавляем функции из всех тарифов
             if let freeFeatures = Self.additionalFeatures[.free] {
-                // Исключаем VPN и рекламу из Free (VPN будет Premium версия, реклама не нужна)
-                allFeatures.append(contentsOf: freeFeatures.filter { $0.id != "vpn_free" && $0.id != "ads_free" })
+                // Исключаем защиту сети и рекламу из Free (защита сети будет Premium версия, реклама не нужна)
+                allFeatures.append(contentsOf: freeFeatures.filter { $0.id != "network_protection_free" && $0.id != "ads_free" })
             }
             if let personalFeatures = Self.additionalFeatures[.personal] {
-                // Исключаем VPN из Personal (будет Premium версия)
-                allFeatures.append(contentsOf: personalFeatures.filter { $0.id != "vpn_personal" })
+                // Исключаем защиту сети из Personal (будет Premium версия)
+                allFeatures.append(contentsOf: personalFeatures.filter { $0.id != "network_protection_personal" })
             }
             if let familyFeatures = Self.additionalFeatures[.family] {
-                // Исключаем VPN из Family (будет Premium версия)
-                allFeatures.append(contentsOf: familyFeatures.filter { $0.id != "vpn_family" })
+                // Исключаем защиту сети из Family (будет Premium версия)
+                allFeatures.append(contentsOf: familyFeatures.filter { $0.id != "network_protection_family" })
             }
             if let premiumFeatures = Self.additionalFeatures[.premium] {
                 allFeatures.append(contentsOf: premiumFeatures)

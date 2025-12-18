@@ -52,13 +52,13 @@ enum FamilyProtectionStatus: String, Codable {
 
 /// 🧠 Main View Model
 /// Логика для главного экрана
-/// Управляет состоянием VPN, функций, статистикой
+/// Управляет состоянием защиты сети, функций, статистикой
 @MainActor
 class MainViewModel: ObservableObject {
     
     // MARK: - Published Properties
     
-    @Published var isVPNEnabled: Bool = true
+    @Published var isNetworkProtectionEnabled: Bool = true
     @Published var familyMembers: Int = 4 // Дефолтное значение (fallback)
     @Published var threatsBlocked: Int = 47 // Дефолтное значение (fallback)
     @Published var devicesProtected: Int = 8 // Дефолтное значение (fallback)
@@ -181,19 +181,19 @@ class MainViewModel: ObservableObject {
         }
     }
     
-    /// Переключение VPN
-    func toggleVPN() {
-        isVPNEnabled.toggle()
+    /// Переключение защиты сети
+    func toggleNetworkProtection() {
+        isNetworkProtectionEnabled.toggle()
         
         // Haptic feedback
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
         
-        // API вызов для включения/выключения VPN
-        if isVPNEnabled {
-            connectVPN()
+        // API вызов для включения/выключения защиты сети
+        if isNetworkProtectionEnabled {
+            connectNetworkProtection()
         } else {
-            disconnectVPN()
+            disconnectNetworkProtection()
         }
     }
     
@@ -238,10 +238,10 @@ class MainViewModel: ObservableObject {
         #endif
     }
     
-    /// Открыть VPN
-    func openVPN() {
+    /// Открыть защиту сети
+    func openNetworkProtection() {
         #if DEBUG
-        print("Navigation to VPN Screen")
+        print("Navigation to Network Protection Screen")
         #endif
     }
     
@@ -261,17 +261,17 @@ class MainViewModel: ObservableObject {
     
     // MARK: - Private Methods
     
-    private func connectVPN() {
-        // В реальности: API вызов к VPN сервису
+    private func connectNetworkProtection() {
+        // В реальности: API вызов к сервису защиты сети
         #if DEBUG
-        print("Connecting to VPN...")
+        print("Connecting to Network Protection...")
         #endif
     }
     
-    private func disconnectVPN() {
-        // В реальности: API вызов к VPN сервису
+    private func disconnectNetworkProtection() {
+        // В реальности: API вызов к сервису защиты сети
         #if DEBUG
-        print("Disconnecting VPN...")
+        print("Disconnecting Network Protection...")
         #endif
     }
 }

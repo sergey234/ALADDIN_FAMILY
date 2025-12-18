@@ -132,11 +132,11 @@ struct StatusCard_Previews: PreviewProvider {
         // Защищено
         StatusCard(
             icon: "shield.fill",
-            title: "VPN Статус",
+            title: "Статус защиты сети",
             value: "Защищено",
             status: .protected
         ) {
-            print("Открыть VPN")
+            print("Открыть защиту сети")
         }
         
         // Угроза

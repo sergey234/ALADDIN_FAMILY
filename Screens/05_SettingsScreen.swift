@@ -36,7 +36,7 @@ struct SettingsScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager // ✅ Добавляем LocalizationManager
     @StateObject private var notificationManager = NotificationManager.shared
     @StateObject private var securityManager = SecurityManager.shared
-    @State private var isVPNEnabled: Bool = true
+    @State private var isNetworkProtectionEnabled: Bool = true
     @AppStorage("profile_name") private var storedName: String = ""
     @AppStorage("profile_alias") private var storedAlias: String = ""
     @State private var isNotificationsEnabled: Bool = true
@@ -269,12 +269,12 @@ struct SettingsScreen: View {
             }
             
             VStack(spacing: Spacing.m) {
-                // VPN
+                // Network Protection
                 settingRow(
                     icon: "shield.fill",
-                    title: localizationManager.localized("vpn_protection"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("vpn_protection_subtitle"), // ✅ Локализованный подзаголовок
-                    isEnabled: $isVPNEnabled
+                    title: localizationManager.localized("network_protection_protection"), // ✅ Локализованный заголовок
+                    subtitle: localizationManager.localized("network_protection_protection_subtitle"), // ✅ Локализованный подзаголовок
+                    isEnabled: $isNetworkProtectionEnabled
                 )
                 
                 // Биометрическая аутентификация

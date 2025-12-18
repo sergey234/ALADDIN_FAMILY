@@ -191,7 +191,7 @@ class MockAPIService: APIService {
                     period: "month",
                     features: [
                         "Базовая защита",
-                        "VPN (ограниченный)",
+                        "Защита сети (ограниченная)",
                         "Родительский контроль (базовый)"
                     ],
                     isRecommended: false
@@ -203,7 +203,7 @@ class MockAPIService: APIService {
                     period: "month",
                     features: [
                         "Полная защита",
-                        "VPN без ограничений",
+                        "Защита сети без ограничений",
                         "Родительский контроль",
                         "AI помощник",
                         "Аналитика угроз"
@@ -292,9 +292,9 @@ class MockAPIService: APIService {
         }
     }
     
-    // MARK: - VPN API
+    // MARK: - Network Protection API
     
-    override func getVPNStatus(completion: @escaping (Result<NetworkProtectionStatusResponse, Error>) -> Void) {
+    override func getNetworkProtectionStatus(completion: @escaping (Result<NetworkProtectionStatusResponse, Error>) -> Void) {
         simulateNetworkDelay {
             let status = NetworkProtectionStatusResponse(
                 isConnected: false,
@@ -310,31 +310,31 @@ class MockAPIService: APIService {
         }
     }
     
-    override func connectVPN(completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+    override func connectNetworkProtection(completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
         simulateNetworkDelay {
             let response = APIResponse<Bool>(
                 success: true,
                 data: true,
-                message: "VPN connected successfully",
+                message: "Network protection connected successfully",
                 error: nil
             )
             completion(.success(response))
         }
     }
     
-    override func disconnectVPN(completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+    override func disconnectNetworkProtection(completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
         simulateNetworkDelay {
             let response = APIResponse<Bool>(
                 success: true,
                 data: true,
-                message: "VPN disconnected successfully",
+                message: "Network protection disconnected successfully",
                 error: nil
             )
             completion(.success(response))
         }
     }
     
-    override func getVPNServers(completion: @escaping (Result<[NetworkProtectionServer], Error>) -> Void) {
+    override func getNetworkProtectionServers(completion: @escaping (Result<[NetworkProtectionServer], Error>) -> Void) {
         simulateNetworkDelay {
             let servers = [
                 NetworkProtectionServer(

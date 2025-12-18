@@ -401,7 +401,7 @@ struct MainScreen: View {
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
                                 
-                                Text(localizationManager.localized("main_family_vpn_info", mainViewModel.threatsBlocked))
+                                Text(localizationManager.localized("main_family_network_protection_info", mainViewModel.threatsBlocked))
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
 
