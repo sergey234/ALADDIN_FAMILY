@@ -154,7 +154,7 @@ class StoreManager: ObservableObject {
         }
         
         // ✅ ДОБАВЛЕНО ДЛЯ IPAD: Проверка что продукты загружены
-        guard !products.isEmpty else {
+        if products.isEmpty {
             print("⚠️ [StoreManager] Products not loaded, attempting to load...")
             await loadProducts()
             guard !products.isEmpty else {
