@@ -1,5 +1,6 @@
 import Foundation
 import StoreKit
+import UIKit
 
 /**
  * 💰 Store Manager
@@ -129,6 +130,13 @@ class StoreManager: ObservableObject {
      * Купить продукт
      */
     func purchase(_ product: Product) async throws -> Transaction? {
+        // ✅ ЛОГИРОВАНИЕ ДЛЯ IPAD: Информация об устройстве
+        print("🔍 [StoreManager] Starting purchase for: \(product.id)")
+        print("🔍 [StoreManager] Device: \(UIDevice.current.model)")
+        print("🔍 [StoreManager] OS: \(UIDevice.current.systemVersion)")
+        print("🔍 [StoreManager] Products loaded: \(products.count)")
+        print("🔍 [StoreManager] Is iPad: \(UIDevice.current.userInterfaceIdiom == .pad)")
+        
         // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка симулятора перед вызовом purchase()
         #if targetEnvironment(simulator)
         throw StoreError.simulatorNotSupported
@@ -143,6 +151,16 @@ class StoreManager: ObservableObject {
         guard !isLoading else {
             print("❌ КРИТИЧЕСКАЯ ОШИБКА: StoreKit уже выполняет операцию!")
             throw StoreError.storeNotReady
+        }
+        
+        // ✅ ДОБАВЛЕНО ДЛЯ IPAD: Проверка что продукты загружены
+        guard !products.isEmpty else {
+            print("⚠️ [StoreManager] Products not loaded, attempting to load...")
+            await loadProducts()
+            guard !products.isEmpty else {
+                print("❌ [StoreManager] Failed to load products")
+                throw StoreError.productsNotLoaded
+            }
         }
         
         isLoading = true
@@ -190,7 +208,12 @@ class StoreManager: ObservableObject {
         } catch {
             errorMessage = "Ошибка покупки: \(error.localizedDescription)"
             isLoading = false
-            print("❌ Purchase error: \(error)")
+            print("❌ [StoreManager] Purchase error: \(error)")
+            print("❌ [StoreManager] Error type: \(type(of: error))")
+            print("❌ [StoreManager] Error description: \(error.localizedDescription)")
+            if let storeError = error as? StoreError {
+                print("❌ [StoreManager] StoreError: \(storeError)")
+            }
             throw error
         }
         #endif
@@ -336,19 +359,23 @@ enum StoreError: LocalizedError {
     case simulatorNotSupported
     case storeNotReady
     case purchaseInProgress
+    case productsNotLoaded
     
     var errorDescription: String? {
+        let localizationManager = LocalizationManager()
         switch self {
         case .failedVerification:
-            return "Не удалось проверить покупку"
+            return localizationManager.localized("store.error.verification.failed")
         case .productNotFound:
-            return "Продукт не найден"
+            return localizationManager.localized("store.error.product.not.found")
         case .simulatorNotSupported:
-            return "In-App Purchase недоступен в симуляторе. Используйте реальное устройство."
+            return localizationManager.localized("store.error.simulator.not.supported")
         case .storeNotReady:
-            return "StoreKit не готов. Пожалуйста, подождите."
+            return localizationManager.localized("store.error.store.not.ready")
         case .purchaseInProgress:
-            return "Покупка уже выполняется. Пожалуйста, подождите."
+            return localizationManager.localized("store.error.purchase.in.progress")
+        case .productsNotLoaded:
+            return localizationManager.localized("store.error.products.not.loaded")
         }
     }
 }

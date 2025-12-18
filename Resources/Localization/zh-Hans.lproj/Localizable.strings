@@ -30,7 +30,7 @@
 
 "main.title" = "ALADDIN AI";
 "main.subtitle" = "AI家庭保护";
-"main.vpn.title" = "VPN保护";
+"main.network_protection.title" = "网络保护";
 "main.functions.title" = "主要功能";
 "main.quick.actions" = "快速操作";
 "main.emergency" = "紧急帮助";
@@ -53,18 +53,18 @@
 "family.offline" = "离线";
 
 /* ═══════════════════════════════════════════════════════════════
- * VPN SCREEN
+ * Network Protection Screen
  * ═══════════════════════════════════════════════════════════════ */
 
-"vpn.title" = "VPN保护";
-"vpn.status" = "VPN状态";
-"vpn.connected" = "已连接";
-"vpn.disconnected" = "已断开";
-"vpn.connect" = "连接";
-"vpn.disconnect" = "断开";
-"vpn.server" = "服务器";
-"vpn.location" = "位置";
-"vpn.speed" = "速度";
+"network_protection.title" = "网络保护";
+"network_protection.status" = "网络保护状态";
+"network_protection.connected" = "已连接";
+"network_protection.disconnected" = "已断开";
+"network_protection.connect" = "连接";
+"network_protection.disconnect" = "断开";
+"network_protection.server" = "服务器";
+"network_protection.location" = "位置";
+"network_protection.speed" = "速度";
 
 /* ═══════════════════════════════════════════════════════════════
  * ANALYTICS SCREEN

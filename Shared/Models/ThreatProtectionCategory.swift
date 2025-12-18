@@ -103,7 +103,7 @@ extension ThreatProtectionCategory {
             .internetThreats: CategoryConfiguration(
                 requiredTariff: TariffType.free,
                 benefit: "Защищает от вредоносных сайтов",
-                settingsScreen: NavigationManager.ALADDINScreen.vpn,
+                settingsScreen: NavigationManager.ALADDINScreen.networkProtection,
                 group: ProtectionGroup.internet
             ),
             .mobileThreats: CategoryConfiguration(

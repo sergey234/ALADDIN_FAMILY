@@ -90,8 +90,8 @@ struct PrimaryButton_Previews: PreviewProvider {
         }
         
         // Кнопка с иконкой
-        PrimaryButton("Подключить VPN", icon: "shield.fill") {
-            print("VPN включается...")
+        PrimaryButton("Подключить защиту сети", icon: "shield.fill") {
+            print("Защита сети включается...")
         }
         
         // Кнопка в состоянии загрузки

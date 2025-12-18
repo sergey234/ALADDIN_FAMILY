@@ -50,7 +50,7 @@ struct PrivacyPolicyScreen: View {
                         if selectedTab == .main {
                             mainSectionsContent
                         } else {
-                            vpnSectionsContent
+                            networkProtectionSectionsContent
                         }
                         
                         // Spacer
@@ -112,7 +112,7 @@ struct PrivacyPolicyScreen: View {
     private var tabsView: some View {
         HStack(spacing: 0) {
             tabButton(title: PrivacyTab.main.localizedTitle(localizationManager), tab: .main)
-            tabButton(title: PrivacyTab.vpn.localizedTitle(localizationManager), tab: .vpn)
+            tabButton(title: PrivacyTab.networkProtection.localizedTitle(localizationManager), tab: .networkProtection)
         }
         .background(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
@@ -155,12 +155,12 @@ struct PrivacyPolicyScreen: View {
         .padding(.horizontal, Spacing.screenPadding)
     }
     
-    // MARK: - VPN Sections Content
+    // MARK: - Network Protection Sections Content
     
-    private var vpnSectionsContent: some View {
+    private var networkProtectionSectionsContent: some View {
         VStack(spacing: Spacing.m) {
-            ForEach(VPNSection.allCases, id: \.self) { section in
-                vpnSectionCard(section: section)
+            ForEach(NetworkProtectionSection.allCases, id: \.self) { section in
+                networkProtectionSectionCard(section: section)
             }
         }
         .padding(.horizontal, Spacing.screenPadding)
@@ -241,16 +241,16 @@ struct PrivacyPolicyScreen: View {
         .cardShadow()
     }
     
-    // MARK: - VPN Section Card
+    // MARK: - Network Protection Section Card
     
-    private func vpnSectionCard(section: VPNSection) -> some View {
+    private func networkProtectionSectionCard(section: NetworkProtectionSection) -> some View {
         VStack(spacing: 0) {
             Button(action: {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    if expandedSection == .vpn(section) {
+                    if expandedSection == .networkProtection(section) {
                         expandedSection = nil
                     } else {
-                        expandedSection = .vpn(section)
+                        expandedSection = .networkProtection(section)
                     }
                 }
                 HapticFeedback.selection()
@@ -273,7 +273,7 @@ struct PrivacyPolicyScreen: View {
                     
                     Spacer()
                     
-                    Image(systemName: expandedSection == .vpn(section) ? "chevron.up" : "chevron.down")
+                    Image(systemName: expandedSection == .networkProtection(section) ? "chevron.up" : "chevron.down")
                         .foregroundColor(.primaryBlue)
                         .font(.headline)
                         .frame(width: 24)
@@ -281,7 +281,7 @@ struct PrivacyPolicyScreen: View {
                 .padding(Spacing.m)
             }
             
-            if expandedSection == .vpn(section) {
+            if expandedSection == .networkProtection(section) {
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     Divider()
                         .background(Color.textTertiary)
@@ -419,19 +419,19 @@ struct PrivacyPolicyScreen_Previews: PreviewProvider {
 
 enum PrivacyTab: String, CaseIterable {
     case main = "Основное"
-    case vpn = "VPN"
+    case networkProtection = "Защита сети"
     
     func localizedTitle(_ localizationManager: LocalizationManager) -> String {
         switch self {
         case .main: return localizationManager.localized("privacy_policy_tab_main")
-        case .vpn: return localizationManager.localized("privacy_policy_tab_vpn")
+        case .networkProtection: return localizationManager.localized("privacy_policy_tab_network_protection")
         }
     }
 }
 
 enum PrivacySectionType: Equatable {
     case main(PrivacyMainSection)
-    case vpn(VPNSection)
+    case networkProtection(NetworkProtectionSection)
 }
 
 enum PrivacyMainSection: String, CaseIterable {
@@ -730,7 +730,7 @@ enum PrivacyMainSection: String, CaseIterable {
     }
 }
 
-enum VPNSection: String, CaseIterable {
+enum NetworkProtectionSection: String, CaseIterable {
     case noLogs = "NO-LOGS POLICY"
     case encryption = "Технологии шифрования"
     case servers = "Серверы"
@@ -749,21 +749,21 @@ enum VPNSection: String, CaseIterable {
     
     func localizedTitle(_ localizationManager: LocalizationManager) -> String {
         switch self {
-        case .noLogs: return localizationManager.localized("privacy_policy_vpn_no_logs")
-        case .encryption: return localizationManager.localized("privacy_policy_vpn_encryption")
-        case .servers: return localizationManager.localized("privacy_policy_vpn_servers")
-        case .features: return localizationManager.localized("privacy_policy_vpn_features")
-        case .energy: return localizationManager.localized("privacy_policy_vpn_energy")
+        case .noLogs: return localizationManager.localized("privacy_policy_network_protection_no_logs")
+        case .encryption: return localizationManager.localized("privacy_policy_network_protection_encryption")
+        case .servers: return localizationManager.localized("privacy_policy_network_protection_servers")
+        case .features: return localizationManager.localized("privacy_policy_network_protection_features")
+        case .energy: return localizationManager.localized("privacy_policy_network_protection_energy")
         }
     }
     
     func localizedSubtitle(_ localizationManager: LocalizationManager) -> String {
         switch self {
-        case .noLogs: return localizationManager.localized("privacy_policy_vpn_no_logs_subtitle")
-        case .encryption: return localizationManager.localized("privacy_policy_vpn_encryption_subtitle")
-        case .servers: return localizationManager.localized("privacy_policy_vpn_servers_subtitle")
-        case .features: return localizationManager.localized("privacy_policy_vpn_features_subtitle")
-        case .energy: return localizationManager.localized("privacy_policy_vpn_energy_subtitle")
+        case .noLogs: return localizationManager.localized("privacy_policy_network_protection_no_logs_subtitle")
+        case .encryption: return localizationManager.localized("privacy_policy_network_protection_encryption_subtitle")
+        case .servers: return localizationManager.localized("privacy_policy_network_protection_servers_subtitle")
+        case .features: return localizationManager.localized("privacy_policy_network_protection_features_subtitle")
+        case .energy: return localizationManager.localized("privacy_policy_network_protection_energy_subtitle")
         }
     }
     
@@ -786,43 +786,43 @@ enum VPNSection: String, CaseIterable {
         switch self {
         case .noLogs:
             return [
-                localizationManager.localized("privacy_policy_vpn_no_logs_content_1"),
-                localizationManager.localized("privacy_policy_vpn_no_logs_content_2"),
-                localizationManager.localized("privacy_policy_vpn_no_logs_content_3"),
-                localizationManager.localized("privacy_policy_vpn_no_logs_content_4"),
-                localizationManager.localized("privacy_policy_vpn_no_logs_content_5"),
-                localizationManager.localized("privacy_policy_vpn_no_logs_content_6")
+                localizationManager.localized("privacy_policy_network_protection_no_logs_content_1"),
+                localizationManager.localized("privacy_policy_network_protection_no_logs_content_2"),
+                localizationManager.localized("privacy_policy_network_protection_no_logs_content_3"),
+                localizationManager.localized("privacy_policy_network_protection_no_logs_content_4"),
+                localizationManager.localized("privacy_policy_network_protection_no_logs_content_5"),
+                localizationManager.localized("privacy_policy_network_protection_no_logs_content_6")
             ]
         case .encryption:
             return [
-                localizationManager.localized("privacy_policy_vpn_encryption_content_1"),
-                localizationManager.localized("privacy_policy_vpn_encryption_content_2"),
-                localizationManager.localized("privacy_policy_vpn_encryption_content_3"),
-                localizationManager.localized("privacy_policy_vpn_encryption_content_4")
+                localizationManager.localized("privacy_policy_network_protection_encryption_content_1"),
+                localizationManager.localized("privacy_policy_network_protection_encryption_content_2"),
+                localizationManager.localized("privacy_policy_network_protection_encryption_content_3"),
+                localizationManager.localized("privacy_policy_network_protection_encryption_content_4")
             ]
         case .servers:
             return [
-                localizationManager.localized("privacy_policy_vpn_servers_content_1"),
-                localizationManager.localized("privacy_policy_vpn_servers_content_2"),
-                localizationManager.localized("privacy_policy_vpn_servers_content_3"),
-                localizationManager.localized("privacy_policy_vpn_servers_content_4"),
-                localizationManager.localized("privacy_policy_vpn_servers_content_5")
+                localizationManager.localized("privacy_policy_network_protection_servers_content_1"),
+                localizationManager.localized("privacy_policy_network_protection_servers_content_2"),
+                localizationManager.localized("privacy_policy_network_protection_servers_content_3"),
+                localizationManager.localized("privacy_policy_network_protection_servers_content_4"),
+                localizationManager.localized("privacy_policy_network_protection_servers_content_5")
             ]
         case .features:
             return [
-                localizationManager.localized("privacy_policy_vpn_features_content_1"),
-                localizationManager.localized("privacy_policy_vpn_features_content_2"),
-                localizationManager.localized("privacy_policy_vpn_features_content_3"),
-                localizationManager.localized("privacy_policy_vpn_features_content_4"),
-                localizationManager.localized("privacy_policy_vpn_features_content_5")
+                localizationManager.localized("privacy_policy_network_protection_features_content_1"),
+                localizationManager.localized("privacy_policy_network_protection_features_content_2"),
+                localizationManager.localized("privacy_policy_network_protection_features_content_3"),
+                localizationManager.localized("privacy_policy_network_protection_features_content_4"),
+                localizationManager.localized("privacy_policy_network_protection_features_content_5")
             ]
         case .energy:
             return [
-                localizationManager.localized("privacy_policy_vpn_energy_content_1"),
-                localizationManager.localized("privacy_policy_vpn_energy_content_2"),
-                localizationManager.localized("privacy_policy_vpn_energy_content_3"),
-                localizationManager.localized("privacy_policy_vpn_energy_content_4"),
-                localizationManager.localized("privacy_policy_vpn_energy_content_5")
+                localizationManager.localized("privacy_policy_network_protection_energy_content_1"),
+                localizationManager.localized("privacy_policy_network_protection_energy_content_2"),
+                localizationManager.localized("privacy_policy_network_protection_energy_content_3"),
+                localizationManager.localized("privacy_policy_network_protection_energy_content_4"),
+                localizationManager.localized("privacy_policy_network_protection_energy_content_5")
             ]
         }
     }
@@ -864,7 +864,7 @@ enum VPNSection: String, CaseIterable {
             ]
         case .energy:
             return [
-                "5 режимов работы VPN",
+                "5 режимов работы защиты сети",
                 "Экономия 30-40% батареи",
                 "Умное управление подключением",
                 "Автоматическая адаптация",

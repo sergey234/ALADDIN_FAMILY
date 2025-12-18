@@ -38,7 +38,7 @@
 
 "main.title" = "ALADDIN AI";
 "main.subtitle" = "AI Family Protection";
-"main.vpn.title" = "VPN PROTECTION";
+"main.network_protection.title" = "NETWORK PROTECTION";
 "main.functions.title" = "MAIN FUNCTIONS";
 "main.quick.actions" = "QUICK ACTIONS";
 "main.emergency" = "Emergency Help";
@@ -63,24 +63,24 @@
 "family.role.elderly" = "Elderly";
 
 /* ═══════════════════════════════════════════════════════════════
- * VPN
+ * Network Protection
  * ═══════════════════════════════════════════════════════════════ */
 
-"vpn.title" = "VPN PROTECTION";
-"vpn.connected" = "Connected";
-"vpn.disconnected" = "Disconnected";
-"vpn.protected" = "PROTECTED";
-"vpn.not.protected" = "NOT PROTECTED";
-"vpn.connection.encrypted" = "Your connection is encrypted";
-"vpn.connection.not.encrypted" = "Your connection is not protected";
-"vpn.server" = "SERVER";
-"vpn.statistics" = "STATISTICS";
-"vpn.downloaded" = "Downloaded";
-"vpn.uploaded" = "Uploaded";
-"vpn.session.time" = "Session Time";
-"vpn.threats.blocked" = "Blocked";
-"vpn.connect" = "Connect VPN";
-"vpn.disconnect" = "Disconnect VPN";
+"network_protection.title" = "NETWORK PROTECTION";
+"network_protection.connected" = "Connected";
+"network_protection.disconnected" = "Disconnected";
+"network_protection.protected" = "PROTECTED";
+"network_protection.not.protected" = "NOT PROTECTED";
+"network_protection.connection.encrypted" = "Your connection is encrypted";
+"network_protection.connection.not.encrypted" = "Your connection is not protected";
+"network_protection.server" = "SERVER";
+"network_protection.statistics" = "STATISTICS";
+"network_protection.downloaded" = "Downloaded";
+"network_protection.uploaded" = "Uploaded";
+"network_protection.session.time" = "Session Time";
+"network_protection.threats.blocked" = "Blocked";
+"network_protection.connect" = "Connect Network Protection";
+"network_protection.disconnect" = "Disconnect Network Protection";
 
 /* ═══════════════════════════════════════════════════════════════
  * ANALYTICS
@@ -224,7 +224,7 @@
 "onboarding.title.1" = "AI FAMILY PROTECTION";
 "onboarding.description.1" = "Comprehensive protection for your entire family from all online threats.";
 "onboarding.title.2" = "SECURE INTERNET";
-"onboarding.description.2" = "VPN, antivirus, and ad blocking for all your devices.";
+"onboarding.description.2" = "Network protection, antivirus, and ad blocking for all your devices.";
 "onboarding.title.3" = "PARENTAL CONTROL";
 "onboarding.description.3" = "Manage screen time and content for children and teenagers.";
 "onboarding.title.4" = "SMART ANALYTICS";
@@ -305,22 +305,22 @@
 "chat.send" = "Send";
 
 /* ═══════════════════════════════════════════════════════════════
- * VPN ENERGY STATS
+ * Network Protection Energy Stats
  * ═══════════════════════════════════════════════════════════════ */
 
-"energy.title" = "VPN ENERGY CONSUMPTION";
+"energy.title" = "NETWORK PROTECTION ENERGY CONSUMPTION";
 "energy.subtitle" = "Usage Statistics";
 "energy.battery.usage" = "Battery usage today";
-"energy.efficient" = "Below average! VPN is working efficiently";
+"energy.efficient" = "Below average! Network protection is working efficiently";
 "energy.statistics" = "STATISTICS";
 "energy.consumed" = "Energy Consumed";
-"energy.vpn.time" = "VPN Runtime";
+"energy.network_protection.time" = "Network Protection Runtime";
 "energy.average" = "Average Consumption";
 "energy.traffic" = "Traffic Processed";
-"energy.comparison" = "COMPARISON WITH OTHER VPNs";
+"energy.comparison" = "COMPARISON WITH OTHER SOLUTIONS";
 "energy.tips" = "ENERGY SAVING TIPS";
 "energy.tip.1" = "Use Wi-Fi instead of cellular";
-"energy.tip.2" = "Disconnect VPN when not needed";
+"energy.tip.2" = "Disconnect network protection when not needed";
 "energy.tip.3" = "Choose nearest server";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -355,6 +355,40 @@
 "error.unknown" = "An unknown error occurred.";
 "error.invalid.credentials" = "Invalid email or password.";
 "error.password.mismatch" = "Passwords do not match.";
+
+/* ═══════════════════════════════════════════════════════════════
+ * STOREKIT / IN-APP PURCHASE ERRORS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"store.error.simulator.not.supported" = "In-App Purchase is not available on the simulator. Please use a real device.";
+"store.error.verification.failed" = "Failed to verify purchase";
+"store.error.product.not.found" = "Product not found";
+"store.error.store.not.ready" = "StoreKit is not ready. Please wait.";
+"store.error.purchase.in.progress" = "Purchase is already in progress. Please wait.";
+"store.error.products.not.loaded" = "Products not loaded. Check your internet connection and try again.";
+"store.error.tariffs.not.loaded" = "Failed to load tariffs. Check your internet connection and try again.";
+
+/* ═══════════════════════════════════════════════════════════════
+ * PROTECTION FEATURES
+ * ═══════════════════════════════════════════════════════════════ */
+
+"protection_feature_network_protection_name" = "Network Protection";
+"protection_feature_network_protection_desc" = "Encryption of internet connection for data protection";
+"protection_feature_website_filter_name" = "Website Filtering";
+"protection_feature_website_filter_desc" = "Blocking dangerous and unwanted websites";
+"protection_feature_parental_control_name" = "Parental Control";
+"protection_feature_parental_control_desc" = "Control of children's time and internet access";
+"protection_feature_activity_monitoring_name" = "Activity Monitoring";
+"protection_feature_activity_monitoring_desc" = "Tracking children's online activity";
+"protection_feature_threat_blocking_name" = "Threat Blocking";
+"protection_feature_threat_blocking_desc" = "Automatic blocking of viruses and phishing";
+"protection_feature_app_blocking_name" = "App Blocking";
+"protection_feature_app_blocking_desc" = "Control access to unwanted applications";
+"protection_feature_emergency_alerts_name" = "Emergency Alerts";
+"protection_feature_emergency_alerts_desc" = "Instant notifications about serious threats";
+"protection_feature_ad_blocking_name" = "Ad Blocking";
+"protection_feature_ad_blocking_desc" = "Protection from intrusive ads and trackers";
+
 "success.saved" = "Data saved successfully!";
 "success.purchase" = "Subscription purchased successfully!";
 "success.email.sent" = "Email sent to your address.";

@@ -297,7 +297,7 @@ private extension NavigationManager.ALADDINScreen {
         switch self {
         case .main: return "nav_screen_main"
         case .family: return "nav_screen_family"
-        case .vpn: return "nav_screen_vpn"
+        case .networkProtection: return "nav_screen_network_protection"
         case .analytics: return "nav_screen_analytics"
         case .settings: return "nav_screen_settings"
         case .aiAssistant: return "nav_screen_ai_assistant"
@@ -316,7 +316,7 @@ private extension NavigationManager.ALADDINScreen {
         case .referral: return "nav_screen_referral"
         case .deviceDetail: return "nav_screen_device_detail"
         case .familyChat: return "nav_screen_family_chat"
-        case .vpnEnergyStats: return "nav_screen_vpn_energy_stats"
+        case .networkProtectionEnergyStats: return "nav_screen_network_protection_energy_stats"
         case .paymentQR: return "nav_screen_payment_qr"
         case .activationCode: return "nav_screen_activation_code"
         case .childRewards: return "nav_screen_child_rewards"

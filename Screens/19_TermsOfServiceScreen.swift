@@ -206,7 +206,7 @@ enum TermsSection: String, CaseIterable {
     case registration = "Регистрация и учетные записи"
     case responsibilities = "Обязанности пользователя"
     case parental = "Родительский контроль"
-    case vpn = "VPN и безопасность"
+    case networkProtection = "Защита сети и безопасность"
     case restrictions = "Ограничения"
     case payments = "Платежи и подписки"
     case intellectual = "Интеллектуальная собственность"
@@ -221,7 +221,7 @@ enum TermsSection: String, CaseIterable {
         case .registration: return "🔐"
         case .responsibilities: return "🤝"
         case .parental: return "👨‍👩‍👧‍👦"
-        case .vpn: return "🔒"
+        case .networkProtection: return "🔒"
         case .restrictions: return "🚫"
         case .payments: return "💳"
         case .intellectual: return "📜"
@@ -242,7 +242,7 @@ enum TermsSection: String, CaseIterable {
         case .registration: return "Создание аккаунта"
         case .responsibilities: return "Что нужно делать"
         case .parental: return "Ответственность родителей"
-        case .vpn: return "Использование VPN"
+        case .networkProtection: return "Использование защиты сети"
         case .restrictions: return "Что запрещено"
         case .payments: return "Оплата подписки"
         case .intellectual: return "Права на контент"
@@ -264,7 +264,7 @@ enum TermsSection: String, CaseIterable {
         case .description:
             return [
                 "ALADDIN AI - система семейной безопасности от киберугроз",
-                "Включает: VPN, антивирус, родительский контроль, мониторинг",
+                "Включает: защиту сети, антивирус, родительский контроль, мониторинг",
                 "Защита для всей семьи: детей, подростков, пожилых",
                 "Образовательный контент и игры по безопасности"
             ]
@@ -291,11 +291,11 @@ enum TermsSection: String, CaseIterable {
                 "Обучайте детей правилам безопасности в сети",
                 "Мониторьте активность детей в приложении"
             ]
-        case .vpn:
+        case .networkProtection:
             return [
-                "VPN предоставляется для защиты соединения",
+                "Защита сети предоставляется для защиты соединения",
                 "Вы несете ответственность за соблюдение законов",
-                "Запрещена незаконная деятельность через VPN",
+                "Запрещена незаконная деятельность через защиту сети",
                 "Мы не храним историю ваших посещений (NO-LOGS)",
                 "Используется военное шифрование"
             ]
@@ -373,7 +373,7 @@ extension TermsSection {
         case .registration: return localizationManager.localized("terms_section_registration_title")
         case .responsibilities: return localizationManager.localized("terms_section_responsibilities_title")
         case .parental: return localizationManager.localized("terms_section_parental_title")
-        case .vpn: return localizationManager.localized("terms_section_vpn_title")
+        case .networkProtection: return localizationManager.localized("terms_section_network_protection_title")
         case .restrictions: return localizationManager.localized("terms_section_restrictions_title")
         case .payments: return localizationManager.localized("terms_section_payments_title")
         case .intellectual: return localizationManager.localized("terms_section_intellectual_title")
@@ -390,7 +390,7 @@ extension TermsSection {
         case .registration: return localizationManager.localized("terms_section_registration_subtitle")
         case .responsibilities: return localizationManager.localized("terms_section_responsibilities_subtitle")
         case .parental: return localizationManager.localized("terms_section_parental_subtitle")
-        case .vpn: return localizationManager.localized("terms_section_vpn_subtitle")
+        case .networkProtection: return localizationManager.localized("terms_section_network_protection_subtitle")
         case .restrictions: return localizationManager.localized("terms_section_restrictions_subtitle")
         case .payments: return localizationManager.localized("terms_section_payments_subtitle")
         case .intellectual: return localizationManager.localized("terms_section_intellectual_subtitle")
@@ -439,13 +439,13 @@ extension TermsSection {
                 localizationManager.localized("terms_section_parental_content_4"),
                 localizationManager.localized("terms_section_parental_content_5")
             ]
-        case .vpn:
+        case .networkProtection:
             return [
-                localizationManager.localized("terms_section_vpn_content_1"),
-                localizationManager.localized("terms_section_vpn_content_2"),
-                localizationManager.localized("terms_section_vpn_content_3"),
-                localizationManager.localized("terms_section_vpn_content_4"),
-                localizationManager.localized("terms_section_vpn_content_5")
+                localizationManager.localized("terms_section_network_protection_content_1"),
+                localizationManager.localized("terms_section_network_protection_content_2"),
+                localizationManager.localized("terms_section_network_protection_content_3"),
+                localizationManager.localized("terms_section_network_protection_content_4"),
+                localizationManager.localized("terms_section_network_protection_content_5")
             ]
         case .restrictions:
             return [

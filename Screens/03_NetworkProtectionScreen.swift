@@ -48,7 +48,7 @@ struct NetworkProtectionScreen: View {
                     }
                 )
                     .accessibilityElement(children: .combine)
-                    .accessibilityLabel(localizationManager.localized("vpn_nav_panel"))
+                    .accessibilityLabel(localizationManager.localized("network_protection_nav_panel"))
                 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
@@ -73,14 +73,14 @@ struct NetworkProtectionScreen: View {
                     .padding(.top, Spacing.m)
                 }
                 .accessibilityElement(children: .contain)
-                .accessibilityLabel(localizationManager.localized("vpn_cards_list"))
+                .accessibilityLabel(localizationManager.localized("network_protection_cards_list"))
             }
         }
         .navigationBarHidden(true)
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
-        .id("vpn_screen_lang_\(localizationManager.currentLanguage.rawValue)")
+        .id("network_protection_screen_lang_\(localizationManager.currentLanguage.rawValue)")
         .sheet(isPresented: $showingSettings) {
-            VPNSettingsView()
+            NetworkProtectionSettingsView()
         }
     }
     
@@ -116,7 +116,7 @@ struct NetworkProtectionScreen: View {
                     Image(systemName: networkProtectionManager.isConnected ? "stop.fill" : "play.fill")
                         .font(.title2)
                     
-                    Text(networkProtectionManager.isConnected ? localizationManager.localized("vpn_disconnect") : localizationManager.localized("vpn_connect"))
+                    Text(networkProtectionManager.isConnected ? localizationManager.localized("network_protection.disconnect") : localizationManager.localized("network_protection.connect"))
                         .font(.headline)
                         .fontWeight(.semibold)
                 }
@@ -128,8 +128,8 @@ struct NetworkProtectionScreen: View {
                         .fill(networkProtectionManager.isConnected ? Color.dangerRed : Color.successGreen)
                 )
             }
-            .accessibilityLabel(networkProtectionManager.isConnected ? localizationManager.localized("vpn_disconnect_action") : localizationManager.localized("vpn_connect_action"))
-            .accessibilityHint(localizationManager.localized("vpn_toggle_hint"))
+            .accessibilityLabel(networkProtectionManager.isConnected ? localizationManager.localized("network_protection_disconnect_action") : localizationManager.localized("network_protection_connect_action"))
+            .accessibilityHint(localizationManager.localized("network_protection_toggle_hint"))
             .accessibilityAddTraits(.isButton)
             .buttonStyle(PlainButtonStyle())
         }
@@ -154,10 +154,10 @@ struct NetworkProtectionScreen: View {
             Image(systemName: "battery.100.bolt")
                 .font(.system(size: 24))
                 .foregroundColor(.warningOrange)
-                .accessibilityLabel(localizationManager.localized("vpn_battery_icon"))
+                .accessibilityLabel(localizationManager.localized("network_protection_battery_icon"))
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(localizationManager.localized("vpn_battery_saving"))
+                Text(localizationManager.localized("network_protection_battery_saving"))
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.textPrimary)
                 
@@ -190,7 +190,7 @@ struct NetworkProtectionScreen: View {
     private var securityFeaturesCard: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("vpn_security_features"))
+                Text(localizationManager.localized("network_protection_security_features"))
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                 
@@ -204,21 +204,21 @@ struct NetworkProtectionScreen: View {
                 
                 SecurityFeatureCard(
                     icon: "shield.fill",
-                    title: localizationManager.localized("vpn_ad_blocking"),
+                    title: localizationManager.localized("network_protection_ad_blocking"),
                     isEnabled: true,
                     color: .successGreen
                 )
                 
                 SecurityFeatureCard(
                     icon: "eye.slash.fill",
-                    title: localizationManager.localized("vpn_anti_tracking"),
+                    title: localizationManager.localized("network_protection_anti_tracking"),
                     isEnabled: true,
                     color: .successGreen
                 )
                 
                 SecurityFeatureCard(
                     icon: "exclamationmark.triangle.fill",
-                    title: localizationManager.localized("vpn_threat_protection"),
+                    title: localizationManager.localized("network_protection_threat_protection"),
                     isEnabled: true,
                     color: .successGreen
                 )
@@ -236,7 +236,7 @@ struct NetworkProtectionScreen: View {
     private var quickActionsCard: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("vpn_quick_actions"))
+                Text(localizationManager.localized("network_protection_quick_actions"))
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                 
@@ -249,7 +249,7 @@ struct NetworkProtectionScreen: View {
                         Image(systemName: "gearshape.fill")
                             .font(.title3)
                             .foregroundColor(.primaryBlue)
-                        Text(localizationManager.localized("vpn_settings"))
+                        Text(localizationManager.localized("network_protection_settings"))
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(.textPrimary)
                             .lineLimit(1)
@@ -268,7 +268,7 @@ struct NetworkProtectionScreen: View {
                         Image(systemName: "chart.bar.fill")
                             .font(.title3)
                             .foregroundColor(.primaryBlue)
-                        Text(localizationManager.localized("vpn_statistics_title"))
+                        Text(localizationManager.localized("network_protection.statistics"))
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(.textPrimary)
                             .lineLimit(1)
@@ -287,7 +287,7 @@ struct NetworkProtectionScreen: View {
                         Image(systemName: "questionmark.circle.fill")
                             .font(.title3)
                             .foregroundColor(.primaryBlue)
-                        Text(localizationManager.localized("vpn_help"))
+                        Text(localizationManager.localized("network_protection_help"))
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(.textPrimary)
                             .lineLimit(1)
@@ -307,13 +307,13 @@ struct NetworkProtectionScreen: View {
         .cardShadow()
         .padding(.horizontal, Spacing.screenPadding)
         .sheet(isPresented: $showingStatistics) {
-            VPNStatisticsView()
+            NetworkProtectionStatisticsView()
         }
         .sheet(isPresented: $showingHelp) {
-            VPNHelpView()
+            NetworkProtectionHelpView()
         }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
-        .id("vpn_lang_\(localizationManager.currentLanguage.rawValue)")
+        .id("network_protection_lang_\(localizationManager.currentLanguage.rawValue)")
     }
     
     // MARK: - Antivirus Card
@@ -324,7 +324,7 @@ struct NetworkProtectionScreen: View {
         VStack(spacing: Spacing.m) {
             // Header
             HStack {
-                Text(localizationManager.localized("vpn_antivirus"))
+                Text(localizationManager.localized("network_protection_antivirus"))
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                 
@@ -334,7 +334,7 @@ struct NetworkProtectionScreen: View {
                 Toggle("", isOn: $antivirusEnabled)
                     .toggleStyle(SwitchToggleStyle(tint: .successGreen))
                 
-                Text(antivirusEnabled ? localizationManager.localized("vpn_active") : localizationManager.localized("vpn_inactive"))
+                Text(antivirusEnabled ? localizationManager.localized("network_protection_active") : localizationManager.localized("network_protection_inactive"))
                     .font(.caption)
                     .foregroundColor(antivirusEnabled ? .successGreen : .textSecondary)
                     .padding(.horizontal, 8)
@@ -352,10 +352,10 @@ struct NetworkProtectionScreen: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: Spacing.s) {
-                AntivirusStatItem(icon: "🔍", value: formatScanCount(), label: localizationManager.localized("vpn_files_scanned"))
-                AntivirusStatItem(icon: "✅", value: "\(antivirusManager.threatsDetected.count)", label: localizationManager.localized("vpn_threats_found"))
-                AntivirusStatItem(icon: "🔄", value: formatLastScan(), label: localizationManager.localized("vpn_ago"))
-                AntivirusStatItem(icon: "⚡", value: antivirusEnabled ? "100%" : "0%", label: localizationManager.localized("vpn_protection"))
+                AntivirusStatItem(icon: "🔍", value: formatScanCount(), label: localizationManager.localized("network_protection_files_scanned"))
+                AntivirusStatItem(icon: "✅", value: "\(antivirusManager.threatsDetected.count)", label: localizationManager.localized("network_protection_threats_found"))
+                AntivirusStatItem(icon: "🔄", value: formatLastScan(), label: localizationManager.localized("network_protection_ago"))
+                AntivirusStatItem(icon: "⚡", value: antivirusEnabled ? "100%" : "0%", label: localizationManager.localized("network_protection_protection"))
             }
             
             // Scan Button
@@ -368,7 +368,7 @@ struct NetworkProtectionScreen: View {
                 HStack {
                     Image(systemName: antivirusManager.isScanning ? "stop.circle.fill" : "play.circle.fill")
                         .font(.title3)
-                    Text(antivirusManager.isScanning ? localizationManager.localized("vpn_scanning") : localizationManager.localized("vpn_start_scan"))
+                    Text(antivirusManager.isScanning ? localizationManager.localized("network_protection_scanning") : localizationManager.localized("network_protection_start_scan"))
                         .font(.headline)
                 }
                 .foregroundColor(.white)
@@ -405,14 +405,14 @@ struct NetworkProtectionScreen: View {
             let interval = now.timeIntervalSince(lastResult.scanTime)
             
             if interval < 60 {
-                return localizationManager.localized("vpn_just_now")
+                return localizationManager.localized("network_protection_just_now")
             } else if interval < 3600 {
-                return "\(Int(interval / 60))\(localizationManager.localized("vpn_min"))"
+                return "\(Int(interval / 60))\(localizationManager.localized("network_protection_min"))"
             } else {
-                return "\(Int(interval / 3600))\(localizationManager.localized("vpn_hour"))"
+                return "\(Int(interval / 3600))\(localizationManager.localized("network_protection_hour"))"
             }
         }
-        return localizationManager.localized("vpn_never")
+        return localizationManager.localized("network_protection_never")
     }
     
     private func performQuickScan() async {
@@ -548,7 +548,7 @@ struct ServerSelectionView: View {
                         Text(error)
                             .foregroundColor(.textSecondary)
                             .multilineTextAlignment(.center)
-                        Button(localizationManager.localized("vpn_retry")) {
+                        Button(localizationManager.localized("network_protection_retry")) {
                             loadServers()
                         }
                         .buttonStyle(.borderedProminent)
@@ -568,11 +568,11 @@ struct ServerSelectionView: View {
                     .listStyle(.insetGrouped)
                 }
             }
-            .navigationTitle(localizationManager.localized("vpn_servers"))
+            .navigationTitle(localizationManager.localized("network_protection.server"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localizationManager.localized("vpn_done")) {
+                    Button(localizationManager.localized("network_protection_done")) {
                         dismiss()
                     }
                 }
@@ -587,7 +587,7 @@ struct ServerSelectionView: View {
         isLoading = true
         errorMessage = nil
         
-        apiService.getVPNServers { result in
+        apiService.getNetworkProtectionServers { result in
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
@@ -595,18 +595,18 @@ struct ServerSelectionView: View {
                     self.availableServers = servers.sorted { $0.ping < $1.ping }
                 case .failure(let error):
                     // Fallback на локальные серверы
-                    let vpnManager = NetworkProtectionManager.shared
-                    let vpnManagerServers = vpnManager.getAvailableServers()
+                    let networkProtectionManager = NetworkProtectionManager.shared
+                    let networkProtectionManagerServers = networkProtectionManager.getAvailableServers()
                     // Используем NetworkProtectionServer из APIModels
-                    self.availableServers = vpnManagerServers.map { vpnServer in
+                    self.availableServers = networkProtectionManagerServers.map { networkProtectionServer in
                         NetworkProtectionServer(
-                            id: vpnServer.id,
-                            country: vpnServer.country,
-                            city: vpnServer.name,
-                            flag: vpnServer.flag,
-                            ping: vpnServer.ping,
-                            load: vpnServer.load,
-                            status: vpnServer.load > 80 ? .loaded : .optimal
+                            id: networkProtectionServer.id,
+                            country: networkProtectionServer.country,
+                            city: networkProtectionServer.name,
+                            flag: networkProtectionServer.flag,
+                            ping: networkProtectionServer.ping,
+                            load: networkProtectionServer.load,
+                            status: networkProtectionServer.load > 80 ? .loaded : .optimal
                         )
                     }.sorted { $0.ping < $1.ping }
                     self.errorMessage = error.localizedDescription
@@ -671,59 +671,59 @@ struct ServerRowView: View {
     }
 }
 
-struct VPNSettingsView: View {
+struct NetworkProtectionSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
-    @AppStorage("vpn_auto_select_server") private var autoSelectServer = true
-    @AppStorage("vpn_auto_connect_wifi") private var autoConnectWiFi = true
-    @AppStorage("vpn_auto_connect_mobile") private var autoConnectMobile = false
-    @AppStorage("vpn_kill_switch") private var killSwitch = true
-    @AppStorage("vpn_dns_leak_protection") private var dnsLeakProtection = true
+    @AppStorage("network_protection_auto_select_server") private var autoSelectServer = true
+    @AppStorage("network_protection_auto_connect_wifi") private var autoConnectWiFi = true
+    @AppStorage("network_protection_auto_connect_mobile") private var autoConnectMobile = false
+    @AppStorage("network_protection_kill_switch") private var killSwitch = true
+    @AppStorage("network_protection_dns_leak_protection") private var dnsLeakProtection = true
     
     var body: some View {
         NavigationView {
             List {
-                Section(localizationManager.localized("vpn_server_section")) {
+                Section(localizationManager.localized("network_protection_server_section")) {
                     HStack {
-                        Text(localizationManager.localized("vpn_auto_server"))
+                        Text(localizationManager.localized("network_protection_auto_server"))
                         Spacer()
                         Toggle("", isOn: $autoSelectServer)
                     }
                 }
                 
-                Section(localizationManager.localized("vpn_connection_section")) {
+                Section(localizationManager.localized("network_protection_connection_section")) {
                     HStack {
-                        Text(localizationManager.localized("vpn_auto_wifi"))
+                        Text(localizationManager.localized("network_protection_auto_wifi"))
                         Spacer()
                         Toggle("", isOn: $autoConnectWiFi)
                     }
                     HStack {
-                        Text(localizationManager.localized("vpn_auto_mobile"))
+                        Text(localizationManager.localized("network_protection_auto_mobile"))
                         Spacer()
                         Toggle("", isOn: $autoConnectMobile)
                     }
                 }
                 
-                Section(localizationManager.localized("vpn_security_section")) {
+                Section(localizationManager.localized("network_protection_security_section")) {
                     HStack {
-                        Text(localizationManager.localized("vpn_kill_switch"))
+                        Text(localizationManager.localized("network_protection_kill_switch"))
                         Spacer()
                         Toggle("", isOn: $killSwitch)
                     }
                     HStack {
-                        Text(localizationManager.localized("vpn_dns_leak"))
+                        Text(localizationManager.localized("network_protection_dns_leak"))
                         Spacer()
                         Toggle("", isOn: $dnsLeakProtection)
                     }
                 }
                 
-                Section(localizationManager.localized("vpn_battery_saving_section")) {
+                Section(localizationManager.localized("network_protection_battery_saving_section")) {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(localizationManager.localized("vpn_auto_disconnect"))
+                            Text(localizationManager.localized("network_protection_auto_disconnect"))
                                 .font(.body)
-                            Text(localizationManager.localized("vpn_auto_disconnect_desc"))
+                            Text(localizationManager.localized("network_protection_auto_disconnect_desc"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -732,11 +732,11 @@ struct VPNSettingsView: View {
                     }
                 }
             }
-            .navigationTitle(localizationManager.localized("vpn_settings_title"))
+            .navigationTitle(localizationManager.localized("network_protection_settings_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localizationManager.localized("vpn_done")) {
+                    Button(localizationManager.localized("network_protection_done")) {
                         dismiss()
                     }
                 }
@@ -745,7 +745,7 @@ struct VPNSettingsView: View {
     }
 }
 
-struct VPNStatisticsView: View {
+struct NetworkProtectionStatisticsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
     
@@ -761,7 +761,7 @@ struct VPNStatisticsView: View {
                             Text("47")
                                 .font(.system(size: 32, weight: .bold))
                                 .foregroundColor(.white)
-                            Text(localizationManager.localized("vpn_threats_blocked"))
+                            Text(localizationManager.localized("network_protection.threats.blocked"))
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.8))
                                 .multilineTextAlignment(.center)
@@ -779,7 +779,7 @@ struct VPNStatisticsView: View {
                             Text("24:00:00")
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.white)
-                            Text(localizationManager.localized("vpn_protection_time"))
+                            Text(localizationManager.localized("network_protection_protection_time"))
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.8))
                                 .multilineTextAlignment(.center)
@@ -799,7 +799,7 @@ struct VPNStatisticsView: View {
                             Text("2.4 GB")
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.white)
-                            Text(localizationManager.localized("vpn_uploaded_today"))
+                            Text(localizationManager.localized("network_protection.uploaded"))
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.8))
                                 .multilineTextAlignment(.center)
@@ -817,7 +817,7 @@ struct VPNStatisticsView: View {
                             Text("1.2 GB")
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.white)
-                            Text(localizationManager.localized("vpn_downloaded_today"))
+                            Text(localizationManager.localized("network_protection.downloaded"))
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.8))
                                 .multilineTextAlignment(.center)
@@ -832,11 +832,11 @@ struct VPNStatisticsView: View {
                 }
                 .padding()
             }
-            .navigationTitle(localizationManager.localized("vpn_statistics_title"))
+            .navigationTitle(localizationManager.localized("network_protection.statistics"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localizationManager.localized("vpn_done")) {
+                    Button(localizationManager.localized("network_protection_done")) {
                         dismiss()
                     }
                 }
@@ -845,7 +845,7 @@ struct VPNStatisticsView: View {
     }
 }
 
-struct VPNHelpView: View {
+struct NetworkProtectionHelpView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
     
@@ -853,7 +853,7 @@ struct VPNHelpView: View {
         NavigationView {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text(localizationManager.localized("vpn_faq"))
+                    Text(localizationManager.localized("network_protection_faq"))
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
@@ -861,64 +861,64 @@ struct VPNHelpView: View {
                     
                     VStack(spacing: 15) {
                         HelpCard(
-                            question: localizationManager.localized("vpn_help_antivirus_question"),
-                            answer: localizationManager.localized("vpn_help_antivirus_answer")
+                            question: localizationManager.localized("network_protection_help_antivirus_question"),
+                            answer: localizationManager.localized("network_protection_help_antivirus_answer")
                         )
                         
                         HelpCard(
-                            question: localizationManager.localized("vpn_help_ad_blocking_question"),
-                            answer: localizationManager.localized("vpn_help_ad_blocking_answer")
+                            question: localizationManager.localized("network_protection_help_ad_blocking_question"),
+                            answer: localizationManager.localized("network_protection_help_ad_blocking_answer")
                         )
                         
                         HelpCard(
-                            question: localizationManager.localized("vpn_help_anti_tracking_question"),
-                            answer: localizationManager.localized("vpn_help_anti_tracking_answer")
+                            question: localizationManager.localized("network_protection_help_anti_tracking_question"),
+                            answer: localizationManager.localized("network_protection_help_anti_tracking_answer")
                         )
                         
                         HelpCard(
-                            question: localizationManager.localized("vpn_help_encryption_question"),
-                            answer: localizationManager.localized("vpn_help_encryption_answer")
+                            question: localizationManager.localized("network_protection_help_encryption_question"),
+                            answer: localizationManager.localized("network_protection_help_encryption_answer")
                         )
                         
                         HelpCard(
-                            question: localizationManager.localized("vpn_help_threat_protection_question"),
-                            answer: localizationManager.localized("vpn_help_threat_protection_answer")
+                            question: localizationManager.localized("network_protection_help_threat_protection_question"),
+                            answer: localizationManager.localized("network_protection_help_threat_protection_answer")
                         )
                         
                         HelpCard(
-                            question: localizationManager.localized("vpn_help_incognito_question"),
-                            answer: localizationManager.localized("vpn_help_incognito_answer")
+                            question: localizationManager.localized("network_protection_help_incognito_question"),
+                            answer: localizationManager.localized("network_protection_help_incognito_answer")
                         )
                         
                         HelpCard(
-                            question: localizationManager.localized("vpn_help_tor_question"),
-                            answer: localizationManager.localized("vpn_help_tor_answer")
+                            question: localizationManager.localized("network_protection_help_tor_question"),
+                            answer: localizationManager.localized("network_protection_help_tor_answer")
                         )
                         
                         HelpCard(
-                            question: localizationManager.localized("vpn_help_proxy_question"),
-                            answer: localizationManager.localized("vpn_help_proxy_answer")
+                            question: localizationManager.localized("network_protection_help_proxy_question"),
+                            answer: localizationManager.localized("network_protection_help_proxy_answer")
                         )
                         
                         HelpCard(
-                            question: localizationManager.localized("vpn_help_kill_switch_question"),
-                            answer: localizationManager.localized("vpn_help_kill_switch_answer")
+                            question: localizationManager.localized("network_protection_help_kill_switch_question"),
+                            answer: localizationManager.localized("network_protection_help_kill_switch_answer")
                         )
                         
                         HelpCard(
-                            question: localizationManager.localized("vpn_help_dns_leak_question"),
-                            answer: localizationManager.localized("vpn_help_dns_leak_answer")
+                            question: localizationManager.localized("network_protection_help_dns_leak_question"),
+                            answer: localizationManager.localized("network_protection_help_dns_leak_answer")
                         )
                     }
                     .padding(.horizontal)
                 }
                 .padding(.vertical)
             }
-            .navigationTitle(localizationManager.localized("vpn_help"))
+            .navigationTitle(localizationManager.localized("network_protection_help"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localizationManager.localized("vpn_done")) {
+                    Button(localizationManager.localized("network_protection_done")) {
                         dismiss()
                     }
                 }

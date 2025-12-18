@@ -87,7 +87,7 @@ struct ALADDINToggle_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 20) {
             HStack {
-                Text("VPN защита")
+                Text("Защита сети")
                 Spacer()
                 ALADDINToggle(isOn: .constant(true))
             }

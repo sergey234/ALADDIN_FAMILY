@@ -32,23 +32,23 @@ class CachedAPIService: ObservableObject {
         self.retryManager = retryManager
     }
     
-    // MARK: - VPN API Methods
+    // MARK: - Network Protection API Methods
     
     /**
-     * Получает статус VPN с кэшированием
+     * Получает статус защиты сети с кэшированием
      */
-    func getVPNStatus() async -> Result<NetworkProtectionStatusResponse, NetworkError> {
-        let cacheKey = "vpn_status"
+    func getNetworkProtectionStatus() async -> Result<NetworkProtectionStatusResponse, NetworkError> {
+        let cacheKey = "network_protection_status"
         
         // Пытаемся получить из кэша (асинхронно)
         if isCachingEnabled, let cachedStatus: NetworkProtectionStatusResponse = await cacheManager.retrieve(NetworkProtectionStatusResponse.self, forKey: cacheKey) {
-            print("💾 CachedAPI: VPN статус получен из кэша")
+            print("💾 CachedAPI: Статус защиты сети получен из кэша")
             return .success(cachedStatus)
         }
         
         // Получаем с сервера
         let result = await retryManager.execute {
-            try await self.apiService.getVPNStatus()
+            try await self.apiService.getNetworkProtectionStatus()
         }
         
         switch result {
@@ -64,18 +64,18 @@ class CachedAPIService: ObservableObject {
     }
     
     /**
-     * Подключается к VPN с кэшированием
+     * Подключается к защите сети с кэшированием
      */
-    func connectVPN() async -> Result<VPNConnectResponse, NetworkError> {
+    func connectNetworkProtection() async -> Result<NetworkProtectionConnectResponse, NetworkError> {
         let result = await retryManager.execute {
-            try await self.apiService.connectVPN()
+            try await self.apiService.connectNetworkProtection()
         }
         
         switch result {
         case .success(let response):
-            // Очищаем кэш VPN статуса при изменении
+            // Очищаем кэш статуса защиты сети при изменении
             if isCachingEnabled {
-                cacheManager.remove(key: "vpn_status")
+                cacheManager.remove(key: "network_protection_status")
             }
             return .success(response)
         case .failure(let error):
@@ -84,18 +84,18 @@ class CachedAPIService: ObservableObject {
     }
     
     /**
-     * Отключается от VPN с кэшированием
+     * Отключается от защиты сети с кэшированием
      */
-    func disconnectVPN() async -> Result<VPNDisconnectResponse, NetworkError> {
+    func disconnectNetworkProtection() async -> Result<NetworkProtectionDisconnectResponse, NetworkError> {
         let result = await retryManager.execute {
-            try await self.apiService.disconnectVPN()
+            try await self.apiService.disconnectNetworkProtection()
         }
         
         switch result {
         case .success(let response):
-            // Очищаем кэш VPN статуса при изменении
+            // Очищаем кэш статуса защиты сети при изменении
             if isCachingEnabled {
-                cacheManager.remove(key: "vpn_status")
+                cacheManager.remove(key: "network_protection_status")
             }
             return .success(response)
         case .failure(let error):
@@ -371,7 +371,7 @@ class CachedAPIService: ObservableObject {
     func clearCache(for dataType: CacheDataType) {
         switch dataType {
         case .vpn:
-            cacheManager.remove(key: "vpn_status")
+            cacheManager.remove(key: "network_protection_status")
         case .family:
             cacheManager.remove(key: "family_members")
         case .analytics:
@@ -415,7 +415,7 @@ class CachedAPIService: ObservableObject {
  * Типы данных для управления кэшем
  */
 enum CacheDataType: String, CaseIterable {
-    case vpn = "vpn"
+    case networkProtection = "network_protection"
     case family = "family"
     case analytics = "analytics"
     case notifications = "notifications"
@@ -425,8 +425,8 @@ enum CacheDataType: String, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .vpn:
-            return "VPN"
+        case .networkProtection:
+            return "Защита сети"
         case .family:
             return "Семья"
         case .analytics:

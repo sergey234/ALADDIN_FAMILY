@@ -20,7 +20,7 @@ class NavigationManager: ObservableObject {
         // Основные экраны
         case main = "01_MainScreen"
         case family = "02_FamilyScreen"
-        case vpn = "03_NetworkProtectionScreen"
+        case networkProtection = "03_NetworkProtectionScreen"
         case analytics = "04_AnalyticsScreen"
         case settings = "05_SettingsScreen"
         case aiAssistant = "06_AIAssistantScreen"
@@ -39,7 +39,7 @@ class NavigationManager: ObservableObject {
         case referral = "21_ReferralScreen"
         case deviceDetail = "22_DeviceDetailScreen"
         case familyChat = "23_FamilyChatScreen"
-        case vpnEnergyStats = "24_VPNEnergyStatsScreen"
+        case networkProtectionEnergyStats = "24_NetworkProtectionEnergyStatsScreen"
         case paymentQR = "25_PaymentQRScreen"
         case activationCode = "26_ActivationCodeScreen"
         
@@ -75,7 +75,7 @@ class NavigationManager: ObservableObject {
             switch self {
             case .main: return "Главная"
             case .family: return "Семья"
-            case .vpn: return "Защита сети"
+            case .networkProtection: return "Защита сети"
             case .analytics: return "Аналитика"
             case .settings: return "Настройки"
             case .aiAssistant: return "AI Помощник"
@@ -94,7 +94,7 @@ class NavigationManager: ObservableObject {
             case .referral: return "Реферальная программа"
             case .deviceDetail: return "Детали устройства"
             case .familyChat: return "Семейный чат"
-            case .vpnEnergyStats: return "Статистика защиты сети"
+            case .networkProtectionEnergyStats: return "Статистика защиты сети"
             case .paymentQR: return "Оплата QR"
             case .childRewards: return "Детские награды"
             case .familyTournament: return "Семейный турнир"
@@ -124,7 +124,7 @@ class NavigationManager: ObservableObject {
             switch self {
             case .main: return "house.fill"
             case .family: return "person.3.fill"
-            case .vpn: return "shield.fill"
+            case .networkProtection: return "shield.fill"
             case .analytics: return "chart.bar.fill"
             case .settings: return "gearshape.fill"
             case .aiAssistant: return "brain.head.profile"
@@ -143,7 +143,7 @@ class NavigationManager: ObservableObject {
             case .referral: return "gift.fill"
             case .deviceDetail: return "info.circle.fill"
             case .familyChat: return "message.fill"
-            case .vpnEnergyStats: return "battery.100percent"
+            case .networkProtectionEnergyStats: return "battery.100percent"
             case .paymentQR: return "qrcode"
             case .childRewards: return "star.fill"
             case .familyTournament: return "trophy.fill"
@@ -393,11 +393,12 @@ class NavigationManager: ObservableObject {
     }
     
     func switchToNetworkProtectionScreen() {
-        navigateToRoot(.vpn)
+        navigateToRoot(.networkProtection)
     }
     
     // Оставляем старую функцию для обратной совместимости
     @available(*, deprecated, renamed: "switchToNetworkProtectionScreen")
+    @available(*, deprecated, message: "Используйте switchToNetworkProtectionScreen()")
     func switchToVPNScreen() {
         switchToNetworkProtectionScreen()
     }

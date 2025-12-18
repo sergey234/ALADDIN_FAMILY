@@ -297,8 +297,8 @@ extension ParentalControlModule {
                     requiredTariff: .family
                 ),
                 ParentalControlFeature(
-                    id: "bypass_vpn_tor",
-                    titleKey: "tariff_parental_bypass_vpn_tor_family",
+                    id: "bypass_network_protection_tor",
+                    titleKey: "tariff_parental_bypass_network_protection_tor_family",
                     descriptionKey: nil,
                     module: .bypassProtection,
                     requiredTariff: .family

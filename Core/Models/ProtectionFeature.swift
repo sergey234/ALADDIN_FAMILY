@@ -40,14 +40,6 @@ class ProtectionFeaturesManager: ObservableObject {
     private func loadDefaultFeatures() {
         features = [
             ProtectionFeature(
-                id: "vpn",
-                name: "VPN защита",
-                icon: "shield.fill",
-                description: "Шифрование интернет-соединения для защиты данных",
-                defaultLevels: [25, 50, 75, 100],
-                isEnabled: true
-            ),
-            ProtectionFeature(
                 id: "website_filter",
                 name: "Фильтрация сайтов",
                 icon: "globe.badge.chevron.backward",

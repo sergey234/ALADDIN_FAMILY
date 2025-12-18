@@ -150,7 +150,7 @@ struct ALADDINToggle_Previews: PreviewProvider {
         VStack(spacing: 20) {
             // Новый API (без title)
             HStack {
-                Text("VPN защита")
+                Text("Защита сети")
                 Spacer()
                 ALADDINToggle(isOn: .constant(true))
             }
