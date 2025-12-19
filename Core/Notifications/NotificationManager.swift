@@ -683,7 +683,7 @@ enum NotificationCategory: String, CaseIterable {
     case general = "general"
     case security = "security"
     case family = "family"
-    case vpn = "vpn"
+    case networkProtection = "network_protection"
     case ai = "ai"
     case subscription = "subscription"
 }

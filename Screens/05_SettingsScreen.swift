@@ -518,8 +518,8 @@ struct SettingsScreen: View {
                     title: "Согласие на обработку персональных данных",
                     subtitle: consentAccepted ? "Согласие предоставлено" : "Управление согласием",
                     action: {
-                        // Открываем экран профиля, где есть раздел согласия
-                        navigationManager.navigateTo(.profile)
+                        // Открываем экран политики конфиденциальности
+                        showPrivacyPolicy = true
                     }
                 )
                 

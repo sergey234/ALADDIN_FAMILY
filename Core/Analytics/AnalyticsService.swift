@@ -99,7 +99,7 @@ struct RecentThreat: Codable, Identifiable {
     }
 }
 
-struct AnalyticsVPNStats: Codable {
+struct AnalyticsNetworkProtectionStats: Codable {
     let today: String // "2.3 GB"
     let week: String // "15.8 GB"
     let protection: String // "100%"
