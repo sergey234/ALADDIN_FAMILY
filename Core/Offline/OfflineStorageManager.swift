@@ -359,7 +359,7 @@ class OfflineStorageManager: ObservableObject {
  * Типы данных для офлайн хранения
  */
 enum OfflineDataType: String, CaseIterable {
-    case vpnStatus = "vpn_status"
+    case networkProtectionStatus = "network_protection_status"
     case familyMembers = "family_members"
     case analytics = "analytics"
     case notifications = "notifications"
@@ -370,8 +370,8 @@ enum OfflineDataType: String, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .vpnStatus:
-            return "VPN Статус"
+        case .networkProtectionStatus:
+            return "Статус защиты сети"
         case .familyMembers:
             return "Члены семьи"
         case .analytics:

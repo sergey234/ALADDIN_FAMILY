@@ -396,12 +396,6 @@ class NavigationManager: ObservableObject {
         navigateToRoot(.networkProtection)
     }
     
-    // Оставляем старую функцию для обратной совместимости
-    @available(*, deprecated, renamed: "switchToNetworkProtectionScreen")
-    @available(*, deprecated, message: "Используйте switchToNetworkProtectionScreen()")
-    func switchToVPNScreen() {
-        switchToNetworkProtectionScreen()
-    }
     
     func switchToAnalyticsScreen() {
         navigateToRoot(.analytics)

@@ -4,7 +4,7 @@ import SwiftUI
 /**
  * 📱 ALADDIN Widgets
  * Виджеты для главного экрана iOS
- * Показывают статус защиты семьи, VPN, статистику
+ * Показывают статус защиты семьи, Network Protection, статистику
  */
 
 // MARK: - Widget Bundle
@@ -13,7 +13,7 @@ import SwiftUI
 struct ALADDINWidgets: WidgetBundle {
     var body: some Widget {
         FamilyProtectionWidget()
-        VPNStatusWidget()
+        NetworkProtectionStatusWidget()
         AnalyticsWidget()
     }
 }
@@ -33,17 +33,17 @@ struct FamilyProtectionWidget: Widget {
     }
 }
 
-// MARK: - VPN Status Widget
+// MARK: - Network Protection Status Widget
 
-struct VPNStatusWidget: Widget {
-    let kind: String = "VPNStatusWidget"
+struct NetworkProtectionStatusWidget: Widget {
+    let kind: String = "NetworkProtectionStatusWidget"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: VPNStatusProvider()) { entry in
-            VPNStatusWidgetEntryView(entry: entry)
+        StaticConfiguration(kind: kind, provider: NetworkProtectionStatusProvider()) { entry in
+            NetworkProtectionStatusWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("VPN Статус")
-        .description("Статус подключения VPN и сервер")
+        .configurationDisplayName("Статус защиты сети")
+        .description("Статус подключения защиты сети и сервер")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
@@ -133,9 +133,9 @@ struct FamilyProtectionProvider: TimelineProvider {
     }
 }
 
-struct VPNStatusProvider: TimelineProvider {
-    func placeholder(in context: Context) -> VPNStatusEntry {
-        VPNStatusEntry(
+struct NetworkProtectionStatusProvider: TimelineProvider {
+    func placeholder(in context: Context) -> NetworkProtectionStatusEntry {
+        NetworkProtectionStatusEntry(
             date: Date(),
             isConnected: true,
             server: "Германия",
@@ -144,8 +144,8 @@ struct VPNStatusProvider: TimelineProvider {
         )
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (VPNStatusEntry) -> ()) {
-        let entry = VPNStatusEntry(
+    func getSnapshot(in context: Context, completion: @escaping (NetworkProtectionStatusEntry) -> ()) {
+        let entry = NetworkProtectionStatusEntry(
             date: Date(),
             isConnected: true,
             server: "Германия",
@@ -155,13 +155,13 @@ struct VPNStatusProvider: TimelineProvider {
         completion(entry)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<VPNStatusEntry>) -> ()) {
-        var entries: [VPNStatusEntry] = []
+    func getTimeline(in context: Context, completion: @escaping (Timeline<NetworkProtectionStatusEntry>) -> ()) {
+        var entries: [NetworkProtectionStatusEntry] = []
 
         let currentDate = Date()
         for hourOffset in 0 ..< 4 {
             let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = VPNStatusEntry(
+            let entry = NetworkProtectionStatusEntry(
                 date: entryDate,
                 isConnected: Bool.random(),
                 server: ["Германия", "США", "Япония", "Канада"].randomElement() ?? "Германия",
@@ -232,7 +232,7 @@ struct FamilyProtectionEntry: TimelineEntry {
     let lastUpdate: String
 }
 
-struct VPNStatusEntry: TimelineEntry {
+struct NetworkProtectionStatusEntry: TimelineEntry {
     let date: Date
     let isConnected: Bool
     let server: String
@@ -315,8 +315,8 @@ struct FamilyProtectionWidgetEntryView: View {
     }
 }
 
-struct VPNStatusWidgetEntryView: View {
-    var entry: VPNStatusProvider.Entry
+struct NetworkProtectionStatusWidgetEntryView: View {
+    var entry: NetworkProtectionStatusProvider.Entry
 
     var body: some View {
         ZStack {
@@ -335,7 +335,7 @@ struct VPNStatusWidgetEntryView: View {
                 HStack {
                     Text("🔒")
                         .font(.title2)
-                    Text("VPN")
+                    Text("Защита сети")
                         .font(.headline)
                         .foregroundColor(.white)
                     Spacer()

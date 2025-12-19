@@ -51,7 +51,6 @@ class NetworkManager: NSObject, ObservableObject {
         self.pinnedDomains = Set([
             "aladdin-ai.ru",       // Основной API (текущий домен)
             "api.aladdin.family",  // Резервный API
-            "vpn.aladdin.family",  // VPN сервер
             "cdn.aladdin.family"   // CDN сервер
         ])
         

@@ -256,7 +256,7 @@ struct SecurityEducationScreen: View {
                 TipRow(text: "Используй двухфакторную аутентификацию (2FA)")
                 TipRow(text: "Проверяй URL перед переходом по ссылкам")
                 TipRow(text: "Не публикуй личную информацию в соц. сетях")
-                TipRow(text: "Используй VPN в общественных Wi-Fi")
+                TipRow(text: "Используй защиту сети в общественных Wi-Fi")
                 TipRow(text: "Обновляй приложения регулярно")
             }
         }

@@ -112,10 +112,10 @@ struct NotificationSettingsScreen: View {
                 )
                 
                 NotificationToggle(
-                    title: "VPN",
-                    subtitle: "Уведомления о подключении VPN",
+                    title: "Защита сети",
+                    subtitle: "Уведомления о подключении защиты сети",
                     icon: "🔒",
-                    isOn: $settings.vpnEnabled
+                    isOn: $settings.networkProtectionEnabled
                 )
                 
                 NotificationToggle(
