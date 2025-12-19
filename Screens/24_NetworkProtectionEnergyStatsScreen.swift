@@ -118,8 +118,8 @@ struct NetworkProtectionEnergyStatsScreen: View {
                     
                     VStack(spacing: Spacing.s) {
                         ComparisonRow(name: "ALADDIN", usage: 12.5, color: .successGreen)
-                        ComparisonRow(name: "NordVPN", usage: 18.3, color: .warningOrange)
-                        ComparisonRow(name: "ExpressVPN", usage: 22.1, color: .dangerRed)
+                        ComparisonRow(name: "Решение A", usage: 18.3, color: .warningOrange)
+                        ComparisonRow(name: "Решение B", usage: 22.1, color: .dangerRed)
                     }
                     .padding(Spacing.m)
                     .background(

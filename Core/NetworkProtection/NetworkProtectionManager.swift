@@ -6,9 +6,7 @@ import SwiftUI
 class NetworkProtectionManager: ObservableObject {
     static let shared = NetworkProtectionManager()
     
-    // ✅ ЗАКОММЕНТИРОВАНО: PacketTunnel больше не используется
-    // private let packetTunnelIdentifier = "family.aladdin.ios.packetTunnel"
-    // private let defaultServerAddress = "vpn.aladdin.family"
+    // ✅ УДАЛЕНО: PacketTunnel больше не используется
     
     @Published var isConnected = false
     @Published var isConnecting = false

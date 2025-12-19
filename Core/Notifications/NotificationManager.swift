@@ -191,15 +191,15 @@ class NotificationManager: NSObject, ObservableObject {
     }
     
     /**
-     * Уведомление о подключении VPN
+     * Уведомление о подключении Network Protection
      */
-    func sendVPNConnectedNotification(server: String) {
+    func sendNetworkProtectionConnectedNotification(server: String) {
         sendLocalNotification(
-            title: "🔒 VPN подключен",
+            title: "🔒 Защита сети подключена",
             body: "Ваше соединение защищено через \(server)",
-            category: .vpn,
+            category: .networkProtection,
             userInfo: [
-                "type": "vpn_connected",
+                "type": "network_protection_connected",
                 "server": server
             ]
         )
@@ -291,12 +291,12 @@ class NotificationManager: NSObject, ObservableObject {
             options: []
         )
         
-        let vpnCategory = UNNotificationCategory(
-            identifier: NotificationCategory.vpn.rawValue,
+        let networkProtectionCategory = UNNotificationCategory(
+            identifier: NotificationCategory.networkProtection.rawValue,
             actions: [
                 UNNotificationAction(
-                    identifier: "view_vpn",
-                    title: "Открыть VPN",
+                    identifier: "view_network_protection",
+                    title: "Открыть защиту сети",
                     options: [.foreground]
                 )
             ],
@@ -339,7 +339,7 @@ class NotificationManager: NSObject, ObservableObject {
             generalCategory,
             securityCategory,
             familyCategory,
-            vpnCategory,
+            networkProtectionCategory,
             aiCategory,
             subscriptionCategory
         ])
@@ -640,8 +640,8 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             handleViewDetailsAction(userInfo: userInfo)
         case "view_family":
             handleViewFamilyAction(userInfo: userInfo)
-        case "view_vpn":
-            handleViewVPNAction(userInfo: userInfo)
+        case "view_network_protection":
+            handleViewNetworkProtectionAction(userInfo: userInfo)
         case "reply":
             handleReplyAction(userInfo: userInfo)
         default:
@@ -661,9 +661,9 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         print("👨‍👩‍👧‍👦 View family action triggered")
     }
     
-    private func handleViewVPNAction(userInfo: [AnyHashable: Any]) {
-        // TODO: Навигация к экрану VPN
-        print("🔒 View VPN action triggered")
+    private func handleViewNetworkProtectionAction(userInfo: [AnyHashable: Any]) {
+        // TODO: Навигация к экрану Network Protection
+        print("🔒 View Network Protection action triggered")
     }
     
     private func handleReplyAction(userInfo: [AnyHashable: Any]) {
@@ -691,7 +691,7 @@ enum NotificationCategory: String, CaseIterable {
 struct NotificationSettings: Codable, Equatable {
     var securityEnabled: Bool = true
     var familyEnabled: Bool = true
-    var vpnEnabled: Bool = true
+    var networkProtectionEnabled: Bool = true
     var aiEnabled: Bool = true
     var bypassEnabled: Bool = true  // НОВАЯ настройка!
     var soundEnabled: Bool = true

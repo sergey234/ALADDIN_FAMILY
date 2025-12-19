@@ -31,7 +31,7 @@ struct NetworkProtectionServer: Codable, Identifiable {
     
     func localizedName(_ localizationManager: LocalizationManager) -> String {
         // Локализуем название страны
-        let key = "vpn_server_\(country.lowercased())"
+        let key = "network_protection_server_\(country.lowercased())"
         let localized = localizationManager.localized(key)
         // Если локализация не найдена, возвращаем оригинальное название
         return localized != key ? localized : country
@@ -51,7 +51,7 @@ enum ServerStatus: String, Codable, CaseIterable {
     case loaded = "loaded"
 }
 
-// MARK: - VPN Stats Models
+// MARK: - Network Protection Stats Models
 
 struct NetworkProtectionStats: Codable {
     let bytesIn: Int64

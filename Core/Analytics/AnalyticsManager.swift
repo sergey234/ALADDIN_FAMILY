@@ -102,17 +102,17 @@ class AnalyticsManager {
     }
     
     /**
-     * Отследить VPN подключение
+     * Отследить Network Protection подключение
      */
-    func trackVPNConnect(server: String) {
-        trackEvent("vpn_connect", parameters: ["server": server])
+    func trackNetworkProtectionConnect(server: String) {
+        trackEvent("network_protection_connect", parameters: ["server": server])
     }
     
     /**
-     * Отследить VPN отключение
+     * Отследить Network Protection отключение
      */
-    func trackVPNDisconnect() {
-        trackEvent("vpn_disconnect")
+    func trackNetworkProtectionDisconnect() {
+        trackEvent("network_protection_disconnect")
     }
     
     /**

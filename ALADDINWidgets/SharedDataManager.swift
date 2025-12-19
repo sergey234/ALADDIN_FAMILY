@@ -20,10 +20,10 @@ class SharedDataManager {
         static let familyProtectionEnabled = "family_protection_enabled"
         static let childrenOnline = "children_online"
         static let threatsBlocked = "threats_blocked"
-        static let vpnConnected = "vpn_connected"
-        static let vpnServer = "vpn_server"
-        static let vpnSpeed = "vpn_speed"
-        static let vpnUptime = "vpn_uptime"
+        static let networkProtectionConnected = "network_protection_connected"
+        static let networkProtectionServer = "network_protection_server"
+        static let networkProtectionSpeed = "network_protection_speed"
+        static let networkProtectionUptime = "network_protection_uptime"
         static let websitesBlocked = "websites_blocked"
         static let appsBlocked = "apps_blocked"
         static let dataSaved = "data_saved"
@@ -55,29 +55,29 @@ class SharedDataManager {
         return (isEnabled, childrenOnline, threatsBlocked)
     }
     
-    // MARK: - VPN Data
+    // MARK: - Network Protection Data
     
-    static func updateVPNData(
+    static func updateNetworkProtectionData(
         isConnected: Bool,
         server: String,
         speed: String,
         uptime: String
     ) {
-        userDefaults.set(isConnected, forKey: Keys.vpnConnected)
-        userDefaults.set(server, forKey: Keys.vpnServer)
-        userDefaults.set(speed, forKey: Keys.vpnSpeed)
-        userDefaults.set(uptime, forKey: Keys.vpnUptime)
+        userDefaults.set(isConnected, forKey: Keys.networkProtectionConnected)
+        userDefaults.set(server, forKey: Keys.networkProtectionServer)
+        userDefaults.set(speed, forKey: Keys.networkProtectionSpeed)
+        userDefaults.set(uptime, forKey: Keys.networkProtectionUptime)
         userDefaults.set(Date(), forKey: Keys.lastUpdate)
         
         // Обновить виджеты
         WidgetCenter.shared.reloadAllTimelines()
     }
     
-    static func getVPNData() -> (isConnected: Bool, server: String, speed: String, uptime: String) {
-        let isConnected = userDefaults.bool(forKey: Keys.vpnConnected)
-        let server = userDefaults.string(forKey: Keys.vpnServer) ?? "Не подключен"
-        let speed = userDefaults.string(forKey: Keys.vpnSpeed) ?? "0 Мбит/с"
-        let uptime = userDefaults.string(forKey: Keys.vpnUptime) ?? "0м"
+    static func getNetworkProtectionData() -> (isConnected: Bool, server: String, speed: String, uptime: String) {
+        let isConnected = userDefaults.bool(forKey: Keys.networkProtectionConnected)
+        let server = userDefaults.string(forKey: Keys.networkProtectionServer) ?? "Не подключен"
+        let speed = userDefaults.string(forKey: Keys.networkProtectionSpeed) ?? "0 Мбит/с"
+        let uptime = userDefaults.string(forKey: Keys.networkProtectionUptime) ?? "0м"
         
         return (isConnected, server, speed, uptime)
     }
@@ -125,10 +125,10 @@ class SharedDataManager {
             Keys.familyProtectionEnabled,
             Keys.childrenOnline,
             Keys.threatsBlocked,
-            Keys.vpnConnected,
-            Keys.vpnServer,
-            Keys.vpnSpeed,
-            Keys.vpnUptime,
+            Keys.networkProtectionConnected,
+            Keys.networkProtectionServer,
+            Keys.networkProtectionSpeed,
+            Keys.networkProtectionUptime,
             Keys.websitesBlocked,
             Keys.appsBlocked,
             Keys.dataSaved,
@@ -156,8 +156,8 @@ extension SharedDataManager {
             threatsBlocked: 15
         )
         
-        // Mock VPN Data
-        updateVPNData(
+        // Mock Network Protection Data
+        updateNetworkProtectionData(
             isConnected: true,
             server: "Германия",
             speed: "45 Мбит/с",

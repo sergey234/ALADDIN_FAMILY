@@ -23,7 +23,7 @@ struct AnalyticsSummary: Codable, Equatable {
 struct SecurityAnalytics: Codable {
     let blockedThreats: [ThreatTypeCount]
     let recentThreats: [RecentThreat]
-    let vpnStats: AnalyticsVPNStats
+    let networkProtectionStats: AnalyticsNetworkProtectionStats
 }
 
 /// Статистика по семье
@@ -304,7 +304,7 @@ final class LocalAnalyticsService: AnalyticsService {
                 RecentThreat(emoji: "⚠️", text: "Подозрительное приложение", time: "15 мин"),
                 RecentThreat(emoji: "🚫", text: "Вредоносный файл", time: "1 час назад")
             ],
-            vpnStats: AnalyticsVPNStats(
+            networkProtectionStats: AnalyticsNetworkProtectionStats(
                 today: "2.3 GB",
                 week: "15.8 GB",
                 protection: "100%"

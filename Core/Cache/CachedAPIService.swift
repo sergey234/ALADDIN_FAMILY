@@ -370,7 +370,7 @@ class CachedAPIService: ObservableObject {
      */
     func clearCache(for dataType: CacheDataType) {
         switch dataType {
-        case .vpn:
+        case .networkProtection:
             cacheManager.remove(key: "network_protection_status")
         case .family:
             cacheManager.remove(key: "family_members")
