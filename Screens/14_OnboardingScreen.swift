@@ -75,6 +75,8 @@ struct OnboardingScreen: View {
     @State private var showInvitationCodeInput = false
     @State private var showQRScanner = false
     @State private var profileImage: UIImage? = nil
+    @State private var dataConsentAccepted: Bool = false
+    @State private var showPrivacyPolicy: Bool = false
     
     // @StateObject private var registrationVM = FamilyRegistrationViewModel()
     
@@ -209,6 +211,8 @@ struct OnboardingScreen: View {
                             }
                         } else {
                             // ✅ Начать регистрацию - сохраняем статус и переходим через NavigationManager
+                            // Сохраняем согласие на обработку данных
+                            UserDefaults.standard.set(dataConsentAccepted, forKey: "personal_data_consent_accepted")
                             hasCompletedOnboarding = true
                             navigationManager.navigateTo(.main)
                             print("✅ OnboardingScreen: Онбординг завершён, переход на главный экран")
@@ -221,17 +225,70 @@ struct OnboardingScreen: View {
                             .frame(height: 50)
                             .background(
                                 LinearGradient(
-                                    colors: [Color.primaryBlue, Color.secondaryBlue],
+                                    colors: currentPage == pages.count - 1 && !dataConsentAccepted 
+                                        ? [Color.gray, Color.gray] 
+                                        : [Color.primaryBlue, Color.secondaryBlue],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
                             )
                             .cornerRadius(CornerRadius.large)
                     }
+                    .disabled(currentPage == pages.count - 1 && !dataConsentAccepted)
                     .accessibilityElement(
                         label: currentPage < pages.count - 1 ? localizationManager.localized("onboarding_continue") : localizationManager.localized("onboarding_start"),
                         hint: currentPage < pages.count - 1 ? localizationManager.localized("onboarding_continue_hint") : localizationManager.localized("onboarding_start_hint")
                     )
+                    
+                    // Информация о данных и согласие на последней странице
+                    if currentPage == pages.count - 1 {
+                        VStack(spacing: Spacing.s) {
+                            // Краткая информация о сборе данных
+                            HStack(spacing: Spacing.xs) {
+                                Image(systemName: "info.circle.fill")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.textSecondary)
+                                
+                                Text("Мы собираем только обезличенные данные для обеспечения безопасности. Подробнее в ")
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                    .multilineTextAlignment(.leading)
+                                
+                                Button(action: {
+                                    showPrivacyPolicy = true
+                                }) {
+                                    Text("Политике конфиденциальности")
+                                        .font(.caption)
+                                        .foregroundColor(.primaryBlue)
+                                        .underline()
+                                }
+                            }
+                            .padding(.horizontal, Spacing.screenPadding)
+                            
+                            // Чекбокс согласия
+                            HStack(spacing: Spacing.s) {
+                                Button(action: {
+                                    withAnimation {
+                                        dataConsentAccepted.toggle()
+                                    }
+                                    HapticFeedback.selection()
+                                }) {
+                                    Image(systemName: dataConsentAccepted ? "checkmark.square.fill" : "square")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(dataConsentAccepted ? .primaryBlue : .textSecondary)
+                                }
+                                
+                                Text("Я согласен с обработкой данных")
+                                    .font(.caption)
+                                    .foregroundColor(.textPrimary)
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal, Spacing.screenPadding)
+                        }
+                        .padding(.top, Spacing.s)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                    }
                     
                     // Дополнительные кнопки на последнем слайде
                     if currentPage == pages.count - 1 {
@@ -348,6 +405,9 @@ struct OnboardingScreen: View {
             QRScannerModal(
                 isPresented: $showQRScanner
             )
+        }
+        .sheet(isPresented: $showPrivacyPolicy) {
+            PrivacyPolicyScreen()
         }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("onboarding_lang_\(localizationManager.currentLanguage.rawValue)")
