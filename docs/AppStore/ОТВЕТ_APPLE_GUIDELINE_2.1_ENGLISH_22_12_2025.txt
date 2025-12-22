@@ -1,0 +1,350 @@
+RESPONSE TO APPLE - GUIDELINE 2.1 - INFORMATION NEEDED
+
+December 22, 2025
+
+Dear App Review Team,
+
+Thank you for your questions. Below are detailed answers to all questions.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. WHAT TOOLS, UTILITIES, FRAMEWORKS OR APIs ARE USED?
+
+Security features:
+
+• LocalAuthentication (iOS) - Biometric authentication (Face ID/Touch ID). Data is processed only on the device.
+
+• CryptoKit (iOS) - Local data encryption (AES-256-GCM). Data is encrypted locally.
+
+• Security framework (iOS) - Keychain Services for secure token storage. Data is stored only locally.
+
+• URLSession (iOS) - Network requests via HTTPS/TLS 1.2+ for backend communication.
+
+• Alamofire (v5.8) - HTTP client. Does not collect user data.
+
+• KeychainAccess (v4.2) - Keychain wrapper. Does not collect user data.
+
+Parental control features:
+
+• SwiftUI (iOS) - User interface.
+
+• UserDefaults (iOS) - Local storage of parental control settings.
+
+• Combine (iOS) - State management.
+
+• Custom REST API - Own backend server for obtaining data about (User ID, Device ID, Family ID) users and their statistics.
+
+NetworkExtension is not used and ScreenTime framework is not used.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2. DOES THE APP COLLECT, STORE OR TRANSMIT USER DATA?
+
+The app collects, stores and transmits De-identified data for security purposes.
+
+What is collected:
+
+• Anonymous identifiers (User ID, Device ID, Family ID)
+
+• Technical data (device type, iOS version, app version)
+
+• Security statistics (de-identified: number of threats, threat type, without details)
+
+• Function usage statistics (on/off protection, parental control usage)
+
+What is NOT collected:
+
+• Names, surnames, dates of birth, addresses, phones, email
+
+• Passport data, SNILS, TIN
+
+• Financial and medical data
+
+• Website visit history, message content, passwords
+
+• Geolocation
+
+Where stored:
+
+• Locally: UserDefaults, Keychain (encrypted), local memory
+
+• On server: De-identified statistics on backend server (Russia)
+
+Transmission: Only via HTTPS/TLS 1.2+, de-identified data
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+3. WHAT DATA IS COLLECTED, HOW IS IT USED AND IS IT TRANSMITTED FROM THE DEVICE?
+
+Detailed list:
+
+1. Registration data (anonymous):
+
+   • Family role (Mom-Dad-Son-Daughter-Grandmother-Grandfather), age group 5-60+
+
+   • Usage: Interface and function configuration
+
+   • Transmission: In de-identified form
+
+2. Device technical data:
+
+   • Device type, model, iOS version
+
+   • Usage: Compatibility and performance improvement
+
+   • Transmission: Yes, for technical support
+
+3. Threat statistics (de-identified):
+
+   • Number of threats, threat type (category), detection time
+
+   • Usage: Statistics display and protection improvement
+
+   • Transmission: Yes, in aggregated form (without details about websites/applications)
+
+4. Function usage statistics:
+
+   • Usage, parental control, AI assistant
+
+   • Usage: Functionality improvement
+
+   • Transmission: Yes, in de-identified form
+
+5. Access tokens:
+
+   • JWT tokens for authorization
+
+   • Usage: Authentication for API requests
+
+   • Transmission: Yes, with each request (standard practice)
+
+   • Storage: Locally in Keychain (encrypted)
+
+6. App settings:
+
+   • Security settings, parental control, language
+
+   • Usage: Saving user preferences
+
+   • Transmission: NO, stored only locally
+
+7. Biometric data:
+
+   • Face ID / Touch ID
+
+   • Usage: Local authentication
+
+   • Transmission: NO, processed only locally in Secure Enclave
+
+Process: Collection → De-identification → Encryption → Transmission (HTTPS) → Storage on server
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4. IS DATA COLLECTED FOR AD TARGETING OR APP ANALYTICS?
+
+No, data is not collected for ad targeting.
+
+App analytics:
+
+• Collected: Function usage events, technical events, statistics (without personal data)
+
+• Usage: Performance improvement, error correction, optimization
+
+• Current state: Firebase SDK is NOT connected (commented out), only our backend API is used
+
+Advertising:
+
+• NO advertising in the app
+
+• Advertising SDKs are NOT used (Google AdMob, Facebook, etc.)
+
+• Data is NOT collected for ad targeting
+
+• Data is NOT transmitted to third parties for advertising
+
+Third-Party Analytics:
+
+• Firebase Analytics is NOT used (SDK commented out)
+
+• Google Analytics, Facebook Analytics, Adjust, AppsFlyer are NOT used
+
+• Only used: Own backend API (de-identified data)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+5. HOW IS DATA COLLECTION, STORAGE OR TRANSMISSION DISCLOSED TO USERS?
+
+Information disclosure:
+
+1. Privacy policy in the app:
+
+   • Screen: Settings → Privacy Policy
+
+   • Content: What is collected, what is NOT collected, how data is used, where stored, user rights, retention periods
+
+2. Terms of service:
+
+   • Screen: Settings → Terms of Service
+
+   • Content: Usage rules, responsibility, data policy
+
+3. Onboarding (first launch):
+
+   • Brief information about data collection
+
+   • Link to full privacy policy
+
+   • User consent
+
+4. App settings:
+
+   • "Privacy" section
+
+   • Links to policy and terms
+
+   • Privacy settings
+
+5. Within the app:
+
+   • Information in understandable form
+
+6. Updates:
+
+   • Current version is always available in the app
+
+   • Last update date is displayed in privacy policy
+
+   • Users can check changes at any time via Settings → Privacy Policy
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+6. WHAT ARE THE DATA RETENTION POLICIES AND WHERE ARE THEY DOCUMENTED?
+
+Retention policies:
+
+Local data (on device):
+
+• Settings: Until app deletion
+
+• Tokens: In Keychain until app deletion or logout
+
+• Encryption keys: In Keychain until app deletion
+
+• Cache: Automatically cleared when space is low
+
+Data on server:
+
+• Anonymous session IDs: 24 hours
+
+• Threat statistics: 30 days (de-identified)
+
+• Aggregated analytics: 1 year
+
+• Technical logs: 7 days
+
+Data deletion:
+
+• When account is deleted, all data is deleted within 30 days
+
+• Local data is deleted immediately when app is deleted
+
+• User can request data deletion by contacting support (contacts are indicated in privacy policy)
+
+Where documented:
+
+• In the app: Settings → Privacy Policy → "Data Retention Periods" section
+
+• In privacy policy: Complete information about retention policy and data deletion procedure
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+7. IS USER DATA SHARED WITH THIRD PARTIES? IF SO, WITH WHOM AND FOR WHAT PURPOSE?
+
+User data is not shared with third parties.
+
+Exceptions (technical services):
+
+1. Backend server (our own):
+
+   • Data: De-identified data for security
+
+   • Purpose: Functionality provision, threat protection
+
+   • Location: Servers in Russia
+
+   
+
+What is NOT shared:
+
+• Data is NOT shared with advertising networks
+
+• Data is NOT shared with analytics services (Firebase, Google Analytics)
+
+• Data is NOT shared with social networks
+
+• Data is NOT shared with payment systems (except Apple for IAP)
+
+• Personal data is NOT shared
+
+Third-Party SDK:
+
+• Only libraries for technical functions are used:
+
+  - Alamofire (HTTP client) - does not collect data
+
+  - KeychainAccess (Keychain) - does not collect data
+
+  - Lottie (animations) - does not collect data
+
+  - SDWebImageSwiftUI (images) - does not collect data
+
+All libraries do not collect and do not transmit user data.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SUMMARY:
+
+✅ WHAT WE DO:
+
+• Collect only de-identified data for security
+
+• Store data locally and on our server
+
+• Transmit data only to our backend server
+
+• Use data only for security and functionality
+
+• Disclose information through privacy policy
+
+• Provide users with control over data
+
+❌ WHAT WE DO NOT DO:
+
+• DO NOT collect personal data
+
+• DO NOT use data for ad targeting
+
+• DO NOT share data with third parties (except technical services)
+
+• DO NOT use advertising SDKs
+
+• DO NOT use third-party analytics services
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If the App Review team has additional questions, we are ready to provide any additional information.
+
+Contacts:
+
+• Email: sergey21-02-84@list.ru
+
+• Phone: +7 (927) 005-15-77
+
+Best regards,
+
+Sergey Khlystov
+
+ALADDIN
+
+December 22, 2025
+

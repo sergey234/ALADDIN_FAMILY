@@ -1,0 +1,28 @@
+Good day, Vadim!
+
+Thank you for your message. My work phone number is: +7 (927) 005-15-77. I have added your number +1-669-227-9865 to my contacts.
+
+I am glad that things have moved forward. I am ready to interact by phone.
+
+Question: Do you have Russian-language support? If yes, it would be convenient to have a call in Russian.
+
+We can also communicate here (in App Store Connect) or by email - whichever is more convenient for you.
+
+I would like to inform you that I have responded to Apple's request regarding Guideline 2.1 - Information Needed and provided detailed answers to all questions:
+
+1. What tools, utilities, frameworks or APIs are used?
+2. Does the app collect, store or transmit user data?
+3. What data is collected, how is it used and is it transmitted from the device?
+4. Is data collected for ad targeting or app analytics?
+5. How is data collection, storage or transmission disclosed to users?
+6. What are the data retention policies and where are they documented?
+7. Is user data shared with third parties? If so, with whom and for what purpose?
+
+I have also submitted a new app build for review with fixes and improvements.
+
+I am ready to discuss the app review at a time convenient for you.
+
+Best regards,
+Sergey Khlystov
+ALADDIN
+
