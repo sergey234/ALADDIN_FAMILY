@@ -145,7 +145,7 @@ struct SupportScreen: View {
         // 💻 ТЕХНИЧЕСКИЕ ВОПРОСЫ (3 вопроса)
         // ==========================================
         
-        FAQItem(icon: "💻", question: localizationManager.localized("faq_how_vpn_works"), answer: localizationManager.localized("faq_how_vpn_works_answer")),
+        FAQItem(icon: "💻", question: localizationManager.localized("faq_how_network_protection_works"), answer: localizationManager.localized("faq_how_network_protection_works_answer")),
         
         FAQItem(icon: "👨‍👩‍👧‍👦", question: localizationManager.localized("faq_parental_control_setup"), answer: localizationManager.localized("faq_parental_control_setup_answer")),
         
