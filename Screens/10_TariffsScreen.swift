@@ -44,9 +44,9 @@ struct TariffsScreen: View {
         var price: String {
             switch self {
             case .free: return "0 ₽"
-            case .personal: return "290 ₽"
-            case .family: return "490 ₽"
-            case .premium: return "990 ₽"
+            case .personal: return "100 ₽"
+            case .family: return "290 ₽"
+            case .premium: return "490 ₽"
             }
         }
         
