@@ -47,7 +47,8 @@ platform :ios do
       
       puts "📋 Проверка путей к профилям:"
       puts "   App profile: #{app_profile_file} (#{File.exist?(app_profile_file) ? '✅' : '❌'})"
-      puts "   Extension profile: #{ext_profile_file} (#{File.exist?(ext_profile_file) ? '✅' : '❌'})"
+      puts "   Extension profile (PacketTunnel): #{ext_profile_file} (#{File.exist?(ext_profile_file) ? '✅' : '❌'})"
+      puts "   Content Blocker profile: #{app_profile_file} (#{File.exist?(app_profile_file) ? '✅' : '❌'}) (использует тот же профиль, что и основное приложение)"
       
       # Создать xcconfig файл с полными путями
       xcconfig_path = "./build/Release.xcconfig"
@@ -69,13 +70,22 @@ platform :ios do
       ALADDIN_PROVISIONING_PROFILE = #{app_profile_file}
       ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
       
-      // Extension target - ПРИНУДИТЕЛЬНО Manual signing
+      // Extension target (PacketTunnel) - ПРИНУДИТЕЛЬНО Manual signing
       ALADDINPacketTunnel_CODE_SIGN_STYLE = Manual
       ALADDINPacketTunnel_DEVELOPMENT_TEAM = #{team_id}
       // НЕ указываем ALADDINPacketTunnel_CODE_SIGN_IDENTITY - Xcode выберет из профиля
       ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER = #{ext_profile_uuid}
       ALADDINPacketTunnel_PROVISIONING_PROFILE = #{ext_profile_file}
       ALADDINPacketTunnel_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel
+      
+      // Content Blocker Extension target - ПРИНУДИТЕЛЬНО Manual signing
+      // Используем тот же профиль, что и для основного приложения (они в одной App Group)
+      ALADDINContentBlocker_CODE_SIGN_STYLE = Manual
+      ALADDINContentBlocker_DEVELOPMENT_TEAM = #{team_id}
+      // НЕ указываем ALADDINContentBlocker_CODE_SIGN_IDENTITY - Xcode выберет из профиля
+      ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = #{app_profile_uuid}
+      ALADDINContentBlocker_PROVISIONING_PROFILE = #{app_profile_file}
+      ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker
     XCCONFIG
     
       File.write(xcconfig_path, xcconfig_content)
@@ -107,6 +117,9 @@ platform :ios do
         "ALADDINPacketTunnel_CODE_SIGN_STYLE=Manual",
         "ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER=#{ext_profile_uuid}",
         "ALADDINPacketTunnel_PROVISIONING_PROFILE='#{ext_profile_file}'",
+        "ALADDINContentBlocker_CODE_SIGN_STYLE=Manual",
+        "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
+        "ALADDINContentBlocker_PROVISIONING_PROFILE='#{app_profile_file}'",
         "-allowProvisioningUpdates"
       ].join(" ")
       
@@ -137,7 +150,7 @@ platform :ios do
       
       if bundle_id.include?("family.aladdin.ios.packetTunnel")
         ext_profile_uuid = uuid
-      elsif bundle_id.include?("family.aladdin.ios") && !bundle_id.include?("packetTunnel")
+      elsif bundle_id.include?("family.aladdin.ios") && !bundle_id.include?("packetTunnel") && !bundle_id.include?("ALADDINContentBlocker")
         app_profile_uuid = uuid
       end
     end
@@ -145,6 +158,9 @@ platform :ios do
     if app_profile_uuid.nil? || ext_profile_uuid.nil?
       UI.user_error!("❌ Не удалось найти UUID профилей для экспорта")
     end
+    
+    # Content Blocker использует тот же профиль, что и основное приложение
+    content_blocker_profile_uuid = app_profile_uuid
     
     # Создать ExportOptions.plist
     export_options_path = "./build/ExportOptions.plist"
@@ -154,7 +170,8 @@ platform :ios do
       signingStyle: "manual",
       provisioningProfiles: {
         "family.aladdin.ios" => app_profile_uuid,
-        "family.aladdin.ios.packetTunnel" => ext_profile_uuid
+        "family.aladdin.ios.packetTunnel" => ext_profile_uuid,
+        "family.aladdin.ios.ALADDINContentBlocker" => content_blocker_profile_uuid
       }
     }
     
