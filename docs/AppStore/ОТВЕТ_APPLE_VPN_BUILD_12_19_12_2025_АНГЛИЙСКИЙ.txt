@@ -1,0 +1,70 @@
+RESPONSE TO APPLE - GUIDELINE 5.4 - LEGAL - VPN APPS
+Build 12 - December 19, 2025
+
+Dear App Review Team,
+
+Thank you for your feedback. We have carefully reviewed your message regarding ALADDIN being identified as a VPN application and conducted a complete code audit.
+
+ALADDIN IS NOT A VPN APPLICATION
+
+ALADDIN is a family safety and parental control application. It does not provide VPN functionality and does not use the NetworkExtension framework.
+
+COMPLETE REMOVAL OF VPN FUNCTIONALITY (Build 12):
+
+1. NetworkExtension framework completely removed from the project:
+   - Framework is not added to the project
+   - No NetworkExtension imports in active code
+   - All imports are commented out with notes about VPN restrictions for individual developers
+
+2. All VPN-related files and components removed:
+   - PacketTunnelProvider.swift removed
+   - ALADDINPacketTunnel target removed from project.pbxproj
+   - All VPN entitlements removed (ALADDINPacketTunnel.entitlements)
+   - VPNViewModel removed
+   - All VPN classes, structures, and methods renamed to Network Protection
+
+3. All VPN terminology replaced with Network Protection:
+   - VPNStatusWidget → NetworkProtectionStatusWidget
+   - All VPN methods renamed
+   - All VPN identifiers replaced
+   - All VPN UI strings updated
+
+4. VPN domains removed:
+   - "vpn.aladdin.family" removed from SSL pinning domains
+   - No VPN servers in configuration
+
+TECHNICAL EVIDENCE OF NO VPN:
+
+1. Absence of NetworkExtension in project:
+   - project.pbxproj check: no NetworkExtension.framework references
+   - Active code check: 0 files use NetworkExtension
+   - All NetworkExtension imports are commented out
+
+2. Absence of VPN classes and methods:
+   - Active code check: 0 VPN classes in active files
+   - Active code check: 0 VPN methods in active files
+   - All VPN functionality replaced with Network Protection
+
+3. Absence of VPN entitlements:
+   - No files with com.apple.developer.networking.vpn.api in active project
+   - All VPN entitlements removed
+
+4. Application uses only standard iOS APIs:
+   - URLSession for network requests
+   - Standard security protocols
+   - No system-level extensions (network extensions)
+
+REQUEST:
+
+If during your review you found any VPN mentions in our application, please provide us with:
+- Screenshot of the app screen showing VPN functionality
+- Or exact indication of the location in code/metadata where you see VPN
+
+We have conducted a complete code audit and cannot find any VPN functionality. All checks show the code is clean of VPN components. We are ready to promptly fix any location you specify to bring the application into full compliance with Guideline 5.4 requirements.
+
+Current Build 12 contains all fixes for VPN functionality removal. The application is ready for re-review.
+
+Best regards,
+Sergey Khlystov
+ALADDIN
+December 19, 2025

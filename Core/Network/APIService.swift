@@ -74,6 +74,20 @@ class APIService {
         networkManager.post(endpoint: AppConfig.Endpoint.addFamilyMember, body: AddMemberRequest(name: name, role: role), completion: completion)
     }
     
+    /**
+     * Удаление участника семьи (async версия для CachedAPIService)
+     */
+    func removeFamilyMember(_ memberId: String) async throws -> FamilyMemberResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            struct RemoveMemberRequest: Codable {
+                let memberId: String
+            }
+            networkManager.delete(endpoint: AppConfig.Endpoint.removeFamilyMember, body: RemoveMemberRequest(memberId: memberId)) { (result: Result<FamilyMemberResponse, Error>) in
+                continuation.resume(with: result)
+            }
+        }
+    }
+    
     func getFamilyStats(completion: @escaping (Result<FamilyStatsResponse, Error>) -> Void) {
         networkManager.get(endpoint: AppConfig.Endpoint.familyStats, completion: completion)
     }

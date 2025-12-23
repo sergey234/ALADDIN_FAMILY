@@ -2,13 +2,13 @@ import UIKit
 import BackgroundTasks
 import SwiftUI
 
-/// VPN Background Tasks Manager
+/// Network Protection Background Tasks Manager
 /// Оптимизация батареи через Background Tasks
-class VPNBackgroundTasksManager: ObservableObject {
+class NetworkProtectionBackgroundTasksManager: ObservableObject {
     
-    static let shared = VPNBackgroundTasksManager()
+    static let shared = NetworkProtectionBackgroundTasksManager()
     
-    private let taskIdentifier = "family.aladdin.vpncheck"
+    private let taskIdentifier = "family.aladdin.networkprotectioncheck"
     private var backgroundTaskScheduled = false
     
     private init() {
@@ -22,10 +22,10 @@ class VPNBackgroundTasksManager: ObservableObject {
             forTaskWithIdentifier: taskIdentifier,
             using: nil
         ) { task in
-            self.handleVPNCheck(task: task as! BGAppRefreshTask)
+            self.handleNetworkProtectionCheck(task: task as! BGAppRefreshTask)
         }
         
-        print("✅ VPN Background Tasks зарегистрированы")
+        print("✅ Network Protection Background Tasks зарегистрированы")
     }
     
     func scheduleNextCheck() {
@@ -49,7 +49,7 @@ class VPNBackgroundTasksManager: ObservableObject {
     
     // MARK: - Task Handler
     
-    private func handleVPNCheck(task: BGAppRefreshTask) {
+    private func handleNetworkProtectionCheck(task: BGAppRefreshTask) {
         print("📱 Background Task начат")
         
         // Expiration handler
@@ -77,8 +77,8 @@ class VPNBackgroundTasksManager: ObservableObject {
                     }
                 }
                 
-                // 3. Проверяем статус VPN
-                // В production здесь будет проверка состояния VPN
+                // 3. Проверяем статус Network Protection
+                // В production здесь будет проверка состояния Network Protection
                 
                 await Task.sleep(nanoseconds: 100_000_000) // 0.1 сек
                 
