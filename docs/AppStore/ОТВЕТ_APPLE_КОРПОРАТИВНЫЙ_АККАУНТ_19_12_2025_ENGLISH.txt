@@ -1,0 +1,46 @@
+RESPONSE TO APPLE - GUIDELINE 5.4 - DEVELOPER ACCOUNT
+Build 13 - December 19, 2025
+
+Dear App Review Team,
+
+Thank you for your feedback. We would like to clarify the following:
+
+ALADDIN IS NOT A VPN APPLICATION
+
+We understand that you mentioned the need to submit the app from a company Apple Developer Program account. However, we would like to emphasize:
+
+1. ALADDIN is a family safety and parental control application
+2. The application does not provide VPN functionality
+3. All VPN functionality has been completely removed from the application (Build 13)
+
+TECHNICAL CONFIRMATION:
+
+In Build 13, we completely removed all VPN components:
+- NetworkExtension framework is not used (0 active imports)
+- VPN Extension Target removed (ALADDINPacketTunnel)
+- VPN Entitlements removed
+- All VPN API calls absent (0 active calls)
+- All VPN components renamed to "Network Protection"
+- VPN domains removed from configuration
+- Verification of all IPA file components: VPN absent
+
+REQUEST:
+
+Since we have completely removed all VPN functionality and the application is not a VPN application, we request that you:
+
+1. Conduct a re-review of Build 13 taking into account that all VPN functionality has been removed
+2. If you still see VPN functionality in the application, please indicate specific locations:
+   - Screenshot of the app screen showing VPN functionality
+   - Or exact indication in code/metadata where you see VPN
+   - Or specific component that you consider VPN functionality
+
+3. If the requirement for a company account is related to the application still being classified as VPN, we are ready to provide additional technical documentation confirming the absence of VPN functionality
+
+We are confident that after removing all VPN functionality, the company account requirement should not apply to our application, as it is not a VPN application.
+
+Build 13 is ready for re-review.
+
+Best regards,
+Sergey Khlystov
+ALADDIN
+December 19, 2025

@@ -1,0 +1,111 @@
+╔══════════════════════════════════════════════════════════════╗
+║  ВОПРОСЫ ДЛЯ APPLE REVIEW TEAM ОБ ОПИСАНИЯХ ПОДПИСОК      ║
+╚══════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📧 ВОПРОС НА АНГЛИЙСКОМ:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Dear App Review Team,
+
+Thank you for your feedback regarding the ALADDIN Family subscription.
+
+To ensure we provide the correct subscription description that meets Apple's guidelines, could you please clarify what specifically was not acceptable in our current subscription descriptions (55 character limit) for both:
+
+• English (United States) localization
+• Russian localization
+
+Our current descriptions were:
+- English: "Up to 6 devices, parental control, protection."
+- Russian: "До 6 уст-в. Родительский контроль. Полная защита семьи"
+
+Please let us know:
+1. What specific issues need to be corrected?
+2. Are there any guidelines or requirements we should follow for subscription descriptions within the 55-character limit?
+3. What would be an acceptable format for describing subscription features in this limited space?
+
+We want to ensure our subscription descriptions are compliant with Apple's guidelines and provide clear value to users.
+
+Thank you for your assistance.
+
+Best regards,
+Sergey Khlystov
+ALADDIN Development Team
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📧 ВОПРОС НА РУССКОМ:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Уважаемая команда App Review,
+
+Благодарим за обратную связь по подписке ALADDIN Family.
+
+Чтобы обеспечить корректное описание подписки, соответствующее требованиям Apple, не могли бы вы уточнить, что именно не устроило вас в наших текущих описаниях подписки (лимит 55 символов) для обеих локализаций:
+
+• Английская локализация (США)
+• Русская локализация
+
+Наши текущие описания были:
+- Английский: "Up to 6 devices, parental control, protection."
+- Русский: "До 6 уст-в. Родительский контроль. Полная защита семьи"
+
+Пожалуйста, сообщите нам:
+1. Какие именно проблемы нужно исправить?
+2. Есть ли какие-то конкретные требования или рекомендации для описаний подписок в рамках лимита 55 символов?
+3. Какой формат описания функций подписки будет приемлемым в таком ограниченном пространстве?
+
+Мы хотим убедиться, что наши описания подписок соответствуют требованиям Apple и четко показывают ценность для пользователей.
+
+Благодарим за помощь.
+
+С уважением,
+Сергей Хлыстов
+Команда разработки ALADDIN
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 КРАТКАЯ ВЕРСИЯ (если нужно более короткое письмо):
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ENGLISH:
+
+Dear App Review Team,
+
+Could you please clarify what specifically was not acceptable in our subscription descriptions (55 character limit) for English (US) and Russian localizations?
+
+Our current descriptions:
+- English: "Up to 6 devices, parental control, protection."
+- Russian: "До 6 уст-в. Родительский контроль. Полная защита семьи"
+
+What specific issues need to be corrected to meet Apple's guidelines?
+
+Thank you.
+
+Best regards,
+Sergey Khlystov
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+RUSSIAN:
+
+Уважаемая команда App Review,
+
+Не могли бы вы уточнить, что именно не устроило вас в наших описаниях подписки (лимит 55 символов) для английской (США) и русской локализаций?
+
+Наши текущие описания:
+- Английский: "Up to 6 devices, parental control, protection."
+- Русский: "До 6 уст-в. Родительский контроль. Полная защита семьи"
+
+Какие именно проблемы нужно исправить, чтобы соответствовать требованиям Apple?
+
+Спасибо.
+
+С уважением,
+Сергей Хлыстов
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -1,0 +1,121 @@
+КОМАНДЫ ДЛЯ КОММИТА ИЗМЕНЕНИЙ VPN → NETWORK PROTECTION
+Дата: 19 декабря 2025
+
+========================================
+ШАГ 1: ПЕРЕЙТИ В ПАПКУ ПРОЕКТА
+========================================
+
+cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+
+
+========================================
+ШАГ 2: ДОБАВИТЬ ВСЕ ИЗМЕНЕННЫЕ ФАЙЛЫ
+========================================
+
+git add ALADDINWidgets/ALADDINWidgets.swift
+git add ALADDINWidgets/SharedDataManager.swift
+git add Core/Analytics/AnalyticsManager.swift
+git add Core/Analytics/AnalyticsService.swift
+git add Core/Cache/CachedAPIService.swift
+git add Core/Localization/LocalizationManager.swift
+git add Core/Models/APIModels.swift
+git add Core/Navigation/NavigationManager.swift
+git add Core/Network/NetworkManager.swift
+git add Core/NetworkProtection/NetworkProtectionManager.swift
+git add Core/Notifications/NotificationManager.swift
+git add Core/Offline/OfflineStorageManager.swift
+git add Screens/24_NetworkProtectionEnergyStatsScreen.swift
+git add Screens/NotificationSettingsScreen.swift
+git add Screens/SecurityEducationScreen.swift
+git add Screens/SimpleTermsOfServiceScreen.swift
+git add Tests/NetworkProtectionIntegrationTest.swift
+
+# Удалить старые файлы VPN (если они еще есть)
+git rm Core/VPN/VPNBackgroundTasksManager.swift 2>/dev/null || true
+git rm Tests/VPNIntegrationTest.swift 2>/dev/null || true
+
+
+========================================
+ШАГ 3: ПРОВЕРИТЬ ЧТО ДОБАВЛЕНО
+========================================
+
+git status
+
+
+========================================
+ШАГ 4: КОММИТ
+========================================
+
+git commit -m "Remove all VPN references - Replace with Network Protection
+
+- Remove VPN domain from SSL pinning (NetworkManager)
+- Rename all VPN classes, methods, and identifiers to Network Protection
+- Update notification categories and settings (NotificationManager)
+- Rename widgets: VPNStatusWidget → NetworkProtectionStatusWidget
+- Update data managers: VPN → Network Protection
+- Update UI strings in all screens
+- Remove deprecated VPN navigation method
+- Rename analytics: AnalyticsVPNStats → AnalyticsNetworkProtectionStats
+
+All changes comply with Apple Guideline 5.4 - VPN Apps
+ALADDIN is NOT a VPN application - it is a Family Safety app"
+
+
+========================================
+ШАГ 5: ОТПРАВИТЬ В GITHUB
+========================================
+
+git push
+
+
+========================================
+АЛЬТЕРНАТИВНО: ВСЕ В ОДНУ КОМАНДУ
+========================================
+
+cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS && \
+git add ALADDINWidgets/ALADDINWidgets.swift \
+        ALADDINWidgets/SharedDataManager.swift \
+        Core/Analytics/AnalyticsManager.swift \
+        Core/Analytics/AnalyticsService.swift \
+        Core/Cache/CachedAPIService.swift \
+        Core/Localization/LocalizationManager.swift \
+        Core/Models/APIModels.swift \
+        Core/Navigation/NavigationManager.swift \
+        Core/Network/NetworkManager.swift \
+        Core/NetworkProtection/NetworkProtectionManager.swift \
+        Core/Notifications/NotificationManager.swift \
+        Core/Offline/OfflineStorageManager.swift \
+        Screens/24_NetworkProtectionEnergyStatsScreen.swift \
+        Screens/NotificationSettingsScreen.swift \
+        Screens/SecurityEducationScreen.swift \
+        Screens/SimpleTermsOfServiceScreen.swift \
+        Tests/NetworkProtectionIntegrationTest.swift && \
+git commit -m "Remove all VPN references - Replace with Network Protection
+
+- Remove VPN domain from SSL pinning
+- Rename all VPN classes, methods, and identifiers to Network Protection
+- Update notification categories and settings
+- Rename widgets and data managers
+- Update UI strings
+- Remove deprecated VPN navigation method
+
+All changes comply with Apple Guideline 5.4 - VPN Apps
+ALADDIN is NOT a VPN application" && \
+git push
+
+
+========================================
+ВАЖНО: НЕ КОММИТИТЬ
+========================================
+
+❌ НЕ добавлять файлы:
+- ALADDIN.xcodeproj/project.xcworkspace/xcuserdata/ (пользовательские настройки)
+- docs/.DS_Store (системные файлы macOS)
+- BACKUPS/ папки
+- *backup*.swift файлы
+- Локальные настройки проекта
+
+✅ Коммитить только:
+- Активные Swift файлы с исправлениями
+- Новые файлы NetworkProtection
+- Удаленные VPN файлы

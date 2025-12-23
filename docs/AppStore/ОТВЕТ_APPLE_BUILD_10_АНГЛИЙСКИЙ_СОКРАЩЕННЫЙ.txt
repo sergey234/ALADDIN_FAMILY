@@ -1,0 +1,133 @@
+Response to Apple - Build 10
+
+GUIDELINE 5.4 - LEGAL - VPN APPS
+
+Dear App Review Team,
+
+On December 12-15, 2025, we completely removed all VPN functionality and VPN terminology from the ALADDIN app.
+
+VPN Removal - December 15, 2025 (Build 10):
+
+1. Updating All References in Active Code (December 15, 2025)
+
+We updated 46+ places where VPN models were used in the following files:
+
+Core/Network/APIService.swift, Core/Network/MockAPIService.swift, Core/Cache/CachedAPIService.swift, Core/VPN/NetworkProtectionManager.swift, Screens/03_NetworkProtectionScreen.swift
+
+2. Complete Removal of VPNViewModel (December 15, 2025, Build 10):
+
+VPNViewModel has been completely removed from the project:
+
+The ViewModels/VPNViewModel.swift file has been completely removed from the project
+
+Updated Screens/01_MainScreen.swift - completely removed VPNViewModel usage
+
+Removed all references to VPNViewModel.swift from project.pbxproj
+
+VPNViewModel no longer exists in the compiled binary file
+
+3. Previous Removals (December 12-15, 2025):
+
+VPN Functionality Removal - December 12, 2025:
+
+Completely removed target ALADDINPacketTunnel from Xcode project
+
+Removed VPN capabilities from project Entitlements file
+
+Commented out all NetworkExtension methods
+
+Replaced connect() and disconnect() methods with stubs
+
+VPN Files Removal - December 15, 2025:
+
+Completely removed PacketTunnelProvider.swift file from project
+
+Removed NetworkExtension.framework from project
+
+Removed all VPN-related entitlements files
+
+Removed references to VPN files from project.pbxproj
+
+Final Result:
+
+All VPN terminology removed from active code:
+
+VPNViewModel completely removed from project and binary file
+
+All VPN-related classes, structures and properties removed
+
+ALADDIN IS NOT A VPN APPLICATION
+
+The app is a family safety and parental control application
+
+The app does not provide VPN functionality
+
+The app does not use NetworkExtension framework
+
+GUIDELINE 2.1 - PERFORMANCE - APP COMPLETENESS (SUBSCRIPTION ERROR ON IPAD)
+
+Clarification: In the current version, the ALADDIN app is optimized and tested only for iPhone. iPad support is disabled in project settings. As we previously notified you in our letter dated December 5, 2025, the current version of the mobile app is not intended for iPad.
+
+Technical Project Settings:
+
+TARGETED_DEVICE_FAMILY = "1" (iPhone only) set in project settings
+
+LSRequiresIPhoneOS = true set in Info.plist
+
+App compiled only for iPhone
+
+App is not intended for installation on iPad in current version
+
+Users will not be able to download the app on iPad from App Store
+
+Our Positioning:
+
+1. The app is not intended for installation on iPad in the current version
+
+2. We have not tested the app on iPad. We plan to add iPad support in the near future in upcoming updates.
+
+3. All app functions have been tested on iPhone
+
+4. iPad support will be considered in future versions after full interface adaptation.
+
+The error on iPad is not an issue, as the app is currently not fully adapted for iPad in the current version.
+
+GUIDELINE 2.1 - APP COMPLETENESS (IAP PRODUCTS NOT SUBMITTED)
+
+Products Submitted:
+
+We have submitted all 4 in-app purchase products for review:
+
+1. family.aladdin.ios.subscription.basic.v2 - Basic subscription
+
+2. family.aladdin.ios.subscription.individual.v2 - Individual subscription
+
+3. family.aladdin.ios.subscription.family - Family subscription
+
+4. family.aladdin.ios.subscription.premium - Premium subscription
+
+For each product, we have provided:
+
+Product ID
+
+Reference Name
+
+Subscription Group
+
+Subscription Duration (1 month)
+
+Prices for all countries
+
+Localized Descriptions (Russian + English)
+
+App Review screenshots (required) - added for each product
+
+New Binary File:
+
+Uploaded new binary file (Build 10, version 1.0), compatible with submitted products
+
+Best regards,
+
+Sergey Khlystov ALADDIN
+
+Date: December 16, 2025

@@ -20,7 +20,16 @@ I would like to inform you that I have responded to Apple's request regarding Gu
 
 I have also submitted a new app build for review with fixes and improvements.
 
-I am ready to discuss the app review at a time convenient for you.
+I have a question regarding subscription rejections. I am receiving rejections for subscriptions in the "Localization and Images" section, but I cannot understand the exact reasons. I have studied Apple's documentation and, as far as I understand, I am meeting all the requirements, but subscriptions continue to be rejected.
+
+Could you please tell me the specific reasons for rejection? It is important for me to understand:
+- What exactly are the localization requirements that are not being met?
+- What are the issues with subscription images?
+- What exactly needs to be fixed for subscriptions to be approved?
+
+I am ready to make all necessary corrections, but I need specific information about what exactly does not meet Apple's requirements. I would be very grateful for your help with this matter.
+
+I am ready to discuss the app review and subscription questions at a time convenient for you.
 
 Best regards,
 Sergey Khlystov

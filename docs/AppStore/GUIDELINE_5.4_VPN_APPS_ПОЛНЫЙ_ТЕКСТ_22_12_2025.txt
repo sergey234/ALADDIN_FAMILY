@@ -1,0 +1,78 @@
+╔══════════════════════════════════════════════════════════════╗
+║  APPLE GUIDELINE 5.4 - LEGAL - VPN APPS                     ║
+║  Полный текст и дословный перевод на русский                ║
+║  22 декабря 2025                                            ║
+╚══════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 ОРИГИНАЛЬНЫЙ ТЕКСТ (ENGLISH):
+
+5.4 VPN Apps
+
+Apps offering VPN services must utilize the NEVPNManager API and may only be offered by developers enrolled as an organization. You must make a clear declaration of what user data will be collected and how it will be used on an app screen prior to any user action to purchase or otherwise use the service. Apps offering VPN services may not sell, use, or disclose to third parties any data for any purpose, and must commit to this in their privacy policy. VPN apps must not violate local laws, and if you choose to make your VPN app available in a territory that requires a VPN license, you must provide your license information in the App Review Notes field. Parental control, content blocking, and security apps, among others, from approved providers may also use the NEVPNManager API. Apps that do not comply with this guideline will be removed from the App Store and you may be removed from the Apple Developer Program.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 ДОСЛОВНЫЙ ПЕРЕВОД НА РУССКИЙ:
+
+5.4 VPN-приложения
+
+Приложения, предлагающие VPN-услуги, должны использовать API NEVPNManager и могут предлагаться только разработчиками, зарегистрированными как организация. Вы должны сделать четкое заявление о том, какие пользовательские данные будут собираться и как они будут использоваться на экране приложения до любого действия пользователя по покупке или иному использованию услуги. Приложения, предлагающие VPN-услуги, не могут продавать, использовать или раскрывать третьим лицам любые данные для каких-либо целей, и должны взять на себя это обязательство в своей политике конфиденциальности. VPN-приложения не должны нарушать местные законы, и если вы решите сделать свое VPN-приложение доступным на территории, которая требует лицензии VPN, вы должны предоставить информацию о вашей лицензии в поле App Review Notes. Приложения для родительского контроля, блокировки контента и безопасности, среди прочих, от одобренных поставщиков также могут использовать API NEVPNManager. Приложения, которые не соответствуют этому руководству, будут удалены из App Store, и вы можете быть удалены из программы Apple Developer Program.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔑 КЛЮЧЕВЫЕ ПУНКТЫ:
+
+1. "Apps offering VPN services" - "Приложения, предлагающие VPN-услуги"
+   - Guideline применяется ТОЛЬКО к приложениям, которые ПРЕДЛАГАЮТ VPN-услуги
+
+2. "must utilize the NEVPNManager API" - "должны использовать API NEVPNManager"
+   - Требование обязательно только для VPN-приложений
+
+3. "may only be offered by developers enrolled as an organization"
+   - "могут предлагаться только разработчиками, зарегистрированными как организация"
+   - Это требование только для VPN-приложений
+
+4. "Parental control, content blocking, and security apps, among others, from approved providers may also use the NEVPNManager API"
+   - "Приложения для родительского контроля, блокировки контента и безопасности, среди прочих, от одобренных поставщиков также могут использовать API NEVPNManager"
+   - Важно: эти типы приложений МОГУТ использовать NEVPNManager API, но это НЕ означает, что они автоматически являются VPN-приложениями
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ ПОЧЕМУ ALADDIN НЕ ПОДПАДАЕТ ПОД GUIDELINE 5.4:
+
+1. ❌ ALADDIN НЕ ПРЕДЛАГАЕТ VPN-УСЛУГИ
+   - Приложение является приложением для семейной безопасности и родительского контроля
+   - Функция "Защита сети" НЕ является VPN-услугой
+
+2. ❌ ALADDIN НЕ ИСПОЛЬЗУЕТ NEVPNManager API
+   - Framework NetworkExtension НЕ добавлен в project.pbxproj
+   - Все импорты NetworkExtension закомментированы
+   - 0 активных вызовов VPN API в коде
+
+3. ✅ ALADDIN ЯВЛЯЕТСЯ ПРИЛОЖЕНИЕМ ДЛЯ РОДИТЕЛЬСКОГО КОНТРОЛЯ И БЕЗОПАСНОСТИ
+   - Guideline 5.4 явно упоминает "Parental control" и "security apps"
+   - Эти приложения могут использовать NEVPNManager API (но ALADDIN даже его не использует)
+
+4. ✅ ALADDIN МОЖЕТ БЫТЬ ЗАРЕГИСТРИРОВАН КАК ИНДИВИДУАЛЬНЫЙ РАЗРАБОТЧИК
+   - Требование о "organization" применяется ТОЛЬКО к VPN-приложениям
+   - ALADDIN не является VPN-приложением, поэтому это требование не применяется
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 ВЫВОД:
+
+Guideline 5.4 применяется ТОЛЬКО к приложениям, которые:
+- ПРЕДЛАГАЮТ VPN-услуги (offering VPN services)
+- ИСПОЛЬЗУЮТ NEVPNManager API для предоставления VPN-функциональности
+
+ALADDIN:
+- НЕ предлагает VPN-услуги
+- НЕ использует NEVPNManager API
+- Является приложением для родительского контроля и безопасности
+- Не должен подпадать под требования Guideline 5.4
+
+Apple ошибочно классифицировала ALADDIN как VPN-приложение.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

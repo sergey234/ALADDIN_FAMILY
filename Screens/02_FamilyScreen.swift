@@ -195,6 +195,41 @@ struct FamilyScreen: View {
         }
     }
     
+    // ✅ НОВАЯ ФУНКЦИЯ: Удаление участника семьи
+    func removeFamilyMember(_ member: FamilyMemberData) {
+        // Проверяем, что пользователь является администратором или родителем
+        guard isUserParent || isFamilyCreator else {
+            print("⚠️ Only parents or administrators can remove family members")
+            return
+        }
+        
+        // Удаляем из локального списка
+        familyMembers.removeAll { $0.id == member.id }
+        saveFamilyMembers()
+        
+        // Удаляем через API
+        Task {
+            let apiService = APIService.shared
+            let memberId = member.id.uuidString
+            
+            do {
+                let _ = try await apiService.removeFamilyMember(memberId)
+                await MainActor.run {
+                    print("✅ Successfully removed family member: \(member.name)")
+                    HapticFeedback.notification(.success)
+                }
+            } catch {
+                await MainActor.run {
+                    print("❌ Failed to remove family member: \(error.localizedDescription)")
+                    // Восстанавливаем участника в списке при ошибке
+                    familyMembers.append(member)
+                    saveFamilyMembers()
+                    HapticFeedback.notification(.error)
+                }
+            }
+        }
+    }
+    
     // Сохранение участников семьи в UserDefaults
     private func saveFamilyMembers() {
         guard let encoded = try? JSONEncoder().encode(familyMembers) else {
@@ -426,6 +461,16 @@ struct FamilyScreen: View {
                                                 self.navigateToMemberScreen(role: member.role)
                                             }
                                         )
+                                        .contextMenu {
+                                            // Показываем меню только для администраторов и родителей
+                                            if isUserParent || isFamilyCreator {
+                                                Button(role: .destructive) {
+                                                    removeFamilyMember(member)
+                                                } label: {
+                                                    Label("Удалить участника", systemImage: "trash")
+                                                }
+                                            }
+                                        }
                                     }
                                     
                                     // Additional member button (available for parents when members < 10)

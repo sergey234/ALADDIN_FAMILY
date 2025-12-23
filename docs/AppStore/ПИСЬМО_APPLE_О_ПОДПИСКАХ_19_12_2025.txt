@@ -1,0 +1,49 @@
+Subject: Subscription Description Clarification - ALADDIN Family
+
+Dear App Review Team,
+
+Thank you for your feedback regarding the subscription description for "ALADDIN Family".
+
+We would like to clarify the following details and provide an updated, more comprehensive description that meets Apple's guidelines:
+
+1. SUBSCRIPTION PERIOD:
+   - This is a MONTHLY subscription that automatically renews unless cancelled.
+   - The subscription renews monthly at the same price.
+
+2. DETAILED FEATURES INCLUDED:
+
+   The ALADDIN Family subscription provides comprehensive family digital protection:
+   
+   • Up to 6 family devices can be protected under one subscription
+   • Full parental control functionality for web browsing and mobile applications
+   • Device usage time management: set limits and schedules for screen time
+   • AI-powered risk monitoring specifically designed for children and seniors (60+)
+   • Smart device (IoT) protection for connected home devices
+
+3. PROPOSED UPDATED DESCRIPTIONS:
+
+   ENGLISH (United States):
+   "Monthly subscription. Complete family protection for up to 6 devices. Includes: full parental control for web browsing and apps, device usage time management, AI-powered risk monitoring for children and seniors (60+), and smart device (IoT) protection. Perfect for families seeking comprehensive digital safety."
+
+   RUSSIAN:
+   "Ежемесячная подписка. Полная семейная защита для до 6 устройств. Включает: полный родительский контроль веб-серфинга и приложений, управление временем использования устройств, AI-мониторинг рисков для детей и пожилых (60+), защита умных устройств (IoT). Идеально для семей, которым нужна комплексная цифровая защита."
+
+4. FUNCTIONALITY VERIFICATION:
+
+   All mentioned features are fully implemented in the application:
+   - Parental control screens are accessible and functional
+   - Device management allows adding up to 6 devices
+   - Screen time controls are operational
+   - AI risk monitoring is active for children and seniors
+   - IoT protection features are available in the settings
+
+We have also corrected the typo in the Russian description (removed abbreviation "уст-в" and replaced with full word "устройств").
+
+Please let us know if these descriptions are acceptable, or if you require any additional information or modifications.
+
+We are ready to update the subscription descriptions in App Store Connect immediately upon your approval.
+
+Best regards,
+Sergey Khlystov
+ALADDIN Development Team
+December 19, 2025

@@ -1,0 +1,78 @@
+RESPONSE TO APPLE - GUIDELINE 5.4 - RESPONSE TO REVIEW REMARKS
+Build 13 - December 19, 2025
+
+Dear App Review Team,
+
+Thank you for your feedback. We have conducted a complete code audit and confirm:
+
+ALADDIN IS NOT A VPN APPLICATION
+
+ALADDIN is a family safety and parental control application. It does not provide VPN functionality.
+
+TECHNICAL EVIDENCE OF NO VPN:
+
+1. NetworkExtension framework NOT USED:
+   - Framework is not added to project.pbxproj
+   - All NetworkExtension imports are commented out and not executed
+   - 0 active NetworkExtension imports in build code
+
+2. NO VPN EXTENSION TARGET:
+   - ALADDINPacketTunnel target completely removed from project.pbxproj
+   - PacketTunnelProvider.swift removed
+   - No VPN extension in project
+
+3. NO VPN ENTITLEMENTS:
+   - All ALADDINPacketTunnel.entitlements files removed from active project
+   - No com.apple.developer.networking.vpn.api in project
+   - project.pbxproj check: 0 VPN entitlements references
+
+4. ALL VPN COMPONENTS RENAMED:
+   - VPNStatusWidget → NetworkProtectionStatusWidget
+   - All VPN methods → Network Protection methods
+   - All VPN identifiers replaced
+   - All VPN UI strings updated
+
+5. VPN DOMAINS REMOVED:
+   - "vpn.aladdin.family" removed from SSL pinning configuration
+   - No VPN servers in settings
+
+6. VPN API CALLS ABSENT:
+   - startVPNTunnel() - not executed (commented out)
+   - stopVPNTunnel() - not executed (commented out)
+   - All VPN API methods are commented out and not compiled
+   - 0 active VPN API calls in compiled code
+
+7. APPLICATION USES ONLY STANDARD iOS APIs:
+   - URLSession for network requests
+   - Standard security protocols
+   - No system-level extensions (network extensions)
+
+8. VERIFICATION OF ALL IPA FILE COMPONENTS:
+   - Binary code — VPN absent
+   - Resources — VPN absent
+   - Info.plist — VPN absent
+   - Entitlements — VPN absent (only in BACKUPS, inactive files)
+   - Frameworks — NetworkExtension absent
+
+COMPLETE VPN REMOVAL IN BUILD 13:
+
+All VPN-related components have been removed or renamed:
+- All VPN files and targets removed
+- All VPN classes and methods renamed
+- All VPN strings in user interface updated
+- VPN entitlements and configurations removed
+
+REQUEST:
+
+If you found any VPN mentions in our application, please provide us with:
+1. Screenshot of the app screen showing VPN functionality
+2. Or exact indication of the location in code/metadata where you see VPN
+
+We have conducted a complete code audit and cannot find any VPN functionality. All checks show the code is clean of VPN components. We are ready to promptly fix any location you specify.
+
+Build 13 contains all fixes. The application is ready for re-review.
+
+Best regards,
+Sergey Khlystov
+ALADDIN
+December 19, 2025

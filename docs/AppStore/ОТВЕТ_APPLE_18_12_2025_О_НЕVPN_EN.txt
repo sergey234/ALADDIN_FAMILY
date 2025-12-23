@@ -1,0 +1,42 @@
+ALADDIN RESPONSE - CLARIFICATION: APP IS NOT A VPN APPLICATION
+
+DECEMBER 19, 2025
+
+Dear App Review Team,
+
+Thank you for your reply dated December 18, 2025.
+
+We would like to clarify an important point regarding our ALADDIN application.
+
+OUR APPLICATION IS NOT A VPN APPLICATION
+
+In our letter dated December 18, 2025, we detailed all the actions we took to completely remove VPN functionality from the application:
+
+1. VPNViewModel completely removed from the project (Build 11)
+2. All VPN files removed (PacketTunnelProvider.swift, ALADDINPacketTunnel, NetworkExtension.framework)
+3. All VPN-related entitlements removed
+4. All VPN mentions removed from App Store Connect metadata
+5. VPN removed from keywords
+6. VPN status card removed from the main screen
+
+ALADDIN IS AN APPLICATION FOR FAMILY SAFETY AND PARENTAL CONTROL
+
+Our application:
+- DOES NOT provide VPN functionality
+- DOES NOT use NetworkExtension framework
+- IS NOT a VPN application
+
+Guideline 5.4 requires a company account ONLY for VPN applications. Since our application is not a VPN application, this requirement should not apply to our application.
+
+REQUEST
+
+Please review the category of our application. ALADDIN is an application for family safety and parental control, not a VPN application.
+
+If you find any remaining mentions of VPN in our application or metadata, please indicate the specific locations, and we will fix them immediately.
+
+Best regards,
+
+Sergey Khlystov
+ALADDIN
+
+Date: December 19, 2025

@@ -1,0 +1,61 @@
+Здравствуйте,
+
+Проблемы, которые мы ранее выявили, все еще требуют вашего внимания.
+
+Если у вас есть какие-либо вопросы, мы здесь, чтобы помочь. Ответьте на это сообщение в App Store Connect и дайте нам знать.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Окружение для проверки
+
+ID отправки: 11470d23-e822-4879-a355-c514bdbd6a1c
+Дата проверки: 22 декабря 2025
+Устройство для проверки: iPad Air 11-inch (M3).
+Версия для проверки: 1.0
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Guideline 5.4 - Legal - VPN Apps
+
+Ваше VPN-приложение было отправлено с аккаунта Apple Developer Program, зарегистрированного на индивидуального разработчика.
+
+Все VPN-приложения должны быть отправлены с аккаунта Apple Developer Program, зарегистрированного на компанию или организацию.
+
+Следующие шаги
+
+Чтобы решить эту проблему, приложение должно быть отправлено с аккаунта Apple Developer Program, зарегистрированного на компанию или организацию.
+
+Ресурсы
+
+Для получения информации о передаче приложения другому аккаунту разработчика см. страницу "Обзор передачи приложения" в разделе "Справка для разработчиков" App Store Connect.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ОРИГИНАЛЬНЫЙ ТЕКСТ НА АНГЛИЙСКОМ:
+
+Hello,
+
+The issues we previously identified still need your attention.
+
+If you have any questions, we are here to help. Reply to this message in App Store Connect and let us know.
+
+Review Environment
+
+Submission ID: 11470d23-e822-4879-a355-c514bdbd6a1c
+Review date: December 22, 2025
+Review Device: iPad Air 11-inch (M3). 
+Version reviewed: 1.0
+
+Guideline 5.4 - Legal - VPN Apps
+
+Your VPN app was submitted by an Apple Developer Program account registered to an individual.
+
+All VPN apps must be submitted from an Apple Developer Program account registered to a company or organization.
+
+Next Steps
+
+To resolve this issue, the app will need to be submitted by an Apple Developer Program account registered to a company or organization.
+
+Resources
+
+For information on transferring an app to another developer account, please review the App transfer overview page in App Store Connect Developer Help.

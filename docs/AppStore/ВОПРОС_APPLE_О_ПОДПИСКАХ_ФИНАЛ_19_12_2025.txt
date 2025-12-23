@@ -1,0 +1,21 @@
+Dear App Review Team,
+
+Thank you for your feedback regarding the ALADDIN Family subscription.
+
+To ensure we provide correct subscription descriptions that meet Apple's guidelines, could you please clarify what specifically was not acceptable in our current subscription descriptions (55 character limit) for both localizations and all 3 subscription types:
+
+• English (United States) localization
+• Russian localization
+
+Our subscription types are:
+1. ALADDIN Individual
+2. ALADDIN Family
+3. ALADDIN Premium
+
+Please let us know what specific issues need to be corrected for each subscription type in both localizations to meet Apple's guidelines.
+
+Thank you for your assistance.
+
+Best regards,
+Sergey Khlystov
+ALADDIN Development Team
