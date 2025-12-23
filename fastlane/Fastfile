@@ -19,7 +19,6 @@ platform :ios do
              keychain_path = ENV["KEYCHAIN_PATH"]
              keychain_password = ENV["KEYCHAIN_PASSWORD"]
              app_profile_uuid = ENV["APP_PROFILE_UUID"]
-             ext_profile_uuid = ENV["EXT_PROFILE_UUID"]
              dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
              
              # ВАРИАНТ 3: НЕ указываем CODE_SIGN_IDENTITY - Xcode автоматически выберет сертификат из профиля
@@ -30,24 +29,17 @@ platform :ios do
       puts "🔐 Team ID: #{team_id}"
       puts "🔐 Certificate: #{dist_cert_name}"
       puts "📋 App Profile UUID: #{app_profile_uuid}"
-      puts "📋 Extension Profile UUID: #{ext_profile_uuid}"
       
       if app_profile_uuid.nil? || app_profile_uuid.empty?
         UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении")
       end
       
-      if ext_profile_uuid.nil? || ext_profile_uuid.empty?
-        UI.user_error!("❌ EXT_PROFILE_UUID не установлен в окружении")
-      end
-      
       # Получить полные пути к профилям (ДО создания xcconfig)
       profile_dir = "#{ENV['HOME']}/Library/MobileDevice/Provisioning Profiles"
       app_profile_file = "#{profile_dir}/#{app_profile_uuid}.mobileprovision"
-      ext_profile_file = "#{profile_dir}/#{ext_profile_uuid}.mobileprovision"
       
       puts "📋 Проверка путей к профилям:"
       puts "   App profile: #{app_profile_file} (#{File.exist?(app_profile_file) ? '✅' : '❌'})"
-      puts "   Extension profile (PacketTunnel): #{ext_profile_file} (#{File.exist?(ext_profile_file) ? '✅' : '❌'})"
       puts "   Content Blocker profile: #{app_profile_file} (#{File.exist?(app_profile_file) ? '✅' : '❌'}) (использует тот же профиль, что и основное приложение)"
       
       # Создать xcconfig файл с полными путями
@@ -69,14 +61,6 @@ platform :ios do
       ALADDIN_PROVISIONING_PROFILE_SPECIFIER = #{app_profile_uuid}
       ALADDIN_PROVISIONING_PROFILE = #{app_profile_file}
       ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
-      
-      // Extension target (PacketTunnel) - ПРИНУДИТЕЛЬНО Manual signing
-      ALADDINPacketTunnel_CODE_SIGN_STYLE = Manual
-      ALADDINPacketTunnel_DEVELOPMENT_TEAM = #{team_id}
-      // НЕ указываем ALADDINPacketTunnel_CODE_SIGN_IDENTITY - Xcode выберет из профиля
-      ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER = #{ext_profile_uuid}
-      ALADDINPacketTunnel_PROVISIONING_PROFILE = #{ext_profile_file}
-      ALADDINPacketTunnel_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.packetTunnel
       
       // Content Blocker Extension target - ПРИНУДИТЕЛЬНО Manual signing
       // Используем тот же профиль, что и для основного приложения (они в одной App Group)
@@ -114,9 +98,6 @@ platform :ios do
         "ALADDIN_CODE_SIGN_STYLE=Manual",
         "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
         "ALADDIN_PROVISIONING_PROFILE='#{app_profile_file}'",
-        "ALADDINPacketTunnel_CODE_SIGN_STYLE=Manual",
-        "ALADDINPacketTunnel_PROVISIONING_PROFILE_SPECIFIER=#{ext_profile_uuid}",
-        "ALADDINPacketTunnel_PROVISIONING_PROFILE='#{ext_profile_file}'",
         "ALADDINContentBlocker_CODE_SIGN_STYLE=Manual",
         "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
         "ALADDINContentBlocker_PROVISIONING_PROFILE='#{app_profile_file}'",
@@ -142,21 +123,18 @@ platform :ios do
     # Получить UUID профилей
     profile_dir = "#{ENV['HOME']}/Library/MobileDevice/Provisioning Profiles"
     app_profile_uuid = nil
-    ext_profile_uuid = nil
     
     Dir.glob("#{profile_dir}/*.mobileprovision").each do |profile_path|
       uuid = sh("security cms -D -i #{profile_path.shellescape} 2>/dev/null | plutil -extract UUID raw -o - - 2>/dev/null || echo ''", log: false).strip
       bundle_id = sh("security cms -D -i #{profile_path.shellescape} 2>/dev/null | plutil -extract Entitlements.application-identifier raw -o - - 2>/dev/null || echo ''", log: false).strip
       
-      if bundle_id.include?("family.aladdin.ios.packetTunnel")
-        ext_profile_uuid = uuid
-      elsif bundle_id.include?("family.aladdin.ios") && !bundle_id.include?("packetTunnel") && !bundle_id.include?("ALADDINContentBlocker")
+      if bundle_id.include?("family.aladdin.ios") && !bundle_id.include?("ALADDINContentBlocker")
         app_profile_uuid = uuid
       end
     end
     
-    if app_profile_uuid.nil? || ext_profile_uuid.nil?
-      UI.user_error!("❌ Не удалось найти UUID профилей для экспорта")
+    if app_profile_uuid.nil?
+      UI.user_error!("❌ Не удалось найти UUID профиля для экспорта")
     end
     
     # Content Blocker использует тот же профиль, что и основное приложение
@@ -170,7 +148,6 @@ platform :ios do
       signingStyle: "manual",
       provisioningProfiles: {
         "family.aladdin.ios" => app_profile_uuid,
-        "family.aladdin.ios.packetTunnel" => ext_profile_uuid,
         "family.aladdin.ios.ALADDINContentBlocker" => content_blocker_profile_uuid
       }
     }
