@@ -51,6 +51,12 @@
 		5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */; };
 		5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */; };
 		5E32FFFF2EAD25F5000574C4 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */; };
+		5E61A0A12EFB38ED0039093A /* blockerList.json in Resources */ = {isa = PBXBuildFile; fileRef = 5E61A0A02EFB38ED0039093A /* blockerList.json */; };
+		5E61A0A72EFB38ED0039093A /* ALADDINContentBlocker.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5E61A0AC2EFB38ED0039093A /* ActionRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */; };
+		5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */; };
+		5EA2F63E2EFB4B8D000686C0 /* ContentBlockerRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */; };
+		5EA2F6402EFB4BD3000686C0 /* FamilyContentBlockModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */; };
 		5EB01F3A2EC8721300168BE9 /* MockAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F392EC8721300168BE9 /* MockAPIService.swift */; };
 		5EB01F3C2EC8723600168BE9 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F3B2EC8723600168BE9 /* StorageManager.swift */; };
 		5EB01F3E2EC9B74E00168BE9 /* RecoveryCodeStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */; };
@@ -181,6 +187,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		5E61A0A52EFB38ED0039093A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5E61A09D2EFB38ED0039093A;
+			remoteInfo = ALADDINContentBlocker;
+		};
 		B5001008 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A0FFFFF6 /* Project object */;
@@ -196,6 +209,20 @@
 			remoteInfo = ALADDIN;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5E61A0A82EFB38ED0039093A /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				5E61A0A72EFB38ED0039093A /* ALADDINContentBlocker.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		5E0058002EC3C4C600024F7E /* ALADDINTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINTextField.swift; path = BACKUP_MOBILE_20251108_1800/Shared/Components/ALADDINTextField.swift; sourceTree = "<group>"; };
@@ -244,6 +271,13 @@
 		5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityManager.swift; path = Core/Security/SecurityManager.swift; sourceTree = "<group>"; };
 		5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KeychainManager.swift; path = Core/Security/KeychainManager.swift; sourceTree = "<group>"; };
 		5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CacheManager.swift; path = Core/Cache/CacheManager.swift; sourceTree = "<group>"; };
+		5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINContentBlocker.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E61A0A02EFB38ED0039093A /* blockerList.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = blockerList.json; sourceTree = "<group>"; };
+		5E61A0A42EFB38ED0039093A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionRequestHandler.swift; sourceTree = "<group>"; };
+		5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerManager.swift; path = Core/ContentBlocker/ContentBlockerManager.swift; sourceTree = "<group>"; };
+		5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerRule.swift; path = Core/ContentBlocker/ContentBlockerRule.swift; sourceTree = "<group>"; };
+		5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyContentBlockModal.swift; path = Components/Modals/FamilyContentBlockModal.swift; sourceTree = "<group>"; };
 		5EB01F392EC8721300168BE9 /* MockAPIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MockAPIService.swift; path = Core/Network/MockAPIService.swift; sourceTree = "<group>"; };
 		5EB01F3B2EC8723600168BE9 /* StorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StorageManager.swift; path = Core/Storage/StorageManager.swift; sourceTree = "<group>"; };
 		5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecoveryCodeStorageManager.swift; path = Core/Security/RecoveryCodeStorageManager.swift; sourceTree = "<group>"; };
@@ -382,6 +416,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		5E61A09B2EFB38ED0039093A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A0FFFFFB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -421,6 +462,16 @@
 				A4AAA215 /* JWTTokenManager.swift */,
 			);
 			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		5E61A09F2EFB38ED0039093A /* ALADDINContentBlocker */ = {
+			isa = PBXGroup;
+			children = (
+				5E61A0A02EFB38ED0039093A /* blockerList.json */,
+				5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */,
+				5E61A0A42EFB38ED0039093A /* Info.plist */,
+			);
+			path = ALADDINContentBlocker;
 			sourceTree = "<group>";
 		};
 		5EC308E12EA6AB8B00C7D34B /* Screens */ = {
@@ -501,6 +552,9 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */,
+				5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */,
+				5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */,
 				5EE081882EE239FE009AD42A /* ShareSheet.swift */,
 				5EB01F432ECB097500168BE9 /* ActivationCodeViewModel.swift */,
 				5EB01F3F2EC9B7CD00168BE9 /* BackupRecoveryModal.swift */,
@@ -564,9 +618,9 @@
 				5EC308E12EA6AB8B00C7D34B /* Screens */,
 				B5001300 /* Tests */,
 				A0FFFFFF,
+				5E61A09F2EFB38ED0039093A /* ALADDINContentBlocker */,
 				B5003000 /* Products */,
 				5E0057FF2EC3B4DC00024F7E /* Recovered References */,
-				5E709CE42ED8E6010046FFD5 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -671,6 +725,7 @@
 				A0FFFFFE /* ALADDIN.app */,
 				B5001010 /* ALADDINUnitTests.xctest */,
 				B5002010 /* ALADDINUITests.xctest */,
+				5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -687,6 +742,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		5E61A09D2EFB38ED0039093A /* ALADDINContentBlocker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5E61A0AB2EFB38ED0039093A /* Build configuration list for PBXNativeTarget "ALADDINContentBlocker" */;
+			buildPhases = (
+				5E61A09A2EFB38ED0039093A /* Sources */,
+				5E61A09B2EFB38ED0039093A /* Frameworks */,
+				5E61A09C2EFB38ED0039093A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ALADDINContentBlocker;
+			productName = ALADDINContentBlocker;
+			productReference = 5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		A0FFFFFD /* ALADDIN */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A100000D /* Build configuration list for PBXNativeTarget "ALADDIN" */;
@@ -694,10 +766,12 @@
 				A0FFFFFA /* Sources */,
 				A0FFFFFB /* Frameworks */,
 				A0FFFFFC /* Resources */,
+				5E61A0A82EFB38ED0039093A /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				5E61A0A62EFB38ED0039093A /* PBXTargetDependency */,
 			);
 			name = ALADDIN;
 			productName = ALADDIN;
@@ -744,9 +818,12 @@
 		A0FFFFF6 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1600;
+				LastSwiftUpdateCheck = 1320;
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
+					5E61A09D2EFB38ED0039093A = {
+						CreatedOnToolsVersion = 13.2.1;
+					};
 					A0FFFFFD = {
 						CreatedOnToolsVersion = 16.0;
 					};
@@ -776,11 +853,20 @@
 				A0FFFFFD /* ALADDIN */,
 				B5001000 /* ALADDINUnitTests */,
 				B5002000 /* ALADDINUITests */,
+				5E61A09D2EFB38ED0039093A /* ALADDINContentBlocker */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5E61A09C2EFB38ED0039093A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5E61A0A12EFB38ED0039093A /* blockerList.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A0FFFFFC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -795,6 +881,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		5E61A09A2EFB38ED0039093A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5E61A0AC2EFB38ED0039093A /* ActionRequestHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A0FFFFFA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -806,10 +900,12 @@
 				5EB01F442ECB097500168BE9 /* ActivationCodeViewModel.swift in Sources */,
 				5E00582F2EC606BB00024F7E /* TariffCardView.swift in Sources */,
 				A1000001 /* ALADDINApp.swift in Sources */,
+				5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */,
 				5EC3094B2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift in Sources */,
 				5EB01F462ECB09D300168BE9 /* 26_ActivationCodeScreen.swift in Sources */,
 				A3000001 /* ViewModels/MainViewModel.swift in Sources */,
 				5E0058312EC606DA00024F7E /* TariffCardSections.swift in Sources */,
+				5EA2F6402EFB4BD3000686C0 /* FamilyContentBlockModal.swift in Sources */,
 				5E32FFF72EAD23BB000574C4 /* PrimaryButton.swift in Sources */,
 				5EC309252EA6B66900C7D34B /* NotificationSettingsScreen.swift in Sources */,
 				5E0058172EC4A6E300024F7E /* TariffManager.swift in Sources */,
@@ -918,6 +1014,7 @@
 				5E32FFF12EAD18D4000574C4 /* QRScannerModal.swift in Sources */,
 				5EC3090C2EA6B60900C7D34B /* 04_AnalyticsScreen.swift in Sources */,
 				5E0058332EC6073700024F7E /* TariffFeaturesGallery.swift in Sources */,
+				5EA2F63E2EFB4B8D000686C0 /* ContentBlockerRule.swift in Sources */,
 				5EC3091D2EA6B64200C7D34B /* 24_NetworkProtectionEnergyStatsScreen.swift in Sources */,
 				5E32FFEF2EAD18B2000574C4 /* ProfileEditView.swift in Sources */,
 				A3000053 /* ViewModels/TariffsViewModel.swift in Sources */,
@@ -986,6 +1083,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		5E61A0A62EFB38ED0039093A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5E61A09D2EFB38ED0039093A /* ALADDINContentBlocker */;
+			targetProxy = 5E61A0A52EFB38ED0039093A /* PBXContainerItemProxy */;
+		};
 		B5001007 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = A0FFFFFD /* ALADDIN */;
@@ -999,6 +1101,71 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		5E61A0A92EFB38ED0039093A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ALADDINContentBlocker/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ALADDINContentBlocker;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5E61A0AA2EFB38ED0039093A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ALADDINContentBlocker/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ALADDINContentBlocker;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		A100000B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1125,6 +1292,7 @@
 		A100000E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
@@ -1156,10 +1324,11 @@
 		A100000F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_IDENTITY = "iPhone Distribution";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 15;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
@@ -1177,7 +1346,7 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "ALADDIN App Store Distribution";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -1284,6 +1453,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		5E61A0AB2EFB38ED0039093A /* Build configuration list for PBXNativeTarget "ALADDINContentBlocker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E61A0A92EFB38ED0039093A /* Debug */,
+				5E61A0AA2EFB38ED0039093A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A0FFFFF9 /* Build configuration list for PBXProject "ALADDIN" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

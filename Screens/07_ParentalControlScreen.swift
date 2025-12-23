@@ -13,6 +13,7 @@ struct ParentalControlScreen: View {
     @Environment(\.dismiss) private var dismiss
     private let apiService = APIService.shared
     @StateObject private var manager = ParentalControlManager.shared
+    @StateObject private var contentBlockerManager = ContentBlockerManager.shared
     
     // MARK: - Child Selection
     
@@ -140,6 +141,13 @@ struct ParentalControlScreen: View {
         .sheet(isPresented: $showContentBlockModal) {
             FamilyContentBlockModal(isPresented: $showContentBlockModal, isEnabled: $isContentBlockEnabled)
                 .environmentObject(localizationManager)
+        }
+        .onAppear {
+            // Загрузить статус Content Blocker при появлении экрана
+            Task {
+                await contentBlockerManager.checkBlockingStatus()
+                contentBlockerManager.loadActiveCategories()
+            }
         }
         .sheet(isPresented: $showTimeControlModal) {
             FamilyTimeControlModal(isPresented: $showTimeControlModal, isEnabled: $isTimeControlEnabled)
@@ -384,12 +392,14 @@ struct ParentalControlScreen: View {
                     ParentalControlCard(
                         icon: "🔒",
                         title: localizationManager.localized("parental_content_block"),
-                        statusBadge: contentBlockTotal > 0 ? "\(contentBlockActive)/\(contentBlockTotal)" : "\(contentBlockActive)",
-                        statusText: String(format: localizationManager.localized("parental_content_active_status"), contentBlockActive),
-                        metric: String(format: localizationManager.localized("parental_content_blocked_metric"), contentBlockedCount),
+                        statusBadge: contentBlockerManager.isEnabled ? "✅ Safari" : "⚠️ Выкл",
+                        statusText: contentBlockerManager.isEnabled ?
+                            String(format: localizationManager.localized("parental_content_blocked_metric"), contentBlockerManager.blockedSitesCount) :
+                            localizationManager.localized("parental_content_blocker_disabled"),
+                        metric: String(format: localizationManager.localized("parental_content_categories_active"), contentBlockerManager.activeCategories.count),
                         cardColor: .red.opacity(0.2),
                         borderColor: .red.opacity(0.4),
-                        badgeColor: .successGreen,
+                        badgeColor: contentBlockerManager.isEnabled ? .successGreen : .warningOrange,
                         isEnabled: $isContentBlockEnabled,
                         action: { showContentBlockModal = true }
                     )
