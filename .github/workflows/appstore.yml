@@ -282,8 +282,8 @@ jobs:
               fi
               
               # Проверить bundle ID
-              if [ "$EXT_PROFILE_BUNDLE" != "family.aladdin.ios.packetTunnel" ]; then
-                echo "  ⚠️  WARNING: Bundle ID mismatch! Expected: family.aladdin.ios.packetTunnel, Got: $EXT_PROFILE_BUNDLE"
+              if [ "$EXT_PROFILE_BUNDLE" != "family.aladdin.ios.ALADDINContentBlocker" ]; then
+                echo "  ⚠️  WARNING: Bundle ID mismatch! Expected: family.aladdin.ios.ALADDINContentBlocker, Got: $EXT_PROFILE_BUNDLE"
               fi
             fi
           fi
@@ -459,7 +459,7 @@ jobs:
             echo "1. Зайдите в Apple Developer Portal: https://developer.apple.com/account/resources/profiles/list"
             echo "2. Создайте НОВЫЕ профили типа 'App Store' (не Development, не Ad Hoc)"
             echo "3. Для App: Bundle ID 'family.aladdin.ios', тип 'App Store'"
-            echo "4. Для Extension: Bundle ID 'family.aladdin.ios.packetTunnel', тип 'App Store'"
+            echo "4. Для Extension: Bundle ID 'family.aladdin.ios.ALADDINContentBlocker', тип 'App Store'"
             echo "5. Убедитесь, что профили связаны с сертификатом 'Apple Distribution: SERGEY KHLYSTOV'"
             echo "6. Обновите GitHub Secrets: PROVISIONING_PROFILE_APP и PROVISIONING_PROFILE_EXTENSION"
             echo ""
@@ -608,7 +608,7 @@ jobs:
           APP_PROFILE_UUID="family.aladdin.ios"
         fi
         if [ -z "$EXT_PROFILE_UUID" ]; then
-          EXT_PROFILE_UUID="family.aladdin.ios.packetTunnel"
+          EXT_PROFILE_UUID="family.aladdin.ios.ALADDINContentBlocker"
         fi
         
         # Определить стиль подписи (Manual - приоритет, так как работает в CI)
@@ -632,7 +632,7 @@ jobs:
           printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>automatic</string>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" > ./build/ExportOptions.plist
         else
           # Manual signing - используем установленные профили
-          printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>manual</string>\n  <key>signingCertificate</key>\n  <string>Apple Distribution</string>\n  <key>provisioningProfiles</key>\n  <dict>\n    <key>family.aladdin.ios</key>\n    <string>%s</string>\n    <key>family.aladdin.ios.packetTunnel</key>\n    <string>%s</string>\n  </dict>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" "$APP_PROFILE_UUID" "$EXT_PROFILE_UUID" > ./build/ExportOptions.plist
+          printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>manual</string>\n  <key>signingCertificate</key>\n  <string>Apple Distribution</string>\n  <key>provisioningProfiles</key>\n  <dict>\n    <key>family.aladdin.ios</key>\n    <string>%s</string>\n    <key>family.aladdin.ios.ALADDINContentBlocker</key>\n    <string>%s</string>\n  </dict>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" "$APP_PROFILE_UUID" "$EXT_PROFILE_UUID" > ./build/ExportOptions.plist
         fi
         
         xcodebuild -exportArchive \
