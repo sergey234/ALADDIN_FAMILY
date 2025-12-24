@@ -19,6 +19,7 @@ platform :ios do
              keychain_path = ENV["KEYCHAIN_PATH"]
              keychain_password = ENV["KEYCHAIN_PASSWORD"]
              app_profile_uuid = ENV["APP_PROFILE_UUID"]
+             extension_profile_uuid = ENV["PROVISIONING_PROFILE_EXTENSION_UUID"] || app_profile_uuid # Fallback на app profile, если extension не указан
              dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
              
              # ВАРИАНТ 3: НЕ указываем CODE_SIGN_IDENTITY - Xcode автоматически выберет сертификат из профиля
@@ -29,18 +30,24 @@ platform :ios do
       puts "🔐 Team ID: #{team_id}"
       puts "🔐 Certificate: #{dist_cert_name}"
       puts "📋 App Profile UUID: #{app_profile_uuid}"
+      puts "📋 Extension Profile UUID: #{extension_profile_uuid}"
       
       if app_profile_uuid.nil? || app_profile_uuid.empty?
         UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении")
       end
       
+      if extension_profile_uuid.nil? || extension_profile_uuid.empty?
+        UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен в окружении. Создайте отдельный provisioning profile для Content Blocker Extension.")
+      end
+      
       # Получить полные пути к профилям (ДО создания xcconfig)
       profile_dir = "#{ENV['HOME']}/Library/MobileDevice/Provisioning Profiles"
       app_profile_file = "#{profile_dir}/#{app_profile_uuid}.mobileprovision"
+      extension_profile_file = "#{profile_dir}/#{extension_profile_uuid}.mobileprovision"
       
       puts "📋 Проверка путей к профилям:"
       puts "   App profile: #{app_profile_file} (#{File.exist?(app_profile_file) ? '✅' : '❌'})"
-      puts "   Content Blocker profile: #{app_profile_file} (#{File.exist?(app_profile_file) ? '✅' : '❌'}) (использует тот же профиль, что и основное приложение)"
+      puts "   Content Blocker profile: #{extension_profile_file} (#{File.exist?(extension_profile_file) ? '✅' : '❌'})"
       
       # Создать xcconfig файл с полными путями
       xcconfig_path = "./build/Release.xcconfig"
@@ -63,12 +70,12 @@ platform :ios do
       ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
       
       // Content Blocker Extension target - ПРИНУДИТЕЛЬНО Manual signing
-      // Используем тот же профиль, что и для основного приложения (они в одной App Group)
+      // Используем ОТДЕЛЬНЫЙ профиль для extension (требуется отдельный App ID)
       ALADDINContentBlocker_CODE_SIGN_STYLE = Manual
       ALADDINContentBlocker_DEVELOPMENT_TEAM = #{team_id}
       // НЕ указываем ALADDINContentBlocker_CODE_SIGN_IDENTITY - Xcode выберет из профиля
-      ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = #{app_profile_uuid}
-      ALADDINContentBlocker_PROVISIONING_PROFILE = #{app_profile_file}
+      ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = #{extension_profile_uuid}
+      ALADDINContentBlocker_PROVISIONING_PROFILE = #{extension_profile_file}
       ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker
     XCCONFIG
     
@@ -99,8 +106,8 @@ platform :ios do
         "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
         "ALADDIN_PROVISIONING_PROFILE='#{app_profile_file}'",
         "ALADDINContentBlocker_CODE_SIGN_STYLE=Manual",
-        "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
-        "ALADDINContentBlocker_PROVISIONING_PROFILE='#{app_profile_file}'",
+        "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER=#{extension_profile_uuid}",
+        "ALADDINContentBlocker_PROVISIONING_PROFILE='#{extension_profile_file}'",
         "-allowProvisioningUpdates"
       ].join(" ")
       
@@ -120,25 +127,20 @@ platform :ios do
     
     team_id = ENV["APPLE_TEAM_ID"]
     
-    # Получить UUID профилей
-    profile_dir = "#{ENV['HOME']}/Library/MobileDevice/Provisioning Profiles"
-    app_profile_uuid = nil
+    # Получить UUID профилей из окружения (уже установлены в workflow)
+    app_profile_uuid = ENV["APP_PROFILE_UUID"]
+    extension_profile_uuid = ENV["PROVISIONING_PROFILE_EXTENSION_UUID"]
     
-    Dir.glob("#{profile_dir}/*.mobileprovision").each do |profile_path|
-      uuid = sh("security cms -D -i #{profile_path.shellescape} 2>/dev/null | plutil -extract UUID raw -o - - 2>/dev/null || echo ''", log: false).strip
-      bundle_id = sh("security cms -D -i #{profile_path.shellescape} 2>/dev/null | plutil -extract Entitlements.application-identifier raw -o - - 2>/dev/null || echo ''", log: false).strip
-      
-      if bundle_id.include?("family.aladdin.ios") && !bundle_id.include?("ALADDINContentBlocker")
-        app_profile_uuid = uuid
-      end
+    if app_profile_uuid.nil? || app_profile_uuid.empty?
+      UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении")
     end
     
-    if app_profile_uuid.nil?
-      UI.user_error!("❌ Не удалось найти UUID профиля для экспорта")
+    if extension_profile_uuid.nil? || extension_profile_uuid.empty?
+      UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен в окружении")
     end
     
-    # Content Blocker использует тот же профиль, что и основное приложение
-    content_blocker_profile_uuid = app_profile_uuid
+    # Используем отдельный профиль для extension
+    content_blocker_profile_uuid = extension_profile_uuid
     
     # Создать ExportOptions.plist
     export_options_path = "./build/ExportOptions.plist"
