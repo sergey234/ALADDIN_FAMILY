@@ -45,6 +45,11 @@ class StoreManager: ObservableObject {
         case family = "family.aladdin.ios.subscription.family"
         case premium = "family.aladdin.ios.subscription.premium"
         
+        /// Только платные подписки (без бесплатного .basic)
+        static var paidSubscriptions: [ProductID] {
+            return [.individual, .family, .premium]
+        }
+        
         var displayName: String {
             switch self {
             case .basic: return "Базовый"
@@ -113,12 +118,14 @@ class StoreManager: ObservableObject {
         isLoading = true
         
         do {
-            let productIDs = ProductID.allCases.map { $0.rawValue }
+            // ✅ Загружаем только платные подписки (без .basic, которого нет в App Store Connect)
+            let productIDs = ProductID.paidSubscriptions.map { $0.rawValue }
             products = try await Product.products(for: productIDs)
             isLoading = false
             print("✅ Loaded \(products.count) products from App Store")
         } catch {
-            errorMessage = "Ошибка загрузки продуктов: \(error.localizedDescription)"
+            let localizationManager = LocalizationManager()
+            errorMessage = String(format: localizationManager.localized("store_error_load_products"), error.localizedDescription)
             isLoading = false
             print("❌ Error loading products: \(error)")
         }
@@ -206,7 +213,8 @@ class StoreManager: ObservableObject {
                 return nil
             }
         } catch {
-            errorMessage = "Ошибка покупки: \(error.localizedDescription)"
+            let localizationManager = LocalizationManager()
+            errorMessage = String(format: localizationManager.localized("store_error_purchase"), error.localizedDescription)
             isLoading = false
             print("❌ [StoreManager] Purchase error: \(error)")
             print("❌ [StoreManager] Error type: \(type(of: error))")
@@ -233,7 +241,8 @@ class StoreManager: ObservableObject {
             isLoading = false
             print("✅ Purchases restored")
         } catch {
-            errorMessage = "Ошибка восстановления: \(error.localizedDescription)"
+            let localizationManager = LocalizationManager()
+            errorMessage = String(format: localizationManager.localized("store_error_restore"), error.localizedDescription)
             isLoading = false
             print("❌ Restore error: \(error)")
         }

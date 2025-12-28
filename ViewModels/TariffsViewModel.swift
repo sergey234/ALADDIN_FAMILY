@@ -86,7 +86,8 @@ class TariffsViewModel: ObservableObject {
      * Обновить список тарифов из StoreKit продуктов
      */
     private func updateTariffs(from products: [Product]) {
-        tariffs = StoreManager.ProductID.allCases.compactMap { productID in
+        // ✅ Загружаем только платные подписки (без .basic, которого нет в App Store Connect)
+        tariffs = StoreManager.ProductID.paidSubscriptions.compactMap { productID in
             guard let product = products.first(where: { $0.id == productID.rawValue }) else {
                 return nil
             }
@@ -162,7 +163,8 @@ class TariffsViewModel: ObservableObject {
      */
     func purchaseSelectedTariff() async {
         guard let selectedTariff = selectedTariff else {
-            errorMessage = "Выберите тариф"
+            let localizationManager = LocalizationManager()
+            errorMessage = localizationManager.localized("tariffs_error_select_tariff")
             return
         }
         await purchaseTariff(selectedTariff)
@@ -184,7 +186,28 @@ class TariffsViewModel: ObservableObject {
             print("❌ КРИТИЧЕСКАЯ ОШИБКА: НЕВАЛИДНЫЙ ТАРИФ!")
             print("   - id.isEmpty: \(tariff.id.isEmpty)")
             print("   - title.isEmpty: \(tariff.title.isEmpty)")
-            errorMessage = "Ошибка: невалидный тариф"
+            let localizationManager = LocalizationManager()
+            errorMessage = localizationManager.localized("tariffs_error_invalid_tariff")
+            return
+        }
+        
+        // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Бесплатный тариф не покупается через IAP
+        if tariff.id == "free" || tariff.id == StoreManager.FREE_TARIFF_ID {
+            print("✅ Бесплатный тариф - активируем без покупки")
+            storeManager.activateFreeTariff()
+            isPurchaseSuccessful = true
+            isLoading = false
+            
+            // Обновляем статус тарифа
+            if let index = tariffs.firstIndex(where: { $0.id == tariff.id }) {
+                tariffs[index].isPurchased = true
+            }
+            
+            // Активируем тариф
+            if let tariffType = mapTariffToTariffType(tariff) {
+                TariffManager.shared.saveTariff(tariffType)
+                print("✅ TariffManager: Бесплатный тариф активирован")
+            }
             return
         }
         
@@ -211,20 +234,23 @@ class TariffsViewModel: ObservableObject {
         #else
         // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что StoreManager не выполняет другую операцию
         guard !storeManager.isLoading else {
-            errorMessage = "Идет загрузка продуктов. Пожалуйста, подождите."
+            let localizationManager = LocalizationManager()
+            errorMessage = localizationManager.localized("tariffs_error_loading_products")
             print("⚠️ StoreManager уже загружает продукты")
             return
         }
         
         // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что продукты загружены
         if storeManager.products.isEmpty {
-            errorMessage = "Продукты не загружены. Попытка перезагрузки..."
+            let localizationManager = LocalizationManager()
+            errorMessage = localizationManager.localized("tariffs_error_products_not_loaded")
             print("⚠️ Продукты не загружены, пытаемся загрузить...")
             await storeManager.loadProducts()
             
             // Проверяем снова после загрузки
             guard !storeManager.products.isEmpty else {
-                errorMessage = "Не удалось загрузить продукты. Проверьте подключение к интернету."
+                let localizationManager = LocalizationManager()
+                errorMessage = localizationManager.localized("tariffs_error_products_load_failed")
                 print("❌ Продукты все еще не загружены после попытки перезагрузки")
                 return
             }
@@ -286,11 +312,11 @@ class TariffsViewModel: ObservableObject {
                 // ✅ УЛУЧШЕНИЕ: Специальная обработка для productsNotLoaded
                 let localizationManager = LocalizationManager()
                 if let storeError = error as? StoreError, storeError == .productsNotLoaded {
-                    errorMessage = localizationManager.localized("store.error.tariffs.not.loaded")
+                    errorMessage = localizationManager.localized("tariffs_error_products_load_failed")
                     print("❌ [TariffsViewModel] Products not loaded error")
                 } else {
                     let errorDesc = error.localizedDescription
-                    errorMessage = "Ошибка покупки: \(errorDesc)"
+                    errorMessage = String(format: localizationManager.localized("store_error_purchase"), errorDesc)
                     print("❌ [TariffsViewModel] IAP Purchase failed: \(errorDesc)")
                 }
                 
@@ -315,7 +341,8 @@ class TariffsViewModel: ObservableObject {
                 // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Дополнительная проверка продукта
                 guard !product.id.isEmpty else {
                     isLoading = false
-                    errorMessage = "Ошибка: невалидный продукт"
+                    let localizationManager = LocalizationManager()
+                    errorMessage = localizationManager.localized("tariffs_error_invalid_tariff")
                     print("❌ КРИТИЧЕСКАЯ ОШИБКА: Product ID пустой!")
                     return
                 }
@@ -364,11 +391,11 @@ class TariffsViewModel: ObservableObject {
                     // ✅ УЛУЧШЕНИЕ: Специальная обработка для productsNotLoaded
                     let localizationManager = LocalizationManager()
                     if let storeError = error as? StoreError, storeError == .productsNotLoaded {
-                        errorMessage = localizationManager.localized("store.error.tariffs.not.loaded")
+                        errorMessage = localizationManager.localized("tariffs_error_products_load_failed")
                         print("❌ [TariffsViewModel] Products not loaded error")
                     } else {
                         let errorDesc = error.localizedDescription
-                        errorMessage = "Ошибка покупки: \(errorDesc)"
+                        errorMessage = String(format: localizationManager.localized("store_error_purchase"), errorDesc)
                         print("❌ [TariffsViewModel] IAP Purchase failed: \(errorDesc)")
                     }
                     
@@ -382,7 +409,8 @@ class TariffsViewModel: ObservableObject {
             } else {
                 // Продукт не загружен из App Store
                 isLoading = false
-                errorMessage = "Тариф недоступен. Убедитесь, что продукты настроены в App Store Connect."
+                let localizationManager = LocalizationManager()
+                errorMessage = localizationManager.localized("tariffs_error_products_load_failed")
                 print("❌ Продукт не найден в StoreManager для ProductID: \(productID.rawValue)")
                 print("💡 Это может означать:")
                 print("   1. Продукты не настроены в App Store Connect")
@@ -392,7 +420,8 @@ class TariffsViewModel: ObservableObject {
         } else {
             // Не удалось найти ProductID
             isLoading = false
-            errorMessage = "Тариф недоступен. Не удалось определить тип подписки."
+            let localizationManager = LocalizationManager()
+            errorMessage = localizationManager.localized("tariffs_error_invalid_tariff")
             print("❌ Не удалось найти ProductID для tariff.id: '\(tariff.id)'")
             print("💡 Проверьте маппинг в функции findProductID")
             print("💡 Текущий ID тарифа: '\(tariff.id)'")

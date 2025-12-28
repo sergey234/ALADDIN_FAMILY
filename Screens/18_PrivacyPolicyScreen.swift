@@ -733,17 +733,11 @@ enum PrivacyMainSection: String, CaseIterable {
 enum NetworkProtectionSection: String, CaseIterable {
     case noLogs = "NO-LOGS POLICY"
     case encryption = "Технологии шифрования"
-    case servers = "Серверы"
-    case features = "Дополнительные функции"
-    case energy = "Энергосбережение"
     
     var emoji: String {
         switch self {
         case .noLogs: return "🔒"
         case .encryption: return "🔐"
-        case .servers: return "🌐"
-        case .features: return "🛡️"
-        case .energy: return "⚡"
         }
     }
     
@@ -751,9 +745,6 @@ enum NetworkProtectionSection: String, CaseIterable {
         switch self {
         case .noLogs: return localizationManager.localized("privacy_policy_network_protection_no_logs")
         case .encryption: return localizationManager.localized("privacy_policy_network_protection_encryption")
-        case .servers: return localizationManager.localized("privacy_policy_network_protection_servers")
-        case .features: return localizationManager.localized("privacy_policy_network_protection_features")
-        case .energy: return localizationManager.localized("privacy_policy_network_protection_energy")
         }
     }
     
@@ -761,9 +752,6 @@ enum NetworkProtectionSection: String, CaseIterable {
         switch self {
         case .noLogs: return localizationManager.localized("privacy_policy_network_protection_no_logs_subtitle")
         case .encryption: return localizationManager.localized("privacy_policy_network_protection_encryption_subtitle")
-        case .servers: return localizationManager.localized("privacy_policy_network_protection_servers_subtitle")
-        case .features: return localizationManager.localized("privacy_policy_network_protection_features_subtitle")
-        case .energy: return localizationManager.localized("privacy_policy_network_protection_energy_subtitle")
         }
     }
     
@@ -776,9 +764,6 @@ enum NetworkProtectionSection: String, CaseIterable {
         switch self {
         case .noLogs: return "Что мы НЕ собираем"
         case .encryption: return "3 вида военного шифрования"
-        case .servers: return "50+ серверов по всему миру"
-        case .features: return "Дополнительная защита"
-        case .energy: return "Экономия батареи"
         }
     }
     
@@ -799,30 +784,6 @@ enum NetworkProtectionSection: String, CaseIterable {
                 localizationManager.localized("privacy_policy_network_protection_encryption_content_2"),
                 localizationManager.localized("privacy_policy_network_protection_encryption_content_3"),
                 localizationManager.localized("privacy_policy_network_protection_encryption_content_4")
-            ]
-        case .servers:
-            return [
-                localizationManager.localized("privacy_policy_network_protection_servers_content_1"),
-                localizationManager.localized("privacy_policy_network_protection_servers_content_2"),
-                localizationManager.localized("privacy_policy_network_protection_servers_content_3"),
-                localizationManager.localized("privacy_policy_network_protection_servers_content_4"),
-                localizationManager.localized("privacy_policy_network_protection_servers_content_5")
-            ]
-        case .features:
-            return [
-                localizationManager.localized("privacy_policy_network_protection_features_content_1"),
-                localizationManager.localized("privacy_policy_network_protection_features_content_2"),
-                localizationManager.localized("privacy_policy_network_protection_features_content_3"),
-                localizationManager.localized("privacy_policy_network_protection_features_content_4"),
-                localizationManager.localized("privacy_policy_network_protection_features_content_5")
-            ]
-        case .energy:
-            return [
-                localizationManager.localized("privacy_policy_network_protection_energy_content_1"),
-                localizationManager.localized("privacy_policy_network_protection_energy_content_2"),
-                localizationManager.localized("privacy_policy_network_protection_energy_content_3"),
-                localizationManager.localized("privacy_policy_network_protection_energy_content_4"),
-                localizationManager.localized("privacy_policy_network_protection_energy_content_5")
             ]
         }
     }
@@ -845,30 +806,6 @@ enum NetworkProtectionSection: String, CaseIterable {
                 "ChaCha20-Poly1305: быстрое и надёжное ⚡⭐⭐⭐⭐⭐",
                 "XChaCha20-Poly1305: квантовая защита будущего ⭐⭐⭐⭐⭐+",
                 "Все 3 вида: НЕВОЗМОЖНО взломать"
-            ]
-        case .servers:
-            return [
-                "🇷🇺 Россия: 15 серверов",
-                "🇪🇺 Европа: 20 серверов",
-                "🇺🇸 США: 10 серверов",
-                "🇦🇪 Азия: 5 серверов",
-                "Быстрое подключение и низкая задержка"
-            ]
-        case .features:
-            return [
-                "Kill Switch: защита от утечек",
-                "DNS Protection: защита DNS",
-                "IPv6 Protection: защита IPv6",
-                "WebRTC Protection: защита WebRTC",
-                "Split Tunneling: гибкая маршрутизация"
-            ]
-        case .energy:
-            return [
-                "5 режимов работы защиты сети",
-                "Экономия 30-40% батареи",
-                "Умное управление подключением",
-                "Автоматическая адаптация",
-                "Энергосберегающий режим"
             ]
         }
     }

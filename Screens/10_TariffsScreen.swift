@@ -352,7 +352,7 @@ struct TariffsScreen: View {
                     }
                     
                     #if targetEnvironment(simulator)
-                    viewModel.errorMessage = "In-App Purchase недоступен в симуляторе.\n\nStoreKit может вызвать краш при попытке покупки.\n\nДля тестирования оплаты используйте реальное устройство с настроенным тестовым Apple ID."
+                    viewModel.errorMessage = localizationManager.localized("store_error_simulator_not_supported")
                     #else
                     let localTariffObj = tariffObj
                     

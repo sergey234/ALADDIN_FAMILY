@@ -405,12 +405,12 @@ struct MainScreen: View {
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
 
-                                Text("Тариф: \(currentTariffDisplayName)")
+                                Text("\(localizationManager.localized("main_family_tariff_label")) \(currentTariffDisplayName)")
                                     .font(.system(size: 9, weight: .semibold))
                                     .foregroundColor(.black)
 
                                 if let expirationText = subscriptionExpirationText {
-                                    Text("Действует до: \(expirationText)")
+                                    Text("\(localizationManager.localized("main_family_subscription_valid_until")) \(expirationText)")
                                         .font(.system(size: 9))
                                         .foregroundColor(.black)
                                 }
