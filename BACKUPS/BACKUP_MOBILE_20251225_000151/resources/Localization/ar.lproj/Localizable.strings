@@ -1,0 +1,158 @@
+/* 
+ * Localizable.strings (Arabic - UAE)
+ * ALADDIN - AI Family Protection
+ * Arabic localization for UAE
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+ * COMMON
+ * ═══════════════════════════════════════════════════════════════ */
+
+"app.name" = "ALADDIN AI";
+"app.tagline" = "حماية الأسرة بالذكاء الاصطناعي";
+"common.ok" = "موافق";
+"common.cancel" = "إلغاء";
+"common.done" = "تم";
+"common.save" = "حفظ";
+"common.delete" = "حذف";
+"common.edit" = "تعديل";
+"common.close" = "إغلاق";
+"common.back" = "رجوع";
+"common.next" = "التالي";
+"common.loading" = "جاري التحميل...";
+"common.error" = "خطأ";
+"common.success" = "نجح";
+"common.warning" = "تحذير";
+
+/* ═══════════════════════════════════════════════════════════════
+ * MAIN SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"main.title" = "ALADDIN AI";
+"main.subtitle" = "حماية الأسرة بالذكاء الاصطناعي";
+"main.network_protection.title" = "حماية الشبكة";
+"main.functions.title" = "الوظائف الرئيسية";
+"main.quick.actions" = "الإجراءات السريعة";
+"main.emergency" = "المساعدة الطارئة";
+"main.parental.control" = "التحكم الأبوي";
+"main.device.security" = "أمان الجهاز";
+
+/* ═══════════════════════════════════════════════════════════════
+ * FAMILY SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"family.title" = "عائلة ALADDIN AI";
+"family.subtitle" = "احم عائلتك";
+"family.members" = "أعضاء العائلة";
+"family.add.member" = "إضافة عضو";
+"family.invite" = "دعوة العائلة";
+"family.settings" = "إعدادات العائلة";
+"family.protection" = "حماية العائلة";
+"family.status" = "الحالة";
+"family.online" = "متصل";
+"family.offline" = "غير متصل";
+
+/* ═══════════════════════════════════════════════════════════════
+ * Network Protection Screen
+ * ═══════════════════════════════════════════════════════════════ */
+
+"network_protection.title" = "حماية الشبكة";
+"network_protection.status" = "حالة حماية الشبكة";
+"network_protection.connected" = "متصل";
+"network_protection.disconnected" = "غير متصل";
+"network_protection.connect" = "اتصال";
+"network_protection.disconnect" = "قطع الاتصال";
+"network_protection.server" = "الخادم";
+"network_protection.location" = "الموقع";
+"network_protection.speed" = "السرعة";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ANALYTICS SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"analytics.title" = "التحليلات";
+"analytics.threats" = "التهديدات";
+"analytics.blocked" = "محظور";
+"analytics.today" = "اليوم";
+"analytics.week" = "هذا الأسبوع";
+"analytics.month" = "هذا الشهر";
+"analytics.top.threats" = "أهم التهديدات";
+"analytics.protection.level" = "مستوى الحماية";
+
+/* ═══════════════════════════════════════════════════════════════
+ * SETTINGS SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"settings.title" = "الإعدادات";
+"settings.account" = "الحساب";
+"settings.privacy" = "الخصوصية";
+"settings.notifications" = "الإشعارات";
+"settings.language" = "اللغة";
+"settings.about" = "حول";
+"settings.support" = "الدعم";
+"settings.logout" = "تسجيل الخروج";
+
+/* ═══════════════════════════════════════════════════════════════
+ * AI ASSISTANT SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"ai.title" = "مساعد الذكاء الاصطناعي";
+"ai.ask.question" = "اسأل سؤالاً";
+"ai.typing" = "جاري الكتابة...";
+"ai.suggestions" = "الاقتراحات";
+"ai.help" = "المساعدة";
+"ai.security.tips" = "نصائح الأمان";
+"ai.family.tips" = "نصائح العائلة";
+
+/* ═══════════════════════════════════════════════════════════════
+ * PARENTAL CONTROL SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"parental.title" = "التحكم الأبوي";
+"parental.children" = "الأطفال";
+"parental.time.limits" = "حدود الوقت";
+"parental.content.filter" = "تصفية المحتوى";
+"parental.app.blocking" = "حظر التطبيقات";
+"parental.location.tracking" = "تتبع الموقع";
+"parental.screen.time" = "وقت الشاشة";
+
+/* ═══════════════════════════════════════════════════════════════
+ * CHILD INTERFACE SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child.title" = "مرحباً، %@!";
+"child.subtitle" = "حمايتك نشطة";
+"child.all.ok" = "كل شيء على ما يرام!";
+"child.need.help" = "تحتاج مساعدة!";
+"child.protected" = "حمايتك نشطة";
+"child.contact.parents" = "اتصل بالوالدين";
+"child.sos" = "SOS - استدعاء المساعدة";
+"child.call" = "اتصل بـ %@";
+"child.settings" = "إعداداتي";
+"child.achievements" = "إنجازاتي";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ELDERLY INTERFACE SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"elderly.title" = "مرحباً، %@!";
+"elderly.subtitle" = "حمايتك نشطة";
+"elderly.all.ok" = "كل شيء على ما يرام!";
+"elderly.need.help" = "تحتاج مساعدة!";
+"elderly.protected" = "حمايتك نشطة";
+"elderly.contact.family" = "اتصل بالعائلة";
+"elderly.sos" = "SOS - استدعاء المساعدة";
+"elderly.call" = "اتصل بـ %@";
+"elderly.settings" = "إعداداتي";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ERRORS AND MESSAGES
+ * ═══════════════════════════════════════════════════════════════ */
+
+"error.network" = "خطأ في الشبكة. يرجى التحقق من اتصال الإنترنت.";
+"error.unknown" = "حدث خطأ غير معروف.";
+"error.invalid.credentials" = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+"error.password.mismatch" = "كلمات المرور غير متطابقة.";
+"success.saved" = "تم حفظ البيانات بنجاح!";
+"success.purchase" = "تم شراء الاشتراك بنجاح!";
+"success.email.sent" = "تم إرسال البريد الإلكتروني إلى عنوانك.";

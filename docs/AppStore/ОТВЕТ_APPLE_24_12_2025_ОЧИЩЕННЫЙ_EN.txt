@@ -1,0 +1,440 @@
+Hello Vadim!
+
+Thank you for your inquiry and assistance during the review process. Following up on our conversation, we would like to clarify the following.
+
+We provide security and parental control features using standard iOS APIs and our server backend, without using NEVPNManager API, Screen Time API, or PermissionKit framework.
+
+1. TECHNICAL IMPLEMENTATION - STANDARD iOS APIs ONLY
+
+A. Security Features
+
+1. Local Data Protection
+
+Framework: LocalAuthentication (standard iOS API)
+
+File: Core/Security/SecurityManager.swift
+
+Usage: Biometric authentication for app access (Face ID/Touch ID)
+
+Example workflow:
+
+1. User opens the application
+
+2. System requests biometric authentication through LocalAuthentication
+
+3. Data is processed only on the device, never transmitted
+
+4. After successful authentication, user gains access to the application
+
+Standard API, does not require special permissions
+
+Framework: CryptoKit (standard iOS API)
+
+File: Core/Security/SecurityManager.swift
+
+Usage: Local encryption of user data (AES-256-GCM)
+
+Example workflow:
+
+1. User data (tokens, settings) is encrypted locally on the device
+
+2. AES-256-GCM encryption algorithm from CryptoKit is used
+
+3. Encryption keys are stored in Keychain (Security framework)
+
+4. Encrypted data may be sent to backend, but keys never leave the device
+
+Standard API, data is encrypted only on the device
+
+Framework: Security (Keychain Services) (standard iOS API)
+
+File: Core/Security/SecurityManager.swift
+
+Usage: Secure storage of tokens, passwords, encryption keys
+
+Example workflow:
+
+1. Application saves access tokens in Keychain through Security framework
+
+2. Keychain provides hardware-level data protection (Secure Enclave on supported devices)
+
+3. Data is accessible only to the application itself and its extensions through App Groups
+
+4. When the application is deleted, data is automatically removed from Keychain
+
+Standard API, data is stored locally
+
+2. Network Communication
+
+Framework: URLSession (standard iOS API)
+
+File: Core/Network/NetworkManager.swift
+
+Usage: HTTPS communication with backend server
+
+Implementation: SSL Pinning for certificate validation
+
+Example workflow:
+
+1. Application establishes HTTPS connection with backend server through URLSession
+
+2. SSL Pinning verifies that server certificate matches expected one
+
+3. All data is transmitted through encrypted HTTPS connection (TLS 1.2+)
+
+4. Backend server receives only anonymized metadata (URLs, domains, content types)
+
+Standard API, no VPN functionality
+
+3. Content Blocker Extension for Safari
+
+Framework: SafariServices (SFContentBlockerManager) (standard iOS API)
+
+File: Core/ContentBlocker/ContentBlockerManager.swift
+
+Extension: ALADDINContentBlocker/ActionRequestHandler.swift
+
+Usage: Blocking unwanted content in Safari browser
+
+Example workflow:
+
+1. Parent configures blocking categories in the application (adult content, violence, gambling)
+
+2. Application creates JSON blocking rules according to Apple Content Blocker standard
+
+3. Rules are saved in App Group (group.com.aladdin.family) for sharing with Extension
+
+4. SFContentBlockerManager activates Content Blocker Extension
+
+5. When child opens Safari and attempts to access a blocked website, Safari automatically blocks it according to rules
+
+6. Child sees "Website blocked" page instead of content
+
+Standard iOS API, works only in Safari.
+
+What we do NOT use:
+
+NEVPNManager - Not used (NetworkExtension framework is commented out in code)
+
+VPN functionality - Removed from application according to Apple guidelines
+
+4. Backend Security Analysis
+
+File: Core/Network/APIService.swift
+
+Endpoints: /protection/*, /analytics/threats
+
+Example workflow:
+
+1. Application sends anonymized metadata (URLs, domains, content types) to our backend server
+
+2. Backend analyzes data using AI/ML on server side, not on device
+
+3. Backend identifies potential threats (fraudulent websites, phishing, malicious content)
+
+4. Results are returned to application as recommendations and alerts.
+
+5. User receives notification about potential threat for the entire family, enabling quick response to threat.
+
+6. User makes informed decision based on recommendations
+
+7. NO blocking or forced enforcement at system level - we provide only recommendations
+
+B. Parental Control Features
+
+1. Settings Interface
+
+Framework: SwiftUI (standard iOS API)
+
+File: Screens/07_ParentalControlScreen.swift
+
+Usage: User interface for parental control settings
+
+Example workflow:
+
+1. Parent opens "Parental Control" screen in application
+
+2. SwiftUI displays interface with settings (time limits, content categories, rules)
+
+3. Parent configures preferences through standard SwiftUI components (Toggle, Picker, Slider)
+
+4. Settings are saved locally and synchronized with backend
+
+Standard API
+
+Framework: UserDefaults / @AppStorage (standard iOS API)
+
+File: ViewModels/ParentalControlViewModel.swift
+
+Usage: Local storage of user preferences
+
+Example workflow:
+
+1. Parent configures rules (for example, "block adult content")
+
+2. Settings are saved locally in UserDefaults through @AppStorage
+
+3. On next app launch, settings are loaded automatically
+
+4. Settings are also synchronized with backend for use on other family devices
+
+Standard API
+
+2. Backend Analytics and Reports
+
+File: Core/Network/APIService.swift
+
+Endpoints: /api/v1/parental-control/*, /analytics
+
+Example workflow:
+
+1. Parent configures preferences in application (for example, "track app usage time")
+
+2. Preferences are stored on backend server
+
+3. Application sends activity metadata (app types, usage time, content categories) to backend
+
+4. Backend provides analytics and reports (for example, "child used YouTube for 2 hours today")
+
+5. Application displays reports to parents in convenient format
+
+6. Parents receive notifications about important events (for example, "child attempted to access blocked website")
+
+7. Parents use reports to communicate with children and guide their behavior
+
+8. NO forced enforcement at system level - parents use reports for family communication
+
+What we do NOT use:
+
+Screen Time API - Not used (we provide our own monitoring through backend analytics)
+
+PermissionKit framework - Not used (we use standard iOS permission requests)
+
+3. Notifications
+
+Framework: UserNotifications (standard iOS API)
+
+File: Core/Notifications/NotificationManager.swift
+
+Usage: Local notifications and Push Notifications through Apple Push Notification Service (APNs)
+
+Example workflow:
+
+1. Backend detects potential threat or important event
+
+2. Backend sends Push Notification to parents through Apple Push Notification Service (APNs)
+
+3. Parents receive notification on device within 2-7 seconds
+
+4. Notification contains information about event (for example, "child attempted to access blocked website")
+
+5. Parent can open application to view detailed report
+
+Standard API, requires user consent
+
+4. Optional Geofencing Services
+
+Framework: CoreLocation (standard iOS API, optional)
+
+Usage: Family security features (geofences, location sharing)
+
+Permission: Requested with clear description in Info.plist
+
+Example workflow:
+
+1. Parent enables "Geofences" feature in settings
+
+2. Application requests permission to use geolocation with clear description: "For family security features (geofences, location sharing)"
+
+3. If user gives consent, application can track location to create geofences (for example, "home", "school" sports section or friends)
+
+4. Parent receives notifications when child enters or exits geofence
+
+5. User can disable this feature at any time in settings
+
+Standard API, requires user consent
+
+2. OUR APPROACH: ADVISORY SECURITY AND FAMILY GUIDANCE
+
+How security works (full cycle example):
+
+1. User enables security features in application
+
+   - User opens security settings
+
+   - Enables "Protection from fraudulent websites" option
+
+2. Application encrypts data locally (CryptoKit)
+
+   - User settings are encrypted locally on device
+
+   - Encryption keys are stored in Keychain
+
+3. Encrypted data is sent to backend through HTTPS
+
+   - Application sends anonymized metadata (URLs, domains) to backend
+
+   - Connection is protected by SSL Pinning
+
+4. Backend analyzes using AI/ML
+
+   - Backend analyzes metadata on server
+
+   - Identifies potential threats (phishing, fraud, malicious content)
+
+5. Results are sent back as recommendations
+
+   - Backend sends analysis results to application
+
+   - Application displays alerts and recommendations
+
+6. Application displays alerts and suggestions
+
+   - User sees notification: Potentially dangerous website detected
+
+   - User can view detailed information
+
+7. User makes informed decisions
+
+   - User decides whether to follow recommendation
+
+   - NO blocking or forced enforcement at system level
+
+How parental control works (full cycle example):
+
+1. Parent configures rules in application
+
+   - Parent opens "Parental Control" screen
+
+   - Configures rules: "block adult content", "game time limit: 1 hour per day"
+
+2. Rules are stored locally and on backend
+
+   - Rules are saved in UserDefaults locally
+
+   - Rules are also synchronized with backend for use on other devices
+
+3. Backend provides analytics and reports
+
+   - Application sends activity metadata to backend
+
+   - Backend analyzes and creates reports: "child used games for 1.5 hours today"
+
+4. Parent receives reports in application
+
+   - Parent opens application and sees report: Statistics for today: games - 1.5 hours (limit: 1 hour)
+
+   - Parent receives Push Notification: Child exceeded game time limit
+
+5. Parent uses reports to guide children
+
+   - Parent discusses limit exceedance with child
+
+   - Parent uses family communication tools in application
+
+6. Family communication tools are available
+
+   - Application provides features for family communication (chat, messaging)
+
+   - Parents and children can communicate through application
+
+NO forced restrictions or monitoring at system level
+
+3. COMPLIANCE WITH APPLE GUIDELINES
+
+Guideline 2.1 - Performance:
+
+- We use only standard iOS APIs
+
+- No restricted frameworks or private APIs
+
+- All functionality works as described
+
+- Example: All used frameworks (LocalAuthentication, CryptoKit, Security, URLSession, SafariServices, SwiftUI, UserDefaults, UserNotifications, CoreLocation) are standard iOS APIs available to all developers
+
+4. SUMMARY
+
+Our application provides:
+
+Advisory security features (threat detection, recommendations)
+
+- Content Blocker Extension for Safari (blocking on device)
+
+- Backend AI/ML analysis for threat detection
+
+- Notifications and recommendations to users
+
+Family guidance tools (settings, reports, communication)
+
+- Parental control rules configuration
+
+- Activity analytics and reports
+
+- Family communication tools
+
+Educational content about security
+
+- Information about potential threats
+
+- Recommendations for safe internet use
+
+Backend-powered analytics
+
+- AI/ML analysis on server
+
+- Fast notifications through APNs
+
+Our application does NOT provide:
+
+Security blocking at system level
+
+- We do not block access to applications or iOS features
+
+- We provide only recommendations and alerts
+
+Forced parental control restrictions
+
+- We do not apply restrictions at system level
+
+- Parents use reports to communicate with children
+
+VPN functionality (removed according to guidelines)
+
+- NEVPNManager is not used
+
+- NetworkExtension framework is commented out
+
+Screen time monitoring at system level
+
+- Screen Time API is not used
+
+- We provide our own analytics through backend
+
+We use:
+
+Standard iOS APIs:
+
+- LocalAuthentication (biometric authentication)
+
+- CryptoKit (data encryption)
+
+- Security framework (Keychain Services)
+
+- URLSession (HTTPS communication)
+
+- SafariServices (Content Blocker Extension)
+
+- SwiftUI (user interface)
+
+- UserDefaults / @AppStorage (local storage)
+
+- UserNotifications (notifications)
+
+- CoreLocation (optionally, with user permission)
+
+If you need additional technical details, code examples, or screenshots of feature functionality, we are ready to provide them.
+
+Best regards,
+Sergey Khlystov
+ALADDIN
+

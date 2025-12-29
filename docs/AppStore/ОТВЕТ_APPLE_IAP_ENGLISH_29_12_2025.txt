@@ -1,0 +1,35 @@
+Hello, Apple Review Team!
+
+Thank you for your feedback on Build 16 and Guideline 2.1 - Performance - App Completeness (IAP error).
+
+We have conducted a detailed analysis of the In-App Purchase issue:
+
+1. APPLICATION CODE REVIEW:
+✅ StoreManager.swift - correctly implemented with StoreKit 2
+✅ TariffsViewModel.swift - properly handles product loading
+✅ All Product IDs are correctly specified
+✅ Bundle ID matches: family.aladdin.ios
+✅ IAP error localization implemented
+
+2. DEVICE LOGS ANALYSIS:
+Logs show that:
+- ✅ Requests are sent to Apple Sandbox API correctly
+- ✅ Product IDs are transmitted properly
+- ❌ Apple Sandbox API returns "Parsing 0 products in response"
+
+3. APP STORE CONNECT CHECK:
+- ✅ All 3 products are created and linked to the app
+- ⚠️ Product status: "Waiting for Review" (under review)
+
+CONCLUSION:
+The problem is NOT in the application code. The code works correctly. The issue is that products are under review in App Store Connect and are not yet available for Sandbox testing. Apple Sandbox API does not return products that have not been approved yet.
+
+SOLUTION:
+After products are approved in App Store Connect, they will become available for Sandbox testing, and IAP will work correctly.
+
+We are ready to test IAP immediately after products are approved.
+
+Best regards,
+Sergey Khlystov
+ALADDIN
+

@@ -1,0 +1,238 @@
+═══════════════════════════════════════════════════════════════
+  ПОДРОБНАЯ ИНСТРУКЦИЯ ДЛЯ ML СИСТЕМЫ: ЗАВЕРШЕНИЕ НАСТРОЙКИ
+═══════════════════════════════════════════════════════════════
+
+КОНТЕКСТ И ИСТОРИЯ ПРОБЛЕМЫ
+═══════════════════════════════════════════════════════════════
+
+1. ПРОЕКТ: iOS приложение ALADDIN с Content Blocker Extension
+   - Основное приложение: family.aladdin.ios
+   - Extension: family.aladdin.ios.ALADDINContentBlocker
+
+2. ПРОБЛЕМА: Сборка в GitHub Actions падает с ошибкой:
+   "Provisioning profile has app ID 'family.aladdin.ios.packetTunnel', 
+   which does not match the bundle ID 'family.aladdin.ios.ALADDINContentBlocker'"
+
+3. ПРИЧИНА: В GitHub Secrets был указан UUID старого профиля для 
+   ALADDINPacketTunnel (удаленного extension), а не для нового 
+   ALADDINContentBlocker.
+
+4. ЧТО УЖЕ СДЕЛАНО:
+   ✅ Создан App ID: family.aladdin.ios.ALADDINContentBlocker
+   ✅ Создан Provisioning Profile: "ALADDINContentBlocker App Store Distribution"
+   ✅ Профиль скачан: ~/Downloads/ALADDINContentBlocker_App_Store_Distribution (2).mobileprovision
+   ✅ UUID извлечен: 1791d690-8bed-4fc2-a5cb-34d7be856b7d
+   ✅ Bundle ID подтвержден: 6CJVBBUGSN.family.aladdin.ios.ALADDINContentBlocker
+
+5. ЧТО ОСТАЛОСЬ СДЕЛАТЬ:
+   ❌ Извлечь base64 из скачанного профиля
+   ❌ Обновить GitHub Secrets новыми значениями
+   ❌ Запустить сборку и проверить результат
+
+
+ТЕКУЩЕЕ СОСТОЯНИЕ
+═══════════════════════════════════════════════════════════════
+
+ФАЙЛ ПРОФИЛЯ:
+- Путь: ~/Downloads/ALADDINContentBlocker_App_Store_Distribution (2).mobileprovision
+- Размер: ~12KB (нормальный размер для provisioning profile)
+- UUID: 1791d690-8bed-4fc2-a5cb-34d7be856b7d
+- Bundle ID: 6CJVBBUGSN.family.aladdin.ios.ALADDINContentBlocker
+- Тип: App Store Distribution
+- Команда: SERGEY KHLYSTOV (6CJVBBUGSN)
+
+GITHUB SECRETS (текущие - НЕПРАВИЛЬНЫЕ):
+- PROVISIONING_PROFILE_EXTENSION_UUID: d1e59dc9-2171-4eca-a316-1bf714c895ec
+  (Это UUID старого профиля для ALADDINPacketTunnel - НЕПРАВИЛЬНО!)
+  
+- PROVISIONING_PROFILE_EXTENSION: (base64 старого профиля - НЕПРАВИЛЬНО!)
+
+GITHUB SECRETS (нужные - ПРАВИЛЬНЫЕ):
+- PROVISIONING_PROFILE_EXTENSION_UUID: 1791d690-8bed-4fc2-a5cb-34d7be856b7d
+  (Новый UUID для ALADDINContentBlocker - ПРАВИЛЬНО!)
+  
+- PROVISIONING_PROFILE_EXTENSION: (нужно извлечь base64 из файла)
+
+
+ЗАДАЧА ДЛЯ ML СИСТЕМЫ
+═══════════════════════════════════════════════════════════════
+
+ШАГ 1: ИЗВЛЕЧЕНИЕ BASE64 ИЗ ПРОФИЛЯ
+───────────────────────────────────────────────────────────────
+
+1. Файл находится по пути:
+   ~/Downloads/ALADDINContentBlocker_App_Store_Distribution (2).mobileprovision
+
+2. Выполните команду в терминале:
+   base64 -i ~/Downloads/ALADDINContentBlocker_App_Store_Distribution\ \(2\).mobileprovision > ~/Downloads/BASE64_CONTENT_BLOCKER.txt
+
+   Или если путь с пробелами вызывает проблемы:
+   cd ~/Downloads
+   base64 -i "ALADDINContentBlocker_App_Store_Distribution (2).mobileprovision" > BASE64_CONTENT_BLOCKER.txt
+
+3. Проверьте что файл создан:
+   ls -lh ~/Downloads/BASE64_CONTENT_BLOCKER.txt
+   
+   Размер должен быть примерно 16-17KB (base64 больше оригинала на ~33%)
+
+4. Проверьте первые символы (должны быть буквы/цифры, не HTML):
+   head -c 50 ~/Downloads/BASE64_CONTENT_BLOCKER.txt
+   
+   Должно быть что-то вроде: MIIwIAYJKoZIhvcNAQcCoIIwETCCMA0CAQExCzAJBgUrDgMCGgUAMIIgLQYJKoZIhvcNAQcBoIIgHgSCIBo...
+
+
+ШАГ 2: СОЗДАНИЕ ФАЙЛА С ДАННЫМИ ДЛЯ GITHUB SECRETS
+───────────────────────────────────────────────────────────────
+
+1. UUID уже известен: 1791d690-8bed-4fc2-a5cb-34d7be856b7d
+
+2. Base64 нужно прочитать из файла:
+   cat ~/Downloads/BASE64_CONTENT_BLOCKER.txt
+
+3. Создайте файл с инструкцией:
+   ~/Downloads/GITHUB_SECRETS_ИНСТРУКЦИЯ.txt
+
+4. Содержимое файла должно быть:
+
+═══════════════════════════════════════════════════════════════
+  ДАННЫЕ ДЛЯ GITHUB SECRETS - CONTENT BLOCKER EXTENSION
+═══════════════════════════════════════════════════════════════
+
+СЕКРЕТ 1: PROVISIONING_PROFILE_EXTENSION_UUID
+═══════════════════════════════════════════════════════════════
+1791d690-8bed-4fc2-a5cb-34d7be856b7d
+
+СЕКРЕТ 2: PROVISIONING_PROFILE_EXTENSION
+═══════════════════════════════════════════════════════════════
+[ВСТАВИТЬ СЮДА ВЕСЬ BASE64 ИЗ ФАЙЛА BASE64_CONTENT_BLOCKER.txt]
+
+═══════════════════════════════════════════════════════════════
+  ИНСТРУКЦИЯ ПО ОБНОВЛЕНИЮ GITHUB SECRETS
+═══════════════════════════════════════════════════════════════
+
+1. Откройте: https://github.com/sergey234/ALADDIN_FAMILY/settings/secrets/actions
+
+2. Обновите PROVISIONING_PROFILE_EXTENSION_UUID:
+   - Нажмите на секрет (или иконку карандаша справа)
+   - В поле "Value" удалите старое значение: d1e59dc9-2171-4eca-a316-1bf714c895ec
+   - Вставьте новое значение: 1791d690-8bed-4fc2-a5cb-34d7be856b7d
+   - Нажмите "Update secret"
+
+3. Обновите PROVISIONING_PROFILE_EXTENSION:
+   - Нажмите на секрет (или иконку карандаша справа)
+   - В поле "Value" удалите старое значение (весь старый base64)
+   - Вставьте ВЕСЬ новый base64 из файла BASE64_CONTENT_BLOCKER.txt
+   - ВАЖНО: Вставьте ВЕСЬ текст, даже если он очень длинный (16-17KB)!
+   - Прокрутите вниз чтобы убедиться что всё вставлено
+   - Нажмите "Update secret"
+
+4. После обновления GitHub Actions автоматически запустит сборку
+   Или запустите вручную: https://github.com/sergey234/ALADDIN_FAMILY/actions
+
+═══════════════════════════════════════════════════════════════
+
+
+ШАГ 3: ПРОВЕРКА И ЗАПУСК СБОРКИ
+───────────────────────────────────────────────────────────────
+
+1. После обновления секретов проверьте что они обновлены:
+   - PROVISIONING_PROFILE_EXTENSION_UUID должен быть: 1791d690-8bed-4fc2-a5cb-34d7be856b7d
+   - PROVISIONING_PROFILE_EXTENSION должен быть новым base64 (длина ~16-17KB)
+
+2. Запустите сборку в GitHub Actions:
+   https://github.com/sergey234/ALADDIN_FAMILY/actions
+   Нажмите "Run workflow" → "Run workflow"
+
+3. Сборка должна пройти успешно, так как:
+   ✅ Правильный UUID для ALADDINContentBlocker
+   ✅ Правильный base64 профиля
+   ✅ Bundle ID совпадает: family.aladdin.ios.ALADDINContentBlocker
+
+
+ВАЖНЫЕ ЗАМЕЧАНИЯ
+═══════════════════════════════════════════════════════════════
+
+1. НЕ используйте старый UUID: d1e59dc9-2171-4eca-a316-1bf714c895ec
+   Это UUID для удаленного ALADDINPacketTunnel extension!
+
+2. Используйте ТОЛЬКО новый UUID: 1791d690-8bed-4fc2-a5cb-34d7be856b7d
+   Это UUID для нового ALADDINContentBlocker extension!
+
+3. Base64 должен быть из файла:
+   ~/Downloads/ALADDINContentBlocker_App_Store_Distribution (2).mobileprovision
+
+4. Base64 должен быть ОЧЕНЬ длинным (16-17KB символов) - это нормально!
+
+5. После обновления секретов нужно обновить project.pbxproj:
+   В файле ALADDIN.xcodeproj/project.pbxproj для Release конфигурации
+   ALADDINContentBlocker должно быть:
+   PROVISIONING_PROFILE_SPECIFIER = "1791d690-8bed-4fc2-a5cb-34d7be856b7d";
+
+
+ТЕХНИЧЕСКИЕ ДЕТАЛИ
+═══════════════════════════════════════════════════════════════
+
+ПРОЕКТ:
+- Путь: /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+- Xcode проект: ALADDIN.xcodeproj
+- Основной target: ALADDIN
+- Extension target: ALADDINContentBlocker
+
+FASTFILE:
+- Путь: fastlane/Fastfile
+- Уже настроен для использования PROVISIONING_PROFILE_EXTENSION_UUID
+- Переменная окружения: ENV["PROVISIONING_PROFILE_EXTENSION_UUID"]
+
+WORKFLOW:
+- Путь: .github/workflows/check-secrets.yml
+- Уже настроен для загрузки extension профиля
+- Использует секреты: PROVISIONING_PROFILE_EXTENSION и PROVISIONING_PROFILE_EXTENSION_UUID
+
+PROJECT.PBXPROJ:
+- Текущее значение для ALADDINContentBlocker Release:
+  PROVISIONING_PROFILE_SPECIFIER = "d1e59dc9-2171-4eca-a316-1bf714c895ec"
+  (НЕПРАВИЛЬНО - это старый UUID!)
+  
+- Нужно изменить на:
+  PROVISIONING_PROFILE_SPECIFIER = "1791d690-8bed-4fc2-a5cb-34d7be856b7d"
+  (ПРАВИЛЬНО - новый UUID!)
+
+
+КОМАНДЫ ДЛЯ ВЫПОЛНЕНИЯ
+═══════════════════════════════════════════════════════════════
+
+1. Извлечение base64:
+   cd ~/Downloads
+   base64 -i "ALADDINContentBlocker_App_Store_Distribution (2).mobileprovision" > BASE64_CONTENT_BLOCKER.txt
+
+2. Проверка base64:
+   wc -c BASE64_CONTENT_BLOCKER.txt
+   (должно быть примерно 16000-17000 символов)
+
+3. Обновление project.pbxproj (если нужно):
+   cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+   # Найти строку с PROVISIONING_PROFILE_SPECIFIER для ALADDINContentBlocker Release
+   # Заменить d1e59dc9-2171-4eca-a316-1bf714c895ec на 1791d690-8bed-4fc2-a5cb-34d7be856b7d
+
+4. Коммит изменений (если обновляли project.pbxproj):
+   git add ALADDIN.xcodeproj/project.pbxproj
+   git commit -m "fix: Update PROVISIONING_PROFILE_SPECIFIER for ALADDINContentBlocker to new UUID"
+   git push origin master
+
+
+ИТОГОВЫЙ ЧЕКЛИСТ
+═══════════════════════════════════════════════════════════════
+
+- [ ] Извлечен base64 из профиля в файл BASE64_CONTENT_BLOCKER.txt
+- [ ] Проверен размер base64 (должен быть ~16-17KB)
+- [ ] Обновлен GitHub Secret PROVISIONING_PROFILE_EXTENSION_UUID на: 1791d690-8bed-4fc2-a5cb-34d7be856b7d
+- [ ] Обновлен GitHub Secret PROVISIONING_PROFILE_EXTENSION на новый base64
+- [ ] Обновлен project.pbxproj (PROVISIONING_PROFILE_SPECIFIER для ALADDINContentBlocker)
+- [ ] Изменения закоммичены и запушены в GitHub (если обновляли project.pbxproj)
+- [ ] Запущена сборка в GitHub Actions
+- [ ] Сборка прошла успешно
+
+═══════════════════════════════════════════════════════════════
+  КОНЕЦ ИНСТРУКЦИИ
+═══════════════════════════════════════════════════════════════
+

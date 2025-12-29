@@ -1,0 +1,86 @@
+═══════════════════════════════════════════════════════════════
+  ИНСТРУКЦИЯ: СОЗДАНИЕ PROVISIONING PROFILE ДЛЯ EXTENSION
+═══════════════════════════════════════════════════════════════
+
+❌ ПРОБЛЕМА:
+Provisioning profile "ALADDIN App Store Distribution" создан только 
+для основного приложения (family.aladdin.ios), но не поддерживает 
+Content Blocker Extension (family.aladdin.ios.ALADDINContentBlocker).
+
+✅ РЕШЕНИЕ:
+Нужно создать ОТДЕЛЬНЫЙ provisioning profile для Extension.
+
+═══════════════════════════════════════════════════════════════
+  ШАГ 1: СОЗДАНИЕ APP ID ДЛЯ EXTENSION
+═══════════════════════════════════════════════════════════════
+
+1. Откройте: https://developer.apple.com/account/resources/identifiers/list
+2. Нажмите "+" (синяя кнопка)
+3. Выберите "App IDs" → Continue
+4. Выберите "App" → Continue
+5. Заполните:
+   - Description: ALADDIN Content Blocker Extension
+   - Bundle ID: Explicit → family.aladdin.ios.ALADDINContentBlocker
+6. Включите:
+   - ✅ App Groups
+7. Continue → Register
+
+═══════════════════════════════════════════════════════════════
+  ШАГ 2: СОЗДАНИЕ PROVISIONING PROFILE ДЛЯ EXTENSION
+═══════════════════════════════════════════════════════════════
+
+1. Откройте: https://developer.apple.com/account/resources/profiles/list
+2. Нажмите "+" (синяя кнопка)
+3. Выберите "App Store" → Continue
+4. Выберите App ID: family.aladdin.ios.ALADDINContentBlocker → Continue
+5. Выберите сертификат: "Apple Distribution: SERGEY KHLYSTOV" → Continue
+6. Name: ALADDINContentBlocker App Store Distribution → Generate
+7. Скачайте профиль (.mobileprovision файл)
+
+═══════════════════════════════════════════════════════════════
+  ШАГ 3: ИЗВЛЕЧЕНИЕ UUID ПРОФИЛЯ
+═══════════════════════════════════════════════════════════════
+
+1. Откройте скачанный .mobileprovision файл в текстовом редакторе
+2. Найдите: <key>UUID</key>
+3. Скопируйте UUID из следующей строки:
+   <string>XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX</string>
+
+Пример UUID: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+
+═══════════════════════════════════════════════════════════════
+  ШАГ 4: BASE64 КОДИРОВАНИЕ ПРОФИЛЯ
+═══════════════════════════════════════════════════════════════
+
+В терминале выполните:
+base64 -i ~/Downloads/ALADDINContentBlocker_App_Store_Distribution.mobileprovision | pbcopy
+
+(Замените путь на ваш)
+
+Base64 скопирован в буфер обмена.
+
+═══════════════════════════════════════════════════════════════
+  ШАГ 5: ОБНОВЛЕНИЕ GITHUB SECRETS
+═══════════════════════════════════════════════════════════════
+
+1. Откройте: https://github.com/sergey234/ALADDIN_FAMILY/settings/secrets/actions
+2. Добавьте/обновите секреты:
+
+   СЕКРЕТ 1: PROVISIONING_PROFILE_EXTENSION_UUID
+   - Name: PROVISIONING_PROFILE_EXTENSION_UUID
+   - Value: UUID из ШАГ 3
+
+   СЕКРЕТ 2: PROVISIONING_PROFILE_EXTENSION
+   - Name: PROVISIONING_PROFILE_EXTENSION
+   - Value: Base64 из ШАГ 4 (весь текст)
+
+═══════════════════════════════════════════════════════════════
+  ✅ ГОТОВО!
+═══════════════════════════════════════════════════════════════
+
+После обновления секретов:
+1. Запустите сборку в GitHub Actions
+2. Сборка должна пройти успешно
+
+═══════════════════════════════════════════════════════════════
+

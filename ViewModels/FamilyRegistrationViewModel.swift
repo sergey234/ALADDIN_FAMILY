@@ -254,15 +254,27 @@ class FamilyRegistrationViewModel: ObservableObject {
         // МОКОВЫЕ ДАННЫЕ для тестирования (без реального API)
         isLoading = false
         
-        // Генерируем фиктивные данные
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Генерируем фиктивные данные с логированием
         let mockFamilyID = "FAM_\(UUID().uuidString.prefix(12))"
-        let mockRecoveryCode = "FAM-A1B2-C3D4-E5F6"
+        let mockRecoveryCode = "FAM-\(UUID().uuidString.prefix(4).uppercased())-\(UUID().uuidString.prefix(4).uppercased())-\(UUID().uuidString.prefix(4).uppercased())"
+        
+        print("🏠 [FamilyRegistrationViewModel.createFamily] ========== СОЗДАНИЕ СЕМЬИ ==========")
+        print("🏠 [FamilyRegistrationViewModel.createFamily] Роль: \(role.rawValue)")
+        print("🏠 [FamilyRegistrationViewModel.createFamily] Возрастная группа: \(ageGroup.rawValue)")
+        print("🏠 [FamilyRegistrationViewModel.createFamily] Буква: \(letter)")
+        print("🏠 [FamilyRegistrationViewModel.createFamily] Сгенерированный familyID: \(mockFamilyID)")
+        print("🏠 [FamilyRegistrationViewModel.createFamily] Сгенерированный recoveryCode: \(mockRecoveryCode)")
         
         familyID = mockFamilyID
         recoveryCode = mockRecoveryCode
         
-        // ✅ НОВОЕ: Сохраняем family_id в UserDefaults
+        print("🏠 [FamilyRegistrationViewModel.createFamily] familyID установлен: \(familyID ?? "nil")")
+        print("🏠 [FamilyRegistrationViewModel.createFamily] recoveryCode установлен: \(recoveryCode ?? "nil")")
+        
+        // ✅ НОВОЕ: Сохраняем family_id в UserDefaults с принудительной синхронизацией
         UserDefaults.standard.set(mockFamilyID, forKey: "family_id")
+        UserDefaults.standard.synchronize()
+        print("🏠 [FamilyRegistrationViewModel.createFamily] family_id сохранен в UserDefaults: \(mockFamilyID)")
         
         // ✅ НОВОЕ: Автоматически сохраняем Recovery Code в Keychain
         if let recoveryCode = self.recoveryCode,
@@ -272,25 +284,39 @@ class FamilyRegistrationViewModel: ObservableObject {
                 familyID: familyID
             )
             if saved {
-                print("✅ Recovery Code автоматически сохранен в Keychain")
+                print("✅ [FamilyRegistrationViewModel.createFamily] Recovery Code автоматически сохранен в Keychain")
+            } else {
+                print("❌ [FamilyRegistrationViewModel.createFamily] ОШИБКА: Recovery Code НЕ сохранен в Keychain")
             }
+        } else {
+            print("❌ [FamilyRegistrationViewModel.createFamily] ОШИБКА: recoveryCode или familyID = nil")
+            print("   recoveryCode: \(self.recoveryCode ?? "nil")")
+            print("   familyID: \(self.familyID ?? "nil")")
         }
         
         // ✅ НОВОЕ: Сохраняем создателя семьи в family_members_list
         saveCreatorAsFamilyMember(role: role, ageGroup: ageGroup)
+        print("🏠 [FamilyRegistrationViewModel.createFamily] Создатель семьи сохранен в family_members_list")
         
         // ✅ НОВОЕ: Инициализируем стартовый баланс единорога для детей
         // Если это ребенок, устанавливаем стартовый баланс 100 единорогов
         if role == .child || role == .teenager {
             let startBalance = 100 // Стартовый баланс для нового ребенка
             UserDefaults.standard.set(startBalance, forKey: "child_unicorn_balance")
-            print("✅ FamilyRegistration: Установлен стартовый баланс единорога: \(startBalance) 🦄")
+            print("✅ [FamilyRegistrationViewModel.createFamily] Установлен стартовый баланс единорога: \(startBalance) 🦄")
         }
         
         currentStep = .showingRecoveryCode
+        print("🏠 [FamilyRegistrationViewModel.createFamily] currentStep установлен: .showingRecoveryCode")
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Увеличиваем задержку для TestFlight
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            print("🏠 [FamilyRegistrationViewModel.createFamily] Показываем модал через 1.0 сек")
+            print("🏠 [FamilyRegistrationViewModel.createFamily] showFamilyCreatedModal = true")
+            print("🏠 [FamilyRegistrationViewModel.createFamily] familyID перед показом: \(self.familyID ?? "nil")")
+            print("🏠 [FamilyRegistrationViewModel.createFamily] recoveryCode перед показом: \(self.recoveryCode ?? "nil")")
             self.showFamilyCreatedModal = true
+            print("🏠 [FamilyRegistrationViewModel.createFamily] showFamilyCreatedModal установлен: \(self.showFamilyCreatedModal)")
         }
         
         /* ЗАКОММЕНТИРОВАННЫЙ API КОД

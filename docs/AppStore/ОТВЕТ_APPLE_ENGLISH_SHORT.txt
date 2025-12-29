@@ -1,0 +1,12 @@
+Good day, Apple Review team!
+
+Vadim, thank you for your recommendation and assistance during the review process. Following our conversation and your recommendations, we provide the following explanation in the attached letter ОТВЕТ_APPLE_24_12_2025_RU_EN.docx.
+
+Guideline 2.1 - Performance: We use only standard iOS APIs, there are no restricted frameworks or private APIs, all functionality works as described. Example: All frameworks used (LocalAuthentication, CryptoKit, Security, URLSession, SafariServices, SwiftUI, UserDefaults, UserNotifications, CoreLocation) are standard iOS APIs available to all developers.
+
+Best regards,
+
+Sergey Khlystov
+
+ALADDIN
+

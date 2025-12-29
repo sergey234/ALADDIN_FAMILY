@@ -1,0 +1,549 @@
+/* 
+ * Localizable.strings (Russian)
+ * ALADDIN - AI Защита Семьи
+ * Русская локализация
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+ * ОБЩИЕ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"app.name" = "ALADDIN AI";
+"app.tagline" = "AI Защита Семьи";
+"common.ok" = "OK";
+"common.cancel" = "Отмена";
+"common.done" = "Готово";
+"common.save" = "Сохранить";
+"common.delete" = "Удалить";
+"common.edit" = "Редактировать";
+"common.close" = "Закрыть";
+"common.back" = "Назад";
+"common.next" = "Далее";
+"common.loading" = "Загрузка...";
+"common.error" = "Ошибка";
+"common.success" = "Успешно";
+"common.warning" = "Внимание";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ЯЗЫКОВЫЕ НАСТРОЙКИ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"language.settings" = "Язык";
+"language.choose" = "Выберите язык";
+"language.current" = "Текущий язык";
+
+/* ═══════════════════════════════════════════════════════════════
+ * УВЕДОМЛЕНИЯ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"notification.settings" = "Уведомления";
+"notification.manage" = "Управление уведомлениями";
+"notification.types" = "Типы уведомлений";
+"notification.security" = "Безопасность";
+"notification.security.subtitle" = "Угрозы и подозрительная активность";
+"notification.family" = "Семья";
+"notification.family.subtitle" = "Добавление членов семьи";
+"notification.network_protection" = "Защита сети";
+"notification.network_protection.subtitle" = "Подключение и отключение защиты сети";
+"notification.ai" = "AI Помощник";
+"notification.ai.subtitle" = "Сообщения от AI помощника";
+"notification.sound.badge" = "Звук и значок";
+"notification.sound" = "Звук";
+"notification.sound.subtitle" = "Звуковые уведомления";
+"notification.badge" = "Значок";
+"notification.badge.subtitle" = "Красный значок на иконке";
+"notification.quiet.hours" = "Тихие часы";
+"notification.quiet.enabled" = "Включить тихие часы";
+"notification.quiet.subtitle" = "Не беспокоить в указанное время";
+"notification.quiet.start" = "Начало";
+"notification.quiet.end" = "Конец";
+"notification.test" = "Тестовые уведомления";
+"notification.test.security" = "Тест безопасности";
+"notification.test.family" = "Тест семьи";
+"notification.test.network_protection" = "Тест защиты сети";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ВИДЖЕТЫ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"widget.settings" = "Виджеты";
+"widget.configure" = "Настройка виджетов";
+"widget.available" = "Доступные виджеты";
+"widget.family.title" = "Защита семьи";
+"widget.family.description" = "Статус защиты и дети онлайн";
+"widget.network_protection.title" = "Статус защиты сети";
+"widget.network_protection.description" = "Подключение и сервер";
+"widget.analytics.title" = "Аналитика";
+"widget.analytics.description" = "Статистика блокировок";
+"widget.instructions" = "Как добавить виджеты";
+"widget.instruction.1" = "Нажмите и удерживайте пустое место на главном экране";
+"widget.instruction.2" = "Нажмите кнопку + в левом верхнем углу";
+"widget.instruction.3" = "Найдите ALADDIN AI в списке приложений";
+"widget.instruction.4" = "Выберите размер виджета и нажмите Добавить";
+"widget.test.data" = "Тестовые данные";
+"widget.test.set.mock" = "Установить тестовые данные";
+"widget.test.clear" = "Очистить данные";
+"widget.test.reload" = "Обновить виджеты";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ГЛАВНЫЙ ЭКРАН
+ * ═══════════════════════════════════════════════════════════════ */
+
+"main.title" = "ALADDIN AI";
+"main.subtitle" = "AI Защита Семьи";
+"main.network_protection.title" = "ЗАЩИТА СЕТИ";
+"main.functions.title" = "ОСНОВНЫЕ ФУНКЦИИ";
+"main.quick.actions" = "БЫСТРЫЕ ДЕЙСТВИЯ";
+"main.emergency" = "Экстренная помощь";
+"main.parental.control" = "Детский контроль";
+"main.device.security" = "Безопасность устройств";
+
+/* ═══════════════════════════════════════════════════════════════
+ * СЕМЬЯ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"family.title" = "СЕМЬЯ";
+"family.subtitle" = "%d члена под защитой";
+"family.members" = "ЧЛЕНЫ СЕМЬИ";
+"family.add.member" = "Добавить члена семьи";
+"family.add.description" = "Пригласите близких в вашу защищённую сеть";
+"family.stats.threats" = "Угроз";
+"family.stats.protection" = "Защита";
+"family.stats.devices" = "Устройств";
+"family.role.parent" = "Родитель";
+"family.role.child" = "Ребёнок";
+"family.role.teenager" = "Подросток";
+"family.role.elderly" = "Пожилой";
+
+/* ═══════════════════════════════════════════════════════════════
+ * Network Protection
+ * ═══════════════════════════════════════════════════════════════ */
+
+"network_protection.title" = "ЗАЩИТА СЕТИ";
+"network_protection.connected" = "Подключено";
+"network_protection.disconnected" = "Отключено";
+"network_protection.protected" = "ЗАЩИЩЕНО";
+"network_protection.not.protected" = "НЕ ЗАЩИЩЕНО";
+"network_protection.connection.encrypted" = "Ваше соединение зашифровано";
+"network_protection.connection.not.encrypted" = "Ваше соединение не защищено";
+"network_protection.server" = "СЕРВЕР";
+"network_protection.statistics" = "СТАТИСТИКА";
+"network_protection.downloaded" = "Загружено";
+"network_protection.uploaded" = "Отправлено";
+"network_protection.session.time" = "Время сессии";
+"network_protection.threats.blocked" = "Заблокировано";
+"network_protection.connect" = "Включить защиту сети";
+"network_protection.disconnect" = "Отключить защиту сети";
+"network_protection_nav_panel" = "Панель навигации защиты сети";
+"network_protection_cards_list" = "Список карточек защиты сети";
+"network_protection_battery_icon" = "Иконка батареи защиты сети";
+"network_protection_battery_saving" = "Экономия батареи";
+"network_protection_security_features" = "Функции безопасности";
+"network_protection_ad_blocking" = "Блокировка рекламы";
+"network_protection_anti_tracking" = "Антитрекинг";
+"network_protection_threat_protection" = "Защита от угроз";
+"network_protection_quick_actions" = "Быстрые действия";
+"network_protection_settings" = "Настройки";
+"network_protection_help" = "Помощь";
+"network_protection_antivirus" = "Антивирус";
+"network_protection_active" = "Активна";
+"network_protection_inactive" = "Неактивна";
+"network_protection_files_scanned" = "Файлов проверено";
+"network_protection_threats_found" = "Угроз найдено";
+"network_protection_ago" = "назад";
+"network_protection_protection" = "Защита";
+"network_protection_protection_subtitle" = "Защита интернет-соединения";
+"network_protection_scanning" = "Сканирование...";
+"network_protection_start_scan" = "Начать сканирование";
+"network_protection_just_now" = "Только что";
+"network_protection_min" = "мин";
+"network_protection_hour" = "ч";
+"network_protection_never" = "Никогда";
+"network_protection_retry" = "Повторить";
+"network_protection_done" = "Готово";
+"network_protection_auto_select_server" = "Автоматический выбор сервера";
+"network_protection_auto_connect_wifi" = "Автоподключение на Wi-Fi";
+"network_protection_auto_connect_mobile" = "Автоподключение на мобильной сети";
+"network_protection_kill_switch" = "Kill Switch";
+"network_protection_dns_leak_protection" = "Защита от утечки DNS";
+"network_protection_connection_section" = "ПОДКЛЮЧЕНИЕ";
+"network_protection_auto_wifi" = "Автоподключение на Wi-Fi";
+"network_protection_auto_mobile" = "Автоподключение на мобильной сети";
+"network_protection_security_section" = "БЕЗОПАСНОСТЬ";
+"network_protection_dns_leak" = "Защита от утечки DNS";
+"network_protection_battery_saving_section" = "ЭКОНОМИЯ БАТАРЕИ";
+"network_protection_auto_disconnect" = "Автоотключение";
+"network_protection_auto_disconnect_desc" = "Автоматически отключать защиту сети при низком заряде батареи";
+"network_protection_settings_title" = "Настройки защиты сети";
+"network_protection_protection_time" = "Время защиты";
+"network_protection_faq" = "Часто задаваемые вопросы";
+"network_protection_help_antivirus_question" = "Как работает антивирус?";
+"network_protection_help_antivirus_answer" = "Антивирус автоматически проверяет все файлы на наличие вирусов и вредоносного ПО.";
+"network_protection_help_ad_blocking_question" = "Как работает блокировка рекламы?";
+"network_protection_help_ad_blocking_answer" = "Блокировка рекламы убирает назойливую рекламу с веб-сайтов и в приложениях.";
+"network_protection_help_anti_tracking_question" = "Как работает антитрекинг?";
+"network_protection_help_anti_tracking_answer" = "Антитрекинг скрывает вашу активность от сборщиков данных и рекламных сетей.";
+"network_protection_help_encryption_question" = "Как работает шифрование?";
+"network_protection_help_encryption_answer" = "Шифрование защищает ваши данные от перехвата и обеспечивает безопасное соединение.";
+"network_protection_help_threat_protection_question" = "Как работает защита от угроз?";
+"network_protection_help_threat_protection_answer" = "Защита от угроз блокирует опасные сайты и вредоносное ПО до того, как они нанесут вред.";
+"network_protection_help_incognito_question" = "Как работает детекция инкогнито?";
+"network_protection_help_incognito_answer" = "Детекция инкогнито обнаруживает использование режима инкогнито в браузерах.";
+"network_protection_help_tor_question" = "Как работает детекция Tor?";
+"network_protection_help_tor_answer" = "Детекция Tor блокирует использование анонимной сети Tor и .onion сайтов.";
+"network_protection_help_proxy_question" = "Как работает детекция прокси?";
+"network_protection_help_proxy_answer" = "Детекция прокси находит и блокирует использование прокси-серверов (HTTP, HTTPS, SOCKS).";
+"network_protection_help_kill_switch_question" = "Как работает Kill Switch?";
+"network_protection_help_kill_switch_answer" = "Kill Switch автоматически блокирует интернет-соединение, если защита сети отключается.";
+"network_protection_help_dns_leak_question" = "Как работает защита от утечки DNS?";
+"network_protection_help_dns_leak_answer" = "Защита от утечки DNS предотвращает утечку DNS-запросов за пределы защищенного соединения.";
+"network_protection_disconnect_action" = "Отключить защиту сети";
+"network_protection_connect_action" = "Включить защиту сети";
+"network_protection_toggle_hint" = "Переключить защиту сети";
+"network_protection_server_section" = "СЕРВЕР";
+"network_protection_auto_server" = "Автоматический выбор сервера";
+
+/* ═══════════════════════════════════════════════════════════════
+ * АНАЛИТИКА
+ * ═══════════════════════════════════════════════════════════════ */
+
+"analytics.title" = "АНАЛИТИКА";
+"analytics.subtitle" = "Статистика защиты";
+"analytics.overall" = "ОБЩАЯ СТАТИСТИКА";
+"analytics.threats" = "Угроз";
+"analytics.blocked" = "Заблок.";
+"analytics.scanned" = "Проверено";
+"analytics.protection.level" = "УРОВЕНЬ ЗАЩИТЫ";
+"analytics.efficiency" = "Эффективность защиты";
+"analytics.top.threats" = "ТОП УГРОЗ";
+"analytics.threat.types" = "ТИПЫ УГРОЗ";
+"analytics.period.day" = "День";
+"analytics.period.week" = "Неделя";
+"analytics.period.month" = "Месяц";
+
+/* ═══════════════════════════════════════════════════════════════
+ * AI ПОМОЩНИК
+ * ═══════════════════════════════════════════════════════════════ */
+
+"ai.title" = "AI ПОМОЩНИК";
+"ai.subtitle" = "Всегда готов помочь";
+"ai.placeholder" = "Ваше сообщение...";
+"ai.welcome" = "Привет! Я ваш AI помощник. Чем могу помочь?";
+
+/* ═══════════════════════════════════════════════════════════════
+ * РОДИТЕЛЬСКИЙ КОНТРОЛЬ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"parental.title" = "РОДИТЕЛЬСКИЙ КОНТРОЛЬ";
+"parental.subtitle" = "Управление для %@";
+"parental.select.child" = "ВЫБОР РЕБЁНКА";
+"parental.content.filters" = "ФИЛЬТРЫ КОНТЕНТА";
+"parental.screen.time" = "ЛИМИТЫ ЭКРАННОГО ВРЕМЕНИ";
+"parental.location" = "ОТСЛЕЖИВАНИЕ МЕСТОПОЛОЖЕНИЯ";
+"parental.allowed.sites" = "Разрешённые сайты";
+"parental.blocked.apps" = "Заблокированные приложения";
+"parental.schedule" = "Расписание доступа";
+"parental.location.history" = "История перемещений";
+"parental.geofences" = "Геозоны";
+
+/* ═══════════════════════════════════════════════════════════════
+ * НАСТРОЙКИ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"settings.title" = "НАСТРОЙКИ";
+"settings.subtitle" = "Управление приложением";
+"settings.profile" = "ПРОФИЛЬ";
+"settings.security" = "БЕЗОПАСНОСТЬ";
+"settings.application" = "ПРИЛОЖЕНИЕ";
+"settings.notifications" = "Уведомления";
+"settings.dark.mode" = "Тёмная тема";
+"settings.cache.size" = "Размер кэша";
+"settings.clear.cache" = "Очистить кэш";
+"settings.about" = "О приложении";
+"settings.logout" = "Выйти";
+"settings.change.password" = "Изменить пароль";
+"settings.two.factor" = "Двухфакторная аутентификация";
+"settings.active.sessions" = "Активные сессии";
+"settings.login.history" = "История входов";
+"settings.delete.account" = "Удалить аккаунт";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ПРОФИЛЬ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"profile.title" = "ПРОФИЛЬ";
+"profile.subtitle" = "Личные данные и безопасность";
+"profile.personal.data" = "ЛИЧНЫЕ ДАННЫЕ";
+"profile.name.placeholder" = "Имя";
+"profile.email.placeholder" = "Email";
+"profile.phone.placeholder" = "Телефон";
+
+/* ═══════════════════════════════════════════════════════════════
+ * УВЕДОМЛЕНИЯ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"notifications.title" = "УВЕДОМЛЕНИЯ";
+"notifications.subtitle" = "Ваша история событий";
+"notifications.filter.all" = "Все";
+"notifications.filter.threats" = "Угрозы";
+"notifications.filter.warnings" = "Предупреждения";
+"notifications.filter.info" = "Информация";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ТАРИФЫ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"tariffs.title" = "ТАРИФЫ";
+"tariffs.subtitle" = "Выберите ваш план";
+"tariffs.subscribe" = "Подключить %@";
+"tariffs.restore" = "Восстановить покупки";
+"tariffs.basic" = "Базовый";
+"tariffs.individual" = "Индивидуальный";
+"tariffs.family" = "Семейный";
+"tariffs.premium" = "Премиум";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ПОДДЕРЖКА
+ * ═══════════════════════════════════════════════════════════════ */
+
+"support.title" = "ПОДДЕРЖКА";
+"support.subtitle" = "Мы всегда готовы помочь";
+"support.search.placeholder" = "Поиск по вопросам...";
+"support.quick.links" = "БЫСТРЫЕ ССЫЛКИ";
+"support.chat" = "Чат с поддержкой";
+"support.faq" = "Часто задаваемые вопросы";
+"support.contact" = "Связаться с нами";
+"support.guides" = "РУКОВОДСТВА И УРОКИ";
+
+/* ═══════════════════════════════════════════════════════════════
+ * АВТОРИЗАЦИЯ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"auth.login" = "Войти";
+"auth.register" = "Зарегистрироваться";
+"auth.forgot.password" = "Забыли пароль?";
+"auth.email.placeholder" = "Email";
+"auth.password.placeholder" = "Пароль";
+"auth.confirm.password" = "Подтвердите пароль";
+"auth.name.placeholder" = "Имя и Фамилия";
+"auth.phone.placeholder" = "Телефон (опционально)";
+"auth.or" = "или";
+"auth.apple" = "Войти через Apple";
+"auth.google" = "Войти через Google";
+"auth.vk" = "Войти через VK";
+"auth.no.account" = "Нет аккаунта?";
+"auth.have.account" = "Уже есть аккаунт?";
+"auth.agree.terms" = "Я согласен с";
+"auth.privacy.policy" = "Политикой конфиденциальности";
+"auth.terms.of.service" = "Условиями использования";
+"auth.and" = "и";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ОНБОРДИНГ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"onboarding.title.1" = "AI ЗАЩИТА СЕМЬИ";
+"onboarding.description.1" = "Комплексная защита для всей вашей семьи от всех онлайн-угроз.";
+"onboarding.title.2" = "БЕЗОПАСНЫЙ ИНТЕРНЕТ";
+"onboarding.description.2" = "Защита сети, антивирус и блокировка рекламы для всех ваших устройств.";
+"onboarding.title.3" = "РОДИТЕЛЬСКИЙ КОНТРОЛЬ";
+"onboarding.description.3" = "Управляйте временем экрана и контентом для детей и подростков.";
+"onboarding.title.4" = "УМНАЯ АНАЛИТИКА";
+"onboarding.description.4" = "Подробные отчёты и AI-помощник для вашей безопасности.";
+"onboarding.next" = "Далее";
+"onboarding.start" = "Начать пользоваться";
+
+/* ═══════════════════════════════════════════════════════════════
+ * УСТРОЙСТВА
+ * ═══════════════════════════════════════════════════════════════ */
+
+"devices.title" = "УСТРОЙСТВА";
+"devices.subtitle" = "%d устройств под защитой";
+"devices.statistics" = "СТАТИСТИКА";
+"devices.list" = "СПИСОК УСТРОЙСТВ";
+"devices.add" = "Добавить устройство";
+"devices.add.description" = "Подключите новое устройство к защите";
+"devices.protected" = "Защищено";
+"devices.attention" = "Требует внимания";
+"devices.total" = "Всего";
+"devices.status.protected" = "Защищено";
+"devices.status.warning" = "Требует внимания";
+"devices.status.danger" = "Опасность";
+"devices.status.inactive" = "Неактивно";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ДЕТАЛИ УСТРОЙСТВА
+ * ═══════════════════════════════════════════════════════════════ */
+
+"device.detail.info" = "Инфо";
+"device.detail.stats" = "Статистика";
+"device.detail.threats" = "Угрозы";
+"device.detail.settings" = "Настройки";
+"device.detail.block" = "Заблокировать устройство";
+"device.detail.remove" = "Удалить устройство";
+"device.detail.owner" = "Владелец";
+"device.detail.type" = "Тип";
+"device.detail.model" = "Модель";
+"device.detail.system" = "Система";
+"device.detail.ip" = "IP адрес";
+"device.detail.mac" = "MAC адрес";
+
+/* ═══════════════════════════════════════════════════════════════
+ * РЕФЕРАЛЬНАЯ ПРОГРАММА
+ * ═══════════════════════════════════════════════════════════════ */
+
+"referral.title" = "РЕФЕРАЛЬНАЯ ПРОГРАММА";
+"referral.subtitle" = "Приглашай друзей - получай бонусы";
+"referral.invite" = "Пригласи друзей";
+"referral.earn" = "Получи -20% скидку на 1 месяц";
+"referral.invited" = "Приглашено";
+"referral.paid" = "Оплатили";
+"referral.your.code" = "ВАШ РЕФЕРАЛЬНЫЙ КОД";
+"referral.copy" = "Копировать";
+"referral.share" = "ПОДЕЛИТЬСЯ";
+"referral.share.friends" = "Поделиться с друзьями";
+"referral.whatsapp" = "Отправить в WhatsApp";
+"referral.telegram" = "Отправить в Telegram";
+"referral.vk" = "Отправить в VK";
+"referral.how.it.works" = "КАК ЭТО РАБОТАЕТ";
+"referral.step.1" = "Поделитесь кодом";
+"referral.step.1.desc" = "Отправьте ваш код друзьям";
+"referral.step.2" = "Друг регистрируется";
+"referral.step.2.desc" = "Друг использует ваш код при регистрации";
+"referral.step.3" = "Получите бонус";
+"referral.step.3.desc" = "Вы получаете -20%, друг получает скидку 20%";
+"referral.your.referrals" = "ВАШИ ПРИГЛАШЕНИЯ";
+"referral.status.completed" = "Получено";
+"referral.status.pending" = "Ожидание";
+
+/* ═══════════════════════════════════════════════════════════════
+ * СЕМЕЙНЫЙ ЧАТ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"chat.title" = "СЕМЕЙНЫЙ ЧАТ";
+"chat.subtitle" = "%d участника онлайн";
+"chat.placeholder" = "Ваше сообщение...";
+"chat.send" = "Отправить";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ЭНЕРГОПОТРЕБЛЕНИЕ ЗАЩИТЫ СЕТИ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"energy.title" = "ЭНЕРГОПОТРЕБЛЕНИЕ ЗАЩИТЫ СЕТИ";
+"energy.subtitle" = "Статистика использования";
+"energy.battery.usage" = "Расход батареи за сегодня";
+"energy.efficient" = "Это ниже среднего! Защита сети работает эффективно";
+"energy.statistics" = "СТАТИСТИКА";
+"energy.consumed" = "Потреблено энергии";
+"energy.network_protection.time" = "Время работы защиты сети";
+"energy.average" = "Средний расход";
+"energy.traffic" = "Трафик обработан";
+"energy.comparison" = "СРАВНЕНИЕ С ДРУГИМИ РЕШЕНИЯМИ";
+"energy.tips" = "СОВЕТЫ ПО ЭКОНОМИИ";
+"energy.tip.1" = "Используйте Wi-Fi вместо сотовой сети";
+"energy.tip.2" = "Отключайте защиту сети когда не нужна";
+"energy.tip.3" = "Выбирайте ближайший сервер";
+"network_protection_energy_title" = "Энергопотребление защиты сети";
+"network_protection_energy_subtitle" = "Статистика использования";
+"network_protection_energy_nav_accessibility" = "Навигация экрана энергопотребления защиты сети";
+"network_protection_energy_battery" = "Батарея";
+"network_protection_energy_battery_usage" = "Использование батареи: %.1f%%";
+"network_protection_energy_battery_today" = "Расход батареи за сегодня";
+"network_protection_energy_battery_progress" = "Прогресс использования батареи: %.1f%%";
+"network_protection_energy_battery_efficient" = "Это ниже среднего! Защита сети работает эффективно";
+"network_protection_energy_period_today" = "Сегодня";
+"network_protection_energy_period_week" = "Неделя";
+"network_protection_energy_period_month" = "Месяц";
+"network_protection_energy_period_selector" = "Выбранный период: %@";
+"network_protection_energy_stats_title" = "СТАТИСТИКА";
+"network_protection_energy_stats_consumed" = "Потреблено энергии";
+"network_protection_energy_stats_time" = "Время работы";
+"network_protection_energy_stats_average" = "Средний расход";
+"network_protection_energy_stats_traffic" = "Трафик обработан";
+"network_protection_energy_comparison_title" = "СРАВНЕНИЕ С ДРУГИМИ РЕШЕНИЯМИ";
+"network_protection_energy_comparison_percent" = "%";
+"network_protection_energy_comparison_chart" = "График сравнения: %.1f%%";
+"network_protection_energy_comparison_row" = "Строка сравнения: %@, %.1f%%";
+"network_protection_energy_tips_title" = "СОВЕТЫ ПО ЭКОНОМИИ";
+"network_protection_energy_tip_wifi" = "Используйте Wi-Fi вместо сотовой сети";
+"network_protection_energy_tip_disable" = "Отключайте защиту сети когда не нужна";
+"network_protection_energy_tip_server" = "Выбирайте ближайший сервер";
+"network_protection_energy_tip_icon" = "Иконка совета";
+"network_protection_energy_tip_format" = "Совет: %@";
+"network_protection_energy_period_accessibility" = "Период: %@";
+"network_protection_energy_period_selected_hint" = "Выбран период: %@";
+"network_protection_energy_period_switch_hint" = "Переключить на период: %@";
+"network_protection_energy_accessibility" = "Экран энергопотребления защиты сети";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ДЕТСКИЙ ИНТЕРФЕЙС
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child.title" = "ПРИВЕТ, %@!";
+"child.subtitle" = "Твой безопасный мир";
+"child.time.remaining" = "Осталось времени:";
+"child.request.more.time" = "Попросить ещё время";
+"child.achievements" = "Мои достижения";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ИНТЕРФЕЙС ДЛЯ ПОЖИЛЫХ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"elderly.title" = "ПРИВЕТ, %@!";
+"elderly.subtitle" = "Твоя защита активна";
+"elderly.all.ok" = "Всё в порядке!";
+"elderly.need.help" = "Нужна помощь!";
+"elderly.protected" = "Твоя защита активна";
+"elderly.contact.family" = "Свяжись с близкими";
+"elderly.sos" = "SOS - Вызвать помощь";
+"elderly.call" = "Связаться с %@";
+"elderly.settings" = "Мои настройки";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ОШИБКИ И СООБЩЕНИЯ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"error.network" = "Ошибка сети. Проверьте подключение к интернету.";
+"error.unknown" = "Произошла неизвестная ошибка.";
+"error.invalid.credentials" = "Неверный email или пароль.";
+"error.password.mismatch" = "Пароли не совпадают.";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ОШИБКИ STOREKIT / IN-APP PURCHASE
+ * ═══════════════════════════════════════════════════════════════ */
+
+"store.error.simulator.not.supported" = "In-App Purchase недоступен в симуляторе. Используйте реальное устройство.";
+"store.error.verification.failed" = "Не удалось проверить покупку";
+"store.error.product.not.found" = "Продукт не найден";
+"store.error.store.not.ready" = "StoreKit не готов. Пожалуйста, подождите.";
+"store.error.purchase.in.progress" = "Покупка уже выполняется. Пожалуйста, подождите.";
+"store.error.products.not.loaded" = "Продукты не загружены. Проверьте подключение к интернету и попробуйте снова.";
+"store.error.tariffs.not.loaded" = "Не удалось загрузить тарифы. Проверьте подключение к интернету и попробуйте снова.";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ФУНКЦИИ ЗАЩИТЫ (PROTECTION FEATURES)
+ * ═══════════════════════════════════════════════════════════════ */
+
+"protection_feature_network_protection_name" = "Защита сети";
+"protection_feature_network_protection_desc" = "Шифрование интернет-соединения для защиты данных";
+"protection_feature_website_filter_name" = "Фильтрация сайтов";
+"protection_feature_website_filter_desc" = "Блокировка опасных и нежелательных сайтов";
+"protection_feature_parental_control_name" = "Родительский контроль";
+"protection_feature_parental_control_desc" = "Контроль времени и доступа детей к интернету";
+"protection_feature_activity_monitoring_name" = "Мониторинг активности";
+"protection_feature_activity_monitoring_desc" = "Отслеживание активности детей в сети";
+"protection_feature_threat_blocking_name" = "Блокировка угроз";
+"protection_feature_threat_blocking_desc" = "Автоматическая блокировка вирусов и фишинга";
+"protection_feature_app_blocking_name" = "Блокировка приложений";
+"protection_feature_app_blocking_desc" = "Контроль доступа к нежелательным приложениям";
+"protection_feature_emergency_alerts_name" = "Экстренные уведомления";
+"protection_feature_emergency_alerts_desc" = "Мгновенные уведомления о серьезных угрозах";
+"protection_feature_ad_blocking_name" = "Блокировка рекламы";
+"protection_feature_ad_blocking_desc" = "Защита от навязчивой рекламы и трекеров";
+
+"success.saved" = "Данные сохранены!";
+"success.purchase" = "Подписка успешно оформлена!";
+"success.email.sent" = "Письмо отправлено на ваш email.";
+
+
+

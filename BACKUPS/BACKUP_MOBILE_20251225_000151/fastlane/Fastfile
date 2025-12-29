@@ -1,0 +1,169 @@
+# Fastfile для ALADDIN iOS CI/CD
+# Использует существующие сертификаты и профили из GitHub Secrets
+# НЕ требует изменения project.pbxproj
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build archive for App Store with manual signing using existing certificates and profiles"
+  lane :build_archive do |options|
+    # КРИТИЧЕСКИ ВАЖНО: Fastlane запускается из fastlane/ директории
+    # Нужно перейти в корень проекта, где находится ALADDIN.xcodeproj
+    project_root = File.expand_path("..", __dir__)
+    Dir.chdir(project_root) do
+      puts "📁 Рабочая директория: #{Dir.pwd}"
+      puts "📁 Проверка наличия проекта: #{File.exist?('ALADDIN.xcodeproj') ? '✅ найден' : '❌ не найден'}"
+      
+             # Переменные окружения из GitHub Secrets (уже установлены в workflow)
+             team_id = ENV["APPLE_TEAM_ID"]
+             keychain_path = ENV["KEYCHAIN_PATH"]
+             keychain_password = ENV["KEYCHAIN_PASSWORD"]
+             app_profile_uuid = ENV["APP_PROFILE_UUID"]
+             extension_profile_uuid = ENV["PROVISIONING_PROFILE_EXTENSION_UUID"] || app_profile_uuid # Fallback на app profile, если extension не указан
+             dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
+             
+             # ВАРИАНТ 3: НЕ указываем CODE_SIGN_IDENTITY - Xcode автоматически выберет сертификат из профиля
+             # Это решает проблему с несоответствием fingerprint между keychain и профилем
+             # Xcode сам найдет правильный сертификат, который встроен в provisioning profile
+             puts "🔐 Не указываем CODE_SIGN_IDENTITY - Xcode выберет сертификат из профиля автоматически"
+      
+      puts "🔐 Team ID: #{team_id}"
+      puts "🔐 Certificate: #{dist_cert_name}"
+      puts "📋 App Profile UUID: #{app_profile_uuid}"
+      puts "📋 Extension Profile UUID: #{extension_profile_uuid}"
+      
+      if app_profile_uuid.nil? || app_profile_uuid.empty?
+        UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении")
+      end
+      
+      if extension_profile_uuid.nil? || extension_profile_uuid.empty?
+        UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен в окружении. Создайте отдельный provisioning profile для Content Blocker Extension.")
+      end
+      
+      # Получить полные пути к профилям (ДО создания xcconfig)
+      profile_dir = "#{ENV['HOME']}/Library/MobileDevice/Provisioning Profiles"
+      app_profile_file = "#{profile_dir}/#{app_profile_uuid}.mobileprovision"
+      extension_profile_file = "#{profile_dir}/#{extension_profile_uuid}.mobileprovision"
+      
+      puts "📋 Проверка путей к профилям:"
+      puts "   App profile: #{app_profile_file} (#{File.exist?(app_profile_file) ? '✅' : '❌'})"
+      puts "   Content Blocker profile: #{extension_profile_file} (#{File.exist?(extension_profile_file) ? '✅' : '❌'})"
+      
+      # Создать xcconfig файл с полными путями
+      xcconfig_path = "./build/Release.xcconfig"
+      sh("mkdir -p ./build")
+      
+      xcconfig_content = <<~XCCONFIG
+      // Fastlane xcconfig for Manual signing
+      // ВАРИАНТ 3: НЕ указываем CODE_SIGN_IDENTITY - Xcode автоматически выберет сертификат из профиля
+      // Это решает проблему с несоответствием fingerprint между keychain и профилем
+      CODE_SIGN_STYLE = Manual
+      DEVELOPMENT_TEAM = #{team_id}
+      // НЕ указываем CODE_SIGN_IDENTITY - Xcode выберет из профиля
+      
+      // App target - ПРИНУДИТЕЛЬНО Manual signing
+      ALADDIN_CODE_SIGN_STYLE = Manual
+      ALADDIN_DEVELOPMENT_TEAM = #{team_id}
+      // НЕ указываем ALADDIN_CODE_SIGN_IDENTITY - Xcode выберет из профиля
+      ALADDIN_PROVISIONING_PROFILE_SPECIFIER = #{app_profile_uuid}
+      ALADDIN_PROVISIONING_PROFILE = #{app_profile_file}
+      ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
+      
+      // Content Blocker Extension target - ПРИНУДИТЕЛЬНО Manual signing
+      // Используем ОТДЕЛЬНЫЙ профиль для extension (требуется отдельный App ID)
+      ALADDINContentBlocker_CODE_SIGN_STYLE = Manual
+      ALADDINContentBlocker_DEVELOPMENT_TEAM = #{team_id}
+      // НЕ указываем ALADDINContentBlocker_CODE_SIGN_IDENTITY - Xcode выберет из профиля
+      ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = #{extension_profile_uuid}
+      ALADDINContentBlocker_PROVISIONING_PROFILE = #{extension_profile_file}
+      ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker
+    XCCONFIG
+    
+      File.write(xcconfig_path, xcconfig_content)
+      puts "✅ xcconfig создан: #{xcconfig_path}"
+      
+      # Собрать архив используя xcodebuild напрямую
+      # Fastlane может иметь проблемы с Manual signing, если проект настроен на Automatic
+      # Поэтому используем прямой вызов xcodebuild с полными путями к профилям
+      archive_path = "./build/ALADDIN.xcarchive"
+      
+      puts "🔨 Сборка архива с Manual signing через Fastlane..."
+      puts "📁 Текущая директория: #{Dir.pwd}"
+      puts "📁 Проект существует: #{File.exist?('ALADDIN.xcodeproj') ? '✅' : '❌'}"
+      
+      xcodebuild_command = [
+        "xcodebuild archive",
+        "-project ALADDIN.xcodeproj",
+        "-scheme ALADDIN",
+        "-configuration Release",
+        "-xcconfig #{xcconfig_path}",
+        "-archivePath #{archive_path}",
+        "-destination 'generic/platform=iOS'",
+        "CODE_SIGN_STYLE=Manual",
+        "DEVELOPMENT_TEAM=#{team_id}",
+        # НЕ указываем CODE_SIGN_IDENTITY - Xcode выберет из профиля
+        "ALADDIN_CODE_SIGN_STYLE=Manual",
+        "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
+        "ALADDIN_PROVISIONING_PROFILE='#{app_profile_file}'",
+        "ALADDINContentBlocker_CODE_SIGN_STYLE=Manual",
+        "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER=#{extension_profile_uuid}",
+        "ALADDINContentBlocker_PROVISIONING_PROFILE='#{extension_profile_file}'",
+        "-allowProvisioningUpdates"
+      ].join(" ")
+      
+      sh(xcodebuild_command)
+      
+      puts "✅ Архив создан: #{archive_path}"
+      
+      # Вернуть путь к архиву
+      archive_path
+    end
+  end
+  
+  desc "Export IPA from archive"
+  lane :export_ipa do |options|
+    archive_path = options[:archive_path] || "./build/ALADDIN.xcarchive"
+    export_path = options[:export_path] || "./build/export"
+    
+    team_id = ENV["APPLE_TEAM_ID"]
+    
+    # Получить UUID профилей из окружения (уже установлены в workflow)
+    app_profile_uuid = ENV["APP_PROFILE_UUID"]
+    extension_profile_uuid = ENV["PROVISIONING_PROFILE_EXTENSION_UUID"]
+    
+    if app_profile_uuid.nil? || app_profile_uuid.empty?
+      UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении")
+    end
+    
+    if extension_profile_uuid.nil? || extension_profile_uuid.empty?
+      UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен в окружении")
+    end
+    
+    # Используем отдельный профиль для extension
+    content_blocker_profile_uuid = extension_profile_uuid
+    
+    # Создать ExportOptions.plist
+    export_options_path = "./build/ExportOptions.plist"
+    export_options = {
+      method: "app-store",
+      teamID: team_id,
+      signingStyle: "manual",
+      provisioningProfiles: {
+        "family.aladdin.ios" => app_profile_uuid,
+        "family.aladdin.ios.ALADDINContentBlocker" => content_blocker_profile_uuid
+      }
+    }
+    
+    require 'plist'
+    File.write(export_options_path, export_options.to_plist)
+    
+    puts "🔨 Экспорт IPA..."
+    sh("xcodebuild -exportArchive",
+       "-archivePath #{archive_path}",
+       "-exportPath #{export_path}",
+       "-exportOptionsPlist #{export_options_path}")
+    
+    puts "✅ IPA экспортирован: #{export_path}"
+    export_path
+  end
+end

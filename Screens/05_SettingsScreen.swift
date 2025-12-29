@@ -515,8 +515,8 @@ struct SettingsScreen: View {
                 // ✅ Согласие на обработку ПДн (152-ФЗ) - 4-й пункт
                 settingsButton(
                     icon: "checkmark.shield",
-                    title: "Согласие на обработку персональных данных",
-                    subtitle: consentAccepted ? "Согласие предоставлено" : "Управление согласием",
+                    title: localizationManager.localized("settings_consent_personal_data"),
+                    subtitle: consentAccepted ? localizationManager.localized("settings_consent_granted") : localizationManager.localized("settings_consent_manage"),
                     action: {
                         // Открываем экран политики конфиденциальности
                         showPrivacyPolicy = true

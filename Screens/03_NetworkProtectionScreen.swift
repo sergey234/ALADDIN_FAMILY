@@ -45,10 +45,24 @@ struct NetworkProtectionScreen: View {
                     subtitle: localizationManager.localized("secure_connection_subtitle"),
                     showBackButton: true,
                     onBack: {
-                        // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
-                        if navigationManager.canGoBack {
-                            navigationManager.goBack()
+                        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда возвращаемся на главную, а не на онбординг
+                        print("🔙 [NetworkProtectionScreen] Кнопка назад нажата")
+                        print("🔙 [NetworkProtectionScreen] Текущий экран: \(navigationManager.currentScreen)")
+                        print("🔙 [NetworkProtectionScreen] Стек навигации: \(navigationManager.navigationStack)")
+                        print("🔙 [NetworkProtectionScreen] canGoBack: \(navigationManager.canGoBack)")
+                        
+                        // ✅ ПРОВЕРКА: Если стек пуст или содержит только onboarding, идем на главную
+                        if navigationManager.navigationStack.isEmpty || 
+                           navigationManager.navigationStack == [.onboarding] {
+                            print("🔙 [NetworkProtectionScreen] Стек пуст или содержит только onboarding, навигируем на .main")
+                            navigationManager.navigationStack = [.main]
+                            navigationManager.currentScreen = .main
+                        } else if navigationManager.canGoBack {
+                            print("🔙 [NetworkProtectionScreen] Используем goBack()")
+                            navigationManager.goBack(reason: "NetworkProtection.onBack")
                         } else {
+                            print("🔙 [NetworkProtectionScreen] canGoBack = false, навигируем на .main")
+                            navigationManager.navigationStack = [.main]
                             navigationManager.currentScreen = .main
                         }
                     }

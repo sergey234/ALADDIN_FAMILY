@@ -144,16 +144,16 @@ struct MainScreenWithRegistration: View {
                         set: { newValue in
                             registrationVM.showFamilyCreatedModal = newValue
                             // ✅ ИСПРАВЛЕНИЕ: Если модал закрывается (свайп вниз или кнопка), вызываем onComplete
+                            // НЕ вызываем здесь, чтобы избежать двойного вызова - onComplete вызовется в callback
                             if !newValue {
-                                onComplete?()
-                                print("✅ RecoveryCodeModal закрыт, семья создана")
+                                print("✅ RecoveryCodeModal закрыт через setter")
                             }
                         }
                     ),
                     recoveryCode: recoveryCode,
                     familyID: familyID,
                     onComplete: {
-                        // После закрытия RecoveryCodeModal вызываем onComplete
+                        // ✅ ЕДИНСТВЕННЫЙ вызов onComplete при закрытии модала
                         onComplete?()
                         print("✅ RecoveryCodeModal: onComplete вызван")
                     }

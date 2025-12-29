@@ -6,7 +6,7 @@
 	<integer>10</integer>
 	<key>logs</key>
 	<dict>
-		<key>1AEA6BB3-AEB1-48AA-80D9-1F33817CB0A6</key>
+		<key>48A77DD4-902F-4A29-9BDD-D39D2F8A95A7</key>
 		<dict>
 			<key>className</key>
 			<string>IDESchemeActionsInvocationRecord</string>
@@ -15,7 +15,7 @@
 			<key>domainType</key>
 			<string>com.apple.dt.unit.cocoaUnitTest</string>
 			<key>fileName</key>
-			<string>Test-ALADDIN-2025.12.24_02-43-00-+0400.xcresult</string>
+			<string>Test-ALADDIN-2025.12.29_16-54-30-+0400.xcresult</string>
 			<key>hasPrimaryLog</key>
 			<true/>
 			<key>primaryObservable</key>
@@ -32,13 +32,47 @@
 			<key>signature</key>
 			<string>Test ALADDIN</string>
 			<key>timeStartedRecording</key>
-			<real>788222580.28458798</real>
+			<real>788705670.00034106</real>
 			<key>timeStoppedRecording</key>
 			<real>0.0</real>
 			<key>title</key>
 			<string>Test ALADDIN</string>
 			<key>uniqueIdentifier</key>
-			<string>1AEA6BB3-AEB1-48AA-80D9-1F33817CB0A6</string>
+			<string>48A77DD4-902F-4A29-9BDD-D39D2F8A95A7</string>
+		</dict>
+		<key>ECA455B4-DAF9-4560-9E92-11757367DDD2</key>
+		<dict>
+			<key>className</key>
+			<string>IDESchemeActionsInvocationRecord</string>
+			<key>documentTypeString</key>
+			<string>&lt;nil&gt;</string>
+			<key>domainType</key>
+			<string>com.apple.dt.unit.cocoaUnitTest</string>
+			<key>fileName</key>
+			<string>Test-ALADDIN-2025.12.29_18-43-59-+0400.xcresult</string>
+			<key>hasPrimaryLog</key>
+			<true/>
+			<key>primaryObservable</key>
+			<dict>
+				<key>highLevelStatus</key>
+				<string>E</string>
+			</dict>
+			<key>schemeIdentifier-containerName</key>
+			<string>ALADDIN project</string>
+			<key>schemeIdentifier-schemeName</key>
+			<string>ALADDIN</string>
+			<key>schemeIdentifier-sharedScheme</key>
+			<integer>1</integer>
+			<key>signature</key>
+			<string>Test ALADDIN</string>
+			<key>timeStartedRecording</key>
+			<real>788712239.402264</real>
+			<key>timeStoppedRecording</key>
+			<real>0.0</real>
+			<key>title</key>
+			<string>Test ALADDIN</string>
+			<key>uniqueIdentifier</key>
+			<string>ECA455B4-DAF9-4560-9E92-11757367DDD2</string>
 		</dict>
 	</dict>
 </dict>
