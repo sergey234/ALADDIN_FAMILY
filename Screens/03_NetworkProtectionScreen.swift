@@ -16,8 +16,7 @@ struct NetworkProtectionScreen: View {
     @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
     @StateObject private var antivirusManager = AntivirusManager.shared
     @State private var showingSettings = false
-    @State private var showingStatistics = false
-    @State private var showingHelp = false
+    // ✅ УДАЛЕНО: showingStatistics и showingHelp (использовались только в Quick Actions)
     
     // MARK: - Helper Views
     
@@ -45,24 +44,11 @@ struct NetworkProtectionScreen: View {
                     subtitle: localizationManager.localized("secure_connection_subtitle"),
                     showBackButton: true,
                     onBack: {
-                        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда возвращаемся на главную, а не на онбординг
-                        print("🔙 [NetworkProtectionScreen] Кнопка назад нажата")
-                        print("🔙 [NetworkProtectionScreen] Текущий экран: \(navigationManager.currentScreen)")
-                        print("🔙 [NetworkProtectionScreen] Стек навигации: \(navigationManager.navigationStack)")
-                        print("🔙 [NetworkProtectionScreen] canGoBack: \(navigationManager.canGoBack)")
-                        
-                        // ✅ ПРОВЕРКА: Если стек пуст или содержит только onboarding, идем на главную
-                        if navigationManager.navigationStack.isEmpty || 
-                           navigationManager.navigationStack == [.onboarding] {
-                            print("🔙 [NetworkProtectionScreen] Стек пуст или содержит только onboarding, навигируем на .main")
-                            navigationManager.navigationStack = [.main]
-                            navigationManager.currentScreen = .main
-                        } else if navigationManager.canGoBack {
-                            print("🔙 [NetworkProtectionScreen] Используем goBack()")
+                        // ✅ ПРОСТАЯ ЛОГИКА: Используем dismiss() и goBack() как раньше
+                        dismiss()
+                        if navigationManager.canGoBack {
                             navigationManager.goBack(reason: "NetworkProtection.onBack")
                         } else {
-                            print("🔙 [NetworkProtectionScreen] canGoBack = false, навигируем на .main")
-                            navigationManager.navigationStack = [.main]
                             navigationManager.currentScreen = .main
                         }
                     }
@@ -82,8 +68,8 @@ struct NetworkProtectionScreen: View {
                         // Security Features
                         securityFeaturesCard
                         
-                        // Quick Actions
-                        quickActionsCard
+                        // ✅ УДАЛЕНО: Quick Actions карточка
+                        // quickActionsCard
                         
                         // ✅ УДАЛЕНО: Безопасное соединение Status Card (5-я позиция - СНИЗУ)
                         // secureConnectionStatusCard
@@ -102,6 +88,7 @@ struct NetworkProtectionScreen: View {
         .sheet(isPresented: $showingSettings) {
             NetworkProtectionSettingsView()
         }
+        // ✅ УДАЛЕНО: .sheet для showingStatistics и showingHelp (Quick Actions удалены)
     }
     
     // MARK: - Безопасное соединение Status Card (компактная версия)
@@ -251,90 +238,7 @@ struct NetworkProtectionScreen: View {
     }
     
     
-    // MARK: - Quick Actions Card
-    
-    private var quickActionsCard: some View {
-        VStack(spacing: Spacing.m) {
-            HStack {
-                Text(localizationManager.localized("network_protection_quick_actions"))
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                
-                Spacer()
-            }
-            
-            HStack(spacing: Spacing.s) {
-                Button(action: { showingSettings = true }) {
-                    VStack(spacing: 8) {
-                        Image(systemName: "gearshape.fill")
-                            .font(.title3)
-                            .foregroundColor(.primaryBlue)
-                        Text(localizationManager.localized("network_protection_settings"))
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.textPrimary)
-                            .lineLimit(1)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 80)
-                    .background(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .fill(Color.backgroundMedium.opacity(0.3))
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                Button(action: { showingStatistics = true }) {
-                    VStack(spacing: 8) {
-                        Image(systemName: "chart.bar.fill")
-                            .font(.title3)
-                            .foregroundColor(.primaryBlue)
-                        Text(localizationManager.localized("network_protection.statistics"))
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.textPrimary)
-                            .lineLimit(1)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 80)
-                    .background(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .fill(Color.backgroundMedium.opacity(0.3))
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                Button(action: { showingHelp = true }) {
-                    VStack(spacing: 8) {
-                        Image(systemName: "questionmark.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(.primaryBlue)
-                        Text(localizationManager.localized("network_protection_help"))
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(.textPrimary)
-                            .lineLimit(1)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 80)
-                    .background(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .fill(Color.backgroundMedium.opacity(0.3))
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-        }
-        .padding(Spacing.cardPadding)
-        .background(backgroundShape)
-        .cardShadow()
-        .padding(.horizontal, Spacing.screenPadding)
-        .sheet(isPresented: $showingStatistics) {
-            NetworkProtectionStatisticsView()
-        }
-        .sheet(isPresented: $showingHelp) {
-            NetworkProtectionHelpView()
-        }
-        // ✅ Пересоздаём View при изменении языка для обновления всех текстов
-        .id("network_protection_lang_\(localizationManager.currentLanguage.rawValue)")
-    }
+    // ✅ УДАЛЕНО: Quick Actions Card полностью
     
     // MARK: - Antivirus Card
     
@@ -491,32 +395,7 @@ struct SecurityFeatureCard: View {
 }
 
 
-struct QuickActionButton: View {
-    let icon: String
-    let title: String
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: Spacing.s) {
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(.primaryBlue)
-                
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.textPrimary)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(Spacing.m)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(Color.backgroundMedium.opacity(0.3))
-            )
-        }
-                    .buttonStyle(PlainButtonStyle())
-    }
-}
+// ✅ УДАЛЕНО: QuickActionButton (использовался только в Quick Actions карточке)
 
 // MARK: - Antivirus Stat Item
 
