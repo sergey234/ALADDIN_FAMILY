@@ -1756,6 +1756,28 @@ class LocalizationManager: ObservableObject {
             "profile_safety_instructions": "Памятка безопасности",
             "profile_two_factor_auth": "Двухфакторная аутентификация",
             "profile_active_sessions": "Активные сессии",
+            
+            // Consent Section
+            "profile_consent_title": "Согласие на обработку персональных данных",
+            "profile_consent_provided": "Согласие предоставлено",
+            "profile_consent_not_provided": "Согласие не предоставлено",
+            "profile_consent_date": "Дата:",
+            "profile_consent_view": "Просмотреть согласие",
+            "profile_consent_privacy_policy": "Политика конфиденциальности",
+            "profile_consent_revoke": "Отозвать согласие",
+            "profile_consent_revoke_title": "Отозвать согласие?",
+            "profile_consent_revoke_cancel": "Отменить",
+            "profile_consent_revoke_confirm": "Отозвать",
+            "profile_consent_revoke_message": "Отзыв согласия может привести к невозможности использования некоторых функций приложения. Вы уверены?",
+            "profile_consent_required_description": "Согласие на обработку персональных данных необходимо для использования приложения. Вы можете предоставить его при активации кода подписки.",
+            
+            // 2FA Section
+            "profile_2fa_enable": "Включить 2FA",
+            "profile_2fa_enabled": "Включена",
+            "profile_2fa_disabled": "Выключена",
+            "profile_2fa_title": "2FA",
+            "profile_2fa_done": "Готово",
+            "profile_safety_done": "Готово",
 
             // Active Sessions
             "active_sessions_title": "Активные сессии",
@@ -3695,6 +3717,28 @@ class LocalizationManager: ObservableObject {
             "profile_safety_instructions": "Safety memo",
             "profile_two_factor_auth": "Two-factor authentication",
             "profile_active_sessions": "Active sessions",
+            
+            // Consent Section
+            "profile_consent_title": "Personal Data Processing Consent",
+            "profile_consent_provided": "Consent provided",
+            "profile_consent_not_provided": "Consent not provided",
+            "profile_consent_date": "Date:",
+            "profile_consent_view": "View consent",
+            "profile_consent_privacy_policy": "Privacy Policy",
+            "profile_consent_revoke": "Revoke consent",
+            "profile_consent_revoke_title": "Revoke consent?",
+            "profile_consent_revoke_cancel": "Cancel",
+            "profile_consent_revoke_confirm": "Revoke",
+            "profile_consent_revoke_message": "Revoking consent may result in the inability to use some app features. Are you sure?",
+            "profile_consent_required_description": "Consent to personal data processing is required to use the application. You can provide it when activating a subscription code.",
+            
+            // 2FA Section
+            "profile_2fa_enable": "Enable 2FA",
+            "profile_2fa_enabled": "Enabled",
+            "profile_2fa_disabled": "Disabled",
+            "profile_2fa_title": "2FA",
+            "profile_2fa_done": "Done",
+            "profile_safety_done": "Done",
 
             "active_sessions_title": "Active sessions",
             "active_sessions_location": "Location",

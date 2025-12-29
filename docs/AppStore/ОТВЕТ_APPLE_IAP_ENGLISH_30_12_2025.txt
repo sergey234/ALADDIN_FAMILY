@@ -1,0 +1,62 @@
+Hello, Apple Review Team!
+
+Thank you for your feedback on Build 16 and Guideline 2.1 - Performance - App Completeness (IAP error).
+
+What was fixed:
+
+* All IAP error messages are localized (RU/EN).
+
+* Fixed missing localization key main_family_network_protection_info.
+
+* Fixed handling of free tariff (activation without IAP).
+
+Detailed analysis of the In-App Purchase issue:
+
+1. APPLICATION CODE CHECK:
+
+* StoreManager.swift — implemented using StoreKit 2
+
+* TariffsViewModel.swift — correctly handles product loading
+
+* All Product IDs are specified correctly
+
+* Bundle ID matches: family.aladdin.ios
+
+* IAP error localization is implemented
+
+2. DEVICE LOG ANALYSIS:
+
+Logs show:
+
+* Requests are sent to Apple Sandbox API correctly
+
+* Product IDs are passed correctly
+
+* Apple Sandbox API returns "Parsing 0 products in response"
+
+3. WHAT IS VISIBLE
+
+When attempting to purchase, an error message is displayed:
+
+"Payment error: Products not loaded. Attempting to reload..."
+
+This means that the application correctly handles the situation when products are unavailable (under review), and automatically attempts to reload them. Most likely the problem is not in error handling in the code, but in the fact that tariff products are not yet approved and therefore unavailable for Sandbox testing.
+
+4. APP STORE CONNECT CHECK:
+
+* All 3 products are created and linked to the application
+
+* Product status: "Waiting for Review" (under review)
+
+The code works correctly. The probable reason is that products are under review in App Store Connect and are not yet available for full payment and testing. Apple Sandbox API does not return products that are not yet approved.
+
+After products are approved in App Store Connect, they will become available, and IAP should work correctly.
+
+We are ready to test IAP immediately after products are approved.
+
+Best regards,
+
+Sergey
+
+ALADDIN
+

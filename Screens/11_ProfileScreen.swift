@@ -137,6 +137,7 @@ struct ProfileScreen: View {
         .sheet(isPresented: $showTwoFactor) {
             TwoFactorAuthView(isPresented: $showTwoFactor)
                 .environmentObject(navigationManager)
+                .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showActiveSessions) {
             ActiveSessionsView(isPresented: $showActiveSessions)
@@ -323,7 +324,7 @@ struct ProfileScreen: View {
     
     private var consentSection: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            sectionTitle("Согласие на обработку персональных данных")
+            sectionTitle(localizationManager.localized("profile_consent_title"))
             
             VStack(spacing: Spacing.s) {
                 // Статус согласия
@@ -333,12 +334,12 @@ struct ProfileScreen: View {
                         .foregroundColor(consentAccepted ? .green : .red)
                     
                     VStack(alignment: .leading, spacing: Spacing.xxs) {
-                        Text(consentAccepted ? "Согласие предоставлено" : "Согласие не предоставлено")
+                        Text(consentAccepted ? localizationManager.localized("profile_consent_provided") : localizationManager.localized("profile_consent_not_provided"))
                             .font(.bodyBold)
                             .foregroundColor(.textPrimary)
                         
                         if consentAccepted, !consentDate.isEmpty {
-                            Text("Дата: \(formatConsentDate(consentDate))")
+                            Text("\(localizationManager.localized("profile_consent_date")) \(formatConsentDate(consentDate))")
                                 .font(.caption)
                                 .foregroundColor(.textSecondary)
                         }
@@ -363,7 +364,7 @@ struct ProfileScreen: View {
                                 .font(.system(size: 18))
                                 .foregroundColor(.primaryBlue)
                             
-                            Text("Просмотреть согласие")
+                            Text(localizationManager.localized("profile_consent_view"))
                                 .font(.body)
                                 .foregroundColor(.textPrimary)
                             
@@ -388,7 +389,7 @@ struct ProfileScreen: View {
                                 .font(.system(size: 18))
                                 .foregroundColor(.primaryBlue)
                             
-                            Text("Политика конфиденциальности")
+                            Text(localizationManager.localized("profile_consent_privacy_policy"))
                                 .font(.body)
                                 .foregroundColor(.textPrimary)
                             
@@ -414,7 +415,7 @@ struct ProfileScreen: View {
                                 .font(.system(size: 18))
                                 .foregroundColor(.red)
                             
-                            Text("Отозвать согласие")
+                            Text(localizationManager.localized("profile_consent_revoke"))
                                 .font(.body)
                                 .foregroundColor(.red)
                             
@@ -427,7 +428,7 @@ struct ProfileScreen: View {
                         )
                     }
                 } else {
-                    Text("Согласие на обработку персональных данных необходимо для использования приложения. Вы можете предоставить его при активации кода подписки.")
+                    Text(localizationManager.localized("profile_consent_required_description"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .padding(Spacing.m)
@@ -439,15 +440,15 @@ struct ProfileScreen: View {
             }
             .padding(.horizontal, Spacing.screenPadding)
         }
-        .alert("Отозвать согласие?", isPresented: $showConsentRevokeAlert) {
-            Button("Отменить", role: .cancel) {}
-            Button("Отозвать", role: .destructive) {
+        .alert(localizationManager.localized("profile_consent_revoke_title"), isPresented: $showConsentRevokeAlert) {
+            Button(localizationManager.localized("profile_consent_revoke_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("profile_consent_revoke_confirm"), role: .destructive) {
                 consentAccepted = false
                 consentDate = ""
                 // TODO: Отправить запрос на сервер об отзыве согласия
             }
         } message: {
-            Text("Отзыв согласия может привести к невозможности использования некоторых функций приложения. Вы уверены?")
+            Text(localizationManager.localized("profile_consent_revoke_message"))
         }
     }
     
@@ -457,7 +458,9 @@ struct ProfileScreen: View {
             let displayFormatter = DateFormatter()
             displayFormatter.dateStyle = .medium
             displayFormatter.timeStyle = .short
-            displayFormatter.locale = Locale(identifier: "ru_RU")
+            // ✅ Используем текущий язык из LocalizationManager
+            let localeIdentifier = localizationManager.currentLanguage == .russian ? "ru_RU" : "en_US"
+            displayFormatter.locale = Locale(identifier: localeIdentifier)
             return displayFormatter.string(from: date)
         }
         return dateString
@@ -577,13 +580,17 @@ struct ProfileScreen: View {
         if let savedDate = UserDefaults.standard.object(forKey: "registration_date") as? Date {
             let formatter = DateFormatter()
             formatter.dateFormat = "d MMMM yyyy"
-            formatter.locale = Locale(identifier: "ru_RU")
+            // ✅ Используем текущий язык из LocalizationManager
+            let localeIdentifier = localizationManager.currentLanguage == .russian ? "ru_RU" : "en_US"
+            formatter.locale = Locale(identifier: localeIdentifier)
             registrationDate = formatter.string(from: savedDate)
         } else {
             // Если дата не сохранена, используем текущую дату
             let formatter = DateFormatter()
             formatter.dateFormat = "d MMMM yyyy"
-            formatter.locale = Locale(identifier: "ru_RU")
+            // ✅ Используем текущий язык из LocalizationManager
+            let localeIdentifier = localizationManager.currentLanguage == .russian ? "ru_RU" : "en_US"
+            formatter.locale = Locale(identifier: localeIdentifier)
             registrationDate = formatter.string(from: Date())
         }
     }
@@ -643,22 +650,24 @@ struct ProfileImagePicker: UIViewControllerRepresentable {
 struct TwoFactorAuthView: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var isEnabled: Bool = false
     
     var body: some View {
         NavigationView {
             Form {
-                Toggle("Включить 2FA", isOn: $isEnabled)
-                Text(isEnabled ? "Включена" : "Выключена")
+                Toggle(localizationManager.localized("profile_2fa_enable"), isOn: $isEnabled)
+                Text(isEnabled ? localizationManager.localized("profile_2fa_enabled") : localizationManager.localized("profile_2fa_disabled"))
                     .foregroundColor(isEnabled ? .green : .gray)
             }
             .padding()
-            .navigationTitle("2FA")
+            .navigationTitle(localizationManager.localized("profile_2fa_title"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Готово") { isPresented = false }
+                    Button(localizationManager.localized("profile_2fa_done")) { isPresented = false }
                 }
             }
+            .id("2fa_lang_\(localizationManager.currentLanguage.rawValue)")
         }
     }
 }
@@ -1062,7 +1071,7 @@ struct AdultSafetyInstructionsModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("profile_safety_done")) {
                         isPresented = false
                     }
                 }
