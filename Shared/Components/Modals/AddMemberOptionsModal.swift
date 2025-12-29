@@ -142,19 +142,18 @@ struct AddMemberOptionsModal: View {
         .fullScreenCover(isPresented: $showCreateFamily) {
             MainScreenWithRegistration(
                 registrationVM: FamilyRegistrationViewModel(),
-                onComplete: { [weak self] in
-                    guard let self = self else { return }
+                onComplete: {
                     print("✅ [AddMemberOptionsModal] Регистрация завершена, начинаем закрытие модалов")
-                    print("🔍 [AddMemberOptionsModal] Текущий экран: \(self.navigationManager.currentScreen)")
-                    print("🔍 [AddMemberOptionsModal] Стек навигации: \(self.navigationManager.navigationStack)")
+                    print("🔍 [AddMemberOptionsModal] Текущий экран: \(navigationManager.currentScreen)")
+                    print("🔍 [AddMemberOptionsModal] Стек навигации: \(navigationManager.navigationStack)")
                     
                     // ✅ ИСПРАВЛЕНИЕ: Сначала закрываем fullScreenCover
-                    self.showCreateFamily = false
+                    showCreateFamily = false
                     
                     // ✅ ИСПРАВЛЕНИЕ: Закрываем основной sheet после задержки, чтобы fullScreenCover успел закрыться
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                        self.isPresented = false
-                        self.isProcessingCreateFamily = false
+                        isPresented = false
+                        isProcessingCreateFamily = false
                         
                         // ✅ ИСПРАВЛЕНИЕ: Навигация на нужный экран по роли после закрытия всех модалов
                         // Увеличиваем задержку, чтобы все модалы точно закрылись
@@ -169,44 +168,44 @@ struct AddMemberOptionsModal: View {
                             // Пробуем прочитать роль из UserDefaults
                             let roleString = UserDefaults.standard.string(forKey: "current_user_role")
                             print("🔍 [AddMemberOptionsModal] Читаем роль из UserDefaults: \(roleString ?? "nil")")
-                            print("🔍 [AddMemberOptionsModal] Текущий экран перед навигацией: \(self.navigationManager.currentScreen)")
+                            print("🔍 [AddMemberOptionsModal] Текущий экран перед навигацией: \(navigationManager.currentScreen)")
                             
                             // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда навигируем на экран семьи после создания семьи
                             if familyID != nil {
                                 print("✅ [AddMemberOptionsModal] Семья создана (family_id: \(familyID!)), навигируем на экран семьи")
                                 
                                 // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убеждаемся, что стек навигации правильный
-                                if self.navigationManager.navigationStack.isEmpty {
-                                    self.navigationManager.navigationStack = [.main]
+                                if navigationManager.navigationStack.isEmpty {
+                                    navigationManager.navigationStack = [.main]
                                     print("✅ [AddMemberOptionsModal] Стек навигации инициализирован: [.main]")
                                 }
                                 
-                                self.navigationManager.navigateTo(.family)
+                                navigationManager.navigateTo(.family)
                                 print("✅ [AddMemberOptionsModal] Навигация на .family выполнена")
-                                print("🔍 [AddMemberOptionsModal] Текущий экран после навигации: \(self.navigationManager.currentScreen)")
-                                print("🔍 [AddMemberOptionsModal] Стек навигации после навигации: \(self.navigationManager.navigationStack)")
+                                print("🔍 [AddMemberOptionsModal] Текущий экран после навигации: \(navigationManager.currentScreen)")
+                                print("🔍 [AddMemberOptionsModal] Стек навигации после навигации: \(navigationManager.navigationStack)")
                             } else if let roleString = roleString,
                                       let role = FamilyRole(storageValue: roleString) {
                                 // Если семья не создана, но роль есть - навигируем по роли
                                 print("⚠️ [AddMemberOptionsModal] Семья не создана, но роль найдена: \(role.rawValue)")
                                 
                                 // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убеждаемся, что стек навигации правильный
-                                if self.navigationManager.navigationStack.isEmpty {
-                                    self.navigationManager.navigationStack = [.main]
+                                if navigationManager.navigationStack.isEmpty {
+                                    navigationManager.navigationStack = [.main]
                                 }
                                 
                                 switch role {
                                 case .parent:
-                                    self.navigationManager.navigateTo(.parentalControl)
+                                    navigationManager.navigateTo(.parentalControl)
                                 case .child, .teenager:
-                                    self.navigationManager.navigateTo(.childInterface)
+                                    navigationManager.navigateTo(.childInterface)
                                 case .elderly:
-                                    self.navigationManager.navigateTo(.elderlyInterface)
+                                    navigationManager.navigateTo(.elderlyInterface)
                                 }
                             } else {
                                 // Если ничего не найдено - навигируем на главный экран
                                 print("⚠️ [AddMemberOptionsModal] Роль и семья не найдены - навигируем на главный экран")
-                                self.navigationManager.navigateTo(.main)
+                                navigationManager.navigateTo(.main)
                             }
                         }
                     }

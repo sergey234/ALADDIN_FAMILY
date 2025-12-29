@@ -11,6 +11,7 @@ struct NetworkProtectionScreen: View {
     // MARK: - State
     
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
     @StateObject private var antivirusManager = AntivirusManager.shared

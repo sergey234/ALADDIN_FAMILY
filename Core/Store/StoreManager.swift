@@ -169,23 +169,6 @@ class StoreManager: ObservableObject {
                         print("      - Период: \(subscription.subscriptionPeriod.value) \(subscription.subscriptionPeriod.unit)")
                     }
                 }
-            } else {
-                // ✅ КРИТИЧЕСКАЯ ДИАГНОСТИКА: Если продукты пусты, выводим детальную информацию
-                print("⚠️ [StoreManager.loadProducts] ========== КРИТИЧЕСКАЯ ПРОБЛЕМА ==========")
-                print("⚠️ [StoreManager.loadProducts] Apple Sandbox API вернул 0 продуктов!")
-                print("⚠️ [StoreManager.loadProducts] Запрошенные Product IDs:")
-                for (index, productID) in productIDs.enumerated() {
-                    print("   \(index + 1). \(productID)")
-                }
-                print("⚠️ [StoreManager.loadProducts] Bundle ID: \(Bundle.main.bundleIdentifier ?? "unknown")")
-                print("⚠️ [StoreManager.loadProducts] ==========================================")
-                print("⚠️ [StoreManager.loadProducts] ВОЗМОЖНЫЕ ПРИЧИНЫ:")
-                print("   1. Продукты не созданы в App Store Connect")
-                print("   2. Продукты не привязаны к приложению ALADDIN")
-                print("   3. Продукты не в статусе 'Ready to Submit'")
-                print("   4. Bundle ID не совпадает: \(Bundle.main.bundleIdentifier ?? "unknown")")
-                print("   5. Продукты не активированы для Sandbox тестирования")
-                print("⚠️ [StoreManager.loadProducts] ==========================================")
             }
         } catch {
             let localizationManager = LocalizationManager()
