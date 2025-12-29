@@ -66,6 +66,17 @@ class TariffsViewModel: ObservableObject {
             }
         }
         
+        // ✅ ДОПОЛНИТЕЛЬНАЯ ЗАГРУЗКА: Загружаем продукты при создании ViewModel
+        // Это гарантирует, что продукты будут загружены до попытки покупки
+        Task { @MainActor in
+            // Небольшая задержка для гарантии готовности StoreKit
+            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
+            if self.storeManager.products.isEmpty {
+                print("🔄 [TariffsViewModel] Продукты пусты при инициализации, загружаем...")
+                await self.loadProducts()
+            }
+        }
+        
         print("✅ TariffsViewModel.init: Инициализация завершена")
     }
     
@@ -78,6 +89,13 @@ class TariffsViewModel: ObservableObject {
         isLoading = true
         await storeManager.loadProducts()
         isLoading = false
+    }
+    
+    /**
+     * Получить количество загруженных продуктов (для проверки в UI)
+     */
+    func getProductsCount() async -> Int {
+        return storeManager.products.count
     }
     
     // MARK: - Update Tariffs
@@ -219,10 +237,15 @@ class TariffsViewModel: ObservableObject {
         }
         
         // 🌍 Не Россия → IAP (App Store)
-        print("🌍 Запуск IAP покупки для тарифа: \(tariff.title) (ID: \(tariff.id))")
-        print("🔍 DEBUG: Проверяем storeManager...")
+        print("🌍 [TariffsViewModel] ========== ЗАПУСК IAP ПОКУПКИ ==========")
+        print("🌍 [TariffsViewModel] Тариф: \(tariff.title) (ID: \(tariff.id))")
+        print("🌍 [TariffsViewModel] Device: \(UIDevice.current.model)")
+        print("🌍 [TariffsViewModel] OS: \(UIDevice.current.systemVersion)")
+        print("🌍 [TariffsViewModel] Bundle ID: \(Bundle.main.bundleIdentifier ?? "unknown")")
+        print("🔍 [TariffsViewModel] DEBUG: Проверяем storeManager...")
         print("   - storeManager.products.count: \(storeManager.products.count)")
         print("   - storeManager.isLoading: \(storeManager.isLoading)")
+        print("   - storeManager.purchasedProductIDs: \(storeManager.purchasedProductIDs)")
         
         // ✅ КРИТИЧЕСКАЯ ПРОВЕРКА: StoreKit может быть недоступен
         // Проверяем доступность StoreKit перед использованием
@@ -244,16 +267,35 @@ class TariffsViewModel: ObservableObject {
         if storeManager.products.isEmpty {
             let localizationManager = LocalizationManager()
             errorMessage = localizationManager.localized("tariffs_error_products_not_loaded")
-            print("⚠️ Продукты не загружены, пытаемся загрузить...")
+            print("⚠️ [TariffsViewModel] ========== ПРОДУКТЫ НЕ ЗАГРУЖЕНЫ ПЕРЕД ПОКУПКОЙ ==========")
+            print("⚠️ [TariffsViewModel] Попытка покупки тарифа: \(tariff.title) (ID: \(tariff.id))")
+            print("⚠️ [TariffsViewModel] Bundle ID: \(Bundle.main.bundleIdentifier ?? "unknown")")
+            print("⚠️ [TariffsViewModel] Product IDs для загрузки: \(StoreManager.ProductID.paidSubscriptions.map { $0.rawValue })")
+            print("⚠️ [TariffsViewModel] StoreManager.isLoading: \(storeManager.isLoading)")
+            print("⚠️ [TariffsViewModel] Пытаемся загрузить продукты...")
+            
+            // Пытаемся загрузить продукты
             await storeManager.loadProducts()
             
             // Проверяем снова после загрузки
             guard !storeManager.products.isEmpty else {
                 let localizationManager = LocalizationManager()
                 errorMessage = localizationManager.localized("tariffs_error_products_load_failed")
-                print("❌ Продукты все еще не загружены после попытки перезагрузки")
+                print("❌ [TariffsViewModel] ========== ПРОДУКТЫ ВСЕ ЕЩЕ НЕ ЗАГРУЖЕНЫ ==========")
+                print("❌ [TariffsViewModel] Продукты все еще не загружены после попытки перезагрузки")
+                print("❌ [TariffsViewModel] Проверьте:")
+                print("   1. Продукты настроены в App Store Connect")
+                print("   2. Bundle ID совпадает: \(Bundle.main.bundleIdentifier ?? "unknown")")
+                print("   3. Продукты в статусе 'Ready to Submit'")
+                print("   4. Интернет-соединение работает")
+                print("   5. Sandbox аккаунт настроен")
+                print("   6. Вы вошли в Sandbox аккаунт на устройстве")
+                print("❌ [TariffsViewModel] ==========================================")
                 return
             }
+            
+            print("✅ [TariffsViewModel] Продукты успешно загружены после перезагрузки")
+            print("✅ [TariffsViewModel] Загружено продуктов: \(storeManager.products.count)")
         }
         
         isLoading = true

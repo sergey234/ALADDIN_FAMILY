@@ -7,6 +7,8 @@ struct ALADDINApp: App {
     // ✅ Добавляем LocalizationManager
     @StateObject private var localizationManager = LocalizationManager()
     @AppStorage("selected_theme") private var selectedTheme: String = "system"
+    // ✅ ИСПРАВЛЕНИЕ: Отслеживаем состояние приложения для предотвращения сброса навигации
+    @Environment(\.scenePhase) private var scenePhase
     // Убрали @AppStorage для онбординга
     // private var hasCompletedOnboarding: Bool = false // больше не используется
     
@@ -287,6 +289,24 @@ struct ALADDINApp: App {
                 let locManager = localizationManager
                 initializeNavigation(navigationManager: navManager, localizationManager: locManager)
             }
+            // ✅ ИСПРАВЛЕНИЕ: Отслеживаем возврат из Safari/других приложений
+            .onChange(of: scenePhase) { newPhase in
+                if newPhase == .active {
+                    // Приложение стало активным (вернулись из Safari/фона)
+                    // НЕ перенаправляем на онбординг, если уже прошли его
+                    let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+                    if onboardingDone {
+                        if navigationManager.currentScreen == .onboarding {
+                            // Если случайно оказались на онбординге, возвращаемся на главную
+                            print("🔄 Возврат из фона: обнаружен онбординг при пройденном онбординге - исправляем")
+                            navigationManager.currentScreen = .main
+                        }
+                        // ✅ КРИТИЧНО: Не вызываем initializeNavigation повторно при возврате из фона
+                        // Это предотвращает сброс навигации на реальном устройстве
+                        print("🔄 Возврат из фона: онбординг пройден, текущий экран = \(navigationManager.currentScreen)")
+                    }
+                }
+            }
             // ✅ КРИТИЧНО: Дополнительное отслеживание изменений
             .onChange(of: navigationManager.currentScreen) { newScreen in
                 print("🚨🚨🚨 ALADDINApp.onChange: currentScreen изменился на \(newScreen)")
@@ -323,6 +343,12 @@ struct ALADDINApp: App {
         // ✅ Используем статический флаг для предотвращения повторной инициализации
         if ALADDINApp.hasInitialized {
             print("🛠️ [ALADDINApp.initializeNavigation] Уже инициализировано, пропускаем")
+            // ✅ КРИТИЧНО: Даже если уже инициализировано, проверяем что мы не на онбординге случайно
+            let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            if onboardingDone && navigationManager.currentScreen == .onboarding {
+                print("⚠️ [ALADDINApp.initializeNavigation] Обнаружен онбординг при уже пройденном онбординге - исправляем")
+                navigationManager.currentScreen = .main
+            }
             return
         }
         
@@ -339,16 +365,25 @@ struct ALADDINApp: App {
         let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
         print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")
         
-        // ✅ Используем небольшую задержку для гарантии готовности UI
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            if !onboardingDone {
-                // Показываем онбординг
+        // ✅ ИСПРАВЛЕНИЕ: НЕ используем задержку, проверяем сразу и только если действительно первый запуск
+        // ✅ КРИТИЧНО: Не перенаправляем на онбординг, если пользователь уже на другом экране
+        if !onboardingDone {
+            // Только если онбординг не пройден И мы на главной странице (первый запуск)
+            // ✅ КРИТИЧНО: Проверяем, что это действительно первый запуск, а не возврат из фона
+            if navigationManager.currentScreen == .main && navigationManager.navigationStack.isEmpty {
+                print("🔴 ONBOARDING: Показываю онбординг на первом запуске")
                 navigationManager.navigationStack.removeAll()
                 navigationManager.currentScreen = .onboarding
-                print("🔴 ONBOARDING: Показываю онбординг на старте")
             } else {
-                print("🟢 ONBOARDING: Пропущен, остаёмся на главной странице")
-                // ✅ ИСПРАВЛЕНИЕ: Остаёмся на главной странице, не перенаправляем автоматически
+                print("🟡 ONBOARDING: Онбординг не пройден, но уже на экране \(navigationManager.currentScreen) или стек не пуст - не перенаправляем")
+            }
+        } else {
+            print("🟢 ONBOARDING: Пропущен, остаёмся на текущем экране \(navigationManager.currentScreen)")
+            // ✅ ИСПРАВЛЕНИЕ: НЕ меняем currentScreen, если онбординг уже пройден
+            // Пользователь может быть на любом экране, не нужно его сбрасывать на main
+            // ✅ КРИТИЧНО: Если случайно оказались на онбординге, возвращаемся на главную
+            if navigationManager.currentScreen == .onboarding {
+                print("⚠️ ONBOARDING: Обнаружен онбординг при пройденном онбординге - исправляем")
                 navigationManager.currentScreen = .main
             }
         }

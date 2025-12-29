@@ -18,18 +18,13 @@ struct ThreatProtectionScreen: View {
                     showProfileButton: false, // Убираем кнопку профиля
                     showListButton: false, // Убираем кнопку списка экранов
                     onBack: {
-                        // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                        // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
-                        dismiss()
-                        
-                        // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                        DispatchQueue.main.async {
-                            if navigationManager.canGoBack {
-                                navigationManager.goBack(reason: "ThreatProtection.onBack")
-                            } else {
-                                // Если стек пустой, возвращаемся на главный экран
-                                navigationManager.navigateTo(.main)
-                            }
+                        // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
+                        // Это гарантирует правильную навигацию на реальном устройстве
+                        if navigationManager.canGoBack {
+                            navigationManager.goBack(reason: "ThreatProtection.onBack")
+                        } else {
+                            // Если стек пуст, возвращаемся на главную
+                            navigationManager.currentScreen = .main
                         }
                     }
                 )

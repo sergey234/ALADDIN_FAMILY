@@ -180,11 +180,9 @@ struct RecoveryCodeModal: View {
                     Button(action: {
                         // Сохраняем что семья создана
                         UserDefaults.standard.set(familyID, forKey: AppConfig.UserDefaultsKeys.familyId)
+                        UserDefaults.standard.synchronize()
                         
-                        // Вызываем колбэк если есть
-                        onComplete?()
-                        
-                        // Закрываем модал
+                        // ✅ ИСПРАВЛЕНИЕ: Закрываем модал - onComplete вызовется автоматически через setter
                         isPresented = false
                     }) {
                         Text("Готово")
@@ -205,6 +203,7 @@ struct RecoveryCodeModal: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Закрыть") {
+                        // ✅ ИСПРАВЛЕНИЕ: Закрываем модал - onComplete вызовется автоматически через setter
                         isPresented = false
                     }
                 }

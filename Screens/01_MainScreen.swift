@@ -145,7 +145,9 @@ struct MainScreen: View {
                     }
                     
                     // 🛡️ Защита (Каталог угроз)
-                    NavigationLink(destination: ThreatProtectionScreen()) {
+                    Button(action: {
+                        navigationManager.navigateTo(.threatProtection)
+                    }) {
                         VStack(spacing: 4) {
                             Text("🛡️")
                                 .font(.system(size: 20))
@@ -158,7 +160,9 @@ struct MainScreen: View {
                     }
                     
                     // 🔔 Уведомления
-                    NavigationLink(destination: NotificationsScreen()) {
+                    Button(action: {
+                        navigationManager.navigateTo(.notifications)
+                    }) {
                         VStack(spacing: 4) {
                             Text("🔔")
                                 .font(.system(size: 20))
@@ -186,7 +190,9 @@ struct MainScreen: View {
                     }
                     
                     // 📱 Устройства
-                    NavigationLink(destination: DevicesScreen()) {
+                    Button(action: {
+                        navigationManager.navigateTo(.devices)
+                    }) {
                         VStack(spacing: 4) {
                             Text("📱")
                                 .font(.system(size: 20))

@@ -4,6 +4,7 @@ struct ConsentModal: View {
     @Binding var isPresented: Bool
     let onConsentGiven: () -> Void
     @State private var showFullConsent: Bool = false
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         NavigationView {
@@ -15,11 +16,11 @@ struct ConsentModal: View {
                             .font(.system(size: 50))
                             .foregroundColor(.blue)
                         
-                        Text("Согласие на обработку данных")
+                        Text(localizationManager.localized("consent_modal_title"))
                             .font(.system(size: 24, weight: .bold))
                             .foregroundColor(.primary)
                         
-                        Text("Для продолжения регистрации необходимо ваше согласие")
+                        Text(localizationManager.localized("consent_modal_description"))
                             .font(.body)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -27,33 +28,33 @@ struct ConsentModal: View {
                     
                     // Текст согласия
                     VStack(alignment: .leading, spacing: 16) {
-                        Text("Согласие на обработку персональных данных")
+                        Text(localizationManager.localized("consent_modal_consent_title"))
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.primary)
                         
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Я даю согласие компании Aladdin на:")
+                            Text(localizationManager.localized("consent_modal_consent_text"))
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(.primary)
                             
                             VStack(alignment: .leading, spacing: 8) {
-                                consentItem("Создание семейного аккаунта")
-                                consentItem("Обработку данных о роли и возрасте")
-                                consentItem("Генерацию QR-кода для доступа")
-                                consentItem("Сохранение настроек безопасности")
+                                consentItem(localizationManager.localized("consent_modal_item_family_account"))
+                                consentItem(localizationManager.localized("consent_modal_item_role_age"))
+                                consentItem(localizationManager.localized("consent_modal_item_qr_code"))
+                                consentItem(localizationManager.localized("consent_modal_item_security_settings"))
                             }
                         }
                         
-                        Text("Компания Aladdin гарантирует:")
+                        Text(localizationManager.localized("consent_modal_guarantees_title"))
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.primary)
                             .padding(.top, 8)
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            consentItem("Не собирает номера телефонов и email")
-                            consentItem("Не передает данные третьим лицам")
-                            consentItem("Использует данные только для работы приложения")
-                            consentItem("Обеспечивает безопасность данных")
+                            consentItem(localizationManager.localized("consent_modal_guarantee_no_phone_email"))
+                            consentItem(localizationManager.localized("consent_modal_guarantee_no_third_party"))
+                            consentItem(localizationManager.localized("consent_modal_guarantee_app_only"))
+                            consentItem(localizationManager.localized("consent_modal_guarantee_security"))
                         }
                     }
                     .padding(20)
@@ -67,7 +68,7 @@ struct ConsentModal: View {
                         }
                     }) {
                         HStack {
-                            Text(showFullConsent ? "Скрыть полный текст" : "Читать полный текст согласия")
+                            Text(showFullConsent ? localizationManager.localized("consent_modal_hide_full") : localizationManager.localized("consent_modal_read_full"))
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.blue)
                             
@@ -84,7 +85,7 @@ struct ConsentModal: View {
                     // Раздвигающийся блок с полным текстом согласия
                     if showFullConsent {
                         VStack(alignment: .leading, spacing: 16) {
-                            Text("Полное согласие на обработку персональных данных")
+                            Text(localizationManager.localized("consent_modal_full_title"))
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(.primary)
                             
@@ -102,7 +103,7 @@ struct ConsentModal: View {
                             onConsentGiven()
                             isPresented = false
                         }) {
-                            Text("Согласен и продолжаю")
+                            Text(localizationManager.localized("consent_modal_agree"))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -111,7 +112,7 @@ struct ConsentModal: View {
                                 .cornerRadius(12)
                         }
                         
-                        Button("Отказаться") {
+                        Button(localizationManager.localized("consent_modal_decline")) {
                             isPresented = false
                         }
                         .font(.system(size: 16, weight: .medium))
@@ -120,15 +121,16 @@ struct ConsentModal: View {
                 }
                 .padding(20)
             }
-            .navigationTitle("Согласие")
+            .navigationTitle(localizationManager.localized("consent_modal_nav_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Закрыть") {
+                    Button(localizationManager.localized("consent_modal_close")) {
                         isPresented = false
                     }
                 }
             }
+            .id("consent_modal_lang_\(localizationManager.currentLanguage.rawValue)")
         }
     }
     
@@ -148,43 +150,43 @@ struct ConsentModal: View {
     private func fullConsentText() -> some View {
         VStack(alignment: .leading, spacing: 12) {
             consentSection(
-                title: "1. Предмет согласия",
-                text: "Я даю свое согласие компании Aladdin на обработку персональных данных в целях использования приложения ALADDIN Family (далее - «Приложение»), создания семейного аккаунта, настройки функций безопасности и защиты семьи."
+                title: localizationManager.localized("consent_modal_section_1_title"),
+                text: localizationManager.localized("consent_modal_section_1_text")
             )
             
             consentSection(
-                title: "2. Персональные данные",
-                text: "Обработке подлежат следующие персональные данные: роль в семье (родитель/ребенок/бабушка-дедушка), возрастная группа, личная буква для идентификации."
+                title: localizationManager.localized("consent_modal_section_2_title"),
+                text: localizationManager.localized("consent_modal_section_2_text")
             )
             
             consentSection(
-                title: "3. Способы обработки",
-                text: "Персональные данные обрабатываются с использованием автоматизированных средств (приложение, сервер, база данных). Данные хранятся локально на устройстве пользователя и передаются на сервер компании для обеспечения работы семейного доступа."
+                title: localizationManager.localized("consent_modal_section_3_title"),
+                text: localizationManager.localized("consent_modal_section_3_text")
             )
             
             consentSection(
-                title: "4. Сроки обработки",
-                text: "Персональные данные обрабатываются в течение всего срока использования Приложения и до момента отзыва согласия пользователем или до момента прекращения действия Приложения."
+                title: localizationManager.localized("consent_modal_section_4_title"),
+                text: localizationManager.localized("consent_modal_section_4_text")
             )
             
             consentSection(
-                title: "5. Права пользователя",
-                text: "Я подтверждаю, что ознакомлен(а) с правами пользователя, предусмотренными Федеральным законом «О персональных данных» № 152-ФЗ, в том числе с правом на получение информации об обработке моих персональных данных, правом на доступ к моим персональным данным, правом на требование уточнения, блокирования или уничтожения моих персональных данных."
+                title: localizationManager.localized("consent_modal_section_5_title"),
+                text: localizationManager.localized("consent_modal_section_5_text")
             )
             
             consentSection(
-                title: "6. Согласие распространяется на:",
-                text: "- Создание и управление семейным аккаунтом\n- Генерацию и использование QR-кодов для доступа\n- Сохранение настроек безопасности семьи\n- Использование данных для работы функций родительского контроля\n- Обработку данных о роли и возрасте для персонализации интерфейса"
+                title: localizationManager.localized("consent_modal_section_6_title"),
+                text: localizationManager.localized("consent_modal_section_6_text")
             )
             
             consentSection(
-                title: "7. Гарантии компании",
-                text: "- Не собираем номер телефона, email, имя или другие персональные данные\n- Не передаем данные третьим лицам\n- Используем данные исключительно для работы функций Приложения\n- Обеспечиваем безопасное хранение данных\n- Соблюдаем требования законодательства о защите персональных данных"
+                title: localizationManager.localized("consent_modal_section_7_title"),
+                text: localizationManager.localized("consent_modal_section_7_text")
             )
             
             consentSection(
-                title: "8. Отзыв согласия",
-                text: "Я понимаю, что вправе отозвать настоящее согласие на обработку персональных данных в любой момент, направив соответствующее уведомление в компанию Aladdin. При этом я понимаю, что отзыв согласия может повлечь невозможность использования Приложения."
+                title: localizationManager.localized("consent_modal_section_8_title"),
+                text: localizationManager.localized("consent_modal_section_8_text")
             )
         }
     }

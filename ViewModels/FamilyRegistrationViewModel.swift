@@ -235,6 +235,10 @@ class FamilyRegistrationViewModel: ObservableObject {
         
         // ✅ СОХРАНЯЕМ РОЛЬ ПОЛЬЗОВАТЕЛЯ
         saveUserRole(role)
+        print("✅ [FamilyRegistrationViewModel] Роль сохранена: \(role.rawValue)")
+        // ✅ ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ: Убеждаемся, что UserDefaults синхронизирован
+        UserDefaults.standard.synchronize()
+        print("✅ [FamilyRegistrationViewModel] UserDefaults синхронизирован")
         
         currentStep = .creatingFamily
         isLoading = true

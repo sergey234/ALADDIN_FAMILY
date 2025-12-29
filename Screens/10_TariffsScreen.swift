@@ -167,6 +167,20 @@ struct TariffsScreen: View {
         }
         .navigationBarHidden(true)
         .id("tariffs_lang_\(localizationManager.currentLanguage.rawValue)")
+        // ✅ КРИТИЧНО: Загружаем продукты при открытии экрана тарифов
+        .task {
+            print("🔄 [TariffsScreen] Экран открыт, проверяем продукты...")
+            let productsCount = await viewModel.getProductsCount()
+            print("🔄 [TariffsScreen] Продуктов загружено: \(productsCount)")
+            
+            // Если продукты не загружены, загружаем их
+            if productsCount == 0 {
+                print("⚠️ [TariffsScreen] Продукты не загружены, начинаем загрузку...")
+                await viewModel.loadProducts()
+            } else {
+                print("✅ [TariffsScreen] Продукты уже загружены")
+            }
+        }
         // ✅ УДАЛЕНО: Визуальные логи с экрана (оставляем только в консоли)
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УДАЛЕН .sheet модификатор
         // Sheet создавал PaymentQRScreen дважды (через sheet И через NavigationManager)

@@ -141,14 +141,21 @@ struct MainScreenWithRegistration: View {
                 RecoveryCodeModal(
                     isPresented: Binding(
                         get: { registrationVM.showFamilyCreatedModal },
-                        set: { registrationVM.showFamilyCreatedModal = $0 }
+                        set: { newValue in
+                            registrationVM.showFamilyCreatedModal = newValue
+                            // ✅ ИСПРАВЛЕНИЕ: Если модал закрывается (свайп вниз или кнопка), вызываем onComplete
+                            if !newValue {
+                                onComplete?()
+                                print("✅ RecoveryCodeModal закрыт, семья создана")
+                            }
+                        }
                     ),
                     recoveryCode: recoveryCode,
                     familyID: familyID,
                     onComplete: {
                         // После закрытия RecoveryCodeModal вызываем onComplete
                         onComplete?()
-                        print("✅ RecoveryCodeModal закрыт, семья создана")
+                        print("✅ RecoveryCodeModal: onComplete вызван")
                     }
                 )
             }

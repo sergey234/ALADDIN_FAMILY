@@ -78,15 +78,13 @@ struct NotificationsScreen: View {
                 }
             ],
             onBack: {
-                // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
-                dismiss()
-                
-                // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                DispatchQueue.main.async {
-                    if navigationManager.canGoBack {
-                        navigationManager.goBack()
-                    }
+                // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
+                // Это гарантирует правильную навигацию на реальном устройстве
+                if navigationManager.canGoBack {
+                    navigationManager.goBack()
+                } else {
+                    // Если стек пуст, возвращаемся на главную
+                    navigationManager.currentScreen = .main
                 }
             }
         )

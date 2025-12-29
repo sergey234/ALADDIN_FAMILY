@@ -116,18 +116,119 @@ class StoreManager: ObservableObject {
      */
     func loadProducts() async {
         isLoading = true
+        errorMessage = nil
+        
+        // ✅ ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ: Выводим информацию о попытке загрузки
+        let productIDs = ProductID.paidSubscriptions.map { $0.rawValue }
+        print("🔄 [StoreManager.loadProducts] ========== НАЧАЛО ЗАГРУЗКИ ПРОДУКТОВ ==========")
+        print("🔄 [StoreManager.loadProducts] Product IDs: \(productIDs)")
+        print("🔄 [StoreManager.loadProducts] Device: \(UIDevice.current.model)")
+        print("🔄 [StoreManager.loadProducts] OS: \(UIDevice.current.systemVersion)")
+        print("🔄 [StoreManager.loadProducts] Bundle ID: \(Bundle.main.bundleIdentifier ?? "unknown")")
+        print("🔄 [StoreManager.loadProducts] Thread: \(Thread.isMainThread ? "Main" : "Background")")
+        print("🔄 [StoreManager.loadProducts] Timestamp: \(Date())")
+        
+        // ✅ ПРОВЕРКА СЕТИ: Проверяем доступность интернета
+        print("🔄 [StoreManager.loadProducts] Проверяем доступность App Store...")
         
         do {
             // ✅ Загружаем только платные подписки (без .basic, которого нет в App Store Connect)
-            let productIDs = ProductID.paidSubscriptions.map { $0.rawValue }
+            print("🔄 [StoreManager.loadProducts] Вызываем Product.products(for: \(productIDs.count) IDs)...")
+            let startTime = Date()
             products = try await Product.products(for: productIDs)
+            let loadTime = Date().timeIntervalSince(startTime)
             isLoading = false
-            print("✅ Loaded \(products.count) products from App Store")
+            
+            print("🔄 [StoreManager.loadProducts] Загрузка завершена за \(String(format: "%.2f", loadTime)) секунд")
+            
+            if products.isEmpty {
+                print("⚠️ [StoreManager.loadProducts] ========== ПРОДУКТЫ НЕ ЗАГРУЖЕНЫ ==========")
+                print("⚠️ [StoreManager.loadProducts] Возможные причины:")
+                print("   1. Продукты не настроены в App Store Connect")
+                print("   2. Bundle ID не совпадает: \(Bundle.main.bundleIdentifier ?? "unknown")")
+                print("   3. Продукты не в статусе 'Ready to Submit'")
+                print("   4. Проблема с интернет-соединением")
+                print("   5. Проблема с Sandbox аккаунтом")
+                print("   6. Продукты не привязаны к приложению в App Store Connect")
+                print("⚠️ [StoreManager.loadProducts] Проверьте App Store Connect:")
+                print("   - My Apps → ALADDIN → Features → In-App Purchases")
+                print("   - Убедитесь, что все 3 продукта созданы:")
+                print("     • \(ProductID.individual.rawValue)")
+                print("     • \(ProductID.family.rawValue)")
+                print("     • \(ProductID.premium.rawValue)")
+                let localizationManager = LocalizationManager()
+                errorMessage = localizationManager.localized("tariffs_error_products_load_failed")
+            } else {
+                print("✅ [StoreManager.loadProducts] ========== ПРОДУКТЫ ЗАГРУЖЕНЫ УСПЕШНО ==========")
+                print("✅ [StoreManager.loadProducts] Загружено \(products.count) продуктов из App Store")
+                for (index, product) in products.enumerated() {
+                    print("   \(index + 1). \(product.id)")
+                    print("      - Цена: \(product.displayPrice)")
+                    print("      - Название: \(product.displayName)")
+                    if let subscription = product.subscription {
+                        print("      - Период: \(subscription.subscriptionPeriod.value) \(subscription.subscriptionPeriod.unit)")
+                    }
+                }
+            } else {
+                // ✅ КРИТИЧЕСКАЯ ДИАГНОСТИКА: Если продукты пусты, выводим детальную информацию
+                print("⚠️ [StoreManager.loadProducts] ========== КРИТИЧЕСКАЯ ПРОБЛЕМА ==========")
+                print("⚠️ [StoreManager.loadProducts] Apple Sandbox API вернул 0 продуктов!")
+                print("⚠️ [StoreManager.loadProducts] Запрошенные Product IDs:")
+                for (index, productID) in productIDs.enumerated() {
+                    print("   \(index + 1). \(productID)")
+                }
+                print("⚠️ [StoreManager.loadProducts] Bundle ID: \(Bundle.main.bundleIdentifier ?? "unknown")")
+                print("⚠️ [StoreManager.loadProducts] ==========================================")
+                print("⚠️ [StoreManager.loadProducts] ВОЗМОЖНЫЕ ПРИЧИНЫ:")
+                print("   1. Продукты не созданы в App Store Connect")
+                print("   2. Продукты не привязаны к приложению ALADDIN")
+                print("   3. Продукты не в статусе 'Ready to Submit'")
+                print("   4. Bundle ID не совпадает: \(Bundle.main.bundleIdentifier ?? "unknown")")
+                print("   5. Продукты не активированы для Sandbox тестирования")
+                print("⚠️ [StoreManager.loadProducts] ==========================================")
+            }
         } catch {
             let localizationManager = LocalizationManager()
             errorMessage = String(format: localizationManager.localized("store_error_load_products"), error.localizedDescription)
             isLoading = false
-            print("❌ Error loading products: \(error)")
+            print("❌ [StoreManager.loadProducts] ========== ОШИБКА ЗАГРУЗКИ ==========")
+            print("❌ [StoreManager.loadProducts] Error: \(error)")
+            print("❌ [StoreManager.loadProducts] Error type: \(type(of: error))")
+            print("❌ [StoreManager.loadProducts] Error description: \(error.localizedDescription)")
+            
+            // ✅ ДЕТАЛЬНАЯ ДИАГНОСТИКА: Выводим дополнительную информацию
+            if let nsError = error as NSError? {
+                print("❌ [StoreManager.loadProducts] NSError domain: \(nsError.domain)")
+                print("❌ [StoreManager.loadProducts] NSError code: \(nsError.code)")
+                print("❌ [StoreManager.loadProducts] NSError userInfo: \(nsError.userInfo)")
+                
+                // ✅ СПЕЦИФИЧЕСКИЕ ОШИБКИ STOREKIT
+                if nsError.domain == "SKErrorDomain" {
+                    switch nsError.code {
+                    case 0:
+                        print("❌ [StoreManager.loadProducts] SKErrorUnknown - Неизвестная ошибка")
+                    case 1:
+                        print("❌ [StoreManager.loadProducts] SKErrorClientInvalid - Клиент недействителен")
+                    case 2:
+                        print("❌ [StoreManager.loadProducts] SKErrorPaymentCancelled - Платеж отменен")
+                    case 3:
+                        print("❌ [StoreManager.loadProducts] SKErrorPaymentInvalid - Платеж недействителен")
+                    case 4:
+                        print("❌ [StoreManager.loadProducts] SKErrorPaymentNotAllowed - Платеж не разрешен")
+                    case 5:
+                        print("❌ [StoreManager.loadProducts] SKErrorStoreProductNotAvailable - Продукт недоступен")
+                    case 6:
+                        print("❌ [StoreManager.loadProducts] SKErrorCloudServicePermissionDenied - Доступ к облачным сервисам запрещен")
+                    case 7:
+                        print("❌ [StoreManager.loadProducts] SKErrorCloudServiceNetworkConnectionFailed - Ошибка сетевого подключения")
+                    case 8:
+                        print("❌ [StoreManager.loadProducts] SKErrorCloudServiceRevoked - Облачный сервис отозван")
+                    default:
+                        print("❌ [StoreManager.loadProducts] SKError code: \(nsError.code)")
+                    }
+                }
+            }
+            print("❌ [StoreManager.loadProducts] ==========================================")
         }
     }
     

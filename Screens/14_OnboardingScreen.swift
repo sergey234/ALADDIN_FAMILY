@@ -249,7 +249,7 @@ struct OnboardingScreen: View {
                                     .font(.system(size: 14))
                                     .foregroundColor(.textSecondary)
                                 
-                                Text("Мы собираем только обезличенные данные для обеспечения безопасности. Подробнее в ")
+                                Text(localizationManager.localized("onboarding_data_collection_info"))
                                     .font(.caption)
                                     .foregroundColor(.textSecondary)
                                     .multilineTextAlignment(.leading)
@@ -257,7 +257,7 @@ struct OnboardingScreen: View {
                                 Button(action: {
                                     showPrivacyPolicy = true
                                 }) {
-                                    Text("Политике конфиденциальности")
+                                    Text(localizationManager.localized("onboarding_privacy_policy_link"))
                                         .font(.caption)
                                         .foregroundColor(.primaryBlue)
                                         .underline()
@@ -278,7 +278,7 @@ struct OnboardingScreen: View {
                                         .foregroundColor(dataConsentAccepted ? .primaryBlue : .textSecondary)
                                 }
                                 
-                                Text("Я согласен с обработкой данных")
+                                Text(localizationManager.localized("onboarding_data_consent"))
                                     .font(.caption)
                                     .foregroundColor(.textPrimary)
                                 

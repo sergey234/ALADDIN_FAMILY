@@ -168,16 +168,10 @@ struct SupportScreen: View {
                 // Навигационная панель
                 HStack {
                     Button(action: {
-                        // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                        // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
+                        // ✅ ИСПРАВЛЕНИЕ: Просто dismiss() - возвращаемся к Settings
+                        // SupportScreen открывается как .sheet() из SettingsScreen,
+                        // поэтому dismiss() вернет нас обратно на Settings
                         dismiss()
-                        
-                        // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                        DispatchQueue.main.async {
-                            if navigationManager.canGoBack {
-                                navigationManager.goBack()
-                            }
-                        }
                     }) {
                         Image(systemName: "chevron.left")
                             .foregroundColor(.white)

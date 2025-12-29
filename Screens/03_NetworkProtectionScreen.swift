@@ -44,7 +44,12 @@ struct NetworkProtectionScreen: View {
                     subtitle: localizationManager.localized("secure_connection_subtitle"),
                     showBackButton: true,
                     onBack: {
-                        dismiss()
+                        // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
+                        if navigationManager.canGoBack {
+                            navigationManager.goBack()
+                        } else {
+                            navigationManager.currentScreen = .main
+                        }
                     }
                 )
                     .accessibilityElement(children: .combine)
