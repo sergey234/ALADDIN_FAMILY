@@ -1924,8 +1924,6 @@ class LocalizationManager: ObservableObject {
             "devices_device_type": "Тип устройства",
             "devices_owner": "Владелец",
             "devices_loading_members": "Загрузка членов семьи...",
-            "devices_add_device_button": "Добавить устройство",
-            "devices_success_added": "Устройство успешно добавлено!",
             // Support Screen
             "support_title": "ПОДДЕРЖКА",
             "support_subtitle": "Мы всегда рядом",
@@ -4057,8 +4055,6 @@ class LocalizationManager: ObservableObject {
             "devices_device_type": "Device type",
             "devices_owner": "Owner",
             "devices_loading_members": "Loading family members...",
-            "devices_add_device_button": "Add device",
-            "devices_success_added": "Device successfully added!",
             "devices_filter_all": "All",
             "devices_filter_protected": "Protected",
             "devices_filter_warning": "Warnings",

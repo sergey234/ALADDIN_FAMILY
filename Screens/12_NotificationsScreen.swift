@@ -314,9 +314,14 @@ struct NotificationsScreen: View {
             
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.filteredNotifications(for: selectedFilter)) { appNotification in
-                    NotificationCard(notification: appNotification.toNotification()) {
-                        viewModel.markAsRead(appNotification)
-                    }
+                    NotificationCard(
+                        notification: appNotification.toNotification(),
+                        onTap: {
+                            viewModel.markAsRead(appNotification)
+                            // ✅ ДОБАВЛЕНО: Навигация в зависимости от типа уведомления
+                            handleNotificationTap(appNotification)
+                        }
+                    )
                     .environmentObject(localizationManager)
                 }
             }
@@ -370,6 +375,44 @@ struct NotificationsScreen: View {
     
     private func filterCount(for filter: NotificationFilter) -> Int {
         viewModel.filterCount(for: filter)
+    }
+    
+    // MARK: - Notification Navigation
+    
+    /**
+     * Обработка нажатия на уведомление - навигация к соответствующему экрану
+     */
+    private func handleNotificationTap(_ notification: NotificationsViewModel.AppNotification) {
+        HapticFeedback.selection()
+        
+        // Навигация в зависимости от типа уведомления (kind)
+        switch notification.kind {
+        case .threat:
+            // Угроза (threat attempt blocked) - переходим на экран защиты от угроз
+            navigationManager.navigateTo(.threatProtection)
+            
+        case .success:
+            // Успех (например, "Protection enabled") - переходим на экран защиты сети
+            let titleLower = notification.title.lowercased()
+            let messageLower = notification.message.lowercased()
+            if titleLower.contains("protection") || titleLower.contains("защита") ||
+               messageLower.contains("protection") || messageLower.contains("защита") {
+                navigationManager.navigateTo(.networkProtection)
+            }
+            // Для других успешных уведомлений остаемся на экране
+            
+        case .warning:
+            // Предупреждение - переходим на экран аналитики
+            navigationManager.navigateTo(.analytics)
+            
+        case .info:
+            // Информация - остаемся на экране уведомлений
+            break
+            
+        case .bypassAttempt:
+            // Попытка обхода - переходим на экран родительского контроля
+            navigationManager.navigateTo(.parentalControl)
+        }
     }
 }
 

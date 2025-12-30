@@ -14,15 +14,39 @@
 		</data>
 		<key>Assets.car</key>
 		<data>
-		ub5+HlXBk4o8kmMSQ3y7awzxfwE=
+		g6LgvKirKCzXNm165Kw7WVyyh/I=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		oWFe04U14zaqrJir+waSopyhGKk=
+		pUIDdJT2oNsFb8C9yO1YDOHQgtk=
 		</data>
 		<key>PkgInfo</key>
 		<data>
 		n57qDP4tZfLD1rCS43W0B4LQjzE=
+		</data>
+		<key>PlugIns/ALADDINContentBlocker.appex/ALADDINContentBlocker</key>
+		<data>
+		qxXjw5r0xfIwqGsGv/0gPJO62Pc=
+		</data>
+		<key>PlugIns/ALADDINContentBlocker.appex/Info.plist</key>
+		<data>
+		kTxoDVZVwg1fYjUNlQvTJozSv/Y=
+		</data>
+		<key>PlugIns/ALADDINContentBlocker.appex/_CodeSignature/CodeResources</key>
+		<data>
+		EMby26XJg7IIJDk9V5oOWYjdCjI=
+		</data>
+		<key>PlugIns/ALADDINContentBlocker.appex/blockerList.json</key>
+		<data>
+		CK4LBglk1x0+2xIR3aBibPudlEo=
+		</data>
+		<key>aladdin_cert.cer</key>
+		<data>
+		2tLbdut63fp04VOfN1w4lhxwDP8=
+		</data>
+		<key>aladdin_cert_backup.cer</key>
+		<data>
+		XumgHRv9XCrKYHRdWHYq0OMrAFQ=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -45,7 +69,49 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ruIQvo11nEH51FzVYnvE6oNH/wRmncaFUIZE7otjrwk=
+			uazH26NtD3votVL+RGaJvuovnPI3a6Oc7PV5jXlCZSI=
+			</data>
+		</dict>
+		<key>PlugIns/ALADDINContentBlocker.appex/ALADDINContentBlocker</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			qfuijVbDVRLE79ImH4P3ymOqWgI0q20lhVEsHDXqVXA=
+			</data>
+		</dict>
+		<key>PlugIns/ALADDINContentBlocker.appex/Info.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			s8nVLwE2fxn0BDwEisYTZl18kCan9Om30wWMhgBYdDs=
+			</data>
+		</dict>
+		<key>PlugIns/ALADDINContentBlocker.appex/_CodeSignature/CodeResources</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			QGjyW34tcA14poKF/OvOSFwM0wvnjjZ5vIUEa90mOHI=
+			</data>
+		</dict>
+		<key>PlugIns/ALADDINContentBlocker.appex/blockerList.json</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			4l+T0HtSyExCywmEgCYpcclSGoYE9jskzYmNtd4Q4rE=
+			</data>
+		</dict>
+		<key>aladdin_cert.cer</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			mj/5yA/MtAFePAs38DwGN+OQOdjbPr6M7reDZbHY2eI=
+			</data>
+		</dict>
+		<key>aladdin_cert_backup.cer</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			ScEajoUXIqVUGxqahuYU9P+Knr8nrA6hUvI5vwWynlU=
 			</data>
 		</dict>
 	</dict>

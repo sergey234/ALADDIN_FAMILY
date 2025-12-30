@@ -44,12 +44,12 @@ struct NetworkProtectionScreen: View {
                     subtitle: localizationManager.localized("secure_connection_subtitle"),
                     showBackButton: true,
                     onBack: {
-                        // ✅ ПРОСТАЯ ЛОГИКА: Используем dismiss() и goBack() как раньше
-                        dismiss()
+                        // ✅ ИСПРАВЛЕНО: Правильный возврат на главный экран
                         if navigationManager.canGoBack {
                             navigationManager.goBack(reason: "NetworkProtection.onBack")
                         } else {
-                            navigationManager.currentScreen = .main
+                            // Если стек пуст, возвращаемся на главный экран
+                            navigationManager.navigateToRoot(.main)
                         }
                     }
                 )

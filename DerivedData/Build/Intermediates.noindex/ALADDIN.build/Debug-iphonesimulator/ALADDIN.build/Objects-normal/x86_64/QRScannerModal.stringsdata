@@ -1,20 +1,5 @@
 {
   "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Shared/Components/QRScannerModal.swift",
-  "tables": {
-    "Localizable": [
-      {
-        "comment": "",
-        "key": "Наведите камеру на QR-код"
-      },
-      {
-        "comment": "",
-        "key": "Код будет распознан автоматически"
-      },
-      {
-        "comment": "",
-        "key": "Отмена"
-      }
-    ]
-  },
+  "tables": {},
   "version": 1
 }

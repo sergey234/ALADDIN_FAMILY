@@ -225,10 +225,20 @@ class ContentBlockerManager: ObservableObject {
     
     /**
      * Открыть настройки iOS для активации блокировки
+     * ⚠️ ВАЖНО: iOS не поддерживает прямой deep link к Safari → Content Blockers
+     * 
+     * Решение:
+     * 1. Открываем общие настройки приложения (UIApplication.openSettingsURLString)
+     * 2. Пользователь должен вручную перейти: Настройки → Safari → Content Blockers → ALADDIN
+     * 
+     * Альтернатива (не работает в продакшн):
+     * - App-Prefs:root=Safari&path=Content_Blockers (требует приватный API, отклоняется App Store)
      */
     func openSettings() {
+        // Открываем настройки приложения
+        // Пользователь увидит инструкцию в alert и сможет перейти в Safari → Content Blockers
         if let url = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(url)
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
     }
     

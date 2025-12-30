@@ -1,24 +1,5 @@
 {
   "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/10_TariffsScreen.swift",
-  "tables": {
-    "Localizable": [
-      {
-        "comment": "",
-        "key": "Скрыть логи"
-      },
-      {
-        "comment": "",
-        "key": "Показать логи"
-      },
-      {
-        "comment": "",
-        "key": "📊"
-      },
-      {
-        "comment": "",
-        "key": "⭐"
-      }
-    ]
-  },
+  "tables": {},
   "version": 1
 }

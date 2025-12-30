@@ -232,6 +232,8 @@ SWIFT_CLASS("_TtC7ALADDIN14NetworkManager")
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
+
+
 @class NSURLSession;
 @class NSURLAuthenticationChallenge;
 @class NSURLCredential;
@@ -241,7 +243,6 @@ SWIFT_CLASS("_TtC7ALADDIN14NetworkManager")
 /// Это критически важно для защиты от Man-in-the-Middle атак
 - (void)URLSession:(NSURLSession * _Nonnull)session didReceiveChallenge:(NSURLAuthenticationChallenge * _Nonnull)challenge completionHandler:(void (^ _Nonnull)(NSURLSessionAuthChallengeDisposition, NSURLCredential * _Nullable))completionHandler;
 @end
-
 
 
 /// 🔔 Notification Manager

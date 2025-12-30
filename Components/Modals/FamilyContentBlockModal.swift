@@ -76,7 +76,7 @@ struct FamilyContentBlockModal: View {
             }
             Button(localizationManager.localized("content_block_alert_cancel"), role: .cancel) {}
         } message: {
-            Text(localizationManager.localized("content_block_alert_message"))
+            Text("\(localizationManager.localized("content_block_alert_message"))\n\n📱 После открытия настроек:\n1. Нажмите Safari\n2. Выберите Content Blockers\n3. Включите ALADDIN")
         }
     }
     

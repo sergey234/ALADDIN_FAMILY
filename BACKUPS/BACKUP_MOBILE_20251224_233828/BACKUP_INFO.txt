@@ -1,0 +1,94 @@
+ПОЛНЫЙ БЭКАП МОБИЛЬНОГО ПРИЛОЖЕНИЯ ALADDIN iOS
+
+Дата создания: 24 декабря 2025, 23:38:28
+Директория: BACKUPS/BACKUP_MOBILE_20251224_233828
+ZIP архив: BACKUPS/BACKUP_MOBILE_20251224_233828.zip (25 МБ)
+
+СТАТИСТИКА БЭКАПА:
+- Всего файлов: 512
+- Swift файлов: 246
+- Размер: 38 МБ (несжатый), 25 МБ (ZIP)
+- Целостность: проверена, ошибок не обнаружено
+
+ЧТО ВКЛЮЧЕНО В БЭКАП:
+
+1. ПРОЕКТНЫЕ ПАПКИ:
+   ✅ ALADDIN.xcodeproj - полный проект со всеми настройками
+   ✅ ALADDIN/ - основной код приложения
+   ✅ Screens/ - все экраны приложения
+   ✅ ViewModels/ - все ViewModels
+   ✅ Core/ - основные модули (Network, Config, Models, Security, ContentBlocker, etc.)
+   ✅ Shared/ - общие компоненты
+   ✅ Components/ - UI компоненты
+   ✅ ALADDINContentBlocker/ - Content Blocker Extension (актуальный)
+   ✅ ALADDINWidgets/ - Widgets Extension
+   ✅ Assets.xcassets/ - иконки, изображения, цвета
+   ✅ Resources/ - локализация, сертификаты
+   ✅ LocalizedVersions/ - локализованные версии
+   ✅ Tests/ - все unit и UI тесты
+
+2. ФАЙЛЫ ДЛЯ СБОРКИ IPA:
+   ✅ .github/workflows/ - все workflow файлы, включая:
+      - check-secrets.yml - актуальный workflow для проверки секретов
+      - appstore.yml - workflow для сборки App Store
+      - ci.yml, deploy.yml и другие
+   ✅ ExportOptions.plist - настройки экспорта IPA
+   ✅ ALADDINApp.swift - точка входа приложения
+   ✅ fastlane/Fastfile - конфигурация Fastlane
+   ✅ .gitignore - Git ignore файл
+   ✅ Podfile, Podfile.lock - зависимости CocoaPods (если есть)
+
+3. КРИТИЧНЫЕ НАСТРОЙКИ:
+   ✅ Code Signing настройки в project.pbxproj
+   ✅ Bundle IDs:
+      - Main: family.aladdin.ios
+      - Content Blocker: family.aladdin.ios.ALADDINContentBlocker
+   ✅ Development Team: 6CJVBBUGSN
+   ✅ Provisioning Profiles UUIDs в project.pbxproj
+
+4. ДОКУМЕНТАЦИЯ:
+   ✅ README.md - описание бэкапа
+   ✅ Важные документы из docs/ (без предыдущих бэкапов)
+
+ЧТО ИСКЛЮЧЕНО (не нужно для восстановления):
+   ❌ Предыдущие бэкапы (BACKUPS/, BACKUP_*)
+   ❌ Build артефакты (build/, DerivedData/)
+   ❌ Временные файлы (*.log, *.tmp)
+   ❌ Git файлы (.git/)
+   ❌ Certificates (хранятся в Keychain)
+
+ВАЖНЫЕ ИЗМЕНЕНИЯ С ПРЕДЫДУЩЕГО БЭКАПА (9 декабря):
+   ✅ ALADDINPacketTunnel удален (VPN функциональность удалена)
+   ✅ ALADDINContentBlocker добавлен (Content Blocker Extension)
+   ✅ Обновлены GitHub Actions workflows
+   ✅ Обновлены ответы Apple в docs/AppStore/
+   ✅ Обновлены provisioning profiles UUIDs
+
+КАК ВОССТАНОВИТЬ:
+
+1. Распаковать архив:
+   cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+   unzip BACKUPS/BACKUP_MOBILE_20251224_233828.zip -d .
+
+2. Открыть проект в Xcode:
+   open ALADDIN.xcodeproj
+
+3. Проверить настройки:
+   - Signing & Capabilities
+   - Provisioning Profiles (могут истечь, нужно обновить)
+   - Bundle IDs
+
+4. Обновить provisioning profiles в Apple Developer Portal (если истекли)
+
+ПРИМЕЧАНИЯ:
+- Provisioning profiles могут истечь - их нужно будет обновить в Apple Developer Portal
+- Certificates не включены (хранятся в Keychain на вашем Mac)
+- DerivedData не включен (генерируется автоматически при сборке)
+- Build артефакты не включены (не нужны для восстановления)
+
+ВЕРСИЯ ПРИЛОЖЕНИЯ:
+- Версия: 1.0.0
+- Build: 16
+- Статус: Готово к отправке в App Store
+- Content Blocker Extension: Настроен и готов
+

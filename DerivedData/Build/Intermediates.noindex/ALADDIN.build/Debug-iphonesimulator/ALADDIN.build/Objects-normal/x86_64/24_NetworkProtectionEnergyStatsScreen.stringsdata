@@ -1,0 +1,24 @@
+{
+  "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/24_NetworkProtectionEnergyStatsScreen.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "🔋"
+      },
+      {
+        "comment": "",
+        "key": "%.1f%%"
+      },
+      {
+        "comment": "",
+        "key": "%@: %@"
+      },
+      {
+        "comment": "",
+        "key": "%@: %.1f %@"
+      }
+    ]
+  },
+  "version": 1
+}

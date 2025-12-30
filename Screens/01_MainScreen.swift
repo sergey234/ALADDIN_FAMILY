@@ -243,7 +243,9 @@ struct MainScreen: View {
                             GridItem(.flexible())
                         ], spacing: 15) {
                             // Антивирус карточка (вместо VPN)
-                            NavigationLink(destination: NetworkProtectionScreen()) {
+                            Button(action: {
+                                navigationManager.navigateTo(.networkProtection)
+                            }) {
                                 VStack(spacing: 8) {
                                     HStack(spacing: 8) {
                                         Text("🛡️")
@@ -275,6 +277,7 @@ struct MainScreen: View {
                                         )
                                 )
                             }
+                            .buttonStyle(PlainButtonStyle())
                             .accessibilityLabel("Антивирус Аладин - \(antivirusEnabled ? "Активен" : "Отключен")")
                             .accessibilityHint("Нажмите для открытия экрана защиты")
                             
