@@ -190,6 +190,7 @@ struct MainScreenWithRegistration: View {
                         isPresented: $showTip,
                         message: localizationManager.localized("registration_tip_add_members")
                     )
+                    .environmentObject(localizationManager)
                     .padding(.top, 60)
                     
                     Spacer()
@@ -259,6 +260,7 @@ struct TipNotification: View {
     
     @Binding var isPresented: Bool
     let message: String
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         HStack(spacing: Spacing.m) {
