@@ -3,7 +3,6 @@ import UIKit
 
 struct MainScreen: View {
     @State private var aiQuestion: String = ""
-    @State private var showAddMemberModal: Bool = false
     @StateObject private var mainViewModel = MainViewModel()
     @StateObject private var tariffManager = TariffManager.shared
     @StateObject private var antivirusManager = AntivirusManager.shared
@@ -223,10 +222,6 @@ struct MainScreen: View {
         .onAppear {
             loadProfileImage()
         }
-        .sheet(isPresented: $showAddMemberModal) {
-            AddMemberOptionsModal(isPresented: $showAddMemberModal)
-                .environmentObject(navigationManager)
-        }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("main_lang_\(localizationManager.currentLanguage.rawValue)")
     }
@@ -440,7 +435,7 @@ struct MainScreen: View {
                                 
                                 Button(action: {
                                     // Используем модал для добавления участника
-                                    showAddMemberModal = true
+                                    navigationManager.navigateTo(.addMemberOptions)
                                 }) {
                                     Text(localizationManager.localized("main_family_add_member"))
                                         .font(.system(size: 11, weight: .bold))

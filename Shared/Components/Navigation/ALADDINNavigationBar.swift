@@ -309,6 +309,7 @@ private extension NavigationManager.ALADDINScreen {
         case .profile: return "nav_screen_profile"
         case .notifications: return "nav_screen_notifications"
         case .support: return "nav_screen_support"
+        case .addMemberOptions: return "nav_screen_add_member_options"
         case .onboarding: return "nav_screen_onboarding"
         case .privacyPolicy: return "nav_screen_privacy_policy"
         case .termsOfService: return "nav_screen_terms_of_service"

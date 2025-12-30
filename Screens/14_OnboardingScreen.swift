@@ -381,9 +381,11 @@ struct OnboardingScreen: View {
         }
         // ✅ УБРАНО: .fullScreenCover() - теперь используем NavigationManager для навигации
         .sheet(isPresented: $showJoinFamily) {
-            QRScannerModal(
-                isPresented: $showJoinFamily
-            )
+            QRScannerModal { code in
+                // Обработка отсканированного кода
+                showJoinFamily = false
+                // Можно добавить логику обработки кода
+            }
         }
         .sheet(isPresented: $showBackupRecovery) {
             BackupRecoveryModal(
@@ -402,9 +404,11 @@ struct OnboardingScreen: View {
             )
         }
         .sheet(isPresented: $showQRScanner) {
-            QRScannerModal(
-                isPresented: $showQRScanner
-            )
+            QRScannerModal { code in
+                // Обработка отсканированного кода
+                showQRScanner = false
+                // Можно добавить логику обработки кода
+            }
         }
         .sheet(isPresented: $showPrivacyPolicy) {
             PrivacyPolicyScreen()

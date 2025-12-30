@@ -200,6 +200,8 @@ struct ALADDINApp: App {
                         AnyView(NetworkProtectionEnergyStatsScreen().id("networkProtectionEnergyStats").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .support:
                         AnyView(SupportScreen().id("support").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .addMemberOptions:
+                        AnyView(AddMemberOptionsScreen().id("addMemberOptions").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .childRewards:
                         AnyView(ChildRewardsScreen().id("childRewards").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .familyTournament:

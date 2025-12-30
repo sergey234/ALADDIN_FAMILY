@@ -231,7 +231,7 @@ struct AddMemberOptionsModal: View {
             )
         }
         .fullScreenCover(isPresented: $showQRScanner) {
-            QRScannerModal(isPresented: $showQRScanner) { code in
+            QRScannerModal { code in
                 // После сканирования QR автоматически открываем ввод кода
                 scannedCode = code
                 showCodeInput = true

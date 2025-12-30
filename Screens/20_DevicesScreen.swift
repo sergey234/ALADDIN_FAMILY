@@ -314,11 +314,11 @@ struct DevicesScreen: View {
     
     private func filterDescription(_ filter: DeviceFilter) -> String {
         switch filter {
-        case .all: return "Показать все устройства семьи"
-        case .protected: return "Устройства с активной защитой"
-        case .warning: return "Устройства с предупреждениями"
-        case .danger: return "Устройства в опасности"
-        case .inactive: return "Неактивные устройства"
+        case .all: return localizationManager.localized("devices_filter_all_desc")
+        case .protected: return localizationManager.localized("devices_filter_protected_desc")
+        case .warning: return localizationManager.localized("devices_filter_warning_desc")
+        case .danger: return localizationManager.localized("devices_filter_danger_desc")
+        case .inactive: return localizationManager.localized("devices_filter_inactive_desc")
         }
     }
     
@@ -549,6 +549,7 @@ struct DevicesScreen: View {
 
 struct DeviceCard: View {
     let device: Device
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         HStack(spacing: Spacing.m) {
@@ -579,14 +580,14 @@ struct DeviceCard: View {
             VStack(alignment: .trailing, spacing: Spacing.xs) {
                 statusIndicator
                 
-                Text(device.status.rawValue)
+                Text(device.status.localizedName(localizationManager))
                     .font(.caption)
                     .foregroundColor(device.status.color)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("Статус: \(device.status.rawValue)")
+            .accessibilityLabel("Статус: \(device.status.localizedName(localizationManager))")
         }
         .padding(Spacing.m)
         .background(
@@ -594,7 +595,7 @@ struct DeviceCard: View {
                 .fill(Color.backgroundMedium.opacity(0.3))
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Устройство \(device.name), владелец \(device.owner), статус \(device.status.rawValue)")
+        .accessibilityLabel("Устройство \(device.name), владелец \(device.owner), статус \(device.status.localizedName(localizationManager))")
     }
     
     private var deviceIcon: some View {
@@ -613,7 +614,7 @@ struct DeviceCard: View {
         Circle()
             .fill(device.status.color)
             .frame(width: 12, height: 12)
-            .accessibilityLabel("Индикатор статуса: \(device.status.rawValue)")
+            .accessibilityLabel("Индикатор статуса: \(device.status.localizedName(localizationManager))")
     }
 }
 
@@ -663,10 +664,10 @@ enum DeviceType: String, CaseIterable {
 }
 
 enum DeviceStatus: String, CaseIterable {
-    case protected = "Защищён"
-    case warning = "Предупреждение"
-    case danger = "Опасность"
-    case inactive = "Неактивен"
+    case protected = "protected"
+    case warning = "warning"
+    case danger = "danger"
+    case inactive = "inactive"
     
     var color: Color {
         switch self {
@@ -674,6 +675,15 @@ enum DeviceStatus: String, CaseIterable {
         case .warning: return .warningOrange
         case .danger: return .dangerRed
         case .inactive: return .textSecondary
+        }
+    }
+    
+    func localizedName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .protected: return localizationManager.localized("devices_status_protected")
+        case .warning: return localizationManager.localized("devices_status_warning")
+        case .danger: return localizationManager.localized("devices_status_danger")
+        case .inactive: return localizationManager.localized("devices_status_inactive")
         }
     }
 }
@@ -720,10 +730,10 @@ struct AddDeviceView: View {
                                     .font(.body)
                                     .foregroundColor(.textPrimary)
                                 
-                                TextField("Например: iPhone 14 Pro", text: $deviceName)
+                                TextField(localizationManager.localized("devices_device_name_placeholder"), text: $deviceName)
                                     .textFieldStyle(ALADDINTextFieldStyle())
                                     .autocapitalization(.words)
-                                    .accessibilityLabel("Название устройства")
+                                    .accessibilityLabel(localizationManager.localized("devices_device_name"))
                             }
                             
                             // Тип устройства
@@ -732,7 +742,7 @@ struct AddDeviceView: View {
                                     .font(.body)
                                     .foregroundColor(.textPrimary)
                                 
-                                    Picker("Тип устройства", selection: $selectedDeviceType) {
+                                    Picker(localizationManager.localized("devices_device_type"), selection: $selectedDeviceType) {
                                     ForEach([DeviceType.iphone, .ipad, .mac, .android], id: \.self) { type in
                                         HStack {
                                             Image(systemName: type.icon)
@@ -745,7 +755,7 @@ struct AddDeviceView: View {
                                 .padding()
                                 .background(Color.backgroundMedium.opacity(0.3))
                                 .cornerRadius(CornerRadius.medium)
-                                .accessibilityLabel("Тип устройства")
+                                .accessibilityLabel(localizationManager.localized("devices_device_type"))
                             }
                             
                             // Владелец
@@ -760,7 +770,7 @@ struct AddDeviceView: View {
                                         .foregroundColor(.textSecondary)
                                         .padding()
                                 } else {
-                                    Picker("Владелец", selection: $selectedOwner) {
+                                    Picker(localizationManager.localized("devices_owner"), selection: $selectedOwner) {
                                         ForEach(familyMembers, id: \.self) { member in
                                             Text(member)
                                                 .tag(member)
@@ -770,7 +780,7 @@ struct AddDeviceView: View {
                                     .padding()
                                     .background(Color.backgroundMedium.opacity(0.3))
                                     .cornerRadius(CornerRadius.medium)
-                                    .accessibilityLabel("Владелец устройства")
+                                    .accessibilityLabel(localizationManager.localized("devices_owner"))
                                 }
                             }
                         }
@@ -816,18 +826,18 @@ struct AddDeviceView: View {
                         .disabled(!isFormValid || isLoading)
                         .padding(.horizontal, Spacing.screenPadding)
                         .padding(.bottom, Spacing.xl)
-                        .accessibilityLabel("Добавить устройство")
-                        .accessibilityHint(isFormValid ? "Нажмите для добавления устройства" : "Заполните все поля")
+                        .accessibilityLabel(localizationManager.localized("devices_add_device_button"))
+                        .accessibilityHint(isFormValid ? localizationManager.localized("devices_add_device_hint_enabled") : localizationManager.localized("devices_add_device_hint_disabled"))
                     }
                 }
                 .accessibilityElement(children: .contain)
-                .accessibilityLabel("Форма добавления устройства")
+                .accessibilityLabel(localizationManager.localized("devices_add_form_label"))
             }
-            .navigationTitle("Новое устройство")
+            .navigationTitle(localizationManager.localized("devices_add_new_device"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Отмена") {
+                    Button(localizationManager.localized("common_cancel")) {
                         dismiss()
                     }
                     .foregroundColor(.textPrimary)
@@ -836,16 +846,16 @@ struct AddDeviceView: View {
             .onAppear {
                 loadFamilyMembers()
             }
-            .alert("Успех", isPresented: $showSuccessAlert) {
-                Button("ОК") {
+            .alert(localizationManager.localized("common_success"), isPresented: $showSuccessAlert) {
+                Button(localizationManager.localized("common_ok")) {
                     dismiss()
                     onDeviceAdded()
                 }
             } message: {
                 Text(localizationManager.localized("devices_success_added"))
             }
-            .alert("Ошибка", isPresented: .constant(errorMessage != nil)) {
-                Button("ОК") {
+            .alert(localizationManager.localized("common_error"), isPresented: .constant(errorMessage != nil)) {
+                Button(localizationManager.localized("common_ok")) {
                     errorMessage = nil
                 }
             } message: {
@@ -883,8 +893,8 @@ struct AddDeviceView: View {
                 familyMembers = [currentUserName]
                 selectedOwner = currentUserName
             } else {
-                familyMembers = ["Вы"]
-                selectedOwner = "Вы"
+                familyMembers = [localizationManager.localized("devices_owner_you")]
+                selectedOwner = localizationManager.localized("devices_owner_you")
             }
         }
     }

@@ -17,7 +17,8 @@ struct QRScannerModal: View {
     
     // MARK: - Properties
     
-    @Binding var isPresented: Bool
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var scanner = QRScanner()
     
     var onCodeScanned: ((String) -> Void)?
@@ -25,23 +26,22 @@ struct QRScannerModal: View {
     // MARK: - Body
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                // Камера
-                CameraPreview(session: scanner.session)
-                    .ignoresSafeArea()
-                
-                // Overlay
-                VStack {
+        ZStack {
+            // Камера
+            CameraPreview(session: scanner.session)
+                .ignoresSafeArea()
+            
+            // Overlay
+            VStack {
                     Spacer()
                     
                     // Инструкция
                     VStack(spacing: 12) {
-                        Text("Наведите камеру на QR-код")
+                        Text(localizationManager.localized("qr_scanner_instruction"))
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
                         
-                        Text("Код будет распознан автоматически")
+                        Text(localizationManager.localized("qr_scanner_auto_recognize"))
                             .font(.system(size: 14))
                             .foregroundColor(.white.opacity(0.8))
                     }
@@ -55,9 +55,10 @@ struct QRScannerModal: View {
                     
                     // Кнопка отмены
                     Button(action: {
-                        isPresented = false
+                        scanner.stopScanning()
+                        dismiss()
                     }) {
-                        Text("Отмена")
+                        Text(localizationManager.localized("common_cancel"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -69,9 +70,7 @@ struct QRScannerModal: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 40)
-                }
             }
-            .navigationBarHidden(true)
             .onAppear {
                 scanner.startScanning { code in
                     // Haptic feedback
@@ -79,10 +78,15 @@ struct QRScannerModal: View {
                     generator.notificationOccurred(.success)
                     
                     // Закрываем сканер
-                    isPresented = false
+                    scanner.stopScanning()
                     
                     // Вызываем колбэк
                     onCodeScanned?(code)
+                    
+                    // Закрываем модал после небольшой задержки для обработки кода
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        dismiss()
+                    }
                 }
             }
             .onDisappear {
@@ -177,6 +181,6 @@ struct CameraPreview: UIViewRepresentable {
 
 struct QRScannerModal_Previews: PreviewProvider {
     static var previews: some View {
-        QRScannerModal(isPresented: .constant(true))
+        QRScannerModal()
     }
 }

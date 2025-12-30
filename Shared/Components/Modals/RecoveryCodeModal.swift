@@ -22,6 +22,7 @@ struct RecoveryCodeModal: View {
     let familyID: String
     var onComplete: (() -> Void)? = nil
     
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var showShareSheet = false
     @State private var showSuccessAlert = false
     
@@ -38,18 +39,18 @@ struct RecoveryCodeModal: View {
                     
                     // Заголовок
                     VStack(spacing: 8) {
-                        Text("Семья создана!")
+                        Text(localizationManager.localized("recovery_family_created"))
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.primary)
                         
-                        Text("Сохраните код восстановления")
+                        Text(localizationManager.localized("recovery_save_code"))
                             .font(.system(size: 16))
                             .foregroundColor(.secondary)
                     }
                     
                     // Код восстановления
                     VStack(spacing: 16) {
-                        Text("Код восстановления")
+                        Text(localizationManager.localized("recovery_code_title"))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -75,7 +76,7 @@ struct RecoveryCodeModal: View {
                             }) {
                                 HStack {
                                     Image(systemName: "doc.on.doc")
-                                    Text("Копировать")
+                                    Text(localizationManager.localized("recovery_copy"))
                                 }
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.blue)
@@ -92,7 +93,7 @@ struct RecoveryCodeModal: View {
                             }) {
                                 HStack {
                                     Image(systemName: "square.and.arrow.up")
-                                    Text("Поделиться")
+                                    Text(localizationManager.localized("recovery_share"))
                                 }
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.blue)
@@ -108,7 +109,7 @@ struct RecoveryCodeModal: View {
                     
                     // QR-код
                     VStack(spacing: 12) {
-                        Text("QR-код для быстрого доступа")
+                        Text(localizationManager.localized("recovery_qr_title"))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.secondary)
                         
@@ -124,7 +125,7 @@ struct RecoveryCodeModal: View {
                                 .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
                         }
                         
-                        Text("Отсканируйте этот QR-код другим устройством")
+                        Text(localizationManager.localized("recovery_qr_scan"))
                             .font(.system(size: 13))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -142,29 +143,29 @@ struct RecoveryCodeModal: View {
                                 .font(.system(size: 20))
                                 .foregroundColor(.orange)
                             
-                            Text("Важно! Сохраните этот код в безопасном месте. Он понадобится для восстановления доступа к вашей семье.")
+                            Text(localizationManager.localized("recovery_important_save"))
                                 .font(.system(size: 13))
                                 .foregroundColor(.secondary)
                         }
                         
                         // Инструкция по использованию QR-кода
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Как работает система с QR-кодом:")
+                            Text(localizationManager.localized("recovery_qr_how_works"))
                                 .font(.system(size: 14, weight: .semibold))
                                 .foregroundColor(.primary)
                             
                             VStack(alignment: .leading, spacing: 6) {
                                 infoItem(
                                     icon: "1.circle.fill",
-                                    text: "Второе устройство не нужно - QR-код можно отправить через любой мессенджер или email"
+                                    text: localizationManager.localized("recovery_qr_info_1")
                                 )
                                 infoItem(
                                     icon: "2.circle.fill",
-                                    text: "Новые участники сканируют QR-код другим устройством для присоединения к семье"
+                                    text: localizationManager.localized("recovery_qr_info_2")
                                 )
                                 infoItem(
                                     icon: "3.circle.fill",
-                                    text: "Не нужны номер телефона и email - данные не собираются"
+                                    text: localizationManager.localized("recovery_qr_info_3")
                                 )
                             }
                             .font(.system(size: 12))
@@ -182,10 +183,10 @@ struct RecoveryCodeModal: View {
                         UserDefaults.standard.set(familyID, forKey: AppConfig.UserDefaultsKeys.familyId)
                         UserDefaults.standard.synchronize()
                         
-                        // ✅ ИСПРАВЛЕНИЕ: Закрываем модал - onComplete вызовется автоматически через setter
+                        // ✅ ИСПРАВЛЕНИЕ: Закрываем модал - onComplete вызовется через setter
                         isPresented = false
                     }) {
-                        Text("Готово")
+                        Text(localizationManager.localized("recovery_done"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -198,11 +199,11 @@ struct RecoveryCodeModal: View {
                 }
                 .padding(20)
             }
-            .navigationTitle("Код восстановления")
+            .navigationTitle(localizationManager.localized("recovery_nav_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Закрыть") {
+                    Button(localizationManager.localized("common_close")) {
                         // ✅ ИСПРАВЛЕНИЕ: Закрываем модал - onComplete вызовется автоматически через setter
                         isPresented = false
                     }
@@ -217,16 +218,8 @@ struct RecoveryCodeModal: View {
     // MARK: - Helper Functions
     
     private func getShareItems() -> [Any] {
-        var shareItems: [Any] = [
-            """
-            🔑 Код восстановления ALADDIN: \(recoveryCode)
-            
-            Используйте этот код для восстановления доступа к семье.
-            Сохраните его в безопасном месте.
-            
-            Приложение: ALADDIN - Защита семьи от киберугроз
-            """
-        ]
+        let shareText = String(format: localizationManager.localized("recovery_share_text"), recoveryCode)
+        var shareItems: [Any] = [shareText]
         
         // Добавляем QR-код как изображение
         if let qrCodeImage = generateQRCode(from: recoveryCode) {

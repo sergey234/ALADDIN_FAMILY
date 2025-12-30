@@ -16,6 +16,7 @@ struct MainScreenWithRegistration: View {
     
     @StateObject var registrationVM: FamilyRegistrationViewModel
     @State private var showTip: Bool = false
+    @EnvironmentObject private var localizationManager: LocalizationManager
     var onComplete: (() -> Void)? = nil
     
     var body: some View {
@@ -32,7 +33,7 @@ struct MainScreenWithRegistration: View {
             VStack {
                 HStack {
                     Spacer()
-                    Button("Отмена") {
+                    Button(localizationManager.localized("common_cancel")) {
                         onComplete?()
                     }
                     .font(.system(size: 16, weight: .medium))
@@ -75,7 +76,7 @@ struct MainScreenWithRegistration: View {
             
             if registrationVM.showAgeGroupModal {
                 VStack(spacing: 30) {
-                    Text("Выберите возраст")
+                    Text(localizationManager.localized("registration_select_age"))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
                     
@@ -110,7 +111,7 @@ struct MainScreenWithRegistration: View {
             
             if registrationVM.showLetterModal {
                 VStack(spacing: 30) {
-                    Text("Выберите букву")
+                    Text(localizationManager.localized("registration_select_letter"))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.white)
                     
@@ -154,6 +155,8 @@ struct MainScreenWithRegistration: View {
                     familyID: familyID,
                     onComplete: {
                         // ✅ ЕДИНСТВЕННЫЙ вызов onComplete при закрытии модала
+                        // Сохраняем что семья создана
+                        UserDefaults.standard.synchronize()
                         onComplete?()
                         print("✅ RecoveryCodeModal: onComplete вызван")
                     }
@@ -162,15 +165,15 @@ struct MainScreenWithRegistration: View {
             
             if registrationVM.showSuccessModal {
                 VStack {
-                    Text("Регистрация успешна!")
+                    Text(localizationManager.localized("registration_success_title"))
                         .font(.title)
                         .foregroundColor(.white)
                     
-                    Text("Добро пожаловать в семью!")
+                    Text(localizationManager.localized("registration_success_message"))
                         .font(.body)
                         .foregroundColor(.white)
                     
-                    Button("Продолжить") {
+                    Button(localizationManager.localized("common_continue")) {
                         registrationVM.showSuccessModal = false
                     }
                     .buttonStyle(.borderedProminent)
@@ -185,7 +188,7 @@ struct MainScreenWithRegistration: View {
                 VStack {
                     TipNotification(
                         isPresented: $showTip,
-                        message: "Хотите добавить членов семьи?\n→ Настройки → Семья → \"Добавить члена семьи\""
+                        message: localizationManager.localized("registration_tip_add_members")
                     )
                     .padding(.top, 60)
                     
@@ -233,19 +236,19 @@ struct MainScreenWithRegistration: View {
     private func getAgeGroupLabel(_ ageGroup: AgeGroup, for role: FamilyRole) -> String {
         switch role {
         case .parent:
-            return "18+"
+            return localizationManager.localized("age_group_adult_short")
         case .child:
             switch ageGroup {
-            case .toddler: return "1-6 лет"
-            case .child: return "7-12 лет"
-            case .teen: return "13-17 лет"
-            case .adult: return "18-22 лет"
-            case .senior: return "50+"
+            case .toddler: return localizationManager.localized("age_group_toddler_short")
+            case .child: return localizationManager.localized("age_group_child_short")
+            case .teen: return localizationManager.localized("age_group_teen_short")
+            case .adult: return localizationManager.localized("age_group_adult_short")
+            case .senior: return localizationManager.localized("age_group_senior_short")
             }
         case .teenager:
-            return "13-17 лет"
+            return localizationManager.localized("age_group_teen_short")
         case .elderly:
-            return "60+"
+            return localizationManager.localized("age_group_elderly_short")
         }
     }
 }
@@ -261,10 +264,10 @@ struct TipNotification: View {
         HStack(spacing: Spacing.m) {
             VStack(alignment: .leading, spacing: Spacing.s) {
                 HStack {
-                    Text("💡 Совет")
+                    Text(localizationManager.localized("tip_title"))
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.white)
-                        .accessibilityLabel("Совет")
+                        .accessibilityLabel(localizationManager.localized("tip_title"))
                     
                     Spacer()
                     
@@ -292,7 +295,7 @@ struct TipNotification: View {
                         // Navigate to settings
                         isPresented = false
                     }) {
-                        Text("ПОКАЖИТЕ КАК")
+                        Text(localizationManager.localized("tip_show_how"))
                             .font(.caption)
                             .foregroundColor(.white)
                             .padding(.horizontal, Spacing.m)
@@ -300,20 +303,20 @@ struct TipNotification: View {
                             .background(Color.white.opacity(0.2))
                             .cornerRadius(8)
                     }
-                    .accessibilityLabel("Покажите как")
-                    .accessibilityHint("Нажмите для перехода к настройкам семьи")
+                    .accessibilityLabel(localizationManager.localized("tip_show_how"))
+                    .accessibilityHint(localizationManager.localized("tip_show_how_hint"))
                     
                     Button(action: {
                         withAnimation {
                             isPresented = false
                         }
                     }) {
-                        Text("ПОЗЖЕ")
+                        Text(localizationManager.localized("tip_later"))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.7))
                     }
-                    .accessibilityLabel("Позже")
-                    .accessibilityHint("Нажмите для отложения совета")
+                    .accessibilityLabel(localizationManager.localized("tip_later"))
+                    .accessibilityHint(localizationManager.localized("tip_later_hint"))
                 }
             }
         }

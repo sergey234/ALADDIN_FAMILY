@@ -57,6 +57,7 @@
 		5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */; };
 		5EA2F63E2EFB4B8D000686C0 /* ContentBlockerRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */; };
 		5EA2F6402EFB4BD3000686C0 /* FamilyContentBlockModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */; };
+		5EA2F6422F03F2DB000686C0 /* AddMemberOptionsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F6412F03F2DA000686C0 /* AddMemberOptionsScreen.swift */; };
 		5EB01F3A2EC8721300168BE9 /* MockAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F392EC8721300168BE9 /* MockAPIService.swift */; };
 		5EB01F3C2EC8723600168BE9 /* StorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F3B2EC8723600168BE9 /* StorageManager.swift */; };
 		5EB01F3E2EC9B74E00168BE9 /* RecoveryCodeStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */; };
@@ -278,6 +279,7 @@
 		5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerManager.swift; path = Core/ContentBlocker/ContentBlockerManager.swift; sourceTree = "<group>"; };
 		5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerRule.swift; path = Core/ContentBlocker/ContentBlockerRule.swift; sourceTree = "<group>"; };
 		5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyContentBlockModal.swift; path = Components/Modals/FamilyContentBlockModal.swift; sourceTree = "<group>"; };
+		5EA2F6412F03F2DA000686C0 /* AddMemberOptionsScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AddMemberOptionsScreen.swift; path = Screens/AddMemberOptionsScreen.swift; sourceTree = "<group>"; };
 		5EB01F392EC8721300168BE9 /* MockAPIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MockAPIService.swift; path = Core/Network/MockAPIService.swift; sourceTree = "<group>"; };
 		5EB01F3B2EC8723600168BE9 /* StorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StorageManager.swift; path = Core/Storage/StorageManager.swift; sourceTree = "<group>"; };
 		5EB01F3D2EC9B74D00168BE9 /* RecoveryCodeStorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecoveryCodeStorageManager.swift; path = Core/Security/RecoveryCodeStorageManager.swift; sourceTree = "<group>"; };
@@ -552,6 +554,7 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5EA2F6412F03F2DA000686C0 /* AddMemberOptionsScreen.swift */,
 				5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */,
 				5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */,
 				5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */,
@@ -1029,6 +1032,7 @@
 				A4AAA102 /* GamesSettingsManager.swift in Sources */,
 				B1000031 /* ParentalControlManager.swift in Sources */,
 				A4AAA104 /* AnalyticsService.swift in Sources */,
+				5EA2F6422F03F2DB000686C0 /* AddMemberOptionsScreen.swift in Sources */,
 				A4AAA106 /* RemoteAnalyticsService.swift in Sources */,
 				A4AAA108 /* ProfileImageManager.swift in Sources */,
 				A4AAA200 /* RewardModels.swift in Sources */,
