@@ -70,13 +70,13 @@ struct FamilyContentBlockModal: View {
         .onAppear {
             loadSettings()
         }
-        .alert("Включить блокировку в Safari", isPresented: $showSettingsAlert) {
-            Button("Открыть настройки") {
+        .alert(localizationManager.localized("content_block_alert_title"), isPresented: $showSettingsAlert) {
+            Button(localizationManager.localized("content_block_alert_open_settings")) {
                 contentBlockerManager.openSettings()
             }
-            Button("Отмена", role: .cancel) {}
+            Button(localizationManager.localized("content_block_alert_cancel"), role: .cancel) {}
         } message: {
-            Text("Для работы блокировки контента необходимо:\n\n1. Открыть Настройки iOS\n2. Перейти в Safari\n3. Выбрать Content Blockers\n4. Включить ALADDIN")
+            Text(localizationManager.localized("content_block_alert_message"))
         }
     }
     
@@ -88,7 +88,7 @@ struct FamilyContentBlockModal: View {
                 .font(.system(size: 48))
                 .foregroundColor(.primaryBlue)
             
-            Text("Блокировка контента в Safari")
+            Text(localizationManager.localized("content_block_header_title"))
                 .font(.h2)
                 .foregroundColor(.textPrimary)
                 .multilineTextAlignment(.center)
@@ -100,7 +100,7 @@ struct FamilyContentBlockModal: View {
     
     private var descriptionSection: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            Text("Выберите категории контента, которые будут заблокированы в Safari:")
+            Text(localizationManager.localized("content_block_description"))
                 .font(.body)
                 .foregroundColor(.textSecondary)
             
@@ -132,6 +132,7 @@ struct FamilyContentBlockModal: View {
                         }
                     }
                 )
+                .environmentObject(localizationManager)
             }
         }
         .padding(.vertical, Spacing.m)
@@ -144,16 +145,16 @@ struct FamilyContentBlockModal: View {
             HStack(spacing: Spacing.s) {
                 Image(systemName: "info.circle.fill")
                     .foregroundColor(.warningOrange)
-                Text("Для работы блокировки необходимо:")
+                Text(localizationManager.localized("content_block_instructions_title"))
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
             }
             
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                ContentBlockerInstructionStep(number: 1, text: "Открыть Настройки iOS")
-                ContentBlockerInstructionStep(number: 2, text: "Перейти в Safari")
-                ContentBlockerInstructionStep(number: 3, text: "Выбрать Content Blockers")
-                ContentBlockerInstructionStep(number: 4, text: "Включить ALADDIN")
+                ContentBlockerInstructionStep(number: 1, text: localizationManager.localized("content_block_step_1"))
+                ContentBlockerInstructionStep(number: 2, text: localizationManager.localized("content_block_step_2"))
+                ContentBlockerInstructionStep(number: 3, text: localizationManager.localized("content_block_step_3"))
+                ContentBlockerInstructionStep(number: 4, text: localizationManager.localized("content_block_step_4"))
             }
             .padding(.leading, Spacing.m)
         }
@@ -177,7 +178,7 @@ struct FamilyContentBlockModal: View {
             }) {
                 HStack {
                     Image(systemName: "gear")
-                    Text("Открыть настройки iOS")
+                    Text(localizationManager.localized("content_block_open_settings"))
                 }
                 .font(.bodyBold)
                 .foregroundColor(.white)
@@ -200,7 +201,7 @@ struct FamilyContentBlockModal: View {
                     } else {
                         Image(systemName: "checkmark.circle.fill")
                     }
-                    Text("Применить правила")
+                    Text(localizationManager.localized("content_block_apply_rules"))
                 }
                 .font(.bodyBold)
                 .foregroundColor(.white)
@@ -216,7 +217,7 @@ struct FamilyContentBlockModal: View {
                 HStack(spacing: Spacing.s) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.successGreen)
-                    Text("Блокировка активна: \(contentBlockerManager.blockedSitesCount) сайтов")
+                    Text(String(format: localizationManager.localized("content_block_status_active"), contentBlockerManager.blockedSitesCount))
                         .font(.caption)
                         .foregroundColor(.successGreen)
                 }
@@ -225,7 +226,7 @@ struct FamilyContentBlockModal: View {
                 HStack(spacing: Spacing.s) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundColor(.warningOrange)
-                    Text("Требуется активация в настройках iOS")
+                    Text(localizationManager.localized("content_block_status_needs_activation"))
                         .font(.caption)
                         .foregroundColor(.warningOrange)
                 }
@@ -284,9 +285,27 @@ struct FamilyContentBlockModal: View {
 // MARK: - Category Toggle Row
 
 struct CategoryToggleRow: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let category: ContentBlockerCategory
     let isSelected: Bool
     let onToggle: () -> Void
+    
+    private var localizedCategoryName: String {
+        switch category {
+        case .adult: return localizationManager.localized("content_category_adult")
+        case .violence: return localizationManager.localized("content_category_violence")
+        case .gambling: return localizationManager.localized("content_category_gambling")
+        case .socialMedia: return localizationManager.localized("content_category_social_media")
+        case .video: return localizationManager.localized("content_category_video")
+        case .games: return localizationManager.localized("content_category_games")
+        case .shopping: return localizationManager.localized("content_category_shopping")
+        case .news: return localizationManager.localized("content_category_news")
+        case .forums: return localizationManager.localized("content_category_forums")
+        case .fileSharing: return localizationManager.localized("content_category_file_sharing")
+        case .proxy: return localizationManager.localized("content_category_proxy")
+        case .vpn: return localizationManager.localized("content_category_vpn")
+        }
+    }
     
     var body: some View {
         Button(action: onToggle) {
@@ -296,7 +315,7 @@ struct CategoryToggleRow: View {
                     .font(.title2)
                 
                 // Название категории
-                Text(category.displayName)
+                Text(localizedCategoryName)
                     .font(.body)
                     .foregroundColor(.textPrimary)
                 

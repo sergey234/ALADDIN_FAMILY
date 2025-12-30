@@ -392,7 +392,7 @@ struct ParentalControlScreen: View {
                     ParentalControlCard(
                         icon: "🔒",
                         title: localizationManager.localized("parental_content_block"),
-                        statusBadge: contentBlockerManager.isEnabled ? "✅ Safari" : "⚠️ Выкл",
+                        statusBadge: contentBlockerManager.isEnabled ? localizationManager.localized("content_blocker_badge_enabled") : localizationManager.localized("content_blocker_badge_disabled"),
                         statusText: contentBlockerManager.isEnabled ?
                             String(format: localizationManager.localized("parental_content_blocked_metric"), contentBlockerManager.blockedSitesCount) :
                             localizationManager.localized("parental_content_blocker_disabled"),

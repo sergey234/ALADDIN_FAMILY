@@ -8,6 +8,7 @@ struct FamilyMemberCard: View {
     
     // MARK: - Properties
     
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let name: String
     let role: FamilyRole
     let avatar: String
@@ -15,6 +16,17 @@ struct FamilyMemberCard: View {
     let threatsBlocked: Int
     let lastActive: String
     let action: () -> Void
+    
+    // MARK: - Localized Role Label
+    
+    private var localizedRoleLabel: String {
+        switch role {
+        case .parent: return localizationManager.localized("family_role_parent_label")
+        case .child: return localizationManager.localized("family_role_child_label")
+        case .teenager: return localizationManager.localized("family_role_teen_label")
+        case .elderly: return localizationManager.localized("family_role_elderly_label")
+        }
+    }
     
     // MARK: - Family Role
     
@@ -87,7 +99,7 @@ struct FamilyMemberCard: View {
         avatar: String,
         status: ProtectionStatus,
         threatsBlocked: Int,
-        lastActive: String = "Сейчас",
+        lastActive: String = "",
         action: @escaping () -> Void
     ) {
         self.name = name
@@ -124,7 +136,7 @@ struct FamilyMemberCard: View {
                 }
                 
                 // Роль
-                Text(role.label)
+                Text(localizedRoleLabel)
                     .font(.system(size: 11))
                     .foregroundColor(.white.opacity(0.9))
                     .lineLimit(1)

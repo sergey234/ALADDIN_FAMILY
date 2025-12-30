@@ -461,13 +461,14 @@ struct FamilyScreen: View {
                                                 self.navigateToMemberScreen(role: member.role)
                                             }
                                         )
+                                        .environmentObject(localizationManager)
                                         .contextMenu {
                                             // Показываем меню только для администраторов и родителей
                                             if isUserParent || isFamilyCreator {
                                                 Button(role: .destructive) {
                                                     removeFamilyMember(member)
                                                 } label: {
-                                                    Label("Удалить участника", systemImage: "trash")
+                                                    Label(localizationManager.localized("family_remove_member"), systemImage: "trash")
                                                 }
                                             }
                                         }
