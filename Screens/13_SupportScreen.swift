@@ -250,12 +250,12 @@ struct SupportScreen: View {
         HStack {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.secondary)
-                .accessibilityLabel("Поиск")
+                .accessibilityLabel(localizationManager.localized("support_search_icon"))
             
             TextField(localizationManager.localized("support_search_placeholder"), text: $searchText)
                 .textFieldStyle(PlainTextFieldStyle())
-                .accessibilityLabel("Поле поиска по вопросам")
-                .accessibilityHint("Введите текст для поиска в часто задаваемых вопросах")
+                .accessibilityLabel(localizationManager.localized("support_search_field"))
+                .accessibilityHint(localizationManager.localized("support_search_hint"))
         }
         .padding()
         .background(Color.gray.opacity(0.3))
@@ -263,7 +263,7 @@ struct SupportScreen: View {
         .padding(.horizontal, 20)
         .cardShadow()
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Поиск по вопросам")
+        .accessibilityLabel(localizationManager.localized("support_search_label"))
     }
     
     // MARK: - Contact Methods
@@ -274,7 +274,7 @@ struct SupportScreen: View {
                 .font(.title2)
                 .foregroundColor(.primary)
                 .padding(.horizontal, 20)
-                .accessibilityLabel("СВЯЗАТЬСЯ С НАМИ")
+                .accessibilityLabel(localizationManager.localized("support_contact_us_label"))
                 .accessibilityAddTraits(.isHeader)
             
             VStack(spacing: 8) {
@@ -308,7 +308,7 @@ struct SupportScreen: View {
             .padding(.horizontal, 20)
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Способы связи с поддержкой")
+        .accessibilityLabel(localizationManager.localized("support_contact_methods"))
     }
     
     private func contactButton(icon: String, title: String, subtitle: String, color: Color, action: @escaping () -> Void) -> some View {
@@ -316,18 +316,18 @@ struct SupportScreen: View {
             HStack(spacing: 12) {
                 Text(icon)
                     .font(.system(size: 32))
-                    .accessibilityLabel("Иконка \(title)")
+                    .accessibilityLabel(String(format: localizationManager.localized("support_icon_label"), title))
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.body.bold())
                         .foregroundColor(.primary)
-                        .accessibilityLabel("Название: \(title)")
+                        .accessibilityLabel(String(format: localizationManager.localized("support_title_label"), title))
                     
                     Text(subtitle)
                         .font(.caption)
                         .foregroundColor(.secondary)
-                        .accessibilityLabel("Описание: \(subtitle)")
+                        .accessibilityLabel(String(format: localizationManager.localized("support_subtitle_label"), subtitle))
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("\(title): \(subtitle)")
@@ -336,7 +336,7 @@ struct SupportScreen: View {
                 
                 Image(systemName: "chevron.right")
                     .foregroundColor(color)
-                    .accessibilityLabel("Перейти")
+                    .accessibilityLabel(localizationManager.localized("support_go"))
             }
             .padding(12)
             .background(
@@ -352,7 +352,7 @@ struct SupportScreen: View {
         .cardShadow()
         .appGlassmorphism()
         .accessibilityLabel("\(title): \(subtitle)")
-        .accessibilityHint("Нажмите для \(title.lowercased())")
+        .accessibilityHint(String(format: localizationManager.localized("support_tap_hint"), title.lowercased()))
     }
     
     private func openSupportURL(_ urlString: String) {
@@ -368,7 +368,7 @@ struct SupportScreen: View {
                 .font(.title2)
                 .foregroundColor(.primary)
                 .padding(.horizontal, 20)
-                .accessibilityLabel("ЧАСТЫЕ ВОПРОСЫ")
+                .accessibilityLabel(localizationManager.localized("support_faq_label"))
                 .accessibilityAddTraits(.isHeader)
             
             VStack(spacing: 8) {
@@ -379,7 +379,7 @@ struct SupportScreen: View {
             .padding(.horizontal, 20)
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Часто задаваемые вопросы")
+        .accessibilityLabel(localizationManager.localized("support_faq_section"))
     }
     
     private func faqCard(item: Binding<FAQItem>) -> some View {
@@ -393,24 +393,24 @@ struct SupportScreen: View {
                 HStack(spacing: 12) {
                     Text(item.wrappedValue.icon)
                         .font(.system(size: 24))
-                        .accessibilityLabel("Иконка вопроса")
+                        .accessibilityLabel(localizationManager.localized("support_question_icon"))
                     
                     Text(item.wrappedValue.question)
                         .font(.body.bold())
                         .foregroundColor(.primary)
-                        .accessibilityLabel("Вопрос: \(item.wrappedValue.question)")
+                        .accessibilityLabel(String(format: localizationManager.localized("support_question_label"), item.wrappedValue.question))
                     
                     Spacer()
                     
                     Image(systemName: item.wrappedValue.isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.blue)
-                        .accessibilityLabel(item.wrappedValue.isExpanded ? "Свернуть ответ" : "Развернуть ответ")
+                        .accessibilityLabel(item.wrappedValue.isExpanded ? localizationManager.localized("support_collapse") : localizationManager.localized("support_expand"))
                 }
             }
             .buttonStyle(PlainButtonStyle())
-            .accessibilityLabel(item.wrappedValue.isExpanded ? "Свернуть: \(item.wrappedValue.question)" : "Развернуть: \(item.wrappedValue.question)")
-            .accessibilityHint("Нажмите для \(item.wrappedValue.isExpanded ? "сворачивания" : "разворачивания") ответа")
+            .accessibilityLabel(item.wrappedValue.isExpanded ? String(format: localizationManager.localized("support_collapse_label"), item.wrappedValue.question) : String(format: localizationManager.localized("support_expand_label"), item.wrappedValue.question))
+            .accessibilityHint(item.wrappedValue.isExpanded ? localizationManager.localized("support_collapse_hint") : localizationManager.localized("support_expand_hint"))
             
             // Ответ (раскрывается)
             if item.wrappedValue.isExpanded {
@@ -419,7 +419,7 @@ struct SupportScreen: View {
                     .foregroundColor(.secondary)
                     .padding(.leading, 36)
                     .transition(.opacity)
-                    .accessibilityLabel("Ответ: \(item.wrappedValue.answer)")
+                    .accessibilityLabel(String(format: localizationManager.localized("support_answer_label"), item.wrappedValue.answer))
             }
         }
         .padding(12)
@@ -429,7 +429,7 @@ struct SupportScreen: View {
         )
         .cardShadow()
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("FAQ: \(item.wrappedValue.question)")
+        .accessibilityLabel(String(format: localizationManager.localized("support_faq_item"), item.wrappedValue.question))
     }
 }
 

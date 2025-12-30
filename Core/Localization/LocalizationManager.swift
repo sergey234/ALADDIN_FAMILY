@@ -1891,6 +1891,36 @@ class LocalizationManager: ObservableObject {
             "support_phone": "Телефон",
             "support_phone_subtitle": "Свяжитесь с нами по телефону",
             "support_faq": "ЧАСТО ЗАДАВАЕМЫЕ ВОПРОСЫ",
+            // Support Screen - Accessibility
+            "support_background": "Фон экрана поддержки",
+            "support_back": "Назад",
+            "support_back_hint": "Нажмите, чтобы вернуться к настройкам",
+            "support_header": "Заголовок поддержки",
+            "support_nav_panel": "Панель навигации поддержки",
+            "support_content": "Контент поддержки",
+            "support_search_icon": "Поиск",
+            "support_search_field": "Поле поиска по вопросам",
+            "support_search_hint": "Введите текст для поиска в часто задаваемых вопросах",
+            "support_search_label": "Поиск по вопросам",
+            "support_contact_us_label": "СВЯЗАТЬСЯ С НАМИ",
+            "support_contact_methods": "Способы связи с поддержкой",
+            "support_icon_label": "Иконка %@",
+            "support_title_label": "Название: %@",
+            "support_subtitle_label": "Описание: %@",
+            "support_go": "Перейти",
+            "support_tap_hint": "Нажмите для %@",
+            "support_faq_label": "ЧАСТЫЕ ВОПРОСЫ",
+            "support_faq_section": "Часто задаваемые вопросы",
+            "support_question_icon": "Иконка вопроса",
+            "support_question_label": "Вопрос: %@",
+            "support_collapse": "Свернуть ответ",
+            "support_expand": "Развернуть ответ",
+            "support_collapse_label": "Свернуть: %@",
+            "support_expand_label": "Развернуть: %@",
+            "support_collapse_hint": "Нажмите для сворачивания ответа",
+            "support_expand_hint": "Нажмите для разворачивания ответа",
+            "support_answer_label": "Ответ: %@",
+            "support_faq_item": "FAQ: %@",
             "faq_what_protects": "Что защищает система?",
             "faq_what_protects_answer": "ALADDIN защищает от 100+ видов опасностей в интернете. Это как охранник для вашего телефона - не пускает плохое и защищает от вирусов, мошенников и опасных сайтов.\n\nНаша система работает 24/7 и проверяет всё, что происходит на вашем устройстве.",
             "faq_protect_children": "Как система защищает детей?",
@@ -4538,6 +4568,49 @@ class LocalizationManager: ObservableObject {
             "notifications_unread_badge": "Unread notification",
             "notifications_notification_full": "%@: %@, time: %@",
             
+            // Support Screen
+            "support_title": "SUPPORT",
+            "support_subtitle": "We're always here",
+            "support_search_placeholder": "Search questions...",
+            "support_contact_us": "CONTACT US",
+            "support_chat": "Support chat",
+            "support_chat_subtitle": "We'll respond within 5 minutes",
+            "support_ai_assistant": "AI assistant",
+            "support_ai_assistant_subtitle": "Ask me, send feedback and suggestions",
+            "support_phone": "Phone",
+            "support_phone_subtitle": "Contact us by phone",
+            "support_faq": "FREQUENTLY ASKED QUESTIONS",
+            // Support Screen - Accessibility
+            "support_background": "Support screen background",
+            "support_back": "Back",
+            "support_back_hint": "Tap to return to settings",
+            "support_header": "Support header",
+            "support_nav_panel": "Support navigation panel",
+            "support_content": "Support content",
+            "support_search_icon": "Search",
+            "support_search_field": "Question search field",
+            "support_search_hint": "Enter text to search in frequently asked questions",
+            "support_search_label": "Search questions",
+            "support_contact_us_label": "CONTACT US",
+            "support_contact_methods": "Support contact methods",
+            "support_icon_label": "Icon %@",
+            "support_title_label": "Title: %@",
+            "support_subtitle_label": "Description: %@",
+            "support_go": "Go",
+            "support_tap_hint": "Tap for %@",
+            "support_faq_label": "FAQ",
+            "support_faq_section": "Frequently asked questions",
+            "support_question_icon": "Question icon",
+            "support_question_label": "Question: %@",
+            "support_collapse": "Collapse answer",
+            "support_expand": "Expand answer",
+            "support_collapse_label": "Collapse: %@",
+            "support_expand_label": "Expand: %@",
+            "support_collapse_hint": "Tap to collapse answer",
+            "support_expand_hint": "Tap to expand answer",
+            "support_answer_label": "Answer: %@",
+            "support_faq_item": "FAQ: %@",
+            
             // Privacy Policy Screen
             "privacy_policy_title": "PRIVACY POLICY",
             "privacy_policy_background": "Privacy policy screen background",
@@ -4704,6 +4777,105 @@ class LocalizationManager: ObservableObject {
             "faq_how_network_protection_works_answer": "Network protection is like an underground tunnel. When you're online:\n• Usually: Your phone → Provider → Internet (everyone sees where you're going)\n• With network protection: Your phone → Encrypted tunnel → Internet (no one sees!)\n\nIt's like invisibility - the internet sees that someone is online, but doesn't know who exactly!\n\n✅ ALADDIN uses network protection to protect all your data.",
             "faq_unsafe_wifi": "What is unsafe Wi-Fi?",
             "faq_unsafe_wifi_answer": "Unsafe Wi-Fi is a public network that can be a trap:\n• In cafes, airports, metro\n• Scammers can intercept your data\n• Steal passwords\n• See what you're doing\n\nIt's like if someone was standing behind you and watching what you type!\n\n✅ ALADDIN warns about dangerous networks and protects your data through network protection.",
+            
+            // MARK: - FAQ - General Questions
+            "faq_what_protects": "What does the system protect?",
+            "faq_what_protects_answer": "ALADDIN protects against 100+ types of dangers on the internet. It's like a security guard for your phone - it doesn't let bad things in and protects you from viruses, scammers and dangerous sites.\n\nOur system works 24/7 and checks everything that happens on your device.",
+            "faq_protect_children": "How does the system protect children?",
+            "faq_protect_children_answer": "We protect children like real superheroes! 🦸\n\n• We don't let them visit dangerous sites (like a fence around a playground)\n• We don't let them play too long (we help them rest)\n• We make sure strangers don't message your child\n• We teach safety through games (fun and useful!)\n• Parents see what's happening (but don't read personal messages)",
+            "faq_protect_elderly": "How does the system protect the elderly?",
+            "faq_protect_elderly_answer": "For grandparents we made special protection:\n\n• We block calls from scammers (they often call the elderly)\n• We check all sites before opening\n• We make a simple interface - everything is clear even if you're not friends with your phone\n• You can control with voice (say \"call grandson\" - and the call happens immediately)\n• Red SOS button - quickly call for help",
+            "faq_data_safe": "Are my data safe?",
+            "faq_data_safe_answer": "Yes, your data is completely protected! 🔒\n\nWe use:\n• Military encryption (like in banks and the army)\n• All data is stored in Russia\n• We comply with all protection laws\n• In Premium - complete anonymity (no one will know, even us)",
+            
+            // MARK: - FAQ - Cyber Threats
+            "faq_viruses_trojans": "What are viruses and trojans?",
+            "faq_viruses_trojans_answer": "A virus in your phone is like a cold for a computer. It can:\n• Delete your photos\n• Steal passwords\n• Break your phone\n\nA trojan is a virus that hides in a beautiful program (like the Trojan horse from the fairy tale). You think you downloaded a game, but it's actually a virus!\n\n✅ ALADDIN finds and removes viruses before they can cause harm.",
+            "faq_ransomware": "What is Ransomware?",
+            "faq_ransomware_answer": "This is a very evil virus-bandit! It blocks all your files and demands money to return them.\n\nHow it happens:\n1. You download a malicious program\n2. It encrypts (blocks) all files\n3. A message appears on the screen: \"Pay 50,000₽ or lose everything!\"\n\n✅ ALADDIN doesn't let such programs get on your phone.",
+            "faq_spyware": "What is spyware?",
+            "faq_spyware_answer": "Spyware is an invisible program that watches you:\n• Sees your passwords\n• Reads messages\n• Sees where you go\n• Listens to conversations\n\nIt's like if someone was always following you and recording everything you do!\n\n✅ ALADDIN finds and removes spies.",
+            "faq_phishing_sites": "What are phishing sites?",
+            "faq_phishing_sites_answer": "Phishing is when scammers make a fake site that looks like a real bank or store.\n\nHow it works:\n1. You think you're on your bank's site\n2. You enter your password\n3. Scammers get your password and steal money!\n\nIt's like a fake store - looks real, but deceives!\n\n✅ ALADDIN checks all sites and warns: \"Caution! This is a fake!\"",
+            "faq_fake_apps": "What are fake apps?",
+            "faq_fake_apps_answer": "A fake app is like a fake phone. Looks real, but it's a deception!\n\nScammers make:\n• Fake Sberbank (to steal your money)\n• Fake WhatsApp (to read messages)\n• Fake games (to steal passwords)\n\n✅ ALADDIN checks every app before installation and warns of danger.",
+            "faq_malicious_links": "What are malicious links?",
+            "faq_malicious_links_answer": "A malicious link is like a door to a bad place. You click on it and fall into a trap!\n\nWhere they come from:\n• In messages from strangers\n• In ads on sites\n• In emails (\"Congratulations! You won...\")\n\n✅ ALADDIN checks all links and says: \"Stop! This link is dangerous!\"",
+            
+            // MARK: - FAQ - Fraud
+            "faq_phone_scam": "What is phone fraud?",
+            "faq_phone_scam_answer": "Phone scammers call and deceive people:\n• \"Hello, this is the bank! Your account is blocked, tell me your password\"\n• \"This is the police! Your son has problems, we need money\"\n• \"Congratulations! You won a million! Transfer 5000₽ to receive\"\n\nRemember: NEVER tell passwords over the phone!\n\n✅ ALADDIN blocks calls from known scammers.",
+            "faq_financial_scam": "What is financial fraud?",
+            "faq_financial_scam_answer": "Financial scammers want to steal your money:\n• \"Your card is blocked, follow the link\"\n• \"You won a prize, pay 3000₽ tax\"\n• \"Urgent! Need to transfer money for relative's treatment\"\n\nRule: Banks and government NEVER ask for money over the phone or in messages!\n\n✅ ALADDIN warns about such messages.",
+            "faq_social_engineering": "What is social engineering?",
+            "faq_social_engineering_answer": "Social engineering is when a scammer deceives you with words, not hacking.\n\nExamples:\n• \"I'm your new colleague, need access to the system\"\n• \"I'm from tech support, tell me your password for verification\"\n• \"Your mom is in the hospital! Urgently need money!\"\n\nThey play on your emotions - fear, greed, desire to help.\n\n✅ ALADDIN teaches you to recognize such deceptions.",
+            "faq_fake_banks": "What are fake banks?",
+            "faq_fake_banks_answer": "A fake bank is a site that looks like a real bank, but it's a fake!\n\nHow to tell:\n• Real bank: sberbank.ru\n• Fake: sberbank-check.ru (with a hyphen and different ending)\n\nScammers copy the design of a real bank, but it's a deception!\n\n✅ ALADDIN checks the site address and warns: \"This is NOT a real bank!\"",
+            "faq_phishing_emails": "What are phishing emails?",
+            "faq_phishing_emails_answer": "A phishing email is a deceptive email that asks you to do something dangerous:\n• \"Your account is blocked, log in via link\"\n• \"You won a prize! Click here\"\n• \"Someone tried to log into your account, check here\"\n\n❌ DON'T click links in such emails!\n\n✅ ALADDIN checks emails and warns of danger.",
+            
+            // MARK: - FAQ - Children's Threats
+            "faq_inappropriate_content": "What is inappropriate content for children?",
+            "faq_inappropriate_content_answer": "Inappropriate content is what children shouldn't see:\n• Scary videos (murders, violence)\n• Adult sites\n• Pictures and videos for adults\n• Movies and games with cruelty\n\nThis can scare a child or teach them bad things!\n\n✅ ALADDIN automatically blocks everything that doesn't fit the child's age.",
+            "faq_cyberbullying": "What is cyberbullying?",
+            "faq_cyberbullying_answer": "Cyberbullying is when children hurt others online:\n• Call names in chats\n• Post hurtful photos\n• Send threats\n• Create groups to bully someone\n\nIt's painful and scary!\n\n✅ ALADDIN detects insults and warns parents. We also teach children how to defend themselves.",
+            "faq_dangerous_contacts": "What are dangerous online contacts?",
+            "faq_dangerous_contacts_answer": "Dangerous contacts are when an unknown adult tries to befriend a child:\n• \"Hi! How are you? Let's be friends\"\n• \"You're so smart! Let's meet?\"\n• \"Don't tell your parents about our conversation\"\n\n⚠️ DANGEROUS! Adults shouldn't be friends with children online!\n\n✅ ALADDIN notices suspicious conversations and immediately notifies parents.",
+            "faq_gaming_addiction": "What is gaming addiction?",
+            "faq_gaming_addiction_answer": "Gaming addiction is when a child plays too much and can't stop:\n• Plays all day instead of lessons\n• Doesn't eat, doesn't sleep because of games\n• Gets angry when told to stop playing\n• Stops communicating with friends\n\nIt's harmful to health and studies!\n\n✅ ALADDIN helps control game time and teaches balance.",
+            "faq_accidental_purchases": "What are accidental purchases?",
+            "faq_accidental_purchases_answer": "Accidental purchases are when a child accidentally spends parents' money:\n• Clicks \"Buy\" in a game\n• Enters parents' card password\n• Buys expensive things in apps\n\nParents don't want their child to spend money without permission!\n\n✅ ALADDIN requires adult confirmation before any purchase.",
+            
+            // MARK: - FAQ - Data Leaks
+            "faq_password_theft": "What is password theft?",
+            "faq_password_theft_answer": "Password theft is when scammers find out your password and log into your accounts:\n• Steal money from the bank\n• Read your messages\n• Post something in your name\n• Buy something with your money\n\n❌ DON'T use one password everywhere!\n\n✅ ALADDIN checks if your passwords have been stolen.",
+            "faq_privacy_violation": "What is privacy violation?",
+            "faq_privacy_violation_answer": "Privacy violation is when someone sees what only you should see:\n• Your photos\n• Personal messages\n• Where you are\n• What you search for on the internet\n\nIt's like if someone was peeking through your door!\n\n✅ ALADDIN protects your privacy and doesn't let anyone spy on you.",
+            
+            // MARK: - FAQ - Fakes
+            "faq_deepfake": "What are Deepfake videos?",
+            "faq_deepfake_answer": "Deepfake is a video where one person's face is replaced with another's using a computer.\n\nThis is very dangerous:\n• Scammers can make a video where you say something you didn't say\n• Can deceive your friends\n• Use for blackmail\n\nIt's like a mask that can't be removed!\n\n✅ ALADDIN Premium detects fake videos and warns.",
+            "faq_fake_voices": "What are fake voices?",
+            "faq_fake_voices_answer": "A fake voice is when a computer copies a person's voice:\n• A scammer calls mom and speaks in son's voice: \"Mom, urgently need money!\"\n• Sounds like a real voice, but it's a deception!\n\n⚠️ If someone calls and asks for money - always call that person back yourself!\n\n✅ ALADDIN Premium analyzes voice and detects fakes.",
+            "faq_fake_news": "What is fake news?",
+            "faq_fake_news_answer": "Fake news is false information that spreads as truth:\n• \"Scientists found a cure for all diseases!\" (lie)\n• \"Earthquake in Moscow!\" (lie, if it didn't happen)\n• \"All banks are closing!\" (lie)\n\nThis is done to deceive people or sow panic.\n\n✅ ALADDIN checks news and shows whether it's true or not.",
+            
+            // MARK: - FAQ - Internet Threats
+            "faq_dangerous_sites": "What are dangerous sites?",
+            "faq_dangerous_sites_answer": "A dangerous site is a site that can harm your phone:\n• Infect with a virus\n• Steal passwords\n• Deceive you\n• Show bad content\n\n✅ ALADDIN checks every site before opening and warns: \"This site is dangerous! Don't open!\"",
+            "faq_suspicious_downloads": "What are suspicious downloads?",
+            "faq_suspicious_downloads_answer": "A suspicious download is a file that can be dangerous:\n• A program can be a virus\n• A photo can contain a virus\n• A game can steal data\n\nHow to identify:\n• File from unknown sender\n• Too good an offer (\"Download and win a million!\")\n• Unknown file extension\n\n✅ ALADDIN checks every file before downloading.",
+            "faq_mitm_attacks": "What are Man-in-the-Middle attacks?",
+            "faq_mitm_attacks_answer": "Man-in-the-Middle is when a scammer intercepts a conversation between you and the bank:\n\nHow it works:\n1. You think you're talking to the bank\n2. Actually the scammer is \"in the middle\"\n3. They see everything you send (passwords, card data)\n4. Can change the bank's response to their own\n\nIt's like a conversation through an eavesdropper!\n\n✅ ALADDIN Premium uses special encryption so no one can eavesdrop.",
+            
+            // MARK: - FAQ - Mobile Threats
+            "faq_malicious_apps": "What are malicious apps?",
+            "faq_malicious_apps_answer": "A malicious app is a program that looks normal, but does bad things:\n• Steals your photos\n• Reads messages\n• Sees where you are\n• Spends your money\n• Infects phone with virus\n\nThey often hide in:\n• Free games\n• \"Cool\" programs\n• Apps from unknown developers\n\n✅ ALADDIN checks every app before installation.",
+            "faq_sms_scam": "What is SMS fraud?",
+            "faq_sms_scam_answer": "SMS fraud is deceptive messages on your phone:\n• \"You won! Transfer money to receive prize\"\n• \"Your bank account is blocked. Follow the link\"\n• \"Your package is delayed. Pay for delivery\"\n\n❌ NEVER transfer money to strangers via SMS!\n\n✅ ALADDIN blocks such messages and warns of deception.",
+            "faq_location_threats": "What are location threats?",
+            "faq_location_threats_answer": "Location is information about where you are. The danger is:\n• Scammers can find out where you live\n• Understand when you're not home\n• Track you\n• Use it for theft\n\nIt's like if someone knew where you are every minute!\n\n✅ ALADDIN protects information about your location.",
+            
+            // MARK: - FAQ - Family Threats
+            "faq_domestic_violence": "What is digital domestic violence?",
+            "faq_domestic_violence_answer": "Digital domestic violence is when someone in the family controls another through the internet:\n• Monitors all messages\n• Blocks communication with friends\n• Threatens\n• Blackmails\n\nThis is very dangerous and illegal!\n\n✅ ALADDIN Premium helps detect such situations and protect the victim.",
+            "faq_emotional_problems": "What are emotional problems?",
+            "faq_emotional_problems_answer": "Emotional problems appear when the internet harms a person's mood:\n• Child feels sad after social networks\n• Constant comparisons make them upset\n• They see a lot of negativity\n• Isolates from real friends\n\n✅ ALADDIN tracks emotional signals and warns parents when something seems wrong.",
+            
+            // MARK: - FAQ - Military Protection
+            "faq_aes256": "What is military encryption AES-256?",
+            "faq_aes256_answer": "AES-256 is the strongest way to protect information, used by:\n• Banks\n• Military\n• Governments\n• Special services\n\nIt's like a safe with a million locks - it's impossible to break!\n\n✅ ALADDIN Premium applies AES-256 for maximum protection.",
+            "faq_anonymity": "What is internet anonymity?",
+            "faq_anonymity_answer": "Anonymity means no one knows who you are:\n• Your IP address is hidden\n• Your actions cannot be tracked\n• Your location is private\n• No one can spy on you\n\nIt's like invisibility - people see activity, but can't understand it's you!\n\n✅ ALADDIN Premium makes you completely anonymous on the internet.",
+            "faq_critical_infrastructure": "What is critical infrastructure protection?",
+            "faq_critical_infrastructure_answer": "Critical infrastructure is very important systems:\n• Hospitals\n• Power plants\n• Water supply\n• Transport\n• Banks\n\nIf they're hacked - thousands of people can suffer!\n\n✅ ALADDIN Premium protects such systems from hacking.",
+            
+            // MARK: - FAQ - Technical Questions
+            "faq_parental_control_setup": "How to set up parental control?",
+            "faq_parental_control_setup_answer": "Very simple! 😊\n\n1. Open the \"Family\" section\n2. Select a child\n3. Set up:\n   • How much time can be spent with the phone\n   • What sites can be opened\n   • What apps can be used\n   • Who can be communicated with\n\n✅ ALADDIN helps parents protect children, but not spy on them.",
+            "faq_cancel_subscription": "How to cancel subscription?",
+            "faq_cancel_subscription_answer": "Easy! 😊\n\n1. Open \"Settings\"\n2. Find \"Subscription Management\"\n3. Select \"Cancel Subscription\"\n\nOr write to us in support - we'll help!\n\nWe'll miss you, but we understand your choice! 💙",
+            
             "privacy_policy_web_accessibility": "Privacy policy web page",
             "privacy_policy_web_hint": "Scroll to view privacy policy content",
             "privacy_policy_last_update": "Last updated: October 29, 2025",
@@ -5392,8 +5564,27 @@ class LocalizationManager: ObservableObject {
     func localized(_ key: String) -> String {
         // ✅ СНАЧАЛА проверяем словарь переводов для текущего языка
         if let translation = translations[currentLanguage]?[key] {
+            #if DEBUG
+            if key.hasPrefix("faq_") {
+                print("✅ Found translation for key '\(key)' in language '\(currentLanguage.rawValue)': '\(translation.prefix(50))...'")
+            }
+            #endif
             return translation
         }
+        
+        #if DEBUG
+        if key.hasPrefix("faq_") {
+            print("⚠️ Translation NOT found for key '\(key)' in language '\(currentLanguage.rawValue)'")
+            if let englishDict = translations[.english] {
+                print("   English dict has \(englishDict.count) keys")
+                print("   Key exists in English dict: \(englishDict.keys.contains(key))")
+            }
+            if let russianDict = translations[.russian] {
+                print("   Russian dict has \(russianDict.count) keys")
+                print("   Key exists in Russian dict: \(russianDict.keys.contains(key))")
+            }
+        }
+        #endif
         
         // ✅ ЕСЛИ текущий язык - русский, но перевод не найден, пробуем принудительно русский
         if currentLanguage == .russian, let russianTranslation = translations[.russian]?[key] {
