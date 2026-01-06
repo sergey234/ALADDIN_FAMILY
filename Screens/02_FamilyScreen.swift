@@ -115,12 +115,24 @@ struct FamilyScreen: View {
     
     // Загрузка участников семьи из UserDefaults при открытии экрана
     private func loadFamilyMembers() {
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Синхронизируем UserDefaults перед чтением
+        UserDefaults.standard.synchronize()
+        
         // 1. Попытка загрузить из UserDefaults
         if let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
            let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData),
            !decoded.isEmpty {
-            familyMembers = decoded
-            print("✅ Loaded family members from UserDefaults: \(familyMembers.count)")
+            // ✅ ИСПРАВЛЕНИЕ: Обновляем список только если он действительно изменился
+            // Это предотвращает восстановление удаленных участников
+            let currentIds = Set(familyMembers.map { $0.id })
+            let loadedIds = Set(decoded.map { $0.id })
+            
+            if currentIds != loadedIds {
+                familyMembers = decoded
+                print("✅ Loaded family members from UserDefaults: \(familyMembers.count)")
+            } else {
+                print("🔄 Loaded family members: список не изменился (\(familyMembers.count) участников), пропускаем обновление")
+            }
             return
         }
         
@@ -203,28 +215,50 @@ struct FamilyScreen: View {
             return
         }
         
-        // Удаляем из локального списка
-        familyMembers.removeAll { $0.id == member.id }
-        saveFamilyMembers()
+        print("🗑️ [removeFamilyMember] Начало удаления: \(member.name) (ID: \(member.id))")
+        print("🗑️ [removeFamilyMember] Текущее количество участников: \(familyMembers.count)")
         
-        // Удаляем через API
+        // ✅ ИСПРАВЛЕНИЕ: Удаляем из локального списка СРАЗУ для мгновенного обновления UI
+        let memberToRemove = member
+        familyMembers.removeAll { $0.id == member.id }
+        
+        print("🗑️ [removeFamilyMember] Удалено из списка. Новое количество: \(familyMembers.count)")
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сохраняем СРАЗУ после удаления
+        UserDefaults.standard.synchronize()
+        saveFamilyMembers()
+        UserDefaults.standard.synchronize()
+        
+        print("🗑️ [removeFamilyMember] Данные сохранены в UserDefaults")
+        
+        // Haptic feedback для подтверждения удаления
+        HapticFeedback.notification(.success)
+        
+        // Удаляем через API (асинхронно, не блокируем UI)
         Task {
             let apiService = APIService.shared
-            let memberId = member.id.uuidString
+            let memberId = memberToRemove.id.uuidString
+            
+            print("🗑️ [removeFamilyMember] Отправка запроса на удаление через API: \(memberId)")
             
             do {
                 let _ = try await apiService.removeFamilyMember(memberId)
                 await MainActor.run {
-                    print("✅ Successfully removed family member: \(member.name)")
-                    HapticFeedback.notification(.success)
+                    print("✅ [removeFamilyMember] Успешно удален через API: \(memberToRemove.name)")
+                    // Дополнительная проверка - убеждаемся что участник не вернулся
+                    if familyMembers.contains(where: { $0.id == memberToRemove.id }) {
+                        print("⚠️ [removeFamilyMember] Участник все еще в списке, удаляем повторно")
+                        familyMembers.removeAll { $0.id == memberToRemove.id }
+                        saveFamilyMembers()
+                    }
                 }
             } catch {
                 await MainActor.run {
-                    print("❌ Failed to remove family member: \(error.localizedDescription)")
-                    // Восстанавливаем участника в списке при ошибке
-                    familyMembers.append(member)
-                    saveFamilyMembers()
-                    HapticFeedback.notification(.error)
+                    print("❌ [removeFamilyMember] Ошибка при удалении через API: \(error.localizedDescription)")
+                    print("⚠️ [removeFamilyMember] Участник уже удален из локального списка, не восстанавливаем")
+                    // ✅ ИСПРАВЛЕНИЕ: НЕ восстанавливаем участника при ошибке API
+                    // Пользователь уже видит что участник удален, не нужно его возвращать
+                    HapticFeedback.notification(.warning)
                 }
             }
         }
@@ -238,10 +272,13 @@ struct FamilyScreen: View {
         }
         
         UserDefaults.standard.set(encoded, forKey: familyMembersKey)
-        print("✅ Stored \(familyMembers.count) family members in UserDefaults")
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная синхронизация для немедленного сохранения
+        UserDefaults.standard.synchronize()
+        print("✅ Stored \(familyMembers.count) family members in UserDefaults (синхронизировано)")
         
         // Уведомляем другие экраны об изменении
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+        NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
     }
     
     // Вспомогательная функция для получения аватара по роли
@@ -604,8 +641,22 @@ struct FamilyScreen: View {
             }
         }
         .onAppear {
-            // Загружаем участников при появлении экрана
-            loadFamilyMembers()
+            // ✅ ИСПРАВЛЕНИЕ: Загружаем участников только если список пуст
+            // Это предотвращает перезапись удаленных участников
+            if familyMembers.isEmpty {
+                print("🔄 [FamilyScreen.onAppear] Список пуст, загружаем участников")
+                loadFamilyMembers()
+            } else {
+                print("🔄 [FamilyScreen.onAppear] Список уже загружен (\(familyMembers.count) участников), пропускаем загрузку")
+            }
+        }
+        .onChange(of: showAddMemberModal) { newValue in
+            // ✅ ИСПРАВЛЕНИЕ: При закрытии модала добавления участника обновляем список
+            if !newValue {
+                print("🔄 [FamilyScreen] Модал добавления закрыт, обновляем список участников")
+                // Не перезагружаем полностью, только если нужно
+                // loadFamilyMembers() вызовется автоматически если список пуст
+            }
         }
     }
 }

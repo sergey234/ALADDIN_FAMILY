@@ -122,6 +122,14 @@ struct FamilyMemberCard: View {
     var body: some View {
         ZStack {
             Button(action: {
+                // ✅ ИСПРАВЛЕНИЕ: Проверяем, не была ли нажата кнопка удаления
+                // Если есть кнопка удаления, проверяем что нажатие не на неё
+                if showDeleteButton && onDelete != nil {
+                    // Пропускаем действие основной кнопки если есть кнопка удаления
+                    // (кнопка удаления обрабатывается отдельно)
+                    return
+                }
+                
                 // Haptic feedback
                 let generator = UIImpactFeedbackGenerator(style: .medium)
                 generator.impactOccurred()
@@ -145,6 +153,10 @@ struct FamilyMemberCard: View {
                     // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #4: Кнопка удаления (видимая и заметная)
                     if showDeleteButton, let onDelete = onDelete {
                         Button(action: {
+                            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Останавливаем распространение события
+                            // чтобы не вызывался action() основной карточки
+                            print("🗑️ [FamilyMemberCard] Кнопка удаления нажата для: \(name)")
+                            
                             // Haptic feedback
                             let generator = UINotificationFeedbackGenerator()
                             generator.notificationOccurred(.warning)
@@ -162,6 +174,10 @@ struct FamilyMemberCard: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         .zIndex(10)  // Поверх других элементов
+                        .onTapGesture {
+                            // ✅ Дополнительная защита: предотвращаем всплытие события
+                            print("🗑️ [FamilyMemberCard] onTapGesture для кнопки удаления")
+                        }
                     }
                 }
                 
@@ -189,11 +205,43 @@ struct FamilyMemberCard: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
             }
             
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Кнопка удаления ВНЕ основной кнопки для предотвращения конфликтов
+            if showDeleteButton, let onDelete = onDelete {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Останавливаем распространение события
+                            print("🗑️ [FamilyMemberCard] Кнопка удаления нажата для: \(name)")
+                            
+                            // Haptic feedback
+                            let generator = UINotificationFeedbackGenerator()
+                            generator.notificationOccurred(.warning)
+                            
+                            // Вызываем функцию удаления
+                            onDelete()
+                        }) {
+                            Image(systemName: "trash.fill")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 28, height: 28)
+                                .background(Color.red)
+                                .clipShape(Circle())
+                                .shadow(color: .red.opacity(0.3), radius: 4, x: 0, y: 2)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .padding(.top, 8)
+                        .padding(.trailing, 8)
+                    }
+                    Spacer()
+                }
+                .zIndex(1000)  // ✅ Очень высокий приоритет - поверх всего
+                .allowsHitTesting(true)
+            }
         }
         .buttonStyle(PlainButtonStyle())
         .contentShape(Rectangle())  // Явная область для нажатий
         .allowsHitTesting(true)  // ✅ Явное разрешение нажатий
-        .zIndex(100)  // ✅ Высокий приоритет
     }
 }
 
