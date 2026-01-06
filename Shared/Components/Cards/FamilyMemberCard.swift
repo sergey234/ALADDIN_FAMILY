@@ -16,6 +16,8 @@ struct FamilyMemberCard: View {
     let threatsBlocked: Int
     let lastActive: String
     let action: () -> Void
+    var onDelete: (() -> Void)? = nil  // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #4: Функция удаления
+    var showDeleteButton: Bool = false  // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #4: Показывать ли кнопку удаления
     
     // MARK: - Localized Role Label
     
@@ -100,7 +102,9 @@ struct FamilyMemberCard: View {
         status: ProtectionStatus,
         threatsBlocked: Int,
         lastActive: String = "",
-        action: @escaping () -> Void
+        action: @escaping () -> Void,
+        onDelete: (() -> Void)? = nil,
+        showDeleteButton: Bool = false
     ) {
         self.name = name
         self.role = role
@@ -109,6 +113,8 @@ struct FamilyMemberCard: View {
         self.threatsBlocked = threatsBlocked
         self.lastActive = lastActive
         self.action = action
+        self.onDelete = onDelete
+        self.showDeleteButton = showDeleteButton
     }
     
     // MARK: - Body
@@ -133,6 +139,30 @@ struct FamilyMemberCard: View {
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(Color(red: 0.96, green: 0.62, blue: 0.04))
                         .lineLimit(1)
+                    
+                    Spacer()
+                    
+                    // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #4: Кнопка удаления (видимая и заметная)
+                    if showDeleteButton, let onDelete = onDelete {
+                        Button(action: {
+                            // Haptic feedback
+                            let generator = UINotificationFeedbackGenerator()
+                            generator.notificationOccurred(.warning)
+                            
+                            // Вызываем функцию удаления
+                            onDelete()
+                        }) {
+                            Image(systemName: "trash.fill")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 28, height: 28)
+                                .background(Color.red)
+                                .clipShape(Circle())
+                                .shadow(color: .red.opacity(0.3), radius: 4, x: 0, y: 2)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .zIndex(10)  // Поверх других элементов
+                    }
                 }
                 
                 // Роль

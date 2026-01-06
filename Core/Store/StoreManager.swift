@@ -143,6 +143,11 @@ class StoreManager: ObservableObject {
             
             if products.isEmpty {
                 print("⚠️ [StoreManager.loadProducts] ========== ПРОДУКТЫ НЕ ЗАГРУЖЕНЫ ==========")
+                print("⚠️ [StoreManager.loadProducts] Device: \(UIDevice.current.model)")
+                print("⚠️ [StoreManager.loadProducts] OS: \(UIDevice.current.systemVersion)")
+                print("⚠️ [StoreManager.loadProducts] Is iPad: \(UIDevice.current.userInterfaceIdiom == .pad)")
+                print("⚠️ [StoreManager.loadProducts] Bundle ID: \(Bundle.main.bundleIdentifier ?? "unknown")")
+                print("⚠️ [StoreManager.loadProducts] Product IDs requested: \(productIDs)")
                 print("⚠️ [StoreManager.loadProducts] Возможные причины:")
                 print("   1. Продукты не настроены в App Store Connect")
                 print("   2. Bundle ID не совпадает: \(Bundle.main.bundleIdentifier ?? "unknown")")
@@ -150,8 +155,10 @@ class StoreManager: ObservableObject {
                 print("   4. Проблема с интернет-соединением")
                 print("   5. Проблема с Sandbox аккаунтом")
                 print("   6. Продукты не привязаны к приложению в App Store Connect")
+                print("   7. Paid Apps Agreement не принят в App Store Connect")
                 print("⚠️ [StoreManager.loadProducts] Проверьте App Store Connect:")
                 print("   - My Apps → ALADDIN → Features → In-App Purchases")
+                print("   - Agreements, Tax, and Banking → Paid Apps Agreement (должен быть Active)")
                 print("   - Убедитесь, что все 3 продукта созданы:")
                 print("     • \(ProductID.individual.rawValue)")
                 print("     • \(ProductID.family.rawValue)")
@@ -244,28 +251,64 @@ class StoreManager: ObservableObject {
             throw StoreError.storeNotReady
         }
         
-        // ✅ ДОБАВЛЕНО ДЛЯ IPAD: Проверка что продукты загружены
+        // ✅ УЛУЧШЕНО ДЛЯ IPAD: Принудительная проверка и перезагрузка продуктов
+        // На iPad продукты могут не загрузиться корректно, поэтому делаем дополнительную проверку
         if products.isEmpty {
             print("⚠️ [StoreManager] Products not loaded, attempting to load...")
             await loadProducts()
             guard !products.isEmpty else {
-                print("❌ [StoreManager] Failed to load products")
+                print("❌ [StoreManager] Failed to load products after retry")
+                print("❌ [StoreManager] This may indicate:")
+                print("   1. Products not configured in App Store Connect")
+                print("   2. Bundle ID mismatch")
+                print("   3. Products not in 'Ready to Submit' status")
+                print("   4. Network connection issue")
+                print("   5. Sandbox account not configured")
                 throw StoreError.productsNotLoaded
             }
+        }
+        
+        // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА ДЛЯ IPAD: Убеждаемся что продукт есть в списке
+        // На iPad может быть проблема с синхронизацией продуктов
+        if !products.contains(where: { $0.id == product.id }) {
+            print("⚠️ [StoreManager] Product not found in loaded products, reloading...")
+            await loadProducts()
+            
+            // Проверяем снова после перезагрузки
+            guard products.contains(where: { $0.id == product.id }) else {
+                print("❌ [StoreManager] Product still not found after reload")
+                print("❌ [StoreManager] Product ID: \(product.id)")
+                print("❌ [StoreManager] Available products: \(products.map { $0.id })")
+                throw StoreError.productNotFound
+            }
+        }
+        
+        // ✅ ПРОВЕРКА ГОТОВНОСТИ STOREKIT ДЛЯ IPAD
+        // На iPad StoreKit может требовать дополнительное время для инициализации
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            // Небольшая задержка для гарантии готовности StoreKit на iPad
+            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 секунды
         }
         
         isLoading = true
         errorMessage = nil
         
         do {
-            // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что продукт существует перед покупкой
-            guard products.contains(where: { $0.id == product.id }) else {
+            // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Финальная проверка что продукт существует перед покупкой
+            guard let targetProduct = products.first(where: { $0.id == product.id }) else {
                 isLoading = false
                 print("❌ КРИТИЧЕСКАЯ ОШИБКА: Продукт не найден в списке загруженных продуктов!")
+                print("❌ [StoreManager] Requested product ID: \(product.id)")
+                print("❌ [StoreManager] Available product IDs: \(products.map { $0.id })")
                 throw StoreError.productNotFound
             }
             
-            let result = try await product.purchase()
+            // ✅ ИСПОЛЬЗУЕМ ПРОДУКТ ИЗ ЗАГРУЖЕННОГО СПИСКА (более надежно на iPad)
+            print("✅ [StoreManager] Using product from loaded list: \(targetProduct.id)")
+            print("✅ [StoreManager] Product price: \(targetProduct.displayPrice)")
+            print("✅ [StoreManager] Product name: \(targetProduct.displayName)")
+            
+            let result = try await targetProduct.purchase()
             
             switch result {
             case .success(let verification):
@@ -297,15 +340,60 @@ class StoreManager: ObservableObject {
                 return nil
             }
         } catch {
-            let localizationManager = LocalizationManager()
-            errorMessage = String(format: localizationManager.localized("store_error_purchase"), error.localizedDescription)
             isLoading = false
-            print("❌ [StoreManager] Purchase error: \(error)")
+            let localizationManager = LocalizationManager()
+            
+            // ✅ УЛУЧШЕННАЯ ОБРАБОТКА ОШИБОК ДЛЯ IPAD
+            print("❌ [StoreManager] ========== ОШИБКА ПОКУПКИ ==========")
+            print("❌ [StoreManager] Product ID: \(product.id)")
+            print("❌ [StoreManager] Device: \(UIDevice.current.model)")
+            print("❌ [StoreManager] OS: \(UIDevice.current.systemVersion)")
+            print("❌ [StoreManager] Is iPad: \(UIDevice.current.userInterfaceIdiom == .pad)")
+            print("❌ [StoreManager] Error: \(error)")
             print("❌ [StoreManager] Error type: \(type(of: error))")
             print("❌ [StoreManager] Error description: \(error.localizedDescription)")
+            
+            // Детальная диагностика для StoreKit ошибок
+            if let nsError = error as NSError? {
+                print("❌ [StoreManager] NSError domain: \(nsError.domain)")
+                print("❌ [StoreManager] NSError code: \(nsError.code)")
+                print("❌ [StoreManager] NSError userInfo: \(nsError.userInfo)")
+                
+                // Специфические ошибки StoreKit
+                if nsError.domain == "SKErrorDomain" {
+                    switch nsError.code {
+                    case 0:
+                        print("❌ [StoreManager] SKErrorUnknown - Неизвестная ошибка StoreKit")
+                    case 1:
+                        print("❌ [StoreManager] SKErrorClientInvalid - Клиент недействителен")
+                    case 2:
+                        print("❌ [StoreManager] SKErrorPaymentCancelled - Платеж отменен пользователем")
+                    case 3:
+                        print("❌ [StoreManager] SKErrorPaymentInvalid - Платеж недействителен")
+                    case 4:
+                        print("❌ [StoreManager] SKErrorPaymentNotAllowed - Платеж не разрешен (проверьте Paid Apps Agreement)")
+                    case 5:
+                        print("❌ [StoreManager] SKErrorStoreProductNotAvailable - Продукт недоступен в App Store")
+                    case 6:
+                        print("❌ [StoreManager] SKErrorCloudServicePermissionDenied - Доступ к облачным сервисам запрещен")
+                    case 7:
+                        print("❌ [StoreManager] SKErrorCloudServiceNetworkConnectionFailed - Ошибка сетевого подключения")
+                    case 8:
+                        print("❌ [StoreManager] SKErrorCloudServiceRevoked - Облачный сервис отозван")
+                    default:
+                        print("❌ [StoreManager] SKError code: \(nsError.code)")
+                    }
+                }
+            }
+            
             if let storeError = error as? StoreError {
                 print("❌ [StoreManager] StoreError: \(storeError)")
+                errorMessage = storeError.errorDescription
+            } else {
+                errorMessage = String(format: localizationManager.localized("store_error_purchase"), error.localizedDescription)
             }
+            
+            print("❌ [StoreManager] ==========================================")
             throw error
         }
         #endif

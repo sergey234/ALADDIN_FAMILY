@@ -183,7 +183,8 @@ struct RecoveryCodeModal: View {
                         UserDefaults.standard.set(familyID, forKey: AppConfig.UserDefaultsKeys.familyId)
                         UserDefaults.standard.synchronize()
                         
-                        // ✅ ИСПРАВЛЕНИЕ: Закрываем модал - onComplete вызовется через setter
+                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #3: Вызываем onComplete перед закрытием
+                        onComplete?()
                         isPresented = false
                     }) {
                         Text(localizationManager.localized("recovery_done"))
@@ -204,9 +205,16 @@ struct RecoveryCodeModal: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(localizationManager.localized("common_close")) {
-                        // ✅ ИСПРАВЛЕНИЕ: Закрываем модал - onComplete вызовется автоматически через setter
+                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #3: Вызываем onComplete перед закрытием
+                        onComplete?()
                         isPresented = false
                     }
+                }
+            }
+            .onChange(of: isPresented) { newValue in
+                // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #3: Если модал закрывается (свайп вниз), вызываем onComplete
+                if !newValue {
+                    onComplete?()
                 }
             }
             .sheet(isPresented: $showShareSheet) {

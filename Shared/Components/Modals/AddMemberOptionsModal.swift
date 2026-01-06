@@ -17,6 +17,7 @@ struct AddMemberOptionsModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss  // ✅ ИСПРАВЛЕНИЕ: Добавляем dismiss для правильного закрытия
     @State private var showCreateFamily: Bool = false
     @State private var showQRScanner: Bool = false
     @State private var showCodeInput: Bool = false
@@ -29,6 +30,26 @@ struct AddMemberOptionsModal: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 20) {
+                // ✅ ИСПРАВЛЕНИЕ: Кнопка "Назад" в верхней части
+                HStack {
+                    Button(action: {
+                        print("✅ [AddMemberOptionsModal] Кнопка 'Назад' нажата")
+                        isPresented = false
+                        dismiss()
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text(localizationManager.localized("common_back"))
+                                .font(.system(size: 16, weight: .medium))
+                        }
+                        .foregroundColor(.blue)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+                
                 // Заголовок
                 VStack(spacing: 8) {
                     Text(localizationManager.localized("add_member_title"))
@@ -39,7 +60,7 @@ struct AddMemberOptionsModal: View {
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
-                .padding(.top, 20)
+                .padding(.top, 10)
                 
                 // Варианты добавления
                 VStack(spacing: 12) {
@@ -59,11 +80,13 @@ struct AddMemberOptionsModal: View {
                         isProcessingCreateFamily = true
                         print("✅ AddMemberOptionsModal: Открываем регистрацию семьи")
                         
+                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #6: Не закрываем основной модал сразу
                         // Сначала открываем регистрацию
                         showCreateFamily = true
                         
-                        // Закрываем основной модал после открытия регистрации
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        // Закрываем основной модал после открытия регистрации с задержкой
+                        // чтобы регистрация успела полностью открыться
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             isPresented = false
                             // Сбрасываем флаг через небольшую задержку
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -79,9 +102,11 @@ struct AddMemberOptionsModal: View {
                         description: localizationManager.localized("add_member_scan_qr_desc"),
                         color: .blue
                     ) {
+                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #6: Не закрываем основной модал сразу
+                        // Закрываем только после того, как QR сканер полностью откроется
                         showQRScanner = true
-                        // Закрываем основной модал после открытия сканера
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        // Закрываем основной модал с задержкой, чтобы QR сканер успел открыться
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             isPresented = false
                         }
                     }
@@ -93,9 +118,11 @@ struct AddMemberOptionsModal: View {
                         description: localizationManager.localized("add_member_enter_code_desc"),
                         color: .green
                     ) {
+                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #6: Не закрываем основной модал сразу
+                        // Закрываем только после того, как модал ввода кода полностью откроется
                         showCodeInput = true
-                        // Закрываем основной модал после открытия ввода кода
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        // Закрываем основной модал с задержкой, чтобы модал ввода кода успел открыться
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             isPresented = false
                         }
                     }
@@ -125,7 +152,10 @@ struct AddMemberOptionsModal: View {
                 
                 // Кнопка отмены
                 Button(localizationManager.localized("add_member_cancel")) {
+                    // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #5: Закрываем модал с правильной обработкой
+                    print("✅ [AddMemberOptionsModal] Кнопка 'Отмена' нажата")
                     isPresented = false
+                    dismiss()  // ✅ ИСПРАВЛЕНИЕ: Используем dismiss для правильного закрытия
                 }
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.secondary)
@@ -134,6 +164,7 @@ struct AddMemberOptionsModal: View {
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(12)
                 .padding(.bottom, 20)
+                .accessibilityLabel(localizationManager.localized("add_member_cancel"))
             }
             .padding(.horizontal, 20)
             .navigationBarHidden(true)
@@ -179,16 +210,55 @@ struct AddMemberOptionsModal: View {
                                     
                                     // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда навигируем на экран семьи после создания семьи
                                     if let familyID = familyID, !familyID.isEmpty {
-                                        print("✅ [AddMemberOptionsModal] Семья создана (family_id: \(familyID)), навигируем на экран семьи")
+                                        print("✅ [AddMemberOptionsModal] Семья создана (family_id: \(familyID))")
                                         
-                                        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убеждаемся, что стек навигации правильный
-                                        if self.navigationManager.navigationStack.isEmpty {
-                                            self.navigationManager.navigationStack = [.main]
-                                            print("✅ [AddMemberOptionsModal] Стек навигации инициализирован: [.main]")
+                                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #6: Проверяем, откуда был открыт модал
+                                        // Если мы уже на экране .family, не нужно навигировать туда снова
+                                        let currentScreen = self.navigationManager.currentScreen
+                                        print("🔍 [AddMemberOptionsModal] Текущий экран: \(currentScreen)")
+                                        
+                                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #2: Проверяем роль и навигируем по роли, а не на .family
+                                        // Если семья создана, но пользователь добавил ребенка/60+, нужно навигировать на соответствующий интерфейс
+                                        let roleString = UserDefaults.standard.string(forKey: "current_user_role")
+                                        if let roleString = roleString,
+                                           let role = FamilyRole(storageValue: roleString) {
+                                            print("🔍 [AddMemberOptionsModal] Роль найдена: \(role.rawValue), навигируем по роли")
+                                            
+                                            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убеждаемся, что стек навигации правильный
+                                            if self.navigationManager.navigationStack.isEmpty {
+                                                self.navigationManager.navigationStack = [.main]
+                                                print("✅ [AddMemberOptionsModal] Стек навигации инициализирован: [.main]")
+                                            }
+                                            
+                                            // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #2: Навигация по роли для iPad и iPhone
+                                            switch role {
+                                            case .parent:
+                                                // Если родитель, остаемся на экране семьи или переходим на родительский контроль
+                                                if currentScreen != .family {
+                                                    self.navigationManager.navigateTo(.family)
+                                                }
+                                                print("✅ [AddMemberOptionsModal] Родитель - остаемся на экране семьи")
+                                            case .child, .teenager:
+                                                self.navigationManager.navigateTo(.childInterface)
+                                                print("✅ [AddMemberOptionsModal] Навигация на .childInterface для ребенка/подростка")
+                                            case .elderly:
+                                                self.navigationManager.navigateTo(.elderlyInterface)
+                                                print("✅ [AddMemberOptionsModal] Навигация на .elderlyInterface для пожилого")
+                                            }
+                                        } else if currentScreen != .family {
+                                            // Если роль не найдена, но мы не на экране семьи - навигируем на .family
+                                            if self.navigationManager.navigationStack.isEmpty {
+                                                self.navigationManager.navigationStack = [.main]
+                                                print("✅ [AddMemberOptionsModal] Стек навигации инициализирован: [.main]")
+                                            }
+                                            
+                                            self.navigationManager.navigateTo(.family)
+                                            print("✅ [AddMemberOptionsModal] Навигация на .family выполнена")
+                                        } else {
+                                            print("✅ [AddMemberOptionsModal] Уже на экране .family, навигация не требуется")
+                                            // Обновляем данные на текущем экране (если нужно)
+                                            NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
                                         }
-                                        
-                                        self.navigationManager.navigateTo(.family)
-                                        print("✅ [AddMemberOptionsModal] Навигация на .family выполнена")
                                         print("🔍 [AddMemberOptionsModal] Текущий экран после навигации: \(self.navigationManager.currentScreen)")
                                         print("🔍 [AddMemberOptionsModal] Стек навигации после навигации: \(self.navigationManager.navigationStack)")
                                     } else if attempt < maxAttempts {
@@ -199,7 +269,7 @@ struct AddMemberOptionsModal: View {
                                         }
                                     } else if let roleString = roleString,
                                               let role = FamilyRole(storageValue: roleString) {
-                                        // Если семья не создана после всех попыток, но роль есть - навигируем по роли
+                                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #2: Если семья не создана после всех попыток, но роль есть - навигируем по роли
                                         print("⚠️ [AddMemberOptionsModal] Семья не создана после \(maxAttempts) попыток, но роль найдена: \(role.rawValue)")
                                         
                                         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убеждаемся, что стек навигации правильный
@@ -207,13 +277,17 @@ struct AddMemberOptionsModal: View {
                                             self.navigationManager.navigationStack = [.main]
                                         }
                                         
+                                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #2: Навигация по роли для iPad и iPhone
                                         switch role {
                                         case .parent:
                                             self.navigationManager.navigateTo(.parentalControl)
+                                            print("✅ [AddMemberOptionsModal] Навигация на .parentalControl для родителя")
                                         case .child, .teenager:
                                             self.navigationManager.navigateTo(.childInterface)
+                                            print("✅ [AddMemberOptionsModal] Навигация на .childInterface для ребенка/подростка")
                                         case .elderly:
                                             self.navigationManager.navigateTo(.elderlyInterface)
+                                            print("✅ [AddMemberOptionsModal] Навигация на .elderlyInterface для пожилого")
                                         }
                                     } else {
                                         // Если ничего не найдено - навигируем на главный экран

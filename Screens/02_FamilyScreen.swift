@@ -459,7 +459,12 @@ struct FamilyScreen: View {
                                             lastActive: member.lastActive,
                                             action: {
                                                 self.navigateToMemberScreen(role: member.role)
-                                            }
+                                            },
+                                            onDelete: {
+                                                // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #4: Видимая кнопка удаления
+                                                removeFamilyMember(member)
+                                            },
+                                            showDeleteButton: isUserParent || isFamilyCreator  // Показываем только для администраторов/родителей
                                         )
                                         .environmentObject(localizationManager)
                                         .contextMenu {

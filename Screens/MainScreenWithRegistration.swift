@@ -34,6 +34,8 @@ struct MainScreenWithRegistration: View {
                 HStack {
                     Spacer()
                     Button(localizationManager.localized("common_cancel")) {
+                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #3: Вызываем onComplete при нажатии "Отмена"
+                        print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем onComplete")
                         onComplete?()
                     }
                     .font(.system(size: 16, weight: .medium))
@@ -42,6 +44,7 @@ struct MainScreenWithRegistration: View {
                     .padding(.vertical, 8)
                     .background(Color.black.opacity(0.3))
                     .cornerRadius(20)
+                    .accessibilityLabel(localizationManager.localized("common_cancel"))
                 }
                 .padding(.top, 20)
                 .padding(.horizontal, 20)
