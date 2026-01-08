@@ -5,7 +5,8 @@ struct FamilyScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.dismiss) private var dismiss
     
-    @State private var showAddMemberModal = false
+    // ✅ ИСПРАВЛЕНИЕ #7: Убрали @State showAddMemberModal - теперь используем NavigationManager
+    // @State private var showAddMemberModal = false
     @State private var showParentalSettingsModal = false
     @State private var showRewardsModal: Bool = false
     @State private var showInvitationGuideModal: Bool = false
@@ -393,7 +394,10 @@ struct FamilyScreen: View {
                     
                     Spacer()
                     
-                    Button(action: { showAddMemberModal = true }) {
+                    Button(action: { 
+                        // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager вместо sheet модала
+                        navigationManager.navigateTo(.addMemberOptions)
+                    }) {
                         Image(systemName: "plus")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(Color(red: 0.04, green: 0.07, blue: 0.16))
@@ -447,7 +451,10 @@ struct FamilyScreen: View {
                             .accessibilityElement(children: .contain)
                             .accessibilityLabel(localizationManager.localized("family_statistics_accessibility"))
                             
-                            Button(action: { showAddMemberModal = true }) {
+                            Button(action: { 
+                                // ✅ ИСПРАВЛЕНИЕ #2: Используем NavigationManager вместо sheet модала
+                                navigationManager.navigateTo(.addMemberOptions)
+                            }) {
                                 Text(localizationManager.localized("family_add_member"))
                                     .font(.system(size: 16, weight: .bold))
                                     .foregroundColor(.white)
@@ -519,7 +526,8 @@ struct FamilyScreen: View {
                                     // Additional member button (available for parents when members < 10)
                                     if familyMembers.count < 10 && isUserParent {
                                         AddMoreMemberCard {
-                                            showAddMemberModal = true
+                                            // ✅ ИСПРАВЛЕНИЕ #3: Используем NavigationManager вместо sheet модала
+                                            navigationManager.navigateTo(.addMemberOptions)
                                         }
                                         .environmentObject(localizationManager)
                                     }
@@ -537,7 +545,8 @@ struct FamilyScreen: View {
                                         .foregroundColor(.white.opacity(0.7))
                                     
                                     Button(action: {
-                                        showAddMemberModal = true
+                                        // ✅ ИСПРАВЛЕНИЕ #4: Используем NavigationManager вместо sheet модала
+                                        navigationManager.navigateTo(.addMemberOptions)
                                     }) {
                                         Text(localizationManager.localized("family_add_first_member"))
                                             .font(.subheadline)
@@ -579,11 +588,13 @@ struct FamilyScreen: View {
             // ✅ ИСПРАВЛЕНИЕ: Убираем последний Spacer, который может перекрывать карточки
             // Spacer()  // ЗАКОММЕНТИРОВАНО
         }
-        .sheet(isPresented: $showAddMemberModal) {
-            AddMemberOptionsModal(isPresented: $showAddMemberModal)
-                .environmentObject(navigationManager)  // ✅ КРИТИЧНО: Передаем NavigationManager в модал
-                .environmentObject(localizationManager)
-        }
+        // ✅ ИСПРАВЛЕНИЕ #5: Убрали sheet модал - теперь используем NavigationManager + AddMemberOptionsScreen
+        // Это обеспечивает стабильную работу и правильную навигацию "Назад"
+        // .sheet(isPresented: $showAddMemberModal) {
+        //     AddMemberOptionsModal(isPresented: $showAddMemberModal)
+        //         .environmentObject(navigationManager)
+        //         .environmentObject(localizationManager)
+        // }
         // Новые модалы для родительского контроля (7 карточек)
         .sheet(isPresented: $showContentBlockModal) {
             FamilyContentBlockModal(isPresented: $showContentBlockModal, isEnabled: $isContentBlockEnabled)
@@ -650,14 +661,13 @@ struct FamilyScreen: View {
                 print("🔄 [FamilyScreen.onAppear] Список уже загружен (\(familyMembers.count) участников), пропускаем загрузку")
             }
         }
-        .onChange(of: showAddMemberModal) { newValue in
-            // ✅ ИСПРАВЛЕНИЕ: При закрытии модала добавления участника обновляем список
-            if !newValue {
-                print("🔄 [FamilyScreen] Модал добавления закрыт, обновляем список участников")
-                // Не перезагружаем полностью, только если нужно
-                // loadFamilyMembers() вызовется автоматически если список пуст
-            }
-        }
+        // ✅ ИСПРАВЛЕНИЕ #6: Убрали onChange для showAddMemberModal - теперь используем NavigationManager
+        // При возврате с AddMemberOptionsScreen список обновится автоматически через onAppear
+        // .onChange(of: showAddMemberModal) { newValue in
+        //     if !newValue {
+        //         print("🔄 [FamilyScreen] Модал добавления закрыт, обновляем список участников")
+        //     }
+        // }
     }
 }
 

@@ -40,7 +40,9 @@ struct AddMemberOptionsScreen: View {
                 // Кнопка назад
                 HStack {
                     Button(action: {
-                        dismiss()
+                        // ✅ ИСПРАВЛЕНИЕ: Используем navigationManager.goBack() для правильной навигации
+                        // как на других экранах, открытых через NavigationManager
+                        navigationManager.goBack()
                     }) {
                         HStack {
                             Image(systemName: "chevron.left")
@@ -136,7 +138,8 @@ struct AddMemberOptionsScreen: View {
                 
                 // Кнопка отмены
                 Button(localizationManager.localized("add_member_cancel")) {
-                    dismiss()
+                    // ✅ ИСПРАВЛЕНИЕ: Используем navigationManager.goBack() для правильной навигации
+                    navigationManager.goBack()
                 }
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.secondary)
