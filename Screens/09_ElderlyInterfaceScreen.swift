@@ -319,8 +319,8 @@ struct ElderlyInterfaceScreen: View {
                     icon: "💊",
                     title: localizationManager.localized("elderly_interface_medications"),
                     subtitle: medications.isEmpty
-                        ? "Добавить лекарства для напоминаний" 
-                        : "Следующий приём: \(medications.first?.time ?? "—") (\(medications.first?.name ?? "—"))",
+                        ? localizationManager.localized("elderly_medications_add_for_reminders")
+                        : String(format: localizationManager.localized("elderly_medications_next_dose"), medications.first?.time ?? "—", medications.first?.name ?? "—"),
                     color: .blue,
                     action: { showMedicationReminder = true }
                 )
@@ -330,8 +330,8 @@ struct ElderlyInterfaceScreen: View {
                     icon: "🏥",
                     title: localizationManager.localized("elderly_interface_doctor_visits"),
                     subtitle: appointments.isEmpty
-                        ? "Добавить записи к врачу"
-                        : "Следующий: \(appointments.first?.date ?? "—") (\(appointments.first?.doctor ?? "—"))",
+                        ? localizationManager.localized("elderly_appointments_add")
+                        : String(format: localizationManager.localized("elderly_appointments_next"), appointments.first?.date ?? "—", appointments.first?.doctor ?? "—"),
                     color: .green,
                     action: { showDoctorAppointments = true }
                 )
@@ -406,7 +406,7 @@ struct ElderlyInterfaceScreen: View {
         VStack(spacing: Spacing.l) {
             // Заголовок секции
             HStack {
-                Text("👨‍👩‍👧‍👦 Моя семья")
+                Text(localizationManager.localized("elderly_family_title"))
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(1)
@@ -797,7 +797,7 @@ struct ElderlyInterfaceScreen: View {
         }
         .buttonStyle(PlainButtonStyle())
         .padding(.horizontal, Spacing.screenPadding)
-        .alert("Экстренные службы", isPresented: $showEmergencyAlert) {
+        .alert(localizationManager.localized("elderly_emergency_services_title"), isPresented: $showEmergencyAlert) {
             Button(localizationManager.localized("elderly_interface_ambulance")) {
                 callEmergencyService("103")
             }
@@ -855,9 +855,9 @@ struct ElderlyInterfaceScreen: View {
             // Определяем роль (преобразуем FamilyMemberCard.FamilyRole в строку)
             let roleString: String
             switch member.role {
-            case .parent: roleString = "Родитель"
-            case .child: roleString = "Ребёнок"
-            case .teenager: roleString = "Подросток"
+            case .parent: roleString = localizationManager.localized("elderly_family_role_parent")
+            case .child: roleString = localizationManager.localized("elderly_family_role_child")
+            case .teenager: roleString = localizationManager.localized("elderly_family_role_teenager")
             case .elderly: roleString = "60+"
             }
             
@@ -959,6 +959,7 @@ struct ElderlyInterfaceScreen: View {
 
 struct ElderlySettingsModal: View {
     @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @AppStorage("elderly_font_size") private var fontSize: Double = 16
     @AppStorage("elderly_sound_enabled") private var soundEnabled: Bool = true
     @AppStorage("elderly_vibration_enabled") private var vibrationEnabled: Bool = true
@@ -970,30 +971,30 @@ struct ElderlySettingsModal: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: Spacing.l) {
-                    Text("⚙️ Настройки интерфейса")
+                    Text(localizationManager.localized("elderly_settings_title"))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.primary)
                     
                     // Размер шрифта
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("📝 Размер шрифта")
+                        Text(localizationManager.localized("elderly_settings_font_size_title"))
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.primary)
                         
                         HStack {
-                            Text("Маленький")
+                            Text(localizationManager.localized("elderly_settings_font_size_small"))
                                 .font(.system(size: 14))
                                 .foregroundColor(.secondary)
                             
                             Slider(value: $fontSize, in: 12...24, step: 2)
                                 .accentColor(.blue)
                             
-                            Text("Большой")
+                            Text(localizationManager.localized("elderly_settings_font_size_large"))
                                 .font(.system(size: 14))
                                 .foregroundColor(.secondary)
                         }
                         
-                        Text("Текущий размер: \(Int(fontSize))")
+                        Text(String(format: localizationManager.localized("elderly_settings_font_size_current"), Int(fontSize)))
                             .font(.system(size: 16))
                             .foregroundColor(.blue)
                     }
@@ -1003,12 +1004,12 @@ struct ElderlySettingsModal: View {
                     
                     // Звуки и вибрация
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("🔊 Звуки и уведомления")
+                        Text(localizationManager.localized("elderly_settings_sounds_title"))
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.primary)
                         
                         HStack {
-                            Text("🔊 Звуки")
+                            Text(localizationManager.localized("elderly_settings_sounds_label"))
                                 .font(.system(size: 16))
                                 .foregroundColor(.primary)
                             
@@ -1020,7 +1021,7 @@ struct ElderlySettingsModal: View {
                         }
                         
                         HStack {
-                            Text("📳 Вибрация")
+                            Text(localizationManager.localized("elderly_settings_vibration_label"))
                                 .font(.system(size: 16))
                                 .foregroundColor(.primary)
                             
@@ -1037,12 +1038,12 @@ struct ElderlySettingsModal: View {
                     
                     // Экстренные вызовы
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("🚨 Экстренные вызовы")
+                        Text(localizationManager.localized("elderly_settings_emergency_title"))
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.primary)
                         
                         HStack {
-                            Text("📞 Автоматический звонок")
+                            Text(localizationManager.localized("elderly_settings_auto_call_label"))
                                 .font(.system(size: 16))
                                 .foregroundColor(.primary)
                             
@@ -1053,7 +1054,7 @@ struct ElderlySettingsModal: View {
                                 .frame(maxWidth: 60)
                         }
                         
-                        Text("При включении: автоматически звонить детям при нажатии SOS")
+                        Text(localizationManager.localized("elderly_settings_auto_call_description"))
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
                     }
@@ -1063,7 +1064,7 @@ struct ElderlySettingsModal: View {
                     
                     // Управление семьей
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("👨‍👩‍👧‍👦 Управление семьей")
+                        Text(localizationManager.localized("elderly_settings_family_title"))
                             .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(.primary)
                         
@@ -1073,7 +1074,7 @@ struct ElderlySettingsModal: View {
                             HStack {
                                 Image(systemName: "plus.circle.fill")
                                     .foregroundColor(.blue)
-                                Text("Добавить номер телефона")
+                                Text(localizationManager.localized("elderly_settings_add_phone"))
                                     .foregroundColor(.primary)
                                 Spacer()
                                 Image(systemName: "chevron.right")
@@ -1090,7 +1091,7 @@ struct ElderlySettingsModal: View {
                             HStack {
                                 Image(systemName: "pencil.circle.fill")
                                     .foregroundColor(.orange)
-                                Text("Редактировать контакты")
+                                Text(localizationManager.localized("elderly_settings_edit_contacts"))
                                     .foregroundColor(.primary)
                                 Spacer()
                                 Image(systemName: "chevron.right")
@@ -1112,7 +1113,7 @@ struct ElderlySettingsModal: View {
                         HStack {
                             Image(systemName: "arrow.clockwise")
                                 .foregroundColor(.red)
-                            Text("Сбросить настройки")
+                            Text(localizationManager.localized("elderly_settings_reset"))
                                 .foregroundColor(.red)
                         }
                         .padding()
@@ -1126,7 +1127,7 @@ struct ElderlySettingsModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("elderly_settings_done")) {
                         isPresented = false
                     }
                 }
@@ -1134,9 +1135,11 @@ struct ElderlySettingsModal: View {
         }
         .sheet(isPresented: $showAddPhoneModal) {
             AddPhoneNumberModal(isPresented: $showAddPhoneModal)
+                .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showEditContactsModal) {
             EditContactsModal(isPresented: $showEditContactsModal)
+                .environmentObject(localizationManager)
         }
     }
 }
@@ -1145,45 +1148,57 @@ struct ElderlySettingsModal: View {
 
 struct AddPhoneNumberModal: View {
     @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var contactName: String = ""
     @State private var phoneNumber: String = ""
-    @State private var selectedRelation: String = "Сын"
+    @State private var selectedRelation: String = ""
     
-    let relations = ["Сын", "Дочь", "Внук", "Внучка", "Зять", "Невестка", "Друг", "Другое"]
+    private var relations: [String] {
+        [
+            localizationManager.localized("elderly_settings_relation_son"),
+            localizationManager.localized("elderly_settings_relation_daughter"),
+            localizationManager.localized("elderly_settings_relation_grandson"),
+            localizationManager.localized("elderly_settings_relation_granddaughter"),
+            localizationManager.localized("elderly_settings_relation_son_in_law"),
+            localizationManager.localized("elderly_settings_relation_daughter_in_law"),
+            localizationManager.localized("elderly_settings_relation_friend"),
+            localizationManager.localized("elderly_settings_relation_other")
+        ]
+    }
     
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text("📞 Добавить номер телефона")
+                Text(localizationManager.localized("elderly_settings_add_phone_title"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
                 
                 VStack(spacing: Spacing.m) {
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        Text("Имя контакта")
+                        Text(localizationManager.localized("elderly_settings_add_phone_name_label"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.primary)
                         
-                        TextField("Введите имя", text: $contactName)
+                        TextField(localizationManager.localized("elderly_settings_add_phone_name_placeholder"), text: $contactName)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                     }
                     
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        Text("Номер телефона")
+                        Text(localizationManager.localized("elderly_settings_add_phone_number_label"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.primary)
                         
-                        TextField("+7 (999) 123-45-67", text: $phoneNumber)
+                        TextField(localizationManager.localized("elderly_settings_add_phone_number_placeholder"), text: $phoneNumber)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                             .keyboardType(.phonePad)
                     }
                     
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        Text("Родство")
+                        Text(localizationManager.localized("elderly_settings_add_phone_relation_label"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.primary)
                         
-                        Picker("Родство", selection: $selectedRelation) {
+                        Picker(localizationManager.localized("elderly_settings_add_phone_relation_label"), selection: $selectedRelation) {
                             ForEach(relations, id: \.self) { relation in
                                 Text(relation).tag(relation)
                             }
@@ -1193,6 +1208,11 @@ struct AddPhoneNumberModal: View {
                         .padding()
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(CornerRadius.small)
+                        .onAppear {
+                            if selectedRelation.isEmpty {
+                                selectedRelation = relations.first ?? ""
+                            }
+                        }
                     }
                 }
                 
@@ -1200,7 +1220,7 @@ struct AddPhoneNumberModal: View {
                     // Логика сохранения контакта
                     isPresented = false
                 }) {
-                    Text("Сохранить контакт")
+                    Text(localizationManager.localized("elderly_settings_add_phone_save"))
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -1216,7 +1236,7 @@ struct AddPhoneNumberModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Отмена") {
+                    Button(localizationManager.localized("elderly_settings_add_phone_cancel")) {
                         isPresented = false
                     }
                 }
@@ -1229,6 +1249,7 @@ struct AddPhoneNumberModal: View {
 
 struct EditContactsModal: View {
     @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var familyContacts: [FamilyContact] = [
         FamilyContact(name: "Александр", phone: "+7 (999) 123-45-67", relation: "Сын"),
         FamilyContact(name: "Елена", phone: "+7 (999) 234-56-78", relation: "Невестка"),
@@ -1238,7 +1259,7 @@ struct EditContactsModal: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text("📋 Редактировать контакты")
+                Text(localizationManager.localized("elderly_settings_edit_contacts_title"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
                 
@@ -1289,12 +1310,12 @@ struct EditContactsModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Отмена") {
+                    Button(localizationManager.localized("elderly_settings_edit_contacts_cancel")) {
                         isPresented = false
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("elderly_settings_edit_contacts_done")) {
                         isPresented = false
                     }
                 }
@@ -1319,7 +1340,7 @@ struct SecurityStatusModal: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: Spacing.l) {
-                    Text("🛡️ Статус безопасности")
+                    Text(localizationManager.localized("elderly_protection_status_title"))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.primary)
                     
@@ -1328,11 +1349,11 @@ struct SecurityStatusModal: View {
                         Text("✅")
                             .font(.system(size: 80))
                         
-                        Text("ВСЁ ХОРОШО")
+                        Text(localizationManager.localized("elderly_protection_all_good"))
                             .font(.system(size: 32, weight: .bold))
                             .foregroundColor(.successGreen)
                         
-                        Text("Угроз не обнаружено")
+                        Text(localizationManager.localized("elderly_protection_no_threats"))
                             .font(.system(size: 20))
                             .foregroundColor(.primary)
                     }
@@ -1348,14 +1369,14 @@ struct SecurityStatusModal: View {
                     
                     // Детальная информация
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("📊 Детальная информация:")
+                        Text(localizationManager.localized("elderly_protection_detail_info"))
                             .font(.system(size: 22, weight: .bold))
                             .foregroundColor(.primary)
                         
-                        securityStatusRow(icon: "🔒", title: "Защита от мошенников", status: "Включена", color: .green)
-                        securityStatusRow(icon: "🌐", title: "Проверка сайтов", status: "Активна", color: .blue)
-                        securityStatusRow(icon: "📞", title: "Блокировка звонков", status: "3 заблокировано", color: .orange)
-                        securityStatusRow(icon: "🛡️", title: "Общая защита", status: "100%", color: .green)
+                        securityStatusRow(icon: "🔒", title: localizationManager.localized("elderly_protection_scam_protection"), status: localizationManager.localized("elderly_protection_enabled"), color: .green)
+                        securityStatusRow(icon: "🌐", title: localizationManager.localized("elderly_protection_site_check"), status: localizationManager.localized("elderly_protection_active"), color: .blue)
+                        securityStatusRow(icon: "📞", title: localizationManager.localized("elderly_protection_call_blocking"), status: String(format: localizationManager.localized("elderly_protection_blocked_count"), 3), color: .orange)
+                        securityStatusRow(icon: "🛡️", title: localizationManager.localized("elderly_protection_general"), status: localizationManager.localized("elderly_protection_percent"), color: .green)
                     }
                     .padding()
                     .background(Color.gray.opacity(0.1))
@@ -1363,15 +1384,15 @@ struct SecurityStatusModal: View {
                     
                     // Последняя проверка
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        Text("🕐 Последняя проверка:")
+                        Text(localizationManager.localized("elderly_protection_last_check"))
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.primary)
                         
-                        Text("Сегодня в 14:30")
+                        Text(String(format: localizationManager.localized("elderly_protection_today_at"), "14:30"))
                             .font(.system(size: 16))
                             .foregroundColor(.secondary)
                         
-                        Text("Следующая проверка: через 2 часа")
+                        Text(String(format: localizationManager.localized("elderly_protection_next_check"), 2))
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
                     }
@@ -1384,7 +1405,7 @@ struct SecurityStatusModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("elderly_protection_done")) {
                         isPresented = false
                     }
                 }
@@ -1417,6 +1438,7 @@ struct SecurityStatusModal: View {
 struct ElderlyInterfaceScreen_Previews: PreviewProvider {
     static var previews: some View {
         ElderlyInterfaceScreen()
+            .environmentObject(LocalizationManager())
     }
 }
 #endif
@@ -1473,27 +1495,27 @@ struct SafetyInstructionsModal: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: Spacing.l) {
-                    Text("📖 Инструкции по безопасности")
+                    Text(localizationManager.localized("elderly_safety_instructions_title"))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.primary)
                     
                     // Защита от мошенников
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("🛡️ Защита от мошенников")
+                        Text(localizationManager.localized("elderly_safety_scam_protection_title"))
                             .font(.system(size: 22, weight: .bold))
                             .foregroundColor(.primary)
                         
-                        Text("❌ НЕ ВЕРИТЕ звонкам от: Сотрудников ФСБ, Прокуратуры, Начальства, Банков, Соцсетей")
+                        Text(localizationManager.localized("elderly_safety_dont_believe"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                             .padding(.vertical, Spacing.xs)
                         
-                        Text("✅ ПРАВИЛЬНО:")
+                        Text(localizationManager.localized("elderly_safety_correct"))
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.green)
                             .padding(.top, Spacing.s)
                         
-                        Text("• Никогда не называйте пароли\n• Не переводите деньги\n• Не устанавливайте программы\n• Сразу кладите трубку")
+                        Text(localizationManager.localized("elderly_safety_correct_actions"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                     }
@@ -1503,21 +1525,21 @@ struct SafetyInstructionsModal: View {
                     
                     // Социальная инженерия
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("🎭 Социальная инженерия")
+                        Text(localizationManager.localized("elderly_safety_social_engineering"))
                             .font(.system(size: 22, weight: .bold))
                             .foregroundColor(.primary)
                         
-                        Text("Мошенники могут: Называть ваше имя, знать адрес, говорить о ваших детях, требовать срочности")
+                        Text(localizationManager.localized("elderly_safety_scam_warning"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                             .padding(.vertical, Spacing.xs)
                         
-                        Text("⚠️ ВНИМАНИЕ:")
+                        Text(localizationManager.localized("elderly_safety_warning"))
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.red)
                             .padding(.top, Spacing.s)
                         
-                        Text("Это НЕ означает, что они настоящие!")
+                        Text(localizationManager.localized("elderly_safety_scam_not_real"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                     }
@@ -1527,21 +1549,21 @@ struct SafetyInstructionsModal: View {
                     
                     // Ссылки и скам
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("🔗 Опасные ссылки")
+                        Text(localizationManager.localized("elderly_safety_dangerous_links"))
                             .font(.system(size: 22, weight: .bold))
                             .foregroundColor(.primary)
                         
-                        Text("❌ НЕ НАЖИМАЙТЕ на: Ссылки в SMS, WhatsApp, письмах, неизвестные сайты")
+                        Text(localizationManager.localized("elderly_safety_dont_click"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                             .padding(.vertical, Spacing.xs)
                         
-                        Text("✅ ПРАВИЛЬНО:")
+                        Text(localizationManager.localized("elderly_safety_correct"))
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.green)
                             .padding(.top, Spacing.s)
                         
-                        Text("• Используйте кнопку 'Проверить сайт'\n• Спрашивайте у детей\n• Проверяйте адрес сайта")
+                        Text(localizationManager.localized("elderly_safety_correct_links"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                     }
@@ -1551,16 +1573,16 @@ struct SafetyInstructionsModal: View {
                     
                     // Как пользоваться приложением
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("📱 Как пользоваться приложением")
+                        Text(localizationManager.localized("elderly_safety_how_to_use"))
                             .font(.system(size: 22, weight: .bold))
                             .foregroundColor(.primary)
                         
-                        Text("📞 Звонки: Нажмите 'ЗВОНОК' для быстрого набора, выберите нужного родственника")
+                        Text(localizationManager.localized("elderly_safety_calls_info"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                             .padding(.vertical, Spacing.xs)
                         
-                        Text("🩺 Здоровье: Добавляйте лекарства кнопкой '+', отмечайте прием")
+                        Text(localizationManager.localized("elderly_safety_health_info"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                             .padding(.vertical, Spacing.xs)
@@ -1590,7 +1612,7 @@ struct SafetyInstructionsModal: View {
                             .foregroundColor(.primary)
                             .padding(.vertical, Spacing.xs)
                         
-                        Text("⚙️ Настройки: Нажмите на иконку шестеренки, измените размер текста, управляйте уведомлениями")
+                        Text(localizationManager.localized("elderly_settings_instructions"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                             .padding(.vertical, Spacing.xs)
@@ -1604,7 +1626,7 @@ struct SafetyInstructionsModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("elderly_protection_done")) {
                         isPresented = false
                     }
                 }
@@ -1648,9 +1670,9 @@ enum ElderlyFamilyMemberStatus {
     
     var text: String {
         switch self {
-        case .online: return "Онлайн"
-        case .school: return "В школе"
-        case .offline: return "Офлайн"
+        case .online: return localizationManager.localized("elderly_family_status_online")
+        case .school: return localizationManager.localized("elderly_family_status_school")
+        case .offline: return localizationManager.localized("elderly_family_status_offline")
         }
     }
 }
@@ -1708,7 +1730,7 @@ struct MedicationReminderModal: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text("💊 Лекарства")
+                Text(localizationManager.localized("elderly_medications_icon"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
                 
@@ -1716,7 +1738,7 @@ struct MedicationReminderModal: View {
                 Button(action: { showAddMedication = true }) {
                     HStack {
                         Image(systemName: "plus.circle.fill")
-                        Text("Добавить лекарство")
+                        Text(localizationManager.localized("elderly_medications_add"))
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -1739,7 +1761,7 @@ struct MedicationReminderModal: View {
                         Spacer()
                         
                         HStack(spacing: Spacing.s) {
-                            Button(medication.taken ? "✅ Принято" : "Принять") {
+                            Button(medication.taken ? localizationManager.localized("elderly_medications_taken") : localizationManager.localized("elderly_medications_take")) {
                                 if let index = medications.firstIndex(where: { $0.id == medication.id }) {
                                     medications[index].taken.toggle()
                                 }
@@ -1785,7 +1807,7 @@ struct MedicationReminderModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("elderly_protection_done")) {
                         isPresented = false
                     }
                 }
@@ -1819,22 +1841,22 @@ struct AddMedicationSheet: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text(isEditing ? "Редактировать лекарство" : "Добавить лекарство")
+                Text(isEditing ? localizationManager.localized("elderly_medications_edit") : localizationManager.localized("elderly_medications_add"))
                     .font(.system(size: 24, weight: .bold))
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Название лекарства:")
+                    Text(localizationManager.localized("elderly_medications_name_label"))
                         .font(.system(size: 18, weight: .semibold))
                     
-                    TextField("Например: Аспирин", text: $medicationName)
+                    TextField(localizationManager.localized("elderly_medications_name_placeholder"), text: $medicationName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Время приёма:")
+                    Text(localizationManager.localized("elderly_medications_time_label"))
                         .font(.system(size: 18, weight: .semibold))
                     
-                    TextField("Например: 18:00", text: $medicationTime)
+                    TextField(localizationManager.localized("elderly_medications_time_placeholder"), text: $medicationTime)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
@@ -1856,7 +1878,7 @@ struct AddMedicationSheet: View {
                         isPresented = false
                     }
                 }) {
-                    Text(isEditing ? "Сохранить" : "Добавить")
+                    Text(isEditing ? localizationManager.localized("elderly_medications_save") : localizationManager.localized("elderly_medications_add_button"))
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color.blue)
@@ -1871,7 +1893,7 @@ struct AddMedicationSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Отмена") {
+                    Button(localizationManager.localized("elderly_medications_cancel")) {
                         isPresented = false
                     }
                 }
@@ -1896,7 +1918,7 @@ struct DoctorAppointmentsModal: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text("🏥 Визиты к врачу")
+                Text(localizationManager.localized("elderly_appointments_title"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
                 
@@ -1904,7 +1926,7 @@ struct DoctorAppointmentsModal: View {
                 Button(action: { showAddAppointment = true }) {
                     HStack {
                         Image(systemName: "plus.circle.fill")
-                        Text("Добавить визит")
+                        Text(localizationManager.localized("elderly_appointments_add_visit"))
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -1930,7 +1952,7 @@ struct DoctorAppointmentsModal: View {
                         Spacer()
                         
                         HStack(spacing: Spacing.s) {
-                            Button("Напомнить") {
+                            Button(localizationManager.localized("elderly_appointments_remind")) {
                                 // Логика напоминания
                                 let generator = UINotificationFeedbackGenerator()
                                 generator.notificationOccurred(.success)
@@ -1978,7 +2000,7 @@ struct DoctorAppointmentsModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("elderly_protection_done")) {
                         isPresented = false
                     }
                 }
@@ -2014,30 +2036,30 @@ struct AddAppointmentSheet: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text(isEditing ? "Редактировать визит" : "Добавить визит к врачу")
+                Text(isEditing ? localizationManager.localized("elderly_appointments_edit") : localizationManager.localized("elderly_appointments_add_visit_title"))
                     .font(.system(size: 24, weight: .bold))
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Врач:")
+                    Text(localizationManager.localized("elderly_appointments_doctor_label"))
                         .font(.system(size: 18, weight: .semibold))
                     
-                    TextField("Например: Терапевт", text: $doctorName)
+                    TextField(localizationManager.localized("elderly_appointments_doctor_placeholder"), text: $doctorName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Дата:")
+                    Text(localizationManager.localized("elderly_appointments_date_label"))
                         .font(.system(size: 18, weight: .semibold))
                     
-                    TextField("Например: 12.10", text: $appointmentDate)
+                    TextField(localizationManager.localized("elderly_appointments_date_placeholder"), text: $appointmentDate)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Время:")
+                    Text(localizationManager.localized("elderly_appointments_time_label"))
                         .font(.system(size: 18, weight: .semibold))
                     
-                    TextField("Например: 14:00", text: $appointmentTime)
+                    TextField(localizationManager.localized("elderly_appointments_time_placeholder"), text: $appointmentTime)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
@@ -2060,7 +2082,7 @@ struct AddAppointmentSheet: View {
                         isPresented = false
                     }
                 }) {
-                    Text(isEditing ? "Сохранить" : "Добавить")
+                    Text(isEditing ? localizationManager.localized("elderly_medications_save") : localizationManager.localized("elderly_medications_add_button"))
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color.green)
@@ -2075,7 +2097,7 @@ struct AddAppointmentSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Отмена") {
+                    Button(localizationManager.localized("elderly_medications_cancel")) {
                         isPresented = false
                     }
                 }
@@ -2108,7 +2130,7 @@ struct BloodPressureModal: View {
                 Button(action: { showAddReading = true }) {
                     HStack {
                         Image(systemName: "plus.circle.fill")
-                        Text("Добавить измерение")
+                        Text(localizationManager.localized("elderly_blood_pressure_add_measurement"))
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -2119,7 +2141,7 @@ struct BloodPressureModal: View {
                 
                 // Последнее измерение
                 VStack(spacing: Spacing.m) {
-                    Text("Последнее измерение")
+                    Text(localizationManager.localized("elderly_blood_pressure_last_measurement"))
                         .font(.system(size: 20, weight: .bold))
                     
                     Text("\(bloodPressure.systolic)/\(bloodPressure.diastolic)")
@@ -2136,7 +2158,7 @@ struct BloodPressureModal: View {
                 
                 // История измерений по дням недели
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("История измерений:")
+                    Text(localizationManager.localized("elderly_blood_pressure_history"))
                         .font(.system(size: 18, weight: .semibold))
                     
                     ForEach(getWeekDays(), id: \.self) { day in
@@ -2178,7 +2200,7 @@ struct BloodPressureModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("elderly_protection_done")) {
                         onSave()
                         isPresented = false
                     }
@@ -2198,7 +2220,15 @@ struct BloodPressureModal: View {
     }
     
     private func getWeekDays() -> [String] {
-        return ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
+        return [
+            localizationManager.localized("elderly_weekday_mon"),
+            localizationManager.localized("elderly_weekday_tue"),
+            localizationManager.localized("elderly_weekday_wed"),
+            localizationManager.localized("elderly_weekday_thu"),
+            localizationManager.localized("elderly_weekday_fri"),
+            localizationManager.localized("elderly_weekday_sat"),
+            localizationManager.localized("elderly_weekday_sun")
+        ]
     }
     
     private func getPressureForDay(_ day: String) -> String {
@@ -2233,32 +2263,32 @@ struct AddPressureReadingSheet: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text("Добавить измерение давления")
+                Text(localizationManager.localized("elderly_blood_pressure_add_title"))
                     .font(.system(size: 24, weight: .bold))
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Верхнее давление (систолическое):")
+                    Text(localizationManager.localized("elderly_blood_pressure_systolic_label"))
                         .font(.system(size: 18, weight: .semibold))
                     
-                    TextField("Например: 120", text: $systolic)
+                    TextField(localizationManager.localized("elderly_blood_pressure_systolic_placeholder"), text: $systolic)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .keyboardType(.numberPad)
                 }
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Нижнее давление (диастолическое):")
+                    Text(localizationManager.localized("elderly_blood_pressure_diastolic_label"))
                         .font(.system(size: 18, weight: .semibold))
                     
-                    TextField("Например: 80", text: $diastolic)
+                    TextField(localizationManager.localized("elderly_blood_pressure_diastolic_placeholder"), text: $diastolic)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .keyboardType(.numberPad)
                 }
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Дата:")
+                    Text(localizationManager.localized("elderly_appointments_date_label"))
                         .font(.system(size: 18, weight: .semibold))
                     
-                    TextField("Например: 08.10", text: $date)
+                    TextField(localizationManager.localized("elderly_health_journal_date_placeholder"), text: $date)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
@@ -2288,7 +2318,7 @@ struct AddPressureReadingSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Отмена") {
+                    Button(localizationManager.localized("elderly_medications_cancel")) {
                         isPresented = false
                     }
                 }
@@ -2311,7 +2341,7 @@ struct HealthJournalModal: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text("📋 Журнал здоровья")
+                Text(localizationManager.localized("elderly_health_journal_title"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
                 
@@ -2321,7 +2351,7 @@ struct HealthJournalModal: View {
                         Text("\(healthEntries.count)")
                             .font(.system(size: 24, weight: .bold))
                             .foregroundColor(.blue)
-                        Text("Записей")
+                        Text(localizationManager.localized("elderly_health_journal_entries"))
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
                     }
@@ -2334,7 +2364,7 @@ struct HealthJournalModal: View {
                         Text("7")
                             .font(.system(size: 24, weight: .bold))
                             .foregroundColor(.green)
-                        Text("Дней")
+                        Text(localizationManager.localized("elderly_health_journal_days"))
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
                     }
@@ -2355,7 +2385,7 @@ struct HealthJournalModal: View {
                 }) {
                     HStack {
                         Image(systemName: "plus.circle.fill")
-                        Text("Добавить запись")
+                        Text(localizationManager.localized("elderly_health_journal_add_entry"))
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -2432,7 +2462,7 @@ struct HealthJournalModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("elderly_protection_done")) {
                         isPresented = false
                     }
                 }
@@ -2521,22 +2551,22 @@ struct AddHealthEntrySheet: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text(isEditing ? "Редактировать запись" : "Добавить запись в журнал")
+                Text(isEditing ? localizationManager.localized("elderly_health_journal_edit_entry") : localizationManager.localized("elderly_health_journal_add_entry_title"))
                     .font(.system(size: 24, weight: .bold))
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Дата:")
+                    Text(localizationManager.localized("elderly_appointments_date_label"))
                         .font(.system(size: 18, weight: .semibold))
                     
-                    TextField("Например: 08.10", text: $entryDate)
+                    TextField(localizationManager.localized("elderly_health_journal_date_placeholder"), text: $entryDate)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Запись:")
+                    Text(localizationManager.localized("elderly_health_journal_entry_label"))
                         .font(.system(size: 18, weight: .semibold))
                     
-                    TextField("Опишите ваше самочувствие...", text: $entryText)
+                    TextField(localizationManager.localized("elderly_health_journal_entry_placeholder"), text: $entryText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .lineLimit(3)
                 }
@@ -2563,7 +2593,7 @@ struct AddHealthEntrySheet: View {
                         isPresented = false
                     }
                 }) {
-                    Text(isEditing ? "Сохранить" : "Добавить")
+                    Text(isEditing ? localizationManager.localized("elderly_medications_save") : localizationManager.localized("elderly_medications_add_button"))
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background((!isEditing && entries.count >= MAX_HEALTH_ENTRIES) ? Color.gray : Color.purple)
@@ -2586,7 +2616,7 @@ struct AddHealthEntrySheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Отмена") {
+                    Button(localizationManager.localized("elderly_medications_cancel")) {
                         isPresented = false
                     }
                 }
@@ -2611,7 +2641,7 @@ struct SiteCheckerModal: View {
                     .foregroundColor(.primary)
                 
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Введите адрес сайта:")
+                    Text(localizationManager.localized("elderly_site_check_enter_url"))
                         .font(.system(size: 18, weight: .semibold))
                     
                     TextField("https://example.com", text: $urlToCheck)
@@ -2632,7 +2662,7 @@ struct SiteCheckerModal: View {
                             ProgressView()
                                 .scaleEffect(0.8)
                         }
-                        Text(isChecking ? "Проверяем..." : "Проверить")
+                        Text(isChecking ? localizationManager.localized("elderly_site_check_checking") : localizationManager.localized("elderly_site_check_button"))
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
@@ -2657,7 +2687,7 @@ struct SiteCheckerModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("elderly_protection_done")) {
                         isPresented = false
                     }
                 }
@@ -2673,13 +2703,13 @@ struct SecuritySettingsModal: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text("🛡️ Защита от обмана")
+                Text(localizationManager.localized("elderly_scam_protection_title"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
                 
                 VStack(spacing: Spacing.m) {
                     HStack {
-                        Text("Защита включена")
+                        Text(localizationManager.localized("elderly_scam_protection_enabled"))
                             .font(.system(size: 20, weight: .semibold))
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
@@ -2695,12 +2725,12 @@ struct SecuritySettingsModal: View {
                     .cornerRadius(CornerRadius.medium)
                     
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        Text("Что защищает:")
+                        Text(localizationManager.localized("elderly_scam_protection_what_protects"))
                             .font(.system(size: 18, weight: .semibold))
                         
                         Text("• Подозрительные звонки")
                         Text("• Подозрительные SMS")
-                        Text("• Опасные сайты")
+                        Text(localizationManager.localized("elderly_scam_protection_dangerous_sites"))
                         Text("• Мошеннические приложения")
                     }
                     .padding()
@@ -2714,7 +2744,7 @@ struct SecuritySettingsModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("elderly_protection_done")) {
                         isPresented = false
                     }
                 }
@@ -2730,7 +2760,7 @@ struct DangerousContactsModal: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text("📞 Опасные контакты")
+                Text(localizationManager.localized("elderly_dangerous_contacts_title"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
                 
@@ -2740,7 +2770,7 @@ struct DangerousContactsModal: View {
                         .foregroundColor(.red)
                     
                     if blockedCount == 0 {
-                        Text("Все контакты безопасны")
+                        Text(localizationManager.localized("elderly_dangerous_contacts_all_safe"))
                             .font(.system(size: 18))
                             .foregroundColor(.green)
                             .padding()
@@ -2748,7 +2778,7 @@ struct DangerousContactsModal: View {
                             .cornerRadius(CornerRadius.medium)
                     } else {
                         VStack(alignment: .leading, spacing: Spacing.s) {
-                            Text("Заблокированные номера:")
+                            Text(localizationManager.localized("elderly_dangerous_contacts_blocked_numbers"))
                                 .font(.system(size: 18, weight: .semibold))
                             
                             ForEach(0..<blockedCount, id: \.self) { index in
@@ -2758,7 +2788,7 @@ struct DangerousContactsModal: View {
                                     
                                     Spacer()
                                     
-                                    Button("Разблокировать") {
+                                    Button(localizationManager.localized("elderly_dangerous_contacts_unblock")) {
                                         blockedCount -= 1
                                     }
                                     .font(.system(size: 14))
@@ -2779,7 +2809,7 @@ struct DangerousContactsModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("elderly_protection_done")) {
                         isPresented = false
                     }
                 }

@@ -8,15 +8,22 @@ struct FamilyTournamentView: View {
     // MARK: - Properties
     
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     @State private var participants: [(name: String, points: Int, avatar: String)] = []
-    
-    @State private var tournamentTypes = ["📚 Отличники", "🛡️ Защитники", "🧹 Помощники"]
     
     // Сохраняем состояние турнира в AppStorage
     @AppStorage("tournament_selected_index") private var selectedTournamentIndex: Int = 0
     @AppStorage("tournament_quest_progress") private var questProgress: Double = 0.6
     @AppStorage("tournament_days_left") private var daysLeft: Int = 3
+    
+    private var tournamentTypes: [String] {
+        [
+            localizationManager.localized("family_tournament_type_excellent"),
+            localizationManager.localized("family_tournament_type_protector"),
+            localizationManager.localized("family_tournament_type_helpers")
+        ]
+    }
     
     private var tournamentType: String {
         tournamentTypes[selectedTournamentIndex]
@@ -69,8 +76,8 @@ struct FamilyTournamentView: View {
                         if participants.isEmpty {
                             EmptyStateView(
                                 icon: "🏆",
-                                title: "Турнир ещё не начался",
-                                description: "Участники турнира появятся здесь после начала семейного соревнования",
+                                title: localizationManager.localized("family_tournament_empty_title"),
+                                description: localizationManager.localized("family_tournament_empty_desc"),
                                 actionTitle: nil,
                                 action: nil
                             )
@@ -150,7 +157,7 @@ struct FamilyTournamentView: View {
                     )
             }
             
-            Text("🏆 Турнир семьи")
+            Text(localizationManager.localized("family_tournament_title"))
                 .font(.h2)
                 .foregroundColor(.warningOrange)
             
@@ -163,7 +170,7 @@ struct FamilyTournamentView: View {
     // MARK: - Timer View
     
     private var timerView: some View {
-        Text("⏰ До завершения: \(daysLeft) дня")
+        Text(String(format: localizationManager.localized("family_tournament_timer"), daysLeft))
             .font(.body)
             .foregroundColor(.textSecondary)
             .padding(Spacing.m)
@@ -188,8 +195,8 @@ struct FamilyTournamentView: View {
     }
     
     private func participantRow(rank: Int, name: String, score: Int, avatar: String) -> some View {
-        let medal = rank == 1 ? "🥇" : (rank == 2 ? "🥈" : "🥉")
-        let prize = rank == 1 ? "+50 🦄" : (rank == 2 ? "+30 🦄" : "+20 🦄")
+        let medal = rank == 1 ? localizationManager.localized("family_tournament_medal_1") : (rank == 2 ? localizationManager.localized("family_tournament_medal_2") : localizationManager.localized("family_tournament_medal_3"))
+        let prize = rank == 1 ? localizationManager.localized("family_tournament_prize_1") : (rank == 2 ? localizationManager.localized("family_tournament_prize_2") : localizationManager.localized("family_tournament_prize_3"))
         
         return HStack(spacing: Spacing.m) {
             Text(medal)
@@ -223,11 +230,11 @@ struct FamilyTournamentView: View {
     
     private var questView: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Text("👨‍👩‍👧‍👦 СЕМЕЙНЫЙ КВЕСТ")
+            Text(localizationManager.localized("family_tournament_family_quest"))
                 .font(.h3)
                 .foregroundColor(.textPrimary)
             
-            Text("Вместе заработайте 500 🦄 за неделю")
+            Text(localizationManager.localized("family_tournament_family_quest_desc"))
                 .font(.body)
                 .foregroundColor(.textSecondary)
             
@@ -245,7 +252,7 @@ struct FamilyTournamentView: View {
             .frame(height: 20)
             
             HStack {
-                Text("300 🦄 / 500 🦄")
+                Text(localizationManager.localized("family_tournament_family_quest_progress"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
                 Spacer()
@@ -255,7 +262,7 @@ struct FamilyTournamentView: View {
                     .foregroundColor(.successGreen)
             }
             
-            Text("🎁 Награда: каждому по +50 🦄")
+            Text(localizationManager.localized("family_tournament_family_quest_reward"))
                 .font(.caption)
                 .foregroundColor(.successGreen)
         }
@@ -272,6 +279,8 @@ struct FamilyTournamentView: View {
 struct FamilyTournamentView_Previews: PreviewProvider {
     static var previews: some View {
         FamilyTournamentView()
+            .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager())
     }
 }
 #endif

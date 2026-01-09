@@ -122,19 +122,12 @@ struct FamilyMemberCard: View {
     var body: some View {
         ZStack {
             Button(action: {
-                // ✅ ИСПРАВЛЕНИЕ: Проверяем, не была ли нажата кнопка удаления
-                // Если есть кнопка удаления, проверяем что нажатие не на неё
-                if showDeleteButton && onDelete != nil {
-                    // Пропускаем действие основной кнопки если есть кнопка удаления
-                    // (кнопка удаления обрабатывается отдельно)
-                    return
-                }
-                
                 // Haptic feedback
                 let generator = UIImpactFeedbackGenerator(style: .medium)
                 generator.impactOccurred()
                 
                 // Вызываем action() closure
+                print("✅ [FamilyMemberCard] Основная кнопка карточки нажата для: \(name)")
                 action()
             }) {
             VStack(spacing: 4) {

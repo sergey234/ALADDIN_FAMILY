@@ -7,7 +7,7 @@ struct ChildRewardsSettingsModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     // Настройки цели
-    @AppStorage("child_goal_title") private var goalTitle: String = "Новая игра PS5"
+    @AppStorage("child_goal_title") private var goalTitle: String = ""
     @AppStorage("child_goal_cost") private var goalCost: Int = 800
     @State private var editingGoalTitle: String = ""
     @State private var editingGoalCost: String = ""

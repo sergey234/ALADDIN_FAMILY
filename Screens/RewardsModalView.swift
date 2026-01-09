@@ -1288,7 +1288,7 @@ struct RewardsModalView: View {
                 .foregroundColor(.textSecondary)
             
             HStack {
-                Text(goalTitlePending.isEmpty ? "Новая игра" : goalTitlePending)
+                Text(goalTitlePending.isEmpty ? localizationManager.localized("rewards_modal_new_game") : goalTitlePending)
                     .font(.body)
                     .foregroundColor(.textPrimary)
                 Spacer()

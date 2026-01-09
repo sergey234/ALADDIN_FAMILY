@@ -80,15 +80,16 @@ struct AddMemberOptionsModal: View {
                         isProcessingCreateFamily = true
                         print("✅ AddMemberOptionsModal: Открываем регистрацию семьи")
                         
-                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #6: Не закрываем основной модал сразу
+                        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Увеличиваем задержку для TestFlight и разных контекстов
                         // Сначала открываем регистрацию
                         showCreateFamily = true
                         
-                        // Закрываем основной модал после открытия регистрации с задержкой
-                        // чтобы регистрация успела полностью открыться
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        // ✅ ИСПРАВЛЕНИЕ: Увеличиваем задержку до 0.5 секунды для надежности
+                        // В TestFlight и при открытии из разных контекстов нужно больше времени
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            print("✅ [AddMemberOptionsModal] Закрываем основной модал после открытия регистрации")
                             isPresented = false
-                            // Сбрасываем флаг через небольшую задержку
+                            // Сбрасываем флаг через дополнительную задержку
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 isProcessingCreateFamily = false
                             }
@@ -102,11 +103,13 @@ struct AddMemberOptionsModal: View {
                         description: localizationManager.localized("add_member_scan_qr_desc"),
                         color: .blue
                     ) {
-                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #6: Не закрываем основной модал сразу
+                        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Увеличиваем задержку для TestFlight
                         // Закрываем только после того, как QR сканер полностью откроется
                         showQRScanner = true
-                        // Закрываем основной модал с задержкой, чтобы QR сканер успел открыться
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        // ✅ ИСПРАВЛЕНИЕ: Увеличиваем задержку до 0.5 секунды для надежности
+                        print("✅ [AddMemberOptionsModal] Открываем QR сканер, закроем основной модал через 0.5 сек")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            print("✅ [AddMemberOptionsModal] Закрываем основной модал после открытия QR сканера")
                             isPresented = false
                         }
                     }
@@ -118,11 +121,13 @@ struct AddMemberOptionsModal: View {
                         description: localizationManager.localized("add_member_enter_code_desc"),
                         color: .green
                     ) {
-                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #6: Не закрываем основной модал сразу
+                        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Увеличиваем задержку для TestFlight
                         // Закрываем только после того, как модал ввода кода полностью откроется
                         showCodeInput = true
-                        // Закрываем основной модал с задержкой, чтобы модал ввода кода успел открыться
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        // ✅ ИСПРАВЛЕНИЕ: Увеличиваем задержку до 0.5 секунды для надежности
+                        print("✅ [AddMemberOptionsModal] Открываем модал ввода кода, закроем основной модал через 0.5 сек")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            print("✅ [AddMemberOptionsModal] Закрываем основной модал после открытия модала ввода кода")
                             isPresented = false
                         }
                     }

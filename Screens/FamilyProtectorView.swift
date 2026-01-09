@@ -8,6 +8,7 @@ struct FamilyProtectorView: View {
     // MARK: - Properties
     
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var settingsManager = GamesSettingsManager.shared
     
     // Прогресс квестов (AppStorage)
@@ -44,12 +45,12 @@ struct FamilyProtectorView: View {
     enum QuestType {
         case phishing, device, communication, weeklyTest
         
-        var title: String {
+        func title(localizationManager: LocalizationManager) -> String {
             switch self {
-            case .phishing: return "🔍 Детектив фишинга"
-            case .device: return "🛡️ Защитник устройства"
-            case .communication: return "🎭 Сценарий общения"
-            case .weeklyTest: return "📋 Еженедельная проверка"
+            case .phishing: return localizationManager.localized("family_protector_quest_phishing_title")
+            case .device: return localizationManager.localized("family_protector_quest_device_title")
+            case .communication: return localizationManager.localized("family_protector_quest_communication_title")
+            case .weeklyTest: return localizationManager.localized("family_protector_quest_weekly_title")
             }
         }
         
@@ -62,12 +63,12 @@ struct FamilyProtectorView: View {
             }
         }
         
-        var description: String {
+        func description(localizationManager: LocalizationManager) -> String {
             switch self {
-            case .phishing: return "Распознай опасные письма и сайты"
-            case .device: return "Защити устройство от вирусов"
-            case .communication: return "Правильно общайся в интернете"
-            case .weeklyTest: return "10 случайных сценариев безопасности"
+            case .phishing: return localizationManager.localized("family_protector_quest_phishing_desc")
+            case .device: return localizationManager.localized("family_protector_quest_device_desc")
+            case .communication: return localizationManager.localized("family_protector_quest_communication_desc")
+            case .weeklyTest: return localizationManager.localized("family_protector_quest_weekly_desc")
             }
         }
     }
@@ -77,147 +78,154 @@ struct FamilyProtectorView: View {
     struct QuestScenario {
         let id: Int
         let type: QuestType
-        let title: String
-        let scenario: String
-        let options: [String]
+        let titleKey: String
+        let scenarioKey: String
+        let optionKeys: [String]
         let correctAnswer: Int
-        let explanation: String
+        let explanationKey: String
     }
     
-    let phishingScenarios: [QuestScenario] = [
+    // Computed properties для локализованных сценариев
+    private var phishingScenarios: [QuestScenario] {
+        [
         QuestScenario(
             id: 1,
             type: .phishing,
-            title: "Подозрительное письмо",
-            scenario: "Ты получил письмо от 'Банк Онлайн' с текстом: 'СРОЧНО! Твой аккаунт заблокирован. Перейди по ссылке и введи пароль, иначе счёт закроют!'",
-            options: [
-                "Перейти по ссылке и ввести пароль",
-                "Показать родителям и не переходить",
-                "Переслать друзьям",
-                "Удалить письмо"
+            titleKey: "family_protector_scenario_suspicious_email",
+            scenarioKey: "family_protector_scenario_suspicious_email_text",
+            optionKeys: [
+                "family_protector_scenario_suspicious_email_option_1",
+                "family_protector_scenario_suspicious_email_option_2",
+                "family_protector_scenario_suspicious_email_option_3",
+                "family_protector_scenario_suspicious_email_option_4"
             ],
             correctAnswer: 1,
-            explanation: "Правильно! Банки никогда не просят пароль по ссылке. Всегда показывай такие письма родителям."
+            explanationKey: "family_protector_scenario_suspicious_email_explanation"
         ),
         QuestScenario(
             id: 2,
             type: .phishing,
-            title: "Выигрыш в конкурсе",
-            scenario: "Пришло письмо: 'Поздравляем! Ты выиграл новый iPhone! Отправь свои данные (имя, адрес, телефон) чтобы получить приз!'",
-            options: [
-                "Отправить данные сразу",
-                "Показать родителям",
-                "Рассказать друзьям",
-                "Игнорировать"
+            titleKey: "family_protector_scenario_contest_win",
+            scenarioKey: "family_protector_scenario_contest_win_text",
+            optionKeys: [
+                "family_protector_scenario_contest_win_option_1",
+                "family_protector_scenario_contest_win_option_2",
+                "family_protector_scenario_contest_win_option_3",
+                "family_protector_scenario_contest_win_option_4"
             ],
             correctAnswer: 1,
-            explanation: "Правильно! Если ты не участвовал в конкурсе, это обман. Всегда проверяй с родителями."
+            explanationKey: "family_protector_scenario_contest_win_explanation"
         ),
         QuestScenario(
             id: 3,
             type: .phishing,
-            title: "Сайт выглядит странно",
-            scenario: "Ты зашёл на сайт, который должен быть от популярной игры. Но адрес выглядит странно: 'game-premium.free.ru' вместо 'game-official.com'",
-            options: [
-                "Зарегистрироваться на сайте",
-                "Закрыть сайт и рассказать родителям",
-                "Попробовать скачать что-то",
-                "Продолжить использование"
+            titleKey: "family_protector_scenario_strange_site",
+            scenarioKey: "family_protector_scenario_strange_site_text",
+            optionKeys: [
+                "family_protector_scenario_strange_site_option_1",
+                "family_protector_scenario_strange_site_option_2",
+                "family_protector_scenario_strange_site_option_3",
+                "family_protector_scenario_strange_site_option_4"
             ],
             correctAnswer: 1,
-            explanation: "Правильно! Поддельные сайты часто имеют похожие адреса. Всегда проверяй настоящий адрес сайта."
+            explanationKey: "family_protector_scenario_strange_site_explanation"
         )
-    ]
+        ]
+    }
     
-    let deviceScenarios: [QuestScenario] = [
+    private var deviceScenarios: [QuestScenario] {
+        [
         QuestScenario(
             id: 4,
             type: .device,
-            title: "Вирусная атака",
-            scenario: "Твоё устройство показывает сообщение: 'Вирус обнаружен! Срочно установи антивирус по ссылке!'",
-            options: [
-                "Установить антивирус по ссылке",
-                "Показать родителям и не устанавливать",
-                "Перезагрузить устройство",
-                "Игнорировать"
+            titleKey: "family_protector_scenario_virus_attack",
+            scenarioKey: "family_protector_scenario_virus_attack_text",
+            optionKeys: [
+                "family_protector_scenario_virus_attack_option_1",
+                "family_protector_scenario_virus_attack_option_2",
+                "family_protector_scenario_virus_attack_option_3",
+                "family_protector_scenario_virus_attack_option_4"
             ],
             correctAnswer: 1,
-            explanation: "Правильно! Настоящие антивирусы не просят устанавливаться через сомнительные ссылки. Покажи родителям."
+            explanationKey: "family_protector_scenario_virus_attack_explanation"
         ),
         QuestScenario(
             id: 5,
             type: .device,
-            title: "Незнакомый файл",
-            scenario: "Друг прислал файл 'cool_game.exe' и просит его открыть. Ты не знаешь, что это за файл.",
-            options: [
-                "Открыть сразу",
-                "Спросить у родителей",
-                "Переслать другим друзьям",
-                "Открыть на другом устройстве"
+            titleKey: "family_protector_scenario_unknown_file",
+            scenarioKey: "family_protector_scenario_unknown_file_text",
+            optionKeys: [
+                "family_protector_scenario_unknown_file_option_1",
+                "family_protector_scenario_unknown_file_option_2",
+                "family_protector_scenario_unknown_file_option_3",
+                "family_protector_scenario_unknown_file_option_4"
             ],
             correctAnswer: 1,
-            explanation: "Правильно! Не открывай файлы от незнакомцев или подозрительные файлы. Спроси родителей."
+            explanationKey: "family_protector_scenario_unknown_file_explanation"
         ),
         QuestScenario(
             id: 6,
             type: .device,
-            title: "Обновление системы",
-            scenario: "Появилось сообщение: 'Твоя система устарела! Обновись здесь [ссылка] или потеряешь доступ!'",
-            options: [
-                "Обновиться по ссылке",
-                "Проверить в настройках устройства",
-                "Игнорировать",
-                "Спросить у друзей"
+            titleKey: "family_protector_scenario_system_update",
+            scenarioKey: "family_protector_scenario_system_update_text",
+            optionKeys: [
+                "family_protector_scenario_system_update_option_1",
+                "family_protector_scenario_system_update_option_2",
+                "family_protector_scenario_system_update_option_3",
+                "family_protector_scenario_system_update_option_4"
             ],
             correctAnswer: 1,
-            explanation: "Правильно! Обновления системы делаются через настройки устройства, не по ссылкам в сообщениях."
+            explanationKey: "family_protector_scenario_system_update_explanation"
         )
-    ]
+        ]
+    }
     
-    let communicationScenarios: [QuestScenario] = [
+    private var communicationScenarios: [QuestScenario] {
+        [
         QuestScenario(
             id: 7,
             type: .communication,
-            title: "Незнакомец в интернете",
-            scenario: "Незнакомый человек пишет: 'Привет! Ты классный! Давай встретимся? Где ты живёшь?'",
-            options: [
-                "Рассказать, где живёшь",
-                "Не отвечать и показать родителям",
-                "Попробовать узнать, кто это",
-                "Добавить в друзья"
+            titleKey: "family_protector_scenario_stranger_online",
+            scenarioKey: "family_protector_scenario_stranger_online_text",
+            optionKeys: [
+                "family_protector_scenario_stranger_online_option_1",
+                "family_protector_scenario_stranger_online_option_2",
+                "family_protector_scenario_stranger_online_option_3",
+                "family_protector_scenario_stranger_online_option_4"
             ],
             correctAnswer: 1,
-            explanation: "Правильно! Не рассказывай незнакомцам личную информацию. Всегда говори родителям о таких сообщениях."
+            explanationKey: "family_protector_scenario_stranger_online_explanation"
         ),
         QuestScenario(
             id: 8,
             type: .communication,
-            title: "Просьба о фото",
-            scenario: "Незнакомец просит: 'Отправь своё фото и я отправлю тебе подарок!'",
-            options: [
-                "Отправить фото",
-                "Отказать и заблокировать",
-                "Попросить подарок сначала",
-                "Посоветоваться с друзьями"
+            titleKey: "family_protector_scenario_photo_request",
+            scenarioKey: "family_protector_scenario_photo_request_text",
+            optionKeys: [
+                "family_protector_scenario_photo_request_option_1",
+                "family_protector_scenario_photo_request_option_2",
+                "family_protector_scenario_photo_request_option_3",
+                "family_protector_scenario_photo_request_option_4"
             ],
             correctAnswer: 1,
-            explanation: "Правильно! Никогда не отправляй свои фото незнакомцам. Сразу блокируй таких людей."
+            explanationKey: "family_protector_scenario_photo_request_explanation"
         ),
         QuestScenario(
             id: 9,
             type: .communication,
-            title: "Секрет от родителей",
-            scenario: "Кто-то пишет: 'Давай это будет наш секрет! Не говори родителям!'",
-            options: [
-                "Согласиться на секрет",
-                "Всегда говорить родителям",
-                "Рассказать друзьям",
-                "Забыть об этом"
+            titleKey: "family_protector_scenario_secret_from_parents",
+            scenarioKey: "family_protector_scenario_secret_from_parents_text",
+            optionKeys: [
+                "family_protector_scenario_secret_from_parents_option_1",
+                "family_protector_scenario_secret_from_parents_option_2",
+                "family_protector_scenario_secret_from_parents_option_3",
+                "family_protector_scenario_secret_from_parents_option_4"
             ],
             correctAnswer: 1,
-            explanation: "Правильно! Взрослые, которые просят скрывать что-то от родителей, могут быть опасны. Всегда рассказывай родителям."
+            explanationKey: "family_protector_scenario_secret_from_parents_explanation"
         )
-    ]
+        ]
+    }
     
     // Еженедельная проверка: 10 случайных сценариев
     var weeklyTestScenarios: [QuestScenario] {
@@ -291,14 +299,14 @@ struct FamilyProtectorView: View {
                     )
             }
             
-            Text("🕵️ Я защитник")
+            Text(localizationManager.localized("family_protector_title"))
                 .font(.h2)
                 .foregroundColor(.pink)
             
             Spacer()
             
             // Прогресс
-            Text("\(completedQuests)/10 квестов")
+            Text(String(format: localizationManager.localized("family_protector_quests_completed"), completedQuests))
                 .font(.caption)
                 .foregroundColor(.textSecondary)
                 .padding(.horizontal, 12)
@@ -326,7 +334,7 @@ struct FamilyProtectorView: View {
                     Text("\(completedQuests)")
                         .font(.h1)
                         .foregroundColor(.pink)
-                    Text("квестов\nпройдено")
+                    Text(localizationManager.localized("family_protector_progress_quests"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
@@ -336,7 +344,7 @@ struct FamilyProtectorView: View {
                     Text("\(phishingScore + deviceScore + communicationScore)")
                         .font(.h1)
                         .foregroundColor(.successGreen)
-                    Text("очков\nнабрано")
+                    Text(localizationManager.localized("family_protector_progress_points"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
@@ -345,7 +353,7 @@ struct FamilyProtectorView: View {
                 VStack {
                     Text(weeklyTestCompleted ? "✅" : "⏳")
                         .font(.system(size: 32))
-                    Text("Еженедельная\nпроверка")
+                    Text(localizationManager.localized("family_protector_weekly_check"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
@@ -384,7 +392,7 @@ struct FamilyProtectorView: View {
     
     private var questsList: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Text("🎯 Квесты безопасности")
+            Text(localizationManager.localized("family_protector_quests_title"))
                 .font(.h3)
                 .foregroundColor(.textPrimary)
                 .padding(.horizontal, Spacing.screenPadding)
@@ -422,7 +430,7 @@ struct FamilyProtectorView: View {
                 // Информация
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     HStack {
-                        Text(questType.title)
+                        Text(questType.title(localizationManager: localizationManager))
                             .font(.bodyBold)
                             .foregroundColor(.textPrimary)
                         
@@ -432,13 +440,13 @@ struct FamilyProtectorView: View {
                             .font(.system(size: 20))
                     }
                     
-                    Text(questType.description)
+                    Text(questType.description(localizationManager: localizationManager))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .lineLimit(2)
                     
                     if score > 0 {
-                        Text("+\(score) 🦄 получено")
+                        Text(String(format: localizationManager.localized("family_protector_quest_reward_earned"), score))
                             .font(.captionSmall)
                             .foregroundColor(.successGreen)
                     }
@@ -479,7 +487,7 @@ struct FamilyProtectorView: View {
                 // Информация
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     HStack {
-                        Text("📋 Еженедельная проверка")
+                        Text(localizationManager.localized("family_protector_quest_weekly_title"))
                             .font(.bodyBold)
                             .foregroundColor(weeklyTestCompleted ? .successGreen : .textPrimary)
                         
@@ -494,16 +502,16 @@ struct FamilyProtectorView: View {
                         }
                     }
                     
-                    Text("10 случайных сценариев безопасности")
+                    Text(localizationManager.localized("family_protector_quest_weekly_desc"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                     
                     if weeklyTestCompleted {
-                        Text("+\(settingsManager.weeklyTestBonus) 🦄 получено")
+                        Text(String(format: localizationManager.localized("family_protector_quest_reward_earned"), settingsManager.weeklyTestBonus))
                             .font(.captionSmall)
                             .foregroundColor(.successGreen)
                     } else {
-                        Text("Награда: \(settingsManager.weeklyTestBonus) 🦄")
+                        Text(String(format: localizationManager.localized("family_protector_quest_weekly_reward"), settingsManager.weeklyTestBonus))
                             .font(.captionSmall)
                             .foregroundColor(.secondaryGold)
                     }
@@ -603,6 +611,7 @@ struct QuestDetailView: View {
     let onComplete: (Int) -> Void
     
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var currentScenario = 0
     @State private var score = 0
     @State private var selectedAnswer: Int? = nil
@@ -617,11 +626,11 @@ struct QuestDetailView: View {
                 VStack(spacing: Spacing.l) {
                     // Прогресс сценариев
                     if questType != .weeklyTest {
-                        Text("Сценарий \(currentScenario + 1) из \(scenarios.count)")
+                        Text(String(format: localizationManager.localized("family_protector_scenario_progress"), currentScenario + 1, scenarios.count))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                     } else {
-                        Text("Вопрос \(currentScenario + 1) из \(scenarios.count)")
+                        Text(String(format: localizationManager.localized("family_protector_question_progress"), currentScenario + 1, scenarios.count))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                     }
@@ -663,7 +672,7 @@ struct QuestDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Закрыть") {
+                    Button(localizationManager.localized("family_protector_close")) {
                         HapticFeedback.impact(.light)
                         dismiss()
                     }
@@ -674,22 +683,22 @@ struct QuestDetailView: View {
     
     private func scenarioCard(scenario: FamilyProtectorView.QuestScenario) -> some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Text(scenario.title)
+            Text(localizationManager.localized(scenario.titleKey))
                 .font(.h3)
                 .foregroundColor(.textPrimary)
             
-            Text(scenario.scenario)
+            Text(localizationManager.localized(scenario.scenarioKey))
                 .font(.body)
                 .foregroundColor(.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             
-            Text("Что ты сделаешь?")
+            Text(localizationManager.localized("family_protector_scenario_what_do"))
                 .font(.bodyBold)
                 .foregroundColor(.textPrimary)
                 .padding(.top, Spacing.s)
             
             VStack(spacing: Spacing.s) {
-                ForEach(0..<scenario.options.count, id: \.self) { index in
+                ForEach(0..<scenario.optionKeys.count, id: \.self) { index in
                     Button(action: {
                         if !showExplanation {
                             HapticFeedback.impact(.light)
@@ -707,7 +716,7 @@ struct QuestDetailView: View {
                         }
                     }) {
                         HStack {
-                            Text(scenario.options[index])
+                            Text(localizationManager.localized(scenario.optionKeys[index]))
                                 .font(.body)
                                 .foregroundColor(.textPrimary)
                             Spacer()
@@ -746,14 +755,14 @@ struct QuestDetailView: View {
     private func explanationCard(scenario: FamilyProtectorView.QuestScenario) -> some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             HStack {
-                Text(selectedAnswer == scenario.correctAnswer ? "✅ Правильно!" : "❌ Неправильно")
+                Text(selectedAnswer == scenario.correctAnswer ? localizationManager.localized("family_protector_correct") : localizationManager.localized("family_protector_incorrect"))
                     .font(.bodyBold)
                     .foregroundColor(selectedAnswer == scenario.correctAnswer ? .successGreen : .dangerRed)
                 
                 Spacer()
             }
             
-            Text(scenario.explanation)
+            Text(localizationManager.localized(scenario.explanationKey))
                 .font(.body)
                 .foregroundColor(.textSecondary)
         }
@@ -789,11 +798,11 @@ struct QuestDetailView: View {
     
     private func getButtonText() -> String {
         if selectedAnswer == nil {
-            return "Выбери ответ"
+            return localizationManager.localized("family_protector_select_answer")
         } else if showExplanation {
-            return currentScenario == scenarios.count - 1 ? "Завершить" : "Далее"
+            return currentScenario == scenarios.count - 1 ? localizationManager.localized("family_protector_finish") : localizationManager.localized("family_protector_next")
         } else {
-            return "Продолжить"
+            return localizationManager.localized("family_protector_continue")
         }
     }
     
@@ -821,6 +830,7 @@ struct FamilyProtectorView_Previews: PreviewProvider {
     static var previews: some View {
         FamilyProtectorView()
             .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager())
     }
 }
 #endif

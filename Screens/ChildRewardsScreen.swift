@@ -50,8 +50,8 @@ struct ChildRewardsScreen: View {
         }
     }
     
-    @AppStorage("child_goal_title") private var storedGoalTitle: String = "Новая игра PS5"
-    @State private var goalTitle: String = "Новая игра PS5" {
+    @AppStorage("child_goal_title") private var storedGoalTitle: String = ""
+    @State private var goalTitle: String = "" {
         didSet {
             storedGoalTitle = goalTitle
         }
@@ -340,6 +340,9 @@ struct ChildRewardsScreen: View {
             goalProgress = data.goalProgress
             if let titleKey = data.goalTitleKey {
                 goalTitle = localizationManager.localized(titleKey)
+            } else if goalTitle.isEmpty {
+                // ✅ ИСПРАВЛЕНИЕ: Используем локализованное значение по умолчанию
+                goalTitle = localizationManager.localized("child_rewards_goal_default_title")
             }
             if data.goalCost > 0 {
                 goalCost = data.goalCost
@@ -351,8 +354,25 @@ struct ChildRewardsScreen: View {
             loadErrorMessage = nil
             isInitialLoadCompleted = true
         }
+        .onAppear {
+            // ✅ ИСПРАВЛЕНИЕ: Инициализируем goalTitle локализованным значением по умолчанию при первом запуске
+            if goalTitle.isEmpty && storedGoalTitle.isEmpty {
+                goalTitle = localizationManager.localized("child_rewards_goal_default_title")
+            } else if !storedGoalTitle.isEmpty && goalTitle.isEmpty {
+                goalTitle = storedGoalTitle
+            }
+        }
         .onReceive(viewModel.$errorMessage) { message in
-            loadErrorMessage = message
+            // ✅ ИСПРАВЛЕНИЕ: Локализуем ошибку "Ресурс не найден"
+            if let errorMessage = message {
+                if errorMessage.contains("Ресурс не найден") || errorMessage.contains("Not Found") || errorMessage.contains("404") {
+                    loadErrorMessage = localizationManager.localized("child_rewards_error_resource_not_found")
+                } else {
+                    loadErrorMessage = errorMessage
+                }
+            } else {
+                loadErrorMessage = nil
+            }
         }
     }
     
@@ -611,7 +631,7 @@ struct ChildRewardsScreen: View {
                     icon: "🦄",
                     title: localizationManager.localized("child_rewards_game_pet"),
                     status: String(format: localizationManager.localized("child_rewards_game_status_level"), getPetLevel()),
-                    metric: "❤️ \(Int(getPetLove() * 100))%",
+                    metric: String(format: localizationManager.localized("unicorn_pet_metric_format"), Int(getPetLove() * 100)),
                     color: Color(hex: "A855F7"),
                     destination: NavigationManager.ALADDINScreen.unicornPet
                 )

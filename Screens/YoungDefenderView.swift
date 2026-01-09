@@ -8,6 +8,7 @@ struct YoungDefenderView: View {
     // MARK: - Properties
     
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var settingsManager = GamesSettingsManager.shared
     
     // Прогресс урока (сохраняется в AppStorage)
@@ -33,45 +34,62 @@ struct YoungDefenderView: View {
     struct Lesson {
         let id: Int
         let icon: String
-        let title: String
-        let description: String
-        let content: [String]  // Параграфы урока
+        let titleKey: String
+        let descriptionKey: String
+        let contentKeys: [String]  // Ключи локализации для параграфов урока
         let quizQuestions: [QuizQuestion]
     }
     
     struct QuizQuestion {
-        let question: String
-        let options: [String]
+        let questionKey: String
+        let optionKeys: [String]
         let correctAnswer: Int
     }
     
-    let lessons: [Lesson] = [
+    // Computed property для локализованных уроков
+    private var lessons: [Lesson] {
+        [
         Lesson(
             id: 1,
             icon: "🔐",
-            title: "Безопасные пароли",
-            description: "Как создать надёжный пароль",
-            content: [
-                "Пароль должен быть длинным (минимум 8 символов)",
-                "Используй буквы, цифры и символы",
-                "Не используй своё имя или дату рождения",
-                "Не сообщай пароль никому, даже друзьям",
-                "Используй разные пароли для разных сайтов"
+            titleKey: "young_defender_lesson_1_title",
+            descriptionKey: "young_defender_lesson_1_desc",
+            contentKeys: [
+                "young_defender_lesson_1_content_1",
+                "young_defender_lesson_1_content_2",
+                "young_defender_lesson_1_content_3",
+                "young_defender_lesson_1_content_4",
+                "young_defender_lesson_1_content_5"
             ],
             quizQuestions: [
                 QuizQuestion(
-                    question: "Пароль должен быть:",
-                    options: ["Коротким", "Длинным (8+ символов)", "Только цифрами", "Твоим именем"],
+                    questionKey: "young_defender_lesson_1_quiz_1_q",
+                    optionKeys: [
+                        "young_defender_lesson_1_quiz_1_a1",
+                        "young_defender_lesson_1_quiz_1_a2",
+                        "young_defender_lesson_1_quiz_1_a3",
+                        "young_defender_lesson_1_quiz_1_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Что НЕЛЬЗЯ использовать в пароле?",
-                    options: ["Буквы", "Дату рождения", "Цифры", "Символы"],
+                    questionKey: "young_defender_lesson_1_quiz_2_q",
+                    optionKeys: [
+                        "young_defender_lesson_1_quiz_2_a1",
+                        "young_defender_lesson_1_quiz_2_a2",
+                        "young_defender_lesson_1_quiz_2_a3",
+                        "young_defender_lesson_1_quiz_2_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Можно ли сообщать пароль друзьям?",
-                    options: ["Да, друзьям можно", "Нет, никому нельзя", "Только родителям", "Только в экстренном случае"],
+                    questionKey: "young_defender_lesson_1_quiz_3_q",
+                    optionKeys: [
+                        "young_defender_lesson_1_quiz_3_a1",
+                        "young_defender_lesson_1_quiz_3_a2",
+                        "young_defender_lesson_1_quiz_3_a3",
+                        "young_defender_lesson_1_quiz_3_a4"
+                    ],
                     correctAnswer: 1
                 )
             ]
@@ -79,29 +97,44 @@ struct YoungDefenderView: View {
         Lesson(
             id: 2,
             icon: "🎣",
-            title: "Фишинг",
-            description: "Как распознать обман в интернете",
-            content: [
-                "Фишинг - это обман, когда тебя пытаются обмануть",
-                "Подозрительные письма могут быть опасными",
-                "Не переходи по ссылкам от незнакомцев",
-                "Если что-то кажется слишком хорошим - это может быть обман",
-                "Всегда спрашивай родителей, если сомневаешься"
+            titleKey: "young_defender_lesson_2_title",
+            descriptionKey: "young_defender_lesson_2_desc",
+            contentKeys: [
+                "young_defender_lesson_2_content_1",
+                "young_defender_lesson_2_content_2",
+                "young_defender_lesson_2_content_3",
+                "young_defender_lesson_2_content_4",
+                "young_defender_lesson_2_content_5"
             ],
             quizQuestions: [
                 QuizQuestion(
-                    question: "Что такое фишинг?",
-                    options: ["Рыбалка", "Обман в интернете", "Игра", "Социальная сеть"],
+                    questionKey: "young_defender_lesson_2_quiz_1_q",
+                    optionKeys: [
+                        "young_defender_lesson_2_quiz_1_a1",
+                        "young_defender_lesson_2_quiz_1_a2",
+                        "young_defender_lesson_2_quiz_1_a3",
+                        "young_defender_lesson_2_quiz_1_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Что делать с подозрительным письмом?",
-                    options: ["Открыть сразу", "Показать родителям", "Переслать друзьям", "Удалить не читая"],
+                    questionKey: "young_defender_lesson_2_quiz_2_q",
+                    optionKeys: [
+                        "young_defender_lesson_2_quiz_2_a1",
+                        "young_defender_lesson_2_quiz_2_a2",
+                        "young_defender_lesson_2_quiz_2_a3",
+                        "young_defender_lesson_2_quiz_2_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Можно ли переходить по ссылкам от незнакомцев?",
-                    options: ["Да, всегда", "Нет, это опасно", "Только если интересно", "Только днём"],
+                    questionKey: "young_defender_lesson_2_quiz_3_q",
+                    optionKeys: [
+                        "young_defender_lesson_2_quiz_3_a1",
+                        "young_defender_lesson_2_quiz_3_a2",
+                        "young_defender_lesson_2_quiz_3_a3",
+                        "young_defender_lesson_2_quiz_3_a4"
+                    ],
                     correctAnswer: 1
                 )
             ]
@@ -109,29 +142,44 @@ struct YoungDefenderView: View {
         Lesson(
             id: 3,
             icon: "📱",
-            title: "Социальные сети",
-            description: "Безопасное общение в соцсетях",
-            content: [
-                "Не публикуй личную информацию (адрес, телефон)",
-                "Не дружи с незнакомыми людьми",
-                "Показывай родителям сообщения от незнакомцев",
-                "Не публикуй фото без разрешения родителей",
-                "Помни: всё, что публикуешь, остаётся в интернете"
+            titleKey: "young_defender_lesson_3_title",
+            descriptionKey: "young_defender_lesson_3_desc",
+            contentKeys: [
+                "young_defender_lesson_3_content_1",
+                "young_defender_lesson_3_content_2",
+                "young_defender_lesson_3_content_3",
+                "young_defender_lesson_3_content_4",
+                "young_defender_lesson_3_content_5"
             ],
             quizQuestions: [
                 QuizQuestion(
-                    question: "Можно ли публиковать свой адрес?",
-                    options: ["Да, всем", "Нет, это опасно", "Только друзьям", "Только в профиле"],
+                    questionKey: "young_defender_lesson_3_quiz_1_q",
+                    optionKeys: [
+                        "young_defender_lesson_3_quiz_1_a1",
+                        "young_defender_lesson_3_quiz_1_a2",
+                        "young_defender_lesson_3_quiz_1_a3",
+                        "young_defender_lesson_3_quiz_1_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Что делать с сообщениями от незнакомцев?",
-                    options: ["Отвечать сразу", "Показать родителям", "Игнорировать всегда", "Блокировать автоматически"],
+                    questionKey: "young_defender_lesson_3_quiz_2_q",
+                    optionKeys: [
+                        "young_defender_lesson_3_quiz_2_a1",
+                        "young_defender_lesson_3_quiz_2_a2",
+                        "young_defender_lesson_3_quiz_2_a3",
+                        "young_defender_lesson_3_quiz_2_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Можно ли публиковать фото без разрешения родителей?",
-                    options: ["Да, всегда", "Нет, нужно спросить", "Только свои", "Только в закрытых группах"],
+                    questionKey: "young_defender_lesson_3_quiz_3_q",
+                    optionKeys: [
+                        "young_defender_lesson_3_quiz_3_a1",
+                        "young_defender_lesson_3_quiz_3_a2",
+                        "young_defender_lesson_3_quiz_3_a3",
+                        "young_defender_lesson_3_quiz_3_a4"
+                    ],
                     correctAnswer: 1
                 )
             ]
@@ -139,29 +187,44 @@ struct YoungDefenderView: View {
         Lesson(
             id: 4,
             icon: "🌐",
-            title: "Wi‑Fi",
-            description: "Безопасное подключение к интернету",
-            content: [
-                "Подключайся только к известным Wi‑Fi сетям",
-                "Не используй публичные Wi‑Fi без пароля",
-                "Всегда спрашивай родителей перед подключением",
-                "Пароль Wi‑Fi должен быть сложным",
-                "Не дели паролем Wi‑Fi с незнакомцами"
+            titleKey: "young_defender_lesson_4_title",
+            descriptionKey: "young_defender_lesson_4_desc",
+            contentKeys: [
+                "young_defender_lesson_4_content_1",
+                "young_defender_lesson_4_content_2",
+                "young_defender_lesson_4_content_3",
+                "young_defender_lesson_4_content_4",
+                "young_defender_lesson_4_content_5"
             ],
             quizQuestions: [
                 QuizQuestion(
-                    question: "Можно ли подключаться к незнакомым Wi‑Fi?",
-                    options: ["Да, всегда", "Нет, это опасно", "Только бесплатным", "Только быстрым"],
+                    questionKey: "young_defender_lesson_4_quiz_1_q",
+                    optionKeys: [
+                        "young_defender_lesson_4_quiz_1_a1",
+                        "young_defender_lesson_4_quiz_1_a2",
+                        "young_defender_lesson_4_quiz_1_a3",
+                        "young_defender_lesson_4_quiz_1_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Что делать перед подключением к новой сети?",
-                    options: ["Подключаться сразу", "Спросить родителей", "Спросить друзей", "Попробовать подключиться"],
+                    questionKey: "young_defender_lesson_4_quiz_2_q",
+                    optionKeys: [
+                        "young_defender_lesson_4_quiz_2_a1",
+                        "young_defender_lesson_4_quiz_2_a2",
+                        "young_defender_lesson_4_quiz_2_a3",
+                        "young_defender_lesson_4_quiz_2_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Можно ли делиться паролем Wi‑Fi?",
-                    options: ["Да, с друзьями", "Нет, только с родителями", "Да, всем", "Только днём"],
+                    questionKey: "young_defender_lesson_4_quiz_3_q",
+                    optionKeys: [
+                        "young_defender_lesson_4_quiz_3_a1",
+                        "young_defender_lesson_4_quiz_3_a2",
+                        "young_defender_lesson_4_quiz_3_a3",
+                        "young_defender_lesson_4_quiz_3_a4"
+                    ],
                     correctAnswer: 1
                 )
             ]
@@ -169,29 +232,44 @@ struct YoungDefenderView: View {
         Lesson(
             id: 5,
             icon: "📧",
-            title: "Спам",
-            description: "Как защититься от спама",
-            content: [
-                "Спам - это ненужные письма и сообщения",
-                "Не отвечай на спам-сообщения",
-                "Не переходи по ссылкам из спама",
-                "Сообщи родителям о спаме",
-                "Используй фильтры от спама"
+            titleKey: "young_defender_lesson_5_title",
+            descriptionKey: "young_defender_lesson_5_desc",
+            contentKeys: [
+                "young_defender_lesson_5_content_1",
+                "young_defender_lesson_5_content_2",
+                "young_defender_lesson_5_content_3",
+                "young_defender_lesson_5_content_4",
+                "young_defender_lesson_5_content_5"
             ],
             quizQuestions: [
                 QuizQuestion(
-                    question: "Что такое спам?",
-                    options: ["Еда", "Ненужные письма", "Игра", "Социальная сеть"],
+                    questionKey: "young_defender_lesson_5_quiz_1_q",
+                    optionKeys: [
+                        "young_defender_lesson_5_quiz_1_a1",
+                        "young_defender_lesson_5_quiz_1_a2",
+                        "young_defender_lesson_5_quiz_1_a3",
+                        "young_defender_lesson_5_quiz_1_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Что делать со спам-сообщениями?",
-                    options: ["Отвечать", "Удалять и показать родителям", "Переслать друзьям", "Игнорировать"],
+                    questionKey: "young_defender_lesson_5_quiz_2_q",
+                    optionKeys: [
+                        "young_defender_lesson_5_quiz_2_a1",
+                        "young_defender_lesson_5_quiz_2_a2",
+                        "young_defender_lesson_5_quiz_2_a3",
+                        "young_defender_lesson_5_quiz_2_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Можно ли переходить по ссылкам из спама?",
-                    options: ["Да, иногда", "Нет, это опасно", "Только если интересно", "Только в приложениях"],
+                    questionKey: "young_defender_lesson_5_quiz_3_q",
+                    optionKeys: [
+                        "young_defender_lesson_5_quiz_3_a1",
+                        "young_defender_lesson_5_quiz_3_a2",
+                        "young_defender_lesson_5_quiz_3_a3",
+                        "young_defender_lesson_5_quiz_3_a4"
+                    ],
                     correctAnswer: 1
                 )
             ]
@@ -199,34 +277,50 @@ struct YoungDefenderView: View {
         Lesson(
             id: 6,
             icon: "⚠️",
-            title: "Вирусы",
-            description: "Защита от вирусов и вредоносных программ",
-            content: [
-                "Вирусы могут повредить твой компьютер или телефон",
-                "Не открывай файлы от незнакомцев",
-                "Используй антивирус",
-                "Не устанавливай программы из неизвестных источников",
-                "Сообщи родителям, если устройство ведёт себя странно"
+            titleKey: "young_defender_lesson_6_title",
+            descriptionKey: "young_defender_lesson_6_desc",
+            contentKeys: [
+                "young_defender_lesson_6_content_1",
+                "young_defender_lesson_6_content_2",
+                "young_defender_lesson_6_content_3",
+                "young_defender_lesson_6_content_4",
+                "young_defender_lesson_6_content_5"
             ],
             quizQuestions: [
                 QuizQuestion(
-                    question: "Что такое вирус?",
-                    options: ["Болезнь", "Вредоносная программа", "Игра", "Приложение"],
+                    questionKey: "young_defender_lesson_6_quiz_1_q",
+                    optionKeys: [
+                        "young_defender_lesson_6_quiz_1_a1",
+                        "young_defender_lesson_6_quiz_1_a2",
+                        "young_defender_lesson_6_quiz_1_a3",
+                        "young_defender_lesson_6_quiz_1_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Можно ли открывать файлы от незнакомцев?",
-                    options: ["Да, всегда", "Нет, это опасно", "Только изображения", "Только текстовые"],
+                    questionKey: "young_defender_lesson_6_quiz_2_q",
+                    optionKeys: [
+                        "young_defender_lesson_6_quiz_2_a1",
+                        "young_defender_lesson_6_quiz_2_a2",
+                        "young_defender_lesson_6_quiz_2_a3",
+                        "young_defender_lesson_6_quiz_2_a4"
+                    ],
                     correctAnswer: 1
                 ),
                 QuizQuestion(
-                    question: "Что делать, если устройство ведёт себя странно?",
-                    options: ["Ничего", "Сообщить родителям", "Перезагрузить", "Удалить приложения"],
+                    questionKey: "young_defender_lesson_6_quiz_3_q",
+                    optionKeys: [
+                        "young_defender_lesson_6_quiz_3_a1",
+                        "young_defender_lesson_6_quiz_3_a2",
+                        "young_defender_lesson_6_quiz_3_a3",
+                        "young_defender_lesson_6_quiz_3_a4"
+                    ],
                     correctAnswer: 1
                 )
             ]
         )
-    ]
+        ]
+    }
     
     // MARK: - Body
     
@@ -290,7 +384,7 @@ struct YoungDefenderView: View {
                     )
             }
             
-            Text("🛡️ Юный защитник")
+            Text(localizationManager.localized("young_defender_title"))
                 .font(.h2)
                 .foregroundColor(.primaryBlue)
             
@@ -314,7 +408,7 @@ struct YoungDefenderView: View {
                     Text("\(completedLessons)")
                         .font(.h1)
                         .foregroundColor(.primaryBlue)
-                    Text("из \(lessons.count)\nуроков")
+                    Text(String(format: localizationManager.localized("young_defender_progress_from"), lessons.count))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
@@ -324,7 +418,7 @@ struct YoungDefenderView: View {
                     Text("\(totalScore)")
                         .font(.h1)
                         .foregroundColor(.successGreen)
-                    Text("очков\nнабрано")
+                    Text(localizationManager.localized("young_defender_progress_points"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
@@ -334,7 +428,7 @@ struct YoungDefenderView: View {
                     Text("\(calculateBonuses())")
                         .font(.h1)
                         .foregroundColor(.secondaryGold)
-                    Text("🦄\nбонусов")
+                    Text(localizationManager.localized("young_defender_progress_bonuses"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
@@ -373,7 +467,7 @@ struct YoungDefenderView: View {
     
     private var lessonsList: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Text("📚 Уроки безопасности")
+            Text(localizationManager.localized("young_defender_lessons_title"))
                 .font(.h3)
                 .foregroundColor(.textPrimary)
                 .padding(.horizontal, Spacing.screenPadding)
@@ -410,7 +504,7 @@ struct YoungDefenderView: View {
                 // Информация
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     HStack {
-                        Text(lesson.title)
+                        Text(localizationManager.localized(lesson.titleKey))
                             .font(.bodyBold)
                             .foregroundColor(isCompleted ? .successGreen : .textPrimary)
                         
@@ -429,13 +523,13 @@ struct YoungDefenderView: View {
                         }
                     }
                     
-                    Text(lesson.description)
+                    Text(localizationManager.localized(lesson.descriptionKey))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .lineLimit(2)
                     
                     if isCompleted {
-                        Text("+\(settingsManager.lessonReward) 🦄 получено")
+                        Text(String(format: localizationManager.localized("young_defender_lesson_reward_earned"), settingsManager.lessonReward))
                             .font(.captionSmall)
                             .foregroundColor(.successGreen)
                     }
@@ -527,6 +621,7 @@ struct QuizView: View {
     let onComplete: (Int) -> Void
     
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var currentQuestion = 0
     @State private var score = 0
     @State private var selectedAnswer: Int? = nil
@@ -539,7 +634,7 @@ struct QuizView: View {
                 
                 VStack(spacing: Spacing.l) {
                     // Прогресс вопросов
-                    Text("Вопрос \(currentQuestion + 1) из \(lesson.quizQuestions.count)")
+                    Text(String(format: localizationManager.localized("young_defender_quiz_question"), currentQuestion + 1, lesson.quizQuestions.count))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                     
@@ -555,8 +650,8 @@ struct QuizView: View {
                             goToNextQuestion()
                         }
                     }) {
-                        Text(selectedAnswer == nil ? "Выбери ответ" : 
-                             currentQuestion == lesson.quizQuestions.count - 1 ? "Завершить" : "Далее")
+                        Text(selectedAnswer == nil ? localizationManager.localized("young_defender_quiz_select") : 
+                             currentQuestion == lesson.quizQuestions.count - 1 ? localizationManager.localized("young_defender_quiz_finish") : localizationManager.localized("young_defender_quiz_next"))
                             .font(.bodyBold)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -576,7 +671,7 @@ struct QuizView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Закрыть") {
+                    Button(localizationManager.localized("young_defender_quiz_close")) {
                         HapticFeedback.impact(.light)
                         dismiss()
                     }
@@ -587,19 +682,19 @@ struct QuizView: View {
     
     private func quizCard(question: YoungDefenderView.QuizQuestion) -> some View {
         VStack(spacing: Spacing.l) {
-            Text(question.question)
+            Text(localizationManager.localized(question.questionKey))
                 .font(.h3)
                 .foregroundColor(.textPrimary)
                 .multilineTextAlignment(.center)
             
             VStack(spacing: Spacing.s) {
-                ForEach(0..<question.options.count, id: \.self) { index in
+                ForEach(0..<question.optionKeys.count, id: \.self) { index in
                     Button(action: {
                         HapticFeedback.impact(.light)
                         selectedAnswer = index
                     }) {
                         HStack {
-                            Text(question.options[index])
+                            Text(localizationManager.localized(question.optionKeys[index]))
                                 .font(.body)
                                 .foregroundColor(.textPrimary)
                             Spacer()
@@ -664,6 +759,7 @@ struct YoungDefenderView_Previews: PreviewProvider {
     static var previews: some View {
         YoungDefenderView()
             .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager())
     }
 }
 #endif

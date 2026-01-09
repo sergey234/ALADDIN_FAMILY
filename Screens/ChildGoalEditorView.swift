@@ -8,6 +8,7 @@ struct ChildGoalEditorView: View {
     // MARK: - Properties
     
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.dismiss) private var dismiss
     
     // Данные для отправки родителям (AppStorage)
@@ -123,7 +124,7 @@ struct ChildGoalEditorView: View {
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
                 
-                TextField("Например: Новая игра PS5", text: $title)
+                TextField(localizationManager.localized("child_goal_editor_placeholder"), text: $title)
                     .font(.body)
                     .foregroundColor(.textPrimary)
                     .padding(Spacing.m)

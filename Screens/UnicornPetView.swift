@@ -8,6 +8,7 @@ struct UnicornPetView: View {
     // MARK: - Properties
     
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     // Сохраняем состояние питомца в AppStorage
     @AppStorage("pet_level") private var petLevel: Int = 2
@@ -72,7 +73,7 @@ struct UnicornPetView: View {
                     )
             }
             
-            Text("🦄 Мой питомец")
+            Text("🦄 \(localizationManager.localized("unicorn_pet_title"))")
                 .font(.h2)
                 .foregroundColor(Color(hex: "A855F7"))
             
@@ -90,15 +91,15 @@ struct UnicornPetView: View {
                 .font(.system(size: 100))
                 .accessibilityLabel("Единорог питомец")
             
-            Text("Уровень \(petLevel)")
+            Text(String(format: localizationManager.localized("unicorn_pet_level"), petLevel))
                 .font(.h2)
                 .foregroundColor(.primaryBlue)
-                .accessibilityLabel("Уровень питомца: \(petLevel)")
+                .accessibilityLabel(String(format: localizationManager.localized("unicorn_pet_level"), petLevel))
             
-            Text("Стадия: \(evolutionStage)")
+            Text(String(format: localizationManager.localized("unicorn_pet_stage"), getLocalizedEvolutionStage(evolutionStage)))
                 .font(.body)
                 .foregroundColor(.textSecondary)
-                .accessibilityLabel("Стадия развития: \(evolutionStage)")
+                .accessibilityLabel(String(format: localizationManager.localized("unicorn_pet_stage"), getLocalizedEvolutionStage(evolutionStage)))
         }
         .padding(Spacing.l)
         .background(
@@ -114,10 +115,10 @@ struct UnicornPetView: View {
     
     private var indicatorsView: some View {
         VStack(spacing: Spacing.s) {
-            indicatorRow(icon: "❤️", label: "Любовь", value: love, color: .dangerRed)
-            indicatorRow(icon: "🍎", label: "Сытость", value: hunger, color: .successGreen)
-            indicatorRow(icon: "⭐", label: "Энергия", value: energy, color: .warningOrange)
-            indicatorRow(icon: "😊", label: "Настроение", value: mood, color: .primaryBlue)
+            indicatorRow(icon: "❤️", label: localizationManager.localized("unicorn_pet_love"), value: love, color: .dangerRed)
+            indicatorRow(icon: "🍎", label: localizationManager.localized("unicorn_pet_hunger"), value: hunger, color: .successGreen)
+            indicatorRow(icon: "⭐", label: localizationManager.localized("unicorn_pet_energy"), value: energy, color: .warningOrange)
+            indicatorRow(icon: "😊", label: localizationManager.localized("unicorn_pet_mood"), value: mood, color: .primaryBlue)
         }
         .padding(.horizontal, Spacing.screenPadding)
         .accessibilityElement(children: .contain)
@@ -162,15 +163,15 @@ struct UnicornPetView: View {
     
     private var actionsView: some View {
         HStack(spacing: Spacing.m) {
-            actionButton(icon: "🍎", title: "Покормить", cost: "10 🦄") {
+            actionButton(icon: "🍎", title: localizationManager.localized("unicorn_pet_feed"), cost: String(format: localizationManager.localized("unicorn_pet_cost_unicorns"), 10)) {
                 hunger = min(1.0, hunger + 0.2)
             }
             
-            actionButton(icon: "🎮", title: "Поиграть", cost: "5 🦄") {
+            actionButton(icon: "🎮", title: localizationManager.localized("unicorn_pet_play"), cost: String(format: localizationManager.localized("unicorn_pet_cost_unicorns"), 5)) {
                 energy = min(1.0, energy + 0.15)
             }
             
-            actionButton(icon: "💕", title: "Погладить", cost: "FREE") {
+            actionButton(icon: "💕", title: localizationManager.localized("unicorn_pet_pet"), cost: localizationManager.localized("unicorn_pet_cost_free")) {
                 love = min(1.0, love + 0.1)
             }
         }
@@ -206,12 +207,30 @@ struct UnicornPetView: View {
         .accessibilityLabel("\(title) - \(cost)")
         .accessibilityHint("Нажмите для \(title.lowercased()) питомца")
     }
+    
+    // MARK: - Helper Methods
+    
+    private func getLocalizedEvolutionStage(_ stage: String) -> String {
+        switch stage.lowercased() {
+        case "baby":
+            return localizationManager.localized("unicorn_pet_evolution_baby")
+        case "teen":
+            return localizationManager.localized("unicorn_pet_evolution_teen")
+        case "adult":
+            return localizationManager.localized("unicorn_pet_evolution_adult")
+        case "legendary":
+            return localizationManager.localized("unicorn_pet_evolution_legendary")
+        default:
+            return stage
+        }
+    }
 }
 
 #if DEBUG
 struct UnicornPetView_Previews: PreviewProvider {
     static var previews: some View {
         UnicornPetView()
+            .environmentObject(LocalizationManager())
     }
 }
 #endif
