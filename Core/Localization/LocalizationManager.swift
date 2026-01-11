@@ -779,6 +779,7 @@ class LocalizationManager: ObservableObject {
             "elderly_blood_pressure_add_button": "Добавить",
             "elderly_blood_pressure_cancel": "Отмена",
             "elderly_blood_pressure_done": "Готово",
+            "elderly_blood_pressure_title": "🩺 Измерение давления",
             "elderly_weekday_mon": "Пн",
             "elderly_weekday_tue": "Вт",
             "elderly_weekday_wed": "Ср",
@@ -804,6 +805,9 @@ class LocalizationManager: ObservableObject {
             "elderly_health_journal_limit_message": "Достигнут лимит записей (%d). Удалите старые записи.",
             "elderly_health_journal_cancel": "Отмена",
             "elderly_health_journal_done": "Готово",
+            "elderly_health_journal_default_entry_aspirin": "Принял Аспирин",
+            "elderly_health_journal_default_entry_pressure": "Измерил давления",
+            "elderly_health_journal_default_entry_doctor": "Визит к терапевту",
             
             // Elderly Interface - Family (Моя семья)
             "elderly_family_role_parent": "Родитель",
@@ -839,9 +843,11 @@ class LocalizationManager: ObservableObject {
             "elderly_safety_instructions_done": "Готово",
             
             // Elderly Interface - Site Check (Проверка сайта)
+            "elderly_site_check_title": "🔍 Проверить сайт",
             "elderly_site_check_enter_url": "Введите адрес сайта:",
             "elderly_site_check_checking": "Проверяем...",
             "elderly_site_check_button": "Проверить",
+            "elderly_site_check_safe_result": "✅ Сайт безопасен",
             "elderly_site_check_done": "Готово",
             
             // Elderly Interface - Scam Protection (Защита от обмана - детальная)
@@ -849,6 +855,9 @@ class LocalizationManager: ObservableObject {
             "elderly_scam_protection_enabled": "Защита включена",
             "elderly_scam_protection_what_protects": "Что защищает:",
             "elderly_scam_protection_dangerous_sites": "• Опасные сайты",
+            "elderly_scam_protection_suspicious_calls": "• Подозрительные звонки",
+            "elderly_scam_protection_suspicious_sms": "• Подозрительные SMS",
+            "elderly_scam_protection_fraudulent_apps": "• Мошеннические приложения",
             "elderly_scam_protection_done": "Готово",
             
             // Elderly Interface - Dangerous Contacts (Опасные контакты)
@@ -863,7 +872,6 @@ class LocalizationManager: ObservableObject {
             "elderly_emergency_services_title": "Экстренные службы",
             
             // Elderly Interface - Additional texts
-            "elderly_family_title": "👨‍👩‍👧‍👦 Моя семья",
             "elderly_protection_status_title": "🛡️ Статус безопасности",
             "elderly_protection_detail_info": "📊 Детальная информация:",
             "elderly_protection_last_check": "🕐 Последняя проверка:",
@@ -877,6 +885,10 @@ class LocalizationManager: ObservableObject {
             "elderly_safety_how_to_use": "📱 Как пользоваться приложением",
             "elderly_safety_calls_info": "📞 Звонки: Нажмите 'ЗВОНОК' для быстрого набора, выберите нужного родственника",
             "elderly_safety_health_info": "🩺 Здоровье: Добавляйте лекарства кнопкой '+', отмечайте прием",
+            "elderly_safety_security_tip": "🛡️ Безопасность: Используйте 'Проверить сайт', включите защиту от мошенников",
+            "elderly_safety_emergency_help_tip": "🚨 Экстренная помощь: Нажмите красную кнопку SOS, выберите службу (103, 101, 102)",
+            "elderly_safety_family_management_title": "👨‍👩‍👧‍👦 Управление семьей",
+            "elderly_safety_add_phones_instructions": "📱 Добавление телефонов: Нажмите на карточку родственника, выберите 'Редактировать', введите номер, сохраните",
             "elderly_settings_instructions": "⚙️ Настройки: Нажмите на иконку шестеренки, измените размер текста, управляйте уведомлениями",
             "elderly_medications_icon": "💊 Лекарства",
             
@@ -1814,6 +1826,7 @@ class LocalizationManager: ObservableObject {
             "elderly_interface_no_medications": "Добавить лекарства для напоминаний",
             "elderly_interface_doctor_visits": "Визиты к врачу",
             "elderly_interface_blood_pressure": "Давление",
+            "elderly_interface_last_reading": "Последнее: %d/%d (%@)",
             "elderly_interface_health_journal": "Журнал",
             "elderly_interface_view_records": "Просмотр всех записей",
             "elderly_interface_my_family": "👨‍👩‍👧‍👦 Моя семья",
@@ -4053,6 +4066,7 @@ class LocalizationManager: ObservableObject {
             "elderly_blood_pressure_add_button": "Add",
             "elderly_blood_pressure_cancel": "Cancel",
             "elderly_blood_pressure_done": "Done",
+            "elderly_blood_pressure_title": "🩺 Blood Pressure",
             "elderly_weekday_mon": "Mon",
             "elderly_weekday_tue": "Tue",
             "elderly_weekday_wed": "Wed",
@@ -4078,6 +4092,9 @@ class LocalizationManager: ObservableObject {
             "elderly_health_journal_limit_message": "Entry limit reached (%d). Delete old entries.",
             "elderly_health_journal_cancel": "Cancel",
             "elderly_health_journal_done": "Done",
+            "elderly_health_journal_default_entry_aspirin": "Took Aspirin",
+            "elderly_health_journal_default_entry_pressure": "Measured Blood Pressure",
+            "elderly_health_journal_default_entry_doctor": "Therapist Visit",
             
             // Elderly Interface - Family
             "elderly_family_role_parent": "Parent",
@@ -4113,9 +4130,11 @@ class LocalizationManager: ObservableObject {
             "elderly_safety_instructions_done": "Done",
             
             // Elderly Interface - Site Check
+            "elderly_site_check_title": "🔍 Check Site",
             "elderly_site_check_enter_url": "Enter website address:",
             "elderly_site_check_checking": "Checking...",
             "elderly_site_check_button": "Check",
+            "elderly_site_check_safe_result": "✅ Site is safe",
             "elderly_site_check_done": "Done",
             
             // Elderly Interface - Scam Protection (detailed)
@@ -4123,6 +4142,9 @@ class LocalizationManager: ObservableObject {
             "elderly_scam_protection_enabled": "Protection enabled",
             "elderly_scam_protection_what_protects": "What it protects:",
             "elderly_scam_protection_dangerous_sites": "• Dangerous sites",
+            "elderly_scam_protection_suspicious_calls": "• Suspicious Calls",
+            "elderly_scam_protection_suspicious_sms": "• Suspicious SMS",
+            "elderly_scam_protection_fraudulent_apps": "• Fraudulent Apps",
             "elderly_scam_protection_done": "Done",
             
             // Elderly Interface - Dangerous Contacts
@@ -4137,7 +4159,6 @@ class LocalizationManager: ObservableObject {
             "elderly_emergency_services_title": "Emergency Services",
             
             // Elderly Interface - Additional texts
-            "elderly_family_title": "👨‍👩‍👧‍👦 My Family",
             "elderly_protection_status_title": "🛡️ Security Status",
             "elderly_protection_detail_info": "📊 Detailed Information:",
             "elderly_protection_last_check": "🕐 Last Check:",
@@ -4151,6 +4172,10 @@ class LocalizationManager: ObservableObject {
             "elderly_safety_how_to_use": "📱 How to use the app",
             "elderly_safety_calls_info": "📞 Calls: Press 'CALL' for quick dial, select relative",
             "elderly_safety_health_info": "🩺 Health: Add medications with '+' button, mark intake",
+            "elderly_safety_security_tip": "🛡️ Security: Use 'Check Site', enable scam protection",
+            "elderly_safety_emergency_help_tip": "🚨 Emergency Help: Press red SOS button, select service (103, 101, 102)",
+            "elderly_safety_family_management_title": "👨‍👩‍👧‍👦 Family Management",
+            "elderly_safety_add_phones_instructions": "📱 Adding Phones: Tap relative's card, select 'Edit', enter number, save",
             "elderly_settings_instructions": "⚙️ Settings: Tap gear icon, change text size, manage notifications",
             "elderly_medications_icon": "💊 Medications",
             
@@ -5170,10 +5195,9 @@ class LocalizationManager: ObservableObject {
             "elderly_interface_medications": "Medications",
             "elderly_interface_no_medications": "No medications",
             "elderly_interface_doctor_visits": "Doctor visits",
-            // ARCHIVED 2025-11-10: "elderly_interface_no_appointments": "No appointments",
-            // ARCHIVED 2025-11-10: "elderly_interface_blood_pressure": "Blood pressure",
-            // ARCHIVED 2025-11-10: "elderly_interface_last_reading": "Last: %d/%d (%@)",
-            // ARCHIVED 2025-11-10: "elderly_interface_health_journal": "Health journal",
+            "elderly_interface_blood_pressure": "Blood pressure",
+            "elderly_interface_last_reading": "Last: %d/%d (%@)",
+            "elderly_interface_health_journal": "Health journal",
             "elderly_interface_view_records": "View all records",
             "elderly_interface_my_family": "👨‍👩‍👧‍👦 My Family",
             "elderly_interface_family_not_added": "Family not added yet",

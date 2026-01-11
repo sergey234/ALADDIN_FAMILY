@@ -100,34 +100,43 @@ struct ElderlyInterfaceScreen: View {
             MedicationReminderModal(isPresented: $showMedicationReminder, medications: $medications, onSave: {
                 saveMedications()
             })
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showDoctorAppointments) {
             DoctorAppointmentsModal(isPresented: $showDoctorAppointments, appointments: $appointments, onSave: {
                 saveAppointments()
             })
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showBloodPressure) {
             BloodPressureModal(isPresented: $showBloodPressure, bloodPressure: $bloodPressure, onSave: {
                 saveBloodPressure()
             })
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showHealthJournal) {
             HealthJournalModal(isPresented: $showHealthJournal)
+                .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showSiteChecker) {
             SiteCheckerModal(isPresented: $showSiteChecker)
+                .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showSecuritySettings) {
             SecuritySettingsModal(isPresented: $showSecuritySettings, isSecurityEnabled: $isSecurityEnabled)
+                .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showDangerousContacts) {
             DangerousContactsModal(isPresented: $showDangerousContacts, blockedCount: $blockedContactsCount)
+                .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showInstructions) {
             SafetyInstructionsModal(isPresented: $showInstructions)
+                .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showElderlySettings) {
             ElderlySettingsModal(isPresented: $showElderlySettings)
+                .environmentObject(localizationManager)
         }
         .alert(localizationManager.localized("elderly_interface_call_children_question"), isPresented: $showCallChildrenAlert) {
             // Динамический список детей из familyMembers
@@ -292,6 +301,7 @@ struct ElderlyInterfaceScreen: View {
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showSecurityStatus) {
             SecurityStatusModal(isPresented: $showSecurityStatus)
+                .environmentObject(localizationManager)
         }
         .padding(.horizontal, Spacing.screenPadding)
     }
@@ -468,7 +478,7 @@ struct ElderlyInterfaceScreen: View {
                         .fill(member.status.color)
                         .frame(width: 12, height: 12)
                     
-                    Text(member.status.text)
+                    Text(member.status.text(localizationManager: localizationManager))
                         .font(.system(size: 14))
                         .foregroundColor(.white.opacity(0.8))
                         .lineLimit(1)
@@ -1335,6 +1345,7 @@ struct FamilyContact: Identifiable {
 
 struct SecurityStatusModal: View {
     @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         NavigationView {
@@ -1490,6 +1501,7 @@ struct BloodPressureReading: Identifiable {
 
 struct SafetyInstructionsModal: View {
     @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         NavigationView {
@@ -1587,12 +1599,12 @@ struct SafetyInstructionsModal: View {
                             .foregroundColor(.primary)
                             .padding(.vertical, Spacing.xs)
                         
-                        Text("🛡️ Безопасность: Используйте 'Проверить сайт', включите защиту от мошенников")
+                        Text(localizationManager.localized("elderly_safety_security_tip"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                             .padding(.vertical, Spacing.xs)
                         
-                        Text("🚨 Экстренная помощь: Нажмите красную кнопку SOS, выберите службу (103, 101, 102)")
+                        Text(localizationManager.localized("elderly_safety_emergency_help_tip"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                             .padding(.vertical, Spacing.xs)
@@ -1603,11 +1615,11 @@ struct SafetyInstructionsModal: View {
                     
                     // Управление телефонами
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("👨‍👩‍👧‍👦 Управление семьей")
+                        Text(localizationManager.localized("elderly_safety_family_management_title"))
                             .font(.system(size: 22, weight: .bold))
                             .foregroundColor(.primary)
                         
-                        Text("📱 Добавление телефонов: Нажмите на карточку родственника, выберите 'Редактировать', введите номер, сохраните")
+                        Text(localizationManager.localized("elderly_safety_add_phones_instructions"))
                             .font(.system(size: 16))
                             .foregroundColor(.primary)
                             .padding(.vertical, Spacing.xs)
@@ -1668,7 +1680,7 @@ enum ElderlyFamilyMemberStatus {
         }
     }
     
-    var text: String {
+    func text(localizationManager: LocalizationManager) -> String {
         switch self {
         case .online: return localizationManager.localized("elderly_family_status_online")
         case .school: return localizationManager.localized("elderly_family_status_school")
@@ -1719,6 +1731,7 @@ struct MedicationReminderModal: View {
     @Binding var isPresented: Bool
     @Binding var medications: [Medication]
     let onSave: () -> Void
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var newMedicationName: String = ""
     @State private var newMedicationTime: String = ""
     @State private var showAddMedication: Bool = false
@@ -1832,6 +1845,7 @@ struct AddMedicationSheet: View {
     @Binding var medicationName: String
     @Binding var medicationTime: String
     @Binding var editingMedication: Medication? // ✅ Для редактирования
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let onSave: () -> Void
     
     private var isEditing: Bool {
@@ -1905,6 +1919,7 @@ struct AddMedicationSheet: View {
 struct DoctorAppointmentsModal: View {
     @Binding var isPresented: Bool
     @Binding var appointments: [DoctorAppointment]
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let onSave: () -> Void
     @State private var newDoctorName: String = ""
     @State private var newAppointmentDate: String = ""
@@ -2015,6 +2030,7 @@ struct DoctorAppointmentsModal: View {
                     editingAppointment: $editingAppointment,
                     onSave: onSave
                 )
+                .environmentObject(localizationManager)
             }
         }
     }
@@ -2027,6 +2043,7 @@ struct AddAppointmentSheet: View {
     @Binding var appointmentDate: String
     @Binding var appointmentTime: String
     @Binding var editingAppointment: DoctorAppointment? // ✅ Для редактирования
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let onSave: () -> Void
     
     private var isEditing: Bool {
@@ -2109,6 +2126,7 @@ struct AddAppointmentSheet: View {
 struct BloodPressureModal: View {
     @Binding var isPresented: Bool
     @Binding var bloodPressure: BloodPressureReading
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let onSave: () -> Void
     @State private var pressureReadings: [BloodPressureReading] = []
     @State private var newSystolic: String = ""
@@ -2122,7 +2140,7 @@ struct BloodPressureModal: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text("🩺 Измерение давления")
+                Text(localizationManager.localized("elderly_blood_pressure_title"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
                 
@@ -2148,7 +2166,7 @@ struct BloodPressureModal: View {
                         .font(.system(size: 48, weight: .bold))
                         .foregroundColor(.red)
                     
-                    Text("Дата: \(bloodPressure.date)")
+                    Text("\(localizationManager.localized("elderly_blood_pressure_date_label")) \(bloodPressure.date)")
                         .font(.system(size: 16))
                         .foregroundColor(.secondary)
                 }
@@ -2215,6 +2233,7 @@ struct BloodPressureModal: View {
                     date: $newDate,
                     onSave: onSave
                 )
+                .environmentObject(localizationManager)
             }
         }
     }
@@ -2258,6 +2277,7 @@ struct AddPressureReadingSheet: View {
     @Binding var systolic: String
     @Binding var diastolic: String
     @Binding var date: String
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let onSave: () -> Void
     
     var body: some View {
@@ -2303,7 +2323,7 @@ struct AddPressureReadingSheet: View {
                         onSave()
                     }
                 }) {
-                    Text("Добавить")
+                    Text(localizationManager.localized("elderly_blood_pressure_add_button"))
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color.red)
@@ -2329,6 +2349,7 @@ struct AddPressureReadingSheet: View {
 
 struct HealthJournalModal: View {
     @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var healthEntries: [HealthEntry] = []
     @State private var newEntryText: String = ""
     @State private var newEntryDate: String = ""
@@ -2476,6 +2497,7 @@ struct HealthJournalModal: View {
                     editingEntry: $editingEntry,
                     onSave: { saveHealthEntries() } // ✅ Передаем функцию сохранения
                 )
+                .environmentObject(localizationManager)
             }
             .onAppear {
                 // ✅ ЗАГРУЗКА: Загружаем записи из UserDefaults
@@ -2486,13 +2508,9 @@ struct HealthJournalModal: View {
     
     private func getMockHealthEntries() -> [HealthEntry] {
         return [
-            HealthEntry(date: "08.10", text: "Принял аспирин в 18:00. Самочувствие хорошее."),
-            HealthEntry(date: "07.10", text: "Измерил давление: 120/80. Норма."),
-            HealthEntry(date: "06.10", text: "Визит к терапевту. Все анализы в порядке."),
-            HealthEntry(date: "05.10", text: "Принял витамины утром. Энергии больше."),
-            HealthEntry(date: "04.10", text: "Гулял в парке 30 минут. Настроение отличное."),
-            HealthEntry(date: "03.10", text: "Пил больше воды. Кожа стала лучше."),
-            HealthEntry(date: "02.10", text: "Спал 8 часов. Выспался хорошо.")
+            HealthEntry(date: "08.10", text: localizationManager.localized("elderly_health_journal_default_entry_aspirin")),
+            HealthEntry(date: "07.10", text: localizationManager.localized("elderly_health_journal_default_entry_pressure")),
+            HealthEntry(date: "06.10", text: localizationManager.localized("elderly_health_journal_default_entry_doctor"))
         ]
     }
     
@@ -2539,6 +2557,7 @@ struct AddHealthEntrySheet: View {
     @Binding var entryText: String
     @Binding var entryDate: String
     @Binding var editingEntry: HealthEntry? // ✅ Для редактирования
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let onSave: (() -> Void)? // ✅ Функция сохранения (опциональная)
     
     // ✅ ЛИМИТ: Максимальное количество записей
@@ -2629,6 +2648,7 @@ struct AddHealthEntrySheet: View {
 
 struct SiteCheckerModal: View {
     @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var urlToCheck: String = ""
     @State private var checkResult: String = ""
     @State private var isChecking: Bool = false
@@ -2636,7 +2656,7 @@ struct SiteCheckerModal: View {
     var body: some View {
         NavigationView {
             VStack(spacing: Spacing.l) {
-                Text("🔍 Проверить сайт")
+                Text(localizationManager.localized("elderly_site_check_title"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
                 
@@ -2653,7 +2673,7 @@ struct SiteCheckerModal: View {
                 Button(action: {
                     isChecking = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                        checkResult = "✅ Сайт безопасен"
+                        checkResult = localizationManager.localized("elderly_site_check_safe_result")
                         isChecking = false
                     }
                 }) {
@@ -2699,6 +2719,7 @@ struct SiteCheckerModal: View {
 struct SecuritySettingsModal: View {
     @Binding var isPresented: Bool
     @Binding var isSecurityEnabled: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         NavigationView {
@@ -2728,10 +2749,10 @@ struct SecuritySettingsModal: View {
                         Text(localizationManager.localized("elderly_scam_protection_what_protects"))
                             .font(.system(size: 18, weight: .semibold))
                         
-                        Text("• Подозрительные звонки")
-                        Text("• Подозрительные SMS")
+                        Text(localizationManager.localized("elderly_scam_protection_suspicious_calls"))
+                        Text(localizationManager.localized("elderly_scam_protection_suspicious_sms"))
                         Text(localizationManager.localized("elderly_scam_protection_dangerous_sites"))
-                        Text("• Мошеннические приложения")
+                        Text(localizationManager.localized("elderly_scam_protection_fraudulent_apps"))
                     }
                     .padding()
                     .background(Color.blue.opacity(0.1))
@@ -2756,6 +2777,7 @@ struct SecuritySettingsModal: View {
 struct DangerousContactsModal: View {
     @Binding var isPresented: Bool
     @Binding var blockedCount: Int
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         NavigationView {
@@ -2765,7 +2787,7 @@ struct DangerousContactsModal: View {
                     .foregroundColor(.primary)
                 
                 VStack(spacing: Spacing.m) {
-                    Text("Заблокировано: \(blockedCount)")
+                    Text(String(format: localizationManager.localized("elderly_dangerous_contacts_blocked"), blockedCount))
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.red)
                     
