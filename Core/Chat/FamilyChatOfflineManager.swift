@@ -156,17 +156,18 @@ class FamilyChatOfflineManager: ObservableObject {
                 voiceDuration: message.voiceDuration,
                 mediaUrl: message.mediaUrl,
                 mediaType: message.mediaType,
-                replyToMessageId: message.replyToMessageId
-            ) { result in
-                switch result {
-                case .success(_):
-                    successCount += 1
-                    self.removePendingMessage(message.id)
-                case .failure(let error):
-                    print("❌ FamilyChatOfflineManager: Ошибка отправки сообщения \(message.id): \(error.localizedDescription)")
+                replyToMessageId: message.replyToMessageId,
+                completion: { result in
+                    switch result {
+                    case .success(_):
+                        successCount += 1
+                        self.removePendingMessage(message.id)
+                    case .failure(let error):
+                        print("❌ FamilyChatOfflineManager: Ошибка отправки сообщения \(message.id): \(error.localizedDescription)")
+                    }
+                    group.leave()
                 }
-                group.leave()
-            }
+            )
         }
         
         group.notify(queue: .main) {

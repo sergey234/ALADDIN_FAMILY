@@ -37,9 +37,6 @@ struct VoiceMessageBubble: View {
                         } else {
                             if let voiceUrl = message.voiceUrl, let url = URL(string: voiceUrl) {
                                 player.play(url: url, messageId: message.id)
-                            } else if let voiceUrl = message.voiceUrl, let url = URL(string: voiceUrl) {
-                                // Локальный файл
-                                player.play(url: url, messageId: message.id)
                             }
                         }
                     }) {

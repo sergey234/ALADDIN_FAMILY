@@ -26,55 +26,51 @@ struct MediaMessageBubble: View {
                 }
                 
                 // Медиа контент
-                Group {
-                    if let mediaUrl = message.mediaUrl, let url = URL(string: mediaUrl) {
-                        if message.mediaType == "image" || message.mediaType == "photo" {
-                            AsyncImage(url: url) { phase in
-                                switch phase {
-                                case .empty:
-                                    ProgressView()
-                                        .frame(width: 200, height: 200)
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(maxWidth: 200, maxHeight: 200)
-                                        .clipped()
-                                        .cornerRadius(CornerRadius.medium)
-                                        .onTapGesture {
-                                            showFullscreen = true
-                                        }
-                                case .failure:
-                                    Image(systemName: "photo")
-                                        .font(.largeTitle)
-                                        .foregroundColor(.textTertiary)
-                                        .frame(width: 200, height: 200)
-                                @unknown default:
-                                    EmptyView()
-                                }
+                if let mediaUrl = message.mediaUrl, let url = URL(string: mediaUrl) {
+                    if message.mediaType == "image" || message.mediaType == "photo" {
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                                    .frame(width: 200, height: 200)
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(maxWidth: 200, maxHeight: 200)
+                                    .clipped()
+                                    .cornerRadius(CornerRadius.medium)
+                                    .onTapGesture {
+                                        showFullscreen = true
+                                    }
+                            case .failure:
+                                Image(systemName: "photo")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.textTertiary)
+                                    .frame(width: 200, height: 200)
+                            @unknown default:
+                                EmptyView()
                             }
-                        } else if message.mediaType == "video" {
-                            VideoThumbnailView(url: url)
-                                .frame(maxWidth: 200, maxHeight: 200)
-                                .cornerRadius(CornerRadius.medium)
-                                .onTapGesture {
-                                    showFullscreen = true
-                                }
                         }
-                    } else {
-                        // Локальное изображение
-                        if let image = image {
-                            Image(uiImage: image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(maxWidth: 200, maxHeight: 200)
-                                .clipped()
-                                .cornerRadius(CornerRadius.medium)
-                                .onTapGesture {
-                                    showFullscreen = true
-                                }
-                        }
+                    } else if message.mediaType == "video" {
+                        VideoThumbnailView(url: url)
+                            .frame(maxWidth: 200, maxHeight: 200)
+                            .cornerRadius(CornerRadius.medium)
+                            .onTapGesture {
+                                showFullscreen = true
+                            }
                     }
+                } else if let image = image {
+                    // Локальное изображение
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(maxWidth: 200, maxHeight: 200)
+                        .clipped()
+                        .cornerRadius(CornerRadius.medium)
+                        .onTapGesture {
+                            showFullscreen = true
+                        }
                 }
                 .padding(Spacing.xxs)
                 .background(

@@ -57,12 +57,15 @@ struct MessageReactionsView: View {
     }
     
     private var groupedReactions: [GroupedReaction] {
-        let grouped = Dictionary(grouping: message.reactions) { $0.emoji }
-        return grouped.map { emoji, reactions in
+        let reactions = message.reactions
+        guard !reactions.isEmpty else { return [] }
+        
+        let grouped = Dictionary(grouping: reactions) { $0.emoji }
+        return grouped.map { emoji, reactionList in
             GroupedReaction(
                 emoji: emoji,
-                count: reactions.count,
-                isUserReacted: reactions.contains { $0.userId == "current_user" } // TODO: Получить реальный userId
+                count: reactionList.count,
+                isUserReacted: reactionList.contains { $0.userId == "current_user" } // TODO: Получить реальный userId
             )
         }.sorted { $0.count > $1.count }
     }
