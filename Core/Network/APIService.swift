@@ -98,9 +98,96 @@ class APIService {
         networkManager.get(endpoint: AppConfig.Endpoint.familyChatMessages, completion: completion)
     }
     
-    func sendFamilyChatMessage(message: String, familyId: String?, completion: @escaping (Result<SendFamilyChatMessageResponse, Error>) -> Void) {
-        let request = SendFamilyChatMessageRequest(message: message, familyId: familyId)
+    func sendFamilyChatMessage(message: String?, familyId: String?, messageType: String?, voiceUrl: String?, voiceDuration: Double?, mediaUrl: String?, mediaType: String?, replyToMessageId: String?, completion: @escaping (Result<SendFamilyChatMessageResponse, Error>) -> Void) {
+        let request = SendFamilyChatMessageRequest(
+            message: message,
+            familyId: familyId,
+            messageType: messageType,
+            voiceUrl: voiceUrl,
+            voiceDuration: voiceDuration,
+            mediaUrl: mediaUrl,
+            mediaType: mediaType,
+            replyToMessageId: replyToMessageId
+        )
         networkManager.post(endpoint: AppConfig.Endpoint.familyChatSend, body: request, completion: completion)
+    }
+    
+    func deleteFamilyChatMessage(messageId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        struct DeleteRequest: Codable {
+            let messageId: String
+        }
+        networkManager.delete(endpoint: "\(AppConfig.Endpoint.familyChatSend)/\(messageId)", body: DeleteRequest(messageId: messageId)) { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let response):
+                completion(.success(response.data ?? false))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func editFamilyChatMessage(messageId: String, newText: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        struct EditRequest: Codable {
+            let messageId: String
+            let text: String
+        }
+        networkManager.post(endpoint: "\(AppConfig.Endpoint.familyChatSend)/edit", body: EditRequest(messageId: messageId, text: newText)) { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let response):
+                completion(.success(response.data ?? false))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func sendTypingIndicator(familyId: String?, completion: @escaping (Result<Bool, Error>) -> Void) {
+        struct TypingRequest: Codable {
+            let familyId: String?
+        }
+        networkManager.post(endpoint: "\(AppConfig.Endpoint.familyChatSend)/typing", body: TypingRequest(familyId: familyId)) { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let response):
+                completion(.success(response.data ?? false))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func addReaction(messageId: String, emoji: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        struct ReactionRequest: Codable {
+            let messageId: String
+            let emoji: String
+        }
+        networkManager.post(endpoint: "\(AppConfig.Endpoint.familyChatSend)/reaction", body: ReactionRequest(messageId: messageId, emoji: emoji)) { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let response):
+                completion(.success(response.data ?? false))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func markMessageAsRead(messageId: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        struct ReadRequest: Codable {
+            let messageId: String
+        }
+        networkManager.post(endpoint: "\(AppConfig.Endpoint.familyChatSend)/read", body: ReadRequest(messageId: messageId)) { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let response):
+                completion(.success(response.data ?? false))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func uploadMedia(data: Data, type: String, completion: @escaping (Result<String, Error>) -> Void) {
+        // TODO: Реализовать загрузку медиа на сервер
+        // Это требует multipart/form-data запроса
+        completion(.failure(NSError(domain: "APIService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Media upload not implemented"])))
     }
     
     // MARK: - Analytics API
