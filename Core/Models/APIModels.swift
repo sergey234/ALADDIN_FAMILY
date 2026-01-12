@@ -657,14 +657,36 @@ struct DeviceDetailResponse: Codable {
 struct FamilyChatMessageResponse: Codable, Identifiable {
     let id: String
     let sender: String
-    let text: String
+    let text: String?
     let timestamp: String
     let isCurrentUser: Bool
+    let messageType: String? // "text", "voice", "image", "video"
+    let voiceUrl: String? // URL голосового сообщения
+    let voiceDuration: Double? // Длительность в секундах
+    let mediaUrl: String? // URL медиа файла
+    let mediaType: String? // Тип медиа
+    let replyToMessageId: String? // ID сообщения, на которое отвечают
+    let reactions: [MessageReaction]? // Реакции
+    let readStatus: String? // "sent", "delivered", "read"
+    let readAt: String? // Время прочтения
+    let editedAt: String? // Время редактирования
+}
+
+struct MessageReaction: Codable {
+    let emoji: String
+    let userId: String
+    let userName: String
 }
 
 struct SendFamilyChatMessageRequest: Codable {
-    let message: String
+    let message: String?
     let familyId: String?
+    let messageType: String? // "text", "voice", "image", "video"
+    let voiceUrl: String? // URL голосового сообщения
+    let voiceDuration: Double? // Длительность в секундах
+    let mediaUrl: String? // URL медиа файла
+    let mediaType: String? // Тип медиа
+    let replyToMessageId: String? // ID сообщения, на которое отвечают
 }
 
 struct SendFamilyChatMessageResponse: Codable {
