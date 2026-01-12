@@ -54,6 +54,19 @@
 		5E61A0A12EFB38ED0039093A /* blockerList.json in Resources */ = {isa = PBXBuildFile; fileRef = 5E61A0A02EFB38ED0039093A /* blockerList.json */; };
 		5E61A0A72EFB38ED0039093A /* ALADDINContentBlocker.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5E61A0AC2EFB38ED0039093A /* ActionRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */; };
+		5E6F38F72F151E1400CEC103 /* MediaMessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */; };
+		5E6F38F92F151E2800CEC103 /* MessageActionsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */; };
+		5E6F38FB2F151E3700CEC103 /* MessageReactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */; };
+		5E6F38FD2F151E4400CEC103 /* ReplyBubbleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38FC2F151E4400CEC103 /* ReplyBubbleView.swift */; };
+		5E6F38FF2F151E5000CEC103 /* TypingIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38FE2F151E5000CEC103 /* TypingIndicatorView.swift */; };
+		5E6F39012F151E5900CEC103 /* VoiceMessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39002F151E5900CEC103 /* VoiceMessageBubble.swift */; };
+		5E6F39032F151E6A00CEC103 /* VoiceRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39022F151E6A00CEC103 /* VoiceRecordingView.swift */; };
+		5E6F39052F151F2500CEC103 /* FamilyChatWebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39042F151F2500CEC103 /* FamilyChatWebSocket.swift */; };
+		5E6F39072F151F6000CEC103 /* VoiceMessageRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39062F151F6000CEC103 /* VoiceMessageRecorder.swift */; };
+		5E6F39092F151F7C00CEC103 /* VoiceMessagePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39082F151F7C00CEC103 /* VoiceMessagePlayer.swift */; };
+		5E6F390B2F151FBF00CEC103 /* FamilyChatOfflineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F390A2F151FBF00CEC103 /* FamilyChatOfflineManager.swift */; };
+		5E6F390D2F1520D600CEC103 /* PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F390C2F1520D600CEC103 /* PushNotificationService.swift */; };
+		5E6F390F2F15211800CEC103 /* ChatSearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F390E2F15211800CEC103 /* ChatSearchBar.swift */; };
 		5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */; };
 		5EA2F63E2EFB4B8D000686C0 /* ContentBlockerRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */; };
 		5EA2F6402EFB4BD3000686C0 /* FamilyContentBlockModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */; };
@@ -276,6 +289,19 @@
 		5E61A0A02EFB38ED0039093A /* blockerList.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = blockerList.json; sourceTree = "<group>"; };
 		5E61A0A42EFB38ED0039093A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionRequestHandler.swift; sourceTree = "<group>"; };
+		5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MediaMessageBubble.swift; path = Shared/Components/Chat/MediaMessageBubble.swift; sourceTree = "<group>"; };
+		5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MessageActionsMenu.swift; path = Shared/Components/Chat/MessageActionsMenu.swift; sourceTree = "<group>"; };
+		5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MessageReactionsView.swift; path = Shared/Components/Chat/MessageReactionsView.swift; sourceTree = "<group>"; };
+		5E6F38FC2F151E4400CEC103 /* ReplyBubbleView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ReplyBubbleView.swift; path = Shared/Components/Chat/ReplyBubbleView.swift; sourceTree = "<group>"; };
+		5E6F38FE2F151E5000CEC103 /* TypingIndicatorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TypingIndicatorView.swift; path = Shared/Components/Chat/TypingIndicatorView.swift; sourceTree = "<group>"; };
+		5E6F39002F151E5900CEC103 /* VoiceMessageBubble.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceMessageBubble.swift; path = Shared/Components/Chat/VoiceMessageBubble.swift; sourceTree = "<group>"; };
+		5E6F39022F151E6A00CEC103 /* VoiceRecordingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceRecordingView.swift; path = Shared/Components/Chat/VoiceRecordingView.swift; sourceTree = "<group>"; };
+		5E6F39042F151F2500CEC103 /* FamilyChatWebSocket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChatWebSocket.swift; path = Core/Network/FamilyChatWebSocket.swift; sourceTree = "<group>"; };
+		5E6F39062F151F6000CEC103 /* VoiceMessageRecorder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceMessageRecorder.swift; path = Core/Audio/VoiceMessageRecorder.swift; sourceTree = "<group>"; };
+		5E6F39082F151F7C00CEC103 /* VoiceMessagePlayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceMessagePlayer.swift; path = Core/Audio/VoiceMessagePlayer.swift; sourceTree = "<group>"; };
+		5E6F390A2F151FBF00CEC103 /* FamilyChatOfflineManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChatOfflineManager.swift; path = Core/Chat/FamilyChatOfflineManager.swift; sourceTree = "<group>"; };
+		5E6F390C2F1520D600CEC103 /* PushNotificationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PushNotificationService.swift; path = Core/Services/PushNotificationService.swift; sourceTree = "<group>"; };
+		5E6F390E2F15211800CEC103 /* ChatSearchBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChatSearchBar.swift; path = Shared/Components/Chat/ChatSearchBar.swift; sourceTree = "<group>"; };
 		5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerManager.swift; path = Core/ContentBlocker/ContentBlockerManager.swift; sourceTree = "<group>"; };
 		5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerRule.swift; path = Core/ContentBlocker/ContentBlockerRule.swift; sourceTree = "<group>"; };
 		5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyContentBlockModal.swift; path = Components/Modals/FamilyContentBlockModal.swift; sourceTree = "<group>"; };
@@ -554,6 +580,19 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */,
+				5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */,
+				5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */,
+				5E6F38FC2F151E4400CEC103 /* ReplyBubbleView.swift */,
+				5E6F38FE2F151E5000CEC103 /* TypingIndicatorView.swift */,
+				5E6F39002F151E5900CEC103 /* VoiceMessageBubble.swift */,
+				5E6F39022F151E6A00CEC103 /* VoiceRecordingView.swift */,
+				5E6F39042F151F2500CEC103 /* FamilyChatWebSocket.swift */,
+				5E6F39062F151F6000CEC103 /* VoiceMessageRecorder.swift */,
+				5E6F39082F151F7C00CEC103 /* VoiceMessagePlayer.swift */,
+				5E6F390A2F151FBF00CEC103 /* FamilyChatOfflineManager.swift */,
+				5E6F390C2F1520D600CEC103 /* PushNotificationService.swift */,
+				5E6F390E2F15211800CEC103 /* ChatSearchBar.swift */,
 				5EA2F6412F03F2DA000686C0 /* AddMemberOptionsScreen.swift */,
 				5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */,
 				5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */,
@@ -933,16 +972,19 @@
 				A3000019 /* ViewModels/AIAssistantViewModel.swift in Sources */,
 				5EC3091B2EA6B63C00C7D34B /* 22_DeviceDetailScreen.swift in Sources */,
 				5EC3092C2EA6B68000C7D34B /* WidgetConfigurationScreen.swift in Sources */,
+				5E6F39052F151F2500CEC103 /* FamilyChatWebSocket.swift in Sources */,
 				5E0C30BC2EAFF09800FD6647 /* SecurityEducationScreen.swift in Sources */,
 				5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */,
 				5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */,
 				B1000001 /* AddMemberOptionsModal.swift in Sources */,
 				B2000140B2000140B2000140 /* InvitationCodeInputModal.swift in Sources */,
+				5E6F38F92F151E2800CEC103 /* MessageActionsMenu.swift in Sources */,
 				5EC309352EA6CCBD00C7D34B /* Spacing.swift in Sources */,
 				5E32FFF32EAD1915000574C4 /* RecoveryOptionsModal.swift in Sources */,
 				5EE081892EE239FE009AD42A /* ShareSheet.swift in Sources */,
 				5E00582D2EC6064100024F7E /* TariffCard.swift in Sources */,
 				A3000021 /* ViewModels/SettingsViewModel.swift in Sources */,
+				5E6F39032F151E6A00CEC103 /* VoiceRecordingView.swift in Sources */,
 				5E32FFF92EAD24D2000574C4 /* InfoRow.swift in Sources */,
 				5EC3091E2EA6B64500C7D34B /* 25_PaymentQRScreen.swift in Sources */,
 				5E0C30B22EAE71D100FD6647 /* RoleSelectionModal.swift in Sources */,
@@ -950,18 +992,22 @@
 				B2000160B2000160B2000160 /* ProtectionLevelHistoryModal.swift in Sources */,
 				B1000011 /* RecoveryCodeModal.swift in Sources */,
 				A3000023 /* ViewModels/SupportViewModel.swift in Sources */,
+				5E6F38FB2F151E3700CEC103 /* MessageReactionsView.swift in Sources */,
 				A3000025 /* ViewModels/ChildInterfaceViewModel.swift in Sources */,
 				5EC309142EA6B62500C7D34B /* 12_NotificationsScreen.swift in Sources */,
+				5E6F39012F151E5900CEC103 /* VoiceMessageBubble.swift in Sources */,
 				A3000027 /* ViewModels/ElderlyInterfaceViewModel.swift in Sources */,
 				A3000029 /* ViewModels/AnalyticsViewModel.swift in Sources */,
 				5E32FFFF2EAD25F5000574C4 /* CacheManager.swift in Sources */,
 				B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */,
 				B2000100B2000100B2000100 /* ProtectionFeature.swift in Sources */,
 				B2000110B2000110B2000110 /* ProtectionLevelHistory.swift in Sources */,
+				5E6F39092F151F7C00CEC103 /* VoiceMessagePlayer.swift in Sources */,
 				A3000031 /* ViewModels/NotificationsViewModel.swift in Sources */,
 				5EC3090D2EA6B60F00C7D34B /* 06_AIAssistantScreen.swift in Sources */,
 				5E0058092EC3C7A400024F7E /* RewardsQuickModal.swift in Sources */,
 				B2000170B2000170B2000170 /* AdvancedProtectionSettingsScreen.swift in Sources */,
+				5E6F390B2F151FBF00CEC103 /* FamilyChatOfflineManager.swift in Sources */,
 				A3000033 /* ViewModels/ProfileViewModel.swift in Sources */,
 				5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */,
 				A3000035 /* ViewModels/ParentalControlViewModel.swift in Sources */,
@@ -978,6 +1024,7 @@
 				5EC309162EA6B62B00C7D34B /* 14_OnboardingScreen.swift in Sources */,
 				5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */,
 				A3000039 /* ViewModels/PaymentQRViewModel.swift in Sources */,
+				5E6F38F72F151E1400CEC103 /* MediaMessageBubble.swift in Sources */,
 				A3000041 /* Core/Navigation/NavigationManager.swift in Sources */,
 				A3000043 /* Core/Accessibility/AccessibilityManager.swift in Sources */,
 				5EB01F422ECB092A00168BE9 /* URLHelper.swift in Sources */,
@@ -987,10 +1034,12 @@
 				A4BBB001 /* YoungDefenderView.swift in Sources */,
 				A3000047 /* Core/Localization/LocalizationManager.swift in Sources */,
 				5EC309152EA6B62800C7D34B /* 13_SupportScreen.swift in Sources */,
+				5E6F39072F151F6000CEC103 /* VoiceMessageRecorder.swift in Sources */,
 				A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */,
 				5EC3090E2EA6B60F00C7D34B /* 07_ParentalControlScreen.swift in Sources */,
 				5EC3090F2EA6B60F00C7D34B /* 05_SettingsScreen.swift in Sources */,
 				5E0058032EC3C4F900024F7E /* ALADDINTextField.swift in Sources */,
+				5E6F390F2F15211800CEC103 /* ChatSearchBar.swift in Sources */,
 				5EB01F402EC9B7CD00168BE9 /* BackupRecoveryModal.swift in Sources */,
 				5EC309272EA6B66F00C7D34B /* RewardsModalView.swift in Sources */,
 				5EC3091C2EA6B63F00C7D34B /* 23_FamilyChatScreen.swift in Sources */,
@@ -1032,6 +1081,8 @@
 				A4AAA102 /* GamesSettingsManager.swift in Sources */,
 				B1000031 /* ParentalControlManager.swift in Sources */,
 				A4AAA104 /* AnalyticsService.swift in Sources */,
+				5E6F38FD2F151E4400CEC103 /* ReplyBubbleView.swift in Sources */,
+				5E6F390D2F1520D600CEC103 /* PushNotificationService.swift in Sources */,
 				5EA2F6422F03F2DB000686C0 /* AddMemberOptionsScreen.swift in Sources */,
 				A4AAA106 /* RemoteAnalyticsService.swift in Sources */,
 				A4AAA108 /* ProfileImageManager.swift in Sources */,
@@ -1048,6 +1099,7 @@
 				A4BBB007 /* LocalThreatDatabase.swift in Sources */,
 				5E0058052EC3C50500024F7E /* ALADDINToggle.swift in Sources */,
 				A4AAA212 /* EmptyStateView.swift in Sources */,
+				5E6F38FF2F151E5000CEC103 /* TypingIndicatorView.swift in Sources */,
 				A4AAA214 /* JWTTokenManager.swift in Sources */,
 				5E0058252EC4E69100024F7E /* ThreatItemRow.swift in Sources */,
 			);
@@ -1113,7 +1165,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1145,7 +1197,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1301,7 +1353,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1333,7 +1385,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1364,7 +1416,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1389,7 +1441,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1412,7 +1464,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1436,7 +1488,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
