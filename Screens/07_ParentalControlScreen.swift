@@ -14,6 +14,10 @@ struct ParentalControlScreen: View {
     private let apiService = APIService.shared
     @StateObject private var manager = ParentalControlManager.shared
     @StateObject private var contentBlockerManager = ContentBlockerManager.shared
+    @StateObject private var viewModel = ParentalControlViewModel()
+    
+    // Состояние для аккордеона "Защита детей"
+    @State private var childProtectionExpanded = false
     
     // MARK: - Child Selection
     
@@ -121,6 +125,9 @@ struct ParentalControlScreen: View {
                         
                         // Сетка карточек родительского контроля
                         parentalControlCards
+                        
+                        // ✅ НОВЫЙ РАЗДЕЛ: Защита детей (5 компонентов)
+                        childProtectionSection
                         
                         // Карточка вознаграждения (после всех карточек)
                         rewardsCard
@@ -678,6 +685,68 @@ struct ParentalControlScreen: View {
         additionalProtection = stats.monitoring.screenshotsEnabled
         isAdditionalEnabled = additionalRequests > 0 || additionalProtection
     }
+    
+    // MARK: - Child Protection Section (5 компонентов)
+    
+    private var childProtectionSection: some View {
+        VStack(spacing: Spacing.l) {
+            SettingsAccordion(
+                icon: "🛡️",
+                title: localizationManager.localized("component.child_protection.title"),
+                subtitle: localizationManager.localized("component.child_protection.subtitle"),
+                isExpanded: $childProtectionExpanded
+            ) {
+                // 4 компонента защиты детей
+                SecurityFeatureRow(
+                    componentId: "self_harm_detection_agent",
+                    title: localizationManager.localized("component.self_harm_detection_agent.title"),
+                    description: localizationManager.localized("component.self_harm_detection_agent.desc"),
+                    isEnabled: $viewModel.selfHarmDetectionEnabled,
+                    hasSettings: false,
+                    onToggle: { viewModel.toggleSelfHarmDetection() }
+                )
+                
+                SecurityFeatureRow(
+                    componentId: "grooming_detection_agent",
+                    title: localizationManager.localized("component.grooming_detection_agent.title"),
+                    description: localizationManager.localized("component.grooming_detection_agent.desc"),
+                    isEnabled: $viewModel.groomingDetectionEnabled,
+                    hasSettings: false,
+                    onToggle: { viewModel.toggleGroomingDetection() }
+                )
+                
+                SecurityFeatureRow(
+                    componentId: "online_predators_agent",
+                    title: localizationManager.localized("component.online_predators_agent.title"),
+                    description: localizationManager.localized("component.online_predators_agent.desc"),
+                    isEnabled: $viewModel.onlinePredatorsEnabled,
+                    hasSettings: false,
+                    onToggle: { viewModel.toggleOnlinePredators() }
+                )
+                
+                SecurityFeatureRow(
+                    componentId: "psychological_support_agent",
+                    title: localizationManager.localized("component.psychological_support_agent.title"),
+                    description: localizationManager.localized("component.psychological_support_agent.desc"),
+                    isEnabled: $viewModel.psychologicalSupportEnabled,
+                    hasSettings: false,
+                    onToggle: { viewModel.togglePsychologicalSupport() }
+                )
+                
+                // Улучшенный родительский контроль бот
+                SecurityFeatureRow(
+                    componentId: "parental_control_bot",
+                    title: localizationManager.localized("component.parental_control_bot.title"),
+                    description: localizationManager.localized("component.parental_control_bot.desc"),
+                    isEnabled: $viewModel.parentalControlBotEnabled,
+                    hasSettings: true,
+                    onToggle: { viewModel.toggleParentalControlBot() },
+                    onSettingsTap: { /* TODO: Открыть расширенные настройки родительского контроля */ }
+                )
+            }
+        }
+        .padding(.vertical, Spacing.m)
+    }
 }
 
 // MARK: - Parental Control Card Component
@@ -702,7 +771,7 @@ struct ParentalControlCard: View {
         }) {
             VStack(spacing: Spacing.xs) {
                 // Badge в верхнем правом углу
-            HStack {
+                HStack {
                     Spacer()
                     Text(statusBadge)
                         .font(.caption2)
@@ -758,7 +827,7 @@ struct ParentalControlCard: View {
                 .padding(.top, Spacing.xxs)
             }
             .frame(height: 160)
-        .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity)
             .padding(Spacing.s)
             .background(cardColor)
             .overlay(

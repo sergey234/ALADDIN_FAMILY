@@ -1,9 +1,17 @@
+import Foundation
 import SwiftUI
 import Combine
 
-/// 👶 Parental Control View Model
-/// Логика для родительского контроля
+/**
+ * 👶 Parental Control ViewModel
+ * ViewModel для управления родительским контролем и 5 компонентами защиты детей
+ * Использует ComponentStatusService для загрузки и обновления статусов
+ */
+
+@MainActor
 class ParentalControlViewModel: ObservableObject {
+    
+    // MARK: - Published Properties - Child Data
     
     @Published var selectedChild: Child?
     @Published var children: [Child] = []
@@ -14,18 +22,171 @@ class ParentalControlViewModel: ObservableObject {
     @Published var blockedSitesToday: Int = 12
     @Published var screenTimeToday: String = "2:45"
     
-    struct Child: Identifiable {
-        let id = UUID()
-        let name: String
-        let age: Int
-        let avatar: String
-        let screenTimeToday: String
-        let threatsBlocked: Int
+    // MARK: - Published Properties - Component Statuses (5 компонентов)
+    
+    // Защита детей (4 компонента)
+    @Published var selfHarmDetectionEnabled: Bool = false
+    @Published var groomingDetectionEnabled: Bool = false
+    @Published var onlinePredatorsEnabled: Bool = false
+    @Published var psychologicalSupportEnabled: Bool = false
+    
+    // Родительский контроль (1 компонент - улучшить)
+    @Published var parentalControlBotEnabled: Bool = true
+    
+    // MARK: - Dependencies
+    
+    private let statusService: ComponentStatusService
+    private let retryManager: RetryManager
+    private let toastManager = ToastManager.shared
+    
+    // MARK: - Initialization
+    
+    init(
+        statusService: ComponentStatusService = .shared,
+        retryManager: RetryManager = .balanced()
+    ) {
+        self.statusService = statusService
+        self.retryManager = retryManager
+        
+        loadChildren()
+        
+        // Загрузить статусы компонентов
+        Task {
+            await loadComponentStatuses()
+        }
     }
     
-    init() {
-        loadChildren()
+    // MARK: - Component Methods
+    
+    /// Загрузить статусы всех компонентов
+    func loadComponentStatuses() async {
+        let componentIds = [
+            "self_harm_detection_agent",
+            "grooming_detection_agent",
+            "online_predators_agent",
+            "psychological_support_agent",
+            "parental_control_bot"
+        ]
+        
+        for componentId in componentIds {
+            do {
+                let status = try await statusService.getStatus(for: componentId)
+                updateStatusForComponent(componentId: componentId, status: status)
+            } catch {
+                print("⚠️ Ошибка загрузки статуса для \(componentId): \(error)")
+            }
+        }
     }
+    
+    // MARK: - Toggle Methods
+    
+    func toggleSelfHarmDetection() {
+        Task {
+            await toggleComponent(
+                componentId: "self_harm_detection_agent",
+                updateClosure: { [weak self] value in self?.selfHarmDetectionEnabled = value },
+                getCurrentValue: { [weak self] in self?.selfHarmDetectionEnabled ?? false }
+            )
+        }
+    }
+    
+    func toggleGroomingDetection() {
+        Task {
+            await toggleComponent(
+                componentId: "grooming_detection_agent",
+                updateClosure: { [weak self] value in self?.groomingDetectionEnabled = value },
+                getCurrentValue: { [weak self] in self?.groomingDetectionEnabled ?? false }
+            )
+        }
+    }
+    
+    func toggleOnlinePredators() {
+        Task {
+            await toggleComponent(
+                componentId: "online_predators_agent",
+                updateClosure: { [weak self] value in self?.onlinePredatorsEnabled = value },
+                getCurrentValue: { [weak self] in self?.onlinePredatorsEnabled ?? false }
+            )
+        }
+    }
+    
+    func togglePsychologicalSupport() {
+        Task {
+            await toggleComponent(
+                componentId: "psychological_support_agent",
+                updateClosure: { [weak self] value in self?.psychologicalSupportEnabled = value },
+                getCurrentValue: { [weak self] in self?.psychologicalSupportEnabled ?? false }
+            )
+        }
+    }
+    
+    func toggleParentalControlBot() {
+        Task {
+            await toggleComponent(
+                componentId: "parental_control_bot",
+                updateClosure: { [weak self] value in self?.parentalControlBotEnabled = value },
+                getCurrentValue: { [weak self] in self?.parentalControlBotEnabled ?? false }
+            )
+        }
+    }
+    
+    // MARK: - Private Methods
+    
+    /// Переключить компонент
+    private func toggleComponent(
+        componentId: String,
+        updateClosure: @escaping (Bool) -> Void,
+        getCurrentValue: @escaping () -> Bool
+    ) async {
+        let oldValue = getCurrentValue()
+        let newValue = !oldValue
+        
+        // Оптимистичное обновление UI
+        updateClosure(newValue)
+        
+        let result: Result<Void, NetworkError> = await retryManager.execute(
+            operation: {
+                do {
+                    try await self.statusService.updateStatus(
+                        componentId: componentId,
+                        isEnabled: newValue
+                    )
+                } catch let error as ComponentError {
+                    throw error.toNetworkError()
+                }
+            },
+            retryCondition: { $0.isRetryable }
+        )
+        
+        switch result {
+        case .success:
+            toastManager.showSuccess("Компонент обновлен")
+        case .failure(let error):
+            // Откат при ошибке
+            updateClosure(oldValue)
+            toastManager.showError("Ошибка: \(error.localizedDescription)")
+        }
+    }
+    
+    /// Обновить статус компонента локально
+    private func updateStatusForComponent(componentId: String, status: ComponentStatus) {
+        switch componentId {
+        case "self_harm_detection_agent":
+            selfHarmDetectionEnabled = status.isEnabled
+        case "grooming_detection_agent":
+            groomingDetectionEnabled = status.isEnabled
+        case "online_predators_agent":
+            onlinePredatorsEnabled = status.isEnabled
+        case "psychological_support_agent":
+            psychologicalSupportEnabled = status.isEnabled
+        case "parental_control_bot":
+            parentalControlBotEnabled = status.isEnabled
+        default:
+            break
+        }
+    }
+    
+    // MARK: - Child Management
     
     func loadChildren() {
         children = [
@@ -58,7 +219,15 @@ class ParentalControlViewModel: ObservableObject {
     func showLocation() {
         print("Show child location on map")
     }
+    
+    // MARK: - Child Model
+    
+    struct Child: Identifiable {
+        let id = UUID()
+        let name: String
+        let age: Int
+        let avatar: String
+        let screenTimeToday: String
+        let threatsBlocked: Int
+    }
 }
-
-
-
