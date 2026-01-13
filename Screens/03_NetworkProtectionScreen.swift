@@ -105,8 +105,11 @@ struct NetworkProtectionScreen: View {
             NetworkProtectionSettingsView()
         }
         .sheet(isPresented: $showPasswordGenerator) {
-            PasswordGeneratorModal()
-                .environmentObject(localizationManager)
+            PasswordGeneratorModal(
+                componentId: "password_security_agent",
+                isPresented: $showPasswordGenerator
+            )
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showIncidentResponseSettings) {
             IncidentResponseSettingsModal(
@@ -242,7 +245,7 @@ struct NetworkProtectionScreen: View {
                 )
             }
             
-            // Раздел 3: Реагирование на инциденты
+            // Раздел 3: Автоматическая система защиты
             SettingsAccordion(
                 icon: "🚨",
                 title: localizationManager.localized("component.incident_response.title"),

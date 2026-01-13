@@ -657,7 +657,8 @@ struct FamilyChatScreen: View {
                 switch result {
                 case .success(_):
                     replyToMessage = nil
-                    loadMessages(silent: false)
+                    // ✅ ИСПРАВЛЕНО: Используем silent: true, чтобы не показывать ошибку при неудачной загрузке
+                    loadMessages(silent: true)
                 case .failure(let error):
                     errorMessage = error.localizedDescription
                     // Добавляем в очередь офлайн
@@ -697,7 +698,8 @@ struct FamilyChatScreen: View {
                         switch result {
                         case .success(_):
                             replyToMessage = nil
-                            loadMessages(silent: false)
+                            // ✅ ИСПРАВЛЕНО: Используем silent: true, чтобы не показывать ошибку при неудачной загрузке
+                            loadMessages(silent: true)
                         case .failure(let error):
                             errorMessage = error.localizedDescription
                         }
@@ -867,7 +869,9 @@ struct FamilyChatScreen: View {
                 switch result {
                 case .success(_):
                     replyToMessage = nil
-                    loadMessages(silent: false)
+                    // ✅ ИСПРАВЛЕНО: Используем silent: true, чтобы не показывать ошибку при неудачной загрузке
+                    // Сообщение уже отправлено успешно, оно появится при следующем автообновлении
+                    loadMessages(silent: true)
                     
                     // Отправляем push-уведомление другим участникам
                     pushService.sendChatNotification(

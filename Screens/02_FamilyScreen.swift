@@ -783,7 +783,7 @@ extension FamilyScreen {
                 // 4. Геолокация
                 FamilyParentalControlCard(
                     icon: "📍",
-                    title: localizationManager.localized("parental_geolocation"),
+                    title: localizationManager.localized("parental_geofence"),
                     statusBadge: "🏠",
                     statusText: "🏠 \(locationStatus.isEmpty ? localizationManager.localized("parental_location_home") : locationStatus)",
                     metric: locationLastUpdate + (locationWarnings > 0 ? " • ⚠️ \(locationWarnings)" : ""),

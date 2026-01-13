@@ -256,7 +256,7 @@ struct FamilyTournamentView: View {
                     .font(.caption)
                     .foregroundColor(.textSecondary)
                 Spacer()
-                Text("60%")
+                Text(String(format: "%.0f%%", questProgress * 100))
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundColor(.successGreen)

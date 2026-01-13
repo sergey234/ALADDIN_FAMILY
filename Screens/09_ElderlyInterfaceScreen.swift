@@ -96,6 +96,14 @@ struct ElderlyInterfaceScreen: View {
         .sheet(isPresented: $showImagePicker) {
             ElderlyProfileImagePicker(selectedImage: $selectedImage)
         }
+        .onAppear {
+            loadProfileImage()
+        }
+        .onChange(of: selectedImage) { newImage in
+            if let image = newImage {
+                saveProfileImage(image)
+            }
+        }
         .sheet(isPresented: $showMedicationReminder) {
             MedicationReminderModal(isPresented: $showMedicationReminder, medications: $medications, onSave: {
                 saveMedications()
@@ -836,6 +844,16 @@ struct ElderlyInterfaceScreen: View {
         }
     }
     
+    // MARK: - Profile Image Management
+    
+    private func loadProfileImage() {
+        selectedImage = ProfileImageManager.shared.loadProfileImage(for: .elderly)
+    }
+    
+    private func saveProfileImage(_ image: UIImage) {
+        _ = ProfileImageManager.shared.saveProfileImage(image, for: .elderly)
+    }
+    
     private func callEmergencyService(_ number: String) {
         // ✅ РЕАЛЬНЫЙ ЗВОНОК: Открываем приложение телефона
         let generator = UINotificationFeedbackGenerator()
@@ -1265,6 +1283,10 @@ struct EditContactsModal: View {
         FamilyContact(name: "Елена", phone: "+7 (999) 234-56-78", relation: "Невестка"),
         FamilyContact(name: "Алексей", phone: "+7 (999) 345-67-89", relation: "Внук")
     ]
+    @State private var editingContact: FamilyContact?
+    @State private var editingContactIndex: Int?
+    @State private var showDeleteAlert: Bool = false
+    @State private var contactToDelete: Int?
     
     var body: some View {
         NavigationView {
@@ -1294,14 +1316,16 @@ struct EditContactsModal: View {
                                 Spacer()
                                 
                                 Button(action: {
-                                    // Логика редактирования
+                                    editingContact = familyContacts[index]
+                                    editingContactIndex = index
                                 }) {
                                     Image(systemName: "pencil")
                                         .foregroundColor(.blue)
                                 }
                                 
                                 Button(action: {
-                                    familyContacts.remove(at: index)
+                                    contactToDelete = index
+                                    showDeleteAlert = true
                                 }) {
                                     Image(systemName: "trash")
                                         .foregroundColor(.red)
@@ -1330,15 +1354,184 @@ struct EditContactsModal: View {
                     }
                 }
             }
+            .onAppear {
+                loadContacts()
+            }
+            .sheet(item: $editingContact) { contact in
+                ElderlyEditContactModal(
+                    contact: contact,
+                    contactIndex: editingContactIndex,
+                    isPresented: Binding(
+                        get: { editingContact != nil },
+                        set: { if !$0 { editingContact = nil } }
+                    ),
+                    onSave: { updatedContact, index in
+                        if let index = index {
+                            familyContacts[index] = updatedContact
+                            saveContacts()
+                        }
+                    }
+                )
+                .environmentObject(localizationManager)
+            }
+            .alert(localizationManager.localized("elderly_contact_delete_confirmation"), isPresented: $showDeleteAlert) {
+                Button(localizationManager.localized("elderly_settings_edit_contacts_cancel"), role: .cancel) {
+                    contactToDelete = nil
+                }
+                Button(localizationManager.localized("elderly_contact_edit_delete"), role: .destructive) {
+                    if let index = contactToDelete {
+                        familyContacts.remove(at: index)
+                        saveContacts()
+                    }
+                    contactToDelete = nil
+                }
+            }
+        }
+    }
+    
+    // MARK: - Data Loading and Saving
+    
+    private func loadContacts() {
+        // Сначала пытаемся загрузить из elderly_family_contacts_list (сохраненные изменения)
+        if let savedContactsData = UserDefaults.standard.data(forKey: "elderly_family_contacts_list"),
+           let savedContacts = try? JSONDecoder().decode([FamilyContact].self, from: savedContactsData) {
+            familyContacts = savedContacts
+            print("✅ Загружено контактов из elderly_family_contacts_list: \(familyContacts.count)")
+            return
+        }
+        
+        // Если нет сохраненных контактов, загружаем из family_members_list и преобразуем в FamilyContact
+        guard let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
+              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
+            familyContacts = []
+            print("⚠️ Нет данных о членах семьи в UserDefaults")
+            return
+        }
+        
+        // Преобразуем FamilyMemberData в FamilyContact
+        familyContacts = decoded.map { member in
+            // Определяем роль (преобразуем FamilyMemberCard.FamilyRole в строку)
+            let relationString: String
+            switch member.role {
+            case .parent: relationString = localizationManager.localized("elderly_family_role_parent")
+            case .child: relationString = localizationManager.localized("elderly_family_relation_son")
+            case .teenager: relationString = localizationManager.localized("elderly_family_role_teenager")
+            case .elderly: relationString = localizationManager.localized("elderly_family_relation_you")
+            }
+            
+            return FamilyContact(
+                id: member.id,
+                name: member.name,
+                phone: "+7 (999) 000-00-00", // TODO: Добавить телефон в FamilyMemberData
+                relation: relationString
+            )
+        }
+        
+        print("✅ Загружено контактов из family_members_list: \(familyContacts.count)")
+    }
+    
+    private func saveContacts() {
+        // Сохраняем в elderly_family_contacts_list для синхронизации
+        guard let encoded = try? JSONEncoder().encode(familyContacts) else {
+            print("❌ Ошибка кодирования контактов")
+            return
+        }
+        
+        UserDefaults.standard.set(encoded, forKey: "elderly_family_contacts_list")
+        UserDefaults.standard.synchronize() // Принудительная синхронизация
+        print("✅ Сохранено контактов: \(familyContacts.count) в elderly_family_contacts_list")
+        
+        // Уведомляем другие экраны об изменении
+        NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+    }
+// MARK: - Elderly Edit Contact Modal
+
+struct ElderlyEditContactModal: View {
+    let contact: FamilyContact
+    let contactIndex: Int?
+    @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @State private var name: String
+    @State private var phone: String
+    @State private var relation: String
+    
+    var onSave: (FamilyContact, Int?) -> Void
+    
+    init(contact: FamilyContact, contactIndex: Int?, isPresented: Binding<Bool>, onSave: @escaping (FamilyContact, Int?) -> Void) {
+        self.contact = contact
+        self.contactIndex = contactIndex
+        _isPresented = isPresented
+        _name = State(initialValue: contact.name)
+        _phone = State(initialValue: contact.phone)
+        _relation = State(initialValue: contact.relation)
+        self.onSave = onSave
+    }
+    
+    var relations: [String] {
+        [
+            localizationManager.localized("elderly_family_relation_son"),
+            localizationManager.localized("elderly_family_relation_daughter"),
+            localizationManager.localized("elderly_family_relation_daughter_in_law"),
+            localizationManager.localized("elderly_family_relation_grandson"),
+            localizationManager.localized("elderly_family_relation_granddaughter"),
+            localizationManager.localized("elderly_family_relation_you")
+        ]
+    }
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text(localizationManager.localized("elderly_contact_edit_name"))) {
+                    TextField(localizationManager.localized("elderly_interface_enter_name"), text: $name)
+                }
+                
+                Section(header: Text(localizationManager.localized("elderly_contact_edit_phone"))) {
+                    TextField("+7 (999) 123-45-67", text: $phone)
+                        .keyboardType(.phonePad)
+                }
+                
+                Section(header: Text(localizationManager.localized("elderly_contact_edit_relation"))) {
+                    Picker(localizationManager.localized("elderly_contact_edit_relation"), selection: $relation) {
+                        ForEach(relations, id: \.self) { rel in
+                            Text(rel).tag(rel)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                }
+            }
+            .navigationTitle(localizationManager.localized("elderly_contact_edit_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(localizationManager.localized("elderly_settings_edit_contacts_cancel")) {
+                        isPresented = false
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(localizationManager.localized("elderly_contact_edit_save")) {
+                        let updatedContact = FamilyContact(id: contact.id, name: name, phone: phone, relation: relation)
+                        onSave(updatedContact, contactIndex)
+                        isPresented = false
+                    }
+                }
+            }
         }
     }
 }
+}
 
-struct FamilyContact: Identifiable {
-    let id = UUID()
+struct FamilyContact: Identifiable, Codable {
+    let id: UUID
     var name: String
     var phone: String
     var relation: String
+    
+    init(id: UUID = UUID(), name: String, phone: String, relation: String) {
+        self.id = id
+        self.name = name
+        self.phone = phone
+        self.relation = relation
+    }
 }
 
 // MARK: - Security Status Modal

@@ -8,6 +8,7 @@ struct SecurityEducationScreen: View {
     // MARK: - State
     
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.dismiss) private var dismiss
     
     @State private var selectedLesson: SecurityLesson? = nil
@@ -28,12 +29,14 @@ struct SecurityEducationScreen: View {
         let xpReward: Int
     }
     
-    private var lessons: [SecurityLesson] = [
-        SecurityLesson(icon: "🛡️", title: "Киберзащита", description: "Стань экспертом по безопасности", isCompleted: true, xpReward: 100),
-        SecurityLesson(icon: "🎣", title: "Фишинг", description: "Распознай опасные письма", isCompleted: true, xpReward: 80),
-        SecurityLesson(icon: "🕵️", title: "Соц. инженерия", description: "Защитись от манипуляций", isCompleted: false, xpReward: 90),
-        SecurityLesson(icon: "🔐", title: "Пароли", description: "Создай надёжный пароль", isCompleted: false, xpReward: 70)
-    ]
+    private var lessons: [SecurityLesson] {
+        [
+            SecurityLesson(icon: "🛡️", title: localizationManager.localized("security_education_lesson_cybersecurity"), description: localizationManager.localized("security_education_lesson_cybersecurity_desc"), isCompleted: true, xpReward: 100),
+            SecurityLesson(icon: "🎣", title: localizationManager.localized("security_education_lesson_phishing"), description: localizationManager.localized("security_education_lesson_phishing_desc"), isCompleted: true, xpReward: 80),
+            SecurityLesson(icon: "🕵️", title: localizationManager.localized("security_education_lesson_social_engineering"), description: localizationManager.localized("security_education_lesson_social_engineering_desc"), isCompleted: false, xpReward: 90),
+            SecurityLesson(icon: "🔐", title: localizationManager.localized("security_education_lesson_passwords"), description: localizationManager.localized("security_education_lesson_passwords_desc"), isCompleted: false, xpReward: 70)
+        ]
+    }
     
     // MARK: - Body
     
@@ -81,6 +84,7 @@ struct SecurityEducationScreen: View {
         }
         .sheet(item: $selectedLesson) { lesson in
             LessonDetailView(lesson: lesson)
+                .environmentObject(localizationManager)
         }
     }
     
@@ -109,13 +113,13 @@ struct SecurityEducationScreen: View {
                             .fill(Color.white.opacity(0.2))
                     )
             }
-            .accessibilityLabel("Назад")
+            .accessibilityLabel(localizationManager.localized("security_education_back"))
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Безопасность")
+                Text(localizationManager.localized("security_education_title"))
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.white)
-                Text("Обучение защите")
+                Text(localizationManager.localized("security_education_subtitle"))
                     .font(.system(size: 14, weight: .regular))
                     .foregroundColor(.white.opacity(0.8))
             }
@@ -133,10 +137,10 @@ struct SecurityEducationScreen: View {
         VStack(spacing: 12) {
             Text("👋")
                 .font(.system(size: 50))
-            Text("Привет, Алексей!")
+            Text(String(format: localizationManager.localized("security_education_greeting_name"), "Алексей"))
                 .font(.system(size: 24, weight: .bold))
                 .foregroundColor(.primary)
-            Text("Ты молодец! Продолжай изучать безопасность!")
+            Text(localizationManager.localized("security_education_greeting_message"))
                 .font(.system(size: 16))
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -158,10 +162,10 @@ struct SecurityEducationScreen: View {
                 Text("🛡️")
                     .font(.system(size: 32))
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Уровень \(securityLevel)")
+                    Text(String(format: localizationManager.localized("security_education_level"), securityLevel))
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.primary)
-                    Text("Защитник семьи")
+                    Text(localizationManager.localized("security_education_level_title"))
                         .font(.system(size: 14))
                         .foregroundColor(.secondary)
                 }
@@ -187,11 +191,11 @@ struct SecurityEducationScreen: View {
             .frame(height: 12)
             
             HStack {
-                Text("\(securityXP) XP")
+                Text(String(format: localizationManager.localized("security_education_xp"), securityXP))
                     .font(.system(size: 12))
                     .foregroundColor(.secondary)
                 Spacer()
-                Text("\(totalLessonsCompleted) уроков пройдено")
+                Text(String(format: localizationManager.localized("security_education_lessons_completed"), totalLessonsCompleted))
                     .font(.system(size: 12))
                     .foregroundColor(.secondary)
             }
@@ -208,7 +212,7 @@ struct SecurityEducationScreen: View {
     
     private var lessonsList: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Уроки безопасности")
+            Text(localizationManager.localized("security_education_lessons_title"))
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.white)
                 .padding(.horizontal, 4)
@@ -217,6 +221,7 @@ struct SecurityEducationScreen: View {
                 LessonCard(lesson: lesson) {
                     selectedLesson = lesson
                 }
+                .environmentObject(localizationManager)
             }
         }
     }
@@ -225,14 +230,14 @@ struct SecurityEducationScreen: View {
     
     private var simpleRulesCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("✅ Простые правила")
+            Text(localizationManager.localized("security_education_simple_rules_title"))
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.primary)
             
             VStack(alignment: .leading, spacing: 8) {
-                RuleRow(text: "Не разговаривай с незнакомцами")
-                RuleRow(text: "Не открывай странные письма")
-                RuleRow(text: "Позови маму или папу если страшно")
+                RuleRow(text: localizationManager.localized("security_education_rule_strangers"))
+                RuleRow(text: localizationManager.localized("security_education_rule_emails"))
+                RuleRow(text: localizationManager.localized("security_education_rule_parents"))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -248,16 +253,16 @@ struct SecurityEducationScreen: View {
     
     private var advancedTipsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("💡 Продвинутые советы")
+            Text(localizationManager.localized("security_education_advanced_tips_title"))
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.primary)
             
             VStack(alignment: .leading, spacing: 8) {
-                TipRow(text: "Используй двухфакторную аутентификацию (2FA)")
-                TipRow(text: "Проверяй URL перед переходом по ссылкам")
-                TipRow(text: "Не публикуй личную информацию в соц. сетях")
-                TipRow(text: "Используй защиту сети в общественных Wi-Fi")
-                TipRow(text: "Обновляй приложения регулярно")
+                TipRow(text: localizationManager.localized("security_education_tip_2fa"))
+                TipRow(text: localizationManager.localized("security_education_tip_url"))
+                TipRow(text: localizationManager.localized("security_education_tip_social"))
+                TipRow(text: localizationManager.localized("security_education_tip_wifi"))
+                TipRow(text: localizationManager.localized("security_education_tip_updates"))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -275,6 +280,7 @@ struct SecurityEducationScreen: View {
 struct LessonCard: View {
     let lesson: SecurityEducationScreen.SecurityLesson
     let action: () -> Void
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         Button(action: {
@@ -316,7 +322,7 @@ struct LessonCard: View {
                             .foregroundColor(.blue)
                     }
                     
-                    Text("+\(lesson.xpReward) XP")
+                    Text(String(format: localizationManager.localized("security_education_xp_reward"), lesson.xpReward))
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(.secondary)
                 }
@@ -370,6 +376,7 @@ struct TipRow: View {
 
 struct LessonDetailView: View {
     let lesson: SecurityEducationScreen.SecurityLesson
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.dismiss) private var dismiss
     @State private var hasLearned: Bool = false
     
@@ -421,9 +428,9 @@ struct LessonDetailView: View {
                         }
                     }) {
                         VStack(spacing: 8) {
-                            Text("🎓 Изучить урок")
+                            Text(localizationManager.localized("security_education_lesson_study"))
                                 .font(.system(size: 16, weight: .semibold))
-                            Text("+\(lesson.xpReward) XP +10 🦄")
+                            Text(String(format: localizationManager.localized("security_education_lesson_reward"), lesson.xpReward))
                                 .font(.system(size: 12, weight: .medium))
                                 .foregroundColor(.green)
                         }
@@ -437,11 +444,11 @@ struct LessonDetailView: View {
                     .padding(.bottom, 40)
                 } else {
                     VStack(spacing: 12) {
-                        Text("✅ Урок изучен!")
+                        Text(localizationManager.localized("security_education_lesson_completed"))
                             .font(.system(size: 18, weight: .bold))
                             .foregroundColor(.white)
                         
-                        Text("+\(lesson.xpReward) XP • +10 🦄")
+                        Text(String(format: localizationManager.localized("security_education_lesson_reward"), lesson.xpReward))
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.green)
                             .padding(.horizontal, 20)
@@ -455,7 +462,7 @@ struct LessonDetailView: View {
                     Button(action: {
                         dismiss()
                     }) {
-                        Text("Продолжить")
+                        Text(localizationManager.localized("security_education_lesson_continue"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.blue)
                             .frame(maxWidth: .infinity)

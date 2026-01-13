@@ -229,7 +229,7 @@ struct MainScreen: View {
     // MARK: - Profile Image Management
     
     private func loadProfileImage() {
-        profileImage = ProfileImageManager.shared.loadProfileImage()
+        profileImage = ProfileImageManager.shared.loadProfileImage(for: .main)
     }
     
     // MARK: - Home Content

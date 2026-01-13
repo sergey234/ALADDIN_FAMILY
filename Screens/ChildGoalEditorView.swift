@@ -51,13 +51,13 @@ struct ChildGoalEditorView: View {
             }
         }
         .navigationBarHidden(true)
-        .alert("Цель отправлена! 📨", isPresented: $showConfirmation) {
-            Button("ОК") {
+        .alert(localizationManager.localized("child_goal_editor_success_title"), isPresented: $showConfirmation) {
+            Button(localizationManager.localized("child_goal_editor_ok")) {
                 HapticFeedback.impact(.medium)
                 navigationManager.goBack()
             }
         } message: {
-            Text("Родители получили твою цель и скоро ответят!")
+            Text(localizationManager.localized("child_goal_editor_success_message"))
         }
     }
     
@@ -79,7 +79,7 @@ struct ChildGoalEditorView: View {
                     )
             }
             
-            Text("🎯 Моя цель")
+            Text(localizationManager.localized("child_goal_editor_title"))
                 .font(.h2)
                 .foregroundColor(.secondaryGold)
             
@@ -97,10 +97,10 @@ struct ChildGoalEditorView: View {
                 .font(.system(size: 24))
             
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("Установить новую цель")
+                Text(localizationManager.localized("child_goal_editor_info_title"))
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
-                Text("Опиши, на что ты копишь единорогов, и родители одобрят твою цель!")
+                Text(localizationManager.localized("child_goal_editor_info_description"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -120,7 +120,7 @@ struct ChildGoalEditorView: View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             // Поле: название подарка
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("На что копишь? 🎁")
+                Text(localizationManager.localized("child_goal_editor_goal_title"))
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
                 
@@ -137,14 +137,14 @@ struct ChildGoalEditorView: View {
                             .stroke(title.isEmpty ? Color.textSecondary.opacity(0.3) : Color.secondaryGold.opacity(0.5), lineWidth: 1)
                     )
                 
-                Text("Опиши, какой подарок ты хочешь")
+                Text(localizationManager.localized("child_goal_editor_goal_hint"))
                     .font(.captionSmall)
                     .foregroundColor(.textSecondary)
             }
             
             // Поле: стоимость
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("Сколько единорогов нужно? 🦄")
+                Text(localizationManager.localized("child_goal_editor_cost_title"))
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
                 
@@ -167,7 +167,7 @@ struct ChildGoalEditorView: View {
                         .font(.system(size: 32))
                 }
                 
-                Text("Примерная стоимость подарка в единорогах")
+                Text(localizationManager.localized("child_goal_editor_cost_hint"))
                     .font(.captionSmall)
                     .foregroundColor(.textSecondary)
             }
@@ -188,7 +188,7 @@ struct ChildGoalEditorView: View {
             submitGoal()
         }) {
             HStack {
-                Text("📨 Отправить родителям")
+                Text(localizationManager.localized("child_goal_editor_submit_button"))
                     .font(.bodyBold)
                     .foregroundColor(.white)
                 

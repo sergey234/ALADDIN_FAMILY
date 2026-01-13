@@ -1191,7 +1191,7 @@ class LocalizationManager: ObservableObject {
             "family_active_badge": "Активно",
             "family_screenshots": "Скриншоты",
             "family_screenshots_desc": "Скриншоты активности (НОВОЕ!)",
-            "family_geolocation": "Геолокация",
+            "family_geofence": "Геозона",
             "family_location": "Местоположение",
             "family_geofences": "Геозоны",
             "family_movement_history": "История перемещений",
@@ -1739,7 +1739,7 @@ class LocalizationManager: ObservableObject {
             "parental_monitoring": "Мониторинг",
             "parental_sites": "сайтов",
             "parental_apps": "приложений",
-            "parental_geolocation": "Геолокация",
+            "parental_geofence": "Геозона",
             "parental_location_home": "Дома",
             "parental_location_unknown": "Неизвестно",
             "parental_location_not_updated": "Не обновлено",
@@ -3586,8 +3586,8 @@ class LocalizationManager: ObservableObject {
             "component.roadside_assistance_agent.desc": "Быстрая помощь при поломке автомобиля",
             
             // Компонент 3: incident_response_agent
-            "component.incident_response_agent.title": "Реагирование на инциденты",
-            "component.incident_response_agent.desc": "Автоматическое реагирование на критические события",
+            "component.incident_response_agent.title": "Автоматическая система защиты",
+            "component.incident_response_agent.desc": "Автоматическое обнаружение и блокировка угроз",
             
             // Компонент 4: emergency_response_bot
             "component.emergency_response_bot.title": "Экстренный ответ",
@@ -3677,9 +3677,105 @@ class LocalizationManager: ObservableObject {
             "component_russian_data_protection_manager_title": "Защита данных (РФ)",
             "component_russian_data_protection_manager_description": "Соответствие 152-ФЗ РФ",
             
+            // ═══════════════════════════════════════════════════════════════
+            // ЛОКАЛИЗАЦИЯ НОВЫХ СТРАНИЦ НАСТРОЕК (5 ОКОН)
+            // ═══════════════════════════════════════════════════════════════
+            
+            // Emergency Contacts (Экстренные контакты)
+            "emergency_contacts_info_title": "Информация",
+            "emergency_contacts_info_text": "Добавьте контакты для экстренных случаев. Они будут автоматически уведомлены при активации экстренной помощи.",
+            "emergency_contacts_empty": "Нет экстренных контактов",
+            "emergency_contacts_add_first": "Добавить первый контакт",
+            "emergency_contacts_add": "Добавить контакт",
+            "emergency_contacts_add_title": "Новый контакт",
+            "emergency_contacts_name": "Имя",
+            "emergency_contacts_phone": "Телефон",
+            "settings_saved_contacts": "Контакты сохранены",
+            
+            // Emergency Notifications (Экстренные уведомления)
+            "emergency_notifications_templates_title": "Шаблоны сообщений",
+            "emergency_notifications_template_crash": "ДТП",
+            "emergency_notifications_template_medical": "Медицинская помощь",
+            "emergency_notifications_template_security": "Безопасность",
+            "emergency_notifications_template_placeholder": "Введите текст сообщения...",
+            "emergency_notifications_channels_title": "Каналы доставки",
+            "emergency_notifications_channel_push": "Push-уведомления",
+            "emergency_notifications_channel_sms": "SMS",
+            "emergency_notifications_channel_email": "Email",
+            "emergency_notifications_channel_call": "Звонок",
+            "emergency_notifications_repeat_title": "Частота повторения",
+            "emergency_notifications_repeat_minutes": "минут",
+            
+            // Voice Control (Голосовое управление)
+            "voice_control_activation_title": "Слово активации",
+            "voice_control_activation_word": "Выберите слово",
+            "voice_control_language_title": "Язык распознавания",
+            "voice_control_language": "Язык",
+            "voice_control_sensitivity_title": "Чувствительность",
+            "voice_control_sensitivity_low": "Низкая",
+            "voice_control_sensitivity_high": "Высокая",
+            "voice_control_mode_title": "Режим работы",
+            "voice_control_mode_online": "Онлайн режим",
+            "language_russian": "Русский",
+            "language_english": "English",
+            
+            // Compliance (Соответствие требованиям)
+            "compliance_legal_profile_title": "Юридический профиль",
+            "compliance_profile_children": "Дети",
+            "compliance_profile_adults": "Взрослые",
+            "compliance_profile_individual": "Физическое лицо",
+            "compliance_profile_legal": "Юридическое лицо",
+            "compliance_regions_title": "Регионы РФ",
+            "compliance_region_moscow": "Москва",
+            "compliance_region_spb": "Санкт-Петербург",
+            "compliance_region_moscow_oblast": "Московская область",
+            "compliance_region_leningrad_oblast": "Ленинградская область",
+            "compliance_storage_title": "Политика хранения",
+            "compliance_storage_days": "дней",
+            "compliance_deletion_title": "Политика удаления",
+            "compliance_deletion_automatic": "Автоматическое",
+            "compliance_deletion_manual": "Ручное",
+            "compliance_encryption_title": "Шифрование",
+            "compliance_encryption_enabled": "Включено",
+            
+            // Compliance: No Personal Data Info
+            "compliance_no_personal_data_title": "Важно: Мы НЕ собираем персональные данные",
+            "compliance_no_personal_data_text": "Согласно политике конфиденциальности, мы работаем только с обезличенными данными. Персональные данные не собираются, не обрабатываются и не хранятся.",
+            
+            // Compliance: Storage Policy (Fixed values)
+            "compliance_storage_sessions_title": "Анонимные сессии",
+            "compliance_storage_sessions_value": "24 часа",
+            "compliance_storage_statistics_title": "Статистика угроз",
+            "compliance_storage_statistics_value": "30 дней",
+            "compliance_storage_analytics_title": "Агрегированная аналитика",
+            "compliance_storage_analytics_value": "1 год",
+            
+            // Common Settings Messages
+            "settings_saved": "Настройки сохранены",
+            
             // Улучшение существующих (9 компонентов) - Новый формат
             "component.family_notification_manager.title": "Семейные уведомления",
             "component.family_notification_manager.desc": "Управление уведомлениями семьи",
+            
+            // Family Notification Settings Modal
+            "family_notification_settings": "Настройки уведомлений",
+            "family_notifications_channels_title": "Каналы уведомлений",
+            "family_notifications_channel_push": "Push-уведомления",
+            "family_notifications_channel_email": "Email",
+            "family_notifications_channel_sms": "SMS",
+            "family_notifications_frequency_title": "Частота уведомлений",
+            "family_notifications_frequency_instant": "Мгновенно",
+            "family_notifications_frequency_daily": "Ежедневно",
+            "family_notifications_frequency_weekly": "Еженедельно",
+            "family_notifications_templates_title": "Шаблоны сообщений",
+            "family_notifications_template_security": "Безопасность",
+            "family_notifications_template_activity": "Активность",
+            "family_notifications_template_rewards": "Награды",
+            "family_notifications_template_placeholder": "Введите шаблон сообщения...",
+            "family_notifications_priorities_title": "Приоритеты тем",
+            "family_notifications_priority_security": "Безопасность",
+            "family_notifications_priority_activity": "Активность",
+            "family_notifications_priority_rewards": "Награды",
             "component.smart_notification_manager.title": "Умные уведомления",
             "component.smart_notification_manager.desc": "Интеллектуальная система уведомлений",
             "component.child_interface_manager.title": "Детский интерфейс",
@@ -3702,8 +3798,8 @@ class LocalizationManager: ObservableObject {
             "component.emergency_help.subtitle": "Быстрая помощь в критических ситуациях",
             "component.threat_protection.title": "Защита от угроз",
             "component.threat_protection.subtitle": "Защита от различных видов угроз",
-            "component.incident_response.title": "Реагирование",
-            "component.incident_response.subtitle": "Автоматическое реагирование на инциденты",
+            "component.incident_response.title": "Автоматическая система защиты",
+            "component.incident_response.subtitle": "Автоматическое обнаружение и блокировка угроз",
             "component.password_security.title": "Пароли",
             "component.password_security.subtitle": "Безопасность паролей",
             "component.child_protection.title": "Защита детей",
@@ -4935,7 +5031,7 @@ class LocalizationManager: ObservableObject {
             "family_contacts_view": "View contacts",
             "family_contacts_desc": "Who the child communicates with",
             "family_screenshots_desc": "Activity screenshots (NEW!)",
-            "family_geolocation": "Geolocation",
+            "family_geofence": "Geofence",
             "family_location": "Location",
             "family_geofences": "Geofences",
             "family_movement_history": "Movement history",
@@ -5393,7 +5489,7 @@ class LocalizationManager: ObservableObject {
             "parental_content_block": "Content Blocking",
             "parental_time_control": "Time Management",
             "parental_monitoring": "Monitoring",
-            "parental_geolocation": "Geolocation",
+            "parental_geofence": "Geofence",
             "parental_reports": "Reports",
             "parental_additional": "Additional",
             "parental_bypass_protection": "Bypass\\nprotection",
@@ -7247,8 +7343,8 @@ class LocalizationManager: ObservableObject {
             "component.roadside_assistance_agent.desc": "Quick help for car breakdowns",
             
             // Component 3: incident_response_agent
-            "component.incident_response_agent.title": "Incident Response",
-            "component.incident_response_agent.desc": "Automatic response to critical events",
+            "component.incident_response_agent.title": "Automatic Protection System",
+            "component.incident_response_agent.desc": "Automatic threat detection and blocking",
             
             // Component 4: emergency_response_bot
             "component.emergency_response_bot.title": "Emergency Response",
@@ -7338,9 +7434,106 @@ class LocalizationManager: ObservableObject {
             "component_russian_data_protection_manager_title": "Data Protection (RU)",
             "component_russian_data_protection_manager_description": "Compliance with 152-FZ RF",
             
+            // ═══════════════════════════════════════════════════════════════
+            // LOCALIZATION OF NEW SETTINGS PAGES (5 WINDOWS)
+            // ═══════════════════════════════════════════════════════════════
+            
+            // Emergency Contacts
+            "emergency_contacts_info_title": "Information",
+            "emergency_contacts_info_text": "Add contacts for emergencies. They will be automatically notified when emergency assistance is activated.",
+            "emergency_contacts_empty": "No emergency contacts",
+            "emergency_contacts_add_first": "Add first contact",
+            "emergency_contacts_add": "Add contact",
+            "emergency_contacts_add_title": "New contact",
+            "emergency_contacts_name": "Name",
+            "emergency_contacts_phone": "Phone",
+            "settings_saved_contacts": "Contacts saved",
+            
+            // Emergency Notifications
+            "emergency_notifications_templates_title": "Message templates",
+            "emergency_notifications_template_crash": "Crash",
+            "emergency_notifications_template_medical": "Medical assistance",
+            "emergency_notifications_template_security": "Security",
+            "emergency_notifications_template_placeholder": "Enter message text...",
+            "emergency_notifications_channels_title": "Delivery channels",
+            "emergency_notifications_channel_push": "Push notifications",
+            "emergency_notifications_channel_sms": "SMS",
+            "emergency_notifications_channel_email": "Email",
+            "emergency_notifications_channel_call": "Call",
+            "emergency_notifications_repeat_title": "Repeat frequency",
+            "emergency_notifications_repeat_minutes": "minutes",
+            
+            // Voice Control
+            "voice_control_activation_title": "Activation word",
+            "voice_control_activation_word": "Select word",
+            "voice_control_language_title": "Recognition language",
+            "voice_control_language": "Language",
+            "voice_control_sensitivity_title": "Sensitivity",
+            "voice_control_sensitivity_low": "Low",
+            "voice_control_sensitivity_high": "High",
+            "voice_control_mode_title": "Operating mode",
+            "voice_control_mode_online": "Online mode",
+            "language_russian": "Russian",
+            "language_english": "English",
+            
+            // Compliance
+            "compliance_legal_profile_title": "Legal profile",
+            "compliance_profile_children": "Children",
+            "compliance_profile_adults": "Adults",
+            "compliance_profile_individual": "Individual",
+            "compliance_profile_legal": "Legal entity",
+            "compliance_regions_title": "RF Regions",
+            "compliance_region_moscow": "Moscow",
+            "compliance_region_spb": "Saint Petersburg",
+            "compliance_region_moscow_oblast": "Moscow Oblast",
+            "compliance_region_leningrad_oblast": "Leningrad Oblast",
+            "compliance_storage_title": "Storage policy",
+            "compliance_storage_days": "days",
+            "compliance_deletion_title": "Deletion policy",
+            "compliance_deletion_automatic": "Automatic",
+            "compliance_deletion_manual": "Manual",
+            "compliance_encryption_title": "Encryption",
+            "compliance_encryption_enabled": "Enabled",
+            
+            // Compliance: No Personal Data Info
+            "compliance_no_personal_data_title": "Important: We DO NOT collect personal data",
+            "compliance_no_personal_data_text": "According to our privacy policy, we work only with anonymized data. Personal data is not collected, processed, or stored.",
+            
+            // Compliance: Storage Policy (Fixed values)
+            "compliance_storage_sessions_title": "Anonymous sessions",
+            "compliance_storage_sessions_value": "24 hours",
+            "compliance_storage_statistics_title": "Threat statistics",
+            "compliance_storage_statistics_value": "30 days",
+            "compliance_storage_analytics_title": "Aggregated analytics",
+            "compliance_storage_analytics_value": "1 year",
+            
+            // Common Settings Messages
+            "settings_saved": "Settings saved",
+            
             // Improve Existing (9 components) - New Format
             "component.family_notification_manager.title": "Family Notifications",
             "component.family_notification_manager.desc": "Manage family notifications",
+            
+            // Family Notification Settings Modal
+            "family_notification_settings": "Notification Settings",
+            "family_notifications_channels_title": "Notification Channels",
+            "family_notifications_channel_push": "Push Notifications",
+            "family_notifications_channel_email": "Email",
+            "family_notifications_channel_sms": "SMS",
+            "family_notifications_frequency_title": "Notification Frequency",
+            "family_notifications_frequency_instant": "Instant",
+            "family_notifications_frequency_daily": "Daily",
+            "family_notifications_frequency_weekly": "Weekly",
+            "family_notifications_templates_title": "Message Templates",
+            "family_notifications_template_security": "Security",
+            "family_notifications_template_activity": "Activity",
+            "family_notifications_template_rewards": "Rewards",
+            "family_notifications_template_placeholder": "Enter message template...",
+            "family_notifications_priorities_title": "Topic Priorities",
+            "family_notifications_priority_security": "Security",
+            "family_notifications_priority_activity": "Activity",
+            "family_notifications_priority_rewards": "Rewards",
+            
             "component.smart_notification_manager.title": "Smart Notifications",
             "component.smart_notification_manager.desc": "Intelligent notification system",
             "component.child_interface_manager.title": "Child Interface",
@@ -7363,8 +7556,8 @@ class LocalizationManager: ObservableObject {
             "component.emergency_help.subtitle": "Quick help in critical situations",
             "component.threat_protection.title": "Threat Protection",
             "component.threat_protection.subtitle": "Protection from various threats",
-            "component.incident_response.title": "Incident Response",
-            "component.incident_response.subtitle": "Automatic response to incidents",
+            "component.incident_response.title": "Automatic Protection System",
+            "component.incident_response.subtitle": "Automatic threat detection and blocking",
             "component.password_security.title": "Passwords",
             "component.password_security.subtitle": "Password security",
             "component.child_protection.title": "Child Protection",

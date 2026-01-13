@@ -1,1 +1,14 @@
 запустить_workflow_api.sh
+
+# Backups - не коммитим бэкапы
+BACKUPS/
+*.zip
+*.xcarchive
+*.backup
+*BACKUP*
+
+# Xcode user data
+*.xcuserstate
+*.xcuserdatad/
+DerivedData/
+build/

@@ -6,7 +6,8 @@ import SwiftUI
  */
 
 struct PasswordGeneratorModal: View {
-    @Environment(\.dismiss) private var dismiss
+    let componentId: String
+    @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     @State private var passwordLength: Double = 16
@@ -17,146 +18,141 @@ struct PasswordGeneratorModal: View {
     @State private var generatedPassword: String = ""
     @State private var isGenerating: Bool = false
     
+    init(componentId: String = "password_security_agent", isPresented: Binding<Bool>) {
+        self.componentId = componentId
+        self._isPresented = isPresented
+    }
+    
     var body: some View {
-        NavigationView {
-            ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: Spacing.l) {
-                        // Настройки генератора
-                        VStack(alignment: .leading, spacing: Spacing.m) {
-                            Text(localizationManager.localized("password_generator.settings"))
-                                .font(.h4)
+        ComponentSettingsModal(
+            componentId: componentId,
+            title: localizationManager.localized("component.password_security_agent.title"),
+            isPresented: $isPresented,
+            onSave: {
+                saveSettings()
+            }
+        ) {
+            VStack(spacing: Spacing.l) {
+                // Настройки генератора
+                VStack(alignment: .leading, spacing: Spacing.m) {
+                    Text(localizationManager.localized("password_generator.settings"))
+                        .font(.h4)
+                        .foregroundColor(.textPrimary)
+                    
+                    // Длина пароля
+                    VStack(alignment: .leading, spacing: Spacing.s) {
+                        HStack {
+                            Text(localizationManager.localized("password_generator.length"))
+                                .font(.body)
                                 .foregroundColor(.textPrimary)
                             
-                            // Длина пароля
-                            VStack(alignment: .leading, spacing: Spacing.s) {
-                                HStack {
-                                    Text(localizationManager.localized("password_generator.length"))
-                                        .font(.body)
-                                        .foregroundColor(.textPrimary)
-                                    
-                                    Spacer()
-                                    
-                                    Text("\(Int(passwordLength))")
-                                        .font(.headline)
-                                        .foregroundColor(.textPrimary)
-                                }
-                                
-                                Slider(value: $passwordLength, in: 8...64, step: 1)
-                                    .tint(.blue)
-                            }
-                            .padding(Spacing.m)
-                            .background(
-                                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                    .fill(Color.backgroundMedium.opacity(0.3))
-                            )
+                            Spacer()
                             
-                            // Типы символов
-                            VStack(spacing: Spacing.s) {
-                                ToggleRow(
-                                    title: localizationManager.localized("password_generator.uppercase"),
-                                    isOn: $includeUppercase
-                                )
-                                
-                                ToggleRow(
-                                    title: localizationManager.localized("password_generator.lowercase"),
-                                    isOn: $includeLowercase
-                                )
-                                
-                                ToggleRow(
-                                    title: localizationManager.localized("password_generator.numbers"),
-                                    isOn: $includeNumbers
-                                )
-                                
-                                ToggleRow(
-                                    title: localizationManager.localized("password_generator.special"),
-                                    isOn: $includeSpecial
-                                )
-                            }
-                        }
-                        .padding(Spacing.m)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.large)
-                                .fill(Color.backgroundMedium.opacity(0.3))
-                        )
-                        
-                        // Сгенерированный пароль
-                        if !generatedPassword.isEmpty {
-                            VStack(alignment: .leading, spacing: Spacing.s) {
-                                Text(localizationManager.localized("password_generator.generated"))
-                                    .font(.h4)
-                                    .foregroundColor(.textPrimary)
-                                
-                                HStack {
-                                    Text(generatedPassword)
-                                        .font(.system(.body, design: .monospaced))
-                                        .foregroundColor(.textPrimary)
-                                        .padding(Spacing.m)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                                .fill(Color.backgroundMedium.opacity(0.5))
-                                        )
-                                    
-                                    Button(action: {
-                                        UIPasteboard.general.string = generatedPassword
-                                        HapticFeedback.notification(.success)
-                                    }) {
-                                        Image(systemName: "doc.on.doc")
-                                            .font(.title3)
-                                            .foregroundColor(.blue)
-                                    }
-                                    .accessibilityLabel("Copy password")
-                                }
-                            }
-                            .padding(Spacing.m)
-                            .background(
-                                RoundedRectangle(cornerRadius: CornerRadius.large)
-                                    .fill(Color.backgroundMedium.opacity(0.3))
-                            )
+                            Text("\(Int(passwordLength))")
+                                .font(.headline)
+                                .foregroundColor(.textPrimary)
                         }
                         
-                        // Кнопка генерации
-                        Button(action: {
-                            generatePassword()
-                        }) {
-                            HStack {
-                                if isGenerating {
-                                    ProgressView()
-                                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                } else {
-                                    Image(systemName: "key.fill")
-                                        .font(.title3)
-                                }
-                                
-                                Text(localizationManager.localized("password_generator.generate"))
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                            }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 50)
-                            .background(
-                                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                    .fill(canGenerate ? Color.blue : Color.gray)
-                            )
-                        }
-                        .disabled(!canGenerate || isGenerating)
+                        Slider(value: $passwordLength, in: 8...64, step: 1)
+                            .tint(.blue)
                     }
                     .padding(Spacing.m)
-                }
-            }
-            .navigationTitle(localizationManager.localized("component.password_security_agent.title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localizationManager.localized("common.close")) {
-                        dismiss()
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .fill(Color.backgroundMedium.opacity(0.3))
+                    )
+                    
+                    // Типы символов
+                    VStack(spacing: Spacing.s) {
+                        ToggleRow(
+                            title: localizationManager.localized("password_generator.uppercase"),
+                            isOn: $includeUppercase
+                        )
+                        
+                        ToggleRow(
+                            title: localizationManager.localized("password_generator.lowercase"),
+                            isOn: $includeLowercase
+                        )
+                        
+                        ToggleRow(
+                            title: localizationManager.localized("password_generator.numbers"),
+                            isOn: $includeNumbers
+                        )
+                        
+                        ToggleRow(
+                            title: localizationManager.localized("password_generator.special"),
+                            isOn: $includeSpecial
+                        )
                     }
                 }
+                .padding(Spacing.m)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.large)
+                        .fill(Color.backgroundMedium.opacity(0.3))
+                )
+                
+                // Сгенерированный пароль
+                if !generatedPassword.isEmpty {
+                    VStack(alignment: .leading, spacing: Spacing.s) {
+                        Text(localizationManager.localized("password_generator.generated"))
+                            .font(.h4)
+                            .foregroundColor(.textPrimary)
+                        
+                        HStack {
+                            Text(generatedPassword)
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.textPrimary)
+                                .padding(Spacing.m)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(
+                                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                        .fill(Color.backgroundMedium.opacity(0.5))
+                                )
+                            
+                            Button(action: {
+                                UIPasteboard.general.string = generatedPassword
+                                HapticFeedback.notification(.success)
+                            }) {
+                                Image(systemName: "doc.on.doc")
+                                    .font(.title3)
+                                    .foregroundColor(.blue)
+                            }
+                            .accessibilityLabel("Copy password")
+                        }
+                    }
+                    .padding(Spacing.m)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.large)
+                            .fill(Color.backgroundMedium.opacity(0.3))
+                    )
+                }
+                
+                // Кнопка генерации
+                Button(action: {
+                    generatePassword()
+                }) {
+                    HStack {
+                        if isGenerating {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        } else {
+                            Image(systemName: "key.fill")
+                                .font(.title3)
+                        }
+                        
+                        Text(localizationManager.localized("password_generator.generate"))
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .fill(canGenerate ? Color.blue : Color.gray)
+                    )
+                }
+                .disabled(!canGenerate || isGenerating)
             }
         }
     }
@@ -192,6 +188,16 @@ struct PasswordGeneratorModal: View {
             isGenerating = false
             HapticFeedback.notification(.success)
         }
+    }
+    
+    private func saveSettings() {
+        // TODO: Сохранить настройки генератора паролей через ComponentConfigurationService
+        print("💾 Сохранение настроек генератора паролей: \(componentId)")
+        print("   Длина: \(Int(passwordLength))")
+        print("   Заглавные: \(includeUppercase)")
+        print("   Строчные: \(includeLowercase)")
+        print("   Цифры: \(includeNumbers)")
+        print("   Спецсимволы: \(includeSpecial)")
     }
 }
 

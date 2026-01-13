@@ -439,7 +439,7 @@ struct ParentalControlScreen: View {
                     
                     ParentalControlCard(
                         icon: "📍",
-                        title: localizationManager.localized("parental_geolocation"),
+                        title: localizationManager.localized("parental_geofence"),
                         statusBadge: locationStatus.isEmpty ? "🏠" : locationStatus,
                         statusText: locationStatus.isEmpty ? localizationManager.localized("parental_location_home") : locationStatus,
                         metric: locationWarnings > 0 ?

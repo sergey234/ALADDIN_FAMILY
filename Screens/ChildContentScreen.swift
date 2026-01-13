@@ -129,47 +129,63 @@ struct ChildContentScreen: View {
     }
     
     private var greetingEmoji: String {
-        switch category {
-        case "ИГРУШКИ": return "🧸"
-        case "РИСОВАНИЕ": return "🎨"
-        case "ПЕСЕНКИ": return "🎵"
-        case "СКАЗКИ": return "📖"
-        case "ИГРЫ": return "🎮"
-        case "УЧЁБА": return "📚"
-        case "ТВОРЧЕСТВО": return "🎨"
-        case "МУЛЬТИКИ": return "📺"
-        case "ПРОГРАММИРОВАНИЕ": return "💻"
-        case "СОЦИАЛЬНЫЕ СЕТИ": return "📱"
-        case "МУЗЫКА": return "🎵"
-        case "ВИДЕО": return "📺"
-        case "ОБРАЗОВАНИЕ": return "🎓"
-        case "КАРЬЕРА": return "💼"
-        case "ИНТЕРНЕТ": return "🌐"
-        case "КИНО": return "🎬"
-        default: return "🌟"
+        // Используем только локализованные значения
+        if category == localizationManager.localized("child_interface_category_toys") {
+            return "🧸"
         }
+        if category == localizationManager.localized("child_interface_category_drawing") {
+            return "🎨"
+        }
+        if category == localizationManager.localized("child_interface_category_songs") {
+            return "🎵"
+        }
+        if category == localizationManager.localized("child_interface_category_stories") {
+            return "📖"
+        }
+        if category == localizationManager.localized("child_interface_category_games") {
+            return "🎮"
+        }
+        if category == localizationManager.localized("child_interface_category_study") {
+            return "📚"
+        }
+        if category == localizationManager.localized("child_interface_category_creativity") {
+            return "🎨"
+        }
+        if category == localizationManager.localized("child_interface_category_cartoons") {
+            return "📺"
+        }
+        // Fallback
+        return "🌟"
     }
     
     private var greetingText: String {
-        switch category {
-        case "ИГРУШКИ": return "Давай играть!"
-        case "РИСОВАНИЕ": return "Творчество начинается здесь!"
-        case "ПЕСЕНКИ": return "Музыка для маленьких!"
-        case "СКАЗКИ": return "Волшебные истории!"
-        case "ИГРЫ": return "Игровая зона!"
-        case "УЧЁБА": return "Учимся с удовольствием!"
-        case "ТВОРЧЕСТВО": return "Креативим вместе!"
-        case "МУЛЬТИКИ": return "Любимые мультики!"
-        case "ПРОГРАММИРОВАНИЕ": return "Кодируем и творим!"
-        case "СОЦИАЛЬНЫЕ СЕТИ": return "Общение и друзья!"
-        case "МУЗЫКА": return "Твоя музыка!"
-        case "ВИДЕО": return "Развлекайся!"
-        case "ОБРАЗОВАНИЕ": return "Развивайся!"
-        case "КАРЬЕРА": return "Строй будущее!"
-        case "ИНТЕРНЕТ": return "Изучай мир!"
-        case "КИНО": return "Смотри и наслаждайся!"
-        default: return "Добро пожаловать!"
+        // Используем только локализованные значения
+        if category == localizationManager.localized("child_interface_category_games") {
+            return localizationManager.localized("child_game_greeting")
         }
+        if category == localizationManager.localized("child_interface_category_study") {
+            return localizationManager.localized("child_study_welcome")
+        }
+        if category == localizationManager.localized("child_interface_category_creativity") {
+            return localizationManager.localized("child_creativity_welcome")
+        }
+        if category == localizationManager.localized("child_interface_category_cartoons") {
+            return localizationManager.localized("child_cartoons_welcome")
+        }
+        if category == localizationManager.localized("child_interface_category_toys") {
+            return localizationManager.localized("child_game_welcome")
+        }
+        if category == localizationManager.localized("child_interface_category_drawing") {
+            return localizationManager.localized("child_creativity_welcome")
+        }
+        if category == localizationManager.localized("child_interface_category_songs") {
+            return localizationManager.localized("child_game_welcome")
+        }
+        if category == localizationManager.localized("child_interface_category_stories") {
+            return localizationManager.localized("child_game_welcome")
+        }
+        // Fallback только на локализованное значение
+        return localizationManager.localized("child_game_welcome")
     }
     
     // MARK: - Category Content
@@ -193,16 +209,16 @@ struct ChildContentScreen: View {
     
     private var kidsContent: some View {
         VStack(spacing: 16) {
-            switch category {
-            case "ИГРУШКИ":
+            // Используем только локализованные значения
+            if category == localizationManager.localized("child_interface_category_toys") {
                 toysContent
-            case "РИСОВАНИЕ":
+            } else if category == localizationManager.localized("child_interface_category_drawing") {
                 drawingContent
-            case "ПЕСЕНКИ":
+            } else if category == localizationManager.localized("child_interface_category_songs") {
                 songsContent
-            case "СКАЗКИ":
+            } else if category == localizationManager.localized("child_interface_category_stories") {
                 fairyTalesContent
-            default:
+            } else {
                 defaultContent
             }
         }
@@ -214,7 +230,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.pink)
             
-            Text("Выбери игрушку для игры")
+            Text(localizationManager.localized("child_game_welcome"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -260,7 +276,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.orange)
             
-            Text("Нарисуй что угодно!")
+            Text(localizationManager.localized("child_creativity_create"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -297,7 +313,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.purple)
             
-            Text("Песни для малышей")
+            Text(localizationManager.localized("child_game_welcome"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -339,7 +355,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.blue)
             
-            Text("Волшебные сказки")
+            Text(localizationManager.localized("child_game_welcome"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -379,16 +395,16 @@ struct ChildContentScreen: View {
     
     private var schoolContent: some View {
         VStack(spacing: 16) {
-            switch category {
-            case "ИГРЫ":
+            // Сначала проверяем локализованные значения
+            if category == localizationManager.localized("child_interface_category_games") {
                 gamesContent
-            case "УЧЁБА":
+            } else if category == localizationManager.localized("child_interface_category_study") {
                 studyContent
-            case "ТВОРЧЕСТВО":
+            } else if category == localizationManager.localized("child_interface_category_creativity") {
                 creativityContent
-            case "МУЛЬТИКИ":
+            } else if category == localizationManager.localized("child_interface_category_cartoons") {
                 cartoonsContent
-            default:
+            } else {
                 defaultContent
             }
         }
@@ -400,15 +416,15 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.green)
             
-            Text("Игровая зона")
+            Text(localizationManager.localized("child_game_zone"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                gameButton(icon: "🎮", title: "Приключения")
-                gameButton(icon: "🧩", title: "Пазлы")
-                gameButton(icon: "🎯", title: "Логика")
-                gameButton(icon: "⚡", title: "Скорость")
+                gameButton(icon: "🎮", title: localizationManager.localized("child_game_adventures"))
+                gameButton(icon: "🧩", title: localizationManager.localized("child_game_puzzles"))
+                gameButton(icon: "🎯", title: localizationManager.localized("child_game_logic"))
+                gameButton(icon: "⚡", title: localizationManager.localized("child_game_speed"))
             }
         }
     }
@@ -445,14 +461,14 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.blue)
             
-            Text("Учимся с удовольствием!")
+            Text(localizationManager.localized("child_study_learning"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
             VStack(spacing: 12) {
-                studySubject(subject: "📖 Русский язык")
-                studySubject(subject: "🔢 Математика")
-                studySubject(subject: "🌍 Окружающий мир")
+                studySubject(subject: localizationManager.localized("child_study_subject_russian"))
+                studySubject(subject: localizationManager.localized("child_study_subject_math"))
+                studySubject(subject: localizationManager.localized("child_study_subject_world"))
             }
         }
     }
@@ -486,15 +502,15 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.orange)
             
-            Text("Твори и создавай!")
+            Text(localizationManager.localized("child_creativity_create"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                creativityButton(icon: "✏️", title: "Рисование")
-                creativityButton(icon: "✂️", title: "Аппликация")
-                creativityButton(icon: "🎨", title: "Раскраска")
-                creativityButton(icon: "🖼️", title: "Фото")
+                creativityButton(icon: "✏️", title: localizationManager.localized("child_creativity_drawing"))
+                creativityButton(icon: "✂️", title: localizationManager.localized("child_creativity_application"))
+                creativityButton(icon: "🎨", title: localizationManager.localized("child_creativity_coloring"))
+                creativityButton(icon: "🖼️", title: localizationManager.localized("child_creativity_photo"))
             }
         }
     }
@@ -531,14 +547,14 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.red)
             
-            Text("Любимые мультики")
+            Text(localizationManager.localized("child_cartoons_favorites"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
             VStack(spacing: 12) {
-                cartoonItem(title: "🤖 Роботы")
-                cartoonItem(title: "🐾 Приключения")
-                cartoonItem(title: "🌟 Фантазия")
+                cartoonItem(title: localizationManager.localized("child_cartoons_robots"))
+                cartoonItem(title: localizationManager.localized("child_cartoons_adventures"))
+                cartoonItem(title: localizationManager.localized("child_cartoons_fantasy"))
             }
         }
     }
@@ -570,16 +586,16 @@ struct ChildContentScreen: View {
     
     private var teenContent: some View {
         VStack(spacing: 16) {
-            switch category {
-            case "ПРОГРАММИРОВАНИЕ":
+            // Используем только локализованные значения
+            if category == localizationManager.localized("child_interface_category_programming") {
                 programmingContent
-            case "СОЦИАЛЬНЫЕ СЕТИ":
+            } else if category == localizationManager.localized("child_interface_category_social") {
                 socialMediaContent
-            case "МУЗЫКА":
+            } else if category == localizationManager.localized("child_interface_category_music") {
                 musicContent
-            case "ВИДЕО":
+            } else if category == localizationManager.localized("child_interface_category_video") {
                 videoContent
-            default:
+            } else {
                 defaultContent
             }
         }
@@ -753,16 +769,16 @@ struct ChildContentScreen: View {
     
     private var youngAdultContent: some View {
         VStack(spacing: 16) {
-            switch category {
-            case "ОБРАЗОВАНИЕ":
+            // Используем только локализованные значения
+            if category == localizationManager.localized("child_interface_category_education") {
                 educationContent
-            case "КАРЬЕРА":
+            } else if category == localizationManager.localized("child_interface_category_career") {
                 careerContent
-            case "ИНТЕРНЕТ":
+            } else if category == localizationManager.localized("child_interface_category_internet") {
                 internetContent
-            case "КИНО":
+            } else if category == localizationManager.localized("child_interface_category_movies") {
                 cinemaContent
-            default:
+            } else {
                 defaultContent
             }
         }
@@ -936,7 +952,7 @@ struct ChildContentScreen: View {
     
     private var additionalInfoSection: some View {
         VStack(spacing: 12) {
-            Text("💡 Совет дня")
+            Text(localizationManager.localized("child_daily_tip_title"))
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white.opacity(0.8))
             
@@ -957,13 +973,13 @@ struct ChildContentScreen: View {
     private var dailyTip: String {
         switch ageGroup {
         case .kids:
-            return "Играй и учись каждый день! Это поможет тебе стать умнее и счастливее!"
+            return localizationManager.localized("child_daily_tip_kids")
         case .school:
-            return "Не забывай делать перерывы! Отдых так же важен, как и учёба!"
+            return localizationManager.localized("child_daily_tip_school")
         case .teen:
-            return "Помни о безопасности в интернете. Доверяй, но проверяй!"
+            return localizationManager.localized("child_daily_tip_teen")
         case .youngAdult:
-            return "Инвестируй в себя! Каждый день развивай новые навыки!"
+            return localizationManager.localized("child_daily_tip_young_adult")
         }
     }
     
@@ -974,7 +990,7 @@ struct ChildContentScreen: View {
             Text("🌟")
                 .font(.system(size: 80))
             
-            Text("Контент скоро появится!")
+            Text(localizationManager.localized("child_game_content_coming_soon"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
         }

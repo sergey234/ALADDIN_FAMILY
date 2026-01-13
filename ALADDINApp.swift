@@ -196,8 +196,6 @@ struct ALADDINApp: App {
                         .environmentObject(localizationManager))
                     case .familyChat:
                         AnyView(FamilyChatScreen().id("familyChat").environmentObject(navigationManager).environmentObject(localizationManager))
-                    case .networkProtectionEnergyStats:
-                        AnyView(NetworkProtectionEnergyStatsScreen().id("networkProtectionEnergyStats").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .support:
                         AnyView(SupportScreen().id("support").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .addMemberOptions:
@@ -208,10 +206,6 @@ struct ALADDINApp: App {
                         AnyView(FamilyTournamentView().id("familyTournament").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .unicornPet:
                         AnyView(UnicornPetView().id("unicornPet").environmentObject(navigationManager).environmentObject(localizationManager))
-                    case .unicornUniverse:
-                        AnyView(UnicornUniverseView().id("unicornUniverse").environmentObject(navigationManager).environmentObject(localizationManager))
-                    case .wheelOfFortune:
-                        AnyView(WheelOfFortuneView().id("wheelOfFortune").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .youngDefender:
                         AnyView(YoungDefenderView().id("youngDefender").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .familyProtector:

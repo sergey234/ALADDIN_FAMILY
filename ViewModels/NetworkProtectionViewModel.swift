@@ -33,7 +33,7 @@ class NetworkProtectionViewModel: ObservableObject {
     @Published var mobileSecurityEnabled: Bool = false
     @Published var networkSecurityEnabled: Bool = false
     
-    // Реагирование на инциденты (1 компонент)
+    // Автоматическая система защиты (1 компонент)
     @Published var incidentResponseEnabled: Bool = false
     
     // Безопасность паролей (1 компонент)

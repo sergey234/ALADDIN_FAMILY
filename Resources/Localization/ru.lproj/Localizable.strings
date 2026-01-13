@@ -554,8 +554,8 @@
 "component.crash_detection_agent.desc" = "Автоматическое обнаружение ДТП и вызов помощи";
 "component.roadside_assistance_agent.title" = "Помощь на дороге";
 "component.roadside_assistance_agent.desc" = "Быстрая помощь при поломке автомобиля";
-"component.incident_response_agent.title" = "Реагирование на инциденты";
-"component.incident_response_agent.desc" = "Автоматическое реагирование на критические события";
+"component.incident_response_agent.title" = "Автоматическая система защиты";
+"component.incident_response_agent.desc" = "Автоматическое обнаружение и блокировка угроз";
 "component.emergency_response_bot.title" = "Экстренный ответ";
 "component.emergency_response_bot.desc" = "Бот для экстренных ситуаций";
 "component.emergency_event_manager.title" = "Управление экстренными событиями";
@@ -670,8 +670,8 @@
 "component.emergency_help.subtitle" = "Быстрая помощь в критических ситуациях";
 "component.threat_protection.title" = "Защита от угроз";
 "component.threat_protection.subtitle" = "Защита от различных видов угроз";
-"component.incident_response.title" = "Реагирование";
-"component.incident_response.subtitle" = "Автоматическое реагирование на инциденты";
+"component.incident_response.title" = "Автоматическая система защиты";
+"component.incident_response.subtitle" = "Автоматическое обнаружение и блокировка угроз";
 "component.password_security.title" = "Пароли";
 "component.password_security.subtitle" = "Безопасность паролей";
 "component.child_protection.title" = "Защита детей";
@@ -748,6 +748,18 @@
 /* ═══════════════════════════════════════════════════════════════
  * МЕНЕДЖЕРЫ - ЛОКАЛИЗАЦИЯ ДЛЯ VIEW
  * ═══════════════════════════════════════════════════════════════ */
+
+/* SettingsScreen - Component Keys (Old Format) */
+"component_emergency_contact_manager_title" = "Экстренные контакты";
+"component_emergency_contact_manager_description" = "Управление контактами для экстренных случаев";
+"component_emergency_notification_manager_title" = "Экстренные уведомления";
+"component_emergency_notification_manager_description" = "Настройка экстренных оповещений";
+"component_voice_control_manager_title" = "Голосовое управление";
+"component_voice_control_manager_description" = "Управление голосовыми командами";
+"component_russian_child_protection_manager_title" = "Защита детей (РФ)";
+"component_russian_child_protection_manager_description" = "Соответствие законам РФ";
+"component_russian_data_protection_manager_title" = "Защита данных (РФ)";
+"component_russian_data_protection_manager_description" = "Соответствие 152-ФЗ РФ";
 
 /* Emergency Contacts */
 "emergency_contacts_info_title" = "Экстренные контакты";

@@ -36,7 +36,7 @@ struct ProfileEditView: View {
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(localizationManager.localized("profile_edit_background_accessibility"))
                 
-                ScrollView(.vertical, showsIndicators: false) {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: 20) {
                         // Аватар
                         avatarSection
@@ -48,7 +48,8 @@ struct ProfileEditView: View {
                         actionButtons
                     }
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 40)
+                    .padding(.top, 20)
+                    .padding(.bottom, 100)
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel(localizationManager.localized("profile_edit_form_accessibility"))
@@ -91,7 +92,7 @@ struct ProfileEditView: View {
         }
         .onAppear {
             // Загружаем сохраненное фото при открытии
-            selectedImage = ProfileImageManager.shared.loadProfileImage()
+            selectedImage = ProfileImageManager.shared.loadProfileImage(for: .main)
             
             // Загружаем сохраненные значения из @AppStorage
             name = storedName
@@ -325,7 +326,7 @@ struct ProfileEditView: View {
         
         // Сохраняем фото профиля, если оно было выбрано
         if let image = selectedImage {
-            _ = ProfileImageManager.shared.saveProfileImage(image)
+            _ = ProfileImageManager.shared.saveProfileImage(image, for: .main)
             print("✅ Profile image saved")
         }
         

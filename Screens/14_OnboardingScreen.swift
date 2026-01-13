@@ -357,7 +357,7 @@ struct OnboardingScreen: View {
         .task {
             print("🚨 OnboardingScreen загружен!")
             // Загружаем изображение профиля при загрузке экрана
-            profileImage = ProfileImageManager.shared.loadProfileImage()
+            profileImage = ProfileImageManager.shared.loadProfileImage(for: .main)
             
             // ⚠️ КРИТИЧЕСКАЯ ПРОВЕРКА: Количество страниц должно быть 7!
             if pages.count != Self.EXPECTED_PAGES_COUNT {

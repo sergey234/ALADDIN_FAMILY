@@ -138,7 +138,7 @@ struct EmergencyNotificationsView: View {
     
     private var saveButton: some View {
         Button(action: saveSettings) {
-            Text(localizationManager.localized("common.save"))
+            Text(localizationManager.localized("common_save"))
                 .font(.bodyBold)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
@@ -153,7 +153,7 @@ struct EmergencyNotificationsView: View {
     private func saveSettings() {
         Task {
             // TODO: Сохранить настройки через API
-            toastManager.showSuccess("Настройки сохранены")
+            toastManager.showSuccess(localizationManager.localized("settings_saved"))
         }
     }
 }

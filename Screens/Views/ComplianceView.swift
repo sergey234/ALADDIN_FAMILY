@@ -23,17 +23,21 @@ struct ComplianceView: View {
     // Child Protection
     @State private var childLegalProfile: String = "children"
     @State private var selectedRegions: Set<String> = []
-    @State private var storagePolicy: Int = 90 // дней
     @State private var deletionPolicy: String = "automatic"
     
     // Data Protection
-    @State private var dataLegalProfile: String = "individual"
     @State private var dataSelectedRegions: Set<String> = []
-    @State private var dataStoragePolicy: Int = 365 // дней
     @State private var dataDeletionPolicy: String = "automatic"
     @State private var encryptionEnabled: Bool = true
     
-    let russianRegions = ["Москва", "Санкт-Петербург", "Московская область", "Ленинградская область"]
+    var russianRegions: [(key: String, localized: String)] {
+        [
+            ("moscow", localizationManager.localized("compliance_region_moscow")),
+            ("spb", localizationManager.localized("compliance_region_spb")),
+            ("moscow_oblast", localizationManager.localized("compliance_region_moscow_oblast")),
+            ("leningrad_oblast", localizationManager.localized("compliance_region_leningrad_oblast"))
+        ]
+    }
     
     var body: some View {
         ZStack {
@@ -61,6 +65,7 @@ struct ComplianceView: View {
                         }
                         
                         saveButton
+                            .padding(.top, Spacing.m)
                     }
                     .padding(Spacing.m)
                 }
@@ -97,16 +102,16 @@ struct ComplianceView: View {
                     .font(.title3)
                     .foregroundColor(.textPrimary)
                 
-                ForEach(russianRegions, id: \.self) { region in
+                ForEach(russianRegions, id: \.key) { region in
                     Toggle(
-                        region,
+                        region.localized,
                         isOn: Binding(
-                            get: { selectedRegions.contains(region) },
+                            get: { selectedRegions.contains(region.key) },
                             set: { isOn in
                                 if isOn {
-                                    selectedRegions.insert(region)
+                                    selectedRegions.insert(region.key)
                                 } else {
-                                    selectedRegions.remove(region)
+                                    selectedRegions.remove(region.key)
                                 }
                             }
                         )
@@ -119,30 +124,8 @@ struct ComplianceView: View {
                     .fill(Color.backgroundMedium.opacity(0.3))
             )
             
-            // Storage Policy
-            VStack(alignment: .leading, spacing: Spacing.m) {
-                Text(localizationManager.localized("compliance_storage_title"))
-                    .font(.title3)
-                    .foregroundColor(.textPrimary)
-                
-                HStack {
-                    Text("\(storagePolicy)")
-                        .font(.headline)
-                    Text(localizationManager.localized("compliance_storage_days"))
-                        .font(.body)
-                    Spacer()
-                }
-                
-                Slider(value: Binding(
-                    get: { Double(storagePolicy) },
-                    set: { storagePolicy = Int($0) }
-                ), in: 30...365, step: 1)
-            }
-            .padding(Spacing.m)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .fill(Color.backgroundMedium.opacity(0.3))
-            )
+            // Storage Policy (Fixed values according to privacy policy)
+            storagePolicyInfoCards
             
             // Deletion Policy
             VStack(alignment: .leading, spacing: Spacing.m) {
@@ -168,23 +151,8 @@ struct ComplianceView: View {
     
     private var dataProtectionContent: some View {
         VStack(spacing: Spacing.l) {
-            // Legal Profile
-            VStack(alignment: .leading, spacing: Spacing.m) {
-                Text(localizationManager.localized("compliance_legal_profile_title"))
-                    .font(.title3)
-                    .foregroundColor(.textPrimary)
-                
-                Picker("", selection: $dataLegalProfile) {
-                    Text(localizationManager.localized("compliance_profile_individual")).tag("individual")
-                    Text(localizationManager.localized("compliance_profile_legal")).tag("legal")
-                }
-                .pickerStyle(.segmented)
-            }
-            .padding(Spacing.m)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .fill(Color.backgroundMedium.opacity(0.3))
-            )
+            // Info Card: We don't collect personal data
+            infoCardNoPersonalData
             
             // Regions
             VStack(alignment: .leading, spacing: Spacing.m) {
@@ -192,16 +160,16 @@ struct ComplianceView: View {
                     .font(.title3)
                     .foregroundColor(.textPrimary)
                 
-                ForEach(russianRegions, id: \.self) { region in
+                ForEach(russianRegions, id: \.key) { region in
                     Toggle(
-                        region,
+                        region.localized,
                         isOn: Binding(
-                            get: { dataSelectedRegions.contains(region) },
+                            get: { dataSelectedRegions.contains(region.key) },
                             set: { isOn in
                                 if isOn {
-                                    dataSelectedRegions.insert(region)
+                                    dataSelectedRegions.insert(region.key)
                                 } else {
-                                    dataSelectedRegions.remove(region)
+                                    dataSelectedRegions.remove(region.key)
                                 }
                             }
                         )
@@ -214,30 +182,8 @@ struct ComplianceView: View {
                     .fill(Color.backgroundMedium.opacity(0.3))
             )
             
-            // Storage Policy
-            VStack(alignment: .leading, spacing: Spacing.m) {
-                Text(localizationManager.localized("compliance_storage_title"))
-                    .font(.title3)
-                    .foregroundColor(.textPrimary)
-                
-                HStack {
-                    Text("\(dataStoragePolicy)")
-                        .font(.headline)
-                    Text(localizationManager.localized("compliance_storage_days"))
-                        .font(.body)
-                    Spacer()
-                }
-                
-                Slider(value: Binding(
-                    get: { Double(dataStoragePolicy) },
-                    set: { dataStoragePolicy = Int($0) }
-                ), in: 90...1095, step: 1)
-            }
-            .padding(Spacing.m)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .fill(Color.backgroundMedium.opacity(0.3))
-            )
+            // Storage Policy (Fixed values according to privacy policy)
+            storagePolicyInfoCards
             
             // Encryption
             VStack(alignment: .leading, spacing: Spacing.m) {
@@ -276,9 +222,82 @@ struct ComplianceView: View {
         }
     }
     
+    // MARK: - Info Cards
+    
+    private var infoCardNoPersonalData: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack {
+                Image(systemName: "info.circle.fill")
+                    .foregroundColor(.primaryBlue)
+                Text(localizationManager.localized("compliance_no_personal_data_title"))
+                    .font(.bodyBold)
+                    .foregroundColor(.textPrimary)
+            }
+            Text(localizationManager.localized("compliance_no_personal_data_text"))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.primaryBlue.opacity(0.1))
+        )
+    }
+    
+    private var storagePolicyInfoCards: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("compliance_storage_title"))
+                .font(.title3)
+                .foregroundColor(.textPrimary)
+            
+            // Анонимные сессии: 24 часа
+            storageInfoCard(
+                title: localizationManager.localized("compliance_storage_sessions_title"),
+                value: localizationManager.localized("compliance_storage_sessions_value")
+            )
+            
+            // Статистика угроз: 30 дней
+            storageInfoCard(
+                title: localizationManager.localized("compliance_storage_statistics_title"),
+                value: localizationManager.localized("compliance_storage_statistics_value")
+            )
+            
+            // Агрегированная аналитика: 1 год
+            storageInfoCard(
+                title: localizationManager.localized("compliance_storage_analytics_title"),
+                value: localizationManager.localized("compliance_storage_analytics_value")
+            )
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .fill(Color.backgroundMedium.opacity(0.3))
+        )
+    }
+    
+    private func storageInfoCard(title: String, value: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.body)
+                .foregroundColor(.textPrimary)
+            Spacer()
+            Text(value)
+                .font(.bodyBold)
+                .foregroundColor(.primaryBlue)
+        }
+        .padding(Spacing.s)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.2))
+        )
+    }
+    
     private var saveButton: some View {
-        Button(action: saveSettings) {
-            Text(localizationManager.localized("common.save"))
+        Button(action: {
+            HapticFeedback.impact(.medium)
+            saveSettings()
+        }) {
+            Text(localizationManager.localized("common_save"))
                 .font(.bodyBold)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
@@ -286,14 +305,26 @@ struct ComplianceView: View {
                 .background(Color.primaryBlue)
                 .cornerRadius(CornerRadius.medium)
         }
+        .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(localizationManager.localized("common_save"))
     }
     
     // MARK: - Methods
     
     private func saveSettings() {
+        // Тактильная обратная связь
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+        
         Task {
             // TODO: Сохранить настройки через API
-            toastManager.showSuccess("Настройки сохранены")
+            await MainActor.run {
+                toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                // Закрыть окно после сохранения
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    dismiss()
+                }
+            }
         }
     }
 }

@@ -402,8 +402,8 @@
 "component.crash_detection_agent.desc" = "Automatic crash detection and emergency call";
 "component.roadside_assistance_agent.title" = "Roadside Assistance";
 "component.roadside_assistance_agent.desc" = "Quick help for car breakdowns";
-"component.incident_response_agent.title" = "Incident Response";
-"component.incident_response_agent.desc" = "Automatic response to critical events";
+"component.incident_response_agent.title" = "Automatic Protection System";
+"component.incident_response_agent.desc" = "Automatic threat detection and blocking";
 "component.emergency_response_bot.title" = "Emergency Response";
 "component.emergency_response_bot.desc" = "Bot for emergency situations";
 "component.emergency_event_manager.title" = "Emergency Event Manager";
@@ -518,8 +518,8 @@
 "component.emergency_help.subtitle" = "Quick help in critical situations";
 "component.threat_protection.title" = "Threat Protection";
 "component.threat_protection.subtitle" = "Protection from various threats";
-"component.incident_response.title" = "Incident Response";
-"component.incident_response.subtitle" = "Automatic response to incidents";
+"component.incident_response.title" = "Automatic Protection System";
+"component.incident_response.subtitle" = "Automatic threat detection and blocking";
 "component.password_security.title" = "Passwords";
 "component.password_security.subtitle" = "Password security";
 "component.child_protection.title" = "Child Protection";
@@ -598,6 +598,18 @@
 /* ═══════════════════════════════════════════════════════════════
  * MANAGERS - LOCALIZATION FOR VIEWS
  * ═══════════════════════════════════════════════════════════════ */
+
+/* SettingsScreen - Component Keys (Old Format) */
+"component_emergency_contact_manager_title" = "Emergency Contacts";
+"component_emergency_contact_manager_description" = "Manage contacts for emergencies";
+"component_emergency_notification_manager_title" = "Emergency Notifications";
+"component_emergency_notification_manager_description" = "Configure emergency alerts";
+"component_voice_control_manager_title" = "Voice Control";
+"component_voice_control_manager_description" = "Manage voice commands";
+"component_russian_child_protection_manager_title" = "Child Protection (RU)";
+"component_russian_child_protection_manager_description" = "Compliance with RF laws";
+"component_russian_data_protection_manager_title" = "Data Protection (RU)";
+"component_russian_data_protection_manager_description" = "Compliance with 152-FZ RF";
 
 /* Emergency Contacts */
 "emergency_contacts_info_title" = "Emergency Contacts";

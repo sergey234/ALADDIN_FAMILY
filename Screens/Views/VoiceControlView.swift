@@ -19,7 +19,6 @@ struct VoiceControlView: View {
     @State private var isOnlineMode: Bool = true
     
     let activationWords = ["Аладдин", "Aladdin", "Защита", "Protection"]
-    let languages = ["ru": "Русский", "en": "English"]
     
     var body: some View {
         ZStack {
@@ -93,9 +92,8 @@ struct VoiceControlView: View {
                 localizationManager.localized("voice_control_language"),
                 selection: $selectedLanguage
             ) {
-                ForEach(Array(languages.keys), id: \.self) { key in
-                    Text(languages[key] ?? "").tag(key)
-                }
+                Text(localizationManager.localized("language_russian")).tag("ru")
+                Text(localizationManager.localized("language_english")).tag("en")
             }
             .pickerStyle(.menu)
         }
@@ -149,7 +147,7 @@ struct VoiceControlView: View {
     
     private var saveButton: some View {
         Button(action: saveSettings) {
-            Text(localizationManager.localized("common.save"))
+            Text(localizationManager.localized("common_save"))
                 .font(.bodyBold)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
@@ -164,7 +162,7 @@ struct VoiceControlView: View {
     private func saveSettings() {
         Task {
             // TODO: Сохранить настройки через API
-            toastManager.showSuccess("Настройки сохранены")
+            toastManager.showSuccess(localizationManager.localized("settings_saved"))
         }
     }
 }

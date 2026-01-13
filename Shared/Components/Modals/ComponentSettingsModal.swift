@@ -14,7 +14,6 @@ struct ComponentSettingsModal<Content: View>: View {
     let onSave: (() -> Void)?
     
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @State private var hasChanges: Bool = false
     
     init(
         componentId: String,
@@ -67,7 +66,6 @@ struct ComponentSettingsModal<Content: View>: View {
                                 .fontWeight(.semibold)
                         }
                         .accessibilityLabel("Save")
-                        .disabled(!hasChanges)
                     }
                 }
             }

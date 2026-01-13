@@ -44,7 +44,7 @@ struct FamilyNotificationSettingsModal: View {
                     .padding(Spacing.m)
                 }
             }
-            .navigationTitle(localizationManager.localized("component_family_notification_manager_title"))
+            .navigationTitle(localizationManager.localized("component.family_notification_manager.title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -195,7 +195,7 @@ struct FamilyNotificationSettingsModal: View {
     private func saveSettings() {
         Task {
             // TODO: Сохранить настройки через API
-            toastManager.showSuccess("Настройки сохранены")
+            toastManager.showSuccess(localizationManager.localized("settings_saved"))
             dismiss()
         }
     }

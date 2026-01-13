@@ -150,7 +150,7 @@ struct EmergencyContactsView: View {
     private func saveContacts() {
         Task {
             // TODO: Сохранить контакты через API
-            toastManager.showSuccess("Контакты сохранены")
+            toastManager.showSuccess(localizationManager.localized("settings_saved_contacts"))
         }
     }
     
@@ -237,12 +237,12 @@ struct AddEmergencyContactView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(localizationManager.localized("common.cancel")) {
+                    Button(localizationManager.localized("common_cancel")) {
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localizationManager.localized("common.save")) {
+                    Button(localizationManager.localized("common_save")) {
                         let contact = EmergencyContact(
                             name: name,
                             phone: phone,

@@ -40,7 +40,6 @@ class NavigationManager: ObservableObject {
         case referral = "21_ReferralScreen"
         case deviceDetail = "22_DeviceDetailScreen"
         case familyChat = "23_FamilyChatScreen"
-        case networkProtectionEnergyStats = "24_NetworkProtectionEnergyStatsScreen"
         case paymentQR = "25_PaymentQRScreen"
         case activationCode = "26_ActivationCodeScreen"
         
@@ -50,8 +49,6 @@ class NavigationManager: ObservableObject {
         case securityEducation = "SecurityEducationScreen"
         case gamesParentalControl = "GamesParentalControlView"
         case unicornPet = "UnicornPetView"
-        case unicornUniverse = "UnicornUniverseView"
-        case wheelOfFortune = "WheelOfFortuneView"
         
         // НОВЫЕ ИГРОВЫЕ ЭКРАНЫ (геймификация)
         case youngDefender = "YoungDefenderView"           // 🛡️ Юный защитник
@@ -96,15 +93,12 @@ class NavigationManager: ObservableObject {
             case .referral: return "Реферальная программа"
             case .deviceDetail: return "Детали устройства"
             case .familyChat: return "Семейный чат"
-            case .networkProtectionEnergyStats: return "Статистика защиты сети"
             case .paymentQR: return "Оплата QR"
             case .childRewards: return "Детские награды"
             case .familyTournament: return "Семейный турнир"
             case .securityEducation: return "Безопасность"
             case .gamesParentalControl: return "Игры и контроль"
             case .unicornPet: return "Единорог-питомец"
-            case .unicornUniverse: return "Вселенная единорогов"
-            case .wheelOfFortune: return "Колесо фортуны"
             case .mainWithRegistration: return "Главная с регистрацией"
             case .languageSettings: return "Настройки языка"
             case .notificationSettings: return "Настройки уведомлений"
@@ -131,7 +125,7 @@ class NavigationManager: ObservableObject {
             case .settings: return "gearshape.fill"
             case .aiAssistant: return "brain.head.profile"
             case .parentalControl: return "person.crop.circle.badge.checkmark"
-            case .childInterface: return "child"
+            case .childInterface: return "figure.child"
             case .childContent: return "book.fill"
             case .elderlyInterface: return "person.crop.circle"
             case .tariffs: return "creditcard.fill"
@@ -146,15 +140,12 @@ class NavigationManager: ObservableObject {
             case .referral: return "gift.fill"
             case .deviceDetail: return "info.circle.fill"
             case .familyChat: return "message.fill"
-            case .networkProtectionEnergyStats: return "battery.100percent"
             case .paymentQR: return "qrcode"
             case .childRewards: return "star.fill"
             case .familyTournament: return "trophy.fill"
             case .securityEducation: return "shield.lefthalf.filled"
             case .gamesParentalControl: return "gamecontroller.fill"
             case .unicornPet: return "pawprint.fill"
-            case .unicornUniverse: return "sparkles"
-            case .wheelOfFortune: return "circle.grid.3x3.fill"
             case .mainWithRegistration: return "house.fill"
             case .languageSettings: return "globe"
             case .notificationSettings: return "bell.badge.fill"
@@ -504,7 +495,7 @@ extension NavigationManager.ALADDINScreen {
     var isGameScreen: Bool {
         switch self {
         case .childRewards, .familyTournament, .gamesParentalControl, 
-             .unicornPet, .unicornUniverse, .wheelOfFortune:
+             .unicornPet:
             return true
         default:
             return false

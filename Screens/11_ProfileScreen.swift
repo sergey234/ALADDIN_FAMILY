@@ -598,11 +598,11 @@ struct ProfileScreen: View {
     // MARK: - Profile Image Management
     
     private func loadProfileImage() {
-        selectedImage = ProfileImageManager.shared.loadProfileImage()
+        selectedImage = ProfileImageManager.shared.loadProfileImage(for: .main)
     }
     
     private func saveProfileImage(_ image: UIImage) {
-        _ = ProfileImageManager.shared.saveProfileImage(image)
+        _ = ProfileImageManager.shared.saveProfileImage(image, for: .main)
     }
 }
 

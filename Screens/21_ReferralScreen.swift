@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import CoreImage.CIFilterBuiltins
 
 /// 🎁 Referral Screen - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
 /// Реферальная программа с системой бонусов
@@ -1067,16 +1068,80 @@ enum ClipboardType {
 struct QRCodeView: View {
     let code: String
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+    @State private var qrImage: UIImage?
     
     var body: some View {
-        VStack {
-            Text(localizationManager.localized("referral_qr_view_title"))
-                .font(.h2)
-            
-            Text(code)
-                .font(.body)
+        NavigationView {
+            VStack(spacing: Spacing.l) {
+                Text(localizationManager.localized("referral_qr_view_title"))
+                    .font(.h2)
+                    .foregroundColor(.textPrimary)
+                    .padding(.top, Spacing.m)
+                
+                if let qrImage = qrImage {
+                    Image(uiImage: qrImage)
+                        .resizable()
+                        .interpolation(.none)
+                        .scaledToFit()
+                        .frame(width: 250, height: 250)
+                        .background(Color.white)
+                        .padding()
+                } else {
+                    VStack(spacing: Spacing.m) {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle())
+                        
+                        Text(localizationManager.localized("referral_qr_generating"))
+                            .font(.body)
+                            .foregroundColor(.textSecondary)
+                    }
+                    .frame(width: 250, height: 250)
+                }
+                
+                if !code.isEmpty {
+                    Text(code)
+                        .font(.body.monospaced())
+                        .foregroundColor(.textPrimary)
+                        .padding()
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(CornerRadius.medium)
+                }
+                
+                Spacer()
+            }
+            .padding()
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(localizationManager.localized("referral_qr_done")) {
+                        dismiss()
+                    }
+                }
+            }
         }
-        .padding()
+        .onAppear {
+            generateQRCode()
+        }
+    }
+    
+    private func generateQRCode() {
+        guard !code.isEmpty else { return }
+        
+        let qrString = code.contains("http") ? code : "https://aladdin-ai.ru/invite/\(code)"
+        let context = CIContext()
+        let filter = CIFilter.qrCodeGenerator()
+        
+        filter.message = Data(qrString.utf8)
+        
+        if let outputImage = filter.outputImage {
+            let transform = CGAffineTransform(scaleX: 10, y: 10)
+            let scaledImage = outputImage.transformed(by: transform)
+            
+            if let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) {
+                qrImage = UIImage(cgImage: cgImage)
+            }
+        }
     }
 }
 
