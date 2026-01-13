@@ -15,7 +15,16 @@ struct NetworkProtectionScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
     @StateObject private var antivirusManager = AntivirusManager.shared
+    @StateObject private var viewModel = NetworkProtectionViewModel()
     @State private var showingSettings = false
+    @State private var showPasswordGenerator = false
+    @State private var showIncidentResponseSettings = false
+    
+    // Состояния для аккордеонов
+    @State private var emergencyHelpExpanded = false
+    @State private var threatProtectionExpanded = false
+    @State private var incidentResponseExpanded = false
+    @State private var passwordSecurityExpanded = false
     // ✅ УДАЛЕНО: showingStatistics и showingHelp (использовались только в Quick Actions)
     
     // MARK: - Helper Views
@@ -68,6 +77,9 @@ struct NetworkProtectionScreen: View {
                         // Security Features
                         securityFeaturesCard
                         
+                        // ✅ НОВЫЕ РАЗДЕЛЫ: Компоненты безопасности (42 компонента)
+                        componentsSections
+                        
                         // ✅ УДАЛЕНО: Quick Actions карточка
                         // quickActionsCard
                         
@@ -88,7 +100,160 @@ struct NetworkProtectionScreen: View {
         .sheet(isPresented: $showingSettings) {
             NetworkProtectionSettingsView()
         }
+        .sheet(isPresented: $showPasswordGenerator) {
+            PasswordGeneratorModal()
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showIncidentResponseSettings) {
+            IncidentResponseSettingsModal(
+                componentId: "incident_response_agent",
+                isPresented: $showIncidentResponseSettings
+            )
+            .environmentObject(localizationManager)
+        }
         // ✅ УДАЛЕНО: .sheet для showingStatistics и showingHelp (Quick Actions удалены)
+    }
+    
+    // MARK: - Components Sections (42 компонента)
+    
+    private var componentsSections: some View {
+        VStack(spacing: Spacing.l) {
+            // Раздел 1: Экстренная помощь
+            SettingsAccordion(
+                icon: "🚨",
+                title: localizationManager.localized("component.emergency_help.title"),
+                subtitle: localizationManager.localized("component.emergency_help.subtitle"),
+                isExpanded: $emergencyHelpExpanded
+            ) {
+                SecurityFeatureRow(
+                    componentId: "crash_detection_agent",
+                    title: localizationManager.localized("component.crash_detection_agent.title"),
+                    description: localizationManager.localized("component.crash_detection_agent.desc"),
+                    isEnabled: $viewModel.crashDetectionEnabled,
+                    hasSettings: false,
+                    onToggle: { viewModel.toggleCrashDetection() }
+                )
+                
+                SecurityFeatureRow(
+                    componentId: "roadside_assistance_agent",
+                    title: localizationManager.localized("component.roadside_assistance_agent.title"),
+                    description: localizationManager.localized("component.roadside_assistance_agent.desc"),
+                    isEnabled: $viewModel.roadsideAssistanceEnabled,
+                    hasSettings: false,
+                    onToggle: { viewModel.toggleRoadsideAssistance() }
+                )
+                
+                SecurityFeatureRow(
+                    componentId: "emergency_response_bot",
+                    title: localizationManager.localized("component.emergency_response_bot.title"),
+                    description: localizationManager.localized("component.emergency_response_bot.desc"),
+                    isEnabled: $viewModel.emergencyResponseEnabled,
+                    hasSettings: false,
+                    onToggle: { viewModel.toggleEmergencyResponse() }
+                )
+                
+                SecurityFeatureRow(
+                    componentId: "emergency_event_manager",
+                    title: localizationManager.localized("component.emergency_event_manager.title"),
+                    description: localizationManager.localized("component.emergency_event_manager.desc"),
+                    isEnabled: $viewModel.emergencyEventEnabled,
+                    hasSettings: false,
+                    onToggle: { viewModel.toggleEmergencyEvent() }
+                )
+            }
+            
+            // Раздел 2: Защита от угроз
+            SettingsAccordion(
+                icon: "🛡️",
+                title: localizationManager.localized("component.threat_protection.title"),
+                subtitle: localizationManager.localized("component.threat_protection.subtitle"),
+                isExpanded: $threatProtectionExpanded
+            ) {
+                SecurityFeatureRow(
+                    componentId: "phishing_protection_agent",
+                    title: localizationManager.localized("component.phishing_protection_agent.title"),
+                    description: localizationManager.localized("component.phishing_protection_agent.desc"),
+                    isEnabled: $viewModel.phishingProtectionEnabled,
+                    hasSettings: true,
+                    onToggle: { viewModel.togglePhishingProtection() },
+                    onSettingsTap: { /* TODO: Открыть настройки фишинга */ }
+                )
+                
+                SecurityFeatureRow(
+                    componentId: "malware_detection_agent",
+                    title: localizationManager.localized("component.malware_detection_agent.title"),
+                    description: localizationManager.localized("component.malware_detection_agent.desc"),
+                    isEnabled: $viewModel.malwareDetectionEnabled,
+                    hasSettings: true,
+                    onToggle: { viewModel.toggleMalwareDetection() },
+                    onSettingsTap: { /* TODO: Открыть настройки вредоносного ПО */ }
+                )
+                
+                SecurityFeatureRow(
+                    componentId: "mobile_security_agent",
+                    title: localizationManager.localized("component.mobile_security_agent.title"),
+                    description: localizationManager.localized("component.mobile_security_agent.desc"),
+                    isEnabled: $viewModel.mobileSecurityEnabled,
+                    hasSettings: true,
+                    onToggle: { viewModel.toggleMobileSecurity() },
+                    onSettingsTap: { /* TODO: Открыть настройки мобильной безопасности */ }
+                )
+                
+                SecurityFeatureRow(
+                    componentId: "network_security_agent",
+                    title: localizationManager.localized("component.network_security_agent.title"),
+                    description: localizationManager.localized("component.network_security_agent.desc"),
+                    isEnabled: $viewModel.networkSecurityEnabled,
+                    hasSettings: true,
+                    onToggle: { viewModel.toggleNetworkSecurity() },
+                    onSettingsTap: { /* TODO: Открыть настройки сетевой безопасности */ }
+                )
+            }
+            
+            // Раздел 3: Реагирование на инциденты
+            SettingsAccordion(
+                icon: "🚨",
+                title: localizationManager.localized("component.incident_response.title"),
+                subtitle: localizationManager.localized("component.incident_response.subtitle"),
+                isExpanded: $incidentResponseExpanded
+            ) {
+                SecurityFeatureRow(
+                    componentId: "incident_response_agent",
+                    title: localizationManager.localized("component.incident_response_agent.title"),
+                    description: localizationManager.localized("component.incident_response_agent.desc"),
+                    isEnabled: $viewModel.incidentResponseEnabled,
+                    hasSettings: true,
+                    onToggle: { viewModel.toggleIncidentResponse() },
+                    onSettingsTap: { showIncidentResponseSettings = true }
+                )
+            }
+            
+            // Раздел 4: Безопасность паролей
+            SettingsAccordion(
+                icon: "🔐",
+                title: localizationManager.localized("component.password_security.title"),
+                subtitle: localizationManager.localized("component.password_security.subtitle"),
+                isExpanded: $passwordSecurityExpanded
+            ) {
+                SecurityFeatureRow(
+                    componentId: "password_security_agent",
+                    title: localizationManager.localized("component.password_security_agent.title"),
+                    description: localizationManager.localized("component.password_security_agent.desc"),
+                    isEnabled: $viewModel.passwordSecurityEnabled,
+                    hasSettings: true,
+                    onToggle: { viewModel.togglePasswordSecurity() },
+                    onSettingsTap: { showPasswordGenerator = true }
+                )
+            }
+        }
+        .padding(.vertical, Spacing.m)
+        .onAppear {
+            // Отследить просмотр экрана с компонентами
+            ComponentAnalytics.shared.trackComponentScreenView(
+                screenName: "NetworkProtectionScreen",
+                componentCount: 10
+            )
+        }
     }
     
     // MARK: - Безопасное соединение Status Card (компактная версия)
