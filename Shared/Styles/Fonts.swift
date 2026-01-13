@@ -18,6 +18,10 @@ extension Font {
     /// Источник: HTML h3 { font-size: 20px; font-weight: 600; }
     static let h3 = Font.system(size: 20, weight: .semibold, design: .default)
     
+    /// H4: Мелкие заголовки
+    /// Источник: HTML h4 { font-size: 18px; font-weight: 600; }
+    static let h4 = Font.system(size: 18, weight: .semibold, design: .default)
+    
     // MARK: - Body Text
     
     /// Body: Основной текст

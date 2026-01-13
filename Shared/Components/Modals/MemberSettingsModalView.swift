@@ -460,14 +460,28 @@ struct SettingsRow: View {
 }
 
 struct ToggleRow: View {
-    let icon: String
+    let icon: String?
     let title: String
     @Binding var isOn: Bool
     
+    init(title: String, isOn: Binding<Bool>) {
+        self.icon = nil
+        self.title = title
+        self._isOn = isOn
+    }
+    
+    init(icon: String, title: String, isOn: Binding<Bool>) {
+        self.icon = icon
+        self.title = title
+        self._isOn = isOn
+    }
+    
     var body: some View {
         HStack {
-            Text(icon)
-                .font(.system(size: 24))
+            if let icon = icon {
+                Text(icon)
+                    .font(.system(size: 24))
+            }
             
             Text(title)
                 .font(.body)

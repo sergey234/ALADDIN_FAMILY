@@ -93,6 +93,28 @@ class ToastManager: ObservableObject {
             self.isShowing = false
         }
     }
+    
+    // MARK: - Convenience Methods
+    
+    /// Показать успешное сообщение
+    func showSuccess(_ message: String) {
+        show(message: message, type: .success)
+    }
+    
+    /// Показать сообщение об ошибке
+    func showError(_ message: String) {
+        show(message: message, type: .error)
+    }
+    
+    /// Показать информационное сообщение
+    func showInfo(_ message: String) {
+        show(message: message, type: .info)
+    }
+    
+    /// Показать предупреждение
+    func showWarning(_ message: String) {
+        show(message: message, type: .warning)
+    }
 }
 
 /// 🔔 Toast View Modifier

@@ -1,4 +1,5 @@
 import Foundation
+// Импортируем ComponentError для конвертации (если файлы в одном модуле, импорт не нужен)
 
 /**
  * Менеджер повторных попыток для сетевых запросов
@@ -93,6 +94,22 @@ class RetryManager {
                 // Ждем перед следующей попыткой
                 try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                 
+            } catch let error as ComponentError {
+                // Конвертируем ComponentError в NetworkError
+                let networkError = error.toNetworkError()
+                if !networkError.isRetryable || attempt == maxRetries {
+                    totalTime = Date().timeIntervalSince(startTime ?? Date())
+                    print("❌ Retry: Финальная ошибка после \(attempt) попыток за \(String(format: "%.2f", totalTime))с: \(error.localizedDescription)")
+                    return .failure(networkError)
+                }
+                
+                // Вычисляем задержку для следующей попытки
+                let delay = calculateDelay(for: attempt)
+                print("⏳ Retry: Ошибка \(error.localizedDescription), повтор через \(String(format: "%.1f", delay))с")
+                
+                // Ждем перед следующей попыткой
+                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                
             } catch {
                 // Обрабатываем другие ошибки
                 let networkError = NetworkError.unknown(error)
@@ -152,6 +169,22 @@ class RetryManager {
                     totalTime = Date().timeIntervalSince(startTime ?? Date())
                     print("❌ Retry: Финальная ошибка после \(attempt) попыток за \(String(format: "%.2f", totalTime))с: \(error.localizedDescription)")
                     return .failure(error)
+                }
+                
+                // Вычисляем задержку для следующей попытки
+                let delay = calculateDelay(for: attempt)
+                print("⏳ Retry: Ошибка \(error.localizedDescription), повтор через \(String(format: "%.1f", delay))с")
+                
+                // Ждем перед следующей попыткой
+                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                
+            } catch let error as ComponentError {
+                // Конвертируем ComponentError в NetworkError
+                let networkError = error.toNetworkError()
+                if !retryCondition(networkError) || attempt == maxRetries {
+                    totalTime = Date().timeIntervalSince(startTime ?? Date())
+                    print("❌ Retry: Финальная ошибка после \(attempt) попыток за \(String(format: "%.2f", totalTime))с: \(error.localizedDescription)")
+                    return .failure(networkError)
                 }
                 
                 // Вычисляем задержку для следующей попытки

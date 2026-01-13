@@ -313,20 +313,6 @@ struct DeviceSettingsView: View {
     }
 }
 
-private struct ToggleRow: View {
-    let title: String
-    @Binding var isOn: Bool
-    
-    var body: some View {
-        HStack {
-            Text(title)
-                .font(.body)
-                .foregroundColor(.textPrimary)
-            Spacer()
-            ALADDINToggle(isOn: $isOn)
-        }
-    }
-}
 
 // MARK: - Preview
 
