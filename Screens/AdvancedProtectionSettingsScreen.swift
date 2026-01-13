@@ -1,14 +1,23 @@
 import SwiftUI
 
 /// ⚙️ Advanced Protection Settings Screen
-/// Экран расширенных настроек защиты с переключателями функций
+/// Экран расширенных настроек защиты с 13 компонентами
+/// Разделы: Защита в мессенджерах, Приватность, Мониторинг
 
 struct AdvancedProtectionSettingsScreen: View {
     
+    // MARK: - State
+    
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var featuresManager = ProtectionFeaturesManager.shared
-    @State private var currentLevel: Double = UserDefaults.standard.double(forKey: "protectionLevel")
+    @StateObject private var viewModel = ProtectionSettingsViewModel()
+    
+    // Состояния для аккордеонов
+    @State private var messengersExpanded = false
+    @State private var privacyExpanded = false
+    @State private var monitoringExpanded = false
+    
+    // MARK: - Body
     
     var body: some View {
         ZStack {
@@ -17,220 +26,393 @@ struct AdvancedProtectionSettingsScreen: View {
             
             VStack(spacing: 0) {
                 // Навигационная панель
-                HStack(spacing: Spacing.m) {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "chevron.left")
-                            .foregroundColor(.white)
-                            .font(.system(size: 18, weight: .semibold))
-                    }
-                    .accessibilityLabel(localizationManager.localized("common_back"))
-                    
-                    Spacer()
-                    
-                    Text(localizationManager.localized("settings_advanced_title"))
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .accessibilityAddTraits(.isHeader)
-                        .accessibilityLabel(localizationManager.localized("settings_advanced_title"))
-                    
-                    Spacer()
-                    
-                    Color.clear.frame(width: 40, height: 40)
-                }
-                .padding()
-                .background(Color.black.opacity(0.5))
+                ALADDINNavigationBar(
+                    title: localizationManager.localized("settings_advanced_title"),
+                    subtitle: localizationManager.localized("settings_advanced_subtitle"),
+                    showBackButton: true,
+                    onBack: { dismiss() }
+                )
                 
                 // Основной контент
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
-                        // Информация о текущем уровне
-                        currentLevelInfo
+                        // Разделы с компонентами
+                        componentsSections
                         
-                        // Список функций
-                        featuresList
-                        
-                        // Подсказка
-                        infoCard
+                        Spacer(minLength: 100)
                     }
-                    .padding(Spacing.m)
+                    .padding(.top, Spacing.m)
+                    .padding(.horizontal, Spacing.screenPadding)
                 }
             }
         }
         .navigationBarHidden(true)
-        .onAppear {
-            if currentLevel == 0 {
-                currentLevel = 75
+        .id("advanced_protection_settings_screen_lang_\(localizationManager.currentLanguage.rawValue)")
+        // Модальные окна для настроек
+        .sheet(isPresented: $viewModel.showTelegramSettings) {
+            ComponentSettingsModal(
+                componentId: "telegram_security_bot",
+                title: localizationManager.localized("component_telegram_security_bot_title"),
+                isPresented: $viewModel.showTelegramSettings
+            ) {
+                Text(localizationManager.localized("component_telegram_security_bot_description"))
+                    .foregroundColor(.textSecondary)
             }
-            featuresManager.applyProtectionLevel(Int(currentLevel))
+        }
+        .sheet(isPresented: $viewModel.showWhatsAppSettings) {
+            ComponentSettingsModal(
+                componentId: "whatsapp_security_bot",
+                title: localizationManager.localized("component_whatsapp_security_bot_title"),
+                isPresented: $viewModel.showWhatsAppSettings
+            ) {
+                Text(localizationManager.localized("component_whatsapp_security_bot_description"))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .sheet(isPresented: $viewModel.showInstagramSettings) {
+            ComponentSettingsModal(
+                componentId: "instagram_security_bot",
+                title: localizationManager.localized("component_instagram_security_bot_title"),
+                isPresented: $viewModel.showInstagramSettings
+            ) {
+                Text(localizationManager.localized("component_instagram_security_bot_description"))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .sheet(isPresented: $viewModel.showMaxMessengerSettings) {
+            ComponentSettingsModal(
+                componentId: "max_messenger_security_bot",
+                title: localizationManager.localized("component_max_messenger_security_bot_title"),
+                isPresented: $viewModel.showMaxMessengerSettings
+            ) {
+                Text(localizationManager.localized("component_max_messenger_security_bot_description"))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .sheet(isPresented: $viewModel.showGamingSettings) {
+            ComponentSettingsModal(
+                componentId: "gaming_security_bot",
+                title: localizationManager.localized("component_gaming_security_bot_title"),
+                isPresented: $viewModel.showGamingSettings
+            ) {
+                Text(localizationManager.localized("component_gaming_security_bot_description"))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .sheet(isPresented: $viewModel.showBrowserSettings) {
+            ComponentSettingsModal(
+                componentId: "browser_security_bot",
+                title: localizationManager.localized("component_browser_security_bot_title"),
+                isPresented: $viewModel.showBrowserSettings
+            ) {
+                Text(localizationManager.localized("component_browser_security_bot_description"))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .sheet(isPresented: $viewModel.showLocationBubbleSettings) {
+            ComponentSettingsModal(
+                componentId: "location_bubble_agent",
+                title: localizationManager.localized("component_location_bubble_agent_title"),
+                isPresented: $viewModel.showLocationBubbleSettings
+            ) {
+                Text(localizationManager.localized("component_location_bubble_agent_description"))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .sheet(isPresented: $viewModel.showPersonalDataCleanupSettings) {
+            ComponentSettingsModal(
+                componentId: "personal_data_cleanup_agent",
+                title: localizationManager.localized("component_personal_data_cleanup_agent_title"),
+                isPresented: $viewModel.showPersonalDataCleanupSettings
+            ) {
+                Text(localizationManager.localized("component_personal_data_cleanup_agent_description"))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .sheet(isPresented: $viewModel.showAntiTrackerSettings) {
+            ComponentSettingsModal(
+                componentId: "anti_tracker_agent",
+                title: localizationManager.localized("component_anti_tracker_agent_title"),
+                isPresented: $viewModel.showAntiTrackerSettings
+            ) {
+                Text(localizationManager.localized("component_anti_tracker_agent_description"))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .sheet(isPresented: $viewModel.showDarkWebMonitoringSettings) {
+            ComponentSettingsModal(
+                componentId: "dark_web_monitoring_agent",
+                title: localizationManager.localized("component_dark_web_monitoring_agent_title"),
+                isPresented: $viewModel.showDarkWebMonitoringSettings
+            ) {
+                Text(localizationManager.localized("component_dark_web_monitoring_agent_description"))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .sheet(isPresented: $viewModel.showIdentityTheftProtectionSettings) {
+            ComponentSettingsModal(
+                componentId: "russian_identity_theft_protection_agent",
+                title: localizationManager.localized("component_russian_identity_theft_protection_agent_title"),
+                isPresented: $viewModel.showIdentityTheftProtectionSettings
+            ) {
+                Text(localizationManager.localized("component_russian_identity_theft_protection_agent_description"))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .sheet(isPresented: $viewModel.showAICategoriesSettings) {
+            ComponentSettingsModal(
+                componentId: "ai_categories_agent",
+                title: localizationManager.localized("component_ai_categories_agent_title"),
+                isPresented: $viewModel.showAICategoriesSettings
+            ) {
+                Text(localizationManager.localized("component_ai_categories_agent_description"))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .sheet(isPresented: $viewModel.showDrivingReportsSettings) {
+            ComponentSettingsModal(
+                componentId: "driving_reports_agent",
+                title: localizationManager.localized("component_driving_reports_agent_title"),
+                isPresented: $viewModel.showDrivingReportsSettings
+            ) {
+                Text(localizationManager.localized("component_driving_reports_agent_description"))
+                    .foregroundColor(.textSecondary)
+            }
         }
     }
     
-    // MARK: - Current Level Info
+    // MARK: - Components Sections
     
-    private var currentLevelInfo: some View {
-        let levelInfo = featuresManager.getLevelDescription(Int(currentLevel))
-        
-        return VStack(spacing: Spacing.m) {
-            HStack {
-                Text(localizationManager.localized("settings_advanced_current_level"))
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                
-                Spacer()
-                
-                Text("\(Int(currentLevel))%")
-                    .font(.h2)
-                    .foregroundColor(protectionColor)
-            }
-            
-            Text(localizationManager.localized(levelInfo.nameKey))
-                .font(.bodyBold)
-                .foregroundColor(.textPrimary)
-            
-            Text(localizationManager.localized(levelInfo.descriptionKey))
-                .font(.body)
-                .foregroundColor(.textSecondary)
-                .multilineTextAlignment(.center)
-        }
-        .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
-    }
-    
-    // MARK: - Features List
-    
-    private var featuresList: some View {
-        VStack(spacing: Spacing.m) {
-            HStack {
-                Text(localizationManager.localized("settings_advanced_features_title"))
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                
-                Spacer()
-            }
-            
-            VStack(alignment: .leading, spacing: Spacing.s) {
-                ForEach(featuresManager.features) { feature in
-                    featureRow(feature: feature)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(Spacing.m)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
-    }
-    
-    // MARK: - Feature Row
-    
-    private func featureRow(feature: ProtectionFeature) -> some View {
-        let isRecommended = feature.isEnabledAtLevel(Int(currentLevel))
-        
-        return HStack(alignment: .top, spacing: Spacing.m) {
-            // Иконка
-            Image(systemName: feature.icon)
-                .font(.system(size: 24))
-                .foregroundColor(feature.isEnabled ? .primaryBlue : .textSecondary)
-                .frame(width: 40, alignment: .leading)
-            
-            // Информация - выровнено по левому краю, без переносов
-            VStack(alignment: .leading, spacing: Spacing.xxs) {
-                // Название функции - без переносов по слогам, выровнено по левому краю
-                HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
-                    Text(localizedFeatureName(feature))
-                        .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+    private var componentsSections: some View {
+        VStack(spacing: Spacing.l) {
+            // Раздел: Защита в мессенджерах (6 компонентов)
+            SettingsAccordion(
+                icon: "💬",
+                title: localizationManager.localized("protection_settings_messengers_title"),
+                subtitle: localizationManager.localized("protection_settings_messengers_subtitle"),
+                isExpanded: $messengersExpanded
+            ) {
+                VStack(spacing: Spacing.m) {
+                    // Telegram
+                    ComponentToggleCard(
+                        componentId: "telegram_security_bot",
+                        title: localizationManager.localized("component_telegram_security_bot_title"),
+                        description: localizationManager.localized("component_telegram_security_bot_description"),
+                        isEnabled: $viewModel.telegramSecurityEnabled,
+                        icon: "📱",
+                        onToggle: {
+                            viewModel.toggleTelegramSecurity()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showTelegramSettings = true
+                    }
                     
-                    if isRecommended && !feature.isEnabled {
-                        Text(localizationManager.localized("settings_advanced_recommended"))
-                            .font(.caption)
-                            .foregroundColor(.orange)
-                            .lineLimit(1)
-                            .fixedSize(horizontal: true, vertical: false)
+                    // WhatsApp
+                    ComponentToggleCard(
+                        componentId: "whatsapp_security_bot",
+                        title: localizationManager.localized("component_whatsapp_security_bot_title"),
+                        description: localizationManager.localized("component_whatsapp_security_bot_description"),
+                        isEnabled: $viewModel.whatsappSecurityEnabled,
+                        icon: "💬",
+                        onToggle: {
+                            viewModel.toggleWhatsAppSecurity()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showWhatsAppSettings = true
+                    }
+                    
+                    // Instagram
+                    ComponentToggleCard(
+                        componentId: "instagram_security_bot",
+                        title: localizationManager.localized("component_instagram_security_bot_title"),
+                        description: localizationManager.localized("component_instagram_security_bot_description"),
+                        isEnabled: $viewModel.instagramSecurityEnabled,
+                        icon: "📷",
+                        onToggle: {
+                            viewModel.toggleInstagramSecurity()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showInstagramSettings = true
+                    }
+                    
+                    // Max Messenger
+                    ComponentToggleCard(
+                        componentId: "max_messenger_security_bot",
+                        title: localizationManager.localized("component_max_messenger_security_bot_title"),
+                        description: localizationManager.localized("component_max_messenger_security_bot_description"),
+                        isEnabled: $viewModel.maxMessengerSecurityEnabled,
+                        icon: "💭",
+                        onToggle: {
+                            viewModel.toggleMaxMessengerSecurity()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showMaxMessengerSettings = true
+                    }
+                    
+                    // Gaming
+                    ComponentToggleCard(
+                        componentId: "gaming_security_bot",
+                        title: localizationManager.localized("component_gaming_security_bot_title"),
+                        description: localizationManager.localized("component_gaming_security_bot_description"),
+                        isEnabled: $viewModel.gamingSecurityEnabled,
+                        icon: "🎮",
+                        onToggle: {
+                            viewModel.toggleGamingSecurity()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showGamingSettings = true
+                    }
+                    
+                    // Browser
+                    ComponentToggleCard(
+                        componentId: "browser_security_bot",
+                        title: localizationManager.localized("component_browser_security_bot_title"),
+                        description: localizationManager.localized("component_browser_security_bot_description"),
+                        isEnabled: $viewModel.browserSecurityEnabled,
+                        icon: "🌐",
+                        onToggle: {
+                            viewModel.toggleBrowserSecurity()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showBrowserSettings = true
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                
-                // Описание - без переносов слов по слогам, выровнено по левому краю
-                Text(localizedFeatureDescription(feature))
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
-                    .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .multilineTextAlignment(.leading)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, Spacing.m)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
             
-            // Переключатель
-            ALADDINToggle(isOn: Binding(
-                get: { feature.isEnabled },
-                set: { newValue in
-                    featuresManager.toggleFeature(id: feature.id)
+            // Раздел: Приватность (3 компонента)
+            SettingsAccordion(
+                icon: "🔒",
+                title: localizationManager.localized("protection_settings_privacy_title"),
+                subtitle: localizationManager.localized("protection_settings_privacy_subtitle"),
+                isExpanded: $privacyExpanded
+            ) {
+                VStack(spacing: Spacing.m) {
+                    // Location Bubble
+                    ComponentToggleCard(
+                        componentId: "location_bubble_agent",
+                        title: localizationManager.localized("component_location_bubble_agent_title"),
+                        description: localizationManager.localized("component_location_bubble_agent_description"),
+                        isEnabled: $viewModel.locationBubbleEnabled,
+                        icon: "📍",
+                        onToggle: {
+                            viewModel.toggleLocationBubble()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showLocationBubbleSettings = true
+                    }
+                    
+                    // Personal Data Cleanup
+                    ComponentToggleCard(
+                        componentId: "personal_data_cleanup_agent",
+                        title: localizationManager.localized("component_personal_data_cleanup_agent_title"),
+                        description: localizationManager.localized("component_personal_data_cleanup_agent_description"),
+                        isEnabled: $viewModel.personalDataCleanupEnabled,
+                        icon: "🧹",
+                        onToggle: {
+                            viewModel.togglePersonalDataCleanup()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showPersonalDataCleanupSettings = true
+                    }
+                    
+                    // Anti Tracker
+                    ComponentToggleCard(
+                        componentId: "anti_tracker_agent",
+                        title: localizationManager.localized("component_anti_tracker_agent_title"),
+                        description: localizationManager.localized("component_anti_tracker_agent_description"),
+                        isEnabled: $viewModel.antiTrackerEnabled,
+                        icon: "🚫",
+                        onToggle: {
+                            viewModel.toggleAntiTracker()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showAntiTrackerSettings = true
+                    }
                 }
-            ))
-            .padding(.leading, Spacing.s)
-        }
-        .padding(Spacing.m)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(feature.isEnabled ? 
-                      Color.primaryBlue.opacity(0.1) : 
-                      Color.backgroundMedium.opacity(0.3))
-        )
-    }
-    
-    // MARK: - Info Card
-    
-    private var infoCard: some View {
-        VStack(alignment: .leading, spacing: Spacing.s) {
-            HStack {
-                Image(systemName: "info.circle.fill")
-                    .foregroundColor(.primaryBlue)
-                
-                Text(localizationManager.localized("settings_advanced_info_title"))
-                    .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
+                .padding(.top, Spacing.m)
             }
             
-            Text(localizationManager.localized("settings_advanced_info_text"))
-                .font(.caption)
-                .foregroundColor(.textSecondary)
+            // Раздел: Мониторинг (4 компонента)
+            SettingsAccordion(
+                icon: "👁️",
+                title: localizationManager.localized("protection_settings_monitoring_title"),
+                subtitle: localizationManager.localized("protection_settings_monitoring_subtitle"),
+                isExpanded: $monitoringExpanded
+            ) {
+                VStack(spacing: Spacing.m) {
+                    // Dark Web Monitoring
+                    ComponentToggleCard(
+                        componentId: "dark_web_monitoring_agent",
+                        title: localizationManager.localized("component_dark_web_monitoring_agent_title"),
+                        description: localizationManager.localized("component_dark_web_monitoring_agent_description"),
+                        isEnabled: $viewModel.darkWebMonitoringEnabled,
+                        icon: "🌑",
+                        onToggle: {
+                            viewModel.toggleDarkWebMonitoring()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showDarkWebMonitoringSettings = true
+                    }
+                    
+                    // Identity Theft Protection
+                    ComponentToggleCard(
+                        componentId: "russian_identity_theft_protection_agent",
+                        title: localizationManager.localized("component_russian_identity_theft_protection_agent_title"),
+                        description: localizationManager.localized("component_russian_identity_theft_protection_agent_description"),
+                        isEnabled: $viewModel.identityTheftProtectionEnabled,
+                        icon: "🆔",
+                        onToggle: {
+                            viewModel.toggleIdentityTheftProtection()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showIdentityTheftProtectionSettings = true
+                    }
+                    
+                    // AI Categories
+                    ComponentToggleCard(
+                        componentId: "ai_categories_agent",
+                        title: localizationManager.localized("component_ai_categories_agent_title"),
+                        description: localizationManager.localized("component_ai_categories_agent_description"),
+                        isEnabled: $viewModel.aiCategoriesEnabled,
+                        icon: "🤖",
+                        onToggle: {
+                            viewModel.toggleAICategories()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showAICategoriesSettings = true
+                    }
+                    
+                    // Driving Reports
+                    ComponentToggleCard(
+                        componentId: "driving_reports_agent",
+                        title: localizationManager.localized("component_driving_reports_agent_title"),
+                        description: localizationManager.localized("component_driving_reports_agent_description"),
+                        isEnabled: $viewModel.drivingReportsEnabled,
+                        icon: "🚗",
+                        onToggle: {
+                            viewModel.toggleDrivingReports()
+                        }
+                    )
+                    .onTapGesture {
+                        viewModel.showDrivingReportsSettings = true
+                    }
+                }
+                .padding(.top, Spacing.m)
+            }
         }
-        .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.primaryBlue.opacity(0.1))
-        )
-    }
-    
-    // MARK: - Helper
-    
-    private var protectionColor: Color {
-        switch currentLevel {
-        case 0...25: return .red
-        case 26...50: return .orange
-        case 51...75: return .yellow
-        case 76...100: return .green
-        default: return .primaryBlue
-        }
-    }
-    
-    private func localizedFeatureName(_ feature: ProtectionFeature) -> String {
-        localizationManager.localized("protection_feature_\(feature.id)_name")
-    }
-    
-    private func localizedFeatureDescription(_ feature: ProtectionFeature) -> String {
-        localizationManager.localized("protection_feature_\(feature.id)_desc")
     }
 }
 
