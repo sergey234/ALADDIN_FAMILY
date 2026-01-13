@@ -191,10 +191,14 @@ chmod +x Scripts/test_api_integration.sh
 ## 🔧 СЛЕДУЮЩИЕ ШАГИ
 
 1. ✅ Тесты созданы
-2. ⏳ Проверить правильность endpoints на сервере
-3. ⏳ Добавить авторизацию (если требуется)
-4. ⏳ Обновить `AppConfig.Endpoint` (если нужно)
-5. ⏳ Запустить тесты снова после настройки
+2. ✅ **Создан файл с API endpoints для сервера:** `docs/server/COMPONENTS_API_ENDPOINTS.py`
+3. ✅ **Создана инструкция по настройке:** `docs/ИНСТРУКЦИЯ_ПО_НАСТРОЙКЕ_СЕРВЕРА_КОМПОНЕНТОВ.md`
+4. ✅ **Создан скрипт для настройки:** `Scripts/setup_server_components.sh`
+5. ⏳ **Настроить сервер** (см. инструкцию выше)
+6. ⏳ Проверить правильность endpoints на сервере
+7. ⏳ Добавить авторизацию (если требуется)
+8. ⏳ Обновить `AppConfig.Endpoint` (если нужно)
+9. ⏳ Запустить тесты снова после настройки
 
 ---
 
@@ -207,6 +211,92 @@ chmod +x Scripts/test_api_integration.sh
 
 ---
 
+---
+
+## 📁 СОЗДАННЫЕ ФАЙЛЫ ДЛЯ НАСТРОЙКИ СЕРВЕРА
+
+### 1. docs/server/COMPONENTS_API_ENDPOINTS.py
+
+**Статус:** ✅ Файл создан
+
+**Содержание:**
+- FastAPI router для всех 6 endpoints компонентов
+- Модели данных (ComponentStatus, ComponentConfiguration)
+- Список всех 42 компонентов
+- Функции для работы с БД (требуют реализации)
+- Полная документация по использованию
+
+**Endpoints:**
+- `GET /api/components/status/{componentId}` - получить статус
+- `POST /api/components/enable/{componentId}` - включить компонент
+- `POST /api/components/disable/{componentId}` - выключить компонент
+- `GET /api/components/configuration/{componentId}` - получить конфигурацию
+- `POST /api/components/configuration/{componentId}` - обновить конфигурацию
+- `POST /api/components/batch/status` - batch получение статусов
+
+---
+
+### 2. docs/ИНСТРУКЦИЯ_ПО_НАСТРОЙКЕ_СЕРВЕРА_КОМПОНЕНТОВ.md
+
+**Статус:** ✅ Файл создан
+
+**Содержание:**
+- Пошаговая инструкция по настройке сервера
+- SQL скрипты для создания таблиц
+- Инструкции по регистрации router
+- Команды для тестирования endpoints
+- Критерии успеха
+
+---
+
+### 3. Scripts/setup_server_components.sh
+
+**Статус:** ✅ Скрипт создан
+
+**Функции:**
+- Автоматическая проверка зависимостей (sshpass)
+- Инструкции по ручной настройке
+- Опциональное автоматическое копирование файлов на сервер
+- Вывод документации
+
+**Использование:**
+```bash
+chmod +x Scripts/setup_server_components.sh
+./Scripts/setup_server_components.sh
+```
+
+---
+
+## 🚀 БЫСТРЫЙ СТАРТ
+
+1. **Подключиться к серверу:**
+   ```bash
+   ssh root@149.154.65.180
+   # Пароль: Sergio675
+   ```
+
+2. **Скопировать файл endpoints:**
+   ```bash
+   scp docs/server/COMPONENTS_API_ENDPOINTS.py root@149.154.65.180:/root/security/api/routers/components_router.py
+   ```
+
+3. **Зарегистрировать router в главном app:**
+   ```python
+   from security.api.routers.components_router import router as components_router
+   app.include_router(components_router)
+   ```
+
+4. **Создать таблицы в БД** (см. инструкцию)
+
+5. **Перезапустить сервер**
+
+6. **Протестировать:**
+   ```bash
+   curl -X GET "https://aladdin-ai.ru/api/components/status/crash_detection_agent"
+   ```
+
+---
+
 **Дата создания:** 13 января 2026  
-**Статус:** ✅ ТЕСТЫ СОЗДАНЫ, ⚠️ ТРЕБУЕТСЯ НАСТРОЙКА СЕРВЕРА
+**Статус:** ✅ ТЕСТЫ СОЗДАНЫ, ✅ ФАЙЛЫ ДЛЯ СЕРВЕРА СОЗДАНЫ, ⚠️ ТРЕБУЕТСЯ НАСТРОЙКА СЕРВЕРА
 
