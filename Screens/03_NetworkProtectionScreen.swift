@@ -19,6 +19,10 @@ struct NetworkProtectionScreen: View {
     @State private var showingSettings = false
     @State private var showPasswordGenerator = false
     @State private var showIncidentResponseSettings = false
+    @State private var showPhishingSettings = false
+    @State private var showMalwareSettings = false
+    @State private var showMobileSecuritySettings = false
+    @State private var showNetworkSecuritySettings = false
     
     // Состояния для аккордеонов
     @State private var emergencyHelpExpanded = false
@@ -111,6 +115,34 @@ struct NetworkProtectionScreen: View {
             )
             .environmentObject(localizationManager)
         }
+        .sheet(isPresented: $showPhishingSettings) {
+            PhishingProtectionSettingsModal(
+                componentId: "phishing_protection_agent",
+                isPresented: $showPhishingSettings
+            )
+            .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showMalwareSettings) {
+            MalwareDetectionSettingsModal(
+                componentId: "malware_detection_agent",
+                isPresented: $showMalwareSettings
+            )
+            .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showMobileSecuritySettings) {
+            MobileSecuritySettingsModal(
+                componentId: "mobile_security_agent",
+                isPresented: $showMobileSecuritySettings
+            )
+            .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showNetworkSecuritySettings) {
+            NetworkSecuritySettingsModal(
+                componentId: "network_security_agent",
+                isPresented: $showNetworkSecuritySettings
+            )
+            .environmentObject(localizationManager)
+        }
         // ✅ УДАЛЕНО: .sheet для showingStatistics и showingHelp (Quick Actions удалены)
     }
     
@@ -176,7 +208,7 @@ struct NetworkProtectionScreen: View {
                     isEnabled: $viewModel.phishingProtectionEnabled,
                     hasSettings: true,
                     onToggle: { viewModel.togglePhishingProtection() },
-                    onSettingsTap: { /* TODO: Открыть настройки фишинга */ }
+                    onSettingsTap: { showPhishingSettings = true }
                 )
                 
                 SecurityFeatureRow(
@@ -186,7 +218,7 @@ struct NetworkProtectionScreen: View {
                     isEnabled: $viewModel.malwareDetectionEnabled,
                     hasSettings: true,
                     onToggle: { viewModel.toggleMalwareDetection() },
-                    onSettingsTap: { /* TODO: Открыть настройки вредоносного ПО */ }
+                    onSettingsTap: { showMalwareSettings = true }
                 )
                 
                 SecurityFeatureRow(
@@ -196,7 +228,7 @@ struct NetworkProtectionScreen: View {
                     isEnabled: $viewModel.mobileSecurityEnabled,
                     hasSettings: true,
                     onToggle: { viewModel.toggleMobileSecurity() },
-                    onSettingsTap: { /* TODO: Открыть настройки мобильной безопасности */ }
+                    onSettingsTap: { showMobileSecuritySettings = true }
                 )
                 
                 SecurityFeatureRow(
@@ -206,7 +238,7 @@ struct NetworkProtectionScreen: View {
                     isEnabled: $viewModel.networkSecurityEnabled,
                     hasSettings: true,
                     onToggle: { viewModel.toggleNetworkSecurity() },
-                    onSettingsTap: { /* TODO: Открыть настройки сетевой безопасности */ }
+                    onSettingsTap: { showNetworkSecuritySettings = true }
                 )
             }
             

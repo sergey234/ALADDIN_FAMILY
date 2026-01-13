@@ -76,34 +76,64 @@ class ComponentStatusService: ObservableObject {
             "emergency_event_manager"
         ]
         
-        // Загрузить все критичные компоненты параллельно
-        var statuses: [String: ComponentStatus] = [:]
-        
-        try await withThrowingTaskGroup(of: (String, ComponentStatus).self) { group in
-            for componentId in criticalComponents {
-                group.addTask { [weak self] in
-                    guard let self = self else {
-                        throw ComponentError.unknown(NSError(domain: "ComponentStatusService", code: -1))
+        do {
+            // Попытка загрузить все критичные компоненты параллельно
+            var statuses: [String: ComponentStatus] = [:]
+            
+            try await withThrowingTaskGroup(of: (String, ComponentStatus).self) { group in
+                for componentId in criticalComponents {
+                    group.addTask { [weak self] in
+                        guard let self = self else {
+                            throw ComponentError.unknown(NSError(domain: "ComponentStatusService", code: -1))
+                        }
+                        let status = try await self.loadStatusFromAPI(for: componentId, priority: .critical)
+                        return (componentId, status)
                     }
-                    let status = try await self.loadStatusFromAPI(for: componentId, priority: .critical)
-                    return (componentId, status)
+                }
+                
+                for try await (componentId, status) in group {
+                    statuses[componentId] = status
                 }
             }
             
-            for try await (componentId, status) in group {
-                statuses[componentId] = status
+            // Обновить статусы
+            for (componentId, status) in statuses {
+                componentStatuses[componentId] = status
             }
+            
+            // Сохранить в кэш
+            await cacheManager.saveStatuses(statuses)
+            
+            lastUpdate = Date()
+            
+        } catch {
+            // ✅ FALLBACK: Если ошибка, использовать дефолтные значения
+            print("⚠️ ComponentStatusService: Ошибка загрузки компонентов, используем дефолтные значения: \(error.localizedDescription)")
+            
+            // Создать дефолтные статусы (все выключены)
+            var defaultStatuses: [String: ComponentStatus] = [:]
+            for componentId in criticalComponents {
+                // Использовать существующий статус из кэша, если есть, иначе создать новый
+                if let existingStatus = componentStatuses[componentId] {
+                    defaultStatuses[componentId] = existingStatus
+                } else {
+                    let defaultStatus = ComponentStatus(
+                        componentId: componentId,
+                        isEnabled: false,
+                        lastUpdate: nil,
+                        configuration: nil
+                    )
+                    defaultStatuses[componentId] = defaultStatus
+                    componentStatuses[componentId] = defaultStatus
+                }
+            }
+            
+            // Сохранить дефолтные статусы в кэш
+            await cacheManager.saveStatuses(defaultStatuses)
+            
+            // НЕ пробрасывать ошибку дальше - использовать дефолтные значения
+            // Приложение продолжит работать с дефолтными значениями
         }
-        
-        // Обновить статусы
-        for (componentId, status) in statuses {
-            componentStatuses[componentId] = status
-        }
-        
-        // Сохранить в кэш
-        await cacheManager.saveStatuses(statuses)
-        
-        lastUpdate = Date()
     }
     
     /// Обновить статус компонента

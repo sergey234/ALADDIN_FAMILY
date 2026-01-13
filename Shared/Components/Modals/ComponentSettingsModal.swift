@@ -50,7 +50,7 @@ struct ComponentSettingsModal<Content: View>: View {
                     Button(action: {
                         isPresented = false
                     }) {
-                        Text(localizationManager.localized("common.cancel"))
+                        Text(localizationManager.localized("common_cancel"))
                             .foregroundColor(.textPrimary)
                     }
                     .accessibilityLabel("Cancel")
@@ -62,7 +62,7 @@ struct ComponentSettingsModal<Content: View>: View {
                             onSave()
                             isPresented = false
                         }) {
-                            Text(localizationManager.localized("common.save"))
+                            Text(localizationManager.localized("common_save"))
                                 .foregroundColor(.blue)
                                 .fontWeight(.semibold)
                         }

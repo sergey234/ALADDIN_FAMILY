@@ -74,25 +74,18 @@ class NetworkProtectionViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-        let result: Result<Void, NetworkError> = await retryManager.execute(
-            operation: {
-                do {
-                    try await self.statusService.loadCriticalComponentsStatus()
-                } catch let error as ComponentError {
-                    throw error.toNetworkError()
-                }
-            },
-            retryCondition: { $0.isRetryable }
-        )
-        
-        switch result {
-        case .success:
+        // Попытка загрузить компоненты (теперь с fallback в ComponentStatusService)
+        do {
+            try await self.statusService.loadCriticalComponentsStatus()
             await updateLocalStatuses()
             isLoading = false
-        case .failure(let error):
-            errorMessage = error.localizedDescription
+        } catch {
+            // Эта ветка теперь НЕ должна выполняться (fallback в ComponentStatusService)
+            // Но на всякий случай обновляем локальные статусы из дефолтных
+            await updateLocalStatuses()
             isLoading = false
-            toastManager.showError("Ошибка загрузки компонентов")
+            // НЕ показывать ошибку пользователю - fallback уже обработал ситуацию
+            // toastManager.showError("Ошибка загрузки компонентов") // ❌ УБРАНО
         }
     }
     
@@ -261,7 +254,20 @@ class NetworkProtectionViewModel: ObservableObject {
                 let status = try await statusService.getStatus(for: componentId)
                 updateStatusForComponent(componentId: componentId, status: status)
             } catch {
-                print("⚠️ Ошибка загрузки статуса для \(componentId): \(error)")
+                // ✅ FALLBACK: Использовать дефолтное значение из componentStatuses
+                let defaultStatus = await statusService.componentStatuses[componentId]
+                if let status = defaultStatus {
+                    updateStatusForComponent(componentId: componentId, status: status)
+                } else {
+                    // Если даже дефолтного нет, создать новый со значением false
+                    let fallbackStatus = ComponentStatus(
+                        componentId: componentId,
+                        isEnabled: false,
+                        lastUpdate: nil,
+                        configuration: nil
+                    )
+                    updateStatusForComponent(componentId: componentId, status: fallbackStatus)
+                }
             }
         }
     }

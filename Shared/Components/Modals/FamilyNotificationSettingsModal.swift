@@ -48,7 +48,7 @@ struct FamilyNotificationSettingsModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(localizationManager.localized("common.cancel")) {
+                    Button(localizationManager.localized("common_cancel")) {
                         dismiss()
                     }
                 }
@@ -180,7 +180,7 @@ struct FamilyNotificationSettingsModal: View {
     
     private var saveButton: some View {
         Button(action: saveSettings) {
-            Text(localizationManager.localized("common.save"))
+            Text(localizationManager.localized("common_save"))
                 .font(.bodyBold)
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)

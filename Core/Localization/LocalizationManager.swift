@@ -725,6 +725,13 @@ class LocalizationManager: ObservableObject {
             "elderly_settings_edit_contacts_title": "📋 Редактировать контакты",
             "elderly_settings_edit_contacts_cancel": "Отмена",
             "elderly_settings_edit_contacts_done": "Готово",
+            "elderly_contact_edit_delete": "Удалить",
+            "elderly_contact_delete_confirmation": "Вы уверены, что хотите удалить этот контакт?",
+            "elderly_contact_edit_title": "Редактировать контакт",
+            "elderly_contact_edit_name": "Имя",
+            "elderly_contact_edit_phone": "Телефон",
+            "elderly_contact_edit_relation": "Отношение",
+            "elderly_contact_edit_save": "Сохранить",
             
             // Elderly Interface - Medications (Лекарства)
             "elderly_medications_add_for_reminders": "Добавить лекарства для напоминаний",
@@ -1609,8 +1616,56 @@ class LocalizationManager: ObservableObject {
             "family_role_elderly_name": "Люди старшего возраста",
             "family_role_elderly_description": "Упрощённый интерфейс и защищённые сценарии",
             "common_cancel": "Отмена",
+            "common_save": "Сохранить",
             "common_continue": "Продолжить",
             "common_close": "Закрыть",
+            
+            // ═══════════════════════════════════════════════════════════════
+            // МОДАЛЬНЫЕ ОКНА НАСТРОЕК - ЛОКАЛИЗАЦИЯ
+            // ═══════════════════════════════════════════════════════════════
+            
+            // Phishing Protection Settings
+            "phishing_protection.settings": "Настройки защиты от фишинга",
+            "phishing_protection.block_suspicious_links": "Блокировать подозрительные ссылки",
+            "phishing_protection.warn_before_opening": "Предупреждать перед открытием",
+            "phishing_protection.check_email_links": "Проверять ссылки в email",
+            "phishing_protection.check_sms_links": "Проверять ссылки в SMS",
+            "phishing_protection.block_known_domains": "Блокировать известные фишинговые домены",
+            "phishing_protection.sensitivity_level": "Уровень чувствительности",
+            "phishing_protection.sensitivity_low": "Низкий",
+            "phishing_protection.sensitivity_medium": "Средний",
+            "phishing_protection.sensitivity_high": "Высокий",
+            
+            // Malware Detection Settings
+            "malware_detection.settings": "Настройки обнаружения вредоносного ПО",
+            "malware_detection.real_time_scanning": "Сканирование в реальном времени",
+            "malware_detection.scan_downloads": "Сканировать загрузки",
+            "malware_detection.scan_installed_apps": "Сканировать установленные приложения",
+            "malware_detection.quarantine_threats": "Карантин угроз",
+            "malware_detection.auto_remove_threats": "Автоматически удалять угрозы",
+            "malware_detection.scan_frequency": "Частота сканирования",
+            "malware_detection.frequency_hourly": "Каждый час",
+            "malware_detection.frequency_daily": "Ежедневно",
+            "malware_detection.frequency_weekly": "Еженедельно",
+            
+            // Mobile Security Settings
+            "mobile_security.settings": "Настройки мобильной безопасности",
+            "mobile_security.device_encryption": "Шифрование устройства",
+            "mobile_security.app_lock": "Блокировка приложений",
+            "mobile_security.screen_lock": "Блокировка экрана",
+            "mobile_security.biometric_auth": "Биометрическая аутентификация",
+            "mobile_security.remote_wipe": "Удаленная очистка",
+            "mobile_security.track_device": "Отслеживание устройства",
+            
+            // Network Security Settings
+            "network_security.settings": "Настройки сетевой безопасности",
+            "network_security.block_unsafe_networks": "Блокировать небезопасные сети",
+            "network_security.warn_on_public_wifi": "Предупреждать на публичном Wi-Fi",
+            "network_security.auto_connect_vpn": "Автоматически подключать VPN",
+            "network_security.block_tracking": "Блокировать отслеживание",
+            "network_security.encrypt_traffic": "Шифровать трафик",
+            "network_security.firewall_enabled": "Включить Firewall",
+            
             // Registration
             "registration_select_age": "Выберите возраст",
             "registration_select_letter": "Выберите букву",
@@ -1779,6 +1834,35 @@ class LocalizationManager: ObservableObject {
             "child_interface_game_time": "• Время игр: 2 часа в день",
             "child_interface_breaks": "• Перерывы каждые 30 минут",
             "child_interface_allowed_games": "• Только разрешенные игры",
+            "child_game_welcome": "Добро пожаловать!",
+            "child_game_content_coming_soon": "Контент скоро появится!",
+            "child_game_zone": "Игровая зона",
+            "child_game_greeting": "Игровая зона!",
+            "child_study_welcome": "Учимся с удовольствием!",
+            "child_study_learning": "Учимся с удовольствием!",
+            "child_cartoons_welcome": "Любимые мультики!",
+            "child_creativity_welcome": "Креативим вместе!",
+            "child_creativity_create": "Твори и создавай!",
+            "child_game_adventures": "Приключения",
+            "child_game_puzzles": "Пазлы",
+            "child_game_logic": "Логика",
+            "child_game_speed": "Скорость",
+            "child_daily_tip_title": "💡 Совет дня",
+            "child_daily_tip_kids": "Играй и учись каждый день! Это поможет тебе стать умнее и счастливее!",
+            "child_daily_tip_school": "Не забывай делать перерывы! Отдых так же важен, как и учёба!",
+            "child_daily_tip_teen": "Помни о безопасности в интернете. Доверяй, но проверяй!",
+            "child_daily_tip_young_adult": "Инвестируй в себя! Каждый день развивай новые навыки!",
+            "child_study_subject_russian": "📖 Русский язык",
+            "child_study_subject_math": "🔢 Математика",
+            "child_study_subject_world": "🌍 Окружающий мир",
+            "child_creativity_drawing": "Рисование",
+            "child_creativity_application": "Аппликация",
+            "child_creativity_coloring": "Раскраска",
+            "child_creativity_photo": "Фото",
+            "child_cartoons_robots": "🤖 Роботы",
+            "child_cartoons_adventures": "🐾 Приключения",
+            "child_cartoons_fantasy": "🌟 Фантазия",
+            "elderly_family_relation_you": "Вы",
             "child_interface_add_number": "📞 Добавить номер",
             "child_interface_name": "Имя",
             "child_interface_enter_name": "Введите имя",
@@ -1789,6 +1873,13 @@ class LocalizationManager: ObservableObject {
             "child_interface_my_contacts": "📋 Мои контакты",
             "child_interface_no_contacts": "Контактов пока нет",
             "child_interface_ask_parents": "Попросите родителей добавить контакты членов семьи",
+            "child_contact_edit_delete": "Удалить",
+            "child_contact_delete_confirmation": "Вы уверены, что хотите удалить этот контакт?",
+            "child_contact_edit_title": "Редактировать контакт",
+            "child_contact_edit_name": "Имя",
+            "child_contact_edit_phone": "Телефон",
+            "child_contact_edit_relation": "Отношение",
+            "child_contact_edit_save": "Сохранить",
             "child_interface_relation_mom": "Мама",
             "child_interface_relation_dad": "Папа",
             "child_interface_relation_grandma": "Бабушка",
@@ -2954,10 +3045,169 @@ class LocalizationManager: ObservableObject {
             "family_chat_accessibility": "Семейный чат",
             "family_chat_error_title": "Ошибка",
             "family_chat_error_ok": "ОК",
+            "family_chat_error_not_found": "Чат временно недоступен. Используются тестовые данные.",
+            "family_chat_error_loading": "Не удалось загрузить сообщения. Проверьте подключение к интернету.",
             "family_chat_you": "Вы",
+            
+            // Child Goal Editor
+            "child_goal_editor_title": "🎯 Моя цель",
+            "child_goal_editor_info_title": "Установить новую цель",
+            "child_goal_editor_info_description": "Опиши, на что ты копишь единорогов, и родители одобрят твою цель!",
+            "child_goal_editor_goal_title": "На что копишь? 🎁",
+            "child_goal_editor_goal_hint": "Опиши, какой подарок ты хочешь",
+            "child_goal_editor_cost_title": "Сколько единорогов нужно? 🦄",
+            "child_goal_editor_cost_hint": "Примерная стоимость подарка в единорогах",
+            "child_goal_editor_submit_button": "📨 Отправить родителям",
+            "child_goal_editor_success_title": "Цель отправлена! 📨",
+            "child_goal_editor_success_message": "Родители получили твою цель и скоро ответят!",
+            "child_goal_editor_ok": "ОК",
             "family_chat_you_accusative": "вас",
             "family_chat_time": "время",
             "family_chat_message_from": "Сообщение от %@",
+            
+            // Family Chat Extended Features
+            // Voice Messages
+            "family_chat_voice_recording": "Запись...",
+            "family_chat_voice_recording_duration": "%@",
+            "family_chat_voice_send": "Отправить",
+            "family_chat_voice_cancel": "Отменить",
+            "family_chat_voice_delete": "Удалить",
+            "family_chat_voice_playing": "Воспроизведение...",
+            "family_chat_voice_paused": "Пауза",
+            "family_chat_voice_duration": "%@",
+            "family_chat_voice_error": "Ошибка записи",
+            "family_chat_voice_too_short": "Запись слишком короткая",
+            "family_chat_voice_max_duration": "Максимальная длительность 60 секунд",
+            "family_chat_voice_permission_denied": "Нет доступа к микрофону",
+            
+            // WebSocket
+            "family_chat_websocket_connecting": "Подключение...",
+            "family_chat_websocket_connected": "Подключено",
+            "family_chat_websocket_disconnected": "Отключено",
+            "family_chat_websocket_reconnecting": "Переподключение...",
+            "family_chat_websocket_error": "Ошибка подключения",
+            
+            // Typing Indicator
+            "family_chat_typing": "%@ печатает...",
+            "family_chat_typing_multiple": "%d участников печатают...",
+            
+            // Message Actions
+            "family_chat_message_delete": "Удалить сообщение",
+            "family_chat_message_edit": "Редактировать",
+            "family_chat_message_reply": "Ответить",
+            "family_chat_message_copy": "Копировать",
+            "family_chat_message_forward": "Переслать",
+            "family_chat_message_delete_confirm": "Удалить это сообщение?",
+            "family_chat_message_delete_confirm_title": "Удаление сообщения",
+            "family_chat_message_edited": "отредактировано",
+            "family_chat_message_edit_placeholder": "Редактировать сообщение...",
+            "family_chat_message_save": "Сохранить",
+            
+            // Media Messages
+            "family_chat_media_photo": "Фото",
+            "family_chat_media_video": "Видео",
+            "family_chat_media_select": "Выбрать медиа",
+            "family_chat_media_take_photo": "Сделать фото",
+            "family_chat_media_take_video": "Снять видео",
+            "family_chat_media_from_library": "Из галереи",
+            "family_chat_media_uploading": "Загрузка...",
+            "family_chat_media_upload_failed": "Ошибка загрузки",
+            "family_chat_media_view_fullscreen": "Полноэкранный просмотр",
+            "family_chat_media_download": "Скачать",
+            
+            // Replies
+            "family_chat_reply_to": "Ответ на сообщение от %@",
+            "family_chat_reply_preview": "%@: %@",
+            "family_chat_reply_cancel": "Отменить ответ",
+            
+            // Reactions
+            "family_chat_reaction_add": "Добавить реакцию",
+            "family_chat_reaction_remove": "Удалить реакцию",
+            "family_chat_reaction_count": "%d",
+            "family_chat_reaction_people": "%@ и еще %d",
+            
+            // Read Status
+            "family_chat_status_sent": "Отправлено",
+            "family_chat_status_delivered": "Доставлено",
+            "family_chat_status_read": "Прочитано",
+            "family_chat_status_read_at": "Прочитано в %@",
+            
+            // Search
+            "family_chat_search_placeholder": "Поиск в чате...",
+            "family_chat_search_no_results": "Ничего не найдено",
+            "family_chat_search_results": "Найдено: %d",
+            "family_chat_search_clear": "Очистить",
+            
+            // Offline Mode
+            "family_chat_offline": "Офлайн режим",
+            "family_chat_offline_syncing": "Синхронизация...",
+            "family_chat_offline_pending": "%d сообщений в очереди",
+            "family_chat_offline_sync_complete": "Синхронизация завершена",
+            
+            // Themes
+            "family_chat_theme_light": "Светлая тема",
+            "family_chat_theme_dark": "Темная тема",
+            "family_chat_theme_auto": "Автоматически",
+            "family_chat_theme_settings": "Настройки темы",
+            
+            // Export
+            "family_chat_export": "Экспорт чата",
+            "family_chat_export_pdf": "Экспорт в PDF",
+            "family_chat_export_text": "Экспорт в текст",
+            "family_chat_export_share": "Поделиться",
+            "family_chat_export_success": "Чат экспортирован",
+            "family_chat_export_failed": "Ошибка экспорта",
+            "family_chat_export_processing": "Обработка...",
+            
+            // Push Notifications
+            "family_chat_notification_new_message": "Новое сообщение от %@",
+            "family_chat_notification_settings": "Настройки уведомлений",
+            "family_chat_notification_enable": "Включить уведомления",
+            "family_chat_notification_sound": "Звук",
+            "family_chat_notification_vibration": "Вибрация",
+            
+            // General
+            "family_chat_online": "В сети",
+            "family_chat_offline_status": "Не в сети",
+            "family_chat_loading": "Загрузка...",
+            "family_chat_empty": "Нет сообщений",
+            "family_chat_empty_description": "Начните общение с семьей!",
+            
+            // Security Education Screen
+            "security_education_title": "Безопасность",
+            "security_education_subtitle": "Обучение защите",
+            "security_education_back": "Назад",
+            "security_education_greeting_name": "Привет, %@!",
+            "security_education_greeting_message": "Ты молодец! Продолжай изучать безопасность!",
+            "security_education_level": "Уровень %d",
+            "security_education_level_title": "Защитник семьи",
+            "security_education_xp": "%d XP",
+            "security_education_lessons_completed": "%d уроков пройдено",
+            "security_education_lessons_title": "Уроки безопасности",
+            "security_education_lesson_cybersecurity": "Киберзащита",
+            "security_education_lesson_cybersecurity_desc": "Стань экспертом по безопасности",
+            "security_education_lesson_phishing": "Фишинг",
+            "security_education_lesson_phishing_desc": "Распознай опасные письма",
+            "security_education_lesson_social_engineering": "Соц. инженерия",
+            "security_education_lesson_social_engineering_desc": "Защитись от манипуляций",
+            "security_education_lesson_passwords": "Пароли",
+            "security_education_lesson_passwords_desc": "Создай надёжный пароль",
+            "security_education_xp_reward": "+%d XP",
+            "security_education_simple_rules_title": "✅ Простые правила",
+            "security_education_rule_strangers": "Не разговаривай с незнакомцами",
+            "security_education_rule_emails": "Не открывай странные письма",
+            "security_education_rule_parents": "Позови маму или папу если страшно",
+            "security_education_advanced_tips_title": "💡 Продвинутые советы",
+            "security_education_tip_2fa": "Используй двухфакторную аутентификацию (2FA)",
+            "security_education_tip_url": "Проверяй URL перед переходом по ссылкам",
+            "security_education_tip_social": "Не публикуй личную информацию в соц. сетях",
+            "security_education_tip_wifi": "Используй защиту сети в общественных Wi-Fi",
+            "security_education_tip_updates": "Обновляй приложения регулярно",
+            "security_education_lesson_study": "🎓 Изучить урок",
+            "security_education_lesson_reward": "+%d XP +10 🦄",
+            "security_education_lesson_completed": "✅ Урок изучен!",
+            "security_education_lesson_continue": "Продолжить",
+            
             // VPN Energy Stats Screen
             "vpn_energy_title": "ЭНЕРГОПОТРЕБЛЕНИЕ ЗАЩИТЫ СЕТИ",
             "vpn_energy_subtitle": "Статистика использования",
@@ -3322,6 +3572,187 @@ class LocalizationManager: ObservableObject {
             "notifications_mock_info_title": "Система ALADDIN обновлена",
             "notifications_mock_info_message": "Проверка завершена успешно. Всё работает стабильно.",
             "privacy_policy_web_accessibility": "Privacy policy webpage",
+            
+            // ═══════════════════════════════════════════════════════════════
+            // 42 КОМПОНЕНТА - ЛОКАЛИЗАЦИЯ
+            // ═══════════════════════════════════════════════════════════════
+            
+            // Компонент 1: crash_detection_agent (для проверки)
+            "component.crash_detection_agent.title": "Обнаружение аварий",
+            "component.crash_detection_agent.desc": "Автоматическое обнаружение ДТП и вызов помощи",
+            
+            // Компонент 2: roadside_assistance_agent
+            "component.roadside_assistance_agent.title": "Помощь на дороге",
+            "component.roadside_assistance_agent.desc": "Быстрая помощь при поломке автомобиля",
+            
+            // Компонент 3: incident_response_agent
+            "component.incident_response_agent.title": "Реагирование на инциденты",
+            "component.incident_response_agent.desc": "Автоматическое реагирование на критические события",
+            
+            // Компонент 4: emergency_response_bot
+            "component.emergency_response_bot.title": "Экстренный ответ",
+            "component.emergency_response_bot.desc": "Бот для экстренных ситуаций",
+            
+            // Компонент 5: emergency_event_manager
+            "component.emergency_event_manager.title": "Управление экстренными событиями",
+            "component.emergency_event_manager.desc": "Координация экстренных событий",
+            
+            // Компонент 6: phishing_protection_agent
+            "component.phishing_protection_agent.title": "Защита от фишинга",
+            "component.phishing_protection_agent.desc": "Обнаружение мошеннических сайтов",
+            
+            // Компонент 7: malware_detection_agent
+            "component.malware_detection_agent.title": "Обнаружение вредоносного ПО",
+            "component.malware_detection_agent.desc": "Защита от вирусов и троянов",
+            
+            // Компонент 8: mobile_security_agent
+            "component.mobile_security_agent.title": "Безопасность мобильных устройств",
+            "component.mobile_security_agent.desc": "Защита смартфонов и планшетов",
+            
+            // Компонент 9: network_security_agent
+            "component.network_security_agent.title": "Безопасность сети",
+            "component.network_security_agent.desc": "Защита сетевых подключений",
+            
+            // Компонент 10: password_security_agent
+            "component.password_security_agent.title": "Безопасность паролей",
+            "component.password_security_agent.desc": "Проверка и генерация безопасных паролей",
+            
+            // Компонент 11: self_harm_detection_agent
+            "component.self_harm_detection_agent.title": "Обнаружение самоповреждений",
+            "component.self_harm_detection_agent.desc": "Защита от контента о самоповреждениях",
+            
+            // Компонент 12: grooming_detection_agent
+            "component.grooming_detection_agent.title": "Обнаружение груминга",
+            "component.grooming_detection_agent.desc": "Защита от онлайн-хищников",
+            
+            // Компонент 13: online_predators_agent
+            "component.online_predators_agent.title": "Защита от онлайн-хищников",
+            "component.online_predators_agent.desc": "Обнаружение опасных контактов",
+            
+            // Компонент 14: psychological_support_agent
+            "component.psychological_support_agent.title": "Психологическая поддержка",
+            "component.psychological_support_agent.desc": "Помощь в сложных ситуациях",
+            
+            // Компонент 15: parental_control_bot
+            "component.parental_control_bot.title": "Бот родительского контроля",
+            "component.parental_control_bot.desc": "Улучшенный родительский контроль",
+            
+            // AdvancedProtectionSettingsScreen - Старый формат (13 компонентов)
+            "component_telegram_security_bot_title": "Защита Telegram",
+            "component_telegram_security_bot_description": "Безопасность в Telegram",
+            "component_whatsapp_security_bot_title": "Защита WhatsApp",
+            "component_whatsapp_security_bot_description": "Безопасность в WhatsApp",
+            "component_instagram_security_bot_title": "Защита Instagram",
+            "component_instagram_security_bot_description": "Безопасность в Instagram",
+            "component_max_messenger_security_bot_title": "Защита Max Messenger",
+            "component_max_messenger_security_bot_description": "Безопасность в Max Messenger",
+            "component_gaming_security_bot_title": "Защита в играх",
+            "component_gaming_security_bot_description": "Безопасность игровых платформ",
+            "component_browser_security_bot_title": "Защита браузера",
+            "component_browser_security_bot_description": "Безопасность веб-браузера",
+            "component_location_bubble_agent_title": "Пузырь местоположения",
+            "component_location_bubble_agent_description": "Скрытие точного местоположения",
+            "component_personal_data_cleanup_agent_title": "Очистка данных",
+            "component_personal_data_cleanup_agent_description": "Автоматическая очистка личных данных",
+            "component_anti_tracker_agent_title": "Блокировка трекеров",
+            "component_anti_tracker_agent_description": "Блокировка рекламных трекеров",
+            "component_dark_web_monitoring_agent_title": "Мониторинг Dark Web",
+            "component_dark_web_monitoring_agent_description": "Отслеживание утечек данных",
+            "component_russian_identity_theft_protection_agent_title": "Защита от кражи личности (РФ)",
+            "component_russian_identity_theft_protection_agent_description": "Защита от мошенничества с документами",
+            "component_ai_categories_agent_title": "AI категории",
+            "component_ai_categories_agent_description": "Умная категоризация контента",
+            "component_driving_reports_agent_title": "Отчеты о вождении",
+            "component_driving_reports_agent_description": "Анализ стиля вождения",
+            
+            // SettingsScreen - Старый формат (5 компонентов)
+            "component_emergency_contact_manager_title": "Экстренные контакты",
+            "component_emergency_contact_manager_description": "Управление контактами для экстренных случаев",
+            "component_emergency_notification_manager_title": "Экстренные уведомления",
+            "component_emergency_notification_manager_description": "Настройка экстренных оповещений",
+            "component_voice_control_manager_title": "Голосовое управление",
+            "component_voice_control_manager_description": "Управление голосовыми командами",
+            "component_russian_child_protection_manager_title": "Защита детей (РФ)",
+            "component_russian_child_protection_manager_description": "Соответствие законам РФ",
+            "component_russian_data_protection_manager_title": "Защита данных (РФ)",
+            "component_russian_data_protection_manager_description": "Соответствие 152-ФЗ РФ",
+            
+            // Улучшение существующих (9 компонентов) - Новый формат
+            "component.family_notification_manager.title": "Семейные уведомления",
+            "component.family_notification_manager.desc": "Управление уведомлениями семьи",
+            "component.smart_notification_manager.title": "Умные уведомления",
+            "component.smart_notification_manager.desc": "Интеллектуальная система уведомлений",
+            "component.child_interface_manager.title": "Детский интерфейс",
+            "component.child_interface_manager.desc": "Управление детским интерфейсом",
+            "component.elderly_interface_manager.title": "Интерфейс для пожилых",
+            "component.elderly_interface_manager.desc": "Упрощенный интерфейс",
+            "component.subscription_manager.title": "Управление подпиской",
+            "component.subscription_manager.desc": "Настройки тарифов",
+            "component.referral_manager.title": "Реферальная программа",
+            "component.referral_manager.desc": "Приглашение друзей",
+            "component.qr_payment_manager.title": "QR платежи",
+            "component.qr_payment_manager.desc": "Оплата через QR-код",
+            "component.analytics_manager.title": "Аналитика",
+            "component.analytics_manager.desc": "Статистика и отчеты",
+            "component.report_manager.title": "Отчеты",
+            "component.report_manager.desc": "Управление отчетами",
+            
+            // Разделы компонентов (5 разделов) - Новый формат
+            "component.emergency_help.title": "Экстренная помощь",
+            "component.emergency_help.subtitle": "Быстрая помощь в критических ситуациях",
+            "component.threat_protection.title": "Защита от угроз",
+            "component.threat_protection.subtitle": "Защита от различных видов угроз",
+            "component.incident_response.title": "Реагирование",
+            "component.incident_response.subtitle": "Автоматическое реагирование на инциденты",
+            "component.password_security.title": "Пароли",
+            "component.password_security.subtitle": "Безопасность паролей",
+            "component.child_protection.title": "Защита детей",
+            "component.child_protection.subtitle": "Защита от опасностей в интернете",
+            
+            // Общие ключи компонентов (7 ключей) - Новый формат
+            "component.enabled": "Включено",
+            "component.disabled": "Выключено",
+            "component.settings": "Настройки",
+            "component.loading": "Загрузка...",
+            "component.error": "Ошибка загрузки",
+            "component.save": "Сохранить",
+            "component.cancel": "Отмена",
+            
+            // Дополнительные ключи компонентов (5 ключей) - Старый формат
+            "component_settings_hint": "Настройки компонента",
+            "component_toggle_enabled_hint": "Компонент включен",
+            "component_toggle_disabled_hint": "Компонент выключен",
+            "component_enabled": "Включено",
+            "component_disabled": "Выключено",
+            
+            // Ключи аккордеонов (4 ключа) - Новый формат
+            "accordion_expanded": "Раздел '%@' развернут",
+            "accordion_collapsed": "Раздел '%@' свернут",
+            "accordion_collapse_hint": "Свернуть раздел",
+            "accordion_expand_hint": "Развернуть раздел",
+            
+            // Password Generator (8 ключей) - Новый формат
+            "password_generator.settings": "Настройки генератора",
+            "password_generator.length": "Длина пароля",
+            "password_generator.uppercase": "Заглавные буквы",
+            "password_generator.lowercase": "Строчные буквы",
+            "password_generator.numbers": "Цифры",
+            "password_generator.special": "Специальные символы",
+            "password_generator.generate": "Сгенерировать",
+            "password_generator.generated": "Сгенерированный пароль",
+            
+            // Incident Response (11 ключей) - Новый формат
+            "incident_response.escalation_thresholds": "Пороги эскалации",
+            "incident_response.low": "Низкая",
+            "incident_response.medium": "Средняя",
+            "incident_response.high": "Высокая",
+            "incident_response.critical": "Критическая",
+            "incident_response.minutes": "мин",
+            "incident_response.sla_time": "Время реакции SLA",
+            "incident_response.auto_actions": "Автодействия",
+            "incident_response.block": "Блокировать",
+            "incident_response.notify": "Уведомить",
+            "incident_response.escalate": "Эскалировать",
         ],
         .english: [
             "common_back": "Back",
@@ -3367,7 +3798,6 @@ class LocalizationManager: ObservableObject {
             "profile_edit_cancel": "Cancel",
             "profile_edit_save": "Save",
             "profile_edit_default_name": "User name",
-            "profile_edit_default_email": "user@example.com",
             "profile_edit_default_phone": "+1 (555) 123-4567",
             "profile_edit_photo_title": "Profile photo",
             "profile_edit_change_photo_accessibility": "Change profile photo",
@@ -3383,10 +3813,19 @@ class LocalizationManager: ObservableObject {
             "profile_edit_save_changes_accessibility": "Save changes button",
             "profile_edit_reset_password": "Reset password",
             "profile_edit_reset_password_accessibility": "Reset password button",
-            "profile_edit_initial_placeholder": "•",
             "profile_edit_reset_password_title": "Reset password",
             "profile_edit_reset_password_message": "We will send password reset instructions to your email.",
             "profile_edit_ok": "OK",
+            "edit_profile_title": "Edit profile",
+            "edit_profile_cancel": "Cancel",
+            "edit_profile_save": "Save",
+            "edit_profile_reset_password": "Reset password",
+            "edit_profile_photo": "Profile photo",
+            "edit_profile_photo_hint": "Tap to change the photo",
+            "edit_profile_info": "Information",
+            "edit_profile_name": "Name",
+            "edit_profile_email": "Email",
+            "edit_profile_phone": "Phone",
             "settings_history_chart_title": "Protection level chart",
             "settings_history_chart_empty": "No data for the selected period",
             "settings_history_stats_average": "Average",
@@ -3401,6 +3840,7 @@ class LocalizationManager: ObservableObject {
             // Navigation menu
             "nav_screen_main": "Home",
             "nav_screen_family": "Family",
+            "nav_screen_network_protection": "Network Protection",
             "nav_screen_vpn": "Network Protection",
             "nav_screen_analytics": "Analytics",
             "nav_screen_settings": "Settings",
@@ -3433,8 +3873,55 @@ class LocalizationManager: ObservableObject {
             
             // Common
             "common_cancel": "Cancel",
+            "common_save": "Save",
             "common_continue": "Continue",
             "common_close": "Close",
+            
+            // ═══════════════════════════════════════════════════════════════
+            // MODAL SETTINGS - LOCALIZATION
+            // ═══════════════════════════════════════════════════════════════
+            
+            // Phishing Protection Settings
+            "phishing_protection.settings": "Phishing Protection Settings",
+            "phishing_protection.block_suspicious_links": "Block suspicious links",
+            "phishing_protection.warn_before_opening": "Warn before opening",
+            "phishing_protection.check_email_links": "Check email links",
+            "phishing_protection.check_sms_links": "Check SMS links",
+            "phishing_protection.block_known_domains": "Block known phishing domains",
+            "phishing_protection.sensitivity_level": "Sensitivity level",
+            "phishing_protection.sensitivity_low": "Low",
+            "phishing_protection.sensitivity_medium": "Medium",
+            "phishing_protection.sensitivity_high": "High",
+            
+            // Malware Detection Settings
+            "malware_detection.settings": "Malware Detection Settings",
+            "malware_detection.real_time_scanning": "Real-time scanning",
+            "malware_detection.scan_downloads": "Scan downloads",
+            "malware_detection.scan_installed_apps": "Scan installed apps",
+            "malware_detection.quarantine_threats": "Quarantine threats",
+            "malware_detection.auto_remove_threats": "Auto-remove threats",
+            "malware_detection.scan_frequency": "Scan frequency",
+            "malware_detection.frequency_hourly": "Hourly",
+            "malware_detection.frequency_daily": "Daily",
+            "malware_detection.frequency_weekly": "Weekly",
+            
+            // Mobile Security Settings
+            "mobile_security.settings": "Mobile Security Settings",
+            "mobile_security.device_encryption": "Device encryption",
+            "mobile_security.app_lock": "App lock",
+            "mobile_security.screen_lock": "Screen lock",
+            "mobile_security.biometric_auth": "Biometric authentication",
+            "mobile_security.remote_wipe": "Remote wipe",
+            "mobile_security.track_device": "Track device",
+            
+            // Network Security Settings
+            "network_security.settings": "Network Security Settings",
+            "network_security.block_unsafe_networks": "Block unsafe networks",
+            "network_security.warn_on_public_wifi": "Warn on public Wi-Fi",
+            "network_security.auto_connect_vpn": "Auto-connect VPN",
+            "network_security.block_tracking": "Block tracking",
+            "network_security.encrypt_traffic": "Encrypt traffic",
+            "network_security.firewall_enabled": "Firewall enabled",
             
             // Role Selection
             "role_selection_title": "Choose role",
@@ -4012,6 +4499,13 @@ class LocalizationManager: ObservableObject {
             "elderly_settings_edit_contacts_title": "📋 Edit Contacts",
             "elderly_settings_edit_contacts_cancel": "Cancel",
             "elderly_settings_edit_contacts_done": "Done",
+            "elderly_contact_edit_delete": "Delete",
+            "elderly_contact_delete_confirmation": "Are you sure you want to delete this contact?",
+            "elderly_contact_edit_title": "Edit Contact",
+            "elderly_contact_edit_name": "Name",
+            "elderly_contact_edit_phone": "Phone",
+            "elderly_contact_edit_relation": "Relation",
+            "elderly_contact_edit_save": "Save",
             
             // Elderly Interface - Medications
             "elderly_medications_add_for_reminders": "Add medications for reminders",
@@ -5149,6 +5643,36 @@ class LocalizationManager: ObservableObject {
             "child_interface_game_time": "• Game time: 2 hours per day",
             "child_interface_breaks": "• Breaks every 30 minutes",
             "child_interface_allowed_games": "• Only allowed games",
+            "child_game_welcome": "Welcome!",
+            "child_game_content_coming_soon": "Content coming soon!",
+            "child_game_zone": "Game Zone",
+            "child_game_greeting": "Game Zone!",
+            "child_study_welcome": "Learning with pleasure!",
+            "child_study_learning": "Learning with pleasure!",
+            "child_cartoons_welcome": "Favorite cartoons!",
+            "child_cartoons_favorites": "Favorite cartoons",
+            "child_creativity_welcome": "Creating together!",
+            "child_creativity_create": "Create and make!",
+            "child_game_adventures": "Adventures",
+            "child_game_puzzles": "Puzzles",
+            "child_game_logic": "Logic",
+            "child_game_speed": "Speed",
+            "child_daily_tip_title": "💡 Tip of the Day",
+            "child_daily_tip_kids": "Play and learn every day! This will help you become smarter and happier!",
+            "child_daily_tip_school": "Don't forget to take breaks! Rest is just as important as studying!",
+            "child_daily_tip_teen": "Remember internet safety. Trust, but verify!",
+            "child_daily_tip_young_adult": "Invest in yourself! Develop new skills every day!",
+            "child_study_subject_russian": "📖 Russian Language",
+            "child_study_subject_math": "🔢 Mathematics",
+            "child_study_subject_world": "🌍 World Around Us",
+            "child_creativity_drawing": "Drawing",
+            "child_creativity_application": "Application",
+            "child_creativity_coloring": "Coloring",
+            "child_creativity_photo": "Photo",
+            "child_cartoons_robots": "🤖 Robots",
+            "child_cartoons_adventures": "🐾 Adventures",
+            "child_cartoons_fantasy": "🌟 Fantasy",
+            "elderly_family_relation_you": "You",
             "child_interface_add_number": "📞 Add number",
             "child_interface_name": "Name",
             "child_interface_enter_name": "Enter name",
@@ -5158,6 +5682,13 @@ class LocalizationManager: ObservableObject {
             "child_interface_cancel": "Cancel",
             "child_interface_my_contacts": "📋 My Contacts",
             "child_interface_no_contacts": "No contacts added yet",
+            "child_contact_edit_delete": "Delete",
+            "child_contact_delete_confirmation": "Are you sure you want to delete this contact?",
+            "child_contact_edit_title": "Edit Contact",
+            "child_contact_edit_name": "Name",
+            "child_contact_edit_phone": "Phone",
+            "child_contact_edit_relation": "Relation",
+            "child_contact_edit_save": "Save",
             "child_interface_ask_parents": "Ask parents to add family member contacts",
             "child_interface_relation_mom": "Mom",
             "child_interface_relation_dad": "Dad",
@@ -6244,6 +6775,41 @@ class LocalizationManager: ObservableObject {
             "device_detail_protection_enabled": "Device protection",
             "device_detail_scanning_enabled": "Automatic scanning",
             
+            // Security Education Screen
+            "security_education_title": "Security",
+            "security_education_subtitle": "Security education",
+            "security_education_back": "Back",
+            "security_education_greeting_name": "Hello, %@!",
+            "security_education_greeting_message": "You're doing great! Keep learning about security!",
+            "security_education_level": "Level %d",
+            "security_education_level_title": "Family Protector",
+            "security_education_xp": "%d XP",
+            "security_education_lessons_completed": "%d lessons completed",
+            "security_education_lessons_title": "Security lessons",
+            "security_education_lesson_cybersecurity": "Cybersecurity",
+            "security_education_lesson_cybersecurity_desc": "Become a security expert",
+            "security_education_lesson_phishing": "Phishing",
+            "security_education_lesson_phishing_desc": "Recognize dangerous emails",
+            "security_education_lesson_social_engineering": "Social engineering",
+            "security_education_lesson_social_engineering_desc": "Protect yourself from manipulation",
+            "security_education_lesson_passwords": "Passwords",
+            "security_education_lesson_passwords_desc": "Create a strong password",
+            "security_education_xp_reward": "+%d XP",
+            "security_education_simple_rules_title": "✅ Simple rules",
+            "security_education_rule_strangers": "Don't talk to strangers",
+            "security_education_rule_emails": "Don't open strange emails",
+            "security_education_rule_parents": "Call mom or dad if you're scared",
+            "security_education_advanced_tips_title": "💡 Advanced tips",
+            "security_education_tip_2fa": "Use two-factor authentication (2FA)",
+            "security_education_tip_url": "Check URL before clicking links",
+            "security_education_tip_social": "Don't share personal information on social networks",
+            "security_education_tip_wifi": "Use network protection on public Wi-Fi",
+            "security_education_tip_updates": "Update apps regularly",
+            "security_education_lesson_study": "🎓 Study lesson",
+            "security_education_lesson_reward": "+%d XP +10 🦄",
+            "security_education_lesson_completed": "✅ Lesson completed!",
+            "security_education_lesson_continue": "Continue",
+            
             // Family Chat Screen
             "family_chat_title": "FAMILY CHAT",
             "family_chat_subtitle": "%d members online",
@@ -6259,10 +6825,134 @@ class LocalizationManager: ObservableObject {
             "family_chat_accessibility": "Family chat",
             "family_chat_error_title": "Error",
             "family_chat_error_ok": "OK",
+            "family_chat_error_not_found": "Chat is temporarily unavailable. Using test data.",
+            "family_chat_error_loading": "Failed to load messages. Check your internet connection.",
             "family_chat_you": "You",
             "family_chat_you_accusative": "you",
+            
+            // Child Goal Editor
+            "child_goal_editor_title": "🎯 My Goal",
+            "child_goal_editor_info_title": "Set a new goal",
+            "child_goal_editor_info_description": "Describe what you're saving unicorns for, and parents will approve your goal!",
+            "child_goal_editor_goal_title": "What are you saving for? 🎁",
+            "child_goal_editor_goal_hint": "Describe the gift you want",
+            "child_goal_editor_cost_title": "How many unicorns do you need? 🦄",
+            "child_goal_editor_cost_hint": "Approximate cost of the gift in unicorns",
+            "child_goal_editor_submit_button": "📨 Send to parents",
+            "child_goal_editor_success_title": "Goal sent! 📨",
+            "child_goal_editor_success_message": "Parents received your goal and will respond soon!",
+            "child_goal_editor_ok": "OK",
             "family_chat_time": "time",
             "family_chat_message_from": "Message from %@",
+            
+            // Family Chat Extended Features
+            // Voice Messages
+            "family_chat_voice_recording": "Recording...",
+            "family_chat_voice_recording_duration": "%@",
+            "family_chat_voice_send": "Send",
+            "family_chat_voice_cancel": "Cancel",
+            "family_chat_voice_delete": "Delete",
+            "family_chat_voice_playing": "Playing...",
+            "family_chat_voice_paused": "Paused",
+            "family_chat_voice_duration": "%@",
+            "family_chat_voice_error": "Recording error",
+            "family_chat_voice_too_short": "Recording too short",
+            "family_chat_voice_max_duration": "Maximum duration 60 seconds",
+            "family_chat_voice_permission_denied": "Microphone access denied",
+            
+            // WebSocket
+            "family_chat_websocket_connecting": "Connecting...",
+            "family_chat_websocket_connected": "Connected",
+            "family_chat_websocket_disconnected": "Disconnected",
+            "family_chat_websocket_reconnecting": "Reconnecting...",
+            "family_chat_websocket_error": "Connection error",
+            
+            // Typing Indicator
+            "family_chat_typing": "%@ is typing...",
+            "family_chat_typing_multiple": "%d members typing...",
+            
+            // Message Actions
+            "family_chat_message_delete": "Delete message",
+            "family_chat_message_edit": "Edit",
+            "family_chat_message_reply": "Reply",
+            "family_chat_message_copy": "Copy",
+            "family_chat_message_forward": "Forward",
+            "family_chat_message_delete_confirm": "Delete this message?",
+            "family_chat_message_delete_confirm_title": "Delete message",
+            "family_chat_message_edited": "edited",
+            "family_chat_message_edit_placeholder": "Edit message...",
+            "family_chat_message_save": "Save",
+            
+            // Media Messages
+            "family_chat_media_photo": "Photo",
+            "family_chat_media_video": "Video",
+            "family_chat_media_select": "Select media",
+            "family_chat_media_take_photo": "Take photo",
+            "family_chat_media_take_video": "Record video",
+            "family_chat_media_from_library": "From library",
+            "family_chat_media_uploading": "Uploading...",
+            "family_chat_media_upload_failed": "Upload failed",
+            "family_chat_media_view_fullscreen": "View fullscreen",
+            "family_chat_media_download": "Download",
+            
+            // Replies
+            "family_chat_reply_to": "Reply to message from %@",
+            "family_chat_reply_preview": "%@: %@",
+            "family_chat_reply_cancel": "Cancel reply",
+            
+            // Reactions
+            "family_chat_reaction_add": "Add reaction",
+            "family_chat_reaction_remove": "Remove reaction",
+            "family_chat_reaction_count": "%d",
+            "family_chat_reaction_people": "%@ and %d more",
+            
+            // Read Status
+            "family_chat_status_sent": "Sent",
+            "family_chat_status_delivered": "Delivered",
+            "family_chat_status_read": "Read",
+            "family_chat_status_read_at": "Read at %@",
+            
+            // Search
+            "family_chat_search_placeholder": "Search in chat...",
+            "family_chat_search_no_results": "No results found",
+            "family_chat_search_results": "Found: %d",
+            "family_chat_search_clear": "Clear",
+            
+            // Offline Mode
+            "family_chat_offline": "Offline mode",
+            "family_chat_offline_syncing": "Syncing...",
+            "family_chat_offline_pending": "%d messages in queue",
+            "family_chat_offline_sync_complete": "Sync completed",
+            
+            // Themes
+            "family_chat_theme_light": "Light theme",
+            "family_chat_theme_dark": "Dark theme",
+            "family_chat_theme_auto": "Auto",
+            "family_chat_theme_settings": "Theme settings",
+            
+            // Export
+            "family_chat_export": "Export chat",
+            "family_chat_export_pdf": "Export to PDF",
+            "family_chat_export_text": "Export to text",
+            "family_chat_export_share": "Share",
+            "family_chat_export_success": "Chat exported",
+            "family_chat_export_failed": "Export failed",
+            "family_chat_export_processing": "Processing...",
+            
+            // Push Notifications
+            "family_chat_notification_new_message": "New message from %@",
+            "family_chat_notification_settings": "Notification settings",
+            "family_chat_notification_enable": "Enable notifications",
+            "family_chat_notification_sound": "Sound",
+            "family_chat_notification_vibration": "Vibration",
+            
+            // General
+            "family_chat_online": "Online",
+            "family_chat_offline_status": "Offline",
+            "family_chat_loading": "Loading...",
+            "family_chat_empty": "No messages",
+            "family_chat_empty_description": "Start chatting with your family!",
+            
             // VPN Energy Stats Screen
             "vpn_energy_title": "NETWORK PROTECTION ENERGY CONSUMPTION",
             "vpn_energy_subtitle": "Usage statistics",
@@ -6543,6 +7233,187 @@ class LocalizationManager: ObservableObject {
             "onboarding_continue_hint": "Go to the next step",
             "onboarding_start": "Get started",
             "onboarding_start_hint": "Open the main screen",
+            
+            // ═══════════════════════════════════════════════════════════════
+            // 42 COMPONENTS - LOCALIZATION
+            // ═══════════════════════════════════════════════════════════════
+            
+            // Component 1: crash_detection_agent (for testing)
+            "component.crash_detection_agent.title": "Crash Detection",
+            "component.crash_detection_agent.desc": "Automatic crash detection and emergency call",
+            
+            // Component 2: roadside_assistance_agent
+            "component.roadside_assistance_agent.title": "Roadside Assistance",
+            "component.roadside_assistance_agent.desc": "Quick help for car breakdowns",
+            
+            // Component 3: incident_response_agent
+            "component.incident_response_agent.title": "Incident Response",
+            "component.incident_response_agent.desc": "Automatic response to critical events",
+            
+            // Component 4: emergency_response_bot
+            "component.emergency_response_bot.title": "Emergency Response",
+            "component.emergency_response_bot.desc": "Bot for emergency situations",
+            
+            // Component 5: emergency_event_manager
+            "component.emergency_event_manager.title": "Emergency Event Manager",
+            "component.emergency_event_manager.desc": "Coordination of emergency events",
+            
+            // Component 6: phishing_protection_agent
+            "component.phishing_protection_agent.title": "Phishing Protection",
+            "component.phishing_protection_agent.desc": "Detection of fraudulent websites",
+            
+            // Component 7: malware_detection_agent
+            "component.malware_detection_agent.title": "Malware Detection",
+            "component.malware_detection_agent.desc": "Protection from viruses and trojans",
+            
+            // Component 8: mobile_security_agent
+            "component.mobile_security_agent.title": "Mobile Security",
+            "component.mobile_security_agent.desc": "Protection for smartphones and tablets",
+            
+            // Component 9: network_security_agent
+            "component.network_security_agent.title": "Network Security",
+            "component.network_security_agent.desc": "Protection of network connections",
+            
+            // Component 10: password_security_agent
+            "component.password_security_agent.title": "Password Security",
+            "component.password_security_agent.desc": "Check and generate secure passwords",
+            
+            // Component 11: self_harm_detection_agent
+            "component.self_harm_detection_agent.title": "Self-Harm Detection",
+            "component.self_harm_detection_agent.desc": "Protection from self-harm content",
+            
+            // Component 12: grooming_detection_agent
+            "component.grooming_detection_agent.title": "Grooming Detection",
+            "component.grooming_detection_agent.desc": "Protection from online predators",
+            
+            // Component 13: online_predators_agent
+            "component.online_predators_agent.title": "Online Predators Protection",
+            "component.online_predators_agent.desc": "Detection of dangerous contacts",
+            
+            // Component 14: psychological_support_agent
+            "component.psychological_support_agent.title": "Psychological Support",
+            "component.psychological_support_agent.desc": "Help in difficult situations",
+            
+            // Component 15: parental_control_bot
+            "component.parental_control_bot.title": "Parental Control Bot",
+            "component.parental_control_bot.desc": "Enhanced parental control",
+            
+            // AdvancedProtectionSettingsScreen - Old Format (13 components)
+            "component_telegram_security_bot_title": "Telegram Security",
+            "component_telegram_security_bot_description": "Security in Telegram",
+            "component_whatsapp_security_bot_title": "WhatsApp Security",
+            "component_whatsapp_security_bot_description": "Security in WhatsApp",
+            "component_instagram_security_bot_title": "Instagram Security",
+            "component_instagram_security_bot_description": "Security in Instagram",
+            "component_max_messenger_security_bot_title": "Max Messenger Security",
+            "component_max_messenger_security_bot_description": "Security in Max Messenger",
+            "component_gaming_security_bot_title": "Gaming Security",
+            "component_gaming_security_bot_description": "Gaming platform security",
+            "component_browser_security_bot_title": "Browser Security",
+            "component_browser_security_bot_description": "Web browser security",
+            "component_location_bubble_agent_title": "Location Bubble",
+            "component_location_bubble_agent_description": "Hide exact location",
+            "component_personal_data_cleanup_agent_title": "Data Cleanup",
+            "component_personal_data_cleanup_agent_description": "Automatic personal data cleanup",
+            "component_anti_tracker_agent_title": "Tracker Blocking",
+            "component_anti_tracker_agent_description": "Block advertising trackers",
+            "component_dark_web_monitoring_agent_title": "Dark Web Monitoring",
+            "component_dark_web_monitoring_agent_description": "Track data leaks",
+            "component_russian_identity_theft_protection_agent_title": "Identity Theft Protection (RU)",
+            "component_russian_identity_theft_protection_agent_description": "Protection against document fraud",
+            "component_ai_categories_agent_title": "AI Categories",
+            "component_ai_categories_agent_description": "Smart content categorization",
+            "component_driving_reports_agent_title": "Driving Reports",
+            "component_driving_reports_agent_description": "Driving style analysis",
+            
+            // SettingsScreen - Old Format (5 components)
+            "component_emergency_contact_manager_title": "Emergency Contacts",
+            "component_emergency_contact_manager_description": "Manage contacts for emergencies",
+            "component_emergency_notification_manager_title": "Emergency Notifications",
+            "component_emergency_notification_manager_description": "Configure emergency alerts",
+            "component_voice_control_manager_title": "Voice Control",
+            "component_voice_control_manager_description": "Manage voice commands",
+            "component_russian_child_protection_manager_title": "Child Protection (RU)",
+            "component_russian_child_protection_manager_description": "Compliance with RF laws",
+            "component_russian_data_protection_manager_title": "Data Protection (RU)",
+            "component_russian_data_protection_manager_description": "Compliance with 152-FZ RF",
+            
+            // Improve Existing (9 components) - New Format
+            "component.family_notification_manager.title": "Family Notifications",
+            "component.family_notification_manager.desc": "Manage family notifications",
+            "component.smart_notification_manager.title": "Smart Notifications",
+            "component.smart_notification_manager.desc": "Intelligent notification system",
+            "component.child_interface_manager.title": "Child Interface",
+            "component.child_interface_manager.desc": "Manage child interface",
+            "component.elderly_interface_manager.title": "Elderly Interface",
+            "component.elderly_interface_manager.desc": "Simplified interface",
+            "component.subscription_manager.title": "Subscription Manager",
+            "component.subscription_manager.desc": "Tariff settings",
+            "component.referral_manager.title": "Referral Program",
+            "component.referral_manager.desc": "Invite friends",
+            "component.qr_payment_manager.title": "QR Payments",
+            "component.qr_payment_manager.desc": "Payment via QR code",
+            "component.analytics_manager.title": "Analytics",
+            "component.analytics_manager.desc": "Statistics and reports",
+            "component.report_manager.title": "Reports",
+            "component.report_manager.desc": "Manage reports",
+            
+            // Component Sections (5 sections) - New Format
+            "component.emergency_help.title": "Emergency Help",
+            "component.emergency_help.subtitle": "Quick help in critical situations",
+            "component.threat_protection.title": "Threat Protection",
+            "component.threat_protection.subtitle": "Protection from various threats",
+            "component.incident_response.title": "Incident Response",
+            "component.incident_response.subtitle": "Automatic response to incidents",
+            "component.password_security.title": "Passwords",
+            "component.password_security.subtitle": "Password security",
+            "component.child_protection.title": "Child Protection",
+            "component.child_protection.subtitle": "Protection from online dangers",
+            
+            // Common Component Keys (7 keys) - New Format
+            "component.enabled": "Enabled",
+            "component.disabled": "Disabled",
+            "component.settings": "Settings",
+            "component.loading": "Loading...",
+            "component.error": "Loading error",
+            "component.save": "Save",
+            "component.cancel": "Cancel",
+            
+            // Additional Component Keys (5 keys) - Old Format
+            "component_settings_hint": "Component settings",
+            "component_toggle_enabled_hint": "Component enabled",
+            "component_toggle_disabled_hint": "Component disabled",
+            "component_enabled": "Enabled",
+            "component_disabled": "Disabled",
+            
+            // Accordion Keys (4 keys) - New Format
+            "accordion_expanded": "Section '%@' expanded",
+            "accordion_collapsed": "Section '%@' collapsed",
+            "accordion_collapse_hint": "Collapse section",
+            "accordion_expand_hint": "Expand section",
+            
+            // Password Generator (8 keys) - New Format
+            "password_generator.settings": "Generator Settings",
+            "password_generator.length": "Password Length",
+            "password_generator.uppercase": "Uppercase Letters",
+            "password_generator.lowercase": "Lowercase Letters",
+            "password_generator.numbers": "Numbers",
+            "password_generator.special": "Special Characters",
+            "password_generator.generate": "Generate",
+            "password_generator.generated": "Generated Password",
+            
+            // Incident Response (11 keys) - New Format
+            "incident_response.escalation_thresholds": "Escalation Thresholds",
+            "incident_response.low": "Low",
+            "incident_response.medium": "Medium",
+            "incident_response.high": "High",
+            "incident_response.critical": "Critical",
+            "incident_response.minutes": "min",
+            "incident_response.sla_time": "SLA Response Time",
+            "incident_response.auto_actions": "Auto Actions",
+            "incident_response.block": "Block",
+            "incident_response.notify": "Notify",
+            "incident_response.escalate": "Escalate",
         ],
         .chinese: [
             "settings_title": "设置",
@@ -6592,7 +7463,6 @@ class LocalizationManager: ObservableObject {
             "profile_edit_cancel": "取消",
             "profile_edit_save": "保存",
             "profile_edit_default_name": "用户姓名",
-            "profile_edit_default_email": "user@example.com",
             "profile_edit_default_phone": "+86 138 0013 8000",
             "profile_edit_name_label": "姓名",
             "profile_edit_name_placeholder": "请输入姓名",
@@ -6604,7 +7474,6 @@ class LocalizationManager: ObservableObject {
             "profile_edit_save_changes_accessibility": "保存更改按钮",
             "profile_edit_reset_password": "重置密码",
             "profile_edit_reset_password_accessibility": "重置密码按钮",
-            "profile_edit_initial_placeholder": "•",
             "profile_edit_reset_password_title": "重置密码",
             "profile_edit_reset_password_message": "我们会将重置密码的说明发送到您的邮箱。",
             "profile_edit_ok": "好的",
@@ -6664,7 +7533,6 @@ class LocalizationManager: ObservableObject {
             "profile_edit_cancel": "إلغاء",
             "profile_edit_save": "حفظ",
             "profile_edit_default_name": "اسم المستخدم",
-            "profile_edit_default_email": "user@example.com",
             "profile_edit_default_phone": "+971 50 123 4567",
             "profile_edit_photo_title": "صورة الملف الشخصي",
             "profile_edit_change_photo_accessibility": "تغيير صورة الملف الشخصي",
@@ -6680,7 +7548,6 @@ class LocalizationManager: ObservableObject {
             "profile_edit_save_changes_accessibility": "زر حفظ التغييرات",
             "profile_edit_reset_password": "إعادة تعيين كلمة المرور",
             "profile_edit_reset_password_accessibility": "زر إعادة تعيين كلمة المرور",
-            "profile_edit_initial_placeholder": "•",
             "profile_edit_reset_password_title": "إعادة تعيين كلمة المرور",
             "profile_edit_reset_password_message": "سنرسل تعليمات إعادة التعيين إلى بريدك الإلكتروني.",
             "profile_edit_ok": "حسنًا",

@@ -67,6 +67,42 @@
 		5E6F390B2F151FBF00CEC103 /* FamilyChatOfflineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F390A2F151FBF00CEC103 /* FamilyChatOfflineManager.swift */; };
 		5E6F390D2F1520D600CEC103 /* PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F390C2F1520D600CEC103 /* PushNotificationService.swift */; };
 		5E6F390F2F15211800CEC103 /* ChatSearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F390E2F15211800CEC103 /* ChatSearchBar.swift */; };
+		5E6F39132F15AC3300CEC103 /* NetworkProtectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39122F15AC3300CEC103 /* NetworkProtectionViewModel.swift */; };
+		5E6F39152F15AC4400CEC103 /* ProtectionSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39142F15AC4400CEC103 /* ProtectionSettingsViewModel.swift */; };
+		5E6F39172F15AC5600CEC103 /* ParentalControlViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39162F15AC5600CEC103 /* ParentalControlViewModel.swift */; };
+		5E6F391C2F15ADF200CEC103 /* NetworkProtectionViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39102F15ABF200CEC103 /* NetworkProtectionViewModelTests.swift */; };
+		5E6F391D2F15AE1500CEC103 /* NetworkProtectionScreenUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F391A2F15AC7B00CEC103 /* NetworkProtectionScreenUITests.swift */; };
+		5E6F391E2F15AE3600CEC103 /* ParentalControlScreenUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39182F15AC6F00CEC103 /* ParentalControlScreenUITests.swift */; };
+		5E6F39202F15AED900CEC103 /* ComponentCacheServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F391F2F15AED900CEC103 /* ComponentCacheServiceTests.swift */; };
+		5E6F39222F15AEE800CEC103 /* ComponentConfigurationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39212F15AEE800CEC103 /* ComponentConfigurationServiceTests.swift */; };
+		5E6F39242F15AEF200CEC103 /* ComponentStatusServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39232F15AEF200CEC103 /* ComponentStatusServiceTests.swift */; };
+		5E6F39262F15AF2A00CEC103 /* FamilyNotificationSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39252F15AF2A00CEC103 /* FamilyNotificationSettingsModal.swift */; };
+		5E6F39282F15AF3700CEC103 /* AnalyticsSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39272F15AF3700CEC103 /* AnalyticsSettingsModal.swift */; };
+		5E6F392A2F15AF4000CEC103 /* IncidentResponseSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39292F15AF4000CEC103 /* IncidentResponseSettingsModal.swift */; };
+		5E6F392C2F15AF4E00CEC103 /* PasswordGeneratorModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F392B2F15AF4E00CEC103 /* PasswordGeneratorModal.swift */; };
+		5E6F392E2F15AF5A00CEC103 /* ComponentSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F392D2F15AF5A00CEC103 /* ComponentSettingsModal.swift */; };
+		5E6F39302F15AF7800CEC103 /* SecurityFeatureRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F392F2F15AF7800CEC103 /* SecurityFeatureRow.swift */; };
+		5E6F39322F15AF8400CEC103 /* SettingsAccordion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39312F15AF8400CEC103 /* SettingsAccordion.swift */; };
+		5E6F39342F15AF9100CEC103 /* ComponentToggleCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39332F15AF9100CEC103 /* ComponentToggleCard.swift */; };
+		5E6F39362F15AFC400CEC103 /* ComplianceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39352F15AFC400CEC103 /* ComplianceView.swift */; };
+		5E6F39382F15AFCF00CEC103 /* EmergencyContactsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39372F15AFCF00CEC103 /* EmergencyContactsView.swift */; };
+		5E6F393A2F15AFD800CEC103 /* EmergencyNotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39392F15AFD800CEC103 /* EmergencyNotificationsView.swift */; };
+		5E6F393C2F15AFE200CEC103 /* VoiceControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F393B2F15AFE200CEC103 /* VoiceControlView.swift */; };
+		5E6F393E2F15AFF700CEC103 /* ComponentCacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F393D2F15AFF700CEC103 /* ComponentCacheService.swift */; };
+		5E6F39402F15B00100CEC103 /* ComponentConfigurationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F393F2F15B00100CEC103 /* ComponentConfigurationService.swift */; };
+		5E6F39422F15B00B00CEC103 /* ComponentStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39412F15B00B00CEC103 /* ComponentStatusService.swift */; };
+		5E6F39442F15B02C00CEC103 /* APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39432F15B02C00CEC103 /* APIModels.swift */; };
+		5E6F39462F15B03800CEC103 /* ComponentConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39452F15B03700CEC103 /* ComponentConfiguration.swift */; };
+		5E6F39482F15B04400CEC103 /* ComponentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39472F15B04400CEC103 /* ComponentError.swift */; };
+		5E6F394A2F15B05000CEC103 /* ComponentStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39492F15B05000CEC103 /* ComponentStatus.swift */; };
+		5E6F394C2F15B07E00CEC103 /* ComponentAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F394B2F15B07D00CEC103 /* ComponentAnalytics.swift */; };
+		5E6F394E2F15B74F00CEC103 /* RetryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F394D2F15B74E00CEC103 /* RetryManager.swift */; };
+		5E6F39512F16644D00CEC103 /* ComponentAPIIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F394F2F16644900CEC103 /* ComponentAPIIntegrationTests.swift */; };
+		5E6F39532F16645D00CEC103 /* ComponentAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39522F16645C00CEC103 /* ComponentAPITests.swift */; };
+		5E6F39552F16C52100CEC103 /* PhishingProtectionSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39542F16C52000CEC103 /* PhishingProtectionSettingsModal.swift */; };
+		5E6F39572F16C54C00CEC103 /* MalwareDetectionSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39562F16C54B00CEC103 /* MalwareDetectionSettingsModal.swift */; };
+		5E6F39592F16C56100CEC103 /* MobileSecuritySettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39582F16C56100CEC103 /* MobileSecuritySettingsModal.swift */; };
+		5E6F395B2F16C57500CEC103 /* NetworkSecuritySettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F395A2F16C57400CEC103 /* NetworkSecuritySettingsModal.swift */; };
 		5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */; };
 		5EA2F63E2EFB4B8D000686C0 /* ContentBlockerRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */; };
 		5EA2F6402EFB4BD3000686C0 /* FamilyContentBlockModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */; };
@@ -302,6 +338,42 @@
 		5E6F390A2F151FBF00CEC103 /* FamilyChatOfflineManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChatOfflineManager.swift; path = Core/Chat/FamilyChatOfflineManager.swift; sourceTree = "<group>"; };
 		5E6F390C2F1520D600CEC103 /* PushNotificationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PushNotificationService.swift; path = Core/Services/PushNotificationService.swift; sourceTree = "<group>"; };
 		5E6F390E2F15211800CEC103 /* ChatSearchBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChatSearchBar.swift; path = Shared/Components/Chat/ChatSearchBar.swift; sourceTree = "<group>"; };
+		5E6F39102F15ABF200CEC103 /* NetworkProtectionViewModelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkProtectionViewModelTests.swift; path = Tests/ViewModels/NetworkProtectionViewModelTests.swift; sourceTree = "<group>"; };
+		5E6F39122F15AC3300CEC103 /* NetworkProtectionViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkProtectionViewModel.swift; path = ViewModels/NetworkProtectionViewModel.swift; sourceTree = "<group>"; };
+		5E6F39142F15AC4400CEC103 /* ProtectionSettingsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionSettingsViewModel.swift; path = ViewModels/ProtectionSettingsViewModel.swift; sourceTree = "<group>"; };
+		5E6F39162F15AC5600CEC103 /* ParentalControlViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalControlViewModel.swift; path = ViewModels/ParentalControlViewModel.swift; sourceTree = "<group>"; };
+		5E6F39182F15AC6F00CEC103 /* ParentalControlScreenUITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalControlScreenUITests.swift; path = Tests/UITests/ParentalControlScreenUITests.swift; sourceTree = "<group>"; };
+		5E6F391A2F15AC7B00CEC103 /* NetworkProtectionScreenUITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkProtectionScreenUITests.swift; path = Tests/UITests/NetworkProtectionScreenUITests.swift; sourceTree = "<group>"; };
+		5E6F391F2F15AED900CEC103 /* ComponentCacheServiceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentCacheServiceTests.swift; path = Tests/Services/ComponentCacheServiceTests.swift; sourceTree = "<group>"; };
+		5E6F39212F15AEE800CEC103 /* ComponentConfigurationServiceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentConfigurationServiceTests.swift; path = Tests/Services/ComponentConfigurationServiceTests.swift; sourceTree = "<group>"; };
+		5E6F39232F15AEF200CEC103 /* ComponentStatusServiceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentStatusServiceTests.swift; path = Tests/Services/ComponentStatusServiceTests.swift; sourceTree = "<group>"; };
+		5E6F39252F15AF2A00CEC103 /* FamilyNotificationSettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyNotificationSettingsModal.swift; path = Shared/Components/Modals/FamilyNotificationSettingsModal.swift; sourceTree = "<group>"; };
+		5E6F39272F15AF3700CEC103 /* AnalyticsSettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AnalyticsSettingsModal.swift; path = Shared/Components/Modals/AnalyticsSettingsModal.swift; sourceTree = "<group>"; };
+		5E6F39292F15AF4000CEC103 /* IncidentResponseSettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IncidentResponseSettingsModal.swift; path = Shared/Components/Modals/IncidentResponseSettingsModal.swift; sourceTree = "<group>"; };
+		5E6F392B2F15AF4E00CEC103 /* PasswordGeneratorModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PasswordGeneratorModal.swift; path = Shared/Components/Modals/PasswordGeneratorModal.swift; sourceTree = "<group>"; };
+		5E6F392D2F15AF5A00CEC103 /* ComponentSettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentSettingsModal.swift; path = Shared/Components/Modals/ComponentSettingsModal.swift; sourceTree = "<group>"; };
+		5E6F392F2F15AF7800CEC103 /* SecurityFeatureRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityFeatureRow.swift; path = Shared/Components/SecurityFeatureRow.swift; sourceTree = "<group>"; };
+		5E6F39312F15AF8400CEC103 /* SettingsAccordion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SettingsAccordion.swift; path = Shared/Components/SettingsAccordion.swift; sourceTree = "<group>"; };
+		5E6F39332F15AF9100CEC103 /* ComponentToggleCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentToggleCard.swift; path = Shared/Components/ComponentToggleCard.swift; sourceTree = "<group>"; };
+		5E6F39352F15AFC400CEC103 /* ComplianceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComplianceView.swift; path = Screens/Views/ComplianceView.swift; sourceTree = "<group>"; };
+		5E6F39372F15AFCF00CEC103 /* EmergencyContactsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EmergencyContactsView.swift; path = Screens/Views/EmergencyContactsView.swift; sourceTree = "<group>"; };
+		5E6F39392F15AFD800CEC103 /* EmergencyNotificationsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EmergencyNotificationsView.swift; path = Screens/Views/EmergencyNotificationsView.swift; sourceTree = "<group>"; };
+		5E6F393B2F15AFE200CEC103 /* VoiceControlView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceControlView.swift; path = Screens/Views/VoiceControlView.swift; sourceTree = "<group>"; };
+		5E6F393D2F15AFF700CEC103 /* ComponentCacheService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentCacheService.swift; path = Core/Services/ComponentCacheService.swift; sourceTree = "<group>"; };
+		5E6F393F2F15B00100CEC103 /* ComponentConfigurationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentConfigurationService.swift; path = Core/Services/ComponentConfigurationService.swift; sourceTree = "<group>"; };
+		5E6F39412F15B00B00CEC103 /* ComponentStatusService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentStatusService.swift; path = Core/Services/ComponentStatusService.swift; sourceTree = "<group>"; };
+		5E6F39432F15B02C00CEC103 /* APIModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APIModels.swift; path = Core/Models/APIModels.swift; sourceTree = "<group>"; };
+		5E6F39452F15B03700CEC103 /* ComponentConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentConfiguration.swift; path = Core/Models/ComponentConfiguration.swift; sourceTree = "<group>"; };
+		5E6F39472F15B04400CEC103 /* ComponentError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentError.swift; path = Core/Models/ComponentError.swift; sourceTree = "<group>"; };
+		5E6F39492F15B05000CEC103 /* ComponentStatus.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentStatus.swift; path = Core/Models/ComponentStatus.swift; sourceTree = "<group>"; };
+		5E6F394B2F15B07D00CEC103 /* ComponentAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentAnalytics.swift; path = Core/Analytics/ComponentAnalytics.swift; sourceTree = "<group>"; };
+		5E6F394D2F15B74E00CEC103 /* RetryManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RetryManager.swift; path = Core/Network/RetryManager.swift; sourceTree = "<group>"; };
+		5E6F394F2F16644900CEC103 /* ComponentAPIIntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentAPIIntegrationTests.swift; path = Tests/Integration/ComponentAPIIntegrationTests.swift; sourceTree = "<group>"; };
+		5E6F39522F16645C00CEC103 /* ComponentAPITests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentAPITests.swift; path = Tests/Integration/ComponentAPITests.swift; sourceTree = "<group>"; };
+		5E6F39542F16C52000CEC103 /* PhishingProtectionSettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PhishingProtectionSettingsModal.swift; path = Shared/Components/Modals/PhishingProtectionSettingsModal.swift; sourceTree = "<group>"; };
+		5E6F39562F16C54B00CEC103 /* MalwareDetectionSettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MalwareDetectionSettingsModal.swift; path = Shared/Components/Modals/MalwareDetectionSettingsModal.swift; sourceTree = "<group>"; };
+		5E6F39582F16C56100CEC103 /* MobileSecuritySettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MobileSecuritySettingsModal.swift; path = Shared/Components/Modals/MobileSecuritySettingsModal.swift; sourceTree = "<group>"; };
+		5E6F395A2F16C57400CEC103 /* NetworkSecuritySettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkSecuritySettingsModal.swift; path = Shared/Components/Modals/NetworkSecuritySettingsModal.swift; sourceTree = "<group>"; };
 		5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerManager.swift; path = Core/ContentBlocker/ContentBlockerManager.swift; sourceTree = "<group>"; };
 		5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerRule.swift; path = Core/ContentBlocker/ContentBlockerRule.swift; sourceTree = "<group>"; };
 		5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyContentBlockModal.swift; path = Components/Modals/FamilyContentBlockModal.swift; sourceTree = "<group>"; };
@@ -580,6 +652,42 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5E6F395A2F16C57400CEC103 /* NetworkSecuritySettingsModal.swift */,
+				5E6F39582F16C56100CEC103 /* MobileSecuritySettingsModal.swift */,
+				5E6F39562F16C54B00CEC103 /* MalwareDetectionSettingsModal.swift */,
+				5E6F39542F16C52000CEC103 /* PhishingProtectionSettingsModal.swift */,
+				5E6F394F2F16644900CEC103 /* ComponentAPIIntegrationTests.swift */,
+				5E6F39522F16645C00CEC103 /* ComponentAPITests.swift */,
+				5E6F394D2F15B74E00CEC103 /* RetryManager.swift */,
+				5E6F394B2F15B07D00CEC103 /* ComponentAnalytics.swift */,
+				5E6F39492F15B05000CEC103 /* ComponentStatus.swift */,
+				5E6F39472F15B04400CEC103 /* ComponentError.swift */,
+				5E6F39452F15B03700CEC103 /* ComponentConfiguration.swift */,
+				5E6F39432F15B02C00CEC103 /* APIModels.swift */,
+				5E6F39412F15B00B00CEC103 /* ComponentStatusService.swift */,
+				5E6F393F2F15B00100CEC103 /* ComponentConfigurationService.swift */,
+				5E6F393D2F15AFF700CEC103 /* ComponentCacheService.swift */,
+				5E6F39392F15AFD800CEC103 /* EmergencyNotificationsView.swift */,
+				5E6F393B2F15AFE200CEC103 /* VoiceControlView.swift */,
+				5E6F39372F15AFCF00CEC103 /* EmergencyContactsView.swift */,
+				5E6F39352F15AFC400CEC103 /* ComplianceView.swift */,
+				5E6F392F2F15AF7800CEC103 /* SecurityFeatureRow.swift */,
+				5E6F39312F15AF8400CEC103 /* SettingsAccordion.swift */,
+				5E6F39332F15AF9100CEC103 /* ComponentToggleCard.swift */,
+				5E6F39252F15AF2A00CEC103 /* FamilyNotificationSettingsModal.swift */,
+				5E6F39292F15AF4000CEC103 /* IncidentResponseSettingsModal.swift */,
+				5E6F392B2F15AF4E00CEC103 /* PasswordGeneratorModal.swift */,
+				5E6F392D2F15AF5A00CEC103 /* ComponentSettingsModal.swift */,
+				5E6F39272F15AF3700CEC103 /* AnalyticsSettingsModal.swift */,
+				5E6F391F2F15AED900CEC103 /* ComponentCacheServiceTests.swift */,
+				5E6F39212F15AEE800CEC103 /* ComponentConfigurationServiceTests.swift */,
+				5E6F39232F15AEF200CEC103 /* ComponentStatusServiceTests.swift */,
+				5E6F39182F15AC6F00CEC103 /* ParentalControlScreenUITests.swift */,
+				5E6F391A2F15AC7B00CEC103 /* NetworkProtectionScreenUITests.swift */,
+				5E6F39102F15ABF200CEC103 /* NetworkProtectionViewModelTests.swift */,
+				5E6F39122F15AC3300CEC103 /* NetworkProtectionViewModel.swift */,
+				5E6F39142F15AC4400CEC103 /* ProtectionSettingsViewModel.swift */,
+				5E6F39162F15AC5600CEC103 /* ParentalControlViewModel.swift */,
 				5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */,
 				5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */,
 				5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */,
@@ -938,17 +1046,22 @@
 				5EC309102EA6B61700C7D34B /* 08_ChildInterfaceScreen.swift in Sources */,
 				A1000003 /* ContentView.swift in Sources */,
 				B6000001 /* AppDelegate.swift in Sources */,
+				5E6F393C2F15AFE200CEC103 /* VoiceControlView.swift in Sources */,
 				5E3200012EAD2692000574C4 /* AgeGroupSelectionModal.swift in Sources */,
 				5EB01F442ECB097500168BE9 /* ActivationCodeViewModel.swift in Sources */,
+				5E6F39592F16C56100CEC103 /* MobileSecuritySettingsModal.swift in Sources */,
 				5E00582F2EC606BB00024F7E /* TariffCardView.swift in Sources */,
 				A1000001 /* ALADDINApp.swift in Sources */,
 				5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */,
 				5EC3094B2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift in Sources */,
+				5E6F39172F15AC5600CEC103 /* ParentalControlViewModel.swift in Sources */,
 				5EB01F462ECB09D300168BE9 /* 26_ActivationCodeScreen.swift in Sources */,
 				A3000001 /* ViewModels/MainViewModel.swift in Sources */,
 				5E0058312EC606DA00024F7E /* TariffCardSections.swift in Sources */,
 				5EA2F6402EFB4BD3000686C0 /* FamilyContentBlockModal.swift in Sources */,
+				5E6F395B2F16C57500CEC103 /* NetworkSecuritySettingsModal.swift in Sources */,
 				5E32FFF72EAD23BB000574C4 /* PrimaryButton.swift in Sources */,
+				5E6F39302F15AF7800CEC103 /* SecurityFeatureRow.swift in Sources */,
 				5EC309252EA6B66900C7D34B /* NotificationSettingsScreen.swift in Sources */,
 				5E0058172EC4A6E300024F7E /* TariffManager.swift in Sources */,
 				5E0C30BA2EAFC81D00FD6647 /* ChildContentScreen.swift in Sources */,
@@ -961,7 +1074,9 @@
 				A3000007 /* Core/NetworkProtection/NetworkProtectionManager.swift in Sources */,
 				5EC309292EA6B67800C7D34B /* UnicornPetView.swift in Sources */,
 				A3000009 /* Core/Network/APIService.swift in Sources */,
+				5E6F39132F15AC3300CEC103 /* NetworkProtectionViewModel.swift in Sources */,
 				5EC309172EA6B62E00C7D34B /* 18_PrivacyPolicyScreen.swift in Sources */,
+				5E6F39422F15B00B00CEC103 /* ComponentStatusService.swift in Sources */,
 				5EC309122EA6B61E00C7D34B /* 10_TariffsScreen.swift in Sources */,
 				5EC309112EA6B61B00C7D34B /* 09_ElderlyInterfaceScreen.swift in Sources */,
 				5EC309132EA6B62100C7D34B /* 11_ProfileScreen.swift in Sources */,
@@ -974,13 +1089,16 @@
 				5EC3092C2EA6B68000C7D34B /* WidgetConfigurationScreen.swift in Sources */,
 				5E6F39052F151F2500CEC103 /* FamilyChatWebSocket.swift in Sources */,
 				5E0C30BC2EAFF09800FD6647 /* SecurityEducationScreen.swift in Sources */,
+				5E6F394A2F15B05000CEC103 /* ComponentStatus.swift in Sources */,
 				5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */,
 				5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */,
+				5E6F39152F15AC4400CEC103 /* ProtectionSettingsViewModel.swift in Sources */,
 				B1000001 /* AddMemberOptionsModal.swift in Sources */,
 				B2000140B2000140B2000140 /* InvitationCodeInputModal.swift in Sources */,
 				5E6F38F92F151E2800CEC103 /* MessageActionsMenu.swift in Sources */,
 				5EC309352EA6CCBD00C7D34B /* Spacing.swift in Sources */,
 				5E32FFF32EAD1915000574C4 /* RecoveryOptionsModal.swift in Sources */,
+				5E6F39482F15B04400CEC103 /* ComponentError.swift in Sources */,
 				5EE081892EE239FE009AD42A /* ShareSheet.swift in Sources */,
 				5E00582D2EC6064100024F7E /* TariffCard.swift in Sources */,
 				A3000021 /* ViewModels/SettingsViewModel.swift in Sources */,
@@ -1003,20 +1121,26 @@
 				B2000100B2000100B2000100 /* ProtectionFeature.swift in Sources */,
 				B2000110B2000110B2000110 /* ProtectionLevelHistory.swift in Sources */,
 				5E6F39092F151F7C00CEC103 /* VoiceMessagePlayer.swift in Sources */,
+				5E6F394C2F15B07E00CEC103 /* ComponentAnalytics.swift in Sources */,
 				A3000031 /* ViewModels/NotificationsViewModel.swift in Sources */,
 				5EC3090D2EA6B60F00C7D34B /* 06_AIAssistantScreen.swift in Sources */,
+				5E6F39572F16C54C00CEC103 /* MalwareDetectionSettingsModal.swift in Sources */,
 				5E0058092EC3C7A400024F7E /* RewardsQuickModal.swift in Sources */,
+				5E6F39362F15AFC400CEC103 /* ComplianceView.swift in Sources */,
 				B2000170B2000170B2000170 /* AdvancedProtectionSettingsScreen.swift in Sources */,
 				5E6F390B2F151FBF00CEC103 /* FamilyChatOfflineManager.swift in Sources */,
 				A3000033 /* ViewModels/ProfileViewModel.swift in Sources */,
 				5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */,
+				5E6F392A2F15AF4000CEC103 /* IncidentResponseSettingsModal.swift in Sources */,
 				A3000035 /* ViewModels/ParentalControlViewModel.swift in Sources */,
 				A3000037 /* ViewModels/OnboardingViewModel.swift in Sources */,
 				5EC309372EA6CCBD00C7D34B /* Colors.swift in Sources */,
+				5E6F39322F15AF8400CEC103 /* SettingsAccordion.swift in Sources */,
 				5EC3091F2EA6B64800C7D34B /* ChildRewardsScreen.swift in Sources */,
 				A4BBB005 /* ChildGoalEditorView.swift in Sources */,
 				5EB01F3E2EC9B74E00168BE9 /* RecoveryCodeStorageManager.swift in Sources */,
 				5EC3091A2EA6B63700C7D34B /* 21_ReferralScreen.swift in Sources */,
+				5E6F394E2F15B74F00CEC103 /* RetryManager.swift in Sources */,
 				5E32FFF52EAD199B000574C4 /* AvatarSelector.swift in Sources */,
 				5E0058192EC4AF2500024F7E /* MotivationBanner.swift in Sources */,
 				B2000120B2000120B2000120 /* Toast.swift in Sources */,
@@ -1047,10 +1171,13 @@
 				5E0C30B82EAFAD0B00FD6647 /* 02_FamilyScreen.swift in Sources */,
 				5EC309192EA6B63400C7D34B /* 20_DevicesScreen.swift in Sources */,
 				5E0058072EC3C52B00024F7E /* SecondaryButton.swift in Sources */,
+				5E6F392C2F15AF4E00CEC103 /* PasswordGeneratorModal.swift in Sources */,
 				5E00581B2EC4AF6D00024F7E /* EnhancedThreatCategoryCard.swift in Sources */,
+				5E6F39552F16C52100CEC103 /* PhishingProtectionSettingsModal.swift in Sources */,
 				5E32FFD72EACFAA9000574C4 /* ViewModifiers.swift in Sources */,
 				B1000021 /* CollapsibleSection.swift in Sources */,
 				5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */,
+				5E6F39442F15B02C00CEC103 /* APIModels.swift in Sources */,
 				5EC309242EA6B66600C7D34B /* MainScreenWithRegistration.swift in Sources */,
 				5E32FFEB2EAD1852000574C4 /* NetworkError.swift in Sources */,
 				5EC309232EA6B66100C7D34B /* LanguageSettingsScreen.swift in Sources */,
@@ -1068,24 +1195,32 @@
 				5E0058332EC6073700024F7E /* TariffFeaturesGallery.swift in Sources */,
 				5EA2F63E2EFB4B8D000686C0 /* ContentBlockerRule.swift in Sources */,
 				5EC3091D2EA6B64200C7D34B /* 24_NetworkProtectionEnergyStatsScreen.swift in Sources */,
+				5E6F393A2F15AFD800CEC103 /* EmergencyNotificationsView.swift in Sources */,
 				5E32FFEF2EAD18B2000574C4 /* ProfileEditView.swift in Sources */,
+				5E6F39342F15AF9100CEC103 /* ComponentToggleCard.swift in Sources */,
 				A3000053 /* ViewModels/TariffsViewModel.swift in Sources */,
 				5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */,
 				5E0058132EC4A66600024F7E /* ProtectionSettings.swift in Sources */,
 				A4BBB101 /* RemoteNotificationsService.swift in Sources */,
+				5E6F39462F15B03800CEC103 /* ComponentConfiguration.swift in Sources */,
 				5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */,
 				A4AAA002 /* ThreatProtectionScreen.swift in Sources */,
 				A4AAA004 /* ThreatProtectionCard.swift in Sources */,
 				A4AAA006 /* ThreatProtectionCategoriesView.swift in Sources */,
+				5E6F39282F15AF3700CEC103 /* AnalyticsSettingsModal.swift in Sources */,
+				5E6F39402F15B00100CEC103 /* ComponentConfigurationService.swift in Sources */,
 				A4AAA008 /* ThreatProtectionCategory.swift in Sources */,
 				A4AAA102 /* GamesSettingsManager.swift in Sources */,
 				B1000031 /* ParentalControlManager.swift in Sources */,
 				A4AAA104 /* AnalyticsService.swift in Sources */,
 				5E6F38FD2F151E4400CEC103 /* ReplyBubbleView.swift in Sources */,
+				5E6F393E2F15AFF700CEC103 /* ComponentCacheService.swift in Sources */,
 				5E6F390D2F1520D600CEC103 /* PushNotificationService.swift in Sources */,
 				5EA2F6422F03F2DB000686C0 /* AddMemberOptionsScreen.swift in Sources */,
 				A4AAA106 /* RemoteAnalyticsService.swift in Sources */,
+				5E6F392E2F15AF5A00CEC103 /* ComponentSettingsModal.swift in Sources */,
 				A4AAA108 /* ProfileImageManager.swift in Sources */,
+				5E6F39262F15AF2A00CEC103 /* FamilyNotificationSettingsModal.swift in Sources */,
 				A4AAA200 /* RewardModels.swift in Sources */,
 				A4AAA202 /* ViewModels/ChildRewardsViewModel.swift in Sources */,
 				A4AAA210 /* AntivirusManager.swift in Sources */,
@@ -1098,6 +1233,7 @@
 				5E0058212EC4B21A00024F7E /* ProtectionGroupSection.swift in Sources */,
 				A4BBB007 /* LocalThreatDatabase.swift in Sources */,
 				5E0058052EC3C50500024F7E /* ALADDINToggle.swift in Sources */,
+				5E6F39382F15AFCF00CEC103 /* EmergencyContactsView.swift in Sources */,
 				A4AAA212 /* EmptyStateView.swift in Sources */,
 				5E6F38FF2F151E5000CEC103 /* TypingIndicatorView.swift in Sources */,
 				A4AAA214 /* JWTTokenManager.swift in Sources */,
@@ -1114,12 +1250,18 @@
 				B5001202 /* AppConfigTests.swift in Sources */,
 				B5001203 /* AppDelegateTests.swift in Sources */,
 				B5001204 /* FamilyRegistrationViewModelTests.swift in Sources */,
+				5E6F39242F15AEF200CEC103 /* ComponentStatusServiceTests.swift in Sources */,
 				B5001205 /* IoTSecurityModuleTests.swift in Sources */,
+				5E6F391C2F15ADF200CEC103 /* NetworkProtectionViewModelTests.swift in Sources */,
 				B5001206 /* LocalizationManagerTests.swift in Sources */,
+				5E6F39222F15AEE800CEC103 /* ComponentConfigurationServiceTests.swift in Sources */,
+				5E6F39202F15AED900CEC103 /* ComponentCacheServiceTests.swift in Sources */,
 				B5001207 /* NetworkManagerTests.swift in Sources */,
+				5E6F39532F16645D00CEC103 /* ComponentAPITests.swift in Sources */,
 				B5001208 /* NotificationManagerTests.swift in Sources */,
 				B5001209 /* SharedDataManagerTests.swift in Sources */,
 				B5001210 /* MockAPIServiceTests.swift in Sources */,
+				5E6F39512F16644D00CEC103 /* ComponentAPIIntegrationTests.swift in Sources */,
 				5E00580F2EC473DA00024F7E /* PaymentQRViewModelProtectionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1131,6 +1273,8 @@
 				B5002200 /* ALADDINUITests.swift in Sources */,
 				B5002201 /* FamilyRegistrationUITests.swift in Sources */,
 				B5002202 /* LanguageSettingsUITests.swift in Sources */,
+				5E6F391D2F15AE1500CEC103 /* NetworkProtectionScreenUITests.swift in Sources */,
+				5E6F391E2F15AE3600CEC103 /* ParentalControlScreenUITests.swift in Sources */,
 				B5002203 /* NotificationSettingsUITests.swift in Sources */,
 				B5002204 /* WidgetConfigurationUITests.swift in Sources */,
 			);
