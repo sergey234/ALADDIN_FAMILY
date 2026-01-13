@@ -4,8 +4,8 @@ import UIKit
 struct MainScreen: View {
     @State private var aiQuestion: String = ""
     @StateObject private var mainViewModel = MainViewModel()
-    @StateObject private var tariffManager = TariffManager.shared
-    @StateObject private var antivirusManager = AntivirusManager.shared
+    @ObservedObject private var tariffManager = TariffManager.shared
+    @ObservedObject private var antivirusManager = AntivirusManager.shared
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
     @State private var profileImage: UIImage? = nil

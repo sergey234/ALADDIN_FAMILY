@@ -35,14 +35,14 @@ struct FamilyScreen: View {
     @State private var showBypassProtectionModal: Bool = false
     @State private var showFamilyNotificationSettings: Bool = false
     
-    // Состояния для карточек
-    @State private var isContentBlockEnabled: Bool = true
-    @State private var isTimeControlEnabled: Bool = true
-    @State private var isMonitoringEnabled: Bool = true
-    @State private var isLocationEnabled: Bool = true
-    @State private var isReportsEnabled: Bool = true
-    @State private var isAdditionalEnabled: Bool = true
-    @State private var isBypassProtectionEnabled: Bool = true
+    // Состояния для карточек (сохранение через @AppStorage)
+    @AppStorage("family_content_block_enabled") private var isContentBlockEnabled: Bool = true
+    @AppStorage("family_time_control_enabled") private var isTimeControlEnabled: Bool = true
+    @AppStorage("family_monitoring_enabled") private var isMonitoringEnabled: Bool = true
+    @AppStorage("family_location_enabled") private var isLocationEnabled: Bool = true
+    @AppStorage("family_reports_enabled") private var isReportsEnabled: Bool = true
+    @AppStorage("family_additional_enabled") private var isAdditionalEnabled: Bool = true
+    @AppStorage("family_bypass_protection_enabled") private var isBypassProtectionEnabled: Bool = true
     
     // Данные для карточек (из wireframe)
     @State private var contentBlockActive: Int = 3
@@ -2569,7 +2569,7 @@ struct AccessRequestsModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     // Manager для обработки запросов
-    @StateObject private var manager = ParentalControlManager.shared
+    @ObservedObject private var manager = ParentalControlManager.shared
     @State private var processingRequestId: String?
     
     var body: some View {
@@ -4385,7 +4385,7 @@ struct BypassAttemptsDetailModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
     
-    @StateObject private var manager = ParentalControlManager.shared
+    @ObservedObject private var manager = ParentalControlManager.shared
     @AppStorage("parental_selected_child") private var selectedChild: String = ""
     
     // Список детей (динамический)
@@ -4688,7 +4688,7 @@ struct FamilyParentalControlSettingsModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     // Manager для применения правил
-    @StateObject private var manager = ParentalControlManager.shared
+    @ObservedObject private var manager = ParentalControlManager.shared
     
     // Выбор ребёнка (динамический список) с сохранением в UserDefaults
     @AppStorage("parental_selected_child") private var selectedChild: String = ""
@@ -5257,7 +5257,7 @@ struct FamilyBypassProtectionModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     // Manager для обработки защиты от обхода
-    @StateObject private var manager = ParentalControlManager.shared
+    @ObservedObject private var manager = ParentalControlManager.shared
     
     // Выбранный ребёнок
     @AppStorage("parental_selected_child") private var selectedChild: String = ""

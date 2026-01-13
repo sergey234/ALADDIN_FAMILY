@@ -9,41 +9,41 @@ struct MemberSettingsModalView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     
-    // MARK: - State для переключателей
+    // MARK: - State для переключателей (сохранение через @AppStorage)
     
     // Администратор
-    @State private var criticalThreatsEnabled: Bool = true
-    @State private var childrenActionsEnabled: Bool = true
-    @State private var familyAlertsEnabled: Bool = true
-    @State private var twoFactorEnabled: Bool = true
+    @AppStorage("member_critical_threats_enabled") private var criticalThreatsEnabled: Bool = true
+    @AppStorage("member_children_actions_enabled") private var childrenActionsEnabled: Bool = true
+    @AppStorage("member_family_alerts_enabled") private var familyAlertsEnabled: Bool = true
+    @AppStorage("member_two_factor_enabled") private var twoFactorEnabled: Bool = true
     @State private var showTwoFactorSettings: Bool = false
     @State private var showPasswordChange: Bool = false
     @State private var showLoginHistory: Bool = false
     
     // Родитель
-    @State private var contentBlockingEnabled: Bool = true
-    @State private var timeExceededEnabled: Bool = true
-    @State private var accessRequestsEnabled: Bool = true
-    @State private var securityThreatsEnabled: Bool = true
-    @State private var protectionUpdatesEnabled: Bool = true
+    @AppStorage("member_content_blocking_enabled") private var contentBlockingEnabled: Bool = true
+    @AppStorage("member_time_exceeded_enabled") private var timeExceededEnabled: Bool = true
+    @AppStorage("member_access_requests_enabled") private var accessRequestsEnabled: Bool = true
+    @AppStorage("member_security_threats_enabled") private var securityThreatsEnabled: Bool = true
+    @AppStorage("member_protection_updates_enabled") private var protectionUpdatesEnabled: Bool = true
     
     // Подросток
-    @State private var dangerousSitesEnabled: Bool = true
-    @State private var timeLimitEnabled: Bool = true
-    @State private var newFeaturesEnabled: Bool = false
+    @AppStorage("member_dangerous_sites_enabled") private var dangerousSitesEnabled: Bool = true
+    @AppStorage("member_time_limit_enabled") private var timeLimitEnabled: Bool = true
+    @AppStorage("member_new_features_enabled") private var newFeaturesEnabled: Bool = false
     
     // Ребёнок
-    @State private var soundsEnabled: Bool = true
+    @AppStorage("member_sounds_enabled") private var soundsEnabled: Bool = true
     
     // Люди 60+
-    @State private var largeFontEnabled: Bool = true
-    @State private var brightButtonsEnabled: Bool = true
-    @State private var autoPlayEnabled: Bool = true
-    @State private var simpleAuthEnabled: Bool = true
-    @State private var autoProtectionEnabled: Bool = true
-    @State private var criticalOnlyEnabled: Bool = true
-    @State private var largeTextEnabled: Bool = true
-    @State private var soundAlertsEnabled: Bool = true
+    @AppStorage("member_large_font_enabled") private var largeFontEnabled: Bool = true
+    @AppStorage("member_bright_buttons_enabled") private var brightButtonsEnabled: Bool = true
+    @AppStorage("member_auto_play_enabled") private var autoPlayEnabled: Bool = true
+    @AppStorage("member_simple_auth_enabled") private var simpleAuthEnabled: Bool = true
+    @AppStorage("member_auto_protection_enabled") private var autoProtectionEnabled: Bool = true
+    @AppStorage("member_critical_only_enabled") private var criticalOnlyEnabled: Bool = true
+    @AppStorage("member_large_text_enabled") private var largeTextEnabled: Bool = true
+    @AppStorage("member_sound_alerts_enabled") private var soundAlertsEnabled: Bool = true
     
     var body: some View {
         NavigationView {

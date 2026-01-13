@@ -42,6 +42,11 @@ class ComponentStatusService: ObservableObject {
     
     // MARK: - Public Methods
     
+    /// Получить статус включенности компонента (синхронный метод для использования в модальных окнах)
+    func getComponentEnabledStatus(componentId: String) -> Bool {
+        return componentStatuses[componentId]?.isEnabled ?? true
+    }
+    
     /// Получить статус компонента (с ленивой загрузкой)
     func getStatus(
         for componentId: String,

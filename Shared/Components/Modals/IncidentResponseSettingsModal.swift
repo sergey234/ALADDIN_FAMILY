@@ -30,6 +30,8 @@ struct IncidentResponseSettingsModal: View {
     let componentId: String
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     @State private var escalationThresholds: [String: String] = [
         "low": "30",
@@ -45,6 +47,7 @@ struct IncidentResponseSettingsModal: View {
         "notify": true,
         "escalate": true
     ]
+    @State private var isLoading: Bool = false
     
     var body: some View {
         ComponentSettingsModal(
@@ -146,12 +149,76 @@ struct IncidentResponseSettingsModal: View {
             }
         }
         .environmentObject(localizationManager)
+        .onAppear {
+            loadSettings()
+        }
     }
     
+    // ✅ Загрузка настроек при открытии
+    private func loadSettings() {
+        isLoading = true
+        Task {
+            do {
+                let config = try await configurationService.getConfiguration(for: componentId)
+                if let settings = config.additionalSettings {
+                    if let value = settings["escalationThresholds"]?.value as? [String: String] {
+                        escalationThresholds = value
+                    }
+                    if let value = settings["slaTime"]?.value as? String {
+                        slaTime = value
+                    }
+                    if let value = settings["contactRoles"]?.value as? [String] {
+                        contactRoles = value
+                    }
+                    if let value = settings["autoActions"]?.value as? [String: Bool] {
+                        autoActions = value
+                    }
+                }
+            } catch {
+                print("⚠️ IncidentResponseSettingsModal: Ошибка загрузки настроек: \(error)")
+            }
+            await MainActor.run {
+                isLoading = false
+            }
+        }
+    }
+    
+    // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
-        // TODO: Сохранить настройки через API
-        print("💾 Сохранение настроек инцидентов: \(escalationThresholds)")
-        HapticFeedback.notification(.success)
+        Task {
+            do {
+                // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
+                }
+                
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .critical, // Incident Response is critical
+                    additionalSettings: [
+                        "escalationThresholds": AnyCodable(escalationThresholds),
+                        "slaTime": AnyCodable(slaTime),
+                        "contactRoles": AnyCodable(contactRoles),
+                        "autoActions": AnyCodable(autoActions)
+                    ]
+                )
+                
+                try await configurationService.saveConfiguration(
+                    componentId: componentId,
+                    configuration: config
+                )
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isPresented = false
+                }
+            } catch {
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isPresented = false
+                }
+            }
+        }
     }
 }
 

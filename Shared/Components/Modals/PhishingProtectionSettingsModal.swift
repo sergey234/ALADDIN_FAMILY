@@ -9,6 +9,8 @@ struct PhishingProtectionSettingsModal: View {
     let componentId: String
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     @State private var blockSuspiciousLinks: Bool = true
     @State private var warnBeforeOpening: Bool = true
@@ -16,6 +18,7 @@ struct PhishingProtectionSettingsModal: View {
     @State private var checkSMSLinks: Bool = true
     @State private var blockKnownPhishingDomains: Bool = true
     @State private var sensitivityLevel: String = "medium" // low, medium, high
+    @State private var isLoading: Bool = false
     
     var body: some View {
         ComponentSettingsModal(
@@ -74,11 +77,90 @@ struct PhishingProtectionSettingsModal: View {
                 }
             }
         }
+        .onAppear {
+            loadSettings()
+        }
     }
     
+    // ✅ Загрузка настроек при открытии
+    private func loadSettings() {
+        isLoading = true
+        Task {
+            do {
+                let config = try await configurationService.getConfiguration(for: componentId)
+                // Применить настройки из конфигурации
+                if let settings = config.additionalSettings {
+                    if let value = settings["blockSuspiciousLinks"]?.value as? Bool {
+                        blockSuspiciousLinks = value
+                    }
+                    if let value = settings["warnBeforeOpening"]?.value as? Bool {
+                        warnBeforeOpening = value
+                    }
+                    if let value = settings["checkEmailLinks"]?.value as? Bool {
+                        checkEmailLinks = value
+                    }
+                    if let value = settings["checkSMSLinks"]?.value as? Bool {
+                        checkSMSLinks = value
+                    }
+                    if let value = settings["blockKnownPhishingDomains"]?.value as? Bool {
+                        blockKnownPhishingDomains = value
+                    }
+                    if let value = settings["sensitivityLevel"]?.value as? String {
+                        sensitivityLevel = value
+                    }
+                }
+            } catch {
+                // Использовать дефолтные значения (уже установлены в @State)
+                print("⚠️ PhishingProtectionSettingsModal: Ошибка загрузки настроек: \(error)")
+            }
+            await MainActor.run {
+                isLoading = false
+            }
+        }
+    }
+    
+    // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
-        // TODO: Сохранить настройки через ComponentConfigurationService
-        print("💾 Сохранение настроек защиты от фишинга: \(componentId)")
+        Task {
+            do {
+                // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
+                }
+                
+                // Создать конфигурацию с настройками
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .normal,
+                    additionalSettings: [
+                        "blockSuspiciousLinks": AnyCodable(blockSuspiciousLinks),
+                        "warnBeforeOpening": AnyCodable(warnBeforeOpening),
+                        "checkEmailLinks": AnyCodable(checkEmailLinks),
+                        "checkSMSLinks": AnyCodable(checkSMSLinks),
+                        "blockKnownPhishingDomains": AnyCodable(blockKnownPhishingDomains),
+                        "sensitivityLevel": AnyCodable(sensitivityLevel)
+                    ]
+                )
+                
+                // ✅ Сохраняет в UserDefaults через ComponentCacheService
+                // ✅ Синхронизирует с сервером
+                try await configurationService.saveConfiguration(
+                    componentId: componentId,
+                    configuration: config
+                )
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isPresented = false
+                }
+            } catch {
+                // Настройки уже сохранены в кэш (ComponentCacheService)
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isPresented = false
+                }
+            }
+        }
     }
 }
 

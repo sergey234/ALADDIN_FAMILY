@@ -34,12 +34,12 @@ struct SettingsScreen: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager // ✅ Добавляем LocalizationManager
-    @StateObject private var notificationManager = NotificationManager.shared
-    @StateObject private var securityManager = SecurityManager.shared
+    @ObservedObject private var notificationManager = NotificationManager.shared
+    @ObservedObject private var securityManager = SecurityManager.shared
     @State private var isNetworkProtectionEnabled: Bool = true
     @AppStorage("profile_name") private var storedName: String = ""
     @AppStorage("profile_alias") private var storedAlias: String = ""
-    @State private var isNotificationsEnabled: Bool = true
+    @AppStorage("settings_notifications_enabled") private var isNotificationsEnabled: Bool = true
     @State private var isBiometricEnabled: Bool = UserDefaults.standard.bool(forKey: "biometricEnabled")
     @State private var showProfileEdit: Bool = false
     @State private var showLanguageSettings: Bool = false
@@ -50,10 +50,10 @@ struct SettingsScreen: View {
     @State private var selectedTheme: ThemeMode = .system
     @State private var showProtectionExplanation: Bool = false
     @State private var showAdvancedProtection: Bool = false
-    @StateObject private var featuresManager = ProtectionFeaturesManager.shared
-    @StateObject private var toastManager = ToastManager.shared
-    @StateObject private var historyManager = ProtectionLevelHistoryManager.shared
-    @StateObject private var tariffManager = TariffManager.shared
+    @ObservedObject private var featuresManager = ProtectionFeaturesManager.shared
+    @ObservedObject private var toastManager = ToastManager.shared
+    @ObservedObject private var historyManager = ProtectionLevelHistoryManager.shared
+    @ObservedObject private var tariffManager = TariffManager.shared
     @StateObject private var mainViewModel = MainViewModel()
     @State private var showProtectionHistory: Bool = false
     

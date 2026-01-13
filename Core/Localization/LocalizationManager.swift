@@ -1427,6 +1427,10 @@ class LocalizationManager: ObservableObject {
             "vpn_battery_saving_section": "Экономия батареи",
             "vpn_cards_list": "Карточки функций защиты сети",
             "vpn_nav_panel": "Панель навигации экрана защиты сети",
+            // Ключи для NetworkProtectionScreen (accessibility)
+            "network_protection_nav_panel": "Панель навигации защиты сети",
+            "network_protection_cards_list": "Список карточек защиты сети",
+            "network_protection_battery_icon": "Иконка батареи защиты сети",
             "vpn_status_hint": "Переключите защиту сети для защиты соединения",
             "vpn_toggle_hint": "Переключает защиту сети",
             "vpn_status_protected": "Защита сети включена",
@@ -5304,6 +5308,10 @@ class LocalizationManager: ObservableObject {
             "vpn_battery_saving_section": "Battery saving",
             "vpn_cards_list": "Network protection feature cards",
             "vpn_nav_panel": "Network protection screen navigation bar",
+            // Keys for NetworkProtectionScreen (accessibility)
+            "network_protection_nav_panel": "Network protection navigation panel",
+            "network_protection_cards_list": "Network protection cards list",
+            "network_protection_battery_icon": "Network protection battery icon",
             "vpn_status_hint": "Toggle network protection to protect your connection",
             "vpn_toggle_hint": "Toggles network protection",
             "vpn_status_protected": "Network protection is enabled",

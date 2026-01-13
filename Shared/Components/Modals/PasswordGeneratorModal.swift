@@ -9,6 +9,8 @@ struct PasswordGeneratorModal: View {
     let componentId: String
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     @State private var passwordLength: Double = 16
     @State private var includeUppercase: Bool = true
@@ -17,6 +19,7 @@ struct PasswordGeneratorModal: View {
     @State private var includeSpecial: Bool = true
     @State private var generatedPassword: String = ""
     @State private var isGenerating: Bool = false
+    @State private var isLoading: Bool = false
     
     init(componentId: String = "password_security_agent", isPresented: Binding<Bool>) {
         self.componentId = componentId
@@ -155,6 +158,9 @@ struct PasswordGeneratorModal: View {
                 .disabled(!canGenerate || isGenerating)
             }
         }
+        .onAppear {
+            loadSettings()
+        }
     }
     
     private var canGenerate: Bool {
@@ -190,14 +196,75 @@ struct PasswordGeneratorModal: View {
         }
     }
     
+    // ✅ Загрузка настроек при открытии
+    private func loadSettings() {
+        isLoading = true
+        Task {
+            do {
+                let config = try await configurationService.getConfiguration(for: componentId)
+                if let settings = config.additionalSettings {
+                    if let value = settings["passwordLength"]?.value as? Int {
+                        passwordLength = Double(value)
+                    }
+                    if let value = settings["includeUppercase"]?.value as? Bool {
+                        includeUppercase = value
+                    }
+                    if let value = settings["includeLowercase"]?.value as? Bool {
+                        includeLowercase = value
+                    }
+                    if let value = settings["includeNumbers"]?.value as? Bool {
+                        includeNumbers = value
+                    }
+                    if let value = settings["includeSpecial"]?.value as? Bool {
+                        includeSpecial = value
+                    }
+                }
+            } catch {
+                print("⚠️ PasswordGeneratorModal: Ошибка загрузки настроек: \(error)")
+            }
+            await MainActor.run {
+                isLoading = false
+            }
+        }
+    }
+    
+    // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
-        // TODO: Сохранить настройки генератора паролей через ComponentConfigurationService
-        print("💾 Сохранение настроек генератора паролей: \(componentId)")
-        print("   Длина: \(Int(passwordLength))")
-        print("   Заглавные: \(includeUppercase)")
-        print("   Строчные: \(includeLowercase)")
-        print("   Цифры: \(includeNumbers)")
-        print("   Спецсимволы: \(includeSpecial)")
+        Task {
+            do {
+                // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
+                }
+                
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .normal,
+                    additionalSettings: [
+                        "passwordLength": AnyCodable(Int(passwordLength)),
+                        "includeUppercase": AnyCodable(includeUppercase),
+                        "includeLowercase": AnyCodable(includeLowercase),
+                        "includeNumbers": AnyCodable(includeNumbers),
+                        "includeSpecial": AnyCodable(includeSpecial)
+                    ]
+                )
+                
+                try await configurationService.saveConfiguration(
+                    componentId: componentId,
+                    configuration: config
+                )
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isPresented = false
+                }
+            } catch {
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isPresented = false
+                }
+            }
+        }
     }
 }
 

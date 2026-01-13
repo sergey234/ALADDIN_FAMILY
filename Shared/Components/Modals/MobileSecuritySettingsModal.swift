@@ -9,6 +9,8 @@ struct MobileSecuritySettingsModal: View {
     let componentId: String
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     @State private var deviceEncryption: Bool = true
     @State private var appLock: Bool = true
@@ -16,6 +18,7 @@ struct MobileSecuritySettingsModal: View {
     @State private var biometricAuth: Bool = true
     @State private var remoteWipe: Bool = false
     @State private var trackDevice: Bool = true
+    @State private var isLoading: Bool = false
     
     var body: some View {
         ComponentSettingsModal(
@@ -65,11 +68,84 @@ struct MobileSecuritySettingsModal: View {
                 }
             }
         }
+        .onAppear {
+            loadSettings()
+        }
     }
     
+    // ✅ Загрузка настроек при открытии
+    private func loadSettings() {
+        isLoading = true
+        Task {
+            do {
+                let config = try await configurationService.getConfiguration(for: componentId)
+                if let settings = config.additionalSettings {
+                    if let value = settings["deviceEncryption"]?.value as? Bool {
+                        deviceEncryption = value
+                    }
+                    if let value = settings["appLock"]?.value as? Bool {
+                        appLock = value
+                    }
+                    if let value = settings["screenLock"]?.value as? Bool {
+                        screenLock = value
+                    }
+                    if let value = settings["biometricAuth"]?.value as? Bool {
+                        biometricAuth = value
+                    }
+                    if let value = settings["remoteWipe"]?.value as? Bool {
+                        remoteWipe = value
+                    }
+                    if let value = settings["trackDevice"]?.value as? Bool {
+                        trackDevice = value
+                    }
+                }
+            } catch {
+                print("⚠️ MobileSecuritySettingsModal: Ошибка загрузки настроек: \(error)")
+            }
+            await MainActor.run {
+                isLoading = false
+            }
+        }
+    }
+    
+    // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
-        // TODO: Сохранить настройки через ComponentConfigurationService
-        print("💾 Сохранение настроек мобильной безопасности: \(componentId)")
+        Task {
+            do {
+                // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
+                }
+                
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .normal,
+                    additionalSettings: [
+                        "deviceEncryption": AnyCodable(deviceEncryption),
+                        "appLock": AnyCodable(appLock),
+                        "screenLock": AnyCodable(screenLock),
+                        "biometricAuth": AnyCodable(biometricAuth),
+                        "remoteWipe": AnyCodable(remoteWipe),
+                        "trackDevice": AnyCodable(trackDevice)
+                    ]
+                )
+                
+                try await configurationService.saveConfiguration(
+                    componentId: componentId,
+                    configuration: config
+                )
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isPresented = false
+                }
+            } catch {
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isPresented = false
+                }
+            }
+        }
     }
 }
 

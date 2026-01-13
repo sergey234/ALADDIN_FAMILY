@@ -19,7 +19,7 @@ struct FamilyContentBlockModal: View {
     
     // MARK: - State
     
-    @StateObject private var contentBlockerManager = ContentBlockerManager.shared
+    @ObservedObject private var contentBlockerManager = ContentBlockerManager.shared
     @State private var selectedCategories: Set<ContentBlockerCategory> = []
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?

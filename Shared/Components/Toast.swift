@@ -121,7 +121,7 @@ class ToastManager: ObservableObject {
 /// SwiftUI modifier для добавления toast уведомлений
 
 struct ToastModifier: ViewModifier {
-    @StateObject private var toastManager = ToastManager.shared
+    @ObservedObject private var toastManager = ToastManager.shared
     
     func body(content: Content) -> some View {
         ZStack(alignment: .top) {

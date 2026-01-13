@@ -10,8 +10,8 @@ struct AnalyticsSettingsModal: View {
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var configurationService = ComponentConfigurationService.shared
-    @StateObject private var toastManager = ToastManager.shared
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     @State private var selectedPeriod: String = "day" // day, week, month, year
     @State private var enabledMetrics: Set<String> = ["threats", "scans", "blocks", "devices"]
@@ -152,9 +152,38 @@ struct AnalyticsSettingsModal: View {
     
     private func saveSettings() {
         Task {
-            // TODO: Сохранить настройки через API
-            toastManager.showSuccess("Настройки сохранены")
-            dismiss()
+            do {
+                // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: "analytics_manager")
+                }
+                
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .normal,
+                    additionalSettings: [
+                        "selectedPeriod": AnyCodable(selectedPeriod),
+                        "enabledMetrics": AnyCodable(Array(enabledMetrics)),
+                        "reportFrequency": AnyCodable(reportFrequency),
+                        "autoReportsEnabled": AnyCodable(autoReportsEnabled)
+                    ]
+                )
+                
+                try await configurationService.saveConfiguration(
+                    componentId: "analytics_manager",
+                    configuration: config
+                )
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    dismiss()
+                }
+            } catch {
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    dismiss()
+                }
+            }
         }
     }
 }

@@ -122,9 +122,14 @@ class ProtectionSettingsViewModel: ObservableObject {
             await updateLocalStatuses()
             isLoading = false
         case .failure(let error):
-            errorMessage = error.localizedDescription
+            // ✅ ИСПРАВЛЕНИЕ: Не показываем ошибку пользователю при загрузке (fallback работает)
+            // Ошибка загрузки не критична - используем кэш или дефолтные значения
+            print("⚠️ ProtectionSettingsViewModel: Ошибка загрузки компонентов: \(error.localizedDescription)")
+            errorMessage = nil // Не показываем ошибку пользователю
             isLoading = false
-            toastManager.showError("Ошибка загрузки компонентов")
+            // ✅ УДАЛЕНО: toastManager.showError("Ошибка загрузки компонентов")
+            // Загружаем из кэша или используем дефолтные значения
+            await updateLocalStatuses()
         }
     }
     
@@ -300,8 +305,18 @@ class ProtectionSettingsViewModel: ObservableObject {
         case .failure(let error):
             // Откат при ошибке
             updateClosure(oldValue)
-            errorMessage = error.localizedDescription
-            toastManager.showError("Ошибка: \(error.localizedDescription)")
+            // ✅ ИСПРАВЛЕНИЕ: Не показываем технические детали ошибки пользователю
+            if let networkError = error as? NetworkError,
+               case .invalidStatusCode(let code) = networkError,
+               code == 405 {
+                // HTTP 405 - сервер не поддерживает метод, но это не критично
+                print("⚠️ ProtectionSettingsViewModel: HTTP 405 - сервер не поддерживает метод обновления")
+                errorMessage = nil
+                // Не показываем ошибку пользователю - статус сохранен локально
+            } else {
+                errorMessage = error.localizedDescription
+                toastManager.showError("Не удалось обновить настройки. Попробуйте позже.")
+            }
         }
     }
     

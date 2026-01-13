@@ -10,8 +10,8 @@ struct EmergencyContactsView: View {
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var configurationService = ComponentConfigurationService.shared
-    @StateObject private var toastManager = ToastManager.shared
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     @State private var contacts: [EmergencyContact] = []
     @State private var isLoading: Bool = false
@@ -141,16 +141,98 @@ struct EmergencyContactsView: View {
     private func loadContacts() {
         isLoading = true
         Task {
-            // TODO: Загрузить контакты через API
-            try? await Task.sleep(nanoseconds: 500_000_000) // Симуляция загрузки
-            isLoading = false
+            // ✅ Загрузить из UserDefaults
+            if let data = UserDefaults.standard.data(forKey: "component_emergency_contact_manager_contacts"),
+               let decoded = try? JSONDecoder().decode([EmergencyContact].self, from: data) {
+                await MainActor.run {
+                    contacts = decoded
+                    isLoading = false
+                }
+            } else {
+                // ✅ Попробовать загрузить через ComponentConfigurationService
+                do {
+                    let config = try await configurationService.getConfiguration(for: "emergency_contact_manager")
+                    if let settings = config.additionalSettings,
+                       let contactsData = settings["contacts"]?.value as? [[String: Any]] {
+                        // Конвертировать из словарей в EmergencyContact
+                        let loadedContacts: [EmergencyContact] = contactsData.compactMap { contactDict in
+                            guard let name = contactDict["name"] as? String,
+                                  let phone = contactDict["phone"] as? String else {
+                                return nil
+                            }
+                            return EmergencyContact(
+                                name: name,
+                                phone: phone,
+                                priority: contactDict["priority"] as? Int ?? 1,
+                                channels: contactDict["channels"] as? [String] ?? ["call", "sms"]
+                            )
+                        }
+                        await MainActor.run {
+                            contacts = loadedContacts
+                            isLoading = false
+                        }
+                    } else {
+                        await MainActor.run {
+                            isLoading = false
+                        }
+                    }
+                } catch {
+                    await MainActor.run {
+                        isLoading = false
+                    }
+                }
+            }
         }
     }
     
+    // ✅ Сохранение контактов через ComponentConfigurationService и UserDefaults
     private func saveContacts() {
         Task {
-            // TODO: Сохранить контакты через API
-            toastManager.showSuccess(localizationManager.localized("settings_saved_contacts"))
+            // 1. Сохранить в UserDefaults (локально, мгновенно)
+            if let encoded = try? JSONEncoder().encode(contacts) {
+                UserDefaults.standard.set(encoded, forKey: "component_emergency_contact_manager_contacts")
+            }
+            
+            // 2. Сохранить через ComponentConfigurationService (синхронизация с сервером)
+            do {
+                // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: "emergency_contact_manager")
+                }
+                
+                // Конвертировать контакты в словари для сохранения
+                let contactsDict = contacts.map { contact in
+                    [
+                        "id": contact.id.uuidString,
+                        "name": contact.name,
+                        "phone": contact.phone,
+                        "priority": contact.priority,
+                        "channels": contact.channels
+                    ] as [String: Any]
+                }
+                
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .normal,
+                    additionalSettings: [
+                        "contacts": AnyCodable(contactsDict)
+                    ]
+                )
+                
+                try await configurationService.saveConfiguration(
+                    componentId: "emergency_contact_manager",
+                    configuration: config
+                )
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                }
+            } catch {
+                // Настройки уже сохранены локально в UserDefaults
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                }
+            }
         }
     }
     
@@ -162,12 +244,20 @@ struct EmergencyContactsView: View {
 
 // MARK: - Emergency Contact Model
 
-struct EmergencyContact: Identifiable {
-    let id = UUID()
+struct EmergencyContact: Identifiable, Codable {
+    var id: UUID
     var name: String
     var phone: String
     var priority: Int // 1 = основной, 2 = резервный
     var channels: [String] // ["call", "sms", "messenger"]
+    
+    init(id: UUID = UUID(), name: String, phone: String, priority: Int = 1, channels: [String] = ["call", "sms"]) {
+        self.id = id
+        self.name = name
+        self.phone = phone
+        self.priority = priority
+        self.channels = channels
+    }
 }
 
 // MARK: - Contact Row

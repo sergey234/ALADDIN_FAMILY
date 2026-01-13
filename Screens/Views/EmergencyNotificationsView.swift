@@ -10,8 +10,8 @@ struct EmergencyNotificationsView: View {
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var configurationService = ComponentConfigurationService.shared
-    @StateObject private var toastManager = ToastManager.shared
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     @State private var messageTemplates: [String: String] = [:]
     @State private var deliveryChannels: [String: Bool] = ["push": true, "sms": true, "email": false, "call": false]
@@ -50,6 +50,9 @@ struct EmergencyNotificationsView: View {
             }
         }
         .navigationBarHidden(true)
+        .onAppear {
+            loadSettings()
+        }
     }
     
     // MARK: - Sections
@@ -150,10 +153,62 @@ struct EmergencyNotificationsView: View {
     
     // MARK: - Methods
     
+    // ✅ Загрузка настроек при открытии
+    private func loadSettings() {
+        Task {
+            do {
+                let config = try await configurationService.getConfiguration(for: "emergency_notification_manager")
+                if let settings = config.additionalSettings {
+                    if let templates = settings["messageTemplates"]?.value as? [String: String] {
+                        messageTemplates = templates
+                    }
+                    if let channels = settings["deliveryChannels"]?.value as? [String: Bool] {
+                        deliveryChannels = channels
+                    }
+                    if let frequency = settings["repeatFrequency"]?.value as? Int {
+                        repeatFrequency = frequency
+                    }
+                }
+            } catch {
+                print("⚠️ EmergencyNotificationsView: Ошибка загрузки настроек: \(error)")
+            }
+        }
+    }
+    
+    // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
         Task {
-            // TODO: Сохранить настройки через API
-            toastManager.showSuccess(localizationManager.localized("settings_saved"))
+            do {
+                // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: "emergency_notification_manager")
+                }
+                
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .normal,
+                    additionalSettings: [
+                        "messageTemplates": AnyCodable(messageTemplates),
+                        "deliveryChannels": AnyCodable(deliveryChannels),
+                        "repeatFrequency": AnyCodable(repeatFrequency)
+                    ]
+                )
+                
+                try await configurationService.saveConfiguration(
+                    componentId: "emergency_notification_manager",
+                    configuration: config
+                )
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    dismiss()
+                }
+            } catch {
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    dismiss()
+                }
+            }
         }
     }
 }

@@ -14,7 +14,7 @@ struct NetworkProtectionScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
-    @StateObject private var antivirusManager = AntivirusManager.shared
+    @ObservedObject private var antivirusManager = AntivirusManager.shared
     @StateObject private var viewModel = NetworkProtectionViewModel()
     @State private var showingSettings = false
     @State private var showPasswordGenerator = false

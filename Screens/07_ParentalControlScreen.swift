@@ -12,8 +12,8 @@ struct ParentalControlScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.dismiss) private var dismiss
     private let apiService = APIService.shared
-    @StateObject private var manager = ParentalControlManager.shared
-    @StateObject private var contentBlockerManager = ContentBlockerManager.shared
+    @ObservedObject private var manager = ParentalControlManager.shared
+    @ObservedObject private var contentBlockerManager = ContentBlockerManager.shared
     @StateObject private var viewModel = ParentalControlViewModel()
     
     // Состояние для аккордеона "Защита детей"

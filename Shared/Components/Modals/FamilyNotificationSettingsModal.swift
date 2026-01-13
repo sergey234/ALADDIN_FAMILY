@@ -10,8 +10,8 @@ struct FamilyNotificationSettingsModal: View {
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var configurationService = ComponentConfigurationService.shared
-    @StateObject private var toastManager = ToastManager.shared
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     @State private var channels: [String: Bool] = ["push": true, "email": false, "sms": false]
     @State private var frequency: String = "instant" // instant, daily, weekly

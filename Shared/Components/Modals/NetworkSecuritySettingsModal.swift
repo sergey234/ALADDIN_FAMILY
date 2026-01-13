@@ -9,6 +9,8 @@ struct NetworkSecuritySettingsModal: View {
     let componentId: String
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     @State private var blockUnsafeNetworks: Bool = true
     @State private var warnOnPublicWiFi: Bool = true
@@ -16,6 +18,7 @@ struct NetworkSecuritySettingsModal: View {
     @State private var blockTracking: Bool = true
     @State private var encryptTraffic: Bool = true
     @State private var firewallEnabled: Bool = true
+    @State private var isLoading: Bool = false
     
     var body: some View {
         ComponentSettingsModal(
@@ -65,11 +68,84 @@ struct NetworkSecuritySettingsModal: View {
                 }
             }
         }
+        .onAppear {
+            loadSettings()
+        }
     }
     
+    // ✅ Загрузка настроек при открытии
+    private func loadSettings() {
+        isLoading = true
+        Task {
+            do {
+                let config = try await configurationService.getConfiguration(for: componentId)
+                if let settings = config.additionalSettings {
+                    if let value = settings["blockUnsafeNetworks"]?.value as? Bool {
+                        blockUnsafeNetworks = value
+                    }
+                    if let value = settings["warnOnPublicWiFi"]?.value as? Bool {
+                        warnOnPublicWiFi = value
+                    }
+                    if let value = settings["autoConnectVPN"]?.value as? Bool {
+                        autoConnectVPN = value
+                    }
+                    if let value = settings["blockTracking"]?.value as? Bool {
+                        blockTracking = value
+                    }
+                    if let value = settings["encryptTraffic"]?.value as? Bool {
+                        encryptTraffic = value
+                    }
+                    if let value = settings["firewallEnabled"]?.value as? Bool {
+                        firewallEnabled = value
+                    }
+                }
+            } catch {
+                print("⚠️ NetworkSecuritySettingsModal: Ошибка загрузки настроек: \(error)")
+            }
+            await MainActor.run {
+                isLoading = false
+            }
+        }
+    }
+    
+    // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
-        // TODO: Сохранить настройки через ComponentConfigurationService
-        print("💾 Сохранение настроек сетевой безопасности: \(componentId)")
+        Task {
+            do {
+                // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
+                }
+                
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .normal,
+                    additionalSettings: [
+                        "blockUnsafeNetworks": AnyCodable(blockUnsafeNetworks),
+                        "warnOnPublicWiFi": AnyCodable(warnOnPublicWiFi),
+                        "autoConnectVPN": AnyCodable(autoConnectVPN),
+                        "blockTracking": AnyCodable(blockTracking),
+                        "encryptTraffic": AnyCodable(encryptTraffic),
+                        "firewallEnabled": AnyCodable(firewallEnabled)
+                    ]
+                )
+                
+                try await configurationService.saveConfiguration(
+                    componentId: componentId,
+                    configuration: config
+                )
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isPresented = false
+                }
+            } catch {
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isPresented = false
+                }
+            }
+        }
     }
 }
 

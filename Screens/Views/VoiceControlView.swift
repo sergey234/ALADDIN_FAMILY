@@ -10,8 +10,8 @@ struct VoiceControlView: View {
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var configurationService = ComponentConfigurationService.shared
-    @StateObject private var toastManager = ToastManager.shared
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     @State private var activationWord: String = "Аладдин"
     @State private var selectedLanguage: String = "ru"
@@ -55,6 +55,9 @@ struct VoiceControlView: View {
             }
         }
         .navigationBarHidden(true)
+        .onAppear {
+            loadSettings()
+        }
     }
     
     // MARK: - Sections
@@ -159,10 +162,66 @@ struct VoiceControlView: View {
     
     // MARK: - Methods
     
+    private func loadSettings() {
+        Task {
+            do {
+                let config = try await configurationService.getConfiguration(for: "voice_control_manager")
+                if let settings = config.additionalSettings {
+                    await MainActor.run {
+                        if let word = settings["activationWord"]?.value as? String {
+                            activationWord = word
+                        }
+                        if let lang = settings["selectedLanguage"]?.value as? String {
+                            selectedLanguage = lang
+                        }
+                        if let sens = settings["sensitivity"]?.value as? Double {
+                            sensitivity = sens
+                        }
+                        if let mode = settings["isOnlineMode"]?.value as? Bool {
+                            isOnlineMode = mode
+                        }
+                    }
+                }
+            } catch {
+                // Использовать значения по умолчанию
+            }
+        }
+    }
+    
     private func saveSettings() {
         Task {
-            // TODO: Сохранить настройки через API
-            toastManager.showSuccess(localizationManager.localized("settings_saved"))
+            do {
+                // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: "voice_control_manager")
+                }
+                
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .normal,
+                    additionalSettings: [
+                        "activationWord": AnyCodable(activationWord),
+                        "selectedLanguage": AnyCodable(selectedLanguage),
+                        "sensitivity": AnyCodable(sensitivity),
+                        "isOnlineMode": AnyCodable(isOnlineMode)
+                    ]
+                )
+                
+                try await configurationService.saveConfiguration(
+                    componentId: "voice_control_manager",
+                    configuration: config
+                )
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    dismiss()
+                }
+            } catch {
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    dismiss()
+                }
+            }
         }
     }
 }

@@ -15,8 +15,8 @@ struct ComplianceView: View {
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var configurationService = ComponentConfigurationService.shared
-    @StateObject private var toastManager = ToastManager.shared
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     let section: ComplianceSection
     
@@ -72,6 +72,9 @@ struct ComplianceView: View {
             }
         }
         .navigationBarHidden(true)
+        .onAppear {
+            loadSettings()
+        }
     }
     
     // MARK: - Child Protection Content
@@ -311,18 +314,101 @@ struct ComplianceView: View {
     
     // MARK: - Methods
     
+    // ✅ Загрузка настроек при открытии
+    private func loadSettings() {
+        Task {
+            do {
+                let componentId = section == .childProtection 
+                    ? "russian_child_protection_manager"
+                    : "russian_data_protection_manager"
+                
+                let config = try await configurationService.getConfiguration(for: componentId)
+                if let settings = config.additionalSettings {
+                    if section == .childProtection {
+                        if let value = settings["legalProfile"]?.value as? String {
+                            childLegalProfile = value
+                        }
+                        if let regions = settings["selectedRegions"]?.value as? [String] {
+                            selectedRegions = Set(regions)
+                        }
+                        if let value = settings["deletionPolicy"]?.value as? String {
+                            deletionPolicy = value
+                        }
+                    } else {
+                        if let regions = settings["selectedRegions"]?.value as? [String] {
+                            dataSelectedRegions = Set(regions)
+                        }
+                        if let value = settings["deletionPolicy"]?.value as? String {
+                            dataDeletionPolicy = value
+                        }
+                        if let value = settings["encryptionEnabled"]?.value as? Bool {
+                            encryptionEnabled = value
+                        }
+                    }
+                }
+            } catch {
+                print("⚠️ ComplianceView: Ошибка загрузки настроек: \(error)")
+            }
+        }
+    }
+    
+    // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
         // Тактильная обратная связь
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
+        HapticFeedback.impact(.medium)
         
         Task {
-            // TODO: Сохранить настройки через API
-            await MainActor.run {
-                toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                // Закрыть окно после сохранения
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    dismiss()
+            do {
+                let componentId = section == .childProtection 
+                    ? "russian_child_protection_manager"
+                    : "russian_data_protection_manager"
+                
+                // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
+                }
+                
+                let config: ComponentConfiguration
+                
+                if section == .childProtection {
+                    config = ComponentConfiguration(
+                        isEnabled: isComponentEnabled,
+                        priority: .normal,
+                        additionalSettings: [
+                            "legalProfile": AnyCodable(childLegalProfile),
+                            "selectedRegions": AnyCodable(Array(selectedRegions)),
+                            "deletionPolicy": AnyCodable(deletionPolicy)
+                        ]
+                    )
+                } else {
+                    config = ComponentConfiguration(
+                        isEnabled: isComponentEnabled,
+                        priority: .normal,
+                        additionalSettings: [
+                            "selectedRegions": AnyCodable(Array(dataSelectedRegions)),
+                            "deletionPolicy": AnyCodable(dataDeletionPolicy),
+                            "encryptionEnabled": AnyCodable(encryptionEnabled)
+                        ]
+                    )
+                }
+                
+                try await configurationService.saveConfiguration(
+                    componentId: componentId,
+                    configuration: config
+                )
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        dismiss()
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        dismiss()
+                    }
                 }
             }
         }

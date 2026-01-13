@@ -185,6 +185,94 @@ class NetworkManager: NSObject, ObservableObject {
     }
     
     /**
+     * PUT запрос
+     */
+    func put<T: Decodable, B: Encodable>(
+        endpoint: String,
+        body: B,
+        completion: @escaping (Result<T, Error>) -> Void
+    ) {
+        let fullURL = baseURL + endpoint
+        print("🔵 NetworkManager.put: Начало")
+        print("   - URL: \(fullURL)")
+        
+        // Проверяем и обновляем токен если нужно
+        Task {
+            _ = await JWTTokenManager.shared.refreshTokenIfNeeded()
+            
+            guard let url = URL(string: fullURL) else {
+                print("❌ NetworkManager.put: Неверный URL: \(fullURL)")
+                completion(.failure(NetworkError.invalidURL))
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "PUT"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            if let token = AppConfig.authToken {
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+            
+            // Encode body
+            do {
+                let bodyData = try JSONEncoder().encode(body)
+                request.httpBody = bodyData
+            } catch {
+                print("❌ NetworkManager.put: Ошибка кодирования body: \(error)")
+                completion(.failure(error))
+                return
+            }
+            
+            performRequest(request: request, completion: completion)
+        }
+    }
+    
+    /**
+     * PATCH запрос
+     */
+    func patch<T: Decodable, B: Encodable>(
+        endpoint: String,
+        body: B,
+        completion: @escaping (Result<T, Error>) -> Void
+    ) {
+        let fullURL = baseURL + endpoint
+        print("🔵 NetworkManager.patch: Начало")
+        print("   - URL: \(fullURL)")
+        
+        // Проверяем и обновляем токен если нужно
+        Task {
+            _ = await JWTTokenManager.shared.refreshTokenIfNeeded()
+            
+            guard let url = URL(string: fullURL) else {
+                print("❌ NetworkManager.patch: Неверный URL: \(fullURL)")
+                completion(.failure(NetworkError.invalidURL))
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "PATCH"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            if let token = AppConfig.authToken {
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+            
+            // Encode body
+            do {
+                let bodyData = try JSONEncoder().encode(body)
+                request.httpBody = bodyData
+            } catch {
+                print("❌ NetworkManager.patch: Ошибка кодирования body: \(error)")
+                completion(.failure(error))
+                return
+            }
+            
+            performRequest(request: request, completion: completion)
+        }
+    }
+    
+    /**
      * DELETE запрос
      */
     func delete<T: Decodable, B: Encodable>(
