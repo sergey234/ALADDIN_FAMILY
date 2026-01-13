@@ -11,6 +11,7 @@ struct AnalyticsScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var viewModel = AnalyticsScreen.makeViewModel()
+    @State private var showAnalyticsSettings: Bool = false
     
     // MARK: - Body
     
@@ -50,6 +51,10 @@ struct AnalyticsScreen: View {
         .task { await viewModel.load() }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("analytics_lang_\(localizationManager.currentLanguage.rawValue)")
+        .sheet(isPresented: $showAnalyticsSettings) {
+            AnalyticsSettingsModal()
+                .environmentObject(localizationManager)
+        }
         .overlay(alignment: .center) {
             if viewModel.isLoading {
                 ProgressView()
@@ -76,7 +81,13 @@ struct AnalyticsScreen: View {
             showBackButton: true,
             showProfileButton: false,
             showListButton: false,
-            rightButtons: [],
+            rightButtons: [
+                NavigationActionButton(
+                    icon: "slider.horizontal.3",
+                    accessibilityLabel: localizationManager.localized("analytics_settings_button") ?? "Настройки аналитики",
+                    action: { showAnalyticsSettings = true }
+                )
+            ],
             onBack: {
                 navigationManager.goBack()
             }

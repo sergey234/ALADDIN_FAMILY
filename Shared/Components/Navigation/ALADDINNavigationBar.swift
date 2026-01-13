@@ -200,7 +200,15 @@ struct ALADDINNavigationBar: View {
             if showingScreenList {
                 ScrollView {
                     LazyVStack(spacing: 8) {
-                        ForEach(NavigationManager.ALADDINScreen.allCases, id: \.self) { screen in
+                        ForEach(NavigationManager.ALADDINScreen.allCases.filter { screen in
+                            // Скрываем модальные окна и служебные экраны из навигации
+                            switch screen {
+                            case .notificationSettings, .rewardsModal, .rewardsQuickModal:
+                                return false
+                            default:
+                                return true
+                            }
+                        }, id: \.self) { screen in
                             let localizedTitle = screen.localizedTitle(using: localizationManager)
                             NavigationScreenButton(
                                 screen: screen,
@@ -317,7 +325,6 @@ private extension NavigationManager.ALADDINScreen {
         case .referral: return "nav_screen_referral"
         case .deviceDetail: return "nav_screen_device_detail"
         case .familyChat: return "nav_screen_family_chat"
-        case .networkProtectionEnergyStats: return "nav_screen_network_protection_energy_stats"
         case .paymentQR: return "nav_screen_payment_qr"
         case .activationCode: return "nav_screen_activation_code"
         case .childRewards: return "nav_screen_child_rewards"
@@ -325,8 +332,6 @@ private extension NavigationManager.ALADDINScreen {
         case .securityEducation: return "nav_screen_security_education"
         case .gamesParentalControl: return "nav_screen_games_parental_control"
         case .unicornPet: return "nav_screen_unicorn_pet"
-        case .unicornUniverse: return "nav_screen_unicorn_universe"
-        case .wheelOfFortune: return "nav_screen_wheel_of_fortune"
         case .mainWithRegistration: return "nav_screen_main_registration"
         case .languageSettings: return "nav_screen_language_settings"
         case .notificationSettings: return "nav_screen_notification_settings"

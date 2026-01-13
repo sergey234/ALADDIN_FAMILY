@@ -33,6 +33,7 @@ struct FamilyScreen: View {
     @State private var showReportsModal: Bool = false
     @State private var showAdditionalModal: Bool = false
     @State private var showBypassProtectionModal: Bool = false
+    @State private var showFamilyNotificationSettings: Bool = false
     
     // Состояния для карточек
     @State private var isContentBlockEnabled: Bool = true
@@ -394,19 +395,35 @@ struct FamilyScreen: View {
                     
                     Spacer()
                     
-                    Button(action: { 
-                        // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager вместо sheet модала
-                        navigationManager.navigateTo(.addMemberOptions)
-                    }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(Color(red: 0.04, green: 0.07, blue: 0.16))
-                            .frame(width: 40, height: 40)
-                            .background(Color(red: 0.96, green: 0.62, blue: 0.04))
-                            .clipShape(Circle())
+                    HStack(spacing: 10) {
+                        // Кнопка настроек уведомлений
+                        Button(action: {
+                            showFamilyNotificationSettings = true
+                        }) {
+                            Image(systemName: "bell.fill")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(Color(red: 0.04, green: 0.07, blue: 0.16))
+                                .frame(width: 40, height: 40)
+                                .background(Color(red: 0.96, green: 0.62, blue: 0.04))
+                                .clipShape(Circle())
+                        }
+                        .accessibilityLabel(localizationManager.localized("family_notification_settings"))
+                        
+                        // Кнопка добавления участника
+                        Button(action: { 
+                            // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager вместо sheet модала
+                            navigationManager.navigateTo(.addMemberOptions)
+                        }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(Color(red: 0.04, green: 0.07, blue: 0.16))
+                                .frame(width: 40, height: 40)
+                                .background(Color(red: 0.96, green: 0.62, blue: 0.04))
+                                .clipShape(Circle())
+                        }
+                        .accessibilityLabel(localizationManager.localized("add_member_accessibility"))
+                        .accessibilityHint(localizationManager.localized("add_member_accessibility_hint"))
                     }
-                    .accessibilityLabel(localizationManager.localized("add_member_accessibility"))
-                    .accessibilityHint(localizationManager.localized("add_member_accessibility_hint"))
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
@@ -618,6 +635,10 @@ struct FamilyScreen: View {
         }
         .sheet(isPresented: $showAdditionalModal) {
             FamilyAdditionalModal(isPresented: $showAdditionalModal, isEnabled: $isAdditionalEnabled)
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showFamilyNotificationSettings) {
+            FamilyNotificationSettingsModal()
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showBypassProtectionModal) {
