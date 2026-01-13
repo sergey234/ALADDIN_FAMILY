@@ -57,6 +57,13 @@ struct SettingsScreen: View {
     @StateObject private var mainViewModel = MainViewModel()
     @State private var showProtectionHistory: Bool = false
     
+    // Navigation для менеджеров
+    @State private var showEmergencyContacts: Bool = false
+    @State private var showEmergencyNotifications: Bool = false
+    @State private var showVoiceControl: Bool = false
+    @State private var showChildProtectionCompliance: Bool = false
+    @State private var showDataProtectionCompliance: Bool = false
+    
     // ✅ Согласие на обработку ПДн (152-ФЗ)
     @AppStorage("personal_data_consent_accepted") private var consentAccepted: Bool = false
     
@@ -138,6 +145,26 @@ struct SettingsScreen: View {
         }
         .sheet(isPresented: $showProtectionHistory) {
             ProtectionLevelHistoryModal(isPresented: $showProtectionHistory)
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showEmergencyContacts) {
+            EmergencyContactsView()
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showEmergencyNotifications) {
+            EmergencyNotificationsView()
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showVoiceControl) {
+            VoiceControlView()
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showChildProtectionCompliance) {
+            ComplianceView(section: .childProtection)
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showDataProtectionCompliance) {
+            ComplianceView(section: .dataProtection)
                 .environmentObject(localizationManager)
         }
         .onAppear {
@@ -383,6 +410,50 @@ struct SettingsScreen: View {
                 )
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(String(format: localizationManager.localized("settings_protection_level_accessibility"), Int(calculatedProtectionLevel)))
+                
+                // ✅ Менеджеры (5 компонентов)
+                Divider()
+                    .padding(.vertical, Spacing.s)
+                
+                // Emergency Contacts
+                settingsButton(
+                    icon: "person.2.fill",
+                    title: localizationManager.localized("component_emergency_contact_manager_title"),
+                    subtitle: localizationManager.localized("component_emergency_contact_manager_description"),
+                    action: { showEmergencyContacts = true }
+                )
+                
+                // Emergency Notifications
+                settingsButton(
+                    icon: "bell.fill",
+                    title: localizationManager.localized("component_emergency_notification_manager_title"),
+                    subtitle: localizationManager.localized("component_emergency_notification_manager_description"),
+                    action: { showEmergencyNotifications = true }
+                )
+                
+                // Voice Control
+                settingsButton(
+                    icon: "mic.fill",
+                    title: localizationManager.localized("component_voice_control_manager_title"),
+                    subtitle: localizationManager.localized("component_voice_control_manager_description"),
+                    action: { showVoiceControl = true }
+                )
+                
+                // Child Protection Compliance
+                settingsButton(
+                    icon: "child.fill",
+                    title: localizationManager.localized("component_russian_child_protection_manager_title"),
+                    subtitle: localizationManager.localized("component_russian_child_protection_manager_description"),
+                    action: { showChildProtectionCompliance = true }
+                )
+                
+                // Data Protection Compliance
+                settingsButton(
+                    icon: "lock.shield.fill",
+                    title: localizationManager.localized("component_russian_data_protection_manager_title"),
+                    subtitle: localizationManager.localized("component_russian_data_protection_manager_description"),
+                    action: { showDataProtectionCompliance = true }
+                )
             }
         }
         .padding(Spacing.cardPadding)
