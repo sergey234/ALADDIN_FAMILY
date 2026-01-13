@@ -605,6 +605,127 @@ class APIService {
             completion: completion
         )
     }
+    
+    // MARK: - Components API (42 components)
+    
+    /// Получить статус компонента
+    func getComponentStatus(componentId: String) async throws -> ComponentStatus {
+        return try await withCheckedThrowingContinuation { continuation in
+            networkManager.get(endpoint: "\(AppConfig.Endpoint.componentStatus)/\(componentId)") { (result: Result<ComponentStatusResponse, Error>) in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.status)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    /// Включить компонент
+    func enableComponent(componentId: String, configuration: ComponentConfiguration? = nil) async throws -> ComponentStatus {
+        return try await withCheckedThrowingContinuation { continuation in
+            struct EnableRequest: Codable {
+                let componentId: String
+                let configuration: ComponentConfiguration?
+            }
+            networkManager.post(
+                endpoint: "\(AppConfig.Endpoint.componentEnable)/\(componentId)",
+                body: EnableRequest(componentId: componentId, configuration: configuration)
+            ) { (result: Result<ComponentStatusResponse, Error>) in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.status)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    /// Выключить компонент
+    func disableComponent(componentId: String) async throws -> ComponentStatus {
+        return try await withCheckedThrowingContinuation { continuation in
+            struct DisableRequest: Codable {
+                let componentId: String
+            }
+            networkManager.post(
+                endpoint: "\(AppConfig.Endpoint.componentDisable)/\(componentId)",
+                body: DisableRequest(componentId: componentId)
+            ) { (result: Result<ComponentStatusResponse, Error>) in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.status)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    /// Обновить статус компонента
+    func updateComponentStatus(
+        componentId: String,
+        isEnabled: Bool,
+        configuration: ComponentConfiguration? = nil
+    ) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            struct UpdateRequest: Codable {
+                let componentId: String
+                let isEnabled: Bool
+                let configuration: ComponentConfiguration?
+            }
+            networkManager.post(
+                endpoint: "\(AppConfig.Endpoint.componentStatus)/\(componentId)",
+                body: UpdateRequest(componentId: componentId, isEnabled: isEnabled, configuration: configuration)
+            ) { (result: Result<APIResponse<Bool>, Error>) in
+                switch result {
+                case .success:
+                    continuation.resume()
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    /// Получить конфигурацию компонента
+    func getComponentConfiguration(componentId: String) async throws -> ComponentConfiguration {
+        return try await withCheckedThrowingContinuation { continuation in
+            networkManager.get(endpoint: "\(AppConfig.Endpoint.componentConfiguration)/\(componentId)") { (result: Result<ComponentConfigurationResponse, Error>) in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.configuration)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    /// Обновить конфигурацию компонента
+    func updateComponentConfiguration(
+        componentId: String,
+        configuration: ComponentConfiguration
+    ) async throws {
+        return try await withCheckedThrowingContinuation { continuation in
+            struct UpdateRequest: Codable {
+                let componentId: String
+                let configuration: ComponentConfiguration
+            }
+            networkManager.post(
+                endpoint: "\(AppConfig.Endpoint.componentConfiguration)/\(componentId)",
+                body: UpdateRequest(componentId: componentId, configuration: configuration)
+            ) { (result: Result<APIResponse<Bool>, Error>) in
+                switch result {
+                case .success:
+                    continuation.resume()
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
 }
 
 

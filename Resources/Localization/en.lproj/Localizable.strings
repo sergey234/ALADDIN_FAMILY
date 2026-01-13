@@ -393,5 +393,322 @@
 "success.purchase" = "Subscription purchased successfully!";
 "success.email.sent" = "Email sent to your address.";
 
+/* ═══════════════════════════════════════════════════════════════
+ * 42 COMPONENTS - AGENTS (19)
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* Emergency Help */
+"component.crash_detection_agent.title" = "Crash Detection";
+"component.crash_detection_agent.desc" = "Automatic crash detection and emergency call";
+"component.roadside_assistance_agent.title" = "Roadside Assistance";
+"component.roadside_assistance_agent.desc" = "Quick help for car breakdowns";
+"component.incident_response_agent.title" = "Incident Response";
+"component.incident_response_agent.desc" = "Automatic response to critical events";
+"component.emergency_response_bot.title" = "Emergency Response";
+"component.emergency_response_bot.desc" = "Bot for emergency situations";
+"component.emergency_event_manager.title" = "Emergency Event Manager";
+"component.emergency_event_manager.desc" = "Coordination of emergency events";
+
+/* Child Protection */
+"component.self_harm_detection_agent.title" = "Self-Harm Detection";
+"component.self_harm_detection_agent.desc" = "Protection from self-harm content";
+"component.grooming_detection_agent.title" = "Grooming Detection";
+"component.grooming_detection_agent.desc" = "Protection from online predators";
+"component.online_predators_agent.title" = "Online Predators Protection";
+"component.online_predators_agent.desc" = "Detection of dangerous contacts";
+"component.psychological_support_agent.title" = "Psychological Support";
+"component.psychological_support_agent.desc" = "Help in difficult situations";
+
+/* Security */
+"component.password_security_agent.title" = "Password Security";
+"component.password_security_agent.desc" = "Check and generate secure passwords";
+"component.phishing_protection_agent.title" = "Phishing Protection";
+"component.phishing_protection_agent.desc" = "Detection of fraudulent websites";
+"component.malware_detection_agent.title" = "Malware Detection";
+"component.malware_detection_agent.desc" = "Protection from viruses and trojans";
+"component.mobile_security_agent.title" = "Mobile Security";
+"component.mobile_security_agent.desc" = "Protection for smartphones and tablets";
+"component.network_security_agent.title" = "Network Security";
+"component.network_security_agent.desc" = "Protection of network connections";
+
+/* Privacy */
+"component.location_bubble_agent.title" = "Location Bubble";
+"component.location_bubble_agent.desc" = "Hide exact location";
+"component.personal_data_cleanup_agent.title" = "Personal Data Cleanup";
+"component.personal_data_cleanup_agent.desc" = "Remove personal data from internet";
+"component.anti_tracker_agent.title" = "Anti-Tracker";
+"component.anti_tracker_agent.desc" = "Block tracking";
+
+/* Monitoring */
+"component.dark_web_monitoring_agent.title" = "Dark Web Monitoring";
+"component.dark_web_monitoring_agent.desc" = "Track data breaches";
+"component.russian_identity_theft_protection_agent.title" = "Identity Theft Protection (RU)";
+"component.russian_identity_theft_protection_agent.desc" = "Protection under 152-FZ RF";
+"component.ai_categories_agent.title" = "AI Categorization";
+"component.ai_categories_agent.desc" = "Smart content categorization";
+"component.driving_reports_agent.title" = "Driving Reports";
+"component.driving_reports_agent.desc" = "Driving style analysis";
+
+/* ═══════════════════════════════════════════════════════════════
+ * MANAGERS (15)
+ * ═══════════════════════════════════════════════════════════════ */
+
+"component.emergency_contact_manager.title" = "Emergency Contacts";
+"component.emergency_contact_manager.desc" = "Manage contacts for emergencies";
+"component.emergency_notification_manager.title" = "Emergency Notifications";
+"component.emergency_notification_manager.desc" = "Configure emergency alerts";
+"component.voice_control_manager.title" = "Voice Control";
+"component.voice_control_manager.desc" = "Manage voice commands";
+"component.russian_child_protection_manager.title" = "Child Protection (RU)";
+"component.russian_child_protection_manager.desc" = "Compliance with RF laws";
+"component.russian_data_protection_manager.title" = "Data Protection (RU)";
+"component.russian_data_protection_manager.desc" = "Compliance with 152-FZ RF";
+"component.family_notification_manager.title" = "Family Notifications";
+"component.family_notification_manager.desc" = "Manage family notifications";
+"component.smart_notification_manager.title" = "Smart Notifications";
+"component.smart_notification_manager.desc" = "Intelligent notification system";
+"component.child_interface_manager.title" = "Child Interface";
+"component.child_interface_manager.desc" = "Manage child interface";
+"component.elderly_interface_manager.title" = "Elderly Interface";
+"component.elderly_interface_manager.desc" = "Simplified interface";
+"component.subscription_manager.title" = "Subscription Manager";
+"component.subscription_manager.desc" = "Tariff settings";
+"component.referral_manager.title" = "Referral Program";
+"component.referral_manager.desc" = "Invite friends";
+"component.qr_payment_manager.title" = "QR Payments";
+"component.qr_payment_manager.desc" = "Payment via QR code";
+"component.analytics_manager.title" = "Analytics";
+"component.analytics_manager.desc" = "Statistics and reports";
+"component.report_manager.title" = "Reports";
+"component.report_manager.desc" = "Manage reports";
+
+/* ═══════════════════════════════════════════════════════════════
+ * BOTS (8)
+ * ═══════════════════════════════════════════════════════════════ */
+
+"component.parental_control_bot.title" = "Parental Control Bot";
+"component.parental_control_bot.desc" = "Enhanced parental control";
+"component.telegram_security_bot.title" = "Telegram Security";
+"component.telegram_security_bot.desc" = "Security in Telegram";
+"component.whatsapp_security_bot.title" = "WhatsApp Security";
+"component.whatsapp_security_bot.desc" = "Security in WhatsApp";
+"component.instagram_security_bot.title" = "Instagram Security";
+"component.instagram_security_bot.desc" = "Security in Instagram";
+"component.max_messenger_security_bot.title" = "Max Messenger Security";
+"component.max_messenger_security_bot.desc" = "Security in Max Messenger";
+"component.gaming_security_bot.title" = "Gaming Security";
+"component.gaming_security_bot.desc" = "Security for gaming platforms";
+"component.browser_security_bot.title" = "Browser Security";
+"component.browser_security_bot.desc" = "Web browser security";
+
+/* ═══════════════════════════════════════════════════════════════
+ * COMMON COMPONENT KEYS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"component.enabled" = "Enabled";
+"component.disabled" = "Disabled";
+"component.settings" = "Settings";
+"component.loading" = "Loading...";
+"component.error" = "Loading error";
+"component.save" = "Save";
+"component.cancel" = "Cancel";
+
+/* Component Sections */
+"component.emergency_help.title" = "Emergency Help";
+"component.emergency_help.subtitle" = "Quick help in critical situations";
+"component.threat_protection.title" = "Threat Protection";
+"component.threat_protection.subtitle" = "Protection from various threats";
+"component.incident_response.title" = "Incident Response";
+"component.incident_response.subtitle" = "Automatic response to incidents";
+"component.password_security.title" = "Passwords";
+"component.password_security.subtitle" = "Password security";
+"component.child_protection.title" = "Child Protection";
+"component.child_protection.subtitle" = "Protection from online dangers";
+
+/* Password Generator */
+"password_generator.settings" = "Generator Settings";
+"password_generator.length" = "Password Length";
+"password_generator.uppercase" = "Uppercase Letters";
+"password_generator.lowercase" = "Lowercase Letters";
+"password_generator.numbers" = "Numbers";
+"password_generator.special" = "Special Characters";
+"password_generator.generate" = "Generate";
+"password_generator.generated" = "Generated Password";
+
+/* Incident Response */
+"incident_response.escalation_thresholds" = "Escalation Thresholds";
+"incident_response.low" = "Low";
+"incident_response.medium" = "Medium";
+"incident_response.high" = "High";
+"incident_response.critical" = "Critical";
+"incident_response.minutes" = "min";
+"incident_response.sla_time" = "SLA Response Time";
+"incident_response.auto_actions" = "Auto Actions";
+"incident_response.block" = "Block";
+"incident_response.notify" = "Notify";
+"incident_response.escalate" = "Escalate";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ADVANCED PROTECTION SETTINGS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"settings_advanced_title" = "Advanced Settings";
+"settings_advanced_subtitle" = "Manage protection components";
+
+/* Sections */
+"protection_settings_messengers_title" = "Messenger Protection";
+"protection_settings_messengers_subtitle" = "Security in messengers and social networks";
+"protection_settings_privacy_title" = "Privacy";
+"protection_settings_privacy_subtitle" = "Personal data and privacy protection";
+"protection_settings_monitoring_title" = "Monitoring";
+"protection_settings_monitoring_subtitle" = "Threat and data leak monitoring";
+
+/* Components - Messengers */
+"component_telegram_security_bot_title" = "Telegram Security";
+"component_telegram_security_bot_description" = "Security in Telegram";
+"component_whatsapp_security_bot_title" = "WhatsApp Security";
+"component_whatsapp_security_bot_description" = "Security in WhatsApp";
+"component_instagram_security_bot_title" = "Instagram Security";
+"component_instagram_security_bot_description" = "Security in Instagram";
+"component_max_messenger_security_bot_title" = "Max Messenger Security";
+"component_max_messenger_security_bot_description" = "Security in Max Messenger";
+"component_gaming_security_bot_title" = "Gaming Security";
+"component_gaming_security_bot_description" = "Gaming platform security";
+"component_browser_security_bot_title" = "Browser Security";
+"component_browser_security_bot_description" = "Web browser security";
+
+/* Components - Privacy */
+"component_location_bubble_agent_title" = "Location Bubble";
+"component_location_bubble_agent_description" = "Hide exact location";
+"component_personal_data_cleanup_agent_title" = "Data Cleanup";
+"component_personal_data_cleanup_agent_description" = "Automatic personal data cleanup";
+"component_anti_tracker_agent_title" = "Tracker Blocking";
+"component_anti_tracker_agent_description" = "Block advertising trackers";
+
+/* Components - Monitoring */
+"component_dark_web_monitoring_agent_title" = "Dark Web Monitoring";
+"component_dark_web_monitoring_agent_description" = "Track data leaks";
+"component_russian_identity_theft_protection_agent_title" = "Identity Theft Protection (RU)";
+"component_russian_identity_theft_protection_agent_description" = "Protection against document fraud";
+"component_ai_categories_agent_title" = "AI Categories";
+"component_ai_categories_agent_description" = "Smart content categorization";
+"component_driving_reports_agent_title" = "Driving Reports";
+"component_driving_reports_agent_description" = "Driving style analysis";
+
+/* ═══════════════════════════════════════════════════════════════
+ * MANAGERS - LOCALIZATION FOR VIEWS
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* Emergency Contacts */
+"emergency_contacts_info_title" = "Emergency Contacts";
+"emergency_contacts_info_text" = "Add contacts for emergency situations. They will be automatically notified in case of an accident or other critical situation.";
+"emergency_contacts_empty" = "No emergency contacts";
+"emergency_contacts_add_first" = "Add first contact";
+"emergency_contacts_add" = "Add contact";
+"emergency_contacts_add_title" = "New contact";
+"emergency_contacts_name" = "Name";
+"emergency_contacts_phone" = "Phone";
+
+/* Emergency Notifications */
+"emergency_notifications_templates_title" = "Message Templates";
+"emergency_notifications_template_crash" = "Crash";
+"emergency_notifications_template_medical" = "Medical";
+"emergency_notifications_template_security" = "Security";
+"emergency_notifications_template_placeholder" = "Enter message text";
+"emergency_notifications_channels_title" = "Delivery Channels";
+"emergency_notifications_channel_push" = "Push notifications";
+"emergency_notifications_channel_sms" = "SMS";
+"emergency_notifications_channel_email" = "Email";
+"emergency_notifications_channel_call" = "Call";
+"emergency_notifications_repeat_title" = "Repeat Frequency";
+"emergency_notifications_repeat_minutes" = "times per minute";
+
+/* Voice Control */
+"voice_control_activation_title" = "Activation Word";
+"voice_control_activation_word" = "Select word";
+"voice_control_language_title" = "Language";
+"voice_control_language" = "Recognition language";
+"voice_control_sensitivity_title" = "Sensitivity";
+"voice_control_sensitivity_low" = "Low";
+"voice_control_sensitivity_high" = "High";
+"voice_control_mode_title" = "Mode";
+"voice_control_mode_online" = "Online mode";
+
+/* Compliance */
+"compliance_legal_profile_title" = "Legal Profile";
+"compliance_profile_children" = "Children";
+"compliance_profile_adults" = "Adults";
+"compliance_profile_individual" = "Individuals";
+"compliance_profile_legal" = "Legal entities";
+"compliance_regions_title" = "Russian Regions";
+"compliance_storage_title" = "Storage Policy";
+"compliance_storage_days" = "days";
+"compliance_deletion_title" = "Deletion Policy";
+"compliance_deletion_automatic" = "Automatic";
+"compliance_deletion_manual" = "Manual";
+"compliance_encryption_title" = "Encryption";
+"compliance_encryption_enabled" = "Enable encryption";
+
+/* ═══════════════════════════════════════════════════════════════
+ * MANAGERS - ADVANCED SETTINGS
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* Family Notifications */
+"family_notification_settings" = "Notification Settings";
+"family_notifications_channels_title" = "Delivery Channels";
+"family_notifications_channel_push" = "Push notifications";
+"family_notifications_channel_email" = "Email";
+"family_notifications_channel_sms" = "SMS";
+"family_notifications_frequency_title" = "Frequency";
+"family_notifications_frequency_instant" = "Instant";
+"family_notifications_frequency_daily" = "Daily";
+"family_notifications_frequency_weekly" = "Weekly";
+"family_notifications_templates_title" = "Message Templates";
+"family_notifications_template_security" = "Security";
+"family_notifications_template_activity" = "Activity";
+"family_notifications_template_rewards" = "Rewards";
+"family_notifications_template_placeholder" = "Enter text";
+"family_notifications_priorities_title" = "Topic Priorities";
+"family_notifications_priority_security" = "Security";
+"family_notifications_priority_activity" = "Activity";
+"family_notifications_priority_rewards" = "Rewards";
+
+/* Analytics Settings */
+"analytics_settings_period_title" = "Display Period";
+"analytics_settings_period_day" = "Day";
+"analytics_settings_period_week" = "Week";
+"analytics_settings_period_month" = "Month";
+"analytics_settings_period_year" = "Year";
+"analytics_settings_metrics_title" = "Metrics";
+"analytics_settings_metric_threats" = "Threats";
+"analytics_settings_metric_scans" = "Scans";
+"analytics_settings_metric_blocks" = "Blocks";
+"analytics_settings_metric_devices" = "Devices";
+"analytics_settings_metric_family" = "Family";
+"analytics_settings_metric_network" = "Network";
+"analytics_settings_reports_title" = "Report Schedule";
+"analytics_settings_auto_reports" = "Auto Reports";
+"analytics_settings_frequency_daily" = "Daily";
+"analytics_settings_frequency_weekly" = "Weekly";
+"analytics_settings_frequency_monthly" = "Monthly";
+"analytics_settings_button" = "Analytics Settings";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ACCESSIBILITY
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* Component Toggle */
+"component_enabled" = "Enabled";
+"component_disabled" = "Disabled";
+"component_toggle_enabled_hint" = "Double tap to disable component";
+"component_toggle_disabled_hint" = "Double tap to enable component";
+
+/* Accordion */
+"accordion_expanded" = "%@, expanded";
+"accordion_collapsed" = "%@, collapsed";
+"accordion_expand_hint" = "Double tap to expand section";
+"accordion_collapse_hint" = "Double tap to collapse section";
+"component_settings_hint" = "Double tap to open component settings";
+
 
 

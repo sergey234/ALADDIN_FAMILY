@@ -995,4 +995,16 @@ struct ProtectionStatsResponse: Codable {
     let protectionLevel: Int
 }
 
+// MARK: - Component Models
+
+struct ComponentStatusResponse: Codable {
+    let status: ComponentStatus
+    let message: String?
+}
+
+struct ComponentConfigurationResponse: Codable {
+    let configuration: ComponentConfiguration
+    let message: String?
+}
+
 

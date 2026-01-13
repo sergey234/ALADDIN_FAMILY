@@ -107,6 +107,12 @@ struct AppConfig {
         static let familyChatMessages = "/family/chat/messages"
         static let familyChatSend = "/family/chat/send"
         
+        // Components (42 components API)
+        static let componentStatus = "/components/status"
+        static let componentEnable = "/components/enable"
+        static let componentDisable = "/components/disable"
+        static let componentConfiguration = "/components/configuration"
+        
         // Analytics
         static let analytics = "/analytics"
         static let threats = "/analytics/threats"

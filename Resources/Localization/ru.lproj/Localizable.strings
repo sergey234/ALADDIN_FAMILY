@@ -545,5 +545,322 @@
 "success.purchase" = "Подписка успешно оформлена!";
 "success.email.sent" = "Письмо отправлено на ваш email.";
 
+/* ═══════════════════════════════════════════════════════════════
+ * 42 КОМПОНЕНТА - АГЕНТЫ (19)
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* Экстренная помощь */
+"component.crash_detection_agent.title" = "Обнаружение аварий";
+"component.crash_detection_agent.desc" = "Автоматическое обнаружение ДТП и вызов помощи";
+"component.roadside_assistance_agent.title" = "Помощь на дороге";
+"component.roadside_assistance_agent.desc" = "Быстрая помощь при поломке автомобиля";
+"component.incident_response_agent.title" = "Реагирование на инциденты";
+"component.incident_response_agent.desc" = "Автоматическое реагирование на критические события";
+"component.emergency_response_bot.title" = "Экстренный ответ";
+"component.emergency_response_bot.desc" = "Бот для экстренных ситуаций";
+"component.emergency_event_manager.title" = "Управление экстренными событиями";
+"component.emergency_event_manager.desc" = "Координация экстренных событий";
+
+/* Защита детей */
+"component.self_harm_detection_agent.title" = "Обнаружение самоповреждений";
+"component.self_harm_detection_agent.desc" = "Защита от контента о самоповреждениях";
+"component.grooming_detection_agent.title" = "Обнаружение груминга";
+"component.grooming_detection_agent.desc" = "Защита от онлайн-хищников";
+"component.online_predators_agent.title" = "Защита от онлайн-хищников";
+"component.online_predators_agent.desc" = "Обнаружение опасных контактов";
+"component.psychological_support_agent.title" = "Психологическая поддержка";
+"component.psychological_support_agent.desc" = "Помощь в сложных ситуациях";
+
+/* Безопасность */
+"component.password_security_agent.title" = "Безопасность паролей";
+"component.password_security_agent.desc" = "Проверка и генерация безопасных паролей";
+"component.phishing_protection_agent.title" = "Защита от фишинга";
+"component.phishing_protection_agent.desc" = "Обнаружение мошеннических сайтов";
+"component.malware_detection_agent.title" = "Обнаружение вредоносного ПО";
+"component.malware_detection_agent.desc" = "Защита от вирусов и троянов";
+"component.mobile_security_agent.title" = "Безопасность мобильных устройств";
+"component.mobile_security_agent.desc" = "Защита смартфонов и планшетов";
+"component.network_security_agent.title" = "Безопасность сети";
+"component.network_security_agent.desc" = "Защита сетевых подключений";
+
+/* Приватность */
+"component.location_bubble_agent.title" = "Пузырь местоположения";
+"component.location_bubble_agent.desc" = "Скрытие точного местоположения";
+"component.personal_data_cleanup_agent.title" = "Очистка личных данных";
+"component.personal_data_cleanup_agent.desc" = "Удаление личных данных из интернета";
+"component.anti_tracker_agent.title" = "Анти-трекер";
+"component.anti_tracker_agent.desc" = "Блокировка отслеживания";
+
+/* Мониторинг */
+"component.dark_web_monitoring_agent.title" = "Мониторинг Dark Web";
+"component.dark_web_monitoring_agent.desc" = "Отслеживание утечек данных";
+"component.russian_identity_theft_protection_agent.title" = "Защита от кражи личности (РФ)";
+"component.russian_identity_theft_protection_agent.desc" = "Защита по 152-ФЗ РФ";
+"component.ai_categories_agent.title" = "AI категоризация";
+"component.ai_categories_agent.desc" = "Умная категоризация контента";
+"component.driving_reports_agent.title" = "Отчеты о вождении";
+"component.driving_reports_agent.desc" = "Анализ стиля вождения";
+
+/* ═══════════════════════════════════════════════════════════════
+ * МЕНЕДЖЕРЫ (15)
+ * ═══════════════════════════════════════════════════════════════ */
+
+"component.emergency_contact_manager.title" = "Экстренные контакты";
+"component.emergency_contact_manager.desc" = "Управление контактами для экстренных случаев";
+"component.emergency_notification_manager.title" = "Экстренные уведомления";
+"component.emergency_notification_manager.desc" = "Настройка экстренных оповещений";
+"component.voice_control_manager.title" = "Голосовое управление";
+"component.voice_control_manager.desc" = "Управление голосовыми командами";
+"component.russian_child_protection_manager.title" = "Защита детей (РФ)";
+"component.russian_child_protection_manager.desc" = "Соответствие законам РФ";
+"component.russian_data_protection_manager.title" = "Защита данных (РФ)";
+"component.russian_data_protection_manager.desc" = "Соответствие 152-ФЗ РФ";
+"component.family_notification_manager.title" = "Семейные уведомления";
+"component.family_notification_manager.desc" = "Управление уведомлениями семьи";
+"component.smart_notification_manager.title" = "Умные уведомления";
+"component.smart_notification_manager.desc" = "Интеллектуальная система уведомлений";
+"component.child_interface_manager.title" = "Детский интерфейс";
+"component.child_interface_manager.desc" = "Управление детским интерфейсом";
+"component.elderly_interface_manager.title" = "Интерфейс для пожилых";
+"component.elderly_interface_manager.desc" = "Упрощенный интерфейс";
+"component.subscription_manager.title" = "Управление подпиской";
+"component.subscription_manager.desc" = "Настройки тарифов";
+"component.referral_manager.title" = "Реферальная программа";
+"component.referral_manager.desc" = "Приглашение друзей";
+"component.qr_payment_manager.title" = "QR платежи";
+"component.qr_payment_manager.desc" = "Оплата через QR-код";
+"component.analytics_manager.title" = "Аналитика";
+"component.analytics_manager.desc" = "Статистика и отчеты";
+"component.report_manager.title" = "Отчеты";
+"component.report_manager.desc" = "Управление отчетами";
+
+/* ═══════════════════════════════════════════════════════════════
+ * БОТЫ (8)
+ * ═══════════════════════════════════════════════════════════════ */
+
+"component.parental_control_bot.title" = "Бот родительского контроля";
+"component.parental_control_bot.desc" = "Улучшенный родительский контроль";
+"component.telegram_security_bot.title" = "Защита Telegram";
+"component.telegram_security_bot.desc" = "Безопасность в Telegram";
+"component.whatsapp_security_bot.title" = "Защита WhatsApp";
+"component.whatsapp_security_bot.desc" = "Безопасность в WhatsApp";
+"component.instagram_security_bot.title" = "Защита Instagram";
+"component.instagram_security_bot.desc" = "Безопасность в Instagram";
+"component.max_messenger_security_bot.title" = "Защита Max Messenger";
+"component.max_messenger_security_bot.desc" = "Безопасность в Max Messenger";
+"component.gaming_security_bot.title" = "Защита в играх";
+"component.gaming_security_bot.desc" = "Безопасность игровых платформ";
+"component.browser_security_bot.title" = "Защита браузера";
+"component.browser_security_bot.desc" = "Безопасность веб-браузера";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ОБЩИЕ КЛЮЧИ ДЛЯ КОМПОНЕНТОВ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"component.enabled" = "Включено";
+"component.disabled" = "Выключено";
+"component.settings" = "Настройки";
+"component.loading" = "Загрузка...";
+"component.error" = "Ошибка загрузки";
+"component.save" = "Сохранить";
+"component.cancel" = "Отмена";
+
+/* Разделы компонентов */
+"component.emergency_help.title" = "Экстренная помощь";
+"component.emergency_help.subtitle" = "Быстрая помощь в критических ситуациях";
+"component.threat_protection.title" = "Защита от угроз";
+"component.threat_protection.subtitle" = "Защита от различных видов угроз";
+"component.incident_response.title" = "Реагирование";
+"component.incident_response.subtitle" = "Автоматическое реагирование на инциденты";
+"component.password_security.title" = "Пароли";
+"component.password_security.subtitle" = "Безопасность паролей";
+"component.child_protection.title" = "Защита детей";
+"component.child_protection.subtitle" = "Защита от опасностей в интернете";
+
+/* Password Generator */
+"password_generator.settings" = "Настройки генератора";
+"password_generator.length" = "Длина пароля";
+"password_generator.uppercase" = "Заглавные буквы";
+"password_generator.lowercase" = "Строчные буквы";
+"password_generator.numbers" = "Цифры";
+"password_generator.special" = "Специальные символы";
+"password_generator.generate" = "Сгенерировать";
+"password_generator.generated" = "Сгенерированный пароль";
+
+/* Incident Response */
+"incident_response.escalation_thresholds" = "Пороги эскалации";
+"incident_response.low" = "Низкая";
+"incident_response.medium" = "Средняя";
+"incident_response.high" = "Высокая";
+"incident_response.critical" = "Критическая";
+"incident_response.minutes" = "мин";
+"incident_response.sla_time" = "Время реакции SLA";
+"incident_response.auto_actions" = "Автодействия";
+"incident_response.block" = "Блокировать";
+
+/* ═══════════════════════════════════════════════════════════════
+ * РАСШИРЕННЫЕ НАСТРОЙКИ ЗАЩИТЫ (Advanced Protection Settings)
+ * ═══════════════════════════════════════════════════════════════ */
+
+"settings_advanced_title" = "Расширенные настройки";
+"settings_advanced_subtitle" = "Управление компонентами защиты";
+
+/* Разделы */
+"protection_settings_messengers_title" = "Защита в мессенджерах";
+"protection_settings_messengers_subtitle" = "Безопасность в мессенджерах и социальных сетях";
+"protection_settings_privacy_title" = "Приватность";
+"protection_settings_privacy_subtitle" = "Защита личных данных и приватности";
+"protection_settings_monitoring_title" = "Мониторинг";
+"protection_settings_monitoring_subtitle" = "Мониторинг угроз и утечек данных";
+
+/* Компоненты - Мессенджеры */
+"component_telegram_security_bot_title" = "Защита Telegram";
+"component_telegram_security_bot_description" = "Безопасность в Telegram";
+"component_whatsapp_security_bot_title" = "Защита WhatsApp";
+"component_whatsapp_security_bot_description" = "Безопасность в WhatsApp";
+"component_instagram_security_bot_title" = "Защита Instagram";
+"component_instagram_security_bot_description" = "Безопасность в Instagram";
+"component_max_messenger_security_bot_title" = "Защита Max Messenger";
+"component_max_messenger_security_bot_description" = "Безопасность в Max Messenger";
+"component_gaming_security_bot_title" = "Защита в играх";
+"component_gaming_security_bot_description" = "Безопасность игровых платформ";
+"component_browser_security_bot_title" = "Защита браузера";
+"component_browser_security_bot_description" = "Безопасность веб-браузера";
+
+/* Компоненты - Приватность */
+"component_location_bubble_agent_title" = "Пузырь местоположения";
+"component_location_bubble_agent_description" = "Скрытие точного местоположения";
+"component_personal_data_cleanup_agent_title" = "Очистка данных";
+"component_personal_data_cleanup_agent_description" = "Автоматическая очистка личных данных";
+"component_anti_tracker_agent_title" = "Блокировка трекеров";
+"component_anti_tracker_agent_description" = "Блокировка рекламных трекеров";
+
+/* Компоненты - Мониторинг */
+"component_dark_web_monitoring_agent_title" = "Мониторинг Dark Web";
+"component_dark_web_monitoring_agent_description" = "Отслеживание утечек данных";
+"component_russian_identity_theft_protection_agent_title" = "Защита от кражи личности (РФ)";
+"component_russian_identity_theft_protection_agent_description" = "Защита от мошенничества с документами";
+"component_ai_categories_agent_title" = "AI категории";
+"component_ai_categories_agent_description" = "Умная категоризация контента";
+"component_driving_reports_agent_title" = "Отчеты о вождении";
+"component_driving_reports_agent_description" = "Анализ стиля вождения";
+
+/* ═══════════════════════════════════════════════════════════════
+ * МЕНЕДЖЕРЫ - ЛОКАЛИЗАЦИЯ ДЛЯ VIEW
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* Emergency Contacts */
+"emergency_contacts_info_title" = "Экстренные контакты";
+"emergency_contacts_info_text" = "Добавьте контакты для экстренных ситуаций. Они будут автоматически уведомлены при аварии или другой критической ситуации.";
+"emergency_contacts_empty" = "Нет экстренных контактов";
+"emergency_contacts_add_first" = "Добавить первый контакт";
+"emergency_contacts_add" = "Добавить контакт";
+"emergency_contacts_add_title" = "Новый контакт";
+"emergency_contacts_name" = "Имя";
+"emergency_contacts_phone" = "Телефон";
+
+/* Emergency Notifications */
+"emergency_notifications_templates_title" = "Шаблоны сообщений";
+"emergency_notifications_template_crash" = "Авария";
+"emergency_notifications_template_medical" = "Медицинская помощь";
+"emergency_notifications_template_security" = "Безопасность";
+"emergency_notifications_template_placeholder" = "Введите текст сообщения";
+"emergency_notifications_channels_title" = "Каналы доставки";
+"emergency_notifications_channel_push" = "Push-уведомления";
+"emergency_notifications_channel_sms" = "SMS";
+"emergency_notifications_channel_email" = "Email";
+"emergency_notifications_channel_call" = "Звонок";
+"emergency_notifications_repeat_title" = "Частота повторов";
+"emergency_notifications_repeat_minutes" = "раз в минуту";
+
+/* Voice Control */
+"voice_control_activation_title" = "Активационное слово";
+"voice_control_activation_word" = "Выберите слово";
+"voice_control_language_title" = "Язык";
+"voice_control_language" = "Язык распознавания";
+"voice_control_sensitivity_title" = "Чувствительность";
+"voice_control_sensitivity_low" = "Низкая";
+"voice_control_sensitivity_high" = "Высокая";
+"voice_control_mode_title" = "Режим работы";
+"voice_control_mode_online" = "Онлайн режим";
+
+/* Compliance */
+"compliance_legal_profile_title" = "Юридический профиль";
+"compliance_profile_children" = "Дети";
+"compliance_profile_adults" = "Взрослые";
+"compliance_profile_individual" = "Физические лица";
+"compliance_profile_legal" = "Юридические лица";
+"compliance_regions_title" = "Регионы РФ";
+"compliance_storage_title" = "Политика хранения";
+"compliance_storage_days" = "дней";
+"compliance_deletion_title" = "Политика удаления";
+"compliance_deletion_automatic" = "Автоматическое";
+"compliance_deletion_manual" = "Ручное";
+"compliance_encryption_title" = "Шифрование";
+"compliance_encryption_enabled" = "Включить шифрование";
+
+/* ═══════════════════════════════════════════════════════════════
+ * МЕНЕДЖЕРЫ - РАСШИРЕННЫЕ НАСТРОЙКИ
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* Family Notifications */
+"family_notification_settings" = "Настройки уведомлений";
+"family_notifications_channels_title" = "Каналы доставки";
+"family_notifications_channel_push" = "Push-уведомления";
+"family_notifications_channel_email" = "Email";
+"family_notifications_channel_sms" = "SMS";
+"family_notifications_frequency_title" = "Частота";
+"family_notifications_frequency_instant" = "Мгновенно";
+"family_notifications_frequency_daily" = "Ежедневно";
+"family_notifications_frequency_weekly" = "Еженедельно";
+"family_notifications_templates_title" = "Шаблоны сообщений";
+"family_notifications_template_security" = "Безопасность";
+"family_notifications_template_activity" = "Активность";
+"family_notifications_template_rewards" = "Награды";
+"family_notifications_template_placeholder" = "Введите текст";
+"family_notifications_priorities_title" = "Приоритеты тем";
+"family_notifications_priority_security" = "Безопасность";
+"family_notifications_priority_activity" = "Активность";
+"family_notifications_priority_rewards" = "Награды";
+
+/* Analytics Settings */
+"analytics_settings_period_title" = "Период отображения";
+"analytics_settings_period_day" = "День";
+"analytics_settings_period_week" = "Неделя";
+"analytics_settings_period_month" = "Месяц";
+"analytics_settings_period_year" = "Год";
+"analytics_settings_metrics_title" = "Метрики";
+"analytics_settings_metric_threats" = "Угрозы";
+"analytics_settings_metric_scans" = "Сканирования";
+"analytics_settings_metric_blocks" = "Блокировки";
+"analytics_settings_metric_devices" = "Устройства";
+"analytics_settings_metric_family" = "Семья";
+"analytics_settings_metric_network" = "Сеть";
+"analytics_settings_reports_title" = "Расписание отчетов";
+"analytics_settings_auto_reports" = "Автоматические отчеты";
+"analytics_settings_frequency_daily" = "Ежедневно";
+"analytics_settings_frequency_weekly" = "Еженедельно";
+"analytics_settings_frequency_monthly" = "Ежемесячно";
+"analytics_settings_button" = "Настройки аналитики";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ДОСТУПНОСТЬ (ACCESSIBILITY)
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* Component Toggle */
+"component_enabled" = "Включено";
+"component_disabled" = "Выключено";
+"component_toggle_enabled_hint" = "Двойное нажатие выключит компонент";
+"component_toggle_disabled_hint" = "Двойное нажатие включит компонент";
+
+/* Accordion */
+"accordion_expanded" = "%@, развернуто";
+"accordion_collapsed" = "%@, свернуто";
+"accordion_expand_hint" = "Двойное нажатие развернет раздел";
+"accordion_collapse_hint" = "Двойное нажатие свернет раздел";
+"component_settings_hint" = "Двойное нажатие откроет настройки компонента";
+"incident_response.notify" = "Уведомить";
+"incident_response.escalate" = "Эскалировать";
+
 
 
