@@ -6,7 +6,7 @@ import Foundation
  * Локализованные сообщения об ошибках
  */
 
-enum ComponentError: LocalizedError {
+enum ComponentError: LocalizedError, Equatable {
     case componentNotFound(String)
     case apiError(String)
     case networkError(String)

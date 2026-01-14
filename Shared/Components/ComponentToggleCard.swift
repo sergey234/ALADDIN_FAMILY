@@ -63,7 +63,13 @@ struct ComponentToggleCard: View {
             
             Spacer()
             
-            ALADDINToggle(isOn: $isEnabled)
+            ALADDINToggle(isOn: Binding(
+                get: { isEnabled },
+                set: { newValue in
+                    isEnabled = newValue
+                    onToggle()
+                }
+            ))
             .accessibilityLabel(title)
             .accessibilityHint(
                 isEnabled

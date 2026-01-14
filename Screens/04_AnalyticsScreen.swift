@@ -13,6 +13,14 @@ struct AnalyticsScreen: View {
     @StateObject private var viewModel = AnalyticsScreen.makeViewModel()
     @State private var showAnalyticsSettings: Bool = false
     
+    // MARK: - Component Reports Modals
+    
+    @State private var showDrivingReportsModal: Bool = false
+    @State private var showDarkWebMonitoringModal: Bool = false
+    @State private var showIdentityTheftModal: Bool = false
+    @State private var showPrivacyReportsModal: Bool = false
+    @State private var showAICategoriesModal: Bool = false
+    
     // MARK: - Body
     
     var body: some View {
@@ -39,6 +47,9 @@ struct AnalyticsScreen: View {
                         // Уровень защиты
                         protectionBlock
                         
+                        // Компоненты защиты (НОВОЕ)
+                        componentsReportsSection
+                        
                     }
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.bottom, Spacing.xxl)
@@ -53,6 +64,27 @@ struct AnalyticsScreen: View {
         .id("analytics_lang_\(localizationManager.currentLanguage.rawValue)")
         .sheet(isPresented: $showAnalyticsSettings) {
             AnalyticsSettingsModal()
+                .environmentObject(localizationManager)
+        }
+        // Модальные окна отчетов компонентов
+        .sheet(isPresented: $showDrivingReportsModal) {
+            DrivingReportsModal(isPresented: $showDrivingReportsModal)
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showDarkWebMonitoringModal) {
+            DarkWebMonitoringModal(isPresented: $showDarkWebMonitoringModal)
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showIdentityTheftModal) {
+            IdentityTheftModal(isPresented: $showIdentityTheftModal)
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showPrivacyReportsModal) {
+            PrivacyReportsModal(isPresented: $showPrivacyReportsModal)
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showAICategoriesModal) {
+            AICategoriesModal(isPresented: $showAICategoriesModal)
                 .environmentObject(localizationManager)
         }
         .overlay(alignment: .center) {
@@ -84,7 +116,7 @@ struct AnalyticsScreen: View {
             rightButtons: [
                 NavigationActionButton(
                     icon: "slider.horizontal.3",
-                    accessibilityLabel: localizationManager.localized("analytics_settings_button") ?? "Настройки аналитики",
+                    accessibilityLabel: localizationManager.localized("analytics_settings_button"),
                     action: { showAnalyticsSettings = true }
                 )
             ],
@@ -311,6 +343,143 @@ struct AnalyticsScreen: View {
             .background(Color.dangerRed.opacity(0.9))
             .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
             .shadow(radius: 6)
+    }
+    
+    // MARK: - Components Reports Section (НОВОЕ)
+    
+    private var componentsReportsSection: some View {
+        VStack(spacing: Spacing.m) {
+            Text(localizationManager.localized("analytics_components_title"))
+                .font(.h3)
+                .foregroundColor(.textPrimary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityAddTraits(.isHeader)
+            
+            VStack(spacing: Spacing.s) {
+                // Отчеты о вождении
+                componentReportCard(
+                    componentId: "driving_reports_agent",
+                    icon: "🚗",
+                    titleKey: "component_driving_reports_title",
+                    metrics: [
+                        (localizationManager.localized("component_driving_reports_metric_trips"), "12"),
+                        (localizationManager.localized("component_driving_reports_metric_safety"), "8.5/10")
+                    ],
+                    color: .primaryBlue,
+                    badgeCount: 3,
+                    onTap: { showDrivingReportsModal = true }
+                )
+                
+                // Мониторинг Дарк вэб
+                componentReportCard(
+                    componentId: "dark_web_monitoring_agent",
+                    icon: "🌑",
+                    titleKey: "component_dark_web_title",
+                    metrics: [
+                        (localizationManager.localized("component_dark_web_metric_leaks"), "3"),
+                        (localizationManager.localized("component_dark_web_metric_new"), "0")
+                    ],
+                    color: .dangerRed,
+                    badgeCount: 1,
+                    onTap: { showDarkWebMonitoringModal = true }
+                )
+                
+                // Защита кражи личности
+                componentReportCard(
+                    componentId: "russian_identity_theft_protection_agent",
+                    icon: "🛡️",
+                    titleKey: "component_identity_theft_title",
+                    metrics: [
+                        (localizationManager.localized("component_identity_theft_metric_attempts"), "0"),
+                        (localizationManager.localized("component_identity_theft_metric_blocked"), "47")
+                    ],
+                    color: .primaryBlue,
+                    badgeCount: nil,
+                    onTap: { showIdentityTheftModal = true }
+                )
+                
+                // Пузырь местоположения
+                componentReportCard(
+                    componentId: "location_bubble_agent",
+                    icon: "📍",
+                    titleKey: "component_location_bubble_title",
+                    metrics: [
+                        (localizationManager.localized("component_location_bubble_metric_blocked"), "47"),
+                        (localizationManager.localized("component_location_bubble_metric_accuracy"), "Средняя")
+                    ],
+                    color: .primaryBlue,
+                    badgeCount: nil,
+                    onTap: { showPrivacyReportsModal = true }
+                )
+                
+                // Очистка данных
+                componentReportCard(
+                    componentId: "personal_data_cleanup_agent",
+                    icon: "🧹",
+                    titleKey: "component_data_cleanup_title",
+                    metrics: [
+                        (localizationManager.localized("component_data_cleanup_metric_freed"), "2.3 ГБ"),
+                        (localizationManager.localized("component_data_cleanup_metric_last"), "2ч назад")
+                    ],
+                    color: .primaryBlue,
+                    badgeCount: nil,
+                    onTap: { showPrivacyReportsModal = true }
+                )
+                
+                // Блокировка трекеров
+                componentReportCard(
+                    componentId: "anti_tracker_agent",
+                    icon: "🚫",
+                    titleKey: "component_anti_tracker_title",
+                    metrics: [
+                        (localizationManager.localized("component_anti_tracker_metric_blocked"), "1,247"),
+                        (localizationManager.localized("component_anti_tracker_metric_week"), "+234")
+                    ],
+                    color: .primaryBlue,
+                    badgeCount: nil,
+                    onTap: { showPrivacyReportsModal = true }
+                )
+                
+                // AI категоризация
+                componentReportCard(
+                    componentId: "ai_categories_agent",
+                    icon: "🤖",
+                    titleKey: "component_ai_categories_title",
+                    metrics: [
+                        (localizationManager.localized("component_ai_categories_metric_categorized"), "342"),
+                        (localizationManager.localized("component_ai_categories_metric_blocked"), "12")
+                    ],
+                    color: .primaryBlue,
+                    badgeCount: nil,
+                    onTap: { showAICategoriesModal = true }
+                )
+            }
+        }
+        .padding(Spacing.cardPadding)
+        .background(cardBackground)
+        .cardShadow()
+    }
+    
+    // MARK: - Component Report Cards
+    
+    private func componentReportCard(
+        componentId: String,
+        icon: String,
+        titleKey: String,
+        metrics: [(String, String)],
+        color: Color,
+        badgeCount: Int?,
+        onTap: @escaping () -> Void
+    ) -> some View {
+        ComponentReportCard(
+            componentId: componentId,
+            icon: icon,
+            title: localizationManager.localized(titleKey),
+            metrics: metrics,
+            color: color,
+            badgeCount: badgeCount,
+            onTap: onTap
+        )
     }
 }
 

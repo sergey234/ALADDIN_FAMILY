@@ -67,6 +67,10 @@ struct SettingsScreen: View {
     // ✅ Согласие на обработку ПДн (152-ФЗ)
     @AppStorage("personal_data_consent_accepted") private var consentAccepted: Bool = false
     
+    // ✅ Система позиционирования
+    @StateObject private var positioningService = PositioningSystemService.shared
+    @State private var showPositioningSystemPicker: Bool = false
+    
     // MARK: - Body
     
     var body: some View {
@@ -535,11 +539,36 @@ struct SettingsScreen: View {
                         checkForUpdates()
                     }
                 )
+                
+                // ✅ Система позиционирования
+                settingsButton(
+                    icon: positioningService.currentSystem.icon,
+                    title: localizationManager.localized("positioning_system_title"),
+                    subtitle: positioningService.selectedSystem == .auto 
+                        ? "\(positioningService.currentSystem.displayName) (\(localizationManager.localized("positioning_system_auto")))"
+                        : positioningService.currentSystem.displayName,
+                    action: {
+                        showPositioningSystemPicker = true
+                    }
+                )
             }
         }
         .padding(Spacing.cardPadding)
         .background(cardBackground)
         .cardShadow()
+        .sheet(isPresented: $showPositioningSystemPicker) {
+            PositioningSystemPickerView(
+                selectedSystem: Binding(
+                    get: { positioningService.selectedSystem },
+                    set: { newValue in
+                        positioningService.saveSelectedSystem(newValue)
+                    }
+                ),
+                currentSystem: positioningService.currentSystem,
+                currentRegion: positioningService.currentRegionName
+            )
+            .environmentObject(localizationManager)
+        }
     }
     
     // MARK: - Additional Section

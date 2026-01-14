@@ -15,6 +15,8 @@ struct FamilyNotificationSettingsModal: View {
     
     @State private var channels: [String: Bool] = ["push": true, "email": false, "sms": false]
     @State private var frequency: String = "instant" // instant, daily, weekly
+    @State private var quietHoursStart: String = "22:00"
+    @State private var quietHoursEnd: String = "08:00"
     @State private var messageTemplates: [String: String] = [:]
     @State private var topicPriorities: [String: Int] = ["security": 1, "activity": 2, "rewards": 3]
     
@@ -31,6 +33,9 @@ struct FamilyNotificationSettingsModal: View {
                         
                         // Frequency
                         frequencySection
+                        
+                        // Quiet Hours
+                        quietHoursSection
                         
                         // Message Templates
                         templatesSection
@@ -53,6 +58,9 @@ struct FamilyNotificationSettingsModal: View {
                     }
                 }
             }
+        }
+        .onAppear {
+            loadSettings()
         }
     }
     
@@ -107,6 +115,43 @@ struct FamilyNotificationSettingsModal: View {
                 Text(localizationManager.localized("family_notifications_frequency_weekly")).tag("weekly")
             }
             .pickerStyle(.segmented)
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .fill(Color.backgroundMedium.opacity(0.3))
+        )
+    }
+    
+    private var quietHoursSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("family_notifications_quiet_hours_title"))
+                    .font(.title3)
+                .foregroundColor(.textPrimary)
+            
+            VStack(spacing: Spacing.s) {
+                HStack {
+                    Text(localizationManager.localized("family_notifications_quiet_hours_start"))
+                        .font(.body)
+                        .foregroundColor(.textPrimary)
+                    Spacer()
+                    TextField("22:00", text: $quietHoursStart)
+                        .keyboardType(.numbersAndPunctuation)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 80)
+                }
+                
+                HStack {
+                    Text(localizationManager.localized("family_notifications_quiet_hours_end"))
+                        .font(.body)
+                        .foregroundColor(.textPrimary)
+                    Spacer()
+                    TextField("08:00", text: $quietHoursEnd)
+                        .keyboardType(.numbersAndPunctuation)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 80)
+                }
+            }
         }
         .padding(Spacing.m)
         .background(
@@ -192,11 +237,74 @@ struct FamilyNotificationSettingsModal: View {
     
     // MARK: - Methods
     
+    // ✅ Загрузка настроек при открытии
+    private func loadSettings() {
+        Task {
+            do {
+                let config = try await configurationService.getConfiguration(for: "family_notification_manager")
+                if let settings = config.additionalSettings {
+                    if let value = settings["channels"]?.value as? [String: Bool] {
+                        channels = value
+                    }
+                    if let value = settings["frequency"]?.value as? String {
+                        frequency = value
+                    }
+                    if let value = settings["quietHoursStart"]?.value as? String {
+                        quietHoursStart = value
+                    }
+                    if let value = settings["quietHoursEnd"]?.value as? String {
+                        quietHoursEnd = value
+                    }
+                    if let value = settings["messageTemplates"]?.value as? [String: String] {
+                        messageTemplates = value
+                    }
+                    if let value = settings["topicPriorities"]?.value as? [String: Int] {
+                        topicPriorities = value
+                    }
+                }
+            } catch {
+                print("⚠️ FamilyNotificationSettingsModal: Ошибка загрузки настроек: \(error)")
+            }
+        }
+    }
+    
+    // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
         Task {
-            // TODO: Сохранить настройки через API
-            toastManager.showSuccess(localizationManager.localized("settings_saved"))
-            dismiss()
+            do {
+                // Получить текущий статус компонента
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: "family_notification_manager")
+                }
+                
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .normal,
+                    additionalSettings: [
+                        "channels": AnyCodable(channels),
+                        "frequency": AnyCodable(frequency),
+                        "quietHoursStart": AnyCodable(quietHoursStart),
+                        "quietHoursEnd": AnyCodable(quietHoursEnd),
+                        "messageTemplates": AnyCodable(messageTemplates),
+                        "topicPriorities": AnyCodable(topicPriorities)
+                    ]
+                )
+                
+                try await configurationService.saveConfiguration(
+                    componentId: "family_notification_manager",
+                    configuration: config
+                )
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    dismiss()
+                }
+            } catch {
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    dismiss()
+                }
+            }
         }
     }
 }

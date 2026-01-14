@@ -25,7 +25,8 @@ struct LanguageSettingsScreen: View {
         }
     }
     
-    @State private var isSystemLanguage: Bool = false
+    // ✅ ИСПРАВЛЕНО: Заменено @State на @AppStorage для сохранения между сессиями
+    @AppStorage("language_settings_system_language") private var isSystemLanguage: Bool = false
     
     // Сохраняем размер шрифта
     @AppStorage("selected_font_size") private var fontSizeRaw: String = "medium"

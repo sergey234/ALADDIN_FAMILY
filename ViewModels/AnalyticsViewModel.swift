@@ -12,8 +12,25 @@ class AnalyticsViewModel: ObservableObject {
     @Published private(set) var errorMessage: String?
     
     private let service: AnalyticsService
-    private let defaultPeriod = "day"
-    private let defaultFilters = AnalyticsFilters(onlyBlocked: false, includeFamily: true, includeDevices: true)
+    
+    // Ключи для UserDefaults
+    private let periodKey = "analytics_last_period"
+    private let filtersOnlyBlockedKey = "analytics_last_filters_only_blocked"
+    private let filtersIncludeFamilyKey = "analytics_last_filters_include_family"
+    private let filtersIncludeDevicesKey = "analytics_last_filters_include_devices"
+    
+    // Загружаем сохраненные значения или используем дефолтные
+    private var defaultPeriod: String {
+        UserDefaults.standard.string(forKey: periodKey) ?? "day"
+    }
+    
+    private var defaultFilters: AnalyticsFilters {
+        AnalyticsFilters(
+            onlyBlocked: UserDefaults.standard.bool(forKey: filtersOnlyBlockedKey),
+            includeFamily: UserDefaults.standard.object(forKey: filtersIncludeFamilyKey) as? Bool ?? true,
+            includeDevices: UserDefaults.standard.object(forKey: filtersIncludeDevicesKey) as? Bool ?? true
+        )
+    }
     
     init(service: AnalyticsService) {
         self.service = service

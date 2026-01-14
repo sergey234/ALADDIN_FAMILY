@@ -13,12 +13,46 @@ struct NotificationSettingsScreen: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var notificationManager: NotificationManager
-    @State private var settings: NotificationSettings
     
-    // MARK: - Init
+    // ✅ ИСПРАВЛЕНО: Заменено @State на @AppStorage для всех 12 тумблеров
+    @AppStorage("notification_security_enabled") private var securityEnabled: Bool = true
+    @AppStorage("notification_family_enabled") private var familyEnabled: Bool = true
+    @AppStorage("notification_network_protection_enabled") private var networkProtectionEnabled: Bool = true
+    @AppStorage("notification_ai_enabled") private var aiEnabled: Bool = true
+    @AppStorage("notification_bypass_enabled") private var bypassEnabled: Bool = true
+    @AppStorage("notification_sound_enabled") private var soundEnabled: Bool = true
+    @AppStorage("notification_badge_enabled") private var badgeEnabled: Bool = true
+    @AppStorage("notification_quiet_mode_enabled") private var quietModeEnabled: Bool = false
+    @AppStorage("notification_important_only_mode") private var importantOnlyMode: Bool = false
+    @AppStorage("notification_do_not_disturb_mode") private var doNotDisturbMode: Bool = false
+    @AppStorage("notification_high_priority_only") private var highPriorityOnly: Bool = false
+    @AppStorage("notification_quiet_hours_enabled") private var quietHoursEnabled: Bool = false
     
-    init() {
-        _settings = State(initialValue: NotificationManager.shared.notificationSettings)
+    // Дополнительные настройки (не тумблеры, но нужны для сохранения)
+    @AppStorage("notification_quiet_hours_start") private var quietHoursStart: String = "22:00"
+    @AppStorage("notification_quiet_hours_end") private var quietHoursEnd: String = "08:00"
+    @AppStorage("notification_max_per_hour") private var maxNotificationsPerHour: Int = 10
+    @AppStorage("notification_max_per_hour_enabled") private var maxNotificationsPerHourEnabled: Bool = false
+    
+    // doNotDisturbUntil сохраняется через UserDefaults как timestamp
+    @State private var doNotDisturbUntil: Date? = nil
+    
+    private func setDoNotDisturbUntil(_ date: Date?) {
+        doNotDisturbUntil = date
+        if let date = date {
+            UserDefaults.standard.set(date.timeIntervalSince1970, forKey: "notification_do_not_disturb_until")
+        } else {
+            UserDefaults.standard.removeObject(forKey: "notification_do_not_disturb_until")
+        }
+    }
+    
+    private func loadDoNotDisturbUntil() {
+        let timestamp = UserDefaults.standard.double(forKey: "notification_do_not_disturb_until")
+        if timestamp > 0 {
+            doNotDisturbUntil = Date(timeIntervalSince1970: timestamp)
+        } else {
+            doNotDisturbUntil = nil
+        }
     }
     
     // MARK: - Body
@@ -74,16 +108,55 @@ struct NotificationSettingsScreen: View {
             }
         }
         .onAppear {
-            // Синхронизируем с актуальными настройками при открытии
-            settings = notificationManager.notificationSettings
+            // ✅ ИСПРАВЛЕНО: Загружаем настройки из NotificationManager и синхронизируем с @AppStorage
+            let loadedSettings = notificationManager.notificationSettings
+            
+            // Загружаем doNotDisturbUntil из UserDefaults
+            loadDoNotDisturbUntil()
+            
+            // Синхронизируем только если значения в UserDefaults пустые (первый запуск)
+            if UserDefaults.standard.object(forKey: "notification_security_enabled") == nil {
+                securityEnabled = loadedSettings.securityEnabled
+                familyEnabled = loadedSettings.familyEnabled
+                networkProtectionEnabled = loadedSettings.networkProtectionEnabled
+                aiEnabled = loadedSettings.aiEnabled
+                bypassEnabled = loadedSettings.bypassEnabled
+                soundEnabled = loadedSettings.soundEnabled
+                badgeEnabled = loadedSettings.badgeEnabled
+                quietModeEnabled = loadedSettings.quietModeEnabled
+                importantOnlyMode = loadedSettings.importantOnlyMode
+                doNotDisturbMode = loadedSettings.doNotDisturbMode
+                doNotDisturbUntil = loadedSettings.doNotDisturbUntil
+                highPriorityOnly = loadedSettings.highPriorityOnly
+                quietHoursEnabled = loadedSettings.quietHoursEnabled
+                quietHoursStart = loadedSettings.quietHoursStart
+                quietHoursEnd = loadedSettings.quietHoursEnd
+                maxNotificationsPerHour = loadedSettings.maxNotificationsPerHour ?? 10
+                maxNotificationsPerHourEnabled = loadedSettings.maxNotificationsPerHour != nil
+            }
+            
+            // Синхронизируем обратно в NotificationManager
+            syncToNotificationManager()
         }
-        .onChange(of: settings) { newSettings in
-            // Сохраняем настройки в реальном времени при изменении
-            notificationManager.updateNotificationSettings(newSettings)
-        }
+        .onChange(of: securityEnabled) { _ in syncToNotificationManager() }
+        .onChange(of: familyEnabled) { _ in syncToNotificationManager() }
+        .onChange(of: networkProtectionEnabled) { _ in syncToNotificationManager() }
+        .onChange(of: aiEnabled) { _ in syncToNotificationManager() }
+        .onChange(of: bypassEnabled) { _ in syncToNotificationManager() }
+        .onChange(of: soundEnabled) { _ in syncToNotificationManager() }
+        .onChange(of: badgeEnabled) { _ in syncToNotificationManager() }
+        .onChange(of: quietModeEnabled) { _ in syncToNotificationManager() }
+        .onChange(of: importantOnlyMode) { _ in syncToNotificationManager() }
+        .onChange(of: doNotDisturbMode) { _ in syncToNotificationManager() }
+        .onChange(of: highPriorityOnly) { _ in syncToNotificationManager() }
+        .onChange(of: quietHoursEnabled) { _ in syncToNotificationManager() }
+        .onChange(of: quietHoursStart) { _ in syncToNotificationManager() }
+        .onChange(of: quietHoursEnd) { _ in syncToNotificationManager() }
+        .onChange(of: maxNotificationsPerHour) { _ in syncToNotificationManager() }
+        .onChange(of: maxNotificationsPerHourEnabled) { _ in syncToNotificationManager() }
         .onDisappear {
             // Финальное сохранение при закрытии
-            notificationManager.updateNotificationSettings(settings)
+            syncToNotificationManager()
         }
     }
     
@@ -101,35 +174,35 @@ struct NotificationSettingsScreen: View {
                     title: "Безопасность",
                     subtitle: "Уведомления об угрозах и блокировках",
                     icon: "🛡️",
-                    isOn: $settings.securityEnabled
+                    isOn: $securityEnabled
                 )
                 
                 NotificationToggle(
                     title: "Семья",
                     subtitle: "Уведомления о действиях членов семьи",
                     icon: "👨‍👩‍👧‍👦",
-                    isOn: $settings.familyEnabled
+                    isOn: $familyEnabled
                 )
                 
                 NotificationToggle(
                     title: "Защита сети",
                     subtitle: "Уведомления о подключении защиты сети",
                     icon: "🔒",
-                    isOn: $settings.networkProtectionEnabled
+                    isOn: $networkProtectionEnabled
                 )
                 
                 NotificationToggle(
                     title: "AI Помощник",
                     subtitle: "Уведомления от AI помощника",
                     icon: "🤖",
-                    isOn: $settings.aiEnabled
+                    isOn: $aiEnabled
                 )
                 
                 NotificationToggle(
                     title: "Попытки обхода",
                     subtitle: "Уведомления о заблокированных попытках обхода",
                     icon: "🚨",
-                    isOn: $settings.bypassEnabled
+                    isOn: $bypassEnabled
                 )
             }
         }
@@ -154,14 +227,14 @@ struct NotificationSettingsScreen: View {
                     title: "Звук",
                     subtitle: "Звуковые уведомления",
                     icon: "🔊",
-                    isOn: $settings.soundEnabled
+                    isOn: $soundEnabled
                 )
                 
                 NotificationToggle(
                     title: "Badge",
                     subtitle: "Счетчик непрочитанных на иконке",
                     icon: "🔴",
-                    isOn: $settings.badgeEnabled
+                    isOn: $badgeEnabled
                 )
                 
                 // Тихий режим
@@ -169,7 +242,7 @@ struct NotificationSettingsScreen: View {
                     title: "Тихий режим",
                     subtitle: "Уведомления без звука и баннера, только badge",
                     icon: "🔇",
-                    isOn: $settings.quietModeEnabled
+                    isOn: $quietModeEnabled
                 )
             }
         }
@@ -195,7 +268,7 @@ struct NotificationSettingsScreen: View {
                     title: "Только важные",
                     subtitle: "Только угрозы безопасности, остальные в тихий режим",
                     icon: "🎯",
-                    isOn: $settings.importantOnlyMode
+                    isOn: $importantOnlyMode
                 )
                 
                 // Режим "Не беспокоить"
@@ -204,15 +277,15 @@ struct NotificationSettingsScreen: View {
                         title: "Не беспокоить",
                         subtitle: "Полностью отключает уведомления на время",
                         icon: "🔕",
-                        isOn: $settings.doNotDisturbMode
+                        isOn: $doNotDisturbMode
                     )
                     
-                    if settings.doNotDisturbMode {
+                    if doNotDisturbMode {
                         DatePicker(
                             "Отключить до",
                             selection: Binding(
-                                get: { settings.doNotDisturbUntil ?? Date().addingTimeInterval(3600) },
-                                set: { settings.doNotDisturbUntil = $0 }
+                                get: { doNotDisturbUntil ?? Date().addingTimeInterval(3600) },
+                                set: { setDoNotDisturbUntil($0) }
                             ),
                             displayedComponents: [.date, .hourAndMinute]
                         )
@@ -232,7 +305,7 @@ struct NotificationSettingsScreen: View {
                     title: "Только высокий приоритет",
                     subtitle: "Показывать только уведомления высокого приоритета",
                     icon: "⭐",
-                    isOn: $settings.highPriorityOnly
+                    isOn: $highPriorityOnly
                 )
                 
                 // Ограничение частоты
@@ -249,20 +322,21 @@ struct NotificationSettingsScreen: View {
                         
                         // ✅ УНИФИЦИРОВАНО: Используем ALADDINToggle с размером 40 для соответствия дизайну карточек родительского контроля
                         ALADDINToggle(isOn: Binding(
-                            get: { settings.maxNotificationsPerHour != nil },
+                            get: { maxNotificationsPerHourEnabled },
                             set: { enabled in
-                                if enabled {
-                                    settings.maxNotificationsPerHour = settings.maxNotificationsPerHour ?? 10
-                                } else {
-                                    settings.maxNotificationsPerHour = nil
+                                maxNotificationsPerHourEnabled = enabled
+                                if !enabled {
+                                    maxNotificationsPerHour = 0
+                                } else if maxNotificationsPerHour == 0 {
+                                    maxNotificationsPerHour = 10
                                 }
                             }
                         ), size: 40)
                     }
                     
-                    if let maxPerHour = settings.maxNotificationsPerHour {
+                    if maxNotificationsPerHourEnabled && maxNotificationsPerHour > 0 {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Максимум уведомлений в час: \(maxPerHour)")
+                            Text("Максимум уведомлений в час: \(maxNotificationsPerHour)")
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.8))
                                 .lineLimit(2)
@@ -271,10 +345,7 @@ struct NotificationSettingsScreen: View {
                             
                             Stepper(
                                 "",
-                                value: Binding(
-                                    get: { maxPerHour },
-                                    set: { settings.maxNotificationsPerHour = $0 }
-                                ),
+                                value: $maxNotificationsPerHour,
                                 in: 1...60,
                                 step: 1
                             )
@@ -311,10 +382,10 @@ struct NotificationSettingsScreen: View {
                     title: "Включить тихие часы",
                     subtitle: "Отключить звук и баннер в указанное время",
                     icon: "🌙",
-                    isOn: $settings.quietHoursEnabled
+                    isOn: $quietHoursEnabled
                 )
                 
-                if settings.quietHoursEnabled {
+                if quietHoursEnabled {
                     VStack(spacing: 8) {
                         HStack(alignment: .center) {
                             Text("Начало")
@@ -322,7 +393,7 @@ struct NotificationSettingsScreen: View {
                                 .foregroundColor(.white.opacity(0.8))
                                 .lineLimit(1)
                             Spacer()
-                            Text(settings.quietHoursStart)
+                            Text(quietHoursStart)
                                 .font(.system(size: 14, design: .monospaced))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 12)
@@ -339,7 +410,7 @@ struct NotificationSettingsScreen: View {
                                 .foregroundColor(.white.opacity(0.8))
                                 .lineLimit(1)
                             Spacer()
-                            Text(settings.quietHoursEnd)
+                            Text(quietHoursEnd)
                                 .font(.system(size: 14, design: .monospaced))
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 12)
@@ -359,6 +430,31 @@ struct NotificationSettingsScreen: View {
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white.opacity(0.1))
         )
+    }
+    
+    // MARK: - Helper Methods
+    
+    /// Синхронизирует @AppStorage значения с NotificationManager
+    private func syncToNotificationManager() {
+        var updatedSettings = NotificationSettings()
+        updatedSettings.securityEnabled = securityEnabled
+        updatedSettings.familyEnabled = familyEnabled
+        updatedSettings.networkProtectionEnabled = networkProtectionEnabled
+        updatedSettings.aiEnabled = aiEnabled
+        updatedSettings.bypassEnabled = bypassEnabled
+        updatedSettings.soundEnabled = soundEnabled
+        updatedSettings.badgeEnabled = badgeEnabled
+        updatedSettings.quietModeEnabled = quietModeEnabled
+        updatedSettings.importantOnlyMode = importantOnlyMode
+        updatedSettings.doNotDisturbMode = doNotDisturbMode
+        updatedSettings.doNotDisturbUntil = doNotDisturbUntil
+        updatedSettings.highPriorityOnly = highPriorityOnly
+        updatedSettings.quietHoursEnabled = quietHoursEnabled
+        updatedSettings.quietHoursStart = quietHoursStart
+        updatedSettings.quietHoursEnd = quietHoursEnd
+        updatedSettings.maxNotificationsPerHour = maxNotificationsPerHourEnabled ? maxNotificationsPerHour : nil
+        
+        notificationManager.updateNotificationSettings(updatedSettings)
     }
     
 }

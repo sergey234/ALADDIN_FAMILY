@@ -3551,12 +3551,15 @@ struct AppLimitsSettingsModal: View {
     
     // Загрузка лимитов из UserDefaults
     private func loadAppLimits() {
+        // ✅ ИСПРАВЛЕНО: Сначала загружаем из общего массива, затем проверяем индивидуальные ключи
+        var loadedLimits: [AppLimitItem] = []
+        
         if let data = UserDefaults.standard.data(forKey: limitsKey),
            let decoded = try? JSONDecoder().decode([AppLimitItemCodable].self, from: data) {
-            appLimits = decoded.map { AppLimitItem(app: $0.app, limit: $0.limit, color: Color(hex: $0.colorHex)) }
+            loadedLimits = decoded.map { AppLimitItem(app: $0.app, limit: $0.limit, color: Color(hex: $0.colorHex)) }
         } else {
             // Значения по умолчанию
-            appLimits = [
+            loadedLimits = [
                 AppLimitItem(app: "Instagram", limit: 30.0, color: .purple),
                 AppLimitItem(app: "TikTok", limit: 20.0, color: .black),
                 AppLimitItem(app: "WhatsApp", limit: 60.0, color: .green),
@@ -3568,6 +3571,20 @@ struct AppLimitsSettingsModal: View {
                 AppLimitItem(app: "Games", limit: 60.0, color: .pink)
             ]
         }
+        
+        // Проверяем индивидуальные ключи для каждого приложения (приоритет выше)
+        for index in loadedLimits.indices {
+            let app = loadedLimits[index].app
+            let appKey = "app_\(app.lowercased().replacingOccurrences(of: " ", with: "_"))_time_limit"
+            if UserDefaults.standard.object(forKey: appKey) != nil {
+                let savedLimit = UserDefaults.standard.double(forKey: appKey)
+                if savedLimit > 0 {
+                    loadedLimits[index].limit = savedLimit
+                }
+            }
+        }
+        
+        appLimits = loadedLimits
     }
     
     // Сохранение лимитов в UserDefaults
@@ -3576,6 +3593,19 @@ struct AppLimitsSettingsModal: View {
         if let encoded = try? JSONEncoder().encode(codable) {
             UserDefaults.standard.set(encoded, forKey: limitsKey)
         }
+    }
+    
+    // ✅ ИСПРАВЛЕНО: Автоматическое сохранение лимита для конкретного приложения
+    private func saveAppLimitForApp(app: String, limit: Double) {
+        // Сохраняем в UserDefaults с динамическим ключом для каждого приложения
+        let appKey = "app_\(app.lowercased().replacingOccurrences(of: " ", with: "_"))_time_limit"
+        UserDefaults.standard.set(limit, forKey: appKey)
+        
+        // Также обновляем общий массив и сохраняем его
+        if let index = appLimits.firstIndex(where: { $0.app == app }) {
+            appLimits[index].limit = limit
+        }
+        saveAppLimits()
     }
     
     var body: some View {
@@ -3598,7 +3628,15 @@ struct AppLimitsSettingsModal: View {
                                 .foregroundColor(.secondaryGold)
                         }
                         
-                        Slider(value: $limit.limit, in: 5...120, step: 5) {
+                        // ✅ ИСПРАВЛЕНО: Используем Binding с автоматическим сохранением в UserDefaults
+                        Slider(value: Binding(
+                            get: { limit.limit },
+                            set: { newValue in
+                                limit.limit = newValue
+                                // Автоматическое сохранение при изменении слайдера
+                                saveAppLimitForApp(app: limit.app, limit: newValue)
+                            }
+                        ), in: 5...120, step: 5) {
                             Text(limit.app)
                         }
                         .tint(limit.color)

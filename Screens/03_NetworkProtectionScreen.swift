@@ -774,11 +774,16 @@ struct NetworkProtectionSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
+    private let apiService = APIService.shared
+    private let toastManager = ToastManager.shared
+    
     @AppStorage("network_protection_auto_select_server") private var autoSelectServer = true
     @AppStorage("network_protection_auto_connect_wifi") private var autoConnectWiFi = true
     @AppStorage("network_protection_auto_connect_mobile") private var autoConnectMobile = false
     @AppStorage("network_protection_kill_switch") private var killSwitch = true
     @AppStorage("network_protection_dns_leak_protection") private var dnsLeakProtection = true
+    @AppStorage("network_protection_battery_optimization") private var batteryOptimizationEnabled = true
+    @AppStorage("antivirusEnabled") private var antivirusEnabled = true
     
     var body: some View {
         NavigationView {
@@ -827,7 +832,7 @@ struct NetworkProtectionSettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                         Spacer()
-                        Toggle("", isOn: $networkProtectionManager.batteryOptimizationEnabled)
+                        Toggle("", isOn: $batteryOptimizationEnabled)
                     }
                 }
             }
@@ -839,6 +844,70 @@ struct NetworkProtectionSettingsView: View {
                         dismiss()
                     }
                 }
+            }
+            .onAppear {
+                loadNetworkProtectionSettingsFromServer()
+            }
+            .onChange(of: autoSelectServer) { _ in syncNetworkProtectionSettingsToServer() }
+            .onChange(of: autoConnectWiFi) { _ in syncNetworkProtectionSettingsToServer() }
+            .onChange(of: autoConnectMobile) { _ in syncNetworkProtectionSettingsToServer() }
+            .onChange(of: killSwitch) { _ in syncNetworkProtectionSettingsToServer() }
+            .onChange(of: dnsLeakProtection) { _ in syncNetworkProtectionSettingsToServer() }
+            .onChange(of: batteryOptimizationEnabled) { _ in syncNetworkProtectionSettingsToServer() }
+            .onChange(of: antivirusEnabled) { _ in syncNetworkProtectionSettingsToServer() }
+        }
+    }
+    
+    // MARK: - Server Synchronization
+    
+    /// Загружает настройки сетевой защиты с сервера
+    private func loadNetworkProtectionSettingsFromServer() {
+        Task {
+            do {
+                let settings = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<NetworkProtectionSettingsResponse, Error>) in
+                    apiService.getNetworkProtectionSettings { result in
+                        continuation.resume(with: result)
+                    }
+                }
+                
+                await MainActor.run {
+                    autoSelectServer = settings.autoSelectServer
+                    autoConnectWiFi = settings.autoConnectWiFi
+                    autoConnectMobile = settings.autoConnectMobile
+                    killSwitch = settings.killSwitch
+                    dnsLeakProtection = settings.dnsLeakProtection
+                    batteryOptimizationEnabled = settings.batteryOptimizationEnabled
+                    antivirusEnabled = settings.antivirusEnabled
+                }
+            } catch {
+                print("⚠️ NetworkProtectionSettingsView: Ошибка загрузки настроек с сервера: \(error)")
+                // Используем локальные значения из @AppStorage
+            }
+        }
+    }
+    
+    /// Синхронизирует настройки сетевой защиты с сервером
+    private func syncNetworkProtectionSettingsToServer() {
+        Task {
+            do {
+                _ = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<APIResponse<Bool>, Error>) in
+                    apiService.updateNetworkProtectionSettings(
+                        autoSelectServer: autoSelectServer,
+                        autoConnectWiFi: autoConnectWiFi,
+                        autoConnectMobile: autoConnectMobile,
+                        killSwitch: killSwitch,
+                        dnsLeakProtection: dnsLeakProtection,
+                        batteryOptimizationEnabled: batteryOptimizationEnabled,
+                        antivirusEnabled: antivirusEnabled
+                    ) { result in
+                        continuation.resume(with: result)
+                    }
+                }
+                
+                print("✅ NetworkProtectionSettingsView: Настройки синхронизированы с сервером")
+            } catch {
+                print("⚠️ NetworkProtectionSettingsView: Ошибка синхронизации настроек: \(error)")
+                // Не показываем ошибку пользователю - локальное сохранение работает
             }
         }
     }

@@ -651,12 +651,22 @@ struct TwoFactorAuthView: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @State private var isEnabled: Bool = false
+    private let apiService = APIService.shared
+    private let toastManager = ToastManager.shared
+    
+    // ✅ ИСПРАВЛЕНО: Заменено @State на @AppStorage для сохранения между сессиями
+    @AppStorage("profile_2fa_enabled") private var isEnabled: Bool = false
     
     var body: some View {
         NavigationView {
             Form {
-                Toggle(localizationManager.localized("profile_2fa_enable"), isOn: $isEnabled)
+                Toggle(localizationManager.localized("profile_2fa_enable"), isOn: Binding(
+                    get: { isEnabled },
+                    set: { newValue in
+                        isEnabled = newValue
+                        sync2FAStatusToServer(enabled: newValue)
+                    }
+                ))
                 Text(isEnabled ? localizationManager.localized("profile_2fa_enabled") : localizationManager.localized("profile_2fa_disabled"))
                     .foregroundColor(isEnabled ? .green : .gray)
             }
@@ -668,6 +678,54 @@ struct TwoFactorAuthView: View {
                 }
             }
             .id("2fa_lang_\(localizationManager.currentLanguage.rawValue)")
+            .onAppear {
+                load2FAStatusFromServer()
+            }
+        }
+    }
+    
+    // MARK: - Server Synchronization
+    
+    /// Загружает статус 2FA с сервера
+    private func load2FAStatusFromServer() {
+        Task {
+            do {
+                let status = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<TwoFactorAuthStatusResponse, Error>) in
+                    apiService.get2FAStatus { result in
+                        continuation.resume(with: result)
+                    }
+                }
+                
+                await MainActor.run {
+                    isEnabled = status.enabled
+                }
+            } catch {
+                print("⚠️ TwoFactorAuthView: Ошибка загрузки статуса 2FA: \(error)")
+                // Используем локальное значение из @AppStorage
+            }
+        }
+    }
+    
+    /// Синхронизирует статус 2FA с сервером
+    private func sync2FAStatusToServer(enabled: Bool) {
+        Task {
+            do {
+                _ = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<APIResponse<Bool>, Error>) in
+                    apiService.update2FAStatus(enabled: enabled) { result in
+                        continuation.resume(with: result)
+                    }
+                }
+                
+                await MainActor.run {
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                }
+            } catch {
+                await MainActor.run {
+                    toastManager.showError(localizationManager.localized("settings_save_error"))
+                    // Откатываем изменение при ошибке
+                    isEnabled = !enabled
+                }
+            }
         }
     }
 }

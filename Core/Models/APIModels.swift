@@ -90,6 +90,18 @@ struct NetworkProtectionSettings: Codable {
     let batteryOptimizationEnabled: Bool
 }
 
+// ✅ ДОБАВЛЕНО: Network Protection Settings Response (для синхронизации между устройствами)
+struct NetworkProtectionSettingsResponse: Codable {
+    let autoSelectServer: Bool
+    let autoConnectWiFi: Bool
+    let autoConnectMobile: Bool
+    let killSwitch: Bool
+    let dnsLeakProtection: Bool
+    let batteryOptimizationEnabled: Bool
+    let antivirusEnabled: Bool
+    let lastUpdated: Date?
+}
+
 // MARK: - Family Models
 
 struct CreateFamilyResponse: Codable {
@@ -195,6 +207,13 @@ struct UpdateProfileRequest: Codable {
     let name: String?
     let email: String?
     let phone: String?
+}
+
+// ✅ ДОБАВЛЕНО: 2FA Status Response (для синхронизации между устройствами)
+struct TwoFactorAuthStatusResponse: Codable {
+    let enabled: Bool
+    let lastUpdated: Date?
+    let method: String? // "sms", "email", "app"
 }
 
 // MARK: - Parental Control Models
@@ -547,7 +566,7 @@ struct HandleAccessRequestRequest: Codable {
 struct ParentalControlStatsResponse: Codable {
     let contentBlocked: ContentBlockedStats
     let screenTime: ScreenTimeStats
-    let location: LocationStats
+    let location: ParentalControlLocationStats
     let monitoring: MonitoringStats
 }
 
@@ -565,7 +584,7 @@ struct ScreenTimeStats: Codable {
     let schedulesCount: Int
 }
 
-struct LocationStats: Codable {
+struct ParentalControlLocationStats: Codable {
     let currentLocation: String?
     let lastUpdate: String?
     let geofencesCount: Int
@@ -650,6 +669,13 @@ struct DeviceDetailResponse: Codable {
     let dataUsage: Int64 // bytes
     let batteryLevel: Int? // 0-100%
     let isProtected: Bool
+}
+
+// ✅ ДОБАВЛЕНО: Device Settings Response (для синхронизации между устройствами)
+struct DeviceSettingsResponse: Codable {
+    let isProtectionOn: Bool
+    let isScanningEnabled: Bool
+    let lastUpdated: Date?
 }
 
 // MARK: - Family Chat Models

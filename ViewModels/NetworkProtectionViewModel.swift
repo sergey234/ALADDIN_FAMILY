@@ -236,39 +236,60 @@ class NetworkProtectionViewModel: ObservableObject {
     }
     
     private func updateLocalStatuses() async {
-        let componentIds = [
-            "crash_detection_agent",
-            "roadside_assistance_agent",
-            "emergency_response_bot",
-            "emergency_event_manager",
-            "phishing_protection_agent",
-            "malware_detection_agent",
-            "mobile_security_agent",
-            "network_security_agent",
-            "incident_response_agent",
-            "password_security_agent"
+        // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
+        // Критичные компоненты загружаются первыми
+        let componentIds: [(String, ComponentLoadPriority)] = [
+            ("crash_detection_agent", .critical),
+            ("emergency_response_bot", .critical),
+            ("emergency_event_manager", .critical),
+            ("phishing_protection_agent", .high),
+            ("malware_detection_agent", .high),
+            ("password_security_agent", .high),
+            ("mobile_security_agent", .normal),
+            ("network_security_agent", .normal),
+            ("incident_response_agent", .normal),
+            ("roadside_assistance_agent", .normal)
         ]
         
-        for componentId in componentIds {
-            do {
-                let status = try await statusService.getStatus(for: componentId)
-                updateStatusForComponent(componentId: componentId, status: status)
-            } catch {
-                // ✅ FALLBACK: Использовать дефолтное значение из componentStatuses
-                let defaultStatus = await statusService.componentStatuses[componentId]
-                if let status = defaultStatus {
-                    updateStatusForComponent(componentId: componentId, status: status)
-                } else {
-                    // Если даже дефолтного нет, создать новый со значением false
-                    let fallbackStatus = ComponentStatus(
-                        componentId: componentId,
-                        isEnabled: false,
-                        lastUpdate: nil,
-                        configuration: nil
-                    )
-                    updateStatusForComponent(componentId: componentId, status: fallbackStatus)
+        let prioritizedItems: [PrioritizedLoadItem<ComponentStatus>] = componentIds.map { componentId, priority in
+            PrioritizedLoadItem(
+                id: componentId,
+                priority: priority
+            ) { [weak self] in
+                guard let self = self else {
+                    throw ComponentError.unknown(NSError(domain: "NetworkProtectionViewModel", code: -1))
+                }
+                do {
+                    return try await self.statusService.getStatus(for: componentId)
+                } catch {
+                    // ✅ FALLBACK: Использовать дефолтное значение из componentStatuses
+                    let defaultStatus = await self.statusService.componentStatuses[componentId]
+                    if let status = defaultStatus {
+                        return status
+                    } else {
+                        // Если даже дефолтного нет, создать новый со значением false
+                        return ComponentStatus(
+                            componentId: componentId,
+                            isEnabled: false,
+                            lastUpdate: nil,
+                            configuration: nil
+                        )
+                    }
                 }
             }
+        }
+        
+        do {
+            let results = try await ParallelLoader.executeWithLimit(
+                items: prioritizedItems,
+                maxConcurrent: 10
+            ) { [weak self] componentId, status in
+                self?.updateStatusForComponent(componentId: componentId, status: status)
+            }
+            
+            print("✅ NetworkProtectionViewModel: Обновлено \(results.count) статусов")
+        } catch {
+            print("⚠️ NetworkProtectionViewModel: Ошибка загрузки статусов: \(error)")
         }
     }
     

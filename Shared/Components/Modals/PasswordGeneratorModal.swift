@@ -12,11 +12,18 @@ struct PasswordGeneratorModal: View {
     private let configurationService = ComponentConfigurationService.shared
     private let toastManager = ToastManager.shared
     
-    @State private var passwordLength: Double = 16
-    @State private var includeUppercase: Bool = true
-    @State private var includeLowercase: Bool = true
-    @State private var includeNumbers: Bool = true
-    @State private var includeSpecial: Bool = true
+    // ✅ ИСПРАВЛЕНО: Заменено @State на @AppStorage для сохранения между сессиями
+    @AppStorage("password_generator_length") private var passwordLengthInt: Int = 16
+    private var passwordLength: Double {
+        get { Double(passwordLengthInt) }
+        set { passwordLengthInt = Int(newValue) }
+    }
+    
+    @AppStorage("password_generator_uppercase") private var includeUppercase: Bool = true
+    @AppStorage("password_generator_lowercase") private var includeLowercase: Bool = true
+    @AppStorage("password_generator_numbers") private var includeNumbers: Bool = true
+    @AppStorage("password_generator_special") private var includeSpecial: Bool = true
+    
     @State private var generatedPassword: String = ""
     @State private var isGenerating: Bool = false
     @State private var isLoading: Bool = false
@@ -56,7 +63,10 @@ struct PasswordGeneratorModal: View {
                                 .foregroundColor(.textPrimary)
                         }
                         
-                        Slider(value: $passwordLength, in: 8...64, step: 1)
+                        Slider(value: Binding(
+                            get: { passwordLength },
+                            set: { passwordLengthInt = Int($0) }
+                        ), in: 8...64, step: 1)
                             .tint(.blue)
                     }
                     .padding(Spacing.m)
@@ -196,15 +206,16 @@ struct PasswordGeneratorModal: View {
         }
     }
     
-    // ✅ Загрузка настроек при открытии
+    // ✅ Загрузка настроек при открытии (синхронизация с ComponentConfigurationService)
     private func loadSettings() {
         isLoading = true
         Task {
             do {
                 let config = try await configurationService.getConfiguration(for: componentId)
                 if let settings = config.additionalSettings {
+                    // Синхронизируем с @AppStorage только если значения есть в ComponentConfigurationService
                     if let value = settings["passwordLength"]?.value as? Int {
-                        passwordLength = Double(value)
+                        passwordLengthInt = value
                     }
                     if let value = settings["includeUppercase"]?.value as? Bool {
                         includeUppercase = value
@@ -241,7 +252,7 @@ struct PasswordGeneratorModal: View {
                     isEnabled: isComponentEnabled,
                     priority: .normal,
                     additionalSettings: [
-                        "passwordLength": AnyCodable(Int(passwordLength)),
+                        "passwordLength": AnyCodable(passwordLengthInt),
                         "includeUppercase": AnyCodable(includeUppercase),
                         "includeLowercase": AnyCodable(includeLowercase),
                         "includeNumbers": AnyCodable(includeNumbers),

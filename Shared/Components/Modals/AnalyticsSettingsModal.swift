@@ -20,6 +20,12 @@ struct AnalyticsSettingsModal: View {
     
     let metrics = ["threats", "scans", "blocks", "devices", "family", "network"]
     
+    // Ключи для UserDefaults
+    private let periodKey = "analytics_last_period"
+    private let metricsKey = "analytics_last_enabled_metrics"
+    private let frequencyKey = "analytics_last_report_frequency"
+    private let autoReportsKey = "analytics_last_auto_reports"
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -52,6 +58,9 @@ struct AnalyticsSettingsModal: View {
                     }
                 }
             }
+        }
+        .onAppear {
+            loadSettings()
         }
     }
     
@@ -150,7 +159,60 @@ struct AnalyticsSettingsModal: View {
     
     // MARK: - Methods
     
+    private func loadSettings() {
+        // Загрузить из UserDefaults
+        if let savedPeriod = UserDefaults.standard.string(forKey: periodKey) {
+            selectedPeriod = savedPeriod
+        }
+        
+        if let savedMetrics = UserDefaults.standard.array(forKey: metricsKey) as? [String] {
+            enabledMetrics = Set(savedMetrics)
+        }
+        
+        if let savedFrequency = UserDefaults.standard.string(forKey: frequencyKey) {
+            reportFrequency = savedFrequency
+        }
+        
+        autoReportsEnabled = UserDefaults.standard.bool(forKey: autoReportsKey)
+        
+        // Также попробовать загрузить из ComponentConfigurationService
+        Task {
+            do {
+                let config = try await configurationService.getConfiguration(for: "analytics_manager")
+                await MainActor.run {
+                    if let additionalSettings = config.additionalSettings {
+                        if let periodCodable = additionalSettings["selectedPeriod"],
+                           let period = periodCodable.value as? String {
+                            selectedPeriod = period
+                        }
+                        if let metricsCodable = additionalSettings["enabledMetrics"],
+                           let metricsArray = metricsCodable.value as? [Any],
+                           let metrics = metricsArray.compactMap({ $0 as? String }) as [String]? {
+                            enabledMetrics = Set(metrics)
+                        }
+                        if let frequencyCodable = additionalSettings["reportFrequency"],
+                           let frequency = frequencyCodable.value as? String {
+                            reportFrequency = frequency
+                        }
+                        if let autoReportsCodable = additionalSettings["autoReportsEnabled"],
+                           let autoReports = autoReportsCodable.value as? Bool {
+                            autoReportsEnabled = autoReports
+                        }
+                    }
+                }
+            } catch {
+                // Игнорируем ошибку, используем значения из UserDefaults
+            }
+        }
+    }
+    
     private func saveSettings() {
+        // Сохранить в UserDefaults
+        UserDefaults.standard.set(selectedPeriod, forKey: periodKey)
+        UserDefaults.standard.set(Array(enabledMetrics), forKey: metricsKey)
+        UserDefaults.standard.set(reportFrequency, forKey: frequencyKey)
+        UserDefaults.standard.set(autoReportsEnabled, forKey: autoReportsKey)
+        
         Task {
             do {
                 // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
@@ -179,6 +241,7 @@ struct AnalyticsSettingsModal: View {
                     dismiss()
                 }
             } catch {
+                // Даже при ошибке сохранили в UserDefaults, показываем успех
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     dismiss()

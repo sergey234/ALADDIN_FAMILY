@@ -30,6 +30,23 @@
 		5E00582F2EC606BB00024F7E /* TariffCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00582E2EC606BA00024F7E /* TariffCardView.swift */; };
 		5E0058312EC606DA00024F7E /* TariffCardSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058302EC606DA00024F7E /* TariffCardSections.swift */; };
 		5E0058332EC6073700024F7E /* TariffFeaturesGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058322EC6073600024F7E /* TariffFeaturesGallery.swift */; };
+		5E0798152F17D23400D20CF6 /* DrivingReportsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798142F17D23400D20CF6 /* DrivingReportsModal.swift */; };
+		5E0798172F17D23E00D20CF6 /* AICategoriesModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798162F17D23E00D20CF6 /* AICategoriesModal.swift */; };
+		5E0798192F17D26E00D20CF6 /* PrivacyReportsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798182F17D26E00D20CF6 /* PrivacyReportsModal.swift */; };
+		5E07981B2F17D28200D20CF6 /* IdentityTheftModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07981A2F17D28200D20CF6 /* IdentityTheftModal.swift */; };
+		5E07981D2F17D29400D20CF6 /* DarkWebMonitoringModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07981C2F17D29400D20CF6 /* DarkWebMonitoringModal.swift */; };
+		5E07981F2F17D2AB00D20CF6 /* FamilyNotificationSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07981E2F17D2AB00D20CF6 /* FamilyNotificationSettingsModal.swift */; };
+		5E0798232F17D54500D20CF6 /* PositioningSystemPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798222F17D54500D20CF6 /* PositioningSystemPickerView.swift */; };
+		5E0798252F17D5A400D20CF6 /* ComponentReportCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798242F17D5A300D20CF6 /* ComponentReportCard.swift */; };
+		5E0798272F17D77500D20CF6 /* ComponentReportsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798262F17D77500D20CF6 /* ComponentReportsModels.swift */; };
+		5E0798292F17D7E100D20CF6 /* UserSelectorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798282F17D7E000D20CF6 /* UserSelectorView.swift */; };
+		5E07982B2F17D9A700D20CF6 /* DrivingReportsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07982A2F17D9A700D20CF6 /* DrivingReportsViewModel.swift */; };
+		5E07982D2F17D9C500D20CF6 /* DarkWebMonitoringViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07982C2F17D9C500D20CF6 /* DarkWebMonitoringViewModel.swift */; };
+		5E07982F2F17D9EB00D20CF6 /* IdentityTheftViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07982E2F17D9EB00D20CF6 /* IdentityTheftViewModel.swift */; };
+		5E0798312F17DA1E00D20CF6 /* PrivacyReportsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798302F17DA1E00D20CF6 /* PrivacyReportsViewModel.swift */; };
+		5E0798332F17DA4000D20CF6 /* AICategoriesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798322F17DA4000D20CF6 /* AICategoriesViewModel.swift */; };
+		5E0798352F17DC0C00D20CF6 /* PositioningSystemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798342F17DC0C00D20CF6 /* PositioningSystemService.swift */; };
+		5E0798372F1819CD00D20CF6 /* ParallelLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798362F1819CC00D20CF6 /* ParallelLoader.swift */; };
 		5E0C30B22EAE71D100FD6647 /* RoleSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */; };
 		5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */; };
 		5E0C30B82EAFAD0B00FD6647 /* 02_FamilyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */; };
@@ -299,6 +316,24 @@
 		5E00582E2EC606BA00024F7E /* TariffCardView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TariffCardView.swift; path = Components/TariffCardView.swift; sourceTree = "<group>"; };
 		5E0058302EC606DA00024F7E /* TariffCardSections.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TariffCardSections.swift; path = Components/TariffCardSections.swift; sourceTree = "<group>"; };
 		5E0058322EC6073600024F7E /* TariffFeaturesGallery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TariffFeaturesGallery.swift; path = Components/TariffFeaturesGallery.swift; sourceTree = "<group>"; };
+		5E0798142F17D23400D20CF6 /* DrivingReportsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DrivingReportsModal.swift; path = Shared/Components/Modals/DrivingReportsModal.swift; sourceTree = "<group>"; };
+		5E0798162F17D23E00D20CF6 /* AICategoriesModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AICategoriesModal.swift; path = Shared/Components/Modals/AICategoriesModal.swift; sourceTree = "<group>"; };
+		5E0798182F17D26E00D20CF6 /* PrivacyReportsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PrivacyReportsModal.swift; path = Shared/Components/Modals/PrivacyReportsModal.swift; sourceTree = "<group>"; };
+		5E07981A2F17D28200D20CF6 /* IdentityTheftModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IdentityTheftModal.swift; path = Shared/Components/Modals/IdentityTheftModal.swift; sourceTree = "<group>"; };
+		5E07981C2F17D29400D20CF6 /* DarkWebMonitoringModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DarkWebMonitoringModal.swift; path = Shared/Components/Modals/DarkWebMonitoringModal.swift; sourceTree = "<group>"; };
+		5E07981E2F17D2AB00D20CF6 /* FamilyNotificationSettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyNotificationSettingsModal.swift; path = Shared/Components/Modals/FamilyNotificationSettingsModal.swift; sourceTree = "<group>"; };
+		5E0798202F17D2C200D20CF6 /* PasswordGeneratorModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PasswordGeneratorModal.swift; path = Shared/Components/Modals/PasswordGeneratorModal.swift; sourceTree = "<group>"; };
+		5E0798222F17D54500D20CF6 /* PositioningSystemPickerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PositioningSystemPickerView.swift; path = Shared/Components/PositioningSystemPickerView.swift; sourceTree = "<group>"; };
+		5E0798242F17D5A300D20CF6 /* ComponentReportCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentReportCard.swift; path = Shared/Components/ComponentReportCard.swift; sourceTree = "<group>"; };
+		5E0798262F17D77500D20CF6 /* ComponentReportsModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentReportsModels.swift; path = Core/Models/ComponentReportsModels.swift; sourceTree = "<group>"; };
+		5E0798282F17D7E000D20CF6 /* UserSelectorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UserSelectorView.swift; path = Shared/Components/UserSelectorView.swift; sourceTree = "<group>"; };
+		5E07982A2F17D9A700D20CF6 /* DrivingReportsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DrivingReportsViewModel.swift; path = ViewModels/DrivingReportsViewModel.swift; sourceTree = "<group>"; };
+		5E07982C2F17D9C500D20CF6 /* DarkWebMonitoringViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DarkWebMonitoringViewModel.swift; path = ViewModels/DarkWebMonitoringViewModel.swift; sourceTree = "<group>"; };
+		5E07982E2F17D9EB00D20CF6 /* IdentityTheftViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IdentityTheftViewModel.swift; path = ViewModels/IdentityTheftViewModel.swift; sourceTree = "<group>"; };
+		5E0798302F17DA1E00D20CF6 /* PrivacyReportsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PrivacyReportsViewModel.swift; path = ViewModels/PrivacyReportsViewModel.swift; sourceTree = "<group>"; };
+		5E0798322F17DA4000D20CF6 /* AICategoriesViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AICategoriesViewModel.swift; path = ViewModels/AICategoriesViewModel.swift; sourceTree = "<group>"; };
+		5E0798342F17DC0C00D20CF6 /* PositioningSystemService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PositioningSystemService.swift; path = Core/Services/PositioningSystemService.swift; sourceTree = "<group>"; };
+		5E0798362F1819CC00D20CF6 /* ParallelLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParallelLoader.swift; path = Core/Utils/ParallelLoader.swift; sourceTree = "<group>"; };
 		5E0C30AF2EAE71A100FD6647 /* MemberSettingsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberSettingsModalView.swift; path = Shared/Components/Modals/MemberSettingsModalView.swift; sourceTree = "<group>"; };
 		5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RoleSelectionModal.swift; path = Shared/Components/Modals/RoleSelectionModal.swift; sourceTree = "<group>"; };
 		5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberStatsModalView.swift; path = Shared/Components/Modals/MemberStatsModalView.swift; sourceTree = "<group>"; };
@@ -652,6 +687,24 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5E0798362F1819CC00D20CF6 /* ParallelLoader.swift */,
+				5E0798282F17D7E000D20CF6 /* UserSelectorView.swift */,
+				5E0798242F17D5A300D20CF6 /* ComponentReportCard.swift */,
+				5E0798262F17D77500D20CF6 /* ComponentReportsModels.swift */,
+				5E0798222F17D54500D20CF6 /* PositioningSystemPickerView.swift */,
+				5E0798342F17DC0C00D20CF6 /* PositioningSystemService.swift */,
+				5E0798202F17D2C200D20CF6 /* PasswordGeneratorModal.swift */,
+				5E07981E2F17D2AB00D20CF6 /* FamilyNotificationSettingsModal.swift */,
+				5E07981C2F17D29400D20CF6 /* DarkWebMonitoringModal.swift */,
+				5E07982C2F17D9C500D20CF6 /* DarkWebMonitoringViewModel.swift */,
+				5E07981A2F17D28200D20CF6 /* IdentityTheftModal.swift */,
+				5E07982E2F17D9EB00D20CF6 /* IdentityTheftViewModel.swift */,
+				5E0798182F17D26E00D20CF6 /* PrivacyReportsModal.swift */,
+				5E0798302F17DA1E00D20CF6 /* PrivacyReportsViewModel.swift */,
+				5E0798162F17D23E00D20CF6 /* AICategoriesModal.swift */,
+				5E0798322F17DA4000D20CF6 /* AICategoriesViewModel.swift */,
+				5E0798142F17D23400D20CF6 /* DrivingReportsModal.swift */,
+				5E07982A2F17D9A700D20CF6 /* DrivingReportsViewModel.swift */,
 				5E6F395A2F16C57400CEC103 /* NetworkSecuritySettingsModal.swift */,
 				5E6F39582F16C56100CEC103 /* MobileSecuritySettingsModal.swift */,
 				5E6F39562F16C54B00CEC103 /* MalwareDetectionSettingsModal.swift */,
@@ -1043,21 +1096,27 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E07982B2F17D9A700D20CF6 /* DrivingReportsViewModel.swift in Sources */,
 				5EC309102EA6B61700C7D34B /* 08_ChildInterfaceScreen.swift in Sources */,
 				A1000003 /* ContentView.swift in Sources */,
 				B6000001 /* AppDelegate.swift in Sources */,
+				5E0798292F17D7E100D20CF6 /* UserSelectorView.swift in Sources */,
 				5E6F393C2F15AFE200CEC103 /* VoiceControlView.swift in Sources */,
 				5E3200012EAD2692000574C4 /* AgeGroupSelectionModal.swift in Sources */,
 				5EB01F442ECB097500168BE9 /* ActivationCodeViewModel.swift in Sources */,
 				5E6F39592F16C56100CEC103 /* MobileSecuritySettingsModal.swift in Sources */,
+				5E07981B2F17D28200D20CF6 /* IdentityTheftModal.swift in Sources */,
+				5E0798312F17DA1E00D20CF6 /* PrivacyReportsViewModel.swift in Sources */,
 				5E00582F2EC606BB00024F7E /* TariffCardView.swift in Sources */,
 				A1000001 /* ALADDINApp.swift in Sources */,
 				5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */,
+				5E0798192F17D26E00D20CF6 /* PrivacyReportsModal.swift in Sources */,
 				5EC3094B2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift in Sources */,
 				5E6F39172F15AC5600CEC103 /* ParentalControlViewModel.swift in Sources */,
 				5EB01F462ECB09D300168BE9 /* 26_ActivationCodeScreen.swift in Sources */,
 				A3000001 /* ViewModels/MainViewModel.swift in Sources */,
 				5E0058312EC606DA00024F7E /* TariffCardSections.swift in Sources */,
+				5E0798232F17D54500D20CF6 /* PositioningSystemPickerView.swift in Sources */,
 				5EA2F6402EFB4BD3000686C0 /* FamilyContentBlockModal.swift in Sources */,
 				5E6F395B2F16C57500CEC103 /* NetworkSecuritySettingsModal.swift in Sources */,
 				5E32FFF72EAD23BB000574C4 /* PrimaryButton.swift in Sources */,
@@ -1078,11 +1137,13 @@
 				5EC309172EA6B62E00C7D34B /* 18_PrivacyPolicyScreen.swift in Sources */,
 				5E6F39422F15B00B00CEC103 /* ComponentStatusService.swift in Sources */,
 				5EC309122EA6B61E00C7D34B /* 10_TariffsScreen.swift in Sources */,
+				5E07982F2F17D9EB00D20CF6 /* IdentityTheftViewModel.swift in Sources */,
 				5EC309112EA6B61B00C7D34B /* 09_ElderlyInterfaceScreen.swift in Sources */,
 				5EC309132EA6B62100C7D34B /* 11_ProfileScreen.swift in Sources */,
 				A3000011 /* Core/Network/NetworkManager.swift in Sources */,
 				5EC309182EA6B63100C7D34B /* 19_TermsOfServiceScreen.swift in Sources */,
 				A3000013 /* Core/Config/AppConfig.swift in Sources */,
+				5E0798372F1819CD00D20CF6 /* ParallelLoader.swift in Sources */,
 				A3000017 /* ViewModels/FamilyViewModel.swift in Sources */,
 				A3000019 /* ViewModels/AIAssistantViewModel.swift in Sources */,
 				5EC3091B2EA6B63C00C7D34B /* 22_DeviceDetailScreen.swift in Sources */,
@@ -1102,6 +1163,7 @@
 				5EE081892EE239FE009AD42A /* ShareSheet.swift in Sources */,
 				5E00582D2EC6064100024F7E /* TariffCard.swift in Sources */,
 				A3000021 /* ViewModels/SettingsViewModel.swift in Sources */,
+				5E0798152F17D23400D20CF6 /* DrivingReportsModal.swift in Sources */,
 				5E6F39032F151E6A00CEC103 /* VoiceRecordingView.swift in Sources */,
 				5E32FFF92EAD24D2000574C4 /* InfoRow.swift in Sources */,
 				5EC3091E2EA6B64500C7D34B /* 25_PaymentQRScreen.swift in Sources */,
@@ -1120,10 +1182,12 @@
 				B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */,
 				B2000100B2000100B2000100 /* ProtectionFeature.swift in Sources */,
 				B2000110B2000110B2000110 /* ProtectionLevelHistory.swift in Sources */,
+				5E0798272F17D77500D20CF6 /* ComponentReportsModels.swift in Sources */,
 				5E6F39092F151F7C00CEC103 /* VoiceMessagePlayer.swift in Sources */,
 				5E6F394C2F15B07E00CEC103 /* ComponentAnalytics.swift in Sources */,
 				A3000031 /* ViewModels/NotificationsViewModel.swift in Sources */,
 				5EC3090D2EA6B60F00C7D34B /* 06_AIAssistantScreen.swift in Sources */,
+				5E0798172F17D23E00D20CF6 /* AICategoriesModal.swift in Sources */,
 				5E6F39572F16C54C00CEC103 /* MalwareDetectionSettingsModal.swift in Sources */,
 				5E0058092EC3C7A400024F7E /* RewardsQuickModal.swift in Sources */,
 				5E6F39362F15AFC400CEC103 /* ComplianceView.swift in Sources */,
@@ -1143,8 +1207,10 @@
 				5E6F394E2F15B74F00CEC103 /* RetryManager.swift in Sources */,
 				5E32FFF52EAD199B000574C4 /* AvatarSelector.swift in Sources */,
 				5E0058192EC4AF2500024F7E /* MotivationBanner.swift in Sources */,
+				5E07982D2F17D9C500D20CF6 /* DarkWebMonitoringViewModel.swift in Sources */,
 				B2000120B2000120B2000120 /* Toast.swift in Sources */,
 				5EC309392EA6CF0600C7D34B /* ALADDINNavigationBar.swift in Sources */,
+				5E07981D2F17D29400D20CF6 /* DarkWebMonitoringModal.swift in Sources */,
 				5EC309162EA6B62B00C7D34B /* 14_OnboardingScreen.swift in Sources */,
 				5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */,
 				A3000039 /* ViewModels/PaymentQRViewModel.swift in Sources */,
@@ -1204,12 +1270,14 @@
 				A4BBB101 /* RemoteNotificationsService.swift in Sources */,
 				5E6F39462F15B03800CEC103 /* ComponentConfiguration.swift in Sources */,
 				5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */,
+				5E07981F2F17D2AB00D20CF6 /* FamilyNotificationSettingsModal.swift in Sources */,
 				A4AAA002 /* ThreatProtectionScreen.swift in Sources */,
 				A4AAA004 /* ThreatProtectionCard.swift in Sources */,
 				A4AAA006 /* ThreatProtectionCategoriesView.swift in Sources */,
 				5E6F39282F15AF3700CEC103 /* AnalyticsSettingsModal.swift in Sources */,
 				5E6F39402F15B00100CEC103 /* ComponentConfigurationService.swift in Sources */,
 				A4AAA008 /* ThreatProtectionCategory.swift in Sources */,
+				5E0798332F17DA4000D20CF6 /* AICategoriesViewModel.swift in Sources */,
 				A4AAA102 /* GamesSettingsManager.swift in Sources */,
 				B1000031 /* ParentalControlManager.swift in Sources */,
 				A4AAA104 /* AnalyticsService.swift in Sources */,
@@ -1217,6 +1285,8 @@
 				5E6F393E2F15AFF700CEC103 /* ComponentCacheService.swift in Sources */,
 				5E6F390D2F1520D600CEC103 /* PushNotificationService.swift in Sources */,
 				5EA2F6422F03F2DB000686C0 /* AddMemberOptionsScreen.swift in Sources */,
+				5E0798352F17DC0C00D20CF6 /* PositioningSystemService.swift in Sources */,
+				5E0798252F17D5A400D20CF6 /* ComponentReportCard.swift in Sources */,
 				A4AAA106 /* RemoteAnalyticsService.swift in Sources */,
 				5E6F392E2F15AF5A00CEC103 /* ComponentSettingsModal.swift in Sources */,
 				A4AAA108 /* ProfileImageManager.swift in Sources */,

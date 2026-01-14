@@ -46,14 +46,15 @@ struct ParentalControlScreen: View {
     @State private var statsErrorMessage: String?
     
     // MARK: - Control States
+    // ✅ ИСПРАВЛЕНО: Заменено @State на @AppStorage для синхронизации с FamilyScreen
     
-    @State private var isContentBlockEnabled: Bool = true
-    @State private var isTimeControlEnabled: Bool = true
-    @State private var isMonitoringEnabled: Bool = true
-    @State private var isLocationEnabled: Bool = true
-    @State private var isReportsEnabled: Bool = true
-    @State private var isAdditionalEnabled: Bool = true
-    @State private var isBypassProtectionEnabled: Bool = true
+    @AppStorage("family_content_block_enabled") private var isContentBlockEnabled: Bool = true
+    @AppStorage("family_time_control_enabled") private var isTimeControlEnabled: Bool = true
+    @AppStorage("family_monitoring_enabled") private var isMonitoringEnabled: Bool = true
+    @AppStorage("family_location_enabled") private var isLocationEnabled: Bool = true
+    @AppStorage("family_reports_enabled") private var isReportsEnabled: Bool = true
+    @AppStorage("family_additional_enabled") private var isAdditionalEnabled: Bool = true
+    @AppStorage("family_bypass_protection_enabled") private var isBypassProtectionEnabled: Bool = true
     
     // MARK: - Modal Visibility
     
@@ -648,7 +649,7 @@ struct ParentalControlScreen: View {
                     self.bypassAttemptsBlocked = stats.blocked
                     let active = [stats.incognito, stats.tor, stats.proxy].reduce(0) { $0 + ($1 > 0 ? 1 : 0) }
                     self.bypassDetectionActive = active
-                    self.isBypassProtectionEnabled = stats.success
+                    // ✅ ИСПРАВЛЕНО: Не перезаписываем isBypassProtectionEnabled из статистики - это пользовательская настройка через @AppStorage
                 case .failure(let error):
                     print("❌ Ошибка загрузки статистики обхода: \(error.localizedDescription)")
                 }
@@ -661,29 +662,29 @@ struct ParentalControlScreen: View {
         contentBlockActive = stats.contentBlocked.activeFilters
         contentBlockTotal = totalFilters
         contentBlockedCount = stats.contentBlocked.websitesBlocked + stats.contentBlocked.appsBlocked + stats.contentBlocked.searchQueriesBlocked
-        isContentBlockEnabled = stats.contentBlocked.activeFilters > 0
+        // ✅ ИСПРАВЛЕНО: Не перезаписываем isContentBlockEnabled из статистики - это пользовательская настройка через @AppStorage
         
         let remaining = stats.screenTime.remaining
         timeRemaining = remaining.isEmpty ? localizationManager.localized("parental_time_remaining_default") : remaining
         timeSchedules = stats.screenTime.schedulesCount
-        isTimeControlEnabled = !stats.screenTime.todayLimit.isEmpty || !remaining.isEmpty
+        // ✅ ИСПРАВЛЕНО: Не перезаписываем isTimeControlEnabled из статистики - это пользовательская настройка через @AppStorage
         
         monitoringWebsites = stats.monitoring.sitesTracked
         monitoringApps = stats.monitoring.appsTracked
-        isMonitoringEnabled = stats.monitoring.appsTracked > 0 || stats.monitoring.sitesTracked > 0 || stats.monitoring.messagesMonitored || stats.monitoring.screenshotsEnabled
+        // ✅ ИСПРАВЛЕНО: Не перезаписываем isMonitoringEnabled из статистики - это пользовательская настройка через @AppStorage
         
         locationStatus = stats.location.currentLocation ?? localizationManager.localized("parental_location_unknown")
         locationLastUpdate = stats.location.lastUpdate ?? localizationManager.localized("parental_location_not_updated")
         locationWarnings = stats.location.eventsToday
-        isLocationEnabled = stats.location.currentLocation != nil
+        // ✅ ИСПРАВЛЕНО: Не перезаписываем isLocationEnabled из статистики - это пользовательская настройка через @AppStorage
         
         reportsAlerts = stats.monitoring.contactsTracked
         reportsToday = stats.monitoring.messagesMonitored
-        isReportsEnabled = reportsAlerts > 0 || reportsToday
+        // ✅ ИСПРАВЛЕНО: Не перезаписываем isReportsEnabled из статистики - это пользовательская настройка через @AppStorage
         
         additionalRequests = stats.location.geofencesCount
         additionalProtection = stats.monitoring.screenshotsEnabled
-        isAdditionalEnabled = additionalRequests > 0 || additionalProtection
+        // ✅ ИСПРАВЛЕНО: Не перезаписываем isAdditionalEnabled из статистики - это пользовательская настройка через @AppStorage
     }
     
     // MARK: - Child Protection Section (5 компонентов)

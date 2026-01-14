@@ -13,8 +13,17 @@ struct DeviceDetailScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     let device: Device
     
+    private let apiService = APIService.shared
+    
+    // ✅ ИСПРАВЛЕНО: Заменено @State на сохранение через UserDefaults для каждого устройства
+    // Используем имя устройства как часть ключа для уникальности настроек каждого устройства
+    private var protectionKey: String { "device_\(device.name)_protection_enabled" }
+    private var scanningKey: String { "device_\(device.name)_scanning_enabled" }
+    
+    // @State переменные, которые синхронизируются с UserDefaults
     @State private var isProtectionOn: Bool = true
     @State private var isScanningEnabled: Bool = true
+    
     @State private var selectedTab: DetailTab = .info
     
     enum DetailTab: String, CaseIterable {
@@ -115,7 +124,22 @@ struct DeviceDetailScreen: View {
                 case .threats:
                     DeviceThreatsView()
                 case .settings:
-                    DeviceSettingsView(isProtectionOn: $isProtectionOn, isScanningEnabled: $isScanningEnabled)
+                    DeviceSettingsView(
+                        isProtectionOn: Binding(
+                            get: { isProtectionOn },
+                            set: { newValue in
+                                isProtectionOn = newValue
+                                saveDeviceSettings()
+                            }
+                        ),
+                        isScanningEnabled: Binding(
+                            get: { isScanningEnabled },
+                            set: { newValue in
+                                isScanningEnabled = newValue
+                                saveDeviceSettings()
+                            }
+                        )
+                    )
                 }
                 
                 // Action Buttons
@@ -145,6 +169,8 @@ struct DeviceDetailScreen: View {
         }
         .task {
             print("🚨 DeviceDetailScreen загружен!")
+            loadDeviceSettings()
+            loadDeviceSettingsFromServer()
         }
     }
     
@@ -154,6 +180,72 @@ struct DeviceDetailScreen: View {
         case .warning: return localizationManager.localized("device_detail_status_warning")
         case .danger: return localizationManager.localized("device_detail_status_danger")
         case .inactive: return localizationManager.localized("device_detail_status_inactive")
+        }
+    }
+    
+    // MARK: - Settings Persistence
+    
+    /// Загружает настройки устройства из UserDefaults
+    private func loadDeviceSettings() {
+        isProtectionOn = UserDefaults.standard.object(forKey: protectionKey) as? Bool ?? true
+        isScanningEnabled = UserDefaults.standard.object(forKey: scanningKey) as? Bool ?? true
+    }
+    
+    /// Сохраняет настройки устройства в UserDefaults и синхронизирует с сервером
+    private func saveDeviceSettings() {
+        UserDefaults.standard.set(isProtectionOn, forKey: protectionKey)
+        UserDefaults.standard.set(isScanningEnabled, forKey: scanningKey)
+        syncDeviceSettingsToServer()
+    }
+    
+    // MARK: - Server Synchronization
+    
+    /// Загружает настройки устройства с сервера
+    private func loadDeviceSettingsFromServer() {
+        Task {
+            do {
+                let deviceId = device.id.uuidString
+                
+                let settings = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<DeviceSettingsResponse, Error>) in
+                    apiService.getDeviceSettings(deviceId: deviceId) { result in
+                        continuation.resume(with: result)
+                    }
+                }
+                
+                await MainActor.run {
+                    isProtectionOn = settings.isProtectionOn
+                    isScanningEnabled = settings.isScanningEnabled
+                    // Сохранить в UserDefaults для локального кэширования
+                    saveDeviceSettings()
+                }
+            } catch {
+                print("⚠️ DeviceDetailScreen: Ошибка загрузки настроек устройства: \(error)")
+                // Используем локальные значения из UserDefaults
+            }
+        }
+    }
+    
+    /// Синхронизирует настройки устройства с сервером
+    private func syncDeviceSettingsToServer() {
+        Task {
+            do {
+                let deviceId = device.id.uuidString
+                
+                _ = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<APIResponse<Bool>, Error>) in
+                    apiService.updateDeviceSettings(
+                        deviceId: deviceId,
+                        isProtectionOn: isProtectionOn,
+                        isScanningEnabled: isScanningEnabled
+                    ) { result in
+                        continuation.resume(with: result)
+                    }
+                }
+                
+                print("✅ DeviceDetailScreen: Настройки устройства \(device.name) синхронизированы с сервером")
+            } catch {
+                print("⚠️ DeviceDetailScreen: Ошибка синхронизации настроек устройства: \(error)")
+                // Не показываем ошибку пользователю - локальное сохранение работает
+            }
         }
     }
 }

@@ -95,6 +95,7 @@ struct AppConfig {
         static let networkProtectionConnect = "/network-protection/connect"
         static let networkProtectionDisconnect = "/network-protection/disconnect"
         static let networkProtectionServers = "/network-protection/servers"
+        static let networkProtectionSettings = "/network-protection/settings"
         
         // Family
         static let familyMembers = "/family/members"
@@ -118,6 +119,34 @@ struct AppConfig {
         static let threats = "/analytics/threats"
         static let topThreats = "/analytics/top-threats"
         
+        // Component Reports
+        // Driving Reports
+        static let drivingReports = "/reports/driving"
+        static let drivingStats = "/reports/driving/stats"
+        static let drivingExport = "/reports/driving/export"
+        
+        // Dark Web Monitoring
+        static let darkWebLeaks = "/reports/dark-web/leaks"
+        static let darkWebStats = "/reports/dark-web/stats"
+        static let darkWebScans = "/reports/dark-web/scans"
+        static let darkWebResolve = "/reports/dark-web/resolve"
+        
+        // Identity Theft
+        static let identityTheftAttempts = "/reports/identity-theft/attempts"
+        static let identityTheftStats = "/reports/identity-theft/stats"
+        
+        // Privacy Reports
+        static let locationStats = "/reports/privacy/location/stats"
+        static let locationRequests = "/reports/privacy/location/requests"
+        static let dataCleanupStats = "/reports/privacy/cleanup/stats"
+        static let dataCleanupRecords = "/reports/privacy/cleanup/records"
+        static let antiTrackerStats = "/reports/privacy/tracker/stats"
+        static let topTrackers = "/reports/privacy/tracker/top"
+        
+        // AI Categories
+        static let aiCategoriesStats = "/reports/ai-categories/stats"
+        static let aiCategoryReports = "/reports/ai-categories/reports"
+        
         // AI Assistant
         static let aiChat = "/ai/chat"
         static let aiSendMessage = "/ai/message"
@@ -137,6 +166,8 @@ struct AppConfig {
         static let updateProfile = "/user/update"
         static let changePassword = "/user/password"
         static let deleteAccount = "/user/delete"
+        static let twoFactorStatus = "/user/2fa/status"
+        static let twoFactorUpdate = "/user/2fa/update"
         
         // Notifications
         static let notifications = "/notifications"
@@ -146,6 +177,7 @@ struct AppConfig {
         static let devices = "/devices"
         static let deviceRegister = "/devices/register-ios"
         static let deviceDetail = "/devices" // /devices/{deviceId}
+        static let deviceSettings = "/devices" // /devices/{deviceId}/settings
         
         // Auth
         static let login = "/auth/login"

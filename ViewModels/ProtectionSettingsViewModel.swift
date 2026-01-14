@@ -106,12 +106,52 @@ class ProtectionSettingsViewModel: ObservableObject {
         let result: Result<Void, NetworkError> = await retryManager.execute(
             operation: {
                 do {
-                    // Загрузить статусы всех компонентов
-                    for componentId in componentIds {
-                        _ = try await self.statusService.getStatus(for: componentId)
+                    // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
+                    // Определяем приоритеты: критичные компоненты загружаются первыми
+                    let prioritizedItems: [PrioritizedLoadItem<ComponentStatus>] = componentIds.map { componentId in
+                        let priority: ComponentLoadPriority
+                        // Критичные: мониторинг и защита данных
+                        if componentId.contains("dark_web") || componentId.contains("identity_theft") {
+                            priority = .critical
+                        }
+                        // Важные: мессенджеры и приватность
+                        else if componentId.contains("security_bot") || componentId.contains("bubble") || componentId.contains("cleanup") {
+                            priority = .high
+                        }
+                        // Обычные: остальные
+                        else {
+                            priority = .normal
+                        }
+                        
+                        return PrioritizedLoadItem(
+                            id: componentId,
+                            priority: priority
+                        ) { [weak self] in
+                            guard let self = self else {
+                                throw ComponentError.unknown(NSError(domain: "ProtectionSettingsViewModel", code: -1))
+                            }
+                            return try await self.statusService.getStatus(for: componentId)
+                        }
+                    }
+                    
+                    // Загружаем с лимитом 10 одновременных запросов
+                    let results = try await ParallelLoader.executeWithLimit(
+                        items: prioritizedItems,
+                        maxConcurrent: 10
+                    ) { [weak self] componentId, status in
+                        // Статусы автоматически сохраняются в ComponentStatusService
+                        print("✅ ProtectionSettingsViewModel: Загружен статус для \(componentId): \(status.isEnabled)")
+                    }
+                    
+                    // Проверяем, что все загружено
+                    if results.count < componentIds.count {
+                        print("⚠️ ProtectionSettingsViewModel: Загружено только \(results.count)/\(componentIds.count) компонентов")
                     }
                 } catch let error as ComponentError {
                     throw error.toNetworkError()
+                } catch {
+                    // Обрабатываем другие типы ошибок
+                    throw NetworkError.from(error)
                 }
             },
             retryCondition: { $0.isRetryable }
@@ -292,6 +332,9 @@ class ProtectionSettingsViewModel: ObservableObject {
                     )
                 } catch let error as ComponentError {
                     throw error.toNetworkError()
+                } catch {
+                    // Обрабатываем другие типы ошибок
+                    throw NetworkError.from(error)
                 }
             },
             retryCondition: { $0.isRetryable }
@@ -322,25 +365,48 @@ class ProtectionSettingsViewModel: ObservableObject {
     
     /// Обновить локальные статусы из сервиса
     private func updateLocalStatuses() async {
-        // Мессенджеры
+        // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
+        let componentMappings: [(String, ComponentLoadPriority, (Bool) -> Void)] = [
+            ("dark_web_monitoring_agent", .critical, { [weak self] value in self?.darkWebMonitoringEnabled = value }),
+            ("russian_identity_theft_protection_agent", .critical, { [weak self] value in self?.identityTheftProtectionEnabled = value }),
+            ("location_bubble_agent", .high, { [weak self] value in self?.locationBubbleEnabled = value }),
+            ("personal_data_cleanup_agent", .high, { [weak self] value in self?.personalDataCleanupEnabled = value }),
+            ("telegram_security_bot", .high, { [weak self] value in self?.telegramSecurityEnabled = value }),
+            ("whatsapp_security_bot", .high, { [weak self] value in self?.whatsappSecurityEnabled = value }),
+            ("instagram_security_bot", .normal, { [weak self] value in self?.instagramSecurityEnabled = value }),
+            ("max_messenger_security_bot", .normal, { [weak self] value in self?.maxMessengerSecurityEnabled = value }),
+            ("gaming_security_bot", .normal, { [weak self] value in self?.gamingSecurityEnabled = value }),
+            ("browser_security_bot", .normal, { [weak self] value in self?.browserSecurityEnabled = value }),
+            ("anti_tracker_agent", .normal, { [weak self] value in self?.antiTrackerEnabled = value }),
+            ("ai_categories_agent", .normal, { [weak self] value in self?.aiCategoriesEnabled = value }),
+            ("driving_reports_agent", .low, { [weak self] value in self?.drivingReportsEnabled = value })
+        ]
+        
+        let prioritizedItems: [PrioritizedLoadItem<Bool>] = componentMappings.map { componentId, priority, updateClosure in
+            PrioritizedLoadItem(
+                id: componentId,
+                priority: priority
+            ) { [weak self] in
+                guard let self = self else {
+                    throw ComponentError.unknown(NSError(domain: "ProtectionSettingsViewModel", code: -1))
+                }
+                let status = try await self.statusService.getStatus(for: componentId)
+                return status.isEnabled
+            }
+        }
+        
         do {
-            telegramSecurityEnabled = try await statusService.getStatus(for: "telegram_security_bot").isEnabled
-            whatsappSecurityEnabled = try await statusService.getStatus(for: "whatsapp_security_bot").isEnabled
-            instagramSecurityEnabled = try await statusService.getStatus(for: "instagram_security_bot").isEnabled
-            maxMessengerSecurityEnabled = try await statusService.getStatus(for: "max_messenger_security_bot").isEnabled
-            gamingSecurityEnabled = try await statusService.getStatus(for: "gaming_security_bot").isEnabled
-            browserSecurityEnabled = try await statusService.getStatus(for: "browser_security_bot").isEnabled
+            let results = try await ParallelLoader.executeWithLimit(
+                items: prioritizedItems,
+                maxConcurrent: 10
+            ) { componentId, isEnabled in
+                // Обновляем UI сразу при получении результата
+                if let mapping = componentMappings.first(where: { $0.0 == componentId }) {
+                    mapping.2(isEnabled)
+                }
+            }
             
-            // Приватность
-            locationBubbleEnabled = try await statusService.getStatus(for: "location_bubble_agent").isEnabled
-            personalDataCleanupEnabled = try await statusService.getStatus(for: "personal_data_cleanup_agent").isEnabled
-            antiTrackerEnabled = try await statusService.getStatus(for: "anti_tracker_agent").isEnabled
-            
-            // Мониторинг
-            darkWebMonitoringEnabled = try await statusService.getStatus(for: "dark_web_monitoring_agent").isEnabled
-            identityTheftProtectionEnabled = try await statusService.getStatus(for: "russian_identity_theft_protection_agent").isEnabled
-            aiCategoriesEnabled = try await statusService.getStatus(for: "ai_categories_agent").isEnabled
-            drivingReportsEnabled = try await statusService.getStatus(for: "driving_reports_agent").isEnabled
+            print("✅ ProtectionSettingsViewModel: Обновлено \(results.count) статусов")
         } catch {
             print("⚠️ ProtectionSettingsViewModel: Ошибка загрузки статусов: \(error)")
         }

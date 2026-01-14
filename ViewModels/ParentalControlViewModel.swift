@@ -60,21 +60,39 @@ class ParentalControlViewModel: ObservableObject {
     
     /// Загрузить статусы всех компонентов
     func loadComponentStatuses() async {
-        let componentIds = [
-            "self_harm_detection_agent",
-            "grooming_detection_agent",
-            "online_predators_agent",
-            "psychological_support_agent",
-            "parental_control_bot"
+        // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
+        // Критичные компоненты загружаются первыми
+        let componentIds: [(String, ComponentLoadPriority)] = [
+            ("self_harm_detection_agent", .critical),
+            ("grooming_detection_agent", .critical),
+            ("online_predators_agent", .critical),
+            ("parental_control_bot", .high),
+            ("psychological_support_agent", .normal)
         ]
         
-        for componentId in componentIds {
-            do {
-                let status = try await statusService.getStatus(for: componentId)
-                updateStatusForComponent(componentId: componentId, status: status)
-            } catch {
-                print("⚠️ Ошибка загрузки статуса для \(componentId): \(error)")
+        let prioritizedItems: [PrioritizedLoadItem<ComponentStatus>] = componentIds.map { componentId, priority in
+            PrioritizedLoadItem(
+                id: componentId,
+                priority: priority
+            ) { [weak self] in
+                guard let self = self else {
+                    throw ComponentError.unknown(NSError(domain: "ParentalControlViewModel", code: -1))
+                }
+                return try await self.statusService.getStatus(for: componentId)
             }
+        }
+        
+        do {
+            let results = try await ParallelLoader.executeWithLimit(
+                items: prioritizedItems,
+                maxConcurrent: 10
+            ) { [weak self] componentId, status in
+                self?.updateStatusForComponent(componentId: componentId, status: status)
+            }
+            
+            print("✅ ParentalControlViewModel: Загружено \(results.count) статусов")
+        } catch {
+            print("⚠️ ParentalControlViewModel: Ошибка загрузки статусов: \(error)")
         }
     }
     

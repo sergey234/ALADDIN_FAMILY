@@ -60,6 +60,47 @@ class APIService {
         networkManager.post(endpoint: "/network-protection/stats", body: stats, completion: completion)
     }
     
+    // ✅ ДОБАВЛЕНО: Network Protection Settings API (для синхронизации между устройствами)
+    
+    /// Загрузить настройки сетевой защиты с сервера
+    func getNetworkProtectionSettings(completion: @escaping (Result<NetworkProtectionSettingsResponse, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.networkProtectionSettings, completion: completion)
+    }
+    
+    /// Сохранить настройки сетевой защиты на сервер
+    func updateNetworkProtectionSettings(
+        autoSelectServer: Bool,
+        autoConnectWiFi: Bool,
+        autoConnectMobile: Bool,
+        killSwitch: Bool,
+        dnsLeakProtection: Bool,
+        batteryOptimizationEnabled: Bool,
+        antivirusEnabled: Bool,
+        completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void
+    ) {
+        struct NetworkProtectionSettingsRequest: Codable {
+            let autoSelectServer: Bool
+            let autoConnectWiFi: Bool
+            let autoConnectMobile: Bool
+            let killSwitch: Bool
+            let dnsLeakProtection: Bool
+            let batteryOptimizationEnabled: Bool
+            let antivirusEnabled: Bool
+        }
+        
+        let request = NetworkProtectionSettingsRequest(
+            autoSelectServer: autoSelectServer,
+            autoConnectWiFi: autoConnectWiFi,
+            autoConnectMobile: autoConnectMobile,
+            killSwitch: killSwitch,
+            dnsLeakProtection: dnsLeakProtection,
+            batteryOptimizationEnabled: batteryOptimizationEnabled,
+            antivirusEnabled: antivirusEnabled
+        )
+        
+        networkManager.patch(endpoint: AppConfig.Endpoint.networkProtectionSettings, body: request, completion: completion)
+    }
+    
     // MARK: - Family API
     
     func getFamilyMembers(completion: @escaping (Result<[FamilyMemberResponse], Error>) -> Void) {
@@ -229,6 +270,23 @@ class APIService {
         networkManager.delete(endpoint: AppConfig.Endpoint.deleteAccount, body: DeleteAccountRequest(confirmationCode: confirmationCode), completion: completion)
     }
     
+    // ✅ ДОБАВЛЕНО: 2FA API (для синхронизации между устройствами)
+    
+    /// Загрузить статус 2FA с сервера
+    func get2FAStatus(completion: @escaping (Result<TwoFactorAuthStatusResponse, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.twoFactorStatus, completion: completion)
+    }
+    
+    /// Обновить статус 2FA на сервере
+    func update2FAStatus(enabled: Bool, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct TwoFactorAuthRequest: Codable {
+            let enabled: Bool
+        }
+        
+        let request = TwoFactorAuthRequest(enabled: enabled)
+        networkManager.patch(endpoint: AppConfig.Endpoint.twoFactorUpdate, body: request, completion: completion)
+    }
+    
     // MARK: - Notifications API
     
     func getNotifications(completion: @escaping (Result<[NotificationResponse], Error>) -> Void) {
@@ -392,6 +450,33 @@ class APIService {
     func addDevice(name: String, type: String, owner: String, completion: @escaping (Result<DeviceResponse, Error>) -> Void) {
         let request = AddDeviceRequest(name: name, type: type, owner: owner)
         networkManager.post(endpoint: AppConfig.Endpoint.devices, body: request, completion: completion)
+    }
+    
+    // ✅ ДОБАВЛЕНО: Device Settings API (для синхронизации между устройствами)
+    
+    /// Загрузить настройки устройства с сервера
+    func getDeviceSettings(deviceId: String, completion: @escaping (Result<DeviceSettingsResponse, Error>) -> Void) {
+        networkManager.get(endpoint: "\(AppConfig.Endpoint.deviceSettings)/\(deviceId)/settings", completion: completion)
+    }
+    
+    /// Сохранить настройки устройства на сервер
+    func updateDeviceSettings(
+        deviceId: String,
+        isProtectionOn: Bool,
+        isScanningEnabled: Bool,
+        completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void
+    ) {
+        struct DeviceSettingsRequest: Codable {
+            let isProtectionOn: Bool
+            let isScanningEnabled: Bool
+        }
+        
+        let request = DeviceSettingsRequest(
+            isProtectionOn: isProtectionOn,
+            isScanningEnabled: isScanningEnabled
+        )
+        
+        networkManager.patch(endpoint: "\(AppConfig.Endpoint.deviceSettings)/\(deviceId)/settings", body: request, completion: completion)
     }
 
     // MARK: - Payment API
@@ -753,6 +838,191 @@ class APIService {
                 }
             }
         }
+    }
+    
+    // MARK: - Component Reports API
+    
+    // MARK: - Driving Reports API
+    
+    /// Получить отчеты о вождении
+    func getDrivingReports(userId: String?, period: String, completion: @escaping (Result<[DrivingReport], Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.drivingReports
+        var queryItems: [String] = []
+        
+        if let userId = userId {
+            queryItems.append("userId=\(userId)")
+        }
+        queryItems.append("period=\(period)")
+        
+        if !queryItems.isEmpty {
+            endpoint += "?" + queryItems.joined(separator: "&")
+        }
+        
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    /// Получить статистику вождения
+    func getDrivingStats(userId: String?, period: String, completion: @escaping (Result<DrivingStats, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.drivingStats
+        var queryItems: [String] = []
+        
+        if let userId = userId {
+            queryItems.append("userId=\(userId)")
+        }
+        queryItems.append("period=\(period)")
+        
+        if !queryItems.isEmpty {
+            endpoint += "?" + queryItems.joined(separator: "&")
+        }
+        
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    /// Экспортировать отчет о вождении
+    func exportDrivingReport(reportId: String, format: String, completion: @escaping (Result<Data, Error>) -> Void) {
+        let endpoint = "\(AppConfig.Endpoint.drivingExport)?reportId=\(reportId)&format=\(format)"
+        networkManager.get(endpoint: endpoint) { (result: Result<APIResponse<Data>, Error>) in
+            switch result {
+            case .success(let response):
+                if let data = response.data {
+                    completion(.success(data))
+                } else {
+                    completion(.failure(NSError(domain: "APIService", code: -1, userInfo: [NSLocalizedDescriptionKey: "No data in response"])))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    // MARK: - Dark Web Monitoring API
+    
+    /// Получить утечки данных
+    func getDarkWebLeaks(status: String? = nil, severity: String? = nil, completion: @escaping (Result<[DarkWebLeak], Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.darkWebLeaks
+        var queryItems: [String] = []
+        
+        if let status = status {
+            queryItems.append("status=\(status)")
+        }
+        if let severity = severity {
+            queryItems.append("severity=\(severity)")
+        }
+        
+        if !queryItems.isEmpty {
+            endpoint += "?" + queryItems.joined(separator: "&")
+        }
+        
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    /// Получить статистику Dark Web
+    func getDarkWebStats(completion: @escaping (Result<DarkWebStats, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.darkWebStats, completion: completion)
+    }
+    
+    /// Получить историю сканирований
+    func getDarkWebScans(limit: Int = 20, completion: @escaping (Result<[DarkWebScan], Error>) -> Void) {
+        let endpoint = "\(AppConfig.Endpoint.darkWebScans)?limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    /// Отметить утечку как решенную
+    func resolveDarkWebLeak(leakId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct ResolveRequest: Codable {
+            let leakId: String
+        }
+        networkManager.post(endpoint: AppConfig.Endpoint.darkWebResolve, body: ResolveRequest(leakId: leakId), completion: completion)
+    }
+    
+    // MARK: - Identity Theft Protection API
+    
+    /// Получить попытки кражи личности
+    func getIdentityTheftAttempts(action: String? = nil, severity: String? = nil, completion: @escaping (Result<[IdentityTheftAttempt], Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.identityTheftAttempts
+        var queryItems: [String] = []
+        
+        if let action = action {
+            queryItems.append("action=\(action)")
+        }
+        if let severity = severity {
+            queryItems.append("severity=\(severity)")
+        }
+        
+        if !queryItems.isEmpty {
+            endpoint += "?" + queryItems.joined(separator: "&")
+        }
+        
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    /// Получить статистику защиты от кражи личности
+    func getIdentityTheftStats(completion: @escaping (Result<IdentityTheftStats, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.identityTheftStats, completion: completion)
+    }
+    
+    // MARK: - Privacy Reports API
+    
+    /// Получить статистику Location Bubble
+    func getLocationStats(completion: @escaping (Result<LocationStats, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.locationStats, completion: completion)
+    }
+    
+    /// Получить историю запросов местоположения
+    func getLocationRequests(limit: Int = 50, completion: @escaping (Result<[LocationRequest], Error>) -> Void) {
+        let endpoint = "\(AppConfig.Endpoint.locationRequests)?limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    /// Получить статистику очистки данных
+    func getDataCleanupStats(completion: @escaping (Result<DataCleanupStats, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.dataCleanupStats, completion: completion)
+    }
+    
+    /// Получить историю очисток
+    func getDataCleanupRecords(limit: Int = 20, completion: @escaping (Result<[DataCleanupRecord], Error>) -> Void) {
+        let endpoint = "\(AppConfig.Endpoint.dataCleanupRecords)?limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    /// Получить статистику Anti Tracker
+    func getAntiTrackerStats(completion: @escaping (Result<AntiTrackerStats, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.antiTrackerStats, completion: completion)
+    }
+    
+    /// Получить топ трекеров
+    func getTopTrackers(limit: Int = 10, completion: @escaping (Result<[TrackerBlock], Error>) -> Void) {
+        let endpoint = "\(AppConfig.Endpoint.topTrackers)?limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    // MARK: - AI Categories API
+    
+    /// Получить статистику AI категоризации
+    func getAICategoriesStats(childId: String? = nil, completion: @escaping (Result<AICategoriesStats, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.aiCategoriesStats
+        
+        if let childId = childId {
+            endpoint += "?childId=\(childId)"
+        }
+        
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    /// Получить отчеты по категориям
+    func getAICategoryReports(childId: String? = nil, completion: @escaping (Result<[AICategoryReport], Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.aiCategoryReports
+        var queryItems: [String] = []
+        
+        if let childId = childId {
+            queryItems.append("childId=\(childId)")
+        }
+        
+        if !queryItems.isEmpty {
+            endpoint += "?" + queryItems.joined(separator: "&")
+        }
+        
+        networkManager.get(endpoint: endpoint, completion: completion)
     }
 }
 

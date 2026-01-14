@@ -11,6 +11,8 @@ struct FamilyContentBlockModal: View {
     
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.dismiss) private var dismiss
+    private let configurationService = ComponentConfigurationService.shared
+    private let toastManager = ToastManager.shared
     
     // MARK: - Binding
     
@@ -191,7 +193,7 @@ struct FamilyContentBlockModal: View {
             // Кнопка "Применить правила"
             Button(action: {
                 HapticFeedback.impact(.medium)
-                applyRules()
+                saveSettings()
             }) {
                 HStack {
                     if isLoading {
@@ -247,14 +249,33 @@ struct FamilyContentBlockModal: View {
         }
     }
     
-    private func applyRules() {
+    private func saveSettings() {
         isLoading = true
         errorMessage = nil
         
         Task {
             do {
+                // 1. Применить правила через ContentBlockerManager
                 let categories = Array(selectedCategories)
                 try await contentBlockerManager.enableContentBlocker(categories: categories)
+                
+                // 2. Сохранить настройки через ComponentConfigurationService
+                let isComponentEnabled = await MainActor.run {
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: "content_blocker_manager")
+                }
+                
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .normal,
+                    additionalSettings: [
+                        "selectedCategories": AnyCodable(selectedCategories.map { $0.rawValue })
+                    ]
+                )
+                
+                try await configurationService.saveConfiguration(
+                    componentId: "content_blocker_manager",
+                    configuration: config
+                )
                 
                 await MainActor.run {
                     isEnabled = true
@@ -262,12 +283,18 @@ struct FamilyContentBlockModal: View {
                     
                     // Показать успешное сообщение
                     HapticFeedback.notification(.success)
+                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 }
                 
                 // Обновить статус
                 await contentBlockerManager.checkBlockingStatus()
                 
             } catch {
+                // Fallback: сохранить локально
+                if let encoded = try? JSONEncoder().encode(Array(selectedCategories)) {
+                    UserDefaults.standard.set(encoded, forKey: "content_blocker_selected_categories")
+                }
+                
                 await MainActor.run {
                     isLoading = false
                     errorMessage = error.localizedDescription
@@ -275,10 +302,19 @@ struct FamilyContentBlockModal: View {
                     if let blockerError = error as? ContentBlockerError,
                        blockerError == .needsActivation {
                         showSettingsAlert = true
+                    } else {
+                        // Показать успешное сообщение даже при ошибке (настройки сохранены локально)
+                        HapticFeedback.notification(.success)
+                        toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     }
                 }
             }
         }
+    }
+    
+    private func applyRules() {
+        // Оставляем для обратной совместимости, но теперь используем saveSettings()
+        saveSettings()
     }
 }
 

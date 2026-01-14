@@ -82,24 +82,25 @@ class ComponentStatusService: ObservableObject {
         ]
         
         do {
-            // Попытка загрузить все критичные компоненты параллельно
-            var statuses: [String: ComponentStatus] = [:]
-            
-            try await withThrowingTaskGroup(of: (String, ComponentStatus).self) { group in
-                for componentId in criticalComponents {
-                    group.addTask { [weak self] in
-                        guard let self = self else {
-                            throw ComponentError.unknown(NSError(domain: "ComponentStatusService", code: -1))
-                        }
-                        let status = try await self.loadStatusFromAPI(for: componentId, priority: .critical)
-                        return (componentId, status)
+            // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
+            // Все критичные компоненты имеют приоритет .critical
+            let prioritizedItems: [PrioritizedLoadItem<ComponentStatus>] = criticalComponents.map { componentId in
+                PrioritizedLoadItem(
+                    id: componentId,
+                    priority: .critical
+                ) { [weak self] in
+                    guard let self = self else {
+                        throw ComponentError.unknown(NSError(domain: "ComponentStatusService", code: -1))
                     }
-                }
-                
-                for try await (componentId, status) in group {
-                    statuses[componentId] = status
+                    return try await self.loadStatusFromAPI(for: componentId, priority: .critical)
                 }
             }
+            
+            // Загружаем с лимитом 10 одновременных запросов
+            let statuses = try await ParallelLoader.executeWithLimit(
+                items: prioritizedItems,
+                maxConcurrent: 10
+            )
             
             // Обновить статусы
             for (componentId, status) in statuses {
@@ -110,6 +111,8 @@ class ComponentStatusService: ObservableObject {
             await cacheManager.saveStatuses(statuses)
             
             lastUpdate = Date()
+            
+            print("✅ ComponentStatusService: Загружено \(statuses.count) критичных компонентов")
             
         } catch {
             // ✅ FALLBACK: Если ошибка, использовать дефолтные значения
