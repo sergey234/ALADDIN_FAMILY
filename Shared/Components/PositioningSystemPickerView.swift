@@ -64,11 +64,11 @@ struct PositioningSystemPickerView: View {
                     .foregroundColor(.primaryBlue)
                 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(currentSystem.displayName)
+                    Text(currentSystem.localizedDisplayName(localizationManager))
                         .font(.bodyBold)
                         .foregroundColor(.textPrimary)
                     
-                    Text(currentSystem.description)
+                    Text(currentSystem.localizedDescription(localizationManager))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 }
@@ -123,11 +123,11 @@ struct PositioningSystemPickerView: View {
                     .frame(width: 40)
                 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(system.displayName)
+                    Text(system.localizedDisplayName(localizationManager))
                         .font(.bodyBold)
                         .foregroundColor(.textPrimary)
                     
-                    Text(system.description)
+                    Text(system.localizedDescription(localizationManager))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 }

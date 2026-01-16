@@ -24,6 +24,16 @@ enum PositioningSystem: String, CaseIterable, Codable {
         }
     }
     
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .gps: return "GPS"
+        case .glonass: return "ГЛОНАСС"
+        case .galileo: return "Galileo"
+        case .beidou: return "BeiDou"
+        case .auto: return localizationManager.localized("positioning_system_auto")
+        }
+    }
+    
     var description: String {
         switch self {
         case .gps:
@@ -36,6 +46,21 @@ enum PositioningSystem: String, CaseIterable, Codable {
             return "Китайская система спутниковой навигации"
         case .auto:
             return "Автоматический выбор на основе региона"
+        }
+    }
+    
+    func localizedDescription(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .gps:
+            return localizationManager.localized("positioning_system_gps_description")
+        case .glonass:
+            return localizationManager.localized("positioning_system_glonass_description")
+        case .galileo:
+            return localizationManager.localized("positioning_system_galileo_description")
+        case .beidou:
+            return localizationManager.localized("positioning_system_beidou_description")
+        case .auto:
+            return localizationManager.localized("positioning_system_auto_description")
         }
     }
     

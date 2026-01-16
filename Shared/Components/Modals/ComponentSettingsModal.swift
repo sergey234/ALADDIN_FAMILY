@@ -59,7 +59,6 @@ struct ComponentSettingsModal<Content: View>: View {
                     if let onSave = onSave {
                         Button(action: {
                             onSave()
-                            isPresented = false
                         }) {
                             Text(localizationManager.localized("common_save"))
                                 .foregroundColor(.blue)

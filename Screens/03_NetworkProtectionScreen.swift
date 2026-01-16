@@ -777,6 +777,9 @@ struct NetworkProtectionSettingsView: View {
     private let apiService = APIService.shared
     private let toastManager = ToastManager.shared
     
+    // ✅ Guard: чтобы initial load с сервера не триггерил автосинк обратно на сервер
+    @State private var isApplyingServerSettings: Bool = false
+    
     @AppStorage("network_protection_auto_select_server") private var autoSelectServer = true
     @AppStorage("network_protection_auto_connect_wifi") private var autoConnectWiFi = true
     @AppStorage("network_protection_auto_connect_mobile") private var autoConnectMobile = false
@@ -848,13 +851,13 @@ struct NetworkProtectionSettingsView: View {
             .onAppear {
                 loadNetworkProtectionSettingsFromServer()
             }
-            .onChange(of: autoSelectServer) { _ in syncNetworkProtectionSettingsToServer() }
-            .onChange(of: autoConnectWiFi) { _ in syncNetworkProtectionSettingsToServer() }
-            .onChange(of: autoConnectMobile) { _ in syncNetworkProtectionSettingsToServer() }
-            .onChange(of: killSwitch) { _ in syncNetworkProtectionSettingsToServer() }
-            .onChange(of: dnsLeakProtection) { _ in syncNetworkProtectionSettingsToServer() }
-            .onChange(of: batteryOptimizationEnabled) { _ in syncNetworkProtectionSettingsToServer() }
-            .onChange(of: antivirusEnabled) { _ in syncNetworkProtectionSettingsToServer() }
+            .onChange(of: autoSelectServer) { _ in if !isApplyingServerSettings { syncNetworkProtectionSettingsToServer() } }
+            .onChange(of: autoConnectWiFi) { _ in if !isApplyingServerSettings { syncNetworkProtectionSettingsToServer() } }
+            .onChange(of: autoConnectMobile) { _ in if !isApplyingServerSettings { syncNetworkProtectionSettingsToServer() } }
+            .onChange(of: killSwitch) { _ in if !isApplyingServerSettings { syncNetworkProtectionSettingsToServer() } }
+            .onChange(of: dnsLeakProtection) { _ in if !isApplyingServerSettings { syncNetworkProtectionSettingsToServer() } }
+            .onChange(of: batteryOptimizationEnabled) { _ in if !isApplyingServerSettings { syncNetworkProtectionSettingsToServer() } }
+            .onChange(of: antivirusEnabled) { _ in if !isApplyingServerSettings { syncNetworkProtectionSettingsToServer() } }
         }
     }
     
@@ -871,6 +874,7 @@ struct NetworkProtectionSettingsView: View {
                 }
                 
                 await MainActor.run {
+                    isApplyingServerSettings = true
                     autoSelectServer = settings.autoSelectServer
                     autoConnectWiFi = settings.autoConnectWiFi
                     autoConnectMobile = settings.autoConnectMobile
@@ -878,6 +882,7 @@ struct NetworkProtectionSettingsView: View {
                     dnsLeakProtection = settings.dnsLeakProtection
                     batteryOptimizationEnabled = settings.batteryOptimizationEnabled
                     antivirusEnabled = settings.antivirusEnabled
+                    isApplyingServerSettings = false
                 }
             } catch {
                 print("⚠️ NetworkProtectionSettingsView: Ошибка загрузки настроек с сервера: \(error)")

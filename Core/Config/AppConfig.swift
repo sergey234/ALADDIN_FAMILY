@@ -130,22 +130,35 @@ struct AppConfig {
         static let darkWebStats = "/reports/dark-web/stats"
         static let darkWebScans = "/reports/dark-web/scans"
         static let darkWebResolve = "/reports/dark-web/resolve"
+        static let darkWebScanStart = "/reports/dark-web/scan/start"
+        static let darkWebScanSecure = "/reports/dark-web/scan/secure"
+        static let darkWebScanFast = "/reports/dark-web/scan/fast"
         
         // Identity Theft
         static let identityTheftAttempts = "/reports/identity-theft/attempts"
         static let identityTheftStats = "/reports/identity-theft/stats"
+        static let identityTheftAllow = "/reports/identity-theft/allow"
+        static let identityTheftBlock = "/reports/identity-theft/block"
+        static let identityTheftWhitelist = "/reports/identity-theft/whitelist"
         
         // Privacy Reports
         static let locationStats = "/reports/privacy/location/stats"
         static let locationRequests = "/reports/privacy/location/requests"
+        static let locationAllow = "/reports/privacy/location/allow"
+        static let locationBlock = "/reports/privacy/location/block"
+        static let locationUpdateAccuracy = "/reports/privacy/location/update-accuracy"
         static let dataCleanupStats = "/reports/privacy/cleanup/stats"
         static let dataCleanupRecords = "/reports/privacy/cleanup/records"
+        static let dataCleanupStart = "/reports/privacy/cleanup/start"
         static let antiTrackerStats = "/reports/privacy/tracker/stats"
         static let topTrackers = "/reports/privacy/tracker/top"
+        static let trackerWhitelist = "/reports/privacy/tracker/whitelist"
         
         // AI Categories
         static let aiCategoriesStats = "/reports/ai-categories/stats"
         static let aiCategoryReports = "/reports/ai-categories/reports"
+        static let aiCategoriesAllow = "/reports/ai-categories/allow"
+        static let aiCategoriesBlock = "/reports/ai-categories/block"
         
         // AI Assistant
         static let aiChat = "/ai/chat"

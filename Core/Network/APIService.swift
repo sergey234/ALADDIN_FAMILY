@@ -775,8 +775,11 @@ class APIService {
                 case .failure(let error):
                     // ✅ FALLBACK: Если PUT не поддерживается (405), пробуем PATCH
                     if let networkError = error as? NetworkError,
-                       case .invalidStatusCode(let code) = networkError,
-                       code == 405 {
+                       (({
+                           if case .invalidStatusCode(let code) = networkError { return code == 405 }
+                           if case .httpError(let code) = networkError { return code == 405 }
+                           return false
+                       })()) {
                         // Пробуем PATCH как fallback
                         print("⚠️ APIService: PUT вернул 405, пробуем PATCH")
                         self.networkManager.patch(
@@ -935,6 +938,68 @@ class APIService {
         networkManager.post(endpoint: AppConfig.Endpoint.darkWebResolve, body: ResolveRequest(leakId: leakId), completion: completion)
     }
     
+    /// Запустить автоматическое сканирование темной сети
+    func startDarkWebScan(completion: @escaping (Result<DarkWebScan, Error>) -> Void) {
+        struct EmptyRequest: Codable {}
+        networkManager.post(endpoint: AppConfig.Endpoint.darkWebScanStart, body: EmptyRequest(), completion: completion)
+    }
+    
+    // MARK: - Hybrid Dark Web Scan API
+    
+    /// Безопасное сканирование (хеши)
+    func scanDarkWebSecure(
+        emailHash: String?,
+        passwordHash: String?,
+        completion: @escaping (Result<APIResponse<[DarkWebScanResult]>, Error>) -> Void
+    ) {
+        struct SecureScanRequest: Codable {
+            let emailHash: String?
+            let passwordHash: String?
+            let method: String = "secure"
+        }
+        
+        let request = SecureScanRequest(
+            emailHash: emailHash,
+            passwordHash: passwordHash
+        )
+        
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.darkWebScanSecure,
+            body: request,
+            completion: completion
+        )
+    }
+    
+    /// Быстрое сканирование (plaintext)
+    func scanDarkWebFast(
+        email: String?,
+        phone: String?,
+        passport: String?,
+        snils: String?,
+        completion: @escaping (Result<APIResponse<[DarkWebScanResult]>, Error>) -> Void
+    ) {
+        struct FastScanRequest: Codable {
+            let email: String?
+            let phone: String?
+            let passport: String?
+            let snils: String?
+            let method: String = "fast"
+        }
+        
+        let request = FastScanRequest(
+            email: email,
+            phone: phone,
+            passport: passport,
+            snils: snils
+        )
+        
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.darkWebScanFast,
+            body: request,
+            completion: completion
+        )
+    }
+    
     // MARK: - Identity Theft Protection API
     
     /// Получить попытки кражи личности
@@ -959,6 +1024,42 @@ class APIService {
     /// Получить статистику защиты от кражи личности
     func getIdentityTheftStats(completion: @escaping (Result<IdentityTheftStats, Error>) -> Void) {
         networkManager.get(endpoint: AppConfig.Endpoint.identityTheftStats, completion: completion)
+    }
+    
+    /// Разрешить попытку кражи личности
+    func allowIdentityTheftAttempt(attemptId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct AllowRequest: Codable {
+            let attemptId: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.identityTheftAllow,
+            body: AllowRequest(attemptId: attemptId),
+            completion: completion
+        )
+    }
+    
+    /// Заблокировать попытку кражи личности
+    func blockIdentityTheftAttempt(attemptId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct BlockRequest: Codable {
+            let attemptId: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.identityTheftBlock,
+            body: BlockRequest(attemptId: attemptId),
+            completion: completion
+        )
+    }
+    
+    /// Добавить источник в белый список
+    func addToWhitelist(source: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct WhitelistRequest: Codable {
+            let source: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.identityTheftWhitelist,
+            body: WhitelistRequest(source: source),
+            completion: completion
+        )
     }
     
     // MARK: - Privacy Reports API
@@ -996,6 +1097,68 @@ class APIService {
         networkManager.get(endpoint: endpoint, completion: completion)
     }
     
+    // MARK: - Location Actions API
+    
+    func allowLocationRequest(requestId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct AllowRequest: Codable {
+            let requestId: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.locationAllow,
+            body: AllowRequest(requestId: requestId),
+            completion: completion
+        )
+    }
+    
+    func blockLocationRequest(requestId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct BlockRequest: Codable {
+            let requestId: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.locationBlock,
+            body: BlockRequest(requestId: requestId),
+            completion: completion
+        )
+    }
+    
+    func updateLocationAccuracy(requestId: String, accuracy: LocationAccuracy, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct AccuracyRequest: Codable {
+            let requestId: String
+            let accuracy: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.locationUpdateAccuracy,
+            body: AccuracyRequest(requestId: requestId, accuracy: accuracy.rawValue),
+            completion: completion
+        )
+    }
+    
+    // MARK: - Data Cleanup API
+    
+    func startDataCleanup(categories: [String], completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct CleanupRequest: Codable {
+            let categories: [String]
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.dataCleanupStart,
+            body: CleanupRequest(categories: categories),
+            completion: completion
+        )
+    }
+    
+    // MARK: - Anti Tracker API
+    
+    func addTrackerToWhitelist(trackerName: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct WhitelistRequest: Codable {
+            let trackerName: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.trackerWhitelist,
+            body: WhitelistRequest(trackerName: trackerName),
+            completion: completion
+        )
+    }
+    
     // MARK: - AI Categories API
     
     /// Получить статистику AI категоризации
@@ -1023,6 +1186,32 @@ class APIService {
         }
         
         networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    // MARK: - AI Categories Actions API
+    
+    func allowAIContent(contentId: String, childId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct AllowRequest: Codable {
+            let contentId: String
+            let childId: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.aiCategoriesAllow,
+            body: AllowRequest(contentId: contentId, childId: childId),
+            completion: completion
+        )
+    }
+    
+    func blockAIContent(contentId: String, childId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct BlockRequest: Codable {
+            let contentId: String
+            let childId: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.aiCategoriesBlock,
+            body: BlockRequest(contentId: contentId, childId: childId),
+            completion: completion
+        )
     }
 }
 

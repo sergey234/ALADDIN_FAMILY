@@ -90,23 +90,20 @@ struct PhishingProtectionSettingsModal: View {
                 let config = try await configurationService.getConfiguration(for: componentId)
                 // Применить настройки из конфигурации
                 if let settings = config.additionalSettings {
-                    if let value = settings["blockSuspiciousLinks"]?.value as? Bool {
-                        blockSuspiciousLinks = value
-                    }
-                    if let value = settings["warnBeforeOpening"]?.value as? Bool {
-                        warnBeforeOpening = value
-                    }
-                    if let value = settings["checkEmailLinks"]?.value as? Bool {
-                        checkEmailLinks = value
-                    }
-                    if let value = settings["checkSMSLinks"]?.value as? Bool {
-                        checkSMSLinks = value
-                    }
-                    if let value = settings["blockKnownPhishingDomains"]?.value as? Bool {
-                        blockKnownPhishingDomains = value
-                    }
-                    if let value = settings["sensitivityLevel"]?.value as? String {
-                        sensitivityLevel = value
+                    let newBlockSuspiciousLinks = (settings["blockSuspiciousLinks"]?.value as? Bool) ?? blockSuspiciousLinks
+                    let newWarnBeforeOpening = (settings["warnBeforeOpening"]?.value as? Bool) ?? warnBeforeOpening
+                    let newCheckEmailLinks = (settings["checkEmailLinks"]?.value as? Bool) ?? checkEmailLinks
+                    let newCheckSMSLinks = (settings["checkSMSLinks"]?.value as? Bool) ?? checkSMSLinks
+                    let newBlockKnownPhishingDomains = (settings["blockKnownPhishingDomains"]?.value as? Bool) ?? blockKnownPhishingDomains
+                    let newSensitivityLevel = (settings["sensitivityLevel"]?.value as? String) ?? sensitivityLevel
+
+                    await MainActor.run {
+                        blockSuspiciousLinks = newBlockSuspiciousLinks
+                        warnBeforeOpening = newWarnBeforeOpening
+                        checkEmailLinks = newCheckEmailLinks
+                        checkSMSLinks = newCheckSMSLinks
+                        blockKnownPhishingDomains = newBlockKnownPhishingDomains
+                        sensitivityLevel = newSensitivityLevel
                     }
                 }
             } catch {

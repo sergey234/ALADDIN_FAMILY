@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import CryptoKit
 
 /**
  * 🌑 Dark Web Monitoring ViewModel
@@ -15,17 +16,20 @@ class DarkWebMonitoringViewModel: ObservableObject {
     @Published var leaks: [DarkWebLeak] = []
     @Published var scans: [DarkWebScan] = []
     @Published var isLoading: Bool = false
+    @Published var isScanning: Bool = false
     @Published var errorMessage: String?
     
     // MARK: - Private Properties
     
     private let apiService: APIService
+    private let localizationManager: LocalizationManager
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
     
-    init(apiService: APIService = APIService.shared) {
+    init(apiService: APIService = APIService.shared, localizationManager: LocalizationManager = LocalizationManager()) {
         self.apiService = apiService
+        self.localizationManager = localizationManager
     }
     
     // MARK: - Public Methods
@@ -59,8 +63,32 @@ class DarkWebMonitoringViewModel: ObservableObject {
             self.stats = stats
             self.leaks = leaks
             self.scans = scans
+            // Очищаем ошибку при успешной загрузке
+            errorMessage = nil
         } catch {
-            errorMessage = "Не удалось загрузить данные: \(error.localizedDescription)"
+            // Проверяем тип ошибки - показываем только реальные проблемы
+            let networkError = NetworkError.from(error)
+            
+            // Не показываем ошибку для 404 (нет данных - это нормально)
+            if case .notFound = networkError {
+                // Просто используем пустые данные, не показываем ошибку
+                self.stats = nil
+                self.leaks = []
+                self.scans = []
+                errorMessage = nil
+                return
+            }
+            
+            // Показываем ошибку только для реальных проблем
+            if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "dark_web_error_resource_not_found"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            } else {
+                // Для временных ошибок тоже не показываем, просто используем пустые данные
+                errorMessage = nil
+            }
+            
             // В случае ошибки используем пустые данные
             self.stats = nil
             self.leaks = []
@@ -76,6 +104,154 @@ class DarkWebMonitoringViewModel: ObservableObject {
         }
         // Обновить локальные данные после успешного решения
         await loadData()
+    }
+    
+    func startScan() async {
+        isScanning = true
+        errorMessage = nil
+        defer { isScanning = false }
+        
+        do {
+            try await withCheckedThrowingContinuation { continuation in
+                apiService.startDarkWebScan { result in
+                    continuation.resume(with: result.map { _ in () })
+                }
+            }
+            // Обновить данные после успешного запуска сканирования
+            await loadData()
+        } catch {
+            let networkError = NetworkError.from(error)
+            if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "dark_web_error_resource_not_found"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            }
+        }
+    }
+    
+    // MARK: - Hybrid Scan Methods
+    
+    func scanSecure(email: String?, password: String?) async {
+        isScanning = true
+        errorMessage = nil
+        defer { isScanning = false }
+        
+        do {
+            // Хешируем данные на клиенте
+            var emailHash: String? = nil
+            var passwordHash: String? = nil
+            
+            if let email = email, !email.isEmpty {
+                let hash = SHA256.hash(data: email.data(using: .utf8)!)
+                emailHash = hash.compactMap { String(format: "%02x", $0) }.joined()
+            }
+            
+            if let password = password, !password.isEmpty {
+                let hash = SHA256.hash(data: password.data(using: .utf8)!)
+                passwordHash = hash.compactMap { String(format: "%02x", $0) }.joined()
+            }
+            
+            guard emailHash != nil || passwordHash != nil else {
+                errorMessage = localizationManager.localized("dark_web_scan_error_no_data")
+                return
+            }
+            
+            let response: APIResponse<[DarkWebScanResult]> = try await withCheckedThrowingContinuation { continuation in
+                apiService.scanDarkWebSecure(
+                    emailHash: emailHash,
+                    passwordHash: passwordHash
+                ) { result in
+                    continuation.resume(with: result)
+                }
+            }
+            
+            // Преобразуем результаты в утечки
+            let newLeaks = (response.data ?? []).compactMap { result -> DarkWebLeak? in
+                guard result.found,
+                      let leakDate = result.leakDate,
+                      let dataType = LeakDataType(rawValue: result.dataType),
+                      let severity = result.severity.flatMap({ LeakSeverity(rawValue: $0) }) else {
+                    return nil
+                }
+                
+                return DarkWebLeak(
+                    id: result.id,
+                    dataType: dataType,
+                    value: "***", // Маскируем для безопасного сканирования
+                    fullValue: nil,
+                    leakDate: leakDate,
+                    discoveryDate: Date(),
+                    source: result.source ?? "Unknown",
+                    severity: severity,
+                    status: .new,
+                    recommendations: result.recommendations ?? []
+                )
+            }
+            
+            // Добавляем новые утечки в начало списка
+            self.leaks = newLeaks + self.leaks
+            await loadData()
+        } catch {
+            let networkError = NetworkError.from(error)
+            if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "dark_web_scan_error_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            }
+        }
+    }
+    
+    func scanFast(email: String?, phone: String?, passport: String?, snils: String?) async {
+        isScanning = true
+        errorMessage = nil
+        defer { isScanning = false }
+        
+        do {
+            let response: APIResponse<[DarkWebScanResult]> = try await withCheckedThrowingContinuation { continuation in
+                apiService.scanDarkWebFast(
+                    email: email,
+                    phone: phone,
+                    passport: passport,
+                    snils: snils
+                ) { result in
+                    continuation.resume(with: result)
+                }
+            }
+            
+            // Преобразуем результаты в утечки
+            let newLeaks = (response.data ?? []).compactMap { result -> DarkWebLeak? in
+                guard result.found,
+                      let leakDate = result.leakDate,
+                      let dataType = LeakDataType(rawValue: result.dataType),
+                      let severity = result.severity.flatMap({ LeakSeverity(rawValue: $0) }) else {
+                    return nil
+                }
+                
+                return DarkWebLeak(
+                    id: result.id,
+                    dataType: dataType,
+                    value: "***",
+                    fullValue: email ?? phone ?? passport ?? snils,
+                    leakDate: leakDate,
+                    discoveryDate: Date(),
+                    source: result.source ?? "Unknown",
+                    severity: severity,
+                    status: .new,
+                    recommendations: result.recommendations ?? []
+                )
+            }
+            
+            // Добавляем новые утечки в начало списка
+            self.leaks = newLeaks + self.leaks
+            await loadData()
+        } catch {
+            let networkError = NetworkError.from(error)
+            if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "dark_web_scan_error_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            }
+        }
     }
 }
 

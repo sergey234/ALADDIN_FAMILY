@@ -392,8 +392,8 @@ struct SettingsScreen: View {
                         protectionActionButton(
                             title: localizationManager.localized("settings_advanced_settings"),
                             icon: "slider.horizontal.3",
-                            foreground: .primaryBlue,
-                            background: Color.primaryBlue.opacity(0.12),
+                            foreground: Color(hex: "#A855F7"),
+                            background: Color(hex: "#A855F7").opacity(0.14),
                             action: { showAdvancedProtection = true }
                         )
                         
@@ -805,15 +805,25 @@ struct SettingsScreen: View {
     @ViewBuilder
     private func protectionActionButton(title: String, icon: String, foreground: Color, background: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
+            // Важно: фиксируем "контентную" высоту кнопки, чтобы сетка 3-х кнопок выглядела ровно
+            // на разных размерах экранов (SE ↔ Pro Max), и чтобы 2 строки текста не "плясали".
             VStack(spacing: Spacing.xs) {
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .semibold))
-                Text(title.uppercased())
+                    .frame(height: 18)
+
+                let displayTitle = title.contains("\n") ? title : title.uppercased()
+                Text(displayTitle)
                     .font(.caption.bold())
                     .lineLimit(2)
-                    .minimumScaleFactor(0.75)
                     .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.85)
+                    .allowsTightening(true)
+                    // Не даём словам “ломаться” по слогам и держим предсказуемую высоту:
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(minHeight: 28, maxHeight: 28, alignment: .center)
             }
+            .frame(height: 18 + Spacing.xs + 28, alignment: .center)
             .foregroundColor(foreground)
             .frame(maxWidth: .infinity)
             .padding(.vertical, Spacing.s)

@@ -19,12 +19,14 @@ class IdentityTheftViewModel: ObservableObject {
     // MARK: - Private Properties
     
     private let apiService: APIService
+    private let localizationManager: LocalizationManager
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
     
-    init(apiService: APIService = APIService.shared) {
+    init(apiService: APIService = APIService.shared, localizationManager: LocalizationManager = LocalizationManager()) {
         self.apiService = apiService
+        self.localizationManager = localizationManager
     }
     
     // MARK: - Public Methods
@@ -51,11 +53,102 @@ class IdentityTheftViewModel: ObservableObject {
             let (stats, attempts) = try await (statsTask, attemptsTask)
             self.stats = stats
             self.attempts = attempts
+            // Очищаем ошибку при успешной загрузке
+            errorMessage = nil
         } catch {
-            errorMessage = "Не удалось загрузить данные: \(error.localizedDescription)"
+            // Проверяем тип ошибки - показываем только реальные проблемы
+            let networkError = NetworkError.from(error)
+            
+            // Не показываем ошибку для 404 (нет данных - это нормально)
+            if case .notFound = networkError {
+                // Просто используем пустые данные, не показываем ошибку
+                self.stats = nil
+                self.attempts = []
+                errorMessage = nil
+                return
+            }
+            
+            // Показываем ошибку только для реальных проблем
+            if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "identity_theft_error_load_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            } else {
+                // Для временных ошибок тоже не показываем, просто используем пустые данные
+                errorMessage = nil
+            }
+            
             // В случае ошибки используем пустые данные
             self.stats = nil
             self.attempts = []
+        }
+    }
+    
+    // MARK: - Actions
+    
+    func allowAttempt(attemptId: String) async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            try await withCheckedThrowingContinuation { continuation in
+                apiService.allowIdentityTheftAttempt(attemptId: attemptId) { result in
+                    continuation.resume(with: result.map { _ in () })
+                }
+            }
+            await loadData()
+        } catch {
+            let networkError = NetworkError.from(error)
+            if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "identity_theft_error_action_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            }
+        }
+    }
+    
+    func blockAttempt(attemptId: String) async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            try await withCheckedThrowingContinuation { continuation in
+                apiService.blockIdentityTheftAttempt(attemptId: attemptId) { result in
+                    continuation.resume(with: result.map { _ in () })
+                }
+            }
+            await loadData()
+        } catch {
+            let networkError = NetworkError.from(error)
+            if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "identity_theft_error_action_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            }
+        }
+    }
+    
+    func addToWhitelist(source: String) async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            try await withCheckedThrowingContinuation { continuation in
+                apiService.addToWhitelist(source: source) { result in
+                    continuation.resume(with: result.map { _ in () })
+                }
+            }
+            await loadData()
+        } catch {
+            let networkError = NetworkError.from(error)
+            if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "identity_theft_error_whitelist_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            }
         }
     }
 }

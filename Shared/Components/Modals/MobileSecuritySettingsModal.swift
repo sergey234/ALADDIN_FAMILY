@@ -80,23 +80,20 @@ struct MobileSecuritySettingsModal: View {
             do {
                 let config = try await configurationService.getConfiguration(for: componentId)
                 if let settings = config.additionalSettings {
-                    if let value = settings["deviceEncryption"]?.value as? Bool {
-                        deviceEncryption = value
-                    }
-                    if let value = settings["appLock"]?.value as? Bool {
-                        appLock = value
-                    }
-                    if let value = settings["screenLock"]?.value as? Bool {
-                        screenLock = value
-                    }
-                    if let value = settings["biometricAuth"]?.value as? Bool {
-                        biometricAuth = value
-                    }
-                    if let value = settings["remoteWipe"]?.value as? Bool {
-                        remoteWipe = value
-                    }
-                    if let value = settings["trackDevice"]?.value as? Bool {
-                        trackDevice = value
+                    let newDeviceEncryption = (settings["deviceEncryption"]?.value as? Bool) ?? deviceEncryption
+                    let newAppLock = (settings["appLock"]?.value as? Bool) ?? appLock
+                    let newScreenLock = (settings["screenLock"]?.value as? Bool) ?? screenLock
+                    let newBiometricAuth = (settings["biometricAuth"]?.value as? Bool) ?? biometricAuth
+                    let newRemoteWipe = (settings["remoteWipe"]?.value as? Bool) ?? remoteWipe
+                    let newTrackDevice = (settings["trackDevice"]?.value as? Bool) ?? trackDevice
+
+                    await MainActor.run {
+                        deviceEncryption = newDeviceEncryption
+                        appLock = newAppLock
+                        screenLock = newScreenLock
+                        biometricAuth = newBiometricAuth
+                        remoteWipe = newRemoteWipe
+                        trackDevice = newTrackDevice
                     }
                 }
             } catch {

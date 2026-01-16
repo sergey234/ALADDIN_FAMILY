@@ -12,7 +12,7 @@ struct ComponentToggleCard: View {
     let description: String
     @Binding var isEnabled: Bool
     let icon: String?
-    let onToggle: () -> Void
+    let onToggle: (Bool) -> Void
     
     @EnvironmentObject private var localizationManager: LocalizationManager
     
@@ -22,7 +22,7 @@ struct ComponentToggleCard: View {
         description: String,
         isEnabled: Binding<Bool>,
         icon: String? = nil,
-        onToggle: @escaping () -> Void
+        onToggle: @escaping (Bool) -> Void
     ) {
         self.componentId = componentId
         self.title = title
@@ -66,8 +66,10 @@ struct ComponentToggleCard: View {
             ALADDINToggle(isOn: Binding(
                 get: { isEnabled },
                 set: { newValue in
+                    // ВАЖНО: не делаем "двойное переключение".
+                    // Источник истины — binding, а onToggle получает целевое значение и сохраняет его.
                     isEnabled = newValue
-                    onToggle()
+                    onToggle(newValue)
                 }
             ))
             .accessibilityLabel(title)

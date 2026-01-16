@@ -24,11 +24,11 @@ struct IdentityTheftModal: View {
         case blocked = "blocked"
         case suspicious = "suspicious"
         
-        var displayName: String {
+        func displayName(_ localizationManager: LocalizationManager) -> String {
             switch self {
-            case .attempts: return "Попытки"
-            case .blocked: return "Заблокировано"
-            case .suspicious: return "Подозрительные"
+            case .attempts: return localizationManager.localized("identity_theft_tab_attempts")
+            case .blocked: return localizationManager.localized("identity_theft_tab_blocked")
+            case .suspicious: return localizationManager.localized("identity_theft_tab_suspicious")
             }
         }
         
@@ -183,7 +183,7 @@ struct IdentityTheftModal: View {
                         HStack(spacing: Spacing.xs) {
                             Image(systemName: tab.icon)
                                 .font(.caption)
-                            Text(tab.displayName)
+                            Text(tab.displayName(localizationManager))
                                 .font(.body)
                         }
                         .foregroundColor(selectedTab == tab ? .white : .textPrimary)
@@ -234,17 +234,17 @@ struct IdentityTheftModal: View {
                 // Фильтр по действию
                 Menu {
                     Button(action: { filterAction = "all" }) {
-                        Label("Все", systemImage: filterAction == "all" ? "checkmark" : "")
+                        Label(localizationManager.localized("identity_theft_filter_all"), systemImage: filterAction == "all" ? "checkmark" : "")
                     }
                     Button(action: { filterAction = "blocked" }) {
-                        Label("Заблокировано", systemImage: filterAction == "blocked" ? "checkmark" : "")
+                        Label(localizationManager.localized("identity_theft_filter_blocked"), systemImage: filterAction == "blocked" ? "checkmark" : "")
                     }
                     Button(action: { filterAction = "allowed" }) {
-                        Label("Разрешено", systemImage: filterAction == "allowed" ? "checkmark" : "")
+                        Label(localizationManager.localized("identity_theft_filter_allowed"), systemImage: filterAction == "allowed" ? "checkmark" : "")
                     }
                 } label: {
                     HStack {
-                        Text(filterAction == "all" ? "Все действия" : filterAction == "blocked" ? "Заблокировано" : "Разрешено")
+                        Text(filterAction == "all" ? localizationManager.localized("identity_theft_filter_all_actions") : filterAction == "blocked" ? localizationManager.localized("identity_theft_filter_blocked") : localizationManager.localized("identity_theft_filter_allowed"))
                             .font(.caption)
                         Image(systemName: "chevron.down")
                             .font(.caption2)
@@ -261,17 +261,17 @@ struct IdentityTheftModal: View {
                 // Фильтр по критичности
                 Menu {
                     Button(action: { filterSeverity = "all" }) {
-                        Label("Все", systemImage: filterSeverity == "all" ? "checkmark" : "")
+                        Label(localizationManager.localized("identity_theft_filter_all"), systemImage: filterSeverity == "all" ? "checkmark" : "")
                     }
                     Button(action: { filterSeverity = "critical" }) {
-                        Label("Критично", systemImage: filterSeverity == "critical" ? "checkmark" : "")
+                        Label(localizationManager.localized("dark_web_severity_critical"), systemImage: filterSeverity == "critical" ? "checkmark" : "")
                     }
                     Button(action: { filterSeverity = "high" }) {
-                        Label("Высокая", systemImage: filterSeverity == "high" ? "checkmark" : "")
+                        Label(localizationManager.localized("dark_web_severity_high"), systemImage: filterSeverity == "high" ? "checkmark" : "")
                     }
                 } label: {
                     HStack {
-                        Text(filterSeverity == "all" ? "Вся критичность" : filterSeverity == "critical" ? "Критично" : "Высокая")
+                        Text(filterSeverity == "all" ? localizationManager.localized("dark_web_filter_all_severity") : filterSeverity == "critical" ? localizationManager.localized("dark_web_severity_critical") : localizationManager.localized("dark_web_severity_high"))
                             .font(.caption)
                         Image(systemName: "chevron.down")
                             .font(.caption2)
@@ -295,7 +295,7 @@ struct IdentityTheftModal: View {
                 HStack(spacing: Spacing.xs) {
                     Text(attempt.dataType.icon)
                         .font(.caption)
-                    Text(attempt.dataType.displayName)
+                    Text(attempt.dataType.localizedDisplayName(localizationManager))
                         .font(.bodyBold)
                         .foregroundColor(.textPrimary)
                 }
@@ -331,6 +331,49 @@ struct IdentityTheftModal: View {
                     .foregroundColor(.textSecondary)
                     .padding(.top, Spacing.xs)
             }
+            
+            // Действия
+            HStack(spacing: Spacing.m) {
+                // Разрешить (если заблокировано)
+                if attempt.action == .blocked {
+                    Button(action: {
+                        Task {
+                            await viewModel.allowAttempt(attemptId: attempt.id)
+                        }
+                    }) {
+                        Label(localizationManager.localized("identity_theft_action_allow"), systemImage: "checkmark.circle")
+                            .font(.caption)
+                            .foregroundColor(.successGreen)
+                    }
+                }
+                
+                // Заблокировать (если разрешено)
+                if attempt.action == .allowed {
+                    Button(action: {
+                        Task {
+                            await viewModel.blockAttempt(attemptId: attempt.id)
+                        }
+                    }) {
+                        Label(localizationManager.localized("identity_theft_action_block"), systemImage: "hand.raised.fill")
+                            .font(.caption)
+                            .foregroundColor(.dangerRed)
+                    }
+                }
+                
+                // В белый список (если подозрительная)
+                if attempt.action == .suspicious {
+                    Button(action: {
+                        Task {
+                            await viewModel.addToWhitelist(source: attempt.requestSource)
+                        }
+                    }) {
+                        Label(localizationManager.localized("identity_theft_action_whitelist"), systemImage: "plus.circle")
+                            .font(.caption)
+                            .foregroundColor(.primaryBlue)
+                    }
+                }
+            }
+            .padding(.top, Spacing.xs)
         }
         .padding(Spacing.m)
         .background(
@@ -343,7 +386,7 @@ struct IdentityTheftModal: View {
         HStack(spacing: Spacing.xs) {
             Text(action.icon)
                 .font(.caption)
-            Text(action.displayName)
+            Text(action.localizedDisplayName(localizationManager))
                 .font(.caption2)
                 .foregroundColor(.white)
         }
@@ -356,7 +399,7 @@ struct IdentityTheftModal: View {
     }
     
     private func severityBadge(_ severity: AttemptSeverity) -> some View {
-        Text(severity.displayName)
+        Text(severity.localizedDisplayName(localizationManager))
             .font(.caption2)
             .foregroundColor(.white)
             .padding(.horizontal, Spacing.xs)

@@ -15,17 +15,22 @@ struct PrivacyReportsModal: View {
     @StateObject private var viewModel = PrivacyReportsViewModel()
     
     @State private var selectedTab: PrivacyTabType = .location
+    @State private var showAccuracySheet: Bool = false
+    @State private var selectedRequestId: String? = nil
+    @State private var showCleanupCategoriesSheet: Bool = false
+    @State private var showTrackerWhitelistAlert: Bool = false
+    @State private var selectedTrackerName: String? = nil
     
     enum PrivacyTabType: String, CaseIterable {
         case location = "location"
         case cleanup = "cleanup"
         case tracker = "tracker"
         
-        var displayName: String {
+        func displayName(_ localizationManager: LocalizationManager) -> String {
             switch self {
-            case .location: return "Местоположение"
-            case .cleanup: return "Очистка"
-            case .tracker: return "Трекеры"
+            case .location: return localizationManager.localized("privacy_tab_location")
+            case .cleanup: return localizationManager.localized("privacy_tab_cleanup")
+            case .tracker: return localizationManager.localized("privacy_tab_tracker")
             }
         }
         
@@ -109,6 +114,81 @@ struct PrivacyReportsModal: View {
                     .padding(.bottom, Spacing.l)
             }
         }
+        .confirmationDialog(
+            localizationManager.localized("privacy_location_accuracy_title"),
+            isPresented: $showAccuracySheet,
+            presenting: selectedRequestId
+        ) { requestId in
+            Button(localizationManager.localized("privacy_location_accuracy_high")) {
+                Task {
+                    await viewModel.updateLocationAccuracy(requestId: requestId, accuracy: .high)
+                }
+            }
+            Button(localizationManager.localized("privacy_location_accuracy_medium")) {
+                Task {
+                    await viewModel.updateLocationAccuracy(requestId: requestId, accuracy: .medium)
+                }
+            }
+            Button(localizationManager.localized("privacy_location_accuracy_low")) {
+                Task {
+                    await viewModel.updateLocationAccuracy(requestId: requestId, accuracy: .low)
+                }
+            }
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {
+                selectedRequestId = nil
+            }
+        } message: { _ in
+            Text(localizationManager.localized("privacy_location_accuracy_message"))
+        }
+        .confirmationDialog(
+            localizationManager.localized("privacy_cleanup_categories_title"),
+            isPresented: $showCleanupCategoriesSheet
+        ) {
+            Button(localizationManager.localized("privacy_cleanup_category_cache")) {
+                Task {
+                    await viewModel.startCleanup(categories: ["cache"])
+                }
+            }
+            Button(localizationManager.localized("privacy_cleanup_category_temp")) {
+                Task {
+                    await viewModel.startCleanup(categories: ["temp"])
+                }
+            }
+            Button(localizationManager.localized("privacy_cleanup_category_duplicates")) {
+                Task {
+                    await viewModel.startCleanup(categories: ["duplicates"])
+                }
+            }
+            Button(localizationManager.localized("privacy_cleanup_category_old")) {
+                Task {
+                    await viewModel.startCleanup(categories: ["old"])
+                }
+            }
+            Button(localizationManager.localized("privacy_cleanup_category_all")) {
+                Task {
+                    await viewModel.startCleanup(categories: ["all"])
+                }
+            }
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {}
+        } message: {
+            Text(localizationManager.localized("privacy_cleanup_categories_message"))
+        }
+        .alert(
+            localizationManager.localized("privacy_tracker_whitelist_confirm_title"),
+            isPresented: $showTrackerWhitelistAlert,
+            presenting: selectedTrackerName
+        ) { trackerName in
+            Button(localizationManager.localized("privacy_tracker_whitelist_confirm_button")) {
+                Task {
+                    await viewModel.addTrackerToWhitelist(trackerName: trackerName)
+                }
+            }
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {
+                selectedTrackerName = nil
+            }
+        } message: { trackerName in
+            Text(String(format: localizationManager.localized("privacy_tracker_whitelist_confirm_message"), trackerName))
+        }
     }
     
     // MARK: - Data Loading
@@ -148,7 +228,7 @@ struct PrivacyReportsModal: View {
                     HStack(spacing: Spacing.xs) {
                         Image(systemName: tab.icon)
                             .font(.caption)
-                        Text(tab.displayName)
+                        Text(tab.displayName(localizationManager))
                             .font(.body)
                     }
                     .foregroundColor(selectedTab == tab ? .white : .textPrimary)
@@ -220,7 +300,7 @@ struct PrivacyReportsModal: View {
                 Spacer()
                 Group {
                     if let stats = viewModel.locationStats {
-                        Text(stats.currentAccuracy.displayName)
+                        Text(stats.currentAccuracy.localizedDisplayName(localizationManager))
                     } else {
                         Text("—")
                     }
@@ -262,26 +342,68 @@ struct PrivacyReportsModal: View {
     }
     
     private func locationRequestRow(request: LocationRequest) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(request.appName)
-                    .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(request.appName)
+                        .font(.bodyBold)
+                        .foregroundColor(.textPrimary)
+                    
+                    Text(request.formattedTimestamp)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
                 
-                Text(request.formattedTimestamp)
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
+                Spacer()
+                
+                actionBadge(request.action, localizationManager: localizationManager)
+                
+                if let accuracy = request.accuracy {
+                    Text(accuracy.localizedDisplayName(localizationManager))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
             }
             
-            Spacer()
-            
-            actionBadge(request.action)
-            
-            if let accuracy = request.accuracy {
-                Text(accuracy.displayName)
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
+            // Действия
+            HStack(spacing: Spacing.s) {
+                // Разрешить
+                if request.action == .blocked {
+                    Button(action: {
+                        Task {
+                            await viewModel.allowLocationRequest(requestId: request.id)
+                        }
+                    }) {
+                        Label(localizationManager.localized("privacy_location_action_allow"), systemImage: "checkmark.circle")
+                            .font(.caption)
+                            .foregroundColor(.successGreen)
+                    }
+                }
+                
+                // Заблокировать
+                if request.action == .allowed {
+                    Button(action: {
+                        Task {
+                            await viewModel.blockLocationRequest(requestId: request.id)
+                        }
+                    }) {
+                        Label(localizationManager.localized("privacy_location_action_block"), systemImage: "hand.raised.fill")
+                            .font(.caption)
+                            .foregroundColor(.dangerRed)
+                    }
+                }
+                
+                // Изменить точность
+                Button(action: {
+                    selectedRequestId = request.id
+                    showAccuracySheet = true
+                }) {
+                    Label(localizationManager.localized("privacy_location_action_change_accuracy"), systemImage: "location.fill")
+                        .font(.caption)
+                        .foregroundColor(.primaryBlue)
+                }
             }
+            .padding(.top, Spacing.xs)
         }
         .padding(Spacing.m)
         .background(
@@ -305,10 +427,31 @@ struct PrivacyReportsModal: View {
     
     private var cleanupStatsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Text(localizationManager.localized("privacy_cleanup_stats_title"))
-                .font(.h3)
-                .foregroundColor(.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Text(localizationManager.localized("privacy_cleanup_stats_title"))
+                    .font(.h3)
+                    .foregroundColor(.textPrimary)
+                
+                Spacer()
+                
+                Button(action: {
+                    showCleanupCategoriesSheet = true
+                }) {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "trash.fill")
+                            .font(.caption)
+                        Text(localizationManager.localized("privacy_cleanup_start"))
+                            .font(.caption)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, Spacing.s)
+                    .padding(.vertical, Spacing.xs)
+                    .background(
+                        Capsule()
+                            .fill(Color.primaryBlue)
+                    )
+                }
+            }
             
             HStack(spacing: Spacing.s) {
                 statCard(
@@ -477,24 +620,37 @@ struct PrivacyReportsModal: View {
     }
     
     private func trackerRow(tracker: TrackerBlock) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(tracker.trackerName)
-                    .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(tracker.trackerName)
+                        .font(.bodyBold)
+                        .foregroundColor(.textPrimary)
+                    
+                    Text("\(tracker.blockedCount) \(localizationManager.localized("privacy_tracker_blocked_times"))")
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
                 
-                Text("\(tracker.blockedCount) раз заблокирован")
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
+                Spacer()
+                
+                if let lastBlocked = tracker.formattedLastBlocked {
+                    Text(lastBlocked)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
             }
             
-            Spacer()
-            
-            if let lastBlocked = tracker.formattedLastBlocked {
-                Text(lastBlocked)
+            // Кнопка "В белый список"
+            Button(action: {
+                selectedTrackerName = tracker.trackerName
+                showTrackerWhitelistAlert = true
+            }) {
+                Label(localizationManager.localized("privacy_tracker_whitelist_add"), systemImage: "plus.circle")
                     .font(.caption)
-                    .foregroundColor(.textSecondary)
+                    .foregroundColor(.primaryBlue)
             }
+            .padding(.top, Spacing.xs)
         }
         .padding(Spacing.m)
         .background(
@@ -529,11 +685,11 @@ struct PrivacyReportsModal: View {
         )
     }
     
-    private func actionBadge(_ action: LocationRequestAction) -> some View {
+    private func actionBadge(_ action: LocationRequestAction, localizationManager: LocalizationManager) -> some View {
         HStack(spacing: Spacing.xs) {
             Text(action.icon)
                 .font(.caption)
-            Text(action.displayName)
+            Text(action.localizedDisplayName(localizationManager))
                 .font(.caption2)
                 .foregroundColor(.white)
         }

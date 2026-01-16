@@ -20,12 +20,14 @@ class AICategoriesViewModel: ObservableObject {
     // MARK: - Private Properties
     
     private let apiService: APIService
+    private let localizationManager: LocalizationManager
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
     
-    init(apiService: APIService = APIService.shared) {
+    init(apiService: APIService = APIService.shared, localizationManager: LocalizationManager = LocalizationManager()) {
         self.apiService = apiService
+        self.localizationManager = localizationManager
     }
     
     // MARK: - Public Methods
@@ -50,7 +52,9 @@ class AICategoriesViewModel: ObservableObject {
                     )
                 }
         } catch {
-            errorMessage = "Не удалось загрузить список детей: \(error.localizedDescription)"
+            let errorKey = "ai_categories_error_load_failed"
+            let errorFormat = localizationManager.localized(errorKey)
+            errorMessage = String(format: errorFormat, error.localizedDescription)
             // В случае ошибки используем пустой список
             self.children = []
         }
@@ -78,11 +82,80 @@ class AICategoriesViewModel: ObservableObject {
             let (stats, reports) = try await (statsTask, reportsTask)
             self.stats = stats
             self.reports = reports
+            // Очищаем ошибку при успешной загрузке
+            errorMessage = nil
         } catch {
-            errorMessage = "Не удалось загрузить отчеты: \(error.localizedDescription)"
+            // Проверяем тип ошибки - показываем только реальные проблемы
+            let networkError = NetworkError.from(error)
+            
+            // Не показываем ошибку для 404 (нет данных - это нормально)
+            if case .notFound = networkError {
+                // Просто используем пустые данные, не показываем ошибку
+                self.stats = nil
+                self.reports = []
+                errorMessage = nil
+                return
+            }
+            
+            // Показываем ошибку только для реальных проблем
+            if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "ai_categories_error_load_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            } else {
+                // Для временных ошибок тоже не показываем, просто используем пустые данные
+                errorMessage = nil
+            }
+            
             // В случае ошибки используем пустые данные
             self.stats = nil
             self.reports = []
+        }
+    }
+    
+    // MARK: - Actions
+    
+    func allowContent(contentId: String, childId: String) async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            try await withCheckedThrowingContinuation { continuation in
+                apiService.allowAIContent(contentId: contentId, childId: childId) { result in
+                    continuation.resume(with: result.map { _ in () })
+                }
+            }
+            await loadReports(childId: childId.isEmpty ? nil : childId)
+        } catch {
+            let networkError = NetworkError.from(error)
+            if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "ai_categories_error_action_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            }
+        }
+    }
+    
+    func blockContent(contentId: String, childId: String) async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            try await withCheckedThrowingContinuation { continuation in
+                apiService.blockAIContent(contentId: contentId, childId: childId) { result in
+                    continuation.resume(with: result.map { _ in () })
+                }
+            }
+            await loadReports(childId: childId.isEmpty ? nil : childId)
+        } catch {
+            let networkError = NetworkError.from(error)
+            if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "ai_categories_error_action_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            }
         }
     }
 }

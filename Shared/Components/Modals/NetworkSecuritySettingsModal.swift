@@ -80,23 +80,20 @@ struct NetworkSecuritySettingsModal: View {
             do {
                 let config = try await configurationService.getConfiguration(for: componentId)
                 if let settings = config.additionalSettings {
-                    if let value = settings["blockUnsafeNetworks"]?.value as? Bool {
-                        blockUnsafeNetworks = value
-                    }
-                    if let value = settings["warnOnPublicWiFi"]?.value as? Bool {
-                        warnOnPublicWiFi = value
-                    }
-                    if let value = settings["autoConnectVPN"]?.value as? Bool {
-                        autoConnectVPN = value
-                    }
-                    if let value = settings["blockTracking"]?.value as? Bool {
-                        blockTracking = value
-                    }
-                    if let value = settings["encryptTraffic"]?.value as? Bool {
-                        encryptTraffic = value
-                    }
-                    if let value = settings["firewallEnabled"]?.value as? Bool {
-                        firewallEnabled = value
+                    let newBlockUnsafeNetworks = (settings["blockUnsafeNetworks"]?.value as? Bool) ?? blockUnsafeNetworks
+                    let newWarnOnPublicWiFi = (settings["warnOnPublicWiFi"]?.value as? Bool) ?? warnOnPublicWiFi
+                    let newAutoConnectVPN = (settings["autoConnectVPN"]?.value as? Bool) ?? autoConnectVPN
+                    let newBlockTracking = (settings["blockTracking"]?.value as? Bool) ?? blockTracking
+                    let newEncryptTraffic = (settings["encryptTraffic"]?.value as? Bool) ?? encryptTraffic
+                    let newFirewallEnabled = (settings["firewallEnabled"]?.value as? Bool) ?? firewallEnabled
+
+                    await MainActor.run {
+                        blockUnsafeNetworks = newBlockUnsafeNetworks
+                        warnOnPublicWiFi = newWarnOnPublicWiFi
+                        autoConnectVPN = newAutoConnectVPN
+                        blockTracking = newBlockTracking
+                        encryptTraffic = newEncryptTraffic
+                        firewallEnabled = newFirewallEnabled
                     }
                 }
             } catch {

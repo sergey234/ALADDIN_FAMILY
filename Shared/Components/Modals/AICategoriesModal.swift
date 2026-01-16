@@ -197,7 +197,7 @@ struct AICategoriesModal: View {
                 .frame(width: 40)
             
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(category.displayName)
+                Text(category.localizedDisplayName(localizationManager))
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
                 
@@ -207,7 +207,7 @@ struct AICategoriesModal: View {
                         .foregroundColor(.textSecondary)
                     
                     if blocked > 0 {
-                        Label("\(blocked) заблокировано", systemImage: "hand.raised.fill")
+                        Label("\(blocked) \(localizationManager.localized("ai_categories_blocked"))", systemImage: "hand.raised.fill")
                             .font(.caption)
                             .foregroundColor(.dangerRed)
                     }
@@ -258,35 +258,65 @@ struct AICategoriesModal: View {
     }
     
     private func blockedContentRow(report: AICategoryReport) -> some View {
-        HStack {
-            Text(report.category.icon)
-                .font(.title3)
-                .frame(width: 30)
-            
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(report.category.displayName)
-                    .font(.bodyBold)
-                    .foregroundColor(.textPrimary)
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack {
+                Text(report.category.icon)
+                    .font(.title3)
+                    .frame(width: 30)
                 
-                if let childName = report.childName {
-                    Text("Для: \(childName)")
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(report.category.localizedDisplayName(localizationManager))
+                        .font(.bodyBold)
+                        .foregroundColor(.textPrimary)
+                    
+                    if let childName = report.childName {
+                        Text(String(format: localizationManager.localized("ai_categories_for_child"), childName))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: Spacing.xs) {
+                    Text("\(report.blockedCount)")
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.dangerRed)
+                    
+                    Text(localizationManager.localized("ai_categories_blocked"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 }
             }
             
-            Spacer()
-            
-            VStack(alignment: .trailing, spacing: Spacing.xs) {
-                Text("\(report.blockedCount)")
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundColor(.dangerRed)
+            // Действия
+            HStack(spacing: Spacing.s) {
+                Button(action: {
+                    Task {
+                        if let childId = report.childId {
+                            await viewModel.allowContent(contentId: report.id, childId: childId)
+                        }
+                    }
+                }) {
+                    Label(localizationManager.localized("ai_categories_action_allow"), systemImage: "checkmark.circle")
+                        .font(.caption)
+                        .foregroundColor(.successGreen)
+                }
                 
-                Text("заблокировано")
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
+                Button(action: {
+                    Task {
+                        if let childId = report.childId {
+                            await viewModel.blockContent(contentId: report.id, childId: childId)
+                        }
+                    }
+                }) {
+                    Label(localizationManager.localized("ai_categories_action_block"), systemImage: "hand.raised.fill")
+                        .font(.caption)
+                        .foregroundColor(.dangerRed)
+                }
             }
+            .padding(.top, Spacing.xs)
         }
         .padding(Spacing.m)
         .background(

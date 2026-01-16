@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /**
  * 🌑 Dark Web Monitoring Modal
@@ -18,15 +19,16 @@ struct DarkWebMonitoringModal: View {
     @AppStorage("dark_web_filter_status") private var filterStatus: String = "all"
     @AppStorage("dark_web_filter_severity") private var filterSeverity: String = "all"
     @State private var selectedTab: TabType = .leaks
+    @State private var showDataInput: Bool = false
     
     enum TabType: String, CaseIterable {
         case leaks = "leaks"
         case scans = "scans"
         
-        var displayName: String {
+        func displayName(_ localizationManager: LocalizationManager) -> String {
             switch self {
-            case .leaks: return "Утечки"
-            case .scans: return "Сканирования"
+            case .leaks: return localizationManager.localized("dark_web_tab_leaks")
+            case .scans: return localizationManager.localized("dark_web_tab_scans")
             }
         }
         
@@ -107,6 +109,10 @@ struct DarkWebMonitoringModal: View {
                     .padding(.bottom, Spacing.l)
             }
         }
+        .sheet(isPresented: $showDataInput) {
+            DarkWebDataInputView(isPresented: $showDataInput, viewModel: viewModel)
+                .environmentObject(localizationManager)
+        }
     }
     
     // MARK: - Stats Section
@@ -176,7 +182,7 @@ struct DarkWebMonitoringModal: View {
                     HStack(spacing: Spacing.xs) {
                         Image(systemName: tab.icon)
                             .font(.caption)
-                        Text(tab.displayName)
+                        Text(tab.displayName(localizationManager))
                             .font(.body)
                     }
                     .foregroundColor(selectedTab == tab ? .white : .textPrimary)
@@ -201,6 +207,25 @@ struct DarkWebMonitoringModal: View {
     
     private var leaksSection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
+            // Кнопка добавления данных для сканирования
+            Button(action: {
+                showDataInput = true
+            }) {
+                HStack {
+                    Image(systemName: "plus.circle.fill")
+                    Text(localizationManager.localized("dark_web_scan_add_data"))
+                }
+                .font(.body)
+                .foregroundColor(.primaryBlue)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Spacing.s)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                        .fill(Color.primaryBlue.opacity(0.1))
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+            
             // Фильтры
             filtersSection
             
@@ -230,17 +255,17 @@ struct DarkWebMonitoringModal: View {
                 // Фильтр по статусу
                 Menu {
                     Button(action: { filterStatus = "all" }) {
-                        Label("Все", systemImage: filterStatus == "all" ? "checkmark" : "")
+                        Label(localizationManager.localized("dark_web_filter_all"), systemImage: filterStatus == "all" ? "checkmark" : "")
                     }
                     Button(action: { filterStatus = "new" }) {
-                        Label("Новые", systemImage: filterStatus == "new" ? "checkmark" : "")
+                        Label(localizationManager.localized("dark_web_filter_new"), systemImage: filterStatus == "new" ? "checkmark" : "")
                     }
                     Button(action: { filterStatus = "resolved" }) {
-                        Label("Решено", systemImage: filterStatus == "resolved" ? "checkmark" : "")
+                        Label(localizationManager.localized("dark_web_filter_resolved"), systemImage: filterStatus == "resolved" ? "checkmark" : "")
                     }
                 } label: {
                     HStack {
-                        Text(filterStatus == "all" ? "Все статусы" : filterStatus == "new" ? "Новые" : "Решено")
+                        Text(filterStatus == "all" ? localizationManager.localized("dark_web_filter_all_statuses") : filterStatus == "new" ? localizationManager.localized("dark_web_filter_new") : localizationManager.localized("dark_web_filter_resolved"))
                             .font(.caption)
                         Image(systemName: "chevron.down")
                             .font(.caption2)
@@ -257,17 +282,17 @@ struct DarkWebMonitoringModal: View {
                 // Фильтр по критичности
                 Menu {
                     Button(action: { filterSeverity = "all" }) {
-                        Label("Все", systemImage: filterSeverity == "all" ? "checkmark" : "")
+                        Label(localizationManager.localized("dark_web_filter_all"), systemImage: filterSeverity == "all" ? "checkmark" : "")
                     }
                     Button(action: { filterSeverity = "critical" }) {
-                        Label("Критично", systemImage: filterSeverity == "critical" ? "checkmark" : "")
+                        Label(localizationManager.localized("dark_web_severity_critical"), systemImage: filterSeverity == "critical" ? "checkmark" : "")
                     }
                     Button(action: { filterSeverity = "high" }) {
-                        Label("Высокая", systemImage: filterSeverity == "high" ? "checkmark" : "")
+                        Label(localizationManager.localized("dark_web_severity_high"), systemImage: filterSeverity == "high" ? "checkmark" : "")
                     }
                 } label: {
                     HStack {
-                        Text(filterSeverity == "all" ? "Вся критичность" : filterSeverity == "critical" ? "Критично" : "Высокая")
+                        Text(filterSeverity == "all" ? localizationManager.localized("dark_web_filter_all_severity") : filterSeverity == "critical" ? localizationManager.localized("dark_web_severity_critical") : localizationManager.localized("dark_web_severity_high"))
                             .font(.caption)
                         Image(systemName: "chevron.down")
                             .font(.caption2)
@@ -291,7 +316,7 @@ struct DarkWebMonitoringModal: View {
                 HStack(spacing: Spacing.xs) {
                     Text(leak.dataType.icon)
                         .font(.caption)
-                    Text(leak.dataType.displayName)
+                    Text(leak.dataType.localizedDisplayName(localizationManager))
                         .font(.bodyBold)
                         .foregroundColor(.textPrimary)
                 }
@@ -334,18 +359,27 @@ struct DarkWebMonitoringModal: View {
             HStack(spacing: Spacing.m) {
                 if leak.status != .resolved {
                     Button(action: {
-                        // TODO: Отметить как решено
+                        Task {
+                            do {
+                                try await viewModel.resolveLeak(leakId: leak.id)
+                            } catch {
+                                // Ошибка уже обработана в ViewModel
+                            }
+                        }
                     }) {
-                        Label("Решено", systemImage: "checkmark.circle")
+                        Label(localizationManager.localized("dark_web_action_resolved"), systemImage: "checkmark.circle")
                             .font(.caption)
                             .foregroundColor(.successGreen)
                     }
                 }
                 
                 Button(action: {
-                    // TODO: Сменить пароль
+                    // Открываем системные настройки для смены пароля
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
                 }) {
-                    Label("Сменить пароль", systemImage: "key.fill")
+                    Label(localizationManager.localized("dark_web_action_change_password"), systemImage: "key.fill")
                         .font(.caption)
                         .foregroundColor(.primaryBlue)
                 }
@@ -360,7 +394,7 @@ struct DarkWebMonitoringModal: View {
     }
     
     private func statusBadge(_ status: LeakStatus) -> some View {
-        Text(status.displayName)
+        Text(status.localizedDisplayName(localizationManager))
             .font(.caption2)
             .foregroundColor(.white)
             .padding(.horizontal, Spacing.xs)
@@ -372,7 +406,7 @@ struct DarkWebMonitoringModal: View {
     }
     
     private func severityBadge(_ severity: LeakSeverity) -> some View {
-        Text(severity.displayName)
+        Text(severity.localizedDisplayName(localizationManager))
             .font(.caption2)
             .foregroundColor(.white)
             .padding(.horizontal, Spacing.xs)
@@ -387,10 +421,35 @@ struct DarkWebMonitoringModal: View {
     
     private var scansSection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Text(localizationManager.localized("dark_web_scans_history"))
-                .font(.h3)
-                .foregroundColor(.textPrimary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Text(localizationManager.localized("dark_web_scans_history"))
+                    .font(.h3)
+                    .foregroundColor(.textPrimary)
+                
+                Spacer()
+                
+                // Кнопка запуска сканирования
+                Button(action: {
+                    Task {
+                        await viewModel.startScan()
+                    }
+                }) {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.caption)
+                        Text(localizationManager.localized("dark_web_scan_start"))
+                            .font(.caption)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, Spacing.s)
+                    .padding(.vertical, Spacing.xs)
+                    .background(
+                        Capsule()
+                            .fill(Color.primaryBlue)
+                    )
+                }
+                .disabled(viewModel.isScanning)
+            }
             
             if viewModel.scans.isEmpty {
                 emptyScansView
@@ -427,7 +486,7 @@ struct DarkWebMonitoringModal: View {
             
             Spacer()
             
-            Text(scan.status.displayName)
+            Text(scan.status.localizedDisplayName(localizationManager))
                 .font(.caption2)
                 .foregroundColor(.white)
                 .padding(.horizontal, Spacing.xs)

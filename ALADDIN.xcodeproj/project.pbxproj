@@ -47,6 +47,9 @@
 		5E0798332F17DA4000D20CF6 /* AICategoriesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798322F17DA4000D20CF6 /* AICategoriesViewModel.swift */; };
 		5E0798352F17DC0C00D20CF6 /* PositioningSystemService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798342F17DC0C00D20CF6 /* PositioningSystemService.swift */; };
 		5E0798372F1819CD00D20CF6 /* ParallelLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798362F1819CC00D20CF6 /* ParallelLoader.swift */; };
+		5E0798392F18561C00D20CF6 /* DarkWebScanExplanationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0798382F18561A00D20CF6 /* DarkWebScanExplanationView.swift */; };
+		5E07983B2F18563500D20CF6 /* DarkWebScanMethodSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07983A2F18563500D20CF6 /* DarkWebScanMethodSelector.swift */; };
+		5E07983D2F18566300D20CF6 /* DarkWebDataInputView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07983C2F18566300D20CF6 /* DarkWebDataInputView.swift */; };
 		5E0C30B22EAE71D100FD6647 /* RoleSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */; };
 		5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */; };
 		5E0C30B82EAFAD0B00FD6647 /* 02_FamilyScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */; };
@@ -334,6 +337,9 @@
 		5E0798322F17DA4000D20CF6 /* AICategoriesViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AICategoriesViewModel.swift; path = ViewModels/AICategoriesViewModel.swift; sourceTree = "<group>"; };
 		5E0798342F17DC0C00D20CF6 /* PositioningSystemService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PositioningSystemService.swift; path = Core/Services/PositioningSystemService.swift; sourceTree = "<group>"; };
 		5E0798362F1819CC00D20CF6 /* ParallelLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParallelLoader.swift; path = Core/Utils/ParallelLoader.swift; sourceTree = "<group>"; };
+		5E0798382F18561A00D20CF6 /* DarkWebScanExplanationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DarkWebScanExplanationView.swift; path = Shared/Components/Modals/DarkWebScanExplanationView.swift; sourceTree = "<group>"; };
+		5E07983A2F18563500D20CF6 /* DarkWebScanMethodSelector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DarkWebScanMethodSelector.swift; path = Shared/Components/Modals/DarkWebScanMethodSelector.swift; sourceTree = "<group>"; };
+		5E07983C2F18566300D20CF6 /* DarkWebDataInputView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DarkWebDataInputView.swift; path = Shared/Components/Modals/DarkWebDataInputView.swift; sourceTree = "<group>"; };
 		5E0C30AF2EAE71A100FD6647 /* MemberSettingsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberSettingsModalView.swift; path = Shared/Components/Modals/MemberSettingsModalView.swift; sourceTree = "<group>"; };
 		5E0C30B12EAE71D100FD6647 /* RoleSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RoleSelectionModal.swift; path = Shared/Components/Modals/RoleSelectionModal.swift; sourceTree = "<group>"; };
 		5E0C30B32EAE720700FD6647 /* MemberStatsModalView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MemberStatsModalView.swift; path = Shared/Components/Modals/MemberStatsModalView.swift; sourceTree = "<group>"; };
@@ -687,6 +693,9 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5E07983C2F18566300D20CF6 /* DarkWebDataInputView.swift */,
+				5E07983A2F18563500D20CF6 /* DarkWebScanMethodSelector.swift */,
+				5E0798382F18561A00D20CF6 /* DarkWebScanExplanationView.swift */,
 				5E0798362F1819CC00D20CF6 /* ParallelLoader.swift */,
 				5E0798282F17D7E000D20CF6 /* UserSelectorView.swift */,
 				5E0798242F17D5A300D20CF6 /* ComponentReportCard.swift */,
@@ -1125,6 +1134,7 @@
 				5E0058172EC4A6E300024F7E /* TariffManager.swift in Sources */,
 				5E0C30BA2EAFC81D00FD6647 /* ChildContentScreen.swift in Sources */,
 				5E00582B2EC6062100024F7E /* AdditionalFeature.swift in Sources */,
+				5E07983D2F18566300D20CF6 /* DarkWebDataInputView.swift in Sources */,
 				5E32FFE92EAD1836000574C4 /* StatItem.swift in Sources */,
 				5E32FFED2EAD1876000574C4 /* FamilyMemberCard.swift in Sources */,
 				B2000130B2000130B2000130 /* AddMoreMemberCard.swift in Sources */,
@@ -1185,6 +1195,7 @@
 				5E0798272F17D77500D20CF6 /* ComponentReportsModels.swift in Sources */,
 				5E6F39092F151F7C00CEC103 /* VoiceMessagePlayer.swift in Sources */,
 				5E6F394C2F15B07E00CEC103 /* ComponentAnalytics.swift in Sources */,
+				5E0798392F18561C00D20CF6 /* DarkWebScanExplanationView.swift in Sources */,
 				A3000031 /* ViewModels/NotificationsViewModel.swift in Sources */,
 				5EC3090D2EA6B60F00C7D34B /* 06_AIAssistantScreen.swift in Sources */,
 				5E0798172F17D23E00D20CF6 /* AICategoriesModal.swift in Sources */,
@@ -1278,6 +1289,7 @@
 				5E6F39402F15B00100CEC103 /* ComponentConfigurationService.swift in Sources */,
 				A4AAA008 /* ThreatProtectionCategory.swift in Sources */,
 				5E0798332F17DA4000D20CF6 /* AICategoriesViewModel.swift in Sources */,
+				5E07983B2F18563500D20CF6 /* DarkWebScanMethodSelector.swift in Sources */,
 				A4AAA102 /* GamesSettingsManager.swift in Sources */,
 				B1000031 /* ParentalControlManager.swift in Sources */,
 				A4AAA104 /* AnalyticsService.swift in Sources */,

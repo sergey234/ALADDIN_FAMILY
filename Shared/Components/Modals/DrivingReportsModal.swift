@@ -25,17 +25,18 @@ struct DrivingReportsModal: View {
     // Фильтры
     @AppStorage("driving_reports_period") private var selectedPeriod: String = "week"
     @State private var selectedFilter: FilterType = .all
+    @State private var showPositioningSystemPicker: Bool = false
     
     enum FilterType: String, CaseIterable {
         case all = "all"
         case withViolations = "with_violations"
         case withoutViolations = "without_violations"
         
-        var displayName: String {
+        func displayName(_ localizationManager: LocalizationManager) -> String {
             switch self {
-            case .all: return "Все"
-            case .withViolations: return "С нарушениями"
-            case .withoutViolations: return "Без нарушений"
+            case .all: return localizationManager.localized("driving_reports_filter_all")
+            case .withViolations: return localizationManager.localized("driving_reports_filter_with_violations")
+            case .withoutViolations: return localizationManager.localized("driving_reports_filter_without_violations")
             }
         }
     }
@@ -129,6 +130,19 @@ struct DrivingReportsModal: View {
                     .padding(.bottom, Spacing.l)
             }
         }
+        .sheet(isPresented: $showPositioningSystemPicker) {
+            PositioningSystemPickerView(
+                selectedSystem: Binding(
+                    get: { positioningService.selectedSystem },
+                    set: { newSystem in
+                        positioningService.saveSelectedSystem(newSystem)
+                    }
+                ),
+                currentSystem: positioningService.currentSystem,
+                currentRegion: positioningService.currentRegionName
+            )
+            .environmentObject(localizationManager)
+        }
     }
     
     // MARK: - Positioning System Selector
@@ -144,7 +158,7 @@ struct DrivingReportsModal: View {
                 HStack(spacing: Spacing.xs) {
                     Image(systemName: positioningService.currentSystem.icon)
                         .font(.caption)
-                    Text(positioningService.currentSystem.displayName)
+                    Text(positioningService.currentSystem.localizedDisplayName(localizationManager))
                         .font(.caption)
                 }
                 .foregroundColor(.textSecondary)
@@ -159,7 +173,7 @@ struct DrivingReportsModal: View {
                 
                 // Кнопка изменения
                 Button(action: {
-                    // TODO: Показать Picker для выбора системы
+                    showPositioningSystemPicker = true
                 }) {
                     Text(localizationManager.localized("common_change"))
                         .font(.caption)
@@ -332,11 +346,11 @@ struct DrivingReportsModal: View {
             }
             
             HStack(spacing: Spacing.m) {
-                Label(report.formattedDistance, systemImage: "ruler")
+                Label(report.localizedFormattedDistance(localizationManager), systemImage: "ruler")
                     .font(.caption)
                     .foregroundColor(.textSecondary)
                 
-                Label("\(report.durationMinutes) мин", systemImage: "clock")
+                Label("\(report.durationMinutes) \(localizationManager.localized("driving_reports_unit_min"))", systemImage: "clock")
                     .font(.caption)
                     .foregroundColor(.textSecondary)
                 
@@ -454,7 +468,7 @@ struct DrivingReportsModal: View {
     }
     
     private func loadReports() {
-        Task {
+        Task { @MainActor in
             let userId = selectedUserId.isEmpty ? nil : selectedUserId
             await viewModel.loadReports(userId: userId, period: selectedPeriod)
         }

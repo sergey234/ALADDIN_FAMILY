@@ -18,6 +18,34 @@ struct FamilyContentBlockModal: View {
     
     @Binding var isPresented: Bool
     @Binding var isEnabled: Bool
+
+    // MARK: - Optional customization (to support Safari cards contexts)
+    private let titleKey: String
+    private let headerTitleKey: String
+    private let descriptionKey: String
+    private let allowedCategories: [ContentBlockerCategory]?
+    private let initialSelectedCategories: [ContentBlockerCategory]?
+    private let onAppliedCategories: ((Set<ContentBlockerCategory>) -> Void)?
+
+    init(
+        isPresented: Binding<Bool>,
+        isEnabled: Binding<Bool>,
+        titleKey: String = "family_content_block_modal_title",
+        headerTitleKey: String = "content_block_header_title",
+        descriptionKey: String = "content_block_description",
+        allowedCategories: [ContentBlockerCategory]? = nil,
+        initialSelectedCategories: [ContentBlockerCategory]? = nil,
+        onAppliedCategories: ((Set<ContentBlockerCategory>) -> Void)? = nil
+    ) {
+        self._isPresented = isPresented
+        self._isEnabled = isEnabled
+        self.titleKey = titleKey
+        self.headerTitleKey = headerTitleKey
+        self.descriptionKey = descriptionKey
+        self.allowedCategories = allowedCategories
+        self.initialSelectedCategories = initialSelectedCategories
+        self.onAppliedCategories = onAppliedCategories
+    }
     
     // MARK: - State
     
@@ -55,7 +83,7 @@ struct FamilyContentBlockModal: View {
                     .padding(Spacing.screenPadding)
                 }
             }
-            .navigationTitle(localizationManager.localized("family_content_block_modal_title"))
+            .navigationTitle(localizationManager.localized(titleKey))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -90,7 +118,7 @@ struct FamilyContentBlockModal: View {
                 .font(.system(size: 48))
                 .foregroundColor(.primaryBlue)
             
-            Text(localizationManager.localized("content_block_header_title"))
+            Text(localizationManager.localized(headerTitleKey))
                 .font(.h2)
                 .foregroundColor(.textPrimary)
                 .multilineTextAlignment(.center)
@@ -102,7 +130,7 @@ struct FamilyContentBlockModal: View {
     
     private var descriptionSection: some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
-            Text(localizationManager.localized("content_block_description"))
+            Text(localizationManager.localized(descriptionKey))
                 .font(.body)
                 .foregroundColor(.textSecondary)
             
@@ -121,7 +149,8 @@ struct FamilyContentBlockModal: View {
     
     private var categoriesSection: some View {
         VStack(spacing: Spacing.s) {
-            ForEach(ContentBlockerCategory.allCases, id: \.self) { category in
+            let categories = allowedCategories ?? Array(ContentBlockerCategory.allCases)
+            ForEach(categories, id: \.self) { category in
                 CategoryToggleRow(
                     category: category,
                     isSelected: selectedCategories.contains(category),
@@ -242,7 +271,11 @@ struct FamilyContentBlockModal: View {
     
     private func loadSettings() {
         contentBlockerManager.loadActiveCategories()
-        selectedCategories = Set(contentBlockerManager.activeCategories)
+        if let initialSelectedCategories = initialSelectedCategories {
+            selectedCategories = Set(initialSelectedCategories)
+        } else {
+            selectedCategories = Set(contentBlockerManager.activeCategories)
+        }
         
         Task {
             await contentBlockerManager.checkBlockingStatus()
@@ -258,6 +291,7 @@ struct FamilyContentBlockModal: View {
                 // 1. Применить правила через ContentBlockerManager
                 let categories = Array(selectedCategories)
                 try await contentBlockerManager.enableContentBlocker(categories: categories)
+                onAppliedCategories?(selectedCategories)
                 
                 // 2. Сохранить настройки через ComponentConfigurationService
                 let isComponentEnabled = await MainActor.run {

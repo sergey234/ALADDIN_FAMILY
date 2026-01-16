@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /**
  * 📊 Component Reports Models
@@ -661,5 +662,252 @@ extension JSONEncoder {
         }
         return encoder
     }()
+}
+
+// MARK: - Localization Extensions
+
+extension DrivingReport {
+    func localizedFormattedDistance(_ localizationManager: LocalizationManager) -> String {
+        String(format: "%.1f %@", distance, localizationManager.localized("driving_reports_unit_km"))
+    }
+    
+    func localizedFormattedAverageSpeed(_ localizationManager: LocalizationManager) -> String {
+        String(format: "%.0f %@", averageSpeed, localizationManager.localized("driving_reports_unit_km"))
+    }
+}
+
+extension DrivingEvent {
+    func localizedSeverityLevel(_ localizationManager: LocalizationManager) -> String {
+        if severity >= 0.8 {
+            return localizationManager.localized("driving_event_severity_sharp")
+        } else if severity >= 0.5 {
+            return localizationManager.localized("driving_event_severity_medium")
+        } else {
+            return localizationManager.localized("driving_event_severity_soft")
+        }
+    }
+}
+
+extension DrivingEventType {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .braking: return localizationManager.localized("driving_event_type_braking")
+        case .acceleration: return localizationManager.localized("driving_event_type_acceleration")
+        case .turn: return localizationManager.localized("driving_event_type_turn")
+        }
+    }
+}
+
+extension DrivingViolation {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch type {
+        case .speedExceeded: return localizationManager.localized("driving_violation_speed_exceeded")
+        case .harshBraking: return localizationManager.localized("driving_violation_harsh_braking")
+        case .harshAcceleration: return localizationManager.localized("driving_violation_harsh_acceleration")
+        case .sharpTurn: return localizationManager.localized("driving_violation_sharp_turn")
+        }
+    }
+}
+
+extension ViolationSeverity {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .low: return localizationManager.localized("violation_severity_low")
+        case .medium: return localizationManager.localized("violation_severity_medium")
+        case .high: return localizationManager.localized("violation_severity_high")
+        }
+    }
+}
+
+extension DrivingStats {
+    func localizedFormattedTotalDistance(_ localizationManager: LocalizationManager) -> String {
+        String(format: "%.1f %@", totalDistance, localizationManager.localized("driving_reports_unit_km"))
+    }
+    
+    func localizedFormattedTotalDuration(_ localizationManager: LocalizationManager) -> String {
+        let hours = Int(totalDuration / 3600)
+        let minutes = Int((totalDuration.truncatingRemainder(dividingBy: 3600)) / 60)
+        if hours > 0 {
+            return "\(hours)\(localizationManager.localized("driving_reports_unit_hour")) \(minutes)\(localizationManager.localized("driving_reports_unit_min"))"
+        } else {
+            return "\(minutes)\(localizationManager.localized("driving_reports_unit_min"))"
+        }
+    }
+}
+
+extension LeakStatus {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .new: return localizationManager.localized("dark_web_leak_status_new")
+        case .inProgress: return localizationManager.localized("dark_web_scan_status_in_progress")
+        case .resolved: return localizationManager.localized("dark_web_leak_status_resolved")
+        case .ignored: return localizationManager.localized("dark_web_leak_status_resolved") // Используем тот же ключ
+        }
+    }
+}
+
+extension LeakSeverity {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .critical: return localizationManager.localized("dark_web_severity_critical")
+        case .high: return localizationManager.localized("dark_web_severity_high")
+        case .medium: return localizationManager.localized("dark_web_severity_high") // Используем тот же ключ
+        case .low: return localizationManager.localized("dark_web_severity_high") // Используем тот же ключ
+        }
+    }
+}
+
+extension ScanStatus {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .completed: return localizationManager.localized("dark_web_scan_status_completed")
+        case .inProgress: return localizationManager.localized("dark_web_scan_status_in_progress")
+        case .failed: return localizationManager.localized("dark_web_scan_status_failed")
+        }
+    }
+}
+
+extension AttemptAction {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .blocked: return localizationManager.localized("identity_theft_action_blocked")
+        case .allowed: return localizationManager.localized("identity_theft_action_allowed")
+        case .suspicious: return localizationManager.localized("identity_theft_action_suspicious")
+        case .requiresReview: return localizationManager.localized("identity_theft_action_suspicious") // Используем тот же ключ
+        }
+    }
+}
+
+extension AttemptSeverity {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .critical: return localizationManager.localized("dark_web_severity_critical")
+        case .high: return localizationManager.localized("dark_web_severity_high")
+        case .medium: return localizationManager.localized("violation_severity_medium")
+        case .low: return localizationManager.localized("violation_severity_low")
+        }
+    }
+}
+
+extension LeakDataType {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .email: return localizationManager.localized("identity_theft_data_type_email")
+        case .password: return localizationManager.localized("identity_theft_data_type_password")
+        case .phone: return localizationManager.localized("identity_theft_data_type_phone")
+        case .bank: return localizationManager.localized("identity_theft_data_type_card")
+        case .passport: return localizationManager.localized("identity_theft_data_type_passport")
+        case .snils: return localizationManager.localized("identity_theft_data_type_passport") // Используем тот же ключ
+        }
+    }
+}
+
+extension IdentityDataType {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .passport: return localizationManager.localized("identity_theft_data_type_passport")
+        case .snils: return localizationManager.localized("identity_theft_data_type_passport") // Используем тот же ключ
+        case .bank: return localizationManager.localized("identity_theft_data_type_card")
+        case .other: return localizationManager.localized("identity_theft_data_type_passport") // Используем тот же ключ
+        }
+    }
+}
+
+extension LocationRequestAction {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .blocked: return localizationManager.localized("privacy_location_action_blocked")
+        case .allowed: return localizationManager.localized("privacy_location_action_allowed")
+        case .modified: return localizationManager.localized("privacy_location_action_modified_approx")
+        }
+    }
+}
+
+extension LocationAccuracy {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .high: return localizationManager.localized("privacy_location_accuracy_high_with_meters")
+        case .medium: return localizationManager.localized("privacy_location_accuracy_medium_with_meters")
+        case .low: return localizationManager.localized("privacy_location_accuracy_low_with_meters")
+        }
+    }
+}
+
+extension ContentCategory {
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        let key = "ai_categories_category_\(self.rawValue)"
+        let localized = localizationManager.localized(key)
+        // Если ключ не найден, используем дефолтное значение
+        return localized != key ? localized : displayName
+    }
+}
+
+// MARK: - Dark Web Hybrid Scan Models
+
+/// Метод сканирования темной сети
+enum DarkWebScanMethod: String, Codable, CaseIterable {
+    case secure = "secure"  // Хеширование
+    case fast = "fast"      // Без хеширования
+    
+    func displayName(_ localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .secure:
+            return localizationManager.localized("dark_web_scan_method_secure")
+        case .fast:
+            return localizationManager.localized("dark_web_scan_method_fast")
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .secure: return "lock.shield.fill"
+        case .fast: return "bolt.fill"
+        }
+    }
+}
+
+/// Запрос на сканирование темной сети
+struct DarkWebScanRequest: Codable {
+    // Для безопасного сканирования (хеши)
+    let emailHash: String?
+    let passwordHash: String?
+    
+    // Для быстрого сканирования (plaintext)
+    let email: String?
+    let phone: String?
+    let passport: String?
+    let snils: String?
+    
+    let method: String  // "secure" или "fast"
+}
+
+/// Результат сканирования темной сети
+struct DarkWebScanResult: Codable, Identifiable {
+    let id: String
+    let dataType: String  // "email", "password", "phone", "passport", "snils"
+    let found: Bool
+    let leakDate: Date?
+    let source: String?
+    let severity: String?
+    let recommendations: [String]?
+}
+
+/// Хеш для безопасного сканирования
+struct DarkWebHash: Codable {
+    let type: String  // "email", "phone", "password", "snils", "passport"
+    let hash: String
+}
+
+/// Результат сканирования (утечка)
+struct DarkWebLeakResult: Identifiable, Codable {
+    let id: String
+    let dataType: LeakDataType
+    let value: String? // Original value if plaintext scan, or masked if secure
+    let leakDate: Date
+    let discoveryDate: Date?
+    let source: String
+    let severity: LeakSeverity
+    let status: LeakStatus
+    let recommendations: [String]
 }
 

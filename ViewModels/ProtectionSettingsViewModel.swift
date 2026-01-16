@@ -175,61 +175,67 @@ class ProtectionSettingsViewModel: ObservableObject {
     
     // MARK: - Toggle Methods - Мессенджеры
     
-    func toggleTelegramSecurity() {
+    func setTelegramSecurity(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "telegram_security_bot",
                 updateClosure: { [weak self] value in self?.telegramSecurityEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.telegramSecurityEnabled ?? false }
             )
         }
     }
     
-    func toggleWhatsAppSecurity() {
+    func setWhatsAppSecurity(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "whatsapp_security_bot",
                 updateClosure: { [weak self] value in self?.whatsappSecurityEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.whatsappSecurityEnabled ?? false }
             )
         }
     }
     
-    func toggleInstagramSecurity() {
+    func setInstagramSecurity(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "instagram_security_bot",
                 updateClosure: { [weak self] value in self?.instagramSecurityEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.instagramSecurityEnabled ?? false }
             )
         }
     }
     
-    func toggleMaxMessengerSecurity() {
+    func setMaxMessengerSecurity(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "max_messenger_security_bot",
                 updateClosure: { [weak self] value in self?.maxMessengerSecurityEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.maxMessengerSecurityEnabled ?? false }
             )
         }
     }
     
-    func toggleGamingSecurity() {
+    func setGamingSecurity(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "gaming_security_bot",
                 updateClosure: { [weak self] value in self?.gamingSecurityEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.gamingSecurityEnabled ?? false }
             )
         }
     }
     
-    func toggleBrowserSecurity() {
+    func setBrowserSecurity(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "browser_security_bot",
                 updateClosure: { [weak self] value in self?.browserSecurityEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.browserSecurityEnabled ?? false }
             )
         }
@@ -237,31 +243,34 @@ class ProtectionSettingsViewModel: ObservableObject {
     
     // MARK: - Toggle Methods - Приватность
     
-    func toggleLocationBubble() {
+    func setLocationBubble(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "location_bubble_agent",
                 updateClosure: { [weak self] value in self?.locationBubbleEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.locationBubbleEnabled ?? false }
             )
         }
     }
     
-    func togglePersonalDataCleanup() {
+    func setPersonalDataCleanup(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "personal_data_cleanup_agent",
                 updateClosure: { [weak self] value in self?.personalDataCleanupEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.personalDataCleanupEnabled ?? false }
             )
         }
     }
     
-    func toggleAntiTracker() {
+    func setAntiTracker(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "anti_tracker_agent",
                 updateClosure: { [weak self] value in self?.antiTrackerEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.antiTrackerEnabled ?? false }
             )
         }
@@ -269,41 +278,45 @@ class ProtectionSettingsViewModel: ObservableObject {
     
     // MARK: - Toggle Methods - Мониторинг
     
-    func toggleDarkWebMonitoring() {
+    func setDarkWebMonitoring(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "dark_web_monitoring_agent",
                 updateClosure: { [weak self] value in self?.darkWebMonitoringEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.darkWebMonitoringEnabled ?? false }
             )
         }
     }
     
-    func toggleIdentityTheftProtection() {
+    func setIdentityTheftProtection(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "russian_identity_theft_protection_agent",
                 updateClosure: { [weak self] value in self?.identityTheftProtectionEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.identityTheftProtectionEnabled ?? false }
             )
         }
     }
     
-    func toggleAICategories() {
+    func setAICategories(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "ai_categories_agent",
                 updateClosure: { [weak self] value in self?.aiCategoriesEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.aiCategoriesEnabled ?? false }
             )
         }
     }
     
-    func toggleDrivingReports() {
+    func setDrivingReports(isEnabled: Bool) {
         Task {
-            await toggleComponent(
+            await setComponent(
                 componentId: "driving_reports_agent",
                 updateClosure: { [weak self] value in self?.drivingReportsEnabled = value },
+                newValue: isEnabled,
                 getCurrentValue: { [weak self] in self?.drivingReportsEnabled ?? false }
             )
         }
@@ -312,13 +325,13 @@ class ProtectionSettingsViewModel: ObservableObject {
     // MARK: - Private Methods
     
     /// Переключить компонент
-    private func toggleComponent(
+    private func setComponent(
         componentId: String,
         updateClosure: @escaping (Bool) -> Void,
+        newValue: Bool,
         getCurrentValue: @escaping () -> Bool
     ) async {
         let oldValue = getCurrentValue()
-        let newValue = !oldValue
         
         // Оптимистичное обновление UI
         updateClosure(newValue)
