@@ -585,6 +585,10 @@ func performRealLogin(email: String, password: String, completion: @escaping (Bo
             
             if tokensSaved {
                 print("✅ Теперь тумблеры должны работать!")
+
+                // 🔄 Синхронизация демо-настроек после логина
+                syncDemoSettingsToServer()
+
                 completion(true)
             } else {
                 print("❌ Токены не были сохранены в Keychain!")
@@ -670,5 +674,49 @@ func checkIfTokensAreDebug() -> Bool {
     }
     
     return isDebug
+}
+
+/// 🔄 Синхронизация демо-настроек на сервер после авторизации
+func syncDemoSettingsToServer() {
+    print("🔄 Начинаем синхронизацию демо-настроек на сервер...")
+
+    let demoComponentIds = [
+        "crash_detection_agent",
+        "roadside_assistance_agent",
+        "incident_response_agent",
+        "emergency_response_bot",
+        "emergency_event_manager",
+        "phishing_protection_agent",
+        "malware_detection_agent",
+        "mobile_security_agent",
+        "network_security_agent",
+        "password_security_agent"
+    ]
+
+    Task {
+        for componentId in demoComponentIds {
+            let demoKey = "demo_\(componentId)"
+            if let demoValue = UserDefaults.standard.object(forKey: demoKey) as? Bool {
+                print("   📤 Синхронизируем \(componentId): \(demoValue)")
+
+                do {
+                    try await APIService.shared.updateComponentStatus(
+                        componentId: componentId,
+                        isEnabled: demoValue
+                    )
+                    print("   ✅ \(componentId) синхронизирован")
+
+                    // Удаляем демо-настройку после успешной синхронизации
+                    UserDefaults.standard.removeObject(forKey: demoKey)
+                } catch {
+                    print("   ❌ Ошибка синхронизации \(componentId): \(error.localizedDescription)")
+                }
+            } else {
+                print("   ⏭️ Нет демо-настройки для \(componentId)")
+            }
+        }
+
+        print("✅ Синхронизация демо-настроек завершена")
+    }
 }
 #endif

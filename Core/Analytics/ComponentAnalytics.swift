@@ -60,6 +60,21 @@ class ComponentAnalytics {
             ]
         )
     }
+
+    /**
+     * Отследить переключение настройки компонента
+     */
+    func trackSettingToggle(componentId: String, settingKey: String, enabled: Bool) {
+        analyticsManager.trackEvent(
+            "component_setting_toggle",
+            parameters: [
+                "component_id": componentId,
+                "setting_key": settingKey,
+                "enabled": enabled,
+                "timestamp": Date().timeIntervalSince1970
+            ]
+        )
+    }
     
     // MARK: - Component Error Tracking
     

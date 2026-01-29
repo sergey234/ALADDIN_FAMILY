@@ -787,8 +787,8 @@ class APIService {
             let requestBody = UpdateRequest(componentId: componentId, isEnabled: isEnabled, configuration: configuration)
             let endpoint = "\(AppConfig.Endpoint.componentStatus)/\(componentId)"
             
-            // ✅ ИСПРАВЛЕНИЕ: Сначала пробуем PUT (правильный метод для обновления)
-            networkManager.put(
+            // ✅ ИСПРАВЛЕНИЕ: Используем POST вместо PUT/PATCH
+            networkManager.post(
                 endpoint: endpoint,
                 body: requestBody
             ) { (result: Result<APIResponse<Bool>, Error>) in
@@ -796,33 +796,8 @@ class APIService {
                 case .success:
                     continuation.resume()
                 case .failure(let error):
-                    // ✅ FALLBACK: Если PUT не поддерживается (405), пробуем PATCH
-                    if let networkError = error as? NetworkError,
-                       (({
-                           if case .invalidStatusCode(let code) = networkError { return code == 405 }
-                           if case .httpError(let code) = networkError { return code == 405 }
-                           return false
-                       })()) {
-                        // Пробуем PATCH как fallback
-                        print("⚠️ APIService: PUT вернул 405, пробуем PATCH")
-                        self.networkManager.patch(
-                            endpoint: endpoint,
-                            body: requestBody
-                        ) { (patchResult: Result<APIResponse<Bool>, Error>) in
-                            switch patchResult {
-                            case .success:
-                                continuation.resume()
-                            case .failure(let patchError):
-                                    // Если и PATCH не работает, просто логируем (не критично)
-                                    print("⚠️ APIService: PATCH тоже не работает: \(patchError.localizedDescription)")
-                                    // Не пробрасываем ошибку - статус сохранен локально
-                                    continuation.resume()
-                            }
-                        }
-                    } else {
-                        // Для других ошибок (кроме 405) пробрасываем
-                        continuation.resume(throwing: error)
-                    }
+                    // Пробрасываем все ошибки, не скрываем их
+                    continuation.resume(throwing: error)
                 }
             }
         }

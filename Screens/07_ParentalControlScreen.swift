@@ -704,7 +704,7 @@ struct ParentalControlScreen: View {
                     description: localizationManager.localized("component.self_harm_detection_agent.desc"),
                     isEnabled: $viewModel.selfHarmDetectionEnabled,
                     hasSettings: false,
-                    onToggle: { viewModel.toggleSelfHarmDetection() }
+                    onToggle: { newValue in viewModel.toggleSelfHarmDetection(newValue) }
                 )
                 
                 SecurityFeatureRow(
@@ -713,7 +713,7 @@ struct ParentalControlScreen: View {
                     description: localizationManager.localized("component.grooming_detection_agent.desc"),
                     isEnabled: $viewModel.groomingDetectionEnabled,
                     hasSettings: false,
-                    onToggle: { viewModel.toggleGroomingDetection() }
+                    onToggle: { newValue in viewModel.toggleGroomingDetection(newValue) }
                 )
                 
                 SecurityFeatureRow(
@@ -722,7 +722,7 @@ struct ParentalControlScreen: View {
                     description: localizationManager.localized("component.online_predators_agent.desc"),
                     isEnabled: $viewModel.onlinePredatorsEnabled,
                     hasSettings: false,
-                    onToggle: { viewModel.toggleOnlinePredators() }
+                    onToggle: { newValue in viewModel.toggleOnlinePredators(newValue) }
                 )
                 
                 SecurityFeatureRow(
@@ -731,7 +731,7 @@ struct ParentalControlScreen: View {
                     description: localizationManager.localized("component.psychological_support_agent.desc"),
                     isEnabled: $viewModel.psychologicalSupportEnabled,
                     hasSettings: false,
-                    onToggle: { viewModel.togglePsychologicalSupport() }
+                    onToggle: { newValue in viewModel.togglePsychologicalSupport(newValue) }
                 )
                 
                 // Улучшенный родительский контроль бот
@@ -741,7 +741,7 @@ struct ParentalControlScreen: View {
                     description: localizationManager.localized("component.parental_control_bot.desc"),
                     isEnabled: $viewModel.parentalControlBotEnabled,
                     hasSettings: true,
-                    onToggle: { viewModel.toggleParentalControlBot() },
+                    onToggle: { newValue in viewModel.toggleParentalControlBot(newValue) },
                     onSettingsTap: { /* TODO: Открыть расширенные настройки родительского контроля */ }
                 )
             }

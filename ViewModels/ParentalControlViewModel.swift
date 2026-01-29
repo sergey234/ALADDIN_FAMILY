@@ -60,6 +60,13 @@ class ParentalControlViewModel: ObservableObject {
     
     /// Загрузить статусы всех компонентов
     func loadComponentStatuses() async {
+        // ✅ ПРОВЕРКА ДЕМО-РЕЖИМА: В демо-режиме загружаем из UserDefaults
+        let isDemoMode = AppConfig.authToken == nil
+        if isDemoMode {
+            await loadDemoSettings()
+            return
+        }
+
         // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
         // Критичные компоненты загружаются первыми
         let componentIds: [(String, ComponentLoadPriority)] = [
@@ -95,55 +102,82 @@ class ParentalControlViewModel: ObservableObject {
             print("⚠️ ParentalControlViewModel: Ошибка загрузки статусов: \(error)")
         }
     }
-    
+
+    /// Загрузить настройки из демо-режима (UserDefaults)
+    private func loadDemoSettings() async {
+        print("🔄 ParentalControlViewModel: Загружаем демо-настройки из UserDefaults")
+
+        await MainActor.run {
+            let userDefaults = UserDefaults.standard
+
+            // Загружаем сохраненные значения для каждого компонента
+            selfHarmDetectionEnabled = userDefaults.bool(forKey: "demo_self_harm_detection_agent")
+                ? userDefaults.bool(forKey: "demo_self_harm_detection_agent") : selfHarmDetectionEnabled
+
+            groomingDetectionEnabled = userDefaults.bool(forKey: "demo_grooming_detection_agent")
+                ? userDefaults.bool(forKey: "demo_grooming_detection_agent") : groomingDetectionEnabled
+
+            onlinePredatorsEnabled = userDefaults.bool(forKey: "demo_online_predators_agent")
+                ? userDefaults.bool(forKey: "demo_online_predators_agent") : onlinePredatorsEnabled
+
+            parentalControlBotEnabled = userDefaults.bool(forKey: "demo_parental_control_bot")
+                ? userDefaults.bool(forKey: "demo_parental_control_bot") : parentalControlBotEnabled
+
+            psychologicalSupportEnabled = userDefaults.bool(forKey: "demo_psychological_support_agent")
+                ? userDefaults.bool(forKey: "demo_psychological_support_agent") : psychologicalSupportEnabled
+
+            print("✅ ParentalControlViewModel: Демо-настройки загружены из UserDefaults")
+        }
+    }
+
     // MARK: - Toggle Methods
     
-    func toggleSelfHarmDetection() {
+    func toggleSelfHarmDetection(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "self_harm_detection_agent",
-                updateClosure: { [weak self] value in self?.selfHarmDetectionEnabled = value },
-                getCurrentValue: { [weak self] in self?.selfHarmDetectionEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.selfHarmDetectionEnabled = value }
             )
         }
     }
     
-    func toggleGroomingDetection() {
+    func toggleGroomingDetection(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "grooming_detection_agent",
-                updateClosure: { [weak self] value in self?.groomingDetectionEnabled = value },
-                getCurrentValue: { [weak self] in self?.groomingDetectionEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.groomingDetectionEnabled = value }
             )
         }
     }
     
-    func toggleOnlinePredators() {
+    func toggleOnlinePredators(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "online_predators_agent",
-                updateClosure: { [weak self] value in self?.onlinePredatorsEnabled = value },
-                getCurrentValue: { [weak self] in self?.onlinePredatorsEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.onlinePredatorsEnabled = value }
             )
         }
     }
     
-    func togglePsychologicalSupport() {
+    func togglePsychologicalSupport(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "psychological_support_agent",
-                updateClosure: { [weak self] value in self?.psychologicalSupportEnabled = value },
-                getCurrentValue: { [weak self] in self?.psychologicalSupportEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.psychologicalSupportEnabled = value }
             )
         }
     }
     
-    func toggleParentalControlBot() {
+    func toggleParentalControlBot(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "parental_control_bot",
-                updateClosure: { [weak self] value in self?.parentalControlBotEnabled = value },
-                getCurrentValue: { [weak self] in self?.parentalControlBotEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.parentalControlBotEnabled = value }
             )
         }
     }
@@ -153,15 +187,22 @@ class ParentalControlViewModel: ObservableObject {
     /// Переключить компонент
     private func toggleComponent(
         componentId: String,
-        updateClosure: @escaping (Bool) -> Void,
-        getCurrentValue: @escaping () -> Bool
+        newValue: Bool,
+        updateClosure: @escaping (Bool) -> Void
     ) async {
-        let oldValue = getCurrentValue()
-        let newValue = !oldValue
-        
-        // Оптимистичное обновление UI
+        // Оптимистичное обновление UI с переданным значением
         updateClosure(newValue)
-        
+
+        // Проверяем демо-режим (нет токена авторизации)
+        let isDemoMode = AppConfig.authToken == nil
+
+        if isDemoMode {
+            // В демо-режиме сохраняем локально в UserDefaults
+            UserDefaults.standard.set(newValue, forKey: "demo_\(componentId)")
+            toastManager.showSuccess("Компонент обновлен (демо-режим)")
+            return
+        }
+
         let result: Result<Void, NetworkError> = await retryManager.execute(
             operation: {
                 do {
@@ -175,13 +216,13 @@ class ParentalControlViewModel: ObservableObject {
             },
             retryCondition: { $0.isRetryable }
         )
-        
+
         switch result {
         case .success:
             toastManager.showSuccess("Компонент обновлен")
         case .failure(let error):
-            // Откат при ошибке
-            updateClosure(oldValue)
+            // Откат при ошибке - используем противоположное значение
+            updateClosure(!newValue)
             toastManager.showError("Ошибка: \(error.localizedDescription)")
         }
     }

@@ -32,6 +32,7 @@ struct IncidentResponseSettingsModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     private let configurationService = ComponentConfigurationService.shared
     private let toastManager = ToastManager.shared
+    private let componentAnalytics = ComponentAnalytics.shared
     
     @State private var escalationThresholds: [String: String] = [
         "low": "30",
@@ -47,6 +48,11 @@ struct IncidentResponseSettingsModal: View {
         "notify": true,
         "escalate": true
     ]
+
+    // Отдельные состояния для логирования
+    @State private var blockEnabled: Bool = false
+    @State private var notifyEnabled: Bool = true
+    @State private var escalateEnabled: Bool = true
     @State private var isLoading: Bool = false
     
     var body: some View {
@@ -124,27 +130,45 @@ struct IncidentResponseSettingsModal: View {
                     
                     ToggleRow(
                         title: localizationManager.localized("incident_response.block"),
-                        isOn: Binding(
-                            get: { autoActions["block"] ?? false },
-                            set: { autoActions["block"] = $0 }
-                        )
+                        isOn: $blockEnabled
                     )
-                    
+                    .onChange(of: blockEnabled) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "autoActions_block",
+                            enabled: newValue
+                        )
+                        autoActions["block"] = newValue
+                        print("🔄 IncidentResponse: autoActions_block = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("incident_response.notify"),
-                        isOn: Binding(
-                            get: { autoActions["notify"] ?? true },
-                            set: { autoActions["notify"] = $0 }
-                        )
+                        isOn: $notifyEnabled
                     )
-                    
+                    .onChange(of: notifyEnabled) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "autoActions_notify",
+                            enabled: newValue
+                        )
+                        autoActions["notify"] = newValue
+                        print("🔄 IncidentResponse: autoActions_notify = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("incident_response.escalate"),
-                        isOn: Binding(
-                            get: { autoActions["escalate"] ?? true },
-                            set: { autoActions["escalate"] = $0 }
-                        )
+                        isOn: $escalateEnabled
                     )
+                    .onChange(of: escalateEnabled) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "autoActions_escalate",
+                            enabled: newValue
+                        )
+                        autoActions["escalate"] = newValue
+                        print("🔄 IncidentResponse: autoActions_escalate = \(newValue)")
+                    }
                 }
             }
         }
@@ -172,10 +196,20 @@ struct IncidentResponseSettingsModal: View {
                     }
                     if let value = settings["autoActions"]?.value as? [String: Bool] {
                         autoActions = value
+                        // Синхронизировать @State переменные
+                        blockEnabled = value["block"] ?? false
+                        notifyEnabled = value["notify"] ?? true
+                        escalateEnabled = value["escalate"] ?? true
                     }
                 }
             } catch {
                 print("⚠️ IncidentResponseSettingsModal: Ошибка загрузки настроек: \(error)")
+                // Использовать дефолтные значения
+                await MainActor.run {
+                    blockEnabled = autoActions["block"] ?? false
+                    notifyEnabled = autoActions["notify"] ?? true
+                    escalateEnabled = autoActions["escalate"] ?? true
+                }
             }
             await MainActor.run {
                 isLoading = false

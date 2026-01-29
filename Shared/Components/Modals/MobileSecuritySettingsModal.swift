@@ -11,6 +11,7 @@ struct MobileSecuritySettingsModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     private let configurationService = ComponentConfigurationService.shared
     private let toastManager = ToastManager.shared
+    private let componentAnalytics = ComponentAnalytics.shared
     
     @State private var deviceEncryption: Bool = true
     @State private var appLock: Bool = true
@@ -40,31 +41,79 @@ struct MobileSecuritySettingsModal: View {
                         title: localizationManager.localized("mobile_security.device_encryption"),
                         isOn: $deviceEncryption
                     )
-                    
+                    .onChange(of: deviceEncryption) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "deviceEncryption",
+                            enabled: newValue
+                        )
+                        print("🔄 Mobile: deviceEncryption = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("mobile_security.app_lock"),
                         isOn: $appLock
                     )
-                    
+                    .onChange(of: appLock) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "appLock",
+                            enabled: newValue
+                        )
+                        print("🔄 Mobile: appLock = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("mobile_security.screen_lock"),
                         isOn: $screenLock
                     )
-                    
+                    .onChange(of: screenLock) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "screenLock",
+                            enabled: newValue
+                        )
+                        print("🔄 Mobile: screenLock = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("mobile_security.biometric_auth"),
                         isOn: $biometricAuth
                     )
-                    
+                    .onChange(of: biometricAuth) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "biometricAuth",
+                            enabled: newValue
+                        )
+                        print("🔄 Mobile: biometricAuth = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("mobile_security.remote_wipe"),
                         isOn: $remoteWipe
                     )
-                    
+                    .onChange(of: remoteWipe) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "remoteWipe",
+                            enabled: newValue
+                        )
+                        print("🔄 Mobile: remoteWipe = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("mobile_security.track_device"),
                         isOn: $trackDevice
                     )
+                    .onChange(of: trackDevice) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "trackDevice",
+                            enabled: newValue
+                        )
+                        print("🔄 Mobile: trackDevice = \(newValue)")
+                    }
                 }
             }
         }
@@ -73,7 +122,7 @@ struct MobileSecuritySettingsModal: View {
         }
     }
     
-    // ✅ Загрузка настроек при открытии
+    // ✅ Загрузка настроек при открытии через API
     private func loadSettings() {
         isLoading = true
         Task {
@@ -95,9 +144,15 @@ struct MobileSecuritySettingsModal: View {
                         remoteWipe = newRemoteWipe
                         trackDevice = newTrackDevice
                     }
+
+                    print("✅ MobileSecuritySettingsModal: Настройки загружены из API")
                 }
             } catch {
-                print("⚠️ MobileSecuritySettingsModal: Ошибка загрузки настроек: \(error)")
+                // 404 или ошибка сети - используем дефолты
+                await MainActor.run {
+                    // Оставляем дефолтные значения
+                }
+                print("⚠️ MobileSecuritySettingsModal: Настройки не найдены (404), используются дефолты: \(error.localizedDescription)")
             }
             await MainActor.run {
                 isLoading = false
@@ -113,7 +168,7 @@ struct MobileSecuritySettingsModal: View {
                 let isComponentEnabled = await MainActor.run {
                     ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
                 }
-                
+
                 let config = ComponentConfiguration(
                     isEnabled: isComponentEnabled,
                     priority: .normal,
@@ -126,21 +181,23 @@ struct MobileSecuritySettingsModal: View {
                         "trackDevice": AnyCodable(trackDevice)
                     ]
                 )
-                
+
                 try await configurationService.saveConfiguration(
                     componentId: componentId,
                     configuration: config
                 )
-                
+
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     isPresented = false
                 }
+                print("✅ MobileSecuritySettingsModal: Настройки сохранены через API")
             } catch {
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     isPresented = false
                 }
+                print("⚠️ MobileSecuritySettingsModal: Ошибка сохранения, но кэшировано: \(error.localizedDescription)")
             }
         }
     }

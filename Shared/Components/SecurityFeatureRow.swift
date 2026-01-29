@@ -12,7 +12,7 @@ struct SecurityFeatureRow: View {
     let description: String
     @Binding var isEnabled: Bool
     let hasSettings: Bool
-    let onToggle: () -> Void
+    let onToggle: (Bool) -> Void
     let onSettingsTap: (() -> Void)?
     
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -23,7 +23,7 @@ struct SecurityFeatureRow: View {
         description: String,
         isEnabled: Binding<Bool>,
         hasSettings: Bool = false,
-        onToggle: @escaping () -> Void,
+        onToggle: @escaping (Bool) -> Void,
         onSettingsTap: (() -> Void)? = nil
     ) {
         self.componentId = componentId
@@ -72,10 +72,8 @@ struct SecurityFeatureRow: View {
             ALADDINToggle(isOn: Binding(
                 get: { self.isEnabled },
                 set: { newValue in
-                    if newValue != self.isEnabled {
-                        self.isEnabled = newValue
-                        onToggle()
-                    }
+                    // Передаем новое значение напрямую в ViewModel без изменения локального состояния
+                    onToggle(newValue)
                 }
             ))
             .accessibilityLabel(title)

@@ -94,102 +94,102 @@ class NetworkProtectionViewModel: ObservableObject {
     
     // MARK: - Toggle Methods
     
-    func toggleCrashDetection() {
+    func toggleCrashDetection(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "crash_detection_agent",
-                updateClosure: { [weak self] value in self?.crashDetectionEnabled = value },
-                getCurrentValue: { [weak self] in self?.crashDetectionEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.crashDetectionEnabled = value }
             )
         }
     }
     
-    func toggleRoadsideAssistance() {
+    func toggleRoadsideAssistance(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "roadside_assistance_agent",
-                updateClosure: { [weak self] value in self?.roadsideAssistanceEnabled = value },
-                getCurrentValue: { [weak self] in self?.roadsideAssistanceEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.roadsideAssistanceEnabled = value }
             )
         }
     }
-    
-    func toggleEmergencyResponse() {
+
+    func toggleEmergencyResponse(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "emergency_response_bot",
-                updateClosure: { [weak self] value in self?.emergencyResponseEnabled = value },
-                getCurrentValue: { [weak self] in self?.emergencyResponseEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.emergencyResponseEnabled = value }
             )
         }
     }
-    
-    func toggleEmergencyEvent() {
+
+    func toggleEmergencyEvent(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "emergency_event_manager",
-                updateClosure: { [weak self] value in self?.emergencyEventEnabled = value },
-                getCurrentValue: { [weak self] in self?.emergencyEventEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.emergencyEventEnabled = value }
             )
         }
     }
     
-    func togglePhishingProtection() {
+    func togglePhishingProtection(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "phishing_protection_agent",
-                updateClosure: { [weak self] value in self?.phishingProtectionEnabled = value },
-                getCurrentValue: { [weak self] in self?.phishingProtectionEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.phishingProtectionEnabled = value }
             )
         }
     }
-    
-    func toggleMalwareDetection() {
+
+    func toggleMalwareDetection(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "malware_detection_agent",
-                updateClosure: { [weak self] value in self?.malwareDetectionEnabled = value },
-                getCurrentValue: { [weak self] in self?.malwareDetectionEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.malwareDetectionEnabled = value }
             )
         }
     }
-    
-    func toggleMobileSecurity() {
+
+    func toggleMobileSecurity(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "mobile_security_agent",
-                updateClosure: { [weak self] value in self?.mobileSecurityEnabled = value },
-                getCurrentValue: { [weak self] in self?.mobileSecurityEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.mobileSecurityEnabled = value }
             )
         }
     }
     
-    func toggleNetworkSecurity() {
+    func toggleNetworkSecurity(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "network_security_agent",
-                updateClosure: { [weak self] value in self?.networkSecurityEnabled = value },
-                getCurrentValue: { [weak self] in self?.networkSecurityEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.networkSecurityEnabled = value }
             )
         }
     }
-    
-    func toggleIncidentResponse() {
+
+    func toggleIncidentResponse(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "incident_response_agent",
-                updateClosure: { [weak self] value in self?.incidentResponseEnabled = value },
-                getCurrentValue: { [weak self] in self?.incidentResponseEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.incidentResponseEnabled = value }
             )
         }
     }
-    
-    func togglePasswordSecurity() {
+
+    func togglePasswordSecurity(_ newValue: Bool) {
         Task {
             await toggleComponent(
                 componentId: "password_security_agent",
-                updateClosure: { [weak self] value in self?.passwordSecurityEnabled = value },
-                getCurrentValue: { [weak self] in self?.passwordSecurityEnabled ?? false }
+                newValue: newValue,
+                updateClosure: { [weak self] value in self?.passwordSecurityEnabled = value }
             )
         }
     }
@@ -198,14 +198,22 @@ class NetworkProtectionViewModel: ObservableObject {
     
     private func toggleComponent(
         componentId: String,
-        updateClosure: @escaping (Bool) -> Void,
-        getCurrentValue: @escaping () -> Bool
+        newValue: Bool,
+        updateClosure: @escaping (Bool) -> Void
     ) async {
-        let oldValue = getCurrentValue()
-        let newValue = !oldValue
-        
-        // Оптимистичное обновление UI
+        // Оптимистичное обновление UI с переданным значением
         updateClosure(newValue)
+
+        // Проверяем демо-режим (нет токена авторизации)
+        let isDemoMode = AppConfig.authToken == nil
+
+        if isDemoMode {
+            // В демо-режиме сохраняем локально в UserDefaults
+            UserDefaults.standard.set(newValue, forKey: "demo_\(componentId)")
+            componentAnalytics.trackComponentToggle(componentId: componentId, enabled: newValue)
+            toastManager.showSuccess("Компонент обновлен (демо-режим)")
+            return
+        }
         
         let result: Result<Void, NetworkError> = await retryManager.execute(
             operation: {
@@ -231,13 +239,13 @@ class NetworkProtectionViewModel: ObservableObject {
             toastManager.showSuccess("Компонент обновлен")
         case .failure(let error):
             // Откат изменений
-            updateClosure(oldValue)
+            updateClosure(!newValue)
             // Отследить ошибку
             componentAnalytics.trackComponentError(componentId: componentId, error: error)
             toastManager.showError("Ошибка: \(error.localizedDescription)")
         }
     }
-    
+
     private func updateLocalStatuses() async {
         // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ: Если уже обновляется, пропустить
         guard !isUpdatingStatuses else {
@@ -247,6 +255,13 @@ class NetworkProtectionViewModel: ObservableObject {
 
         isUpdatingStatuses = true
         defer { isUpdatingStatuses = false }
+
+        // ✅ ПРОВЕРКА ДЕМО-РЕЖИМА: В демо-режиме загружаем из UserDefaults
+        let isDemoMode = AppConfig.authToken == nil
+        if isDemoMode {
+            await loadDemoSettings()
+            return
+        }
 
         // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
         // Критичные компоненты загружаются первыми
@@ -304,7 +319,49 @@ class NetworkProtectionViewModel: ObservableObject {
             print("⚠️ NetworkProtectionViewModel: Ошибка загрузки статусов: \(error)")
         }
     }
-    
+
+    /// Загрузить настройки из демо-режима (UserDefaults)
+    private func loadDemoSettings() async {
+        print("🔄 NetworkProtectionViewModel: Загружаем демо-настройки из UserDefaults")
+
+        await MainActor.run {
+            let userDefaults = UserDefaults.standard
+
+            // Загружаем сохраненные значения для каждого компонента
+            crashDetectionEnabled = userDefaults.bool(forKey: "demo_crash_detection_agent")
+                ? userDefaults.bool(forKey: "demo_crash_detection_agent") : crashDetectionEnabled
+
+            roadsideAssistanceEnabled = userDefaults.bool(forKey: "demo_roadside_assistance_agent")
+                ? userDefaults.bool(forKey: "demo_roadside_assistance_agent") : roadsideAssistanceEnabled
+
+            emergencyResponseEnabled = userDefaults.bool(forKey: "demo_emergency_response_bot")
+                ? userDefaults.bool(forKey: "demo_emergency_response_bot") : emergencyResponseEnabled
+
+            emergencyEventEnabled = userDefaults.bool(forKey: "demo_emergency_event_manager")
+                ? userDefaults.bool(forKey: "demo_emergency_event_manager") : emergencyEventEnabled
+
+            phishingProtectionEnabled = userDefaults.bool(forKey: "demo_phishing_protection_agent")
+                ? userDefaults.bool(forKey: "demo_phishing_protection_agent") : phishingProtectionEnabled
+
+            malwareDetectionEnabled = userDefaults.bool(forKey: "demo_malware_detection_agent")
+                ? userDefaults.bool(forKey: "demo_malware_detection_agent") : malwareDetectionEnabled
+
+            mobileSecurityEnabled = userDefaults.bool(forKey: "demo_mobile_security_agent")
+                ? userDefaults.bool(forKey: "demo_mobile_security_agent") : mobileSecurityEnabled
+
+            networkSecurityEnabled = userDefaults.bool(forKey: "demo_network_security_agent")
+                ? userDefaults.bool(forKey: "demo_network_security_agent") : networkSecurityEnabled
+
+            incidentResponseEnabled = userDefaults.bool(forKey: "demo_incident_response_agent")
+                ? userDefaults.bool(forKey: "demo_incident_response_agent") : incidentResponseEnabled
+
+            passwordSecurityEnabled = userDefaults.bool(forKey: "demo_password_security_agent")
+                ? userDefaults.bool(forKey: "demo_password_security_agent") : passwordSecurityEnabled
+
+            print("✅ NetworkProtectionViewModel: Демо-настройки загружены из UserDefaults")
+        }
+    }
+
     private func updateStatusForComponent(componentId: String, status: ComponentStatus) {
         // ✅ ИСПРАВЛЕНИЕ МНОГОПОТОЧНОСТИ: Все обновления UI должны быть в main thread
         // ✅ ИСПРАВЛЕНИЕ БЕСКОНЕЧНЫХ ЛОГОВ: Обновляем только если значение изменилось

@@ -74,3 +74,4 @@ git commit -m "feat: Продакшен готовность ALADDIN iOS
 echo "🎉 Коммит выполнен успешно!"
 echo "📊 Статистика коммита:"
 git show --stat HEAD
+

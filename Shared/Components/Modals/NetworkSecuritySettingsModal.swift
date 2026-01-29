@@ -11,6 +11,7 @@ struct NetworkSecuritySettingsModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     private let configurationService = ComponentConfigurationService.shared
     private let toastManager = ToastManager.shared
+    private let componentAnalytics = ComponentAnalytics.shared
     
     @State private var blockUnsafeNetworks: Bool = true
     @State private var warnOnPublicWiFi: Bool = true
@@ -40,31 +41,79 @@ struct NetworkSecuritySettingsModal: View {
                         title: localizationManager.localized("network_security.block_unsafe_networks"),
                         isOn: $blockUnsafeNetworks
                     )
-                    
+                    .onChange(of: blockUnsafeNetworks) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "blockUnsafeNetworks",
+                            enabled: newValue
+                        )
+                        print("🔄 Network: blockUnsafeNetworks = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("network_security.warn_on_public_wifi"),
                         isOn: $warnOnPublicWiFi
                     )
-                    
+                    .onChange(of: warnOnPublicWiFi) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "warnOnPublicWiFi",
+                            enabled: newValue
+                        )
+                        print("🔄 Network: warnOnPublicWiFi = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("network_security.auto_connect_vpn"),
                         isOn: $autoConnectVPN
                     )
-                    
+                    .onChange(of: autoConnectVPN) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "autoConnectVPN",
+                            enabled: newValue
+                        )
+                        print("🔄 Network: autoConnectVPN = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("network_security.block_tracking"),
                         isOn: $blockTracking
                     )
-                    
+                    .onChange(of: blockTracking) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "blockTracking",
+                            enabled: newValue
+                        )
+                        print("🔄 Network: blockTracking = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("network_security.encrypt_traffic"),
                         isOn: $encryptTraffic
                     )
-                    
+                    .onChange(of: encryptTraffic) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "encryptTraffic",
+                            enabled: newValue
+                        )
+                        print("🔄 Network: encryptTraffic = \(newValue)")
+                    }
+
                     ToggleRow(
                         title: localizationManager.localized("network_security.firewall_enabled"),
                         isOn: $firewallEnabled
                     )
+                    .onChange(of: firewallEnabled) { newValue in
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: "firewallEnabled",
+                            enabled: newValue
+                        )
+                        print("🔄 Network: firewallEnabled = \(newValue)")
+                    }
                 }
             }
         }
@@ -73,7 +122,7 @@ struct NetworkSecuritySettingsModal: View {
         }
     }
     
-    // ✅ Загрузка настроек при открытии
+    // ✅ Загрузка настроек при открытии через API
     private func loadSettings() {
         isLoading = true
         Task {
@@ -95,9 +144,15 @@ struct NetworkSecuritySettingsModal: View {
                         encryptTraffic = newEncryptTraffic
                         firewallEnabled = newFirewallEnabled
                     }
+
+                    print("✅ NetworkSecuritySettingsModal: Настройки загружены из API")
                 }
             } catch {
-                print("⚠️ NetworkSecuritySettingsModal: Ошибка загрузки настроек: \(error)")
+                // 404 или ошибка сети - используем дефолты
+                await MainActor.run {
+                    // Оставляем дефолтные значения
+                }
+                print("⚠️ NetworkSecuritySettingsModal: Настройки не найдены (404), используются дефолты: \(error.localizedDescription)")
             }
             await MainActor.run {
                 isLoading = false
@@ -113,7 +168,7 @@ struct NetworkSecuritySettingsModal: View {
                 let isComponentEnabled = await MainActor.run {
                     ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
                 }
-                
+
                 let config = ComponentConfiguration(
                     isEnabled: isComponentEnabled,
                     priority: .normal,
@@ -126,21 +181,23 @@ struct NetworkSecuritySettingsModal: View {
                         "firewallEnabled": AnyCodable(firewallEnabled)
                     ]
                 )
-                
+
                 try await configurationService.saveConfiguration(
                     componentId: componentId,
                     configuration: config
                 )
-                
+
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     isPresented = false
                 }
+                print("✅ NetworkSecuritySettingsModal: Настройки сохранены через API")
             } catch {
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     isPresented = false
                 }
+                print("⚠️ NetworkSecuritySettingsModal: Ошибка сохранения, но кэшировано: \(error.localizedDescription)")
             }
         }
     }

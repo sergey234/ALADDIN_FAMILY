@@ -11,6 +11,7 @@ struct PasswordGeneratorModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     private let configurationService = ComponentConfigurationService.shared
     private let toastManager = ToastManager.shared
+    private let componentAnalytics = ComponentAnalytics.shared
     
     // ✅ ИСПРАВЛЕНО: Заменено @State на @AppStorage для сохранения между сессиями
     @AppStorage("password_generator_length") private var passwordLengthInt: Int = 16
@@ -68,6 +69,14 @@ struct PasswordGeneratorModal: View {
                             set: { passwordLengthInt = Int($0) }
                         ), in: 8...64, step: 1)
                             .tint(.blue)
+                            .onChange(of: passwordLengthInt) { newValue in
+                                componentAnalytics.trackSettingToggle(
+                                    componentId: componentId,
+                                    settingKey: "passwordLength",
+                                    enabled: true // Для слайдера всегда true, значение в метаданных
+                                )
+                                print("🔄 PasswordGenerator: passwordLength = \(newValue)")
+                            }
                     }
                     .padding(Spacing.m)
                     .background(
@@ -81,21 +90,53 @@ struct PasswordGeneratorModal: View {
                             title: localizationManager.localized("password_generator.uppercase"),
                             isOn: $includeUppercase
                         )
-                        
+                        .onChange(of: includeUppercase) { newValue in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "includeUppercase",
+                                enabled: newValue
+                            )
+                            print("🔄 PasswordGenerator: includeUppercase = \(newValue)")
+                        }
+
                         ToggleRow(
                             title: localizationManager.localized("password_generator.lowercase"),
                             isOn: $includeLowercase
                         )
-                        
+                        .onChange(of: includeLowercase) { newValue in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "includeLowercase",
+                                enabled: newValue
+                            )
+                            print("🔄 PasswordGenerator: includeLowercase = \(newValue)")
+                        }
+
                         ToggleRow(
                             title: localizationManager.localized("password_generator.numbers"),
                             isOn: $includeNumbers
                         )
-                        
+                        .onChange(of: includeNumbers) { newValue in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "includeNumbers",
+                                enabled: newValue
+                            )
+                            print("🔄 PasswordGenerator: includeNumbers = \(newValue)")
+                        }
+
                         ToggleRow(
                             title: localizationManager.localized("password_generator.special"),
                             isOn: $includeSpecial
                         )
+                        .onChange(of: includeSpecial) { newValue in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "includeSpecial",
+                                enabled: newValue
+                            )
+                            print("🔄 PasswordGenerator: includeSpecial = \(newValue)")
+                        }
                     }
                 }
                 .padding(Spacing.m)
