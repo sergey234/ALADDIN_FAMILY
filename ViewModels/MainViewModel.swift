@@ -74,19 +74,28 @@ class MainViewModel: ObservableObject {
     private let apiService: APIService
     private let keychainManager: KeychainManager
     
+    // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ
+    private var isLoadingDashboard = false
+    private var lastOnAppearTime: Date?
+    
     // MARK: - Init
     
     init(apiService: APIService = .shared, keychainManager: KeychainManager = .shared) {
         self.apiService = apiService
         self.keychainManager = keychainManager
-        // Загружаем данные при инициализации
-        loadDashboardData()
+        // НЕ загружаем данные автоматически при инициализации - только по требованию
+        // loadDashboardData() // Закомментировано чтобы избежать бесконечных циклов
     }
     
     // MARK: - Public Methods
     
     /// ✅ ИНТЕГРАЦИЯ С API: Загрузка данных дашборда из реального API
     func loadDashboardData() {
+        // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ: Если уже загружается, пропускаем
+        guard !isLoadingDashboard else {
+            print("⚠️ MainViewModel: Загрузка дашборда уже выполняется, пропускаем")
+            return
+        }
         loadDashboardDataWithRetry(maxAttempts: 3)
     }
     
@@ -100,6 +109,7 @@ class MainViewModel: ObservableObject {
                 return
             }
             isLoading = true
+            isLoadingDashboard = true
             errorMessage = nil
         }
         
@@ -107,9 +117,37 @@ class MainViewModel: ObservableObject {
         print("🔄 MainViewModel: Загружаем данные дашборда из API... (attempt \(currentAttempt)/\(maxAttempts))")
         #endif
         
-        // ✅ ТАЙМАУТ: Если запрос не успевает за N секунд, показываем fallback данные (для попытки)
+        // ✅ ПРОВЕРКА ТОКЕНА: Если нет токена, не делаем API вызов
         let hasAuthToken = keychainManager.isDataAvailable(forKey: .authToken)
-        let timeoutInterval: TimeInterval = hasAuthToken ? 10.0 : 5.0
+        #if DEBUG
+        print("🔐 MainViewModel: Проверка токена авторизации - \(hasAuthToken ? "✅ токен найден" : "ℹ️ токен отсутствует (демо режим)")")
+        #endif
+
+        if !hasAuthToken {
+            // ❌ НЕТ ТОКЕНА: Не делаем API вызов, показываем демо данные
+            #if DEBUG
+            print("ℹ️ MainViewModel: Debug токены - демо режим, без API загрузки")
+            #endif
+
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                self.isLoading = false
+                self.isLoadingDashboard = false
+                // Показываем демо данные вместо API данных
+                self.familyMembers = 1
+                self.devicesProtected = 1
+                self.threatsBlocked = 0
+                self.lastUpdateTime = Date()
+                self.errorMessage = nil
+                self.familyProtectionStatus = .active
+                self.familyProtectionStatusMessage = "Демо режим - используйте performRealLogin() для реальной авторизации"
+                NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+            }
+            return
+        }
+
+        // ✅ ЕСТЬ ТОКЕН: Делаем API вызов
+        let timeoutInterval: TimeInterval = 10.0
         let timeoutWorkItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
             
@@ -118,7 +156,7 @@ class MainViewModel: ObservableObject {
                 
                 if self.isLoading {
                     #if DEBUG
-                    print("⚠️ MainViewModel: Таймаут загрузки данных (5 секунд) на попытке \(currentAttempt)")
+                    print("⚠️ MainViewModel: Таймаут загрузки данных (10 секунд) на попытке \(currentAttempt)")
                     #endif
                     self.isLoading = false
                     // Показываем баннер только если исчерпаны попытки
@@ -144,6 +182,7 @@ class MainViewModel: ObservableObject {
                 switch result {
                 case .success(let stats):
                     self.isLoading = false
+                    self.isLoadingDashboard = false
                     // ✅ ОБНОВЛЯЕМ ДАННЫЕ ИЗ API
                     self.familyMembers = stats.totalMembers
                     self.devicesProtected = stats.totalDevices
@@ -169,12 +208,23 @@ class MainViewModel: ObservableObject {
                             self.loadDashboardDataWithRetry(maxAttempts: maxAttempts, currentAttempt: currentAttempt + 1)
                         }
                     } else {
+                        // После всех неудачных попыток проверяем, связана ли ошибка с токеном
+                        let isTokenError = error.localizedDescription.contains("Сессия истекла") ||
+                                          error.localizedDescription.contains("токен") ||
+                                          error.localizedDescription.contains("Token")
+
+                        if isTokenError {
+                            // Сессия истекла - очищаем токены и отправляем на логин
+                            self.handleSessionExpired()
+                        } else {
+                            // Другая ошибка - просто показываем сообщение
                         self.isLoading = false
                         self.errorMessage = error.localizedDescription
                         #if DEBUG
                         print("❌ MainViewModel: Ошибка после \(maxAttempts) попыток: \(error.localizedDescription)")
                         #endif
                         NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+                        }
                     }
                 }
             }
@@ -204,9 +254,84 @@ class MainViewModel: ObservableObject {
         #endif
         loadDashboardData()
     }
+
+    /// Обработка истекшей сессии
+    private func handleSessionExpired() {
+        // Проверяем, являются ли токены debug токенами
+        let isDebugToken = isUsingDebugTokens()
+
+        if isDebugToken {
+            print("🔐 MainViewModel: Debug токены не работают с сервером - работаем в offline режиме")
+            // Для debug токенов не очищаем их и не отправляем на логин
+            // Просто показываем сообщение и работаем с дефолтными данными
+            isLoading = false
+            errorMessage = "Работа в демо-режиме с тестовыми данными"
+            NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+            return
+        }
+
+        print("🔐 MainViewModel: Сессия истекла - очищаем токены и отправляем на логин")
+
+        // Очищаем токены из Keychain
+        keychainManager.delete(forKey: .authToken)
+        keychainManager.delete(forKey: .refreshToken)
+
+        // Сбрасываем состояние
+        isLoading = false
+        errorMessage = "Сессия истекла. Пожалуйста, войдите заново."
+
+        // Отправляем уведомление о необходимости логина
+        NotificationCenter.default.post(
+            name: NSNotification.Name("SessionExpired"),
+            object: nil,
+            userInfo: ["message": "Ваша сессия истекла. Пожалуйста, войдите заново."]
+        )
+
+        // Также отправляем стандартное уведомление для UI
+        NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+    }
+
+    /// Проверяет, используются ли debug токены
+    private func isUsingDebugTokens() -> Bool {
+        guard let token: String = keychainManager.load(String.self, forKey: .authToken) else {
+            return false
+        }
+
+        // Debug токен содержит специфический payload
+        return token.contains("debug-auth") || token.contains("debugsignature")
+    }
     
     /// ✅ АВТООБНОВЛЕНИЕ: Загрузка данных при открытии экрана
     func onAppear() {
+        // ✅ КРИТИЧНО: Проверяем, завершен ли онбординг
+        let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        if !onboardingDone {
+            #if DEBUG
+            print("⚠️ MainViewModel: Онбординг не завершен - пропускаем загрузку данных")
+            #endif
+            return
+        }
+
+        // ✅ ЗАЩИТА ОТ ЧАСТЫХ ВЫЗОВОВ: Проверяем, не было ли onAppear недавно
+        if let lastCall = lastOnAppearTime, Date().timeIntervalSince(lastCall) < 30 {
+            #if DEBUG
+            print("⚠️ MainViewModel: onAppear вызван слишком часто, пропускаем")
+            #endif
+            return
+        }
+        lastOnAppearTime = Date()
+
+        // Проверяем, используются ли debug токены
+        if isUsingDebugTokens() {
+            #if DEBUG
+            print("ℹ️ MainViewModel: Debug токены - работаем в демо-режиме, пропускаем загрузку API")
+            #endif
+            // Для debug токенов показываем демо-сообщение
+            errorMessage = "Демо-режим: тестовые данные"
+            NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+            return
+        }
+
         // Проверяем, нужно ли обновлять данные
         let shouldRefresh: Bool
         

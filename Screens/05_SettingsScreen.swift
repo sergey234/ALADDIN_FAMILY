@@ -54,7 +54,6 @@ struct SettingsScreen: View {
     @ObservedObject private var toastManager = ToastManager.shared
     @ObservedObject private var historyManager = ProtectionLevelHistoryManager.shared
     @ObservedObject private var tariffManager = TariffManager.shared
-    @StateObject private var mainViewModel = MainViewModel()
     @State private var showProtectionHistory: Bool = false
     
     // Navigation для менеджеров

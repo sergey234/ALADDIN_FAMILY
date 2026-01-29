@@ -68,14 +68,28 @@ struct AppConfig {
     
     /**
      * Токен авторизации (если есть)
-     * TODO: В будущем заменить на Keychain для безопасности
+     * Читается из Keychain для безопасности с fallback на UserDefaults
      */
     static var authToken: String? {
         get {
-            UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.authToken)
+            // Сначала пробуем Keychain (основное хранилище)
+            if let keychainToken = KeychainManager.shared.load(String.self, forKey: .authToken) {
+                return keychainToken
+            }
+            // Fallback на UserDefaults для обратной совместимости
+            return UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.authToken)
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: AppConfig.UserDefaultsKeys.authToken)
+            if let token = newValue {
+                // Сохраняем в Keychain
+                KeychainManager.shared.save(token, forKey: .authToken)
+                // И в UserDefaults для обратной совместимости
+                UserDefaults.standard.set(token, forKey: AppConfig.UserDefaultsKeys.authToken)
+            } else {
+                // Удаляем из обоих мест
+                KeychainManager.shared.delete(forKey: .authToken)
+                UserDefaults.standard.removeObject(forKey: AppConfig.UserDefaultsKeys.authToken)
+            }
         }
     }
     
@@ -98,6 +112,9 @@ struct AppConfig {
         static let networkProtectionSettings = "/network-protection/settings"
         
         // Family
+        static let createFamily = "/family/create"
+        static let joinFamily = "/family/join"
+        static let recoverFamily = "/family/recover"
         static let familyMembers = "/family/members"
         static let addFamilyMember = "/family/add"
         static let removeFamilyMember = "/family/remove"

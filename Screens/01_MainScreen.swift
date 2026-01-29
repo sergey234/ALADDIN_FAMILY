@@ -4,6 +4,7 @@ import UIKit
 struct MainScreen: View {
     @State private var aiQuestion: String = ""
     @StateObject private var mainViewModel = MainViewModel()
+    @State private var hasAppeared = false
     @ObservedObject private var tariffManager = TariffManager.shared
     @ObservedObject private var antivirusManager = AntivirusManager.shared
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -213,14 +214,27 @@ struct MainScreen: View {
                 .padding(.bottom, 20)
             }
         }
-        .task {
-            print("🚨 MainScreen загружен! Точная копия HTML!")
-            loadProfileImage()
-            // Загружаем статистику из API
-            mainViewModel.loadDashboardData()
-        }
         .onAppear {
+            // ✅ ИСПРАВЛЕНИЕ: Предотвращаем двойной вызов onAppear
+            guard !hasAppeared else {
+                print("⚠️ MainScreen.onAppear: Повторный вызов пропущен")
+                return
+            }
+            hasAppeared = true
+
+            print("🚨 MainScreen загружен! Точная копия HTML!")
+
+            // ✅ КРИТИЧНО: Проверяем, завершен ли онбординг
+            let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            if !onboardingDone {
+                print("🚨 MainScreen: Онбординг не завершен - перенаправляем обратно")
+                navigationManager.currentScreen = .onboarding
+                return
+            }
+
             loadProfileImage()
+            // ✅ ИСПРАВЛЕНИЕ: Убираем loadDashboardData() из onAppear - загрузка происходит в MainViewModel.onAppear()
+            // mainViewModel.loadDashboardData() // УБРАНО чтобы избежать двойной загрузки
         }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("main_lang_\(localizationManager.currentLanguage.rawValue)")

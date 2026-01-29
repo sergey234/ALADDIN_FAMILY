@@ -18,7 +18,7 @@ struct DevicesScreen: View {
     @State private var selectedFilter: DeviceFilter = .all
     @State private var expandedFilters: Set<DeviceFilter> = []
     
-    private let apiService = APIService(networkManager: NetworkManager())
+    private let apiService = APIService.shared
     
     enum DeviceFilter: String, CaseIterable {
         case all
@@ -705,7 +705,7 @@ struct AddDeviceView: View {
     
     @State private var familyMembers: [String] = []
     
-    private let apiService = APIService(networkManager: NetworkManager())
+    private let apiService = APIService.shared
     
     var body: some View {
         NavigationView {

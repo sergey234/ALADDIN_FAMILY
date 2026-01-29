@@ -150,17 +150,8 @@ class PaymentQRViewModel: ObservableObject {
     private var autoCheckTimer: Timer?
     private let isoFormatter: ISO8601DateFormatter = ISO8601DateFormatter()
     
-    // ✅ ИСПРАВЛЕНИЕ #6: NetworkManager создается один раз и переиспользуется
-    private lazy var networkManager: NetworkManager = {
-        print("🔍 PaymentQRViewModel: Создание NetworkManager (lazy)")
-        return NetworkManager()
-    }()
-    
-    // ✅ ИСПРАВЛЕНИЕ #6: APIService создается один раз
-    private lazy var apiService: APIService = {
-        print("🔍 PaymentQRViewModel: Создание APIService (lazy)")
-        return APIService(networkManager: networkManager)
-    }()
+    // ✅ Используем общий APIService
+    private let apiService = APIService.shared
     private var isManualCloseInProgress: Bool = false
     
     // MARK: - Localization Helper

@@ -21,9 +21,9 @@ class ProfileViewModel: ObservableObject {
     private let apiService: APIService
     private let networkManager: NetworkManager
     
-    init(apiService: APIService? = nil, networkManager: NetworkManager? = nil) {
-        self.networkManager = networkManager ?? NetworkManager()
-        self.apiService = apiService ?? APIService(networkManager: self.networkManager)
+    init(apiService: APIService? = nil) {
+        self.networkManager = NetworkManager() // Для обратной совместимости, но не используется
+        self.apiService = apiService ?? APIService.shared
     }
     
     // Загрузка профиля из API

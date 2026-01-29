@@ -8,11 +8,18 @@ import Combine
  */
 
 class APIService {
-    
+
     let networkManager: NetworkManager
-    
-    // Singleton для глобального доступа
-    // ✅ ОБНОВЛЕНО: Поддержка переключения между Mock и Real API
+
+    // ✅ ИСПРАВЛЕНИЕ: Исправляем singleton паттерн - один экземпляр NetworkManager
+    private static let sharedNetworkManager: NetworkManager = {
+        print("🔧 APIService: Создание singleton NetworkManager")
+        return NetworkManager()
+    }()
+
+    // ✅ ИСПРАВЛЕНИЕ: Кешируем APIService для избежания повторного создания
+    private static var _sharedAPIService: APIService?
+
     static var shared: APIService {
         #if DEBUG
         if AppConfig.useMockAPI {
@@ -22,9 +29,15 @@ class APIService {
             return MockAPIService.mockShared
         }
         #endif
-        // Real API Service (по умолчанию)
-        let networkManager = NetworkManager()
-        return APIService(networkManager: networkManager)
+
+        // ✅ ИСПРАВЛЕНИЕ: Используем кешированный экземпляр вместо создания нового
+        if let cached = _sharedAPIService {
+            return cached
+        }
+
+        let service = APIService(networkManager: sharedNetworkManager)
+        _sharedAPIService = service
+        return service
     }
     
     // Private initializer для Real API Service
@@ -58,6 +71,16 @@ class APIService {
     
     func sendNetworkProtectionStats(_ stats: NetworkProtectionStats, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
         networkManager.post(endpoint: "/network-protection/stats", body: stats, completion: completion)
+    }
+
+    // MARK: - Family Registration API
+
+    func createFamily(request: CreateFamilyRequest, completion: @escaping (Result<CreateFamilyResponse, Error>) -> Void) {
+        networkManager.post(endpoint: AppConfig.Endpoint.createFamily, body: request, completion: completion)
+    }
+
+    func joinFamily(request: JoinFamilyRequest, completion: @escaping (Result<APIResponse<FamilyResponse>, Error>) -> Void) {
+        networkManager.post(endpoint: AppConfig.Endpoint.joinFamily, body: request, completion: completion)
     }
     
     // ✅ ДОБАВЛЕНО: Network Protection Settings API (для синхронизации между устройствами)
@@ -790,10 +813,10 @@ class APIService {
                             case .success:
                                 continuation.resume()
                             case .failure(let patchError):
-                                // Если и PATCH не работает, просто логируем (не критично)
-                                print("⚠️ APIService: PATCH тоже не работает: \(patchError.localizedDescription)")
-                                // Не пробрасываем ошибку - статус сохранен локально
-                                continuation.resume()
+                                    // Если и PATCH не работает, просто логируем (не критично)
+                                    print("⚠️ APIService: PATCH тоже не работает: \(patchError.localizedDescription)")
+                                    // Не пробрасываем ошибку - статус сохранен локально
+                                    continuation.resume()
                             }
                         }
                     } else {
@@ -955,7 +978,7 @@ class APIService {
         struct SecureScanRequest: Codable {
             let emailHash: String?
             let passwordHash: String?
-            let method: String = "secure"
+            var method: String = "secure"
         }
         
         let request = SecureScanRequest(
@@ -983,7 +1006,7 @@ class APIService {
             let phone: String?
             let passport: String?
             let snils: String?
-            let method: String = "fast"
+            var method: String = "fast"
         }
         
         let request = FastScanRequest(

@@ -24,7 +24,126 @@ struct ALADDINApp: App {
         
 #if DEBUG
         KeychainAutoRecoveryService.repairTokensIfNeeded()
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала проверяем и удаляем debug токены СИНХРОННО
+        // Это нужно сделать ДО создания новых debug токенов
+        let hadDebugTokens = ALADDINApp.autoFixDebugTokensIfNeeded()
+
+        // ✅ ИСПРАВЛЕНИЕ: Проверяем, нужно ли создавать debug токены
+        // Если установлена переменная окружения SKIP_DEBUG_TOKENS=1, пропускаем создание debug токенов
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Тримируем значение, чтобы убрать возможные пробелы
+        let skipDebugTokensRaw = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""
+        let skipDebugTokens = skipDebugTokensRaw.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
+
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если есть AUTO_LOGIN_EMAIL, автоматически считаем, что нужно пропустить debug токены
+        let hasAutoLogin = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"] != nil &&
+                          !ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"]!.isEmpty
+
+        let shouldSkipDebugTokens = skipDebugTokens || hasAutoLogin
+
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда создаем debug токены после удаления старых
+        // Если мы удалили debug токены, обязательно создаем новые
+        if hadDebugTokens || !shouldSkipDebugTokens {
+            if !shouldSkipDebugTokens {
+                // Создаем debug токены независимо от того, были ли они удалены
+                DebugAuthTokenSeeder.seedIfNeeded()
+            } else if hadDebugTokens {
+                // Если токены были удалены, но skipDebugTokens = true, создаем токены в любом случае
         DebugAuthTokenSeeder.seedIfNeeded()
+            }
+        } else {
+            if skipDebugTokens {
+                print("⚠️ DEBUG: Пропущено создание debug токенов (SKIP_DEBUG_TOKENS=1)")
+            } else if hasAutoLogin {
+                print("⚠️ DEBUG: Пропущено создание debug токенов (настроен автоматический логин)")
+            }
+            print("   Для получения валидных токенов используйте performRealLogin() в Debug Console")
+        }
+        
+        // ✅ АВТОМАТИЧЕСКИЙ ЛОГИН: Если установлены переменные окружения, выполняем логин автоматически
+        // ✅ ПРОДАКШЕН: Проверяем сохраненные credentials для автоматического логина
+        DispatchQueue.global(qos: .utility).async {
+            // ✅ ДИАГНОСТИКА: Проверяем переменные окружения
+            let email = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"]
+            let password = ProcessInfo.processInfo.environment["AUTO_LOGIN_PASSWORD"]
+
+            // ✅ ПРОДАКШЕН: Проверяем сохраненные credentials
+            let savedEmail = UserDefaults.standard.string(forKey: "saved_login_email")
+            let savedPassword = UserDefaults.standard.string(forKey: "saved_login_password")
+            let autoLoginEnabled = UserDefaults.standard.bool(forKey: "auto_login_enabled")
+            
+            print("🔍 ALADDINApp: Проверка переменных окружения...")
+            let skipDebugTokensValue = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""
+            let skipDebugTokensTrimmed = skipDebugTokensValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            let skipDebugTokensIsSet = skipDebugTokensTrimmed == "1"
+            print("   - AUTO_LOGIN_EMAIL: \(email != nil ? "✅ установлен (\(email?.prefix(3) ?? "")...)" : "❌ не установлен")")
+            print("   - AUTO_LOGIN_PASSWORD: \(password != nil ? "✅ установлен (\(password?.count ?? 0) символов)" : "❌ не установлен")")
+            print("   - SKIP_DEBUG_TOKENS: \(skipDebugTokensValue.isEmpty ? "❌ НЕ УСТАНОВЛЕН" : "✅ установлен = '\(skipDebugTokensTrimmed)' (\(skipDebugTokensIsSet ? "активен" : "не активен"))")")
+            
+            // ✅ ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА: Выводим все переменные окружения, начинающиеся с AUTO_ или SKIP_
+            let allEnvVars = ProcessInfo.processInfo.environment
+            let relevantVars = allEnvVars.keys.filter { $0.hasPrefix("AUTO_") || $0.hasPrefix("SKIP_") }
+            if !relevantVars.isEmpty {
+                print("   - Все найденные переменные: \(relevantVars.joined(separator: ", "))")
+                for varName in relevantVars {
+                    let value = allEnvVars[varName] ?? ""
+                    if varName.contains("PASSWORD") {
+                        print("     • \(varName) = '\(value.count) символов'")
+                    } else {
+                        print("     • \(varName) = '\(value)'")
+                    }
+                }
+            } else {
+                print("   - ⚠️ ВНИМАНИЕ: Не найдено ни одной переменной окружения с префиксом AUTO_ или SKIP_!")
+                print("   - Проверьте, что переменные установлены в правильной схеме (Run)")
+            }
+            
+            // ✅ ПРОДАКШЕН: Проверяем условия для автоматического логина
+            let shouldAutoLogin = (email != nil && password != nil && !email!.isEmpty && !password!.isEmpty) ||
+                                 (autoLoginEnabled && savedEmail != nil && savedPassword != nil)
+
+            if shouldAutoLogin {
+                let loginEmail = email ?? savedEmail!
+                let loginPassword = password ?? savedPassword!
+
+                print("🔐 ALADDINApp: Автоматический логин...")
+                print("   - Email: \(loginEmail)")
+                print("   - Тип: \(email != nil ? "переменные окружения" : "сохраненные credentials")")
+
+                // Небольшая задержка, чтобы приложение успело запуститься
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    performRealLogin(email: loginEmail, password: loginPassword) { success in
+                        if success {
+                            print("✅ ALADDINApp: Автоматический логин успешен!")
+
+                            // ✅ ПРОВЕРКА: Убеждаемся, что токены действительно сохранены
+                            let keychain = KeychainManager.shared
+                            if let token: String = keychain.load(String.self, forKey: .authToken) {
+                                print("✅ ALADDINApp: Токен подтвержден в Keychain (длина: \(token.count))")
+                            } else {
+                                print("⚠️ ALADDINApp: ВНИМАНИЕ! Токен не найден в Keychain после успешного логина!")
+                            }
+                        } else {
+                            print("❌ ALADDINApp: Ошибка автоматического логина")
+                            print("   - Проверьте правильность email и password")
+                            print("   - Проверьте доступность сервера")
+                            // В продакшене не показываем детали для безопасности
+                            #if DEBUG
+                            print("   - Проверьте endpoint /auth/login на сервере")
+                            #endif
+                        }
+                    }
+                }
+            } else {
+                #if DEBUG
+                if email == nil || password == nil || email!.isEmpty || password!.isEmpty {
+                    print("⚠️ ALADDINApp: Переменные окружения для автоматического логина не установлены")
+                    print("   - Установите AUTO_LOGIN_EMAIL и AUTO_LOGIN_PASSWORD в Scheme → Run → Arguments → Environment Variables")
+                }
+                #endif
+                print("ℹ️ ALADDINApp: Автоматический логин не настроен - пользователь должен войти вручную")
+            }
+        }
 #endif
     }
     
@@ -263,10 +382,7 @@ struct ALADDINApp: App {
                         AnyView(AdvancedProtectionSettingsScreen().id("advancedProtection").environmentObject(navigationManager).environmentObject(localizationManager))
                     }
                 }
-                .id("screen_\(navigationManager.currentScreen.rawValue)")  // ✅ Дополнительный ID для принудительного обновления
-                .onAppear {
-                    print("🔍 DEBUG ALADDINApp: Рендер currentScreen = \(navigationManager.currentScreen)")
-                }
+                .id("screen_\(navigationManager.currentScreen.rawValue)")
                 .navigationBarHidden(true)
             }
             .navigationViewStyle(StackNavigationViewStyle())
@@ -278,39 +394,18 @@ struct ALADDINApp: App {
             .environment(\.locale, localizationManager.locale)
             // ✅ КРИТИЧНО: Пересоздаём NavigationView при изменении currentScreen
             .id("nav_\(navigationManager.currentScreen.rawValue)_\(localizationManager.currentLanguage.rawValue)")
-            // ✅ КРИТИЧНО: Инициализация навигации при первом появлении
+            // ✅ Инициализация навигации при первом появлении
             .onAppear {
-                // Используем замыкание с захватом для безопасного доступа к StateObject
                 let navManager = navigationManager
                 let locManager = localizationManager
                 initializeNavigation(navigationManager: navManager, localizationManager: locManager)
             }
-            // ✅ ИСПРАВЛЕНИЕ: Отслеживаем возврат из Safari/других приложений
+            // ✅ ИСПРАВЛЕНИЕ: Упрощенная обработка возврата из фона - без лишних проверок
             .onChange(of: scenePhase) { newPhase in
                 if newPhase == .active {
                     // Приложение стало активным (вернулись из Safari/фона)
-                    // НЕ перенаправляем на онбординг, если уже прошли его
-                    let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-                    if onboardingDone {
-                        if navigationManager.currentScreen == .onboarding {
-                            // Если случайно оказались на онбординге, возвращаемся на главную
-                            print("🔄 Возврат из фона: обнаружен онбординг при пройденном онбординге - исправляем")
-                            navigationManager.currentScreen = .main
-                        }
-                        // ✅ КРИТИЧНО: Не вызываем initializeNavigation повторно при возврате из фона
-                        // Это предотвращает сброс навигации на реальном устройстве
-                        print("🔄 Возврат из фона: онбординг пройден, текущий экран = \(navigationManager.currentScreen)")
-                    }
-                }
-            }
-            // ✅ КРИТИЧНО: Дополнительное отслеживание изменений
-            .onChange(of: navigationManager.currentScreen) { newScreen in
-                print("🚨🚨🚨 ALADDINApp.onChange: currentScreen изменился на \(newScreen)")
-                print("🚨🚨🚨 ALADDINApp: Обновляем switch statement")
-                
-                // ✅ КРИТИЧНО: Принудительное обновление через RunLoop
-                RunLoop.main.perform {
-                    print("🚨 ALADDINApp: RunLoop.perform выполнен")
+                    print("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
+                    // НЕ вызываем initializeNavigation - это может вызвать двойную загрузку
                 }
             }
             // 🌓 ПРИМЕНЯЕМ ТЕМУ
@@ -336,15 +431,17 @@ struct ALADDINApp: App {
     private static var hasInitialized = false
     
     private func initializeNavigation(navigationManager: NavigationManager, localizationManager: LocalizationManager) {
+        // ✅ КРИТИЧНО: ПЕРВЫЙ ЗАПУСК - СБРАСЫВАЕМ ВСЕ СОСТОЯНИЕ
+        if !ALADDINApp.hasInitialized {
+            print("🛠️ [ALADDINApp.initializeNavigation] Первый запуск - сбрасываем состояние")
+            // Принудительный сброс онбординга для первого запуска
+            UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            UserDefaults.standard.synchronize()
+        }
+
         // ✅ Используем статический флаг для предотвращения повторной инициализации
         if ALADDINApp.hasInitialized {
             print("🛠️ [ALADDINApp.initializeNavigation] Уже инициализировано, пропускаем")
-            // ✅ КРИТИЧНО: Даже если уже инициализировано, проверяем что мы не на онбординге случайно
-            let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-            if onboardingDone && navigationManager.currentScreen == .onboarding {
-                print("⚠️ [ALADDINApp.initializeNavigation] Обнаружен онбординг при уже пройденном онбординге - исправляем")
-                navigationManager.currentScreen = .main
-            }
             return
         }
         
@@ -361,27 +458,15 @@ struct ALADDINApp: App {
         let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
         print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")
         
-        // ✅ ИСПРАВЛЕНИЕ: НЕ используем задержку, проверяем сразу и только если действительно первый запуск
-        // ✅ КРИТИЧНО: Не перенаправляем на онбординг, если пользователь уже на другом экране
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда начинаем с онбординга при первом запуске
         if !onboardingDone {
-            // Только если онбординг не пройден И мы на главной странице (первый запуск)
-            // ✅ КРИТИЧНО: Проверяем, что это действительно первый запуск, а не возврат из фона
-            if navigationManager.currentScreen == .main && navigationManager.navigationStack.isEmpty {
-                print("🔴 ONBOARDING: Показываю онбординг на первом запуске")
-                navigationManager.navigationStack.removeAll()
+            // Первый запуск - всегда показываем онбординг
+            print("🔴 ONBOARDING: Первый запуск - показываем онбординг")
                 navigationManager.currentScreen = .onboarding
-            } else {
-                print("🟡 ONBOARDING: Онбординг не пройден, но уже на экране \(navigationManager.currentScreen) или стек не пуст - не перенаправляем")
-            }
         } else {
-            print("🟢 ONBOARDING: Пропущен, остаёмся на текущем экране \(navigationManager.currentScreen)")
-            // ✅ ИСПРАВЛЕНИЕ: НЕ меняем currentScreen, если онбординг уже пройден
-            // Пользователь может быть на любом экране, не нужно его сбрасывать на main
-            // ✅ КРИТИЧНО: Если случайно оказались на онбординге, возвращаемся на главную
-            if navigationManager.currentScreen == .onboarding {
-                print("⚠️ ONBOARDING: Обнаружен онбординг при пройденном онбординге - исправляем")
+            // Онбординг пройден - переходим на main
+            print("🟢 ONBOARDING: Пройден - переходим на главный экран")
                 navigationManager.currentScreen = .main
-            }
         }
     }
     
@@ -394,33 +479,196 @@ struct ALADDINApp: App {
         print("✅ Остаёмся на главной странице")
         navigationManager.currentScreen = .main
     }
+    
+    /// Автоматически проверяет и удаляет debug токены при запуске
+    /// Возвращает true, если были обнаружены и удалены debug токены
+    private static func autoFixDebugTokensIfNeeded() -> Bool {
+        let keychain = KeychainManager.shared
+        
+        // Проверяем access token
+        var isDebugToken = false
+        if let accessToken: String = keychain.load(String.self, forKey: .authToken) {
+            // Проверяем признаки debug токена
+            if accessToken.contains(".debugsignature") {
+                isDebugToken = true
+                print("⚠️ ALADDINApp: Обнаружен debug access token (содержит .debugsignature)")
+            } else if accessToken.count == 140 && accessToken.contains("eyJhbGciOi") {
+                isDebugToken = true
+                print("⚠️ ALADDINApp: Обнаружен debug access token (длина 140)")
+            }
+        }
+        
+        // Проверяем refresh token
+        if let refreshToken: String = keychain.load(String.self, forKey: .refreshToken) {
+            if refreshToken == "debug-refresh-token" {
+                isDebugToken = true
+                print("⚠️ ALADDINApp: Обнаружен debug refresh token")
+            }
+        }
+        
+        // Если обнаружены debug токены - удаляем их
+        if isDebugToken {
+            print("🔧 ALADDINApp: Автоматически удаляем debug токены...")
+            keychain.delete(forKey: .authToken)
+            keychain.delete(forKey: .refreshToken)
+            AppConfig.authToken = nil
+            UserDefaults.standard.removeObject(forKey: "refresh_token_not_supported")
+            print("✅ ALADDINApp: Debug токены удалены!")
+            print("⚠️ ALADDINApp: ВАЖНО! Выполните реальный логин через Debug Console:")
+            print("   performRealLogin(email: \"ваш_email\", password: \"ваш_пароль\") { _ in }")
+            return true
+        } else {
+            print("✅ ALADDINApp: Debug токены не обнаружены")
+            return false
+        }
+    }
 }
 
 #if DEBUG
 private enum DebugAuthTokenSeeder {
-    private static let demoAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjQwOTk2ODAwMDAsInN1YiI6ImRlYnVnLWF1dGgiLCJuYW1lIjoiQUxBRERJTiBEZWJ1ZyBUb2tlbiJ9.debugsignature"
-    private static let demoRefreshToken = "debug-refresh-token"
+    // ✅ ИСПРАВЛЕНИЕ: Убираем debug токены, которые не принимает сервер
+    // Вместо этого приложение будет работать в демо режиме
+    private static let demoAccessToken = ""
+    private static let demoRefreshToken = ""
     
     static func seedIfNeeded() {
-        let keychain = KeychainManager.shared
-        let hasAccessToken = keychain.isDataAvailable(forKey: .authToken)
-        
-        guard !hasAccessToken else {
-            #if DEBUG
-            print("✅ DEBUG: auth_token уже есть в Keychain")
-            #endif
-            return
-        }
-
-        if let accessData = try? JSONEncoder().encode(demoAccessToken) {
-            keychain.save(accessData, forKey: .authToken)
-        }
-        if let refreshData = try? JSONEncoder().encode(demoRefreshToken) {
-            keychain.save(refreshData, forKey: .refreshToken)
-        }
+        // ✅ ИСПРАВЛЕНИЕ: Не создаем debug токены - приложение работает в демо режиме
         #if DEBUG
-        print("✅ DEBUG: Тестовые auth/refresh токены сохранены в Keychain (seedIfNeeded)")
+        print("ℹ️ DEBUG: Debug токены отключены - приложение работает в демо режиме")
+        print("ℹ️ DEBUG: Для тестирования API используйте performRealLogin() в Debug Console")
         #endif
     }
+}
+#endif
+
+#if DEBUG
+// MARK: - Debug Console Functions
+
+func clearDebugTokens() -> Bool {
+    let keychain = KeychainManager.shared
+    keychain.delete(forKey: .authToken)
+    keychain.delete(forKey: .refreshToken)
+    AppConfig.authToken = nil
+    UserDefaults.standard.removeObject(forKey: "refresh_token_not_supported")
+    print("✅ Debug токены удалены. Выполните реальный логин.")
+    return true
+}
+
+func performRealLogin(email: String, password: String, completion: @escaping (Bool) -> Void) {
+    print("🔐 Выполняем логин для \(email)...")
+    print("   - Endpoint: \(AppConfig.Endpoint.login)")
+    print("   - Base URL: \(AppConfig.apiBaseURL)")
+    print("   - Full URL: \(AppConfig.apiBaseURL)\(AppConfig.Endpoint.login)")
+    
+    APIService.shared.login(email: email, password: password) { result in
+        switch result {
+        case .success(_):
+            print("✅ Логин успешен! Токены сохранены в Keychain.")
+            
+            // ✅ ПРОВЕРКА: Убеждаемся, что токены действительно сохранены
+            let keychain = KeychainManager.shared
+            var tokensSaved = true
+            
+            if let accessToken: String = keychain.load(String.self, forKey: .authToken) {
+                print("   - Access token сохранен (длина: \(accessToken.count))")
+            } else {
+                print("   - ⚠️ Access token НЕ найден в Keychain!")
+                tokensSaved = false
+            }
+            
+            if let refreshToken: String = keychain.load(String.self, forKey: .refreshToken) {
+                print("   - Refresh token сохранен (длина: \(refreshToken.count))")
+            } else {
+                print("   - ⚠️ Refresh token НЕ найден в Keychain!")
+                tokensSaved = false
+            }
+            
+            if tokensSaved {
+                print("✅ Теперь тумблеры должны работать!")
+                completion(true)
+            } else {
+                print("❌ Токены не были сохранены в Keychain!")
+                completion(false)
+            }
+        case .failure(let error):
+            print("❌ Ошибка логина: \(error.localizedDescription)")
+            
+            // ✅ ДЕТАЛЬНАЯ ДИАГНОСТИКА ОШИБКИ
+            if let networkError = error as? NetworkError {
+                switch networkError {
+                case .invalidStatusCode(let code):
+                    print("   - HTTP Status: \(code)")
+                    if code == 404 {
+                        print("   - ⚠️ Endpoint не найден! Проверьте правильность endpoint на сервере")
+                        print("   - Проверьте: \(AppConfig.apiBaseURL)\(AppConfig.Endpoint.login)")
+                    } else if code == 401 {
+                        print("   - ⚠️ Неверные credentials (email или password)")
+                    } else if code == 403 {
+                        print("   - ⚠️ Доступ запрещен")
+                    }
+                case .httpError(let code):
+                    print("   - HTTP Error \(code)")
+                    if code == 404 {
+                        print("   - ⚠️ Endpoint не найден! Проверьте правильность endpoint на сервере")
+                        print("   - Проверьте: \(AppConfig.apiBaseURL)\(AppConfig.Endpoint.login)")
+                    } else if code == 401 {
+                        print("   - ⚠️ Неверные credentials (email или password)")
+                    } else if code == 403 {
+                        print("   - ⚠️ Доступ запрещен")
+                    }
+                case .notFound(let message):
+                    print("   - ⚠️ Endpoint не найден: \(message ?? "Not Found")")
+                    print("   - Проверьте: \(AppConfig.apiBaseURL)\(AppConfig.Endpoint.login)")
+                case .unauthorized:
+                    print("   - ⚠️ Неверный email или пароль")
+                case .unauthorized(let message):
+                    print("   - ⚠️ Неверные credentials: \(message ?? "Unauthorized")")
+                case .forbidden(let message):
+                    print("   - ⚠️ Доступ запрещен: \(message ?? "Forbidden")")
+                case .invalidURL:
+                    print("   - ⚠️ Неверный URL: \(AppConfig.apiBaseURL)\(AppConfig.Endpoint.login)")
+                default:
+                    print("   - Тип ошибки: \(networkError)")
+                }
+            }
+            
+            print("⚠️ Проверьте:")
+            print("   1. Правильность email и password")
+            print("   2. Доступность сервера: \(AppConfig.apiBaseURL)")
+            print("   3. Правильность endpoint: \(AppConfig.Endpoint.login)")
+            print("   4. Полный URL: \(AppConfig.apiBaseURL)\(AppConfig.Endpoint.login)")
+            
+            completion(false)
+        }
+    }
+}
+
+/// Проверяет, являются ли текущие токены debug токенами
+/// Использование в Debug Console: checkIfTokensAreDebug()
+func checkIfTokensAreDebug() -> Bool {
+    let keychain = KeychainManager.shared
+    var isDebug = false
+    
+    if let accessToken: String = keychain.load(String.self, forKey: .authToken) {
+        if accessToken.contains(".debugsignature") || (accessToken.count == 140 && accessToken.contains("eyJhbGciOi")) {
+            print("⚠️ Обнаружен debug access token")
+            isDebug = true
+        }
+    }
+    
+    if let refreshToken: String = keychain.load(String.self, forKey: .refreshToken) {
+        if refreshToken == "debug-refresh-token" {
+            print("⚠️ Обнаружен debug refresh token")
+            isDebug = true
+        }
+    }
+    
+    if isDebug {
+        print("❌ Токены являются debug токенами. Выполните: clearDebugTokens() и затем performRealLogin()")
+    } else {
+        print("✅ Токены не являются debug токенами")
+    }
+    
+    return isDebug
 }
 #endif

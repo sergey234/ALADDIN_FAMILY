@@ -7,7 +7,7 @@ import Security
 class KeychainManager {
     static let shared = KeychainManager()
     
-    private let service = Bundle.main.bundleIdentifier ?? "com.aladdin.ios"
+    private let service = Bundle.main.bundleIdentifier ?? "family.aladdin.ios"
     
     private init() {}
     

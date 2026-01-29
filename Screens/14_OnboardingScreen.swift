@@ -214,6 +214,10 @@ struct OnboardingScreen: View {
                             // Сохраняем согласие на обработку данных
                             UserDefaults.standard.set(dataConsentAccepted, forKey: "personal_data_consent_accepted")
                             hasCompletedOnboarding = true
+
+                            // ✅ ИСПРАВЛЕНИЕ: НЕ создаем demo токены - приложение работает в демо режиме
+                            print("ℹ️ OnboardingScreen: Онбординг завершен - приложение работает в демо режиме")
+
                             navigationManager.navigateTo(.main)
                             print("✅ OnboardingScreen: Онбординг завершён, переход на главный экран")
                         }

@@ -64,6 +64,12 @@ class ComponentStatusService: ObservableObject {
     
     /// Загрузить статусы критичных компонентов (batch)
     func loadCriticalComponentsStatus() async throws {
+        // ✅ ЗАЩИТА ОТ МНОГОКРАТНЫХ ВЫЗОВОВ: Если уже загружается, пропустить
+        guard !isLoading else {
+            print("⚠️ ComponentStatusService: Загрузка уже выполняется, пропускаем")
+            return
+        }
+
         isLoading = true
         defer { isLoading = false }
         
@@ -102,9 +108,11 @@ class ComponentStatusService: ObservableObject {
                 maxConcurrent: 10
             )
             
-            // Обновить статусы
+            // Обновить статусы (только если значения изменились, чтобы избежать бесконечных циклов)
             for (componentId, status) in statuses {
+                if componentStatuses[componentId]?.isEnabled != status.isEnabled {
                 componentStatuses[componentId] = status
+                }
             }
             
             // Сохранить в кэш
@@ -195,9 +203,24 @@ class ComponentStatusService: ObservableObject {
         // Использовать APIService для загрузки
         do {
             return try await apiService.getComponentStatus(componentId: componentId)
+        } catch let networkError as NetworkError {
+            // ✅ ИСПРАВЛЕНИЕ: При сетевых ошибках возвращаем дефолтный статус вместо исключения
+            print("⚠️ ComponentStatusService: API недоступен для \(componentId) - \(networkError.localizedDescription)")
+            return ComponentStatus(
+                componentId: componentId,
+                isEnabled: false,
+                lastUpdate: nil,
+                configuration: nil
+            )
         } catch {
-            // Если компонент не найден, вернуть дефолтный статус
-            throw ComponentError.componentNotFound(componentId)
+            // ✅ ИСПРАВЛЕНИЕ: При любых других ошибках тоже возвращаем дефолтный статус
+            print("⚠️ ComponentStatusService: Ошибка загрузки \(componentId) - \(error.localizedDescription)")
+            return ComponentStatus(
+                componentId: componentId,
+                isEnabled: false,
+                lastUpdate: nil,
+                configuration: nil
+            )
         }
     }
     

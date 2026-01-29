@@ -54,7 +54,7 @@ struct FamilyChatScreen: View {
     private let familyIdKey = "family_id"
     private let familyMembersKey = "family_members_list"
     
-    private let apiService = APIService(networkManager: NetworkManager())
+    private let apiService = APIService.shared
     
     enum ChatTheme: String, CaseIterable {
         case light = "light"

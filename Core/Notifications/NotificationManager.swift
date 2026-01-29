@@ -30,7 +30,7 @@ class NotificationManager: NSObject, ObservableObject {
     // MARK: - Private Properties
     
     private let notificationCenter = UNUserNotificationCenter.current()
-    private let apiService = APIService(networkManager: NetworkManager())
+    private let apiService = APIService.shared
     private let userDefaults = UserDefaults.standard
     private let settingsKey = "notificationSettings"
     

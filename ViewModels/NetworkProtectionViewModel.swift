@@ -46,6 +46,9 @@ class NetworkProtectionViewModel: ObservableObject {
     @Published var showPasswordGenerator: Bool = false
     @Published var showIncidentResponseSettings: Bool = false
     
+    // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ
+    private var isUpdatingStatuses = false
+    
     // MARK: - Private Properties
     
     private var cancellables = Set<AnyCancellable>()
@@ -236,6 +239,15 @@ class NetworkProtectionViewModel: ObservableObject {
     }
     
     private func updateLocalStatuses() async {
+        // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ: Если уже обновляется, пропустить
+        guard !isUpdatingStatuses else {
+            print("⚠️ NetworkProtectionViewModel: Обновление статусов уже выполняется, пропускаем")
+            return
+        }
+
+        isUpdatingStatuses = true
+        defer { isUpdatingStatuses = false }
+
         // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
         // Критичные компоненты загружаются первыми
         let componentIds: [(String, ComponentLoadPriority)] = [
@@ -294,29 +306,53 @@ class NetworkProtectionViewModel: ObservableObject {
     }
     
     private func updateStatusForComponent(componentId: String, status: ComponentStatus) {
+        // ✅ ИСПРАВЛЕНИЕ МНОГОПОТОЧНОСТИ: Все обновления UI должны быть в main thread
+        // ✅ ИСПРАВЛЕНИЕ БЕСКОНЕЧНЫХ ЛОГОВ: Обновляем только если значение изменилось
+        Task { @MainActor in
         switch componentId {
         case "crash_detection_agent":
+                if crashDetectionEnabled != status.isEnabled {
             crashDetectionEnabled = status.isEnabled
+                }
         case "roadside_assistance_agent":
+                if roadsideAssistanceEnabled != status.isEnabled {
             roadsideAssistanceEnabled = status.isEnabled
+                }
         case "emergency_response_bot":
+                if emergencyResponseEnabled != status.isEnabled {
             emergencyResponseEnabled = status.isEnabled
+                }
         case "emergency_event_manager":
+                if emergencyEventEnabled != status.isEnabled {
             emergencyEventEnabled = status.isEnabled
+                }
         case "phishing_protection_agent":
+                if phishingProtectionEnabled != status.isEnabled {
             phishingProtectionEnabled = status.isEnabled
+                }
         case "malware_detection_agent":
+                if malwareDetectionEnabled != status.isEnabled {
             malwareDetectionEnabled = status.isEnabled
+                }
         case "mobile_security_agent":
+                if mobileSecurityEnabled != status.isEnabled {
             mobileSecurityEnabled = status.isEnabled
+                }
         case "network_security_agent":
+                if networkSecurityEnabled != status.isEnabled {
             networkSecurityEnabled = status.isEnabled
+                }
         case "incident_response_agent":
+                if incidentResponseEnabled != status.isEnabled {
             incidentResponseEnabled = status.isEnabled
+                }
         case "password_security_agent":
+                if passwordSecurityEnabled != status.isEnabled {
             passwordSecurityEnabled = status.isEnabled
+                }
         default:
             break
+            }
         }
     }
 }

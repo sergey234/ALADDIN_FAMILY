@@ -329,6 +329,7 @@ class NetworkManager: NSObject, ObservableObject {
         }
         
         // Проверяем наличие сертификатов
+        #if !DEBUG
         if certificates.isEmpty {
             print("⚠️ SSL Pinning: Сертификаты не найдены в Bundle!")
             print("   Инструкция: Добавьте сертификаты в Xcode проект:")
@@ -336,10 +337,10 @@ class NetworkManager: NSObject, ObservableObject {
             print("   2. Перетащите файлы из ALADDIN/Certificates/ в проект")
             print("   3. Убедитесь, что они добавлены в Target Membership")
             print("   4. Файлы: aladdin_cert.cer, aladdin_cert_backup.cer")
-            // В продакшене здесь должно быть исключение, но для разработки используем fallback
         } else {
             print("✅ SSL Pinning: Загружено \(certificates.count) сертификатов")
         }
+        #endif
         
         return certificates
     }
@@ -348,17 +349,19 @@ class NetworkManager: NSObject, ObservableObject {
      * Загружает конкретный сертификат по имени
      */
     private func loadCertificate(named name: String) -> Data? {
+        #if DEBUG
+        // В DEBUG режиме отключаем SSL Pinning для удобства разработки
+        return nil
+        #endif
+
         guard let path = Bundle.main.path(forResource: name, ofType: "cer") else {
-            print("⚠️ SSL Pinning: Сертификат \(name) не найден")
             return nil
         }
         
         guard let data = NSData(contentsOfFile: path) as Data? else {
-            print("⚠️ SSL Pinning: Ошибка чтения сертификата \(name)")
             return nil
         }
         
-        print("✅ SSL Pinning: Сертификат \(name) загружен")
         return data
     }
     
@@ -498,12 +501,19 @@ class NetworkManager: NSObject, ObservableObject {
                 // Обработка 401 ошибки (Unauthorized) - токен истёк
                 if httpResponse.statusCode == 401 {
                     print("⚠️ NetworkManager: Получен 401 - токен истёк, пытаемся обновить...")
+
+                    // Проверяем, есть ли токен в Keychain перед обновлением
+                    guard JWTTokenManager.shared.hasValidToken() else {
+                        print("❌ NetworkManager: Валидный токен отсутствует, не повторяем запрос")
+                        completion(.failure(NetworkError.tokenExpired))
+                        return
+                    }
                     
                     // Пытаемся обновить токен
                     Task { [weak self] in
-                        let refreshed = await JWTTokenManager.shared.refreshTokenIfNeeded()
+                        let tokenWasRefreshed = await JWTTokenManager.shared.forceRefreshToken()
                         
-                        if refreshed {
+                        if tokenWasRefreshed {
                             print("✅ NetworkManager: Токен обновлён, повторяем запрос...")
                             
                             guard let strongSelf = self else {

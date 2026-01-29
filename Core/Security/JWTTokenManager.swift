@@ -73,7 +73,30 @@ class JWTTokenManager {
     
     // MARK: - Token Refresh
     
+    /// Принудительно обновляет токен (для обработки 401 ошибок) - прямой HTTP запрос без рекурсии
+    func forceRefreshToken() async -> Bool {
+        print("🔄 JWT: Принудительное обновление токена...")
+
+        // Получаем refresh token
+        guard let refreshToken: String = keychainManager.load(String.self, forKey: .refreshToken) else {
+            print("❌ JWT: Refresh token не найден в Keychain")
+            return false
+        }
+
+        // Делаем прямой HTTP запрос без использования NetworkManager, чтобы избежать бесконечного цикла
+        return await directRefreshTokenRequest(refreshToken: refreshToken)
+    }
+
+    /// Проверяет, есть ли валидный токен
+    func hasValidToken() -> Bool {
+        guard let accessToken: String = keychainManager.load(String.self, forKey: .authToken) else {
+            return false
+        }
+        return !isTokenExpired(accessToken)
+    }
+
     /// Проверяет и обновляет токен если нужно
+    /// Возвращает true только если токен был действительно обновлен
     func refreshTokenIfNeeded() async -> Bool {
         guard let accessToken: String = keychainManager.load(String.self, forKey: .authToken) else {
             print("❌ JWT: Access token не найден в Keychain")
@@ -83,7 +106,7 @@ class JWTTokenManager {
         // Проверяем, не истёк ли токен
         if !isTokenExpired(accessToken) {
             print("✅ JWT: Access token действителен, обновление не требуется")
-            return true
+            return false // Возвращаем false - токен не был обновлен
         }
         
         print("🔄 JWT: Access token истёк, обновляем...")
@@ -98,12 +121,102 @@ class JWTTokenManager {
         return await refreshAccessToken(refreshToken: refreshToken)
     }
     
+    /// Прямой HTTP запрос на обновление токена (без использования NetworkManager, чтобы избежать бесконечного цикла)
+    private func directRefreshTokenRequest(refreshToken: String) async -> Bool {
+        print("🔄 JWT: Прямой HTTP запрос на обновление токена...")
+
+        return await withCheckedContinuation { continuation in
+            let urlString = AppConfig.apiBaseURL + "/auth/refresh"
+            guard let url = URL(string: urlString) else {
+                print("❌ JWT: Неверный URL для обновления токена")
+                continuation.resume(returning: false)
+                return
+            }
+
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+            struct RefreshTokenRequest: Codable {
+                let refresh_token: String
+            }
+
+            let requestBody = RefreshTokenRequest(refresh_token: refreshToken)
+
+            do {
+                request.httpBody = try JSONEncoder().encode(requestBody)
+            } catch {
+                print("❌ JWT: Ошибка кодирования тела запроса: \(error)")
+                continuation.resume(returning: false)
+                return
+            }
+
+            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    print("❌ JWT: Сетевая ошибка при обновлении токена: \(error.localizedDescription)")
+                    continuation.resume(returning: false)
+                    return
+                }
+
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    print("❌ JWT: Неверный HTTP ответ")
+                    continuation.resume(returning: false)
+                    return
+                }
+
+                guard let data = data else {
+                    print("❌ JWT: Пустой ответ от сервера")
+                    continuation.resume(returning: false)
+                    return
+                }
+
+                if httpResponse.statusCode == 200 {
+                    do {
+                        let response = try JSONDecoder().decode(RefreshTokenResponse.self, from: data)
+
+                        // Сохраняем новый access token
+                        self.keychainManager.save(response.access_token, forKey: .authToken)
+
+                        // Сохраняем новый refresh token если он есть
+                        if let newRefreshToken = response.refresh_token {
+                            self.keychainManager.save(newRefreshToken, forKey: .refreshToken)
+                        }
+
+                        print("✅ JWT: Токен успешно обновлён через прямой запрос")
+                        continuation.resume(returning: true)
+
+                    } catch {
+                        print("❌ JWT: Ошибка декодирования ответа: \(error)")
+                        continuation.resume(returning: false)
+                    }
+                } else {
+                    if let responseString = String(data: data, encoding: .utf8) {
+                        print("❌ JWT: Ошибка сервера (\(httpResponse.statusCode)): \(responseString)")
+                    } else {
+                        print("❌ JWT: Ошибка сервера (\(httpResponse.statusCode))")
+                    }
+                    continuation.resume(returning: false)
+                }
+            }
+            task.resume()
+        }
+    }
+    
     /// Обновляет access token используя refresh token
     private func refreshAccessToken(refreshToken: String) async -> Bool {
         print("🔄 JWT: Отправляем запрос на обновление токена...")
         
         return await withCheckedContinuation { continuation in
-            APIService.shared.refreshToken(refreshToken: refreshToken) { [weak self] result in
+            // Используем NetworkManager из APIService, чтобы избежать создания лишних экземпляров
+            let networkManager = APIService.shared.networkManager
+
+            struct RefreshTokenRequest: Codable {
+                let refresh_token: String
+            }
+
+            let request = RefreshTokenRequest(refresh_token: refreshToken)
+
+            networkManager.post(endpoint: "/auth/refresh", body: request) { [weak self] (result: Result<RefreshTokenResponse, Error>) in
                 switch result {
                 case .success(let response):
                     // Сохраняем новый access token

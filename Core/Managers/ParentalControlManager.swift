@@ -77,14 +77,15 @@ class ParentalControlManager: ObservableObject {
         apiService: APIService? = nil,
         networkManager: NetworkManager? = nil
     ) {
-        // Инициализируем NetworkManager
+        // ✅ ИСПРАВЛЕНИЕ: Правильная инициализация в правильном порядке
+        // Сначала инициализируем NetworkManager
         if let networkManager = networkManager {
             self.networkManager = networkManager
         } else {
             self.networkManager = NetworkManager()
         }
-        
-        // Инициализируем APIService с NetworkManager
+
+        // Затем инициализируем APIService
         if let apiService = apiService {
             self.apiService = apiService
         } else {

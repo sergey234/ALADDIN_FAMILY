@@ -3,7 +3,8 @@ import SwiftUI
 // MARK: - Navigation Manager для всех экранов ALADDIN - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
 @MainActor
 class NavigationManager: ObservableObject {
-    @Published var currentScreen: ALADDINScreen = .main
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Начинаем с онбординга для первого запуска
+    @Published var currentScreen: ALADDINScreen = .onboarding
     @Published var navigationStack: [ALADDINScreen] = []
     @Published var isPresentingModal: Bool = false
     @Published var currentModal: ALADDINModal? = nil
