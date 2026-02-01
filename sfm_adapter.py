@@ -7,6 +7,9 @@ import sys
 import os
 import time
 import json
+import threading
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Any, Optional, Tuple
 from datetime import datetime
 
@@ -15,40 +18,83 @@ backend_path = "/opt/aladdin-backend"
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
 
+# Add security module path
+security_path = "/opt/aladdin-backend/security"
+if security_path not in sys.path:
+    sys.path.insert(0, security_path)
+
 class SFMAdapter:
     """
-    Adapter for Safe Function Manager integration
-    Provides fallback to mock responses when SFM is unavailable
+    Optimized Adapter for Safe Function Manager integration
+    Asynchronous initialization, fast startup, graceful fallback
     """
 
     def __init__(self):
         self._sfm = None
         self.available = False
+        self._sfm_initialized = False
+        self._init_thread = None
+        self._init_lock = threading.Lock()
+        self._executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="sfm-init")
+
         self.metrics = {
             'total_calls': 0,
             'successful_calls': 0,
             'failed_calls': 0,
             'fallback_calls': 0,
-            'avg_response_time': 0
+            'avg_response_time': 0,
+            'init_time': 0,
+            'init_status': 'pending'  # pending -> initializing -> ready/failed
         }
 
-        # Try to initialize SFM
-        self._initialize_sfm()
+    def _initialize_sfm_async(self):
+        """Asynchronous SFM initialization in background thread"""
+        def init_worker():
+            start_time = time.time()
+            try:
+                self.metrics['init_status'] = 'initializing'
+                print("🔄 Starting SFM initialization in background...")
+
+                # Try to import SFM using optimized singleton
+                from security.sfm_singleton import get_sfm
+                self._sfm = get_sfm()
+
+                init_duration = time.time() - start_time
+                self.metrics['init_time'] = init_duration
+                self.available = True
+                self._sfm_initialized = True
+                self.metrics['init_status'] = 'ready'
+
+                print(f"✅ SFM initialized successfully in {init_duration:.2f} seconds")
+
+            except Exception as e:
+                init_duration = time.time() - start_time
+                self.metrics['init_time'] = init_duration
+                self._sfm = None
+                self.available = False
+                self._sfm_initialized = True  # Mark as attempted
+                self.metrics['init_status'] = 'failed'
+
+                print(f"❌ SFM initialization failed after {init_duration:.2f} seconds: {e}")
+
+        # Start initialization in background thread
+        if not self._init_thread or not self._init_thread.is_alive():
+            with self._init_lock:
+                if not self._init_thread or not self._init_thread.is_alive():
+                    self._init_thread = threading.Thread(
+                        target=init_worker,
+                        name="sfm-initializer",
+                        daemon=True
+                    )
+                    self._init_thread.start()
 
     def _initialize_sfm(self):
-        """Initialize SFM with graceful degradation"""
-        try:
-            # Try to import SFM
-            from safe_function_manager import SFM
-            self._sfm = SFM()
-            self.available = True
-            print("✅ SFM initialized successfully")
-        except ImportError as e:
-            print(f"⚠️  SFM not available (ImportError): {e}")
-            self.available = False
-        except Exception as e:
-            print(f"⚠️  SFM initialization failed: {e}")
-            self.available = False
+        """Legacy synchronous initialization - redirects to async"""
+        if not self._sfm_initialized:
+            self._initialize_sfm_async()
+        # For immediate calls, wait a bit for initialization
+        if self.metrics['init_status'] == 'initializing':
+            time.sleep(0.1)  # Brief wait
 
     def execute_function(self, func_name: str, params: Optional[Dict[str, Any]] = None) -> Tuple[bool, Any, Optional[str]]:
         """
@@ -61,6 +107,11 @@ class SFMAdapter:
         Returns:
             Tuple(success: bool, result: Any, error_message: Optional[str])
         """
+        # Lazy initialization of SFM
+        if not self._sfm_initialized:
+            self._initialize_sfm()
+            self._sfm_initialized = True
+
         self.metrics['total_calls'] += 1
         params = params or {}
 
@@ -294,12 +345,21 @@ class SFMAdapter:
         }
 
     def health_check(self) -> Dict[str, Any]:
-        """Health check for the adapter"""
-        return {
-            "status": "ok" if self.available else "degraded",
+        """Enhanced health check with detailed SFM status"""
+        sfm_status = "available" if self.available else self.metrics['init_status']
+
+        health_data = {
+            "status": "ok" if self.available else "initializing",
+            "sfm_adapter": sfm_status,  # This is what mobile app checks
+            "endpoints": 101,
+            "groups": ["components", "security", "monitoring", "protection", "system"],
             "sfm_available": self.available,
+            "sfm_init_status": self.metrics['init_status'],
+            "sfm_init_time": f"{self.metrics['init_time']:.2f}s" if self.metrics['init_time'] > 0 else "pending",
             "metrics": self.get_metrics()
         }
+
+        return health_data
 
 # Global instance
 sfm_adapter = SFMAdapter()

@@ -62,6 +62,11 @@ try:
     from sfm_adapter import sfm_adapter
     SFM_ADAPTER_AVAILABLE = True
     print("SFM Adapter loaded successfully")
+
+    # Start asynchronous SFM initialization immediately
+    print("🚀 Starting SFM initialization...")
+    sfm_adapter._initialize_sfm_async()
+
 except ImportError as e:
     print(f"SFM Adapter not available: {e}")
     SFM_ADAPTER_AVAILABLE = False
@@ -181,13 +186,19 @@ async def root():
 
 @app.get("/api/health")
 async def health():
-    sfm_status = "available" if SFM_ADAPTER_AVAILABLE and sfm_adapter and sfm_adapter.available else "fallback"
-    return {
-        "status": "ok",
-        "sfm_adapter": sfm_status,
-        "endpoints": 101,
-        "groups": ["components", "security", "monitoring", "protection", "system"]
-}
+    # Use detailed health check from SFM adapter
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        health_data = sfm_adapter.health_check()
+        # Ensure mobile app compatibility - it checks for "sfm_adapter": "available"
+        return health_data
+    else:
+        # Fallback when SFM adapter not available
+        return {
+            "status": "degraded",
+            "sfm_adapter": "fallback",
+            "endpoints": 101,
+            "groups": ["components", "security", "monitoring", "protection", "system"]
+        }
 
 @app.get("/metrics")
 def get_metrics():
