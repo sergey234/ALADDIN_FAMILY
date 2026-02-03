@@ -52,155 +52,1130 @@ class APIConfigLockdown:
         "auto_restart": True
     }
 
-    # 🔒 ЗАФИКСИРОВАННЫЕ API ЭНДПОИНТЫ (96 эндпоинтов - НЕ МЕНЯТЬ!)
+    # 🔒 ЗАФИКСИРОВАННЫЕ API ЭНДПОИНТЫ (96 эндпоинтов - НЕ МЕНЯТЬ!)    # 🔒 ЗАФИКСИРОВАННЫЕ API ЭНДПОИНТЫ (183 эндпоинта - НЕ МЕНЯТЬ!)
     API_ENDPOINTS_CONFIG = {
-        "authentication": [
-            {"method": "POST", "path": "/api/auth/register", "status": "locked"},
-            {"method": "POST", "path": "/api/auth/login", "status": "locked"},
-            {"method": "GET", "path": "/api/auth/profile", "status": "locked"},
-            {"method": "POST", "path": "/api/auth/refresh", "status": "locked"},
-            {"method": "POST", "path": "/api/auth/logout", "status": "locked"}
-        ],
-        "subscription": [
-            {"method": "GET", "path": "/api/subscription/status", "status": "locked"},
-            {"method": "GET", "path": "/api/subscription/plans", "status": "locked"},
-            {"method": "GET", "path": "/api/subscription/billing_history", "status": "locked"},
-            {"method": "POST", "path": "/api/subscription/upgrade", "status": "locked"},
-            {"method": "POST", "path": "/api/subscription/cancel", "status": "locked"}
-        ],
-        "notifications": [
-            {"method": "GET", "path": "/api/notifications/list", "status": "locked"},
-            {"method": "GET", "path": "/api/notifications/stats", "status": "locked"},
-            {"method": "GET", "path": "/api/notifications/unread_count", "status": "locked"},
-            {"method": "POST", "path": "/api/notifications/mark_read/{id}", "status": "locked"},
-            {"method": "POST", "path": "/api/notifications/delete/{id}", "status": "locked"},
-            {"method": "POST", "path": "/api/notifications/bulk_mark_read", "status": "locked"},
-            {"method": "POST", "path": "/api/notifications/test", "status": "locked"}
-        ],
-        "parental_control": [
-            {"method": "GET", "path": "/api/parental/stats", "status": "locked"},
-            {"method": "GET", "path": "/api/parental/activity/{child_id}", "status": "locked"},
-            {"method": "POST", "path": "/api/parental/restrict/{child_id}", "status": "locked"},
-            {"method": "POST", "path": "/api/parental/alert", "status": "locked"}
-        ],
-        "identity_protection": [
-            {"method": "GET", "path": "/api/identity/attempts", "status": "locked"},
-            {"method": "GET", "path": "/api/identity/stats", "status": "locked"},
-            {"method": "GET", "path": "/api/identity/theft/attempts", "status": "locked"},
-            {"method": "GET", "path": "/api/identity/theft/stats", "status": "locked"},
-            {"method": "GET", "path": "/api/identity/theft/history", "status": "locked"},
-            {"method": "POST", "path": "/api/identity/allow", "status": "locked"},
-            {"method": "POST", "path": "/api/identity/block", "status": "locked"},
-            {"method": "POST", "path": "/api/identity/whitelist", "status": "locked"},
-            {"method": "POST", "path": "/api/identity/theft/report/{id}", "status": "locked"}
-        ],
-        "darkweb_monitoring": [
-            {"method": "GET", "path": "/api/darkweb/leaks", "status": "locked"},
-            {"method": "GET", "path": "/api/darkweb/scans", "status": "locked"},
-            {"method": "GET", "path": "/api/darkweb/stats", "status": "locked"},
-            {"method": "POST", "path": "/api/darkweb/scan_start", "status": "locked"}
-        ],
-        "location_tracking": [
-            {"method": "GET", "path": "/api/location/requests", "status": "locked"},
-            {"method": "GET", "path": "/api/location/stats", "status": "locked"},
-            {"method": "POST", "path": "/api/location/allow", "status": "locked"},
-            {"method": "POST", "path": "/api/location/block", "status": "locked"}
-        ],
-        "data_cleanup": [
-            {"method": "GET", "path": "/api/data/cleanup/records", "status": "locked"},
-            {"method": "GET", "path": "/api/data/cleanup/stats", "status": "locked"},
-            {"method": "POST", "path": "/api/data/cleanup/start", "status": "locked"}
-        ],
-        "antitracker": [
-            {"method": "GET", "path": "/api/antitracker/categories", "status": "locked"},
-            {"method": "GET", "path": "/api/antitracker/trackers", "status": "locked"},
-            {"method": "GET", "path": "/api/antitracker/stats", "status": "locked"},
-            {"method": "GET", "path": "/api/antitracker/reports", "status": "locked"},
-            {"method": "POST", "path": "/api/antitracker/scan", "status": "locked"},
-            {"method": "POST", "path": "/api/antitracker/whitelist", "status": "locked"},
-            {"method": "POST", "path": "/api/antitracker/allow/{tracker_id}", "status": "locked"},
-            {"method": "POST", "path": "/api/antitracker/block/{tracker_id}", "status": "locked"},
-            {"method": "PUT", "path": "/api/antitracker/category/{id}", "status": "locked"}
-        ],
-        "roadside_assistance": [
-            {"method": "GET", "path": "/api/roadside/history", "status": "locked"},
-            {"method": "POST", "path": "/api/roadside/emergency", "status": "locked"},
-            {"method": "PUT", "path": "/api/roadside/settings", "status": "locked"}
-        ],
-        "system_management": [
-            {"method": "GET", "path": "/api/system/health", "status": "locked"},
-            {"method": "GET", "path": "/api/system/info", "status": "locked"},
-            {"method": "GET", "path": "/api/system/logs", "status": "locked"},
-            {"method": "POST", "path": "/api/system/maintenance", "status": "locked"}
-        ],
-        "analytics": [
-            {"method": "GET", "path": "/api/analytics/overview", "status": "locked"},
-            {"method": "GET", "path": "/api/analytics/performance", "status": "locked"},
-            {"method": "GET", "path": "/api/analytics/reports", "status": "locked"},
-            {"method": "GET", "path": "/api/analytics/security_events", "status": "locked"},
-            {"method": "POST", "path": "/api/analytics/export", "status": "locked"}
-        ],
-        "ai_categories": [
-            {"method": "GET", "path": "/api/ai/categories/stats", "status": "locked"},
-            {"method": "GET", "path": "/api/ai/categories/reports", "status": "locked"},
-            {"method": "POST", "path": "/api/ai/categories/allow", "status": "locked"},
-            {"method": "POST", "path": "/api/ai/categories/block", "status": "locked"}
-        ],
-        "components": [
-            {"method": "GET", "path": "/", "status": "locked"},
-            {"method": "GET", "path": "/api/components/health", "status": "locked"},
-            {"method": "GET", "path": "/api/components/status/{component_id}", "status": "locked"},
-            {"method": "POST", "path": "/api/components/enable/{component_id}", "status": "locked"},
-            {"method": "POST", "path": "/api/components/disable/{component_id}", "status": "locked"},
-            {"method": "GET", "path": "/api/components/config/{component_id}", "status": "locked"},
-            {"method": "PUT", "path": "/api/components/config/{component_id}", "status": "locked"},
-            {"method": "POST", "path": "/api/components/restart/{component_id}", "status": "locked"},
-            {"method": "GET", "path": "/api/components/logs/{component_id}", "status": "locked"},
-            {"method": "POST", "path": "/api/components/backup/{component_id}", "status": "locked"},
-            {"method": "GET", "path": "/api/components/status/sfm_core", "status": "locked"},
-            {"method": "GET", "path": "/api/components/config/sfm_core", "status": "locked"},
-            {"method": "GET", "path": "/api/components/logs/sfm_core", "status": "locked"},
-            {"method": "POST", "path": "/api/components/enable/sfm_core", "status": "locked"},
-            {"method": "POST", "path": "/api/components/disable/sfm_core", "status": "locked"},
-            {"method": "POST", "path": "/api/components/restart/sfm_core", "status": "locked"}
-        ],
-        "antiphishing": [
-            {"method": "GET", "path": "/api/phishing/sensitivity", "status": "locked"},
-            {"method": "PUT", "path": "/api/phishing/sensitivity", "status": "locked"},
-            {"method": "GET", "path": "/api/phishing/block_suspicious", "status": "locked"},
-            {"method": "PUT", "path": "/api/phishing/block_suspicious", "status": "locked"},
-            {"method": "GET", "path": "/api/phishing/exclusions", "status": "locked"}
-        ],
-        "antivirus": [
-            {"method": "GET", "path": "/api/malware/scan_scheduled", "status": "locked"},
-            {"method": "PUT", "path": "/api/malware/scan_scheduled", "status": "locked"},
-            {"method": "GET", "path": "/api/malware/quarantine", "status": "locked"},
-            {"method": "POST", "path": "/api/malware/scan_now", "status": "locked"}
-        ],
-        "mobile_security": [
-            {"method": "GET", "path": "/api/mobile/app_lock", "status": "locked"},
-            {"method": "GET", "path": "/api/mobile/biometric", "status": "locked"}
-        ],
-        "network_security": [
-            {"method": "GET", "path": "/api/network/firewall_rules", "status": "locked"},
-            {"method": "PUT", "path": "/api/network/vpn_config", "status": "locked"}
-        ],
         "health_checks": [
-            {"method": "GET", "path": "/api/health", "status": "locked"},
-            {"method": "GET", "path": "/api/system/health", "status": "locked"}
+            {
+                "method": "GET",
+                "path": "/",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/health",
+                "status": "locked"
+            },
         ],
-        "settings": [
-            {"method": "PUT", "path": "/api/analytics/settings", "status": "locked"},
-            {"method": "PUT", "path": "/api/location/accuracy", "status": "locked"},
-            {"method": "PUT", "path": "/api/notifications/settings", "status": "locked"},
-            {"method": "PUT", "path": "/api/parental/settings", "status": "locked"},
-            {"method": "PUT", "path": "/api/identity/theft/settings", "status": "locked"},
-            {"method": "PUT", "path": "/api/subscription/payment_method", "status": "locked"}
+
+        "components": [
+            {
+                "method": "GET",
+                "path": "/api/components/status/{component_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/components/enable/{component_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/components/disable/{component_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/components/config/{component_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/components/config/{component_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/components/health",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/components/restart/{component_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/components/logs/{component_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/components/backup/{component_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/components/restore/{component_id}",
+                "status": "locked"
+            },
         ],
-        "additional": [
-            {"method": "POST", "path": "/api/darkweb/resolve", "status": "locked"},
-            {"method": "POST", "path": "/api/system/backup", "status": "locked"}
-        ]
+
+        "anti_phishing": [
+            {
+                "method": "GET",
+                "path": "/api/phishing/sensitivity",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/phishing/sensitivity",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/phishing/block_suspicious",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/phishing/block_suspicious",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/phishing/exclusions",
+                "status": "locked"
+            },
+        ],
+
+        "antivirus": [
+            {
+                "method": "GET",
+                "path": "/api/malware/scan_scheduled",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/malware/scan_scheduled",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/malware/quarantine",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/malware/quarantine",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/malware/scan_now",
+                "status": "locked"
+            },
+        ],
+
+        "mobile_security": [
+            {
+                "method": "GET",
+                "path": "/api/mobile/app_lock",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/mobile/app_lock",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/mobile/biometric",
+                "status": "locked"
+            },
+        ],
+
+        "network_security": [
+            {
+                "method": "GET",
+                "path": "/api/network/firewall_rules",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/network/vpn_config",
+                "status": "locked"
+            },
+        ],
+
+        "ai_categories": [
+            {
+                "method": "GET",
+                "path": "/api/ai/categories/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/ai/categories/reports",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/ai/categories/allow",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/ai/categories/block",
+                "status": "locked"
+            },
+            {
+                "method": "GET",
+                "path": "/api/ai/categories/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/ai/categories/reports",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/ai/categories/allow",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/ai/categories/block",
+                "status": "locked"
+            },
+        ],
+
+        "data_cleanup": [
+            {
+                "method": "GET",
+                "path": "/api/data/cleanup/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/data/cleanup/records",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/data/cleanup/start",
+                "status": "locked"
+            },
+            {
+                "method": "GET",
+                "path": "/api/data/cleanup/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/data/cleanup/records",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/data/cleanup/start",
+                "status": "locked"
+            },
+        ],
+
+        "location_tracking": [
+            {
+                "method": "GET",
+                "path": "/api/location/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/location/requests",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/location/allow",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/location/block",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/location/accuracy",
+                "status": "locked"
+            },
+            {
+                "method": "GET",
+                "path": "/api/location/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/location/requests",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/location/allow",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/location/block",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/location/accuracy",
+                "status": "locked"
+            },
+        ],
+
+        "darkweb_monitoring": [
+            {
+                "method": "GET",
+                "path": "/api/darkweb/leaks",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/darkweb/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/darkweb/scans",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/darkweb/resolve",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/darkweb/scan_start",
+                "status": "locked"
+            },
+            {
+                "method": "GET",
+                "path": "/api/darkweb/leaks",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/darkweb/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/darkweb/scans",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/darkweb/resolve",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/darkweb/scan_start",
+                "status": "locked"
+            },
+        ],
+
+        "identity_protection": [
+            {
+                "method": "GET",
+                "path": "/api/identity/attempts",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/identity/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/allow",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/block",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/whitelist",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/identity/theft/attempts",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/identity/theft/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/theft/allow/{attempt_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/theft/block/{attempt_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/theft/whitelist",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/identity/theft/history",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/theft/report/{attempt_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/identity/theft/settings",
+                "status": "locked"
+            },
+            {
+                "method": "GET",
+                "path": "/api/identity/attempts",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/identity/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/allow",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/block",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/whitelist",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/identity/theft/attempts",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/identity/theft/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/theft/allow/{attempt_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/theft/block/{attempt_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/theft/whitelist",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/identity/theft/history",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/identity/theft/report/{attempt_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/identity/theft/settings",
+                "status": "locked"
+            },
+        ],
+
+        "anti_tracker": [
+            {
+                "method": "GET",
+                "path": "/api/antitracker/trackers",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/antitracker/block/{tracker_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/antitracker/allow/{tracker_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/antitracker/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/antitracker/whitelist",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/antitracker/categories",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/antitracker/category/{category_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/antitracker/scan",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/antitracker/reports",
+                "status": "locked"
+            },
+            {
+                "method": "GET",
+                "path": "/api/antitracker/trackers",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/antitracker/block/{tracker_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/antitracker/allow/{tracker_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/antitracker/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/antitracker/whitelist",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/antitracker/categories",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/antitracker/category/{category_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/antitracker/scan",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/antitracker/reports",
+                "status": "locked"
+            },
+        ],
+
+        "parental_control": [
+            {
+                "method": "GET",
+                "path": "/api/parental/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/parental/settings",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/parental/restrict/{child_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/parental/activity/{child_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/parental/alert",
+                "status": "locked"
+            },
+            {
+                "method": "GET",
+                "path": "/api/parental/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/parental/settings",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/parental/restrict/{child_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/parental/activity/{child_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/parental/alert",
+                "status": "locked"
+            },
+        ],
+
+        "roadside_assistance": [
+            {
+                "method": "POST",
+                "path": "/api/roadside/emergency",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/roadside/history",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/roadside/settings",
+                "status": "locked"
+            },
+            {
+                "method": "POST",
+                "path": "/api/roadside/emergency",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/roadside/history",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/roadside/settings",
+                "status": "locked"
+            },
+        ],
+
+        "notifications": [
+            {
+                "method": "GET",
+                "path": "/api/notifications/list",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/notifications/mark_read/{notification_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/notifications/delete/{notification_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/notifications/settings",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/notifications/test",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/notifications/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/notifications/bulk_mark_read",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/notifications/unread_count",
+                "status": "locked"
+            },
+            {
+                "method": "GET",
+                "path": "/api/notifications/list",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/notifications/mark_read/{notification_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/notifications/delete/{notification_id}",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/notifications/settings",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/notifications/test",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/notifications/stats",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/notifications/bulk_mark_read",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/notifications/unread_count",
+                "status": "locked"
+            },
+        ],
+
+        "analytics": [
+            {
+                "method": "GET",
+                "path": "/api/analytics/overview",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/analytics/security_events",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/analytics/performance",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/analytics/export",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/analytics/reports",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/analytics/settings",
+                "status": "locked"
+            },
+            {
+                "method": "GET",
+                "path": "/api/analytics/overview",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/analytics/security_events",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/analytics/performance",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/analytics/export",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/analytics/reports",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/analytics/settings",
+                "status": "locked"
+            },
+        ],
+
+        "subscription": [
+            {
+                "method": "GET",
+                "path": "/api/subscription/status",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/subscription/plans",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/subscription/upgrade",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/subscription/cancel",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/subscription/billing_history",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/subscription/payment_method",
+                "status": "locked"
+            },
+            {
+                "method": "GET",
+                "path": "/api/subscription/status",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/subscription/plans",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/subscription/upgrade",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/subscription/cancel",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/subscription/billing_history",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/subscription/payment_method",
+                "status": "locked"
+            },
+        ],
+
+        "authentication": [
+            {
+                "method": "POST",
+                "path": "/api/auth/register",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/auth/login",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/auth/logout",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/auth/refresh",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/auth/profile",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/auth/profile",
+                "status": "locked"
+            },
+            {
+                "method": "POST",
+                "path": "/api/auth/register",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/auth/login",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/auth/logout",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/auth/refresh",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/auth/profile",
+                "status": "locked"
+            },
+
+            {
+                "method": "PUT",
+                "path": "/api/auth/profile",
+                "status": "locked"
+            },
+        ],
+
+        "system_management": [
+            {
+                "method": "GET",
+                "path": "/api/system/info",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/system/health",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/system/backup",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/system/logs",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/system/maintenance",
+                "status": "locked"
+            },
+            {
+                "method": "GET",
+                "path": "/api/system/info",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/system/health",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/system/backup",
+                "status": "locked"
+            },
+
+            {
+                "method": "GET",
+                "path": "/api/system/logs",
+                "status": "locked"
+            },
+
+            {
+                "method": "POST",
+                "path": "/api/system/maintenance",
+                "status": "locked"
+            },
+        ],
     }
 
     def __init__(self):

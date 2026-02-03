@@ -1,0 +1,57 @@
+{
+  "timestamp": "2026-02-03T15:46:21.346983",
+  "total_endpoints": 4,
+  "successful_tests": 0,
+  "failed_tests": 4,
+  "success_rate": 0.0,
+  "sfm_integration_count": 0,
+  "avg_response_time": 1.75,
+  "performance_stats": {
+    "avg_response_time": 1.75,
+    "min_response_time": 0,
+    "max_response_time": 7,
+    "p50_response_time": 0,
+    "p95_response_time": 7,
+    "p99_response_time": 7,
+    "under_200ms": 4,
+    "over_1000ms": 0
+  },
+  "results": [
+    {
+      "method": "POST",
+      "path": "\"/api/system/maintenance\"",
+      "function": "add_group3_endpoints",
+      "status": "ERROR",
+      "response_time": 7,
+      "sfm_integration": false,
+      "error": "Failed to parse: http://149.154.65.180:8002\"/api/system/maintenance\""
+    },
+    {
+      "method": "POST",
+      "path": "\"/api/identity/whitelist\"",
+      "function": "test_group3_endpoints",
+      "status": "ERROR",
+      "response_time": 0,
+      "sfm_integration": false,
+      "error": "Failed to parse: http://149.154.65.180:8002\"/api/identity/whitelist\""
+    },
+    {
+      "method": "PUT",
+      "path": "\"/api/roadside/settings\"",
+      "function": "apply_migration",
+      "status": "ERROR",
+      "response_time": 0,
+      "sfm_integration": false,
+      "error": "Failed to parse: http://149.154.65.180:8002\"/api/roadside/settings\""
+    },
+    {
+      "method": "POST",
+      "path": "\"/api/system/maintenance\"",
+      "function": "apply_migration",
+      "status": "ERROR",
+      "response_time": 0,
+      "sfm_integration": false,
+      "error": "Failed to parse: http://149.154.65.180:8002\"/api/system/maintenance\""
+    }
+  ]
+}

@@ -1,0 +1,231 @@
+{
+  "timestamp": "2026-02-03T16:19:23.684874",
+  "total_tests": 17,
+  "successful_tests": 2,
+  "success_rate": 11.76470588235294,
+  "avg_response_time": 14.176470588235293,
+  "sfm_integrated": 0,
+  "fast_responses": 17,
+  "errors": 15,
+  "results": [
+    {
+      "test_name": "Root endpoint",
+      "method": "GET",
+      "path": "/",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "expected_status": 200,
+      "response_time": 3,
+      "sfm_integration": false,
+      "response_data": {
+        "service": "ALADDIN API Gateway",
+        "version": "1.0.0",
+        "status": "running"
+      },
+      "error": null
+    },
+    {
+      "test_name": "API Health check",
+      "method": "GET",
+      "path": "/api/health",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "expected_status": 200,
+      "response_time": 3,
+      "sfm_integration": false,
+      "response_data": {
+        "status": "ok",
+        "sfm_adapter": "fallback",
+        "endpoints": 101,
+        "groups": [
+          "components",
+          "security",
+          "monitoring",
+          "protection",
+          "system"
+        ]
+      },
+      "error": null
+    },
+    {
+      "test_name": "User registration",
+      "method": "POST",
+      "path": "/api/auth/register",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 40,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "User login",
+      "method": "POST",
+      "path": "/api/auth/login",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 12,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "Get user profile",
+      "method": "GET",
+      "path": "/api/auth/profile",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 11,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "Refresh token",
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 13,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "Components health",
+      "method": "GET",
+      "path": "/api/components/health",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 13,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "Component status",
+      "method": "GET",
+      "path": "/api/components/status/sfm_core",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 13,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "Enable component",
+      "method": "POST",
+      "path": "/api/components/enable/sfm_core",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 13,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "Update component config",
+      "method": "PUT",
+      "path": "/api/components/config/sfm_core",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 21,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "Anti-phishing sensitivity",
+      "method": "GET",
+      "path": "/api/phishing/sensitivity",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 25,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "Antivirus schedule",
+      "method": "GET",
+      "path": "/api/malware/scan_scheduled",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 11,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "Mobile security status",
+      "method": "GET",
+      "path": "/api/mobile/app_lock",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 12,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "Analytics overview",
+      "method": "GET",
+      "path": "/api/analytics/overview",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 12,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "Performance metrics",
+      "method": "GET",
+      "path": "/api/analytics/performance",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 14,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "System information",
+      "method": "GET",
+      "path": "/api/system/info",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 13,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    },
+    {
+      "test_name": "System health",
+      "method": "GET",
+      "path": "/api/system/health",
+      "status": "FAILED",
+      "http_status": 500,
+      "expected_status": 200,
+      "response_time": 12,
+      "sfm_integration": false,
+      "response_data": null,
+      "error": "Expected 200, got 500"
+    }
+  ]
+}

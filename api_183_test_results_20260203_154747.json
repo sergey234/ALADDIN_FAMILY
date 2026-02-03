@@ -1,0 +1,1851 @@
+{
+  "timestamp": "2026-02-03T15:47:47.026051",
+  "total_endpoints": 183,
+  "successful_tests": 183,
+  "failed_tests": 0,
+  "success_rate": 100.0,
+  "sfm_integration_count": 180,
+  "avg_response_time": 62.96174863387978,
+  "performance_stats": {
+    "avg_response_time": 62.96174863387978,
+    "min_response_time": 43,
+    "max_response_time": 301,
+    "p50_response_time": 51,
+    "p95_response_time": 168,
+    "p99_response_time": 226,
+    "under_200ms": 179,
+    "over_1000ms": 0
+  },
+  "results": [
+    {
+      "method": "GET",
+      "path": "/",
+      "function": "root",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 77,
+      "sfm_integration": false,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "function": "health",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 65,
+      "sfm_integration": false,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/components/status/{component_id}",
+      "function": "get_component_status",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 69,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/components/enable/{component_id}",
+      "function": "enable_component",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 159,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/components/disable/{component_id}",
+      "function": "disable_component",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 44,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/components/config/{component_id}",
+      "function": "get_component_config",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 60,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/components/config/{component_id}",
+      "function": "update_component_config",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 55,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/components/health",
+      "function": "get_components_health",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/components/restart/{component_id}",
+      "function": "restart_component",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 60,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/components/logs/{component_id}",
+      "function": "get_component_logs",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/components/backup/{component_id}",
+      "function": "backup_component",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/components/restore/{component_id}",
+      "function": "restore_component",
+      "status": "SUCCESS",
+      "http_status": 405,
+      "response_time": 55,
+      "sfm_integration": false,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/phishing/sensitivity",
+      "function": "get_phishing_sensitivity",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/phishing/sensitivity",
+      "function": "update_phishing_sensitivity",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 44,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/phishing/block_suspicious",
+      "function": "get_phishing_block_suspicious",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/phishing/block_suspicious",
+      "function": "update_phishing_block_suspicious",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 188,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/phishing/exclusions",
+      "function": "get_phishing_exclusions",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/malware/scan_scheduled",
+      "function": "get_malware_scan_scheduled",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 76,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/malware/scan_scheduled",
+      "function": "update_malware_scan_scheduled",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 125,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/malware/quarantine",
+      "function": "get_malware_quarantine",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/malware/quarantine",
+      "function": "update_malware_quarantine",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 45,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/malware/scan_now",
+      "function": "scan_malware_now",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 63,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/mobile/app_lock",
+      "function": "get_mobile_app_lock",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/mobile/app_lock",
+      "function": "update_mobile_app_lock",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 58,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/mobile/biometric",
+      "function": "get_mobile_biometric",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 44,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/network/firewall_rules",
+      "function": "get_network_firewall_rules",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 66,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/network/vpn_config",
+      "function": "update_network_vpn_config",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 131,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/categories/stats",
+      "function": "get_ai_categories_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/categories/reports",
+      "function": "get_ai_categories_reports",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 43,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/categories/allow",
+      "function": "allow_ai_content",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/categories/block",
+      "function": "block_ai_content",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 186,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/data/cleanup/stats",
+      "function": "get_data_cleanup_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 226,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/data/cleanup/records",
+      "function": "get_data_cleanup_records",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 222,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/data/cleanup/start",
+      "function": "start_data_cleanup",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 204,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/location/stats",
+      "function": "get_location_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 158,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/location/requests",
+      "function": "get_location_requests",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 301,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/location/allow",
+      "function": "allow_location_request",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 174,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/location/block",
+      "function": "block_location_request",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 185,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/location/accuracy",
+      "function": "update_location_accuracy",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 168,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/darkweb/leaks",
+      "function": "get_darkweb_leaks",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 168,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/darkweb/stats",
+      "function": "get_darkweb_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 44,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/darkweb/scans",
+      "function": "get_darkweb_scans",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 56,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/darkweb/resolve",
+      "function": "resolve_darkweb_leak",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 61,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/darkweb/scan_start",
+      "function": "start_darkweb_scan",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 58,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/identity/attempts",
+      "function": "get_identity_attempts",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 62,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/identity/stats",
+      "function": "get_identity_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/allow",
+      "function": "allow_identity_attempt",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 51,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/block",
+      "function": "block_identity_attempt",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 63,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/whitelist",
+      "function": "add_to_identity_whitelist",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 50,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/identity/theft/attempts",
+      "function": "get_identity_theft_attempts",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/identity/theft/stats",
+      "function": "get_identity_theft_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 45,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/theft/allow/{attempt_id}",
+      "function": "allow_identity_theft_attempt",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/theft/block/{attempt_id}",
+      "function": "block_identity_theft_attempt",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/theft/whitelist",
+      "function": "add_identity_theft_whitelist",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 49,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/identity/theft/history",
+      "function": "get_identity_theft_history",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 53,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/theft/report/{attempt_id}",
+      "function": "report_identity_theft_attempt",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 54,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/identity/theft/settings",
+      "function": "update_identity_theft_settings",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 65,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/antitracker/trackers",
+      "function": "get_antitracker_trackers",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 53,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/antitracker/block/{tracker_id}",
+      "function": "block_antitracker_tracker",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 51,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/antitracker/allow/{tracker_id}",
+      "function": "allow_antitracker_tracker",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 56,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/antitracker/stats",
+      "function": "get_antitracker_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 59,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/antitracker/whitelist",
+      "function": "add_antitracker_whitelist",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 65,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/antitracker/categories",
+      "function": "get_antitracker_categories",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 54,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/antitracker/category/{category_id}",
+      "function": "update_antitracker_category",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/antitracker/scan",
+      "function": "scan_antitracker",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/antitracker/reports",
+      "function": "get_antitracker_reports",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 51,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/parental/stats",
+      "function": "get_parental_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/parental/settings",
+      "function": "update_parental_settings",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 72,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/parental/restrict/{child_id}",
+      "function": "restrict_parental_child",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 73,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/parental/activity/{child_id}",
+      "function": "get_parental_activity",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/parental/alert",
+      "function": "send_parental_alert",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/roadside/emergency",
+      "function": "send_roadside_emergency",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/roadside/history",
+      "function": "get_roadside_history",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 56,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/roadside/settings",
+      "function": "update_roadside_settings",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 45,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/list",
+      "function": "get_notifications_list",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 57,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/mark_read/{notification_id}",
+      "function": "mark_notification_read",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/delete/{notification_id}",
+      "function": "delete_notification",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 50,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/notifications/settings",
+      "function": "update_notifications_settings",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/test",
+      "function": "test_notifications",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 49,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stats",
+      "function": "get_notifications_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 49,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/bulk_mark_read",
+      "function": "bulk_mark_notifications_read",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 54,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/unread_count",
+      "function": "get_notifications_unread_count",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/overview",
+      "function": "get_analytics_overview",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/security_events",
+      "function": "get_analytics_security_events",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 45,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/performance",
+      "function": "get_analytics_performance",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/analytics/export",
+      "function": "export_analytics",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 51,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/reports",
+      "function": "get_analytics_reports",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/analytics/settings",
+      "function": "update_analytics_settings",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/status",
+      "function": "get_subscription_status",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/plans",
+      "function": "get_subscription_plans",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 60,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/subscription/upgrade",
+      "function": "upgrade_subscription",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 51,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/subscription/cancel",
+      "function": "cancel_subscription",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 83,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/billing_history",
+      "function": "get_subscription_billing_history",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 58,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/subscription/payment_method",
+      "function": "update_subscription_payment_method",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "function": "register_user",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "function": "login_user",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "function": "logout_user",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 49,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "function": "refresh_token",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 52,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/profile",
+      "function": "get_user_profile",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 53,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/auth/profile",
+      "function": "update_user_profile",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/system/info",
+      "function": "get_system_info",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 68,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/system/health",
+      "function": "get_system_health",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/system/backup",
+      "function": "create_system_backup",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 49,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/system/logs",
+      "function": "get_system_logs",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 44,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/system/maintenance",
+      "function": "run_system_maintenance",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/categories/stats",
+      "function": "get_ai_categories_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 53,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/ai/categories/reports",
+      "function": "get_ai_categories_reports",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 54,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/categories/allow",
+      "function": "allow_ai_content",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/ai/categories/block",
+      "function": "block_ai_content",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/data/cleanup/stats",
+      "function": "get_data_cleanup_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 49,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/data/cleanup/records",
+      "function": "get_data_cleanup_records",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 51,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/data/cleanup/start",
+      "function": "start_data_cleanup",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/location/stats",
+      "function": "get_location_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 57,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/location/requests",
+      "function": "get_location_requests",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 59,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/location/allow",
+      "function": "allow_location_request",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 50,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/location/block",
+      "function": "block_location_request",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 50,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/location/accuracy",
+      "function": "update_location_accuracy",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 52,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/darkweb/leaks",
+      "function": "get_darkweb_leaks",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 55,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/darkweb/stats",
+      "function": "get_darkweb_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 49,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/darkweb/scans",
+      "function": "get_darkweb_scans",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/darkweb/resolve",
+      "function": "resolve_darkweb_leak",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/darkweb/scan_start",
+      "function": "start_darkweb_scan",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 45,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/identity/attempts",
+      "function": "get_identity_attempts",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 55,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/identity/stats",
+      "function": "get_identity_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 54,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/allow",
+      "function": "allow_identity_attempt",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/block",
+      "function": "block_identity_attempt",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/whitelist",
+      "function": "add_to_identity_whitelist",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 52,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/identity/theft/attempts",
+      "function": "get_identity_theft_attempts",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 56,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/identity/theft/stats",
+      "function": "get_identity_theft_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 63,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/theft/allow/{attempt_id}",
+      "function": "allow_identity_theft_attempt",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 57,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/theft/block/{attempt_id}",
+      "function": "block_identity_theft_attempt",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 53,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/theft/whitelist",
+      "function": "add_identity_theft_whitelist",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/identity/theft/history",
+      "function": "get_identity_theft_history",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/identity/theft/report/{attempt_id}",
+      "function": "report_identity_theft_attempt",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 56,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/identity/theft/settings",
+      "function": "update_identity_theft_settings",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 57,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/antitracker/trackers",
+      "function": "get_antitracker_trackers",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 62,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/antitracker/block/{tracker_id}",
+      "function": "block_antitracker_tracker",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 53,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/antitracker/allow/{tracker_id}",
+      "function": "allow_antitracker_tracker",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 69,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/antitracker/stats",
+      "function": "get_antitracker_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 51,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/antitracker/whitelist",
+      "function": "add_antitracker_whitelist",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/antitracker/categories",
+      "function": "get_antitracker_categories",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/antitracker/category/{category_id}",
+      "function": "update_antitracker_category",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 57,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/antitracker/scan",
+      "function": "scan_antitracker",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 56,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/antitracker/reports",
+      "function": "get_antitracker_reports",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 43,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/parental/stats",
+      "function": "get_parental_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 49,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/parental/settings",
+      "function": "update_parental_settings",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/parental/restrict/{child_id}",
+      "function": "restrict_parental_child",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 54,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/parental/activity/{child_id}",
+      "function": "get_parental_activity",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/parental/alert",
+      "function": "send_parental_alert",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 44,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/roadside/emergency",
+      "function": "send_roadside_emergency",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 45,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/roadside/history",
+      "function": "get_roadside_history",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/roadside/settings",
+      "function": "update_roadside_settings",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 61,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/list",
+      "function": "get_notifications_list",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 52,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/mark_read/{notification_id}",
+      "function": "mark_notification_read",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 64,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/delete/{notification_id}",
+      "function": "delete_notification",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 66,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/notifications/settings",
+      "function": "update_notifications_settings",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 45,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/test",
+      "function": "test_notifications",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 49,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stats",
+      "function": "get_notifications_stats",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 53,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/bulk_mark_read",
+      "function": "bulk_mark_notifications_read",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 53,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/unread_count",
+      "function": "get_notifications_unread_count",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 50,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/overview",
+      "function": "get_analytics_overview",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 45,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/security_events",
+      "function": "get_analytics_security_events",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/performance",
+      "function": "get_analytics_performance",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 50,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/analytics/export",
+      "function": "export_analytics",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 47,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/analytics/reports",
+      "function": "get_analytics_reports",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 44,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/analytics/settings",
+      "function": "update_analytics_settings",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 50,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/status",
+      "function": "get_subscription_status",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 77,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/plans",
+      "function": "get_subscription_plans",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/subscription/upgrade",
+      "function": "upgrade_subscription",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 76,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/subscription/cancel",
+      "function": "cancel_subscription",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 50,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/billing_history",
+      "function": "get_subscription_billing_history",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 77,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/subscription/payment_method",
+      "function": "update_subscription_payment_method",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 54,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "function": "register_user",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 67,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "function": "login_user",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 60,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "function": "logout_user",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 57,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "function": "refresh_token",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 46,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/profile",
+      "function": "get_user_profile",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 73,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "PUT",
+      "path": "/api/auth/profile",
+      "function": "update_user_profile",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 58,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/system/info",
+      "function": "get_system_info",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 43,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/system/health",
+      "function": "get_system_health",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 59,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/system/backup",
+      "function": "create_system_backup",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 45,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "GET",
+      "path": "/api/system/logs",
+      "function": "get_system_logs",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/system/maintenance",
+      "function": "run_system_maintenance",
+      "status": "SUCCESS",
+      "http_status": 200,
+      "response_time": 48,
+      "sfm_integration": true,
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,2380 @@
+{
+  "files_analysis": {
+    "api_gateway_complete.py": {
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "full_path": "/",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/health",
+          "full_path": "/api/health",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/status/{}",
+          "full_path": "/api/components/status/{component_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/enable/{}",
+          "full_path": "/api/components/enable/{component_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/disable/{}",
+          "full_path": "/api/components/disable/{component_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/config/{}",
+          "full_path": "/api/components/config/{component_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/components/config/{}",
+          "full_path": "/api/components/config/{component_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/health",
+          "full_path": "/api/components/health",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/restart/{}",
+          "full_path": "/api/components/restart/{component_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/logs/{}",
+          "full_path": "/api/components/logs/{component_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/backup/{}",
+          "full_path": "/api/components/backup/{component_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/restore/{}",
+          "full_path": "/api/components/restore/{component_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/phishing/sensitivity",
+          "full_path": "/api/phishing/sensitivity",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/phishing/sensitivity",
+          "full_path": "/api/phishing/sensitivity",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/phishing/block_suspicious",
+          "full_path": "/api/phishing/block_suspicious",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/phishing/block_suspicious",
+          "full_path": "/api/phishing/block_suspicious",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/phishing/exclusions",
+          "full_path": "/api/phishing/exclusions",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/malware/scan_scheduled",
+          "full_path": "/api/malware/scan_scheduled",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/malware/scan_scheduled",
+          "full_path": "/api/malware/scan_scheduled",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/malware/quarantine",
+          "full_path": "/api/malware/quarantine",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/malware/quarantine",
+          "full_path": "/api/malware/quarantine",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/malware/scan_now",
+          "full_path": "/api/malware/scan_now",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mobile/app_lock",
+          "full_path": "/api/mobile/app_lock",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/mobile/app_lock",
+          "full_path": "/api/mobile/app_lock",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mobile/biometric",
+          "full_path": "/api/mobile/biometric",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/network/firewall_rules",
+          "full_path": "/api/network/firewall_rules",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/network/vpn_config",
+          "full_path": "/api/network/vpn_config",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/ai/categories/stats",
+          "full_path": "/api/ai/categories/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/ai/categories/reports",
+          "full_path": "/api/ai/categories/reports",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/ai/categories/allow",
+          "full_path": "/api/ai/categories/allow",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/ai/categories/block",
+          "full_path": "/api/ai/categories/block",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/data/cleanup/stats",
+          "full_path": "/api/data/cleanup/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/data/cleanup/records",
+          "full_path": "/api/data/cleanup/records",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/data/cleanup/start",
+          "full_path": "/api/data/cleanup/start",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/location/stats",
+          "full_path": "/api/location/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/location/requests",
+          "full_path": "/api/location/requests",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/location/allow",
+          "full_path": "/api/location/allow",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/location/block",
+          "full_path": "/api/location/block",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/location/accuracy",
+          "full_path": "/api/location/accuracy",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/leaks",
+          "full_path": "/api/darkweb/leaks",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/stats",
+          "full_path": "/api/darkweb/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/scans",
+          "full_path": "/api/darkweb/scans",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/darkweb/resolve",
+          "full_path": "/api/darkweb/resolve",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/darkweb/scan_start",
+          "full_path": "/api/darkweb/scan_start",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/attempts",
+          "full_path": "/api/identity/attempts",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/stats",
+          "full_path": "/api/identity/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/allow",
+          "full_path": "/api/identity/allow",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/block",
+          "full_path": "/api/identity/block",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/whitelist",
+          "full_path": "/api/identity/whitelist",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/attempts",
+          "full_path": "/api/identity/theft/attempts",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/stats",
+          "full_path": "/api/identity/theft/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/allow/{}",
+          "full_path": "/api/identity/theft/allow/{attempt_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/block/{}",
+          "full_path": "/api/identity/theft/block/{attempt_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/whitelist",
+          "full_path": "/api/identity/theft/whitelist",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/history",
+          "full_path": "/api/identity/theft/history",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/report/{}",
+          "full_path": "/api/identity/theft/report/{attempt_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/identity/theft/settings",
+          "full_path": "/api/identity/theft/settings",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/trackers",
+          "full_path": "/api/antitracker/trackers",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/block/{}",
+          "full_path": "/api/antitracker/block/{tracker_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/allow/{}",
+          "full_path": "/api/antitracker/allow/{tracker_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/stats",
+          "full_path": "/api/antitracker/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/whitelist",
+          "full_path": "/api/antitracker/whitelist",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/categories",
+          "full_path": "/api/antitracker/categories",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/antitracker/category/{}",
+          "full_path": "/api/antitracker/category/{category_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/scan",
+          "full_path": "/api/antitracker/scan",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/reports",
+          "full_path": "/api/antitracker/reports",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/parental/stats",
+          "full_path": "/api/parental/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/parental/settings",
+          "full_path": "/api/parental/settings",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/parental/restrict/{}",
+          "full_path": "/api/parental/restrict/{child_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/parental/activity/{}",
+          "full_path": "/api/parental/activity/{child_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/parental/alert",
+          "full_path": "/api/parental/alert",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/roadside/emergency",
+          "full_path": "/api/roadside/emergency",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/roadside/history",
+          "full_path": "/api/roadside/history",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/roadside/settings",
+          "full_path": "/api/roadside/settings",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/list",
+          "full_path": "/api/notifications/list",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/mark_read/{}",
+          "full_path": "/api/notifications/mark_read/{notification_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/delete/{}",
+          "full_path": "/api/notifications/delete/{notification_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/notifications/settings",
+          "full_path": "/api/notifications/settings",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/test",
+          "full_path": "/api/notifications/test",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/stats",
+          "full_path": "/api/notifications/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/bulk_mark_read",
+          "full_path": "/api/notifications/bulk_mark_read",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/unread_count",
+          "full_path": "/api/notifications/unread_count",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/overview",
+          "full_path": "/api/analytics/overview",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/security_events",
+          "full_path": "/api/analytics/security_events",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/performance",
+          "full_path": "/api/analytics/performance",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/analytics/export",
+          "full_path": "/api/analytics/export",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/reports",
+          "full_path": "/api/analytics/reports",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/analytics/settings",
+          "full_path": "/api/analytics/settings",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/status",
+          "full_path": "/api/subscription/status",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/plans",
+          "full_path": "/api/subscription/plans",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/subscription/upgrade",
+          "full_path": "/api/subscription/upgrade",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/subscription/cancel",
+          "full_path": "/api/subscription/cancel",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/billing_history",
+          "full_path": "/api/subscription/billing_history",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/subscription/payment_method",
+          "full_path": "/api/subscription/payment_method",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/register",
+          "full_path": "/api/auth/register",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/login",
+          "full_path": "/api/auth/login",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/logout",
+          "full_path": "/api/auth/logout",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh",
+          "full_path": "/api/auth/refresh",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/profile",
+          "full_path": "/api/auth/profile",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/auth/profile",
+          "full_path": "/api/auth/profile",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/info",
+          "full_path": "/api/system/info",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/health",
+          "full_path": "/api/system/health",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/system/backup",
+          "full_path": "/api/system/backup",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/logs",
+          "full_path": "/api/system/logs",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/system/maintenance",
+          "full_path": "/api/system/maintenance",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/ai/categories/stats",
+          "full_path": "/api/ai/categories/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/ai/categories/reports",
+          "full_path": "/api/ai/categories/reports",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/ai/categories/allow",
+          "full_path": "/api/ai/categories/allow",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/ai/categories/block",
+          "full_path": "/api/ai/categories/block",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/data/cleanup/stats",
+          "full_path": "/api/data/cleanup/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/data/cleanup/records",
+          "full_path": "/api/data/cleanup/records",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/data/cleanup/start",
+          "full_path": "/api/data/cleanup/start",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/location/stats",
+          "full_path": "/api/location/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/location/requests",
+          "full_path": "/api/location/requests",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/location/allow",
+          "full_path": "/api/location/allow",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/location/block",
+          "full_path": "/api/location/block",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/location/accuracy",
+          "full_path": "/api/location/accuracy",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/leaks",
+          "full_path": "/api/darkweb/leaks",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/stats",
+          "full_path": "/api/darkweb/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/scans",
+          "full_path": "/api/darkweb/scans",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/darkweb/resolve",
+          "full_path": "/api/darkweb/resolve",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/darkweb/scan_start",
+          "full_path": "/api/darkweb/scan_start",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/attempts",
+          "full_path": "/api/identity/attempts",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/stats",
+          "full_path": "/api/identity/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/allow",
+          "full_path": "/api/identity/allow",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/block",
+          "full_path": "/api/identity/block",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/whitelist",
+          "full_path": "/api/identity/whitelist",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/attempts",
+          "full_path": "/api/identity/theft/attempts",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/stats",
+          "full_path": "/api/identity/theft/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/allow/{}",
+          "full_path": "/api/identity/theft/allow/{attempt_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/block/{}",
+          "full_path": "/api/identity/theft/block/{attempt_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/whitelist",
+          "full_path": "/api/identity/theft/whitelist",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/history",
+          "full_path": "/api/identity/theft/history",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/report/{}",
+          "full_path": "/api/identity/theft/report/{attempt_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/identity/theft/settings",
+          "full_path": "/api/identity/theft/settings",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/trackers",
+          "full_path": "/api/antitracker/trackers",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/block/{}",
+          "full_path": "/api/antitracker/block/{tracker_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/allow/{}",
+          "full_path": "/api/antitracker/allow/{tracker_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/stats",
+          "full_path": "/api/antitracker/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/whitelist",
+          "full_path": "/api/antitracker/whitelist",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/categories",
+          "full_path": "/api/antitracker/categories",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/antitracker/category/{}",
+          "full_path": "/api/antitracker/category/{category_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/scan",
+          "full_path": "/api/antitracker/scan",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/reports",
+          "full_path": "/api/antitracker/reports",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/parental/stats",
+          "full_path": "/api/parental/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/parental/settings",
+          "full_path": "/api/parental/settings",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/parental/restrict/{}",
+          "full_path": "/api/parental/restrict/{child_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/parental/activity/{}",
+          "full_path": "/api/parental/activity/{child_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/parental/alert",
+          "full_path": "/api/parental/alert",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/roadside/emergency",
+          "full_path": "/api/roadside/emergency",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/roadside/history",
+          "full_path": "/api/roadside/history",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/roadside/settings",
+          "full_path": "/api/roadside/settings",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/list",
+          "full_path": "/api/notifications/list",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/mark_read/{}",
+          "full_path": "/api/notifications/mark_read/{notification_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/delete/{}",
+          "full_path": "/api/notifications/delete/{notification_id}",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/notifications/settings",
+          "full_path": "/api/notifications/settings",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/test",
+          "full_path": "/api/notifications/test",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/stats",
+          "full_path": "/api/notifications/stats",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/bulk_mark_read",
+          "full_path": "/api/notifications/bulk_mark_read",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/unread_count",
+          "full_path": "/api/notifications/unread_count",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/overview",
+          "full_path": "/api/analytics/overview",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/security_events",
+          "full_path": "/api/analytics/security_events",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/performance",
+          "full_path": "/api/analytics/performance",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/analytics/export",
+          "full_path": "/api/analytics/export",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/reports",
+          "full_path": "/api/analytics/reports",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/analytics/settings",
+          "full_path": "/api/analytics/settings",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/status",
+          "full_path": "/api/subscription/status",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/plans",
+          "full_path": "/api/subscription/plans",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/subscription/upgrade",
+          "full_path": "/api/subscription/upgrade",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/subscription/cancel",
+          "full_path": "/api/subscription/cancel",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/billing_history",
+          "full_path": "/api/subscription/billing_history",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/subscription/payment_method",
+          "full_path": "/api/subscription/payment_method",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/register",
+          "full_path": "/api/auth/register",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/login",
+          "full_path": "/api/auth/login",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/logout",
+          "full_path": "/api/auth/logout",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh",
+          "full_path": "/api/auth/refresh",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/profile",
+          "full_path": "/api/auth/profile",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/auth/profile",
+          "full_path": "/api/auth/profile",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/info",
+          "full_path": "/api/system/info",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/health",
+          "full_path": "/api/system/health",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/system/backup",
+          "full_path": "/api/system/backup",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/logs",
+          "full_path": "/api/system/logs",
+          "file": "api_gateway_complete.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/system/maintenance",
+          "full_path": "/api/system/maintenance",
+          "file": "api_gateway_complete.py"
+        }
+      ],
+      "count": 183,
+      "exists": true
+    },
+    "api_gateway_final.py": {
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "full_path": "/",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/health",
+          "full_path": "/api/health",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/status/{}",
+          "full_path": "/api/components/status/{component_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/enable/{}",
+          "full_path": "/api/components/enable/{component_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/disable/{}",
+          "full_path": "/api/components/disable/{component_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/config/{}",
+          "full_path": "/api/components/config/{component_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/components/config/{}",
+          "full_path": "/api/components/config/{component_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/health",
+          "full_path": "/api/components/health",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/restart/{}",
+          "full_path": "/api/components/restart/{component_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/logs/{}",
+          "full_path": "/api/components/logs/{component_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/backup/{}",
+          "full_path": "/api/components/backup/{component_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/restore/{}",
+          "full_path": "/api/components/restore/{component_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/phishing/sensitivity",
+          "full_path": "/api/phishing/sensitivity",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/phishing/block_suspicious",
+          "full_path": "/api/phishing/block_suspicious",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/phishing/block_suspicious",
+          "full_path": "/api/phishing/block_suspicious",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/phishing/exclusions",
+          "full_path": "/api/phishing/exclusions",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/malware/scan_scheduled",
+          "full_path": "/api/malware/scan_scheduled",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/malware/scan_scheduled",
+          "full_path": "/api/malware/scan_scheduled",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/malware/quarantine",
+          "full_path": "/api/malware/quarantine",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/malware/quarantine",
+          "full_path": "/api/malware/quarantine",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/malware/scan_now",
+          "full_path": "/api/malware/scan_now",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mobile/app_lock",
+          "full_path": "/api/mobile/app_lock",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/mobile/app_lock",
+          "full_path": "/api/mobile/app_lock",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mobile/biometric",
+          "full_path": "/api/mobile/biometric",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/network/firewall_rules",
+          "full_path": "/api/network/firewall_rules",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/network/vpn_config",
+          "full_path": "/api/network/vpn_config",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/ai/categories/stats",
+          "full_path": "/api/ai/categories/stats",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/ai/categories/reports",
+          "full_path": "/api/ai/categories/reports",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/ai/categories/allow",
+          "full_path": "/api/ai/categories/allow",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/ai/categories/block",
+          "full_path": "/api/ai/categories/block",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/data/cleanup/stats",
+          "full_path": "/api/data/cleanup/stats",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/data/cleanup/records",
+          "full_path": "/api/data/cleanup/records",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/data/cleanup/start",
+          "full_path": "/api/data/cleanup/start",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/location/stats",
+          "full_path": "/api/location/stats",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/location/requests",
+          "full_path": "/api/location/requests",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/location/allow",
+          "full_path": "/api/location/allow",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/location/block",
+          "full_path": "/api/location/block",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/location/accuracy",
+          "full_path": "/api/location/accuracy",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/leaks",
+          "full_path": "/api/darkweb/leaks",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/stats",
+          "full_path": "/api/darkweb/stats",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/scans",
+          "full_path": "/api/darkweb/scans",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/darkweb/resolve",
+          "full_path": "/api/darkweb/resolve",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/darkweb/scan_start",
+          "full_path": "/api/darkweb/scan_start",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/attempts",
+          "full_path": "/api/identity/attempts",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/stats",
+          "full_path": "/api/identity/stats",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/allow",
+          "full_path": "/api/identity/allow",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/block",
+          "full_path": "/api/identity/block",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/whitelist",
+          "full_path": "/api/identity/whitelist",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/attempts",
+          "full_path": "/api/identity/theft/attempts",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/stats",
+          "full_path": "/api/identity/theft/stats",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/allow/{}",
+          "full_path": "/api/identity/theft/allow/{attempt_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/block/{}",
+          "full_path": "/api/identity/theft/block/{attempt_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/whitelist",
+          "full_path": "/api/identity/theft/whitelist",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/history",
+          "full_path": "/api/identity/theft/history",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/report/{}",
+          "full_path": "/api/identity/theft/report/{attempt_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/identity/theft/settings",
+          "full_path": "/api/identity/theft/settings",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/trackers",
+          "full_path": "/api/antitracker/trackers",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/block/{}",
+          "full_path": "/api/antitracker/block/{tracker_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/allow/{}",
+          "full_path": "/api/antitracker/allow/{tracker_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/stats",
+          "full_path": "/api/antitracker/stats",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/whitelist",
+          "full_path": "/api/antitracker/whitelist",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/categories",
+          "full_path": "/api/antitracker/categories",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/antitracker/category/{}",
+          "full_path": "/api/antitracker/category/{category_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/scan",
+          "full_path": "/api/antitracker/scan",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/reports",
+          "full_path": "/api/antitracker/reports",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/parental/stats",
+          "full_path": "/api/parental/stats",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/parental/settings",
+          "full_path": "/api/parental/settings",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/parental/restrict/{}",
+          "full_path": "/api/parental/restrict/{child_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/parental/activity/{}",
+          "full_path": "/api/parental/activity/{child_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/parental/alert",
+          "full_path": "/api/parental/alert",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/roadside/emergency",
+          "full_path": "/api/roadside/emergency",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/roadside/history",
+          "full_path": "/api/roadside/history",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/roadside/settings",
+          "full_path": "/api/roadside/settings",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/list",
+          "full_path": "/api/notifications/list",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/mark_read/{}",
+          "full_path": "/api/notifications/mark_read/{notification_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/delete/{}",
+          "full_path": "/api/notifications/delete/{notification_id}",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/notifications/settings",
+          "full_path": "/api/notifications/settings",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/test",
+          "full_path": "/api/notifications/test",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/stats",
+          "full_path": "/api/notifications/stats",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/bulk_mark_read",
+          "full_path": "/api/notifications/bulk_mark_read",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/unread_count",
+          "full_path": "/api/notifications/unread_count",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/overview",
+          "full_path": "/api/analytics/overview",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/security_events",
+          "full_path": "/api/analytics/security_events",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/performance",
+          "full_path": "/api/analytics/performance",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/analytics/export",
+          "full_path": "/api/analytics/export",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/reports",
+          "full_path": "/api/analytics/reports",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/analytics/settings",
+          "full_path": "/api/analytics/settings",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/status",
+          "full_path": "/api/subscription/status",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/plans",
+          "full_path": "/api/subscription/plans",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/subscription/upgrade",
+          "full_path": "/api/subscription/upgrade",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/subscription/cancel",
+          "full_path": "/api/subscription/cancel",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/billing_history",
+          "full_path": "/api/subscription/billing_history",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/subscription/payment_method",
+          "full_path": "/api/subscription/payment_method",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/register",
+          "full_path": "/api/auth/register",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/login",
+          "full_path": "/api/auth/login",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/logout",
+          "full_path": "/api/auth/logout",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh",
+          "full_path": "/api/auth/refresh",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/profile",
+          "full_path": "/api/auth/profile",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/auth/profile",
+          "full_path": "/api/auth/profile",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/info",
+          "full_path": "/api/system/info",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/health",
+          "full_path": "/api/system/health",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/system/backup",
+          "full_path": "/api/system/backup",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/logs",
+          "full_path": "/api/system/logs",
+          "file": "api_gateway_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/system/maintenance",
+          "full_path": "/api/system/maintenance",
+          "file": "api_gateway_final.py"
+        }
+      ],
+      "count": 104,
+      "exists": true
+    },
+    "api_gateway_production_final.py": {
+      "endpoints": [
+        {
+          "method": "GET",
+          "path": "/",
+          "full_path": "/",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/health",
+          "full_path": "/api/health",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/status/{}",
+          "full_path": "/api/components/status/{component_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/enable/{}",
+          "full_path": "/api/components/enable/{component_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/disable/{}",
+          "full_path": "/api/components/disable/{component_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/config/{}",
+          "full_path": "/api/components/config/{component_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/components/config/{}",
+          "full_path": "/api/components/config/{component_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/health",
+          "full_path": "/api/components/health",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/restart/{}",
+          "full_path": "/api/components/restart/{component_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/components/logs/{}",
+          "full_path": "/api/components/logs/{component_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/backup/{}",
+          "full_path": "/api/components/backup/{component_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/components/restore/{}",
+          "full_path": "/api/components/restore/{component_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/phishing/sensitivity",
+          "full_path": "/api/phishing/sensitivity",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/phishing/block_suspicious",
+          "full_path": "/api/phishing/block_suspicious",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/phishing/block_suspicious",
+          "full_path": "/api/phishing/block_suspicious",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/phishing/exclusions",
+          "full_path": "/api/phishing/exclusions",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/malware/scan_scheduled",
+          "full_path": "/api/malware/scan_scheduled",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/malware/scan_scheduled",
+          "full_path": "/api/malware/scan_scheduled",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/malware/quarantine",
+          "full_path": "/api/malware/quarantine",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/malware/quarantine",
+          "full_path": "/api/malware/quarantine",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/malware/scan_now",
+          "full_path": "/api/malware/scan_now",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mobile/app_lock",
+          "full_path": "/api/mobile/app_lock",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/mobile/app_lock",
+          "full_path": "/api/mobile/app_lock",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/mobile/biometric",
+          "full_path": "/api/mobile/biometric",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/network/firewall_rules",
+          "full_path": "/api/network/firewall_rules",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/network/vpn_config",
+          "full_path": "/api/network/vpn_config",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/ai/categories/stats",
+          "full_path": "/api/ai/categories/stats",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/ai/categories/reports",
+          "full_path": "/api/ai/categories/reports",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/ai/categories/allow",
+          "full_path": "/api/ai/categories/allow",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/ai/categories/block",
+          "full_path": "/api/ai/categories/block",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/data/cleanup/stats",
+          "full_path": "/api/data/cleanup/stats",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/data/cleanup/records",
+          "full_path": "/api/data/cleanup/records",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/data/cleanup/start",
+          "full_path": "/api/data/cleanup/start",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/location/stats",
+          "full_path": "/api/location/stats",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/location/requests",
+          "full_path": "/api/location/requests",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/location/allow",
+          "full_path": "/api/location/allow",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/location/block",
+          "full_path": "/api/location/block",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/location/accuracy",
+          "full_path": "/api/location/accuracy",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/leaks",
+          "full_path": "/api/darkweb/leaks",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/stats",
+          "full_path": "/api/darkweb/stats",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/darkweb/scans",
+          "full_path": "/api/darkweb/scans",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/darkweb/resolve",
+          "full_path": "/api/darkweb/resolve",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/darkweb/scan_start",
+          "full_path": "/api/darkweb/scan_start",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/attempts",
+          "full_path": "/api/identity/attempts",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/stats",
+          "full_path": "/api/identity/stats",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/allow",
+          "full_path": "/api/identity/allow",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/block",
+          "full_path": "/api/identity/block",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/whitelist",
+          "full_path": "/api/identity/whitelist",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/attempts",
+          "full_path": "/api/identity/theft/attempts",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/stats",
+          "full_path": "/api/identity/theft/stats",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/allow/{}",
+          "full_path": "/api/identity/theft/allow/{attempt_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/block/{}",
+          "full_path": "/api/identity/theft/block/{attempt_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/whitelist",
+          "full_path": "/api/identity/theft/whitelist",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/identity/theft/history",
+          "full_path": "/api/identity/theft/history",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/identity/theft/report/{}",
+          "full_path": "/api/identity/theft/report/{attempt_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/identity/theft/settings",
+          "full_path": "/api/identity/theft/settings",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/trackers",
+          "full_path": "/api/antitracker/trackers",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/block/{}",
+          "full_path": "/api/antitracker/block/{tracker_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/allow/{}",
+          "full_path": "/api/antitracker/allow/{tracker_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/stats",
+          "full_path": "/api/antitracker/stats",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/whitelist",
+          "full_path": "/api/antitracker/whitelist",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/categories",
+          "full_path": "/api/antitracker/categories",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/antitracker/category/{}",
+          "full_path": "/api/antitracker/category/{category_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/antitracker/scan",
+          "full_path": "/api/antitracker/scan",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/antitracker/reports",
+          "full_path": "/api/antitracker/reports",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/parental/stats",
+          "full_path": "/api/parental/stats",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/parental/settings",
+          "full_path": "/api/parental/settings",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/parental/restrict/{}",
+          "full_path": "/api/parental/restrict/{child_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/parental/activity/{}",
+          "full_path": "/api/parental/activity/{child_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/parental/alert",
+          "full_path": "/api/parental/alert",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/roadside/emergency",
+          "full_path": "/api/roadside/emergency",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/roadside/history",
+          "full_path": "/api/roadside/history",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/roadside/settings",
+          "full_path": "/api/roadside/settings",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/list",
+          "full_path": "/api/notifications/list",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/mark_read/{}",
+          "full_path": "/api/notifications/mark_read/{notification_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/delete/{}",
+          "full_path": "/api/notifications/delete/{notification_id}",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/notifications/settings",
+          "full_path": "/api/notifications/settings",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/test",
+          "full_path": "/api/notifications/test",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/stats",
+          "full_path": "/api/notifications/stats",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/notifications/bulk_mark_read",
+          "full_path": "/api/notifications/bulk_mark_read",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/notifications/unread_count",
+          "full_path": "/api/notifications/unread_count",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/overview",
+          "full_path": "/api/analytics/overview",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/security_events",
+          "full_path": "/api/analytics/security_events",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/performance",
+          "full_path": "/api/analytics/performance",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/analytics/export",
+          "full_path": "/api/analytics/export",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/analytics/reports",
+          "full_path": "/api/analytics/reports",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/analytics/settings",
+          "full_path": "/api/analytics/settings",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/status",
+          "full_path": "/api/subscription/status",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/plans",
+          "full_path": "/api/subscription/plans",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/subscription/upgrade",
+          "full_path": "/api/subscription/upgrade",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/subscription/cancel",
+          "full_path": "/api/subscription/cancel",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/subscription/billing_history",
+          "full_path": "/api/subscription/billing_history",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/subscription/payment_method",
+          "full_path": "/api/subscription/payment_method",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/register",
+          "full_path": "/api/auth/register",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/login",
+          "full_path": "/api/auth/login",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/logout",
+          "full_path": "/api/auth/logout",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh",
+          "full_path": "/api/auth/refresh",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/profile",
+          "full_path": "/api/auth/profile",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/auth/profile",
+          "full_path": "/api/auth/profile",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/info",
+          "full_path": "/api/system/info",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/health",
+          "full_path": "/api/system/health",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/system/backup",
+          "full_path": "/api/system/backup",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "GET",
+          "path": "/api/system/logs",
+          "full_path": "/api/system/logs",
+          "file": "api_gateway_production_final.py"
+        },
+        {
+          "method": "POST",
+          "path": "/api/system/maintenance",
+          "full_path": "/api/system/maintenance",
+          "file": "api_gateway_production_final.py"
+        }
+      ],
+      "count": 104,
+      "exists": true
+    },
+    "api_config_lockdown_system.py": {
+      "endpoints": [
+        {
+          "method": "POST",
+          "path": "/api/auth/register",
+          "file": "api_config_lockdown_system.py",
+          "source": "lockdown_config"
+        }
+      ],
+      "count": 1,
+      "exists": true
+    }
+  },
+  "unique_endpoints": 

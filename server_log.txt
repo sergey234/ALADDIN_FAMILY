@@ -1,0 +1,13 @@
+INFO:     Started server process [18687]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+ERROR:    [Errno 48] error while attempting to bind on address ('127.0.0.1', 8002): address already in use
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+Complete function mapping loaded: 103 functions
+Original SFM not available: No module named 'security.safe_function_manager'
+🔄 Creating mock SFM with REAL protection functions...
+✅ Mock SFM initialized with 4 REAL protection functions
+🚀 SFM singleton initialized in 0.00 seconds
+SFM singleton imported successfully
+SFM Adapter loaded successfully
