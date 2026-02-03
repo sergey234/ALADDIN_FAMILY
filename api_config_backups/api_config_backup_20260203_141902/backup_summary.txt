@@ -1,0 +1,21 @@
+ALADDIN API CONFIGURATION BACKUP
+=====================================
+Backup ID: api_config_backup_20260203_141902
+Created: 2026-02-03T14:19:02.892120
+Reason: Production API lockdown - Critical settings backup
+Files: 6
+JSON Configs: 5
+Hash: 06cacaf007e7c388...
+
+CONTENTS:
+  - api_gateway_complete.py
+  - api_gateway_final.py
+  - api_gateway_production_final.py
+  - sfm_adapter_fixed.py
+  - sfm_adapter.py
+  - api_config_lockdown_system.py
+  - api_protection_status.json
+  - api_config_locked_2026-02-03T14-18-53.834700.json
+  - api_config_backup_20260203_141853.json
+  - localization_keys_report.json
+  - _temp_translation_data.json

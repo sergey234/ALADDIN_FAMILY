@@ -1,0 +1,13 @@
+{
+  "backups": [
+    {
+      "id": "api_config_backup_20260203_141902",
+      "timestamp": "2026-02-03T14:19:02.892120",
+      "reason": "Production API lockdown - Critical settings backup",
+      "hash": "06cacaf007e7c388702f79dfd0d23eaf3b79cb4d47fab6beb97199080cbbbd74",
+      "path": "api_config_backups/api_config_backup_20260203_141902"
+    }
+  ],
+  "last_backup": "2026-02-03T14:19:02.892120",
+  "total_backups": 1
+}

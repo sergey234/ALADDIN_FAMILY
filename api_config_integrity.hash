@@ -1,0 +1,7 @@
+{
+  "api_gateway": "dd025848029bd4e72b1024bea81d86bf69a0819e5245292db50f7539750d0e5d",
+  "sfm_core": "f4aaf5e112c5d1ec8889087274a7a514ad82bad14c75ef5656ee905c007bdadb",
+  "endpoints": "6da7d0eabf5b71775a80904f0e8c3cee972d34e277db0640c77a52f8e8c441d6",
+  "locked_at": "2026-02-03T14:18:53.834700",
+  "version": "2.1.0-PROD"
+}
