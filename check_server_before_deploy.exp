@@ -1,0 +1,135 @@
+#!/usr/bin/expect -f
+# Проверка сервера перед развертыванием API Gateway
+
+set timeout 30
+set password "Sergio675"
+set server "root@149.154.65.180"
+set remote_path "/opt/aladdin-backend"
+
+puts "=========================================="
+puts "🔍 ПРОВЕРКА СЕРВЕРА ПЕРЕД РАЗВЕРТЫВАНИЕМ"
+puts "=========================================="
+puts ""
+
+# Проверка 1: Список файлов в /opt/aladdin-backend
+puts "📋 Проверка 1: Список файлов на сервере..."
+spawn ssh $server "ls -la $remote_path/ 2>/dev/null | head -30"
+
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "Are you sure you want to continue connecting" {
+        send "yes\r"
+        exp_continue
+    }
+    eof {
+        puts ""
+    }
+}
+wait
+
+# Проверка 2: Наличие safe_function_manager.py
+puts ""
+puts "📋 Проверка 2: Наличие safe_function_manager.py..."
+spawn ssh $server "test -f $remote_path/safe_function_manager.py && echo '✅ safe_function_manager.py найден' || echo '❌ safe_function_manager.py НЕ найден'"
+
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof {
+        puts ""
+    }
+}
+wait
+
+# Проверка 3: Наличие sfm_adapter.py
+puts ""
+puts "📋 Проверка 3: Наличие sfm_adapter.py..."
+spawn ssh $server "test -f $remote_path/sfm_adapter.py && echo '✅ sfm_adapter.py найден' || echo '❌ sfm_adapter.py НЕ найден'"
+
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof {
+        puts ""
+    }
+}
+wait
+
+# Проверка 4: Наличие api_gateway.py (текущая версия)
+puts ""
+puts "📋 Проверка 4: Наличие api_gateway.py (текущая версия)..."
+spawn ssh $server "test -f $remote_path/api_gateway.py && echo '✅ api_gateway.py найден' || echo '⚠️  api_gateway.py НЕ найден (первое развертывание?)'"
+
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof {
+        puts ""
+    }
+}
+wait
+
+# Проверка 5: Статус сервиса
+puts ""
+puts "📋 Проверка 5: Статус сервиса API Gateway..."
+spawn ssh $server "systemctl status aladdin-api-gateway --no-pager 2>/dev/null | head -10 || systemctl status aladdin-main-api-gateway --no-pager 2>/dev/null | head -10 || echo '⚠️  Сервис не найден'"
+
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof {
+        puts ""
+    }
+}
+wait
+
+# Проверка 6: Python версия
+puts ""
+puts "📋 Проверка 6: Версия Python..."
+spawn ssh $server "python3 --version"
+
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof {
+        puts ""
+    }
+}
+wait
+
+# Проверка 7: FastAPI установлен
+puts ""
+puts "📋 Проверка 7: FastAPI установлен..."
+spawn ssh $server "pip list 2>/dev/null | grep -i fastapi || echo '⚠️  FastAPI не найден'"
+
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof {
+        puts ""
+    }
+}
+wait
+
+puts ""
+puts "=========================================="
+puts "✅ ПРОВЕРКА ЗАВЕРШЕНА"
+puts "=========================================="
+
+
+

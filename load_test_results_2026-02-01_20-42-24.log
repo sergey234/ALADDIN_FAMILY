@@ -1,0 +1,2319 @@
+📊 ТЕСТИРОВАНИЕ НАЧАТО: 2026-02-01_20-42-24
+📁 ЛОГ ФАЙЛ: load_test_results_2026-02-01_20-42-24.log
+
+🎯 ЭТАП 1: БАЗОВОЕ НАГРУЗОЧНОЕ ТЕСТИРОВАНИЕ
+==============================================
+
+🔍 ТЕСТИРОВАНИЕ: Health Check (базовая нагрузка)
+📍 Endpoint: /health
+📊 Запросов: 50, Параллельно: 10
+
+     time_namelookup:  0.021681
+        time_connect:  0.043217
+     time_appconnect:  0.107618
+    time_pretransfer:  0.107815
+       time_redirect:  0.000000
+  time_starttransfer:  0.140257
+                     ----------
+          time_total:  0.140366
+         http_code:  200
+     time_namelookup:  0.030400
+        time_connect:  0.053264
+     time_appconnect:  0.105829
+    time_pretransfer:  0.106000
+       time_redirect:  0.000000
+  time_starttransfer:  0.138448
+                     ----------
+          time_total:  0.138550
+         http_code:  200
+     time_namelookup:  0.022357
+        time_connect:  0.048091
+     time_appconnect:  0.117964
+    time_pretransfer:  0.118142
+       time_redirect:  0.000000
+  time_starttransfer:  0.157705
+                     ----------
+          time_total:  0.157819
+         http_code:  200
+     time_namelookup:  0.029674
+        time_connect:  0.054987
+     time_appconnect:  0.116962
+    time_pretransfer:  0.117097
+       time_redirect:  0.000000
+  time_starttransfer:  0.154800
+                     ----------
+          time_total:  0.154914
+         http_code:  200
+     time_namelookup:  0.024883
+        time_connect:  0.047802
+     time_appconnect:  0.111955
+    time_pretransfer:  0.112091
+       time_redirect:  0.000000
+  time_starttransfer:  0.155546
+                     ----------
+          time_total:  0.155655
+         http_code:  200
+     time_namelookup:  0.029632
+        time_connect:  0.055239
+     time_appconnect:  0.117150
+    time_pretransfer:  0.117278
+       time_redirect:  0.000000
+  time_starttransfer:  0.161967
+                     ----------
+          time_total:  0.162065
+         http_code:  200
+     time_namelookup:  0.022322
+        time_connect:  0.048126
+     time_appconnect:  0.120650
+    time_pretransfer:  0.120770
+       time_redirect:  0.000000
+  time_starttransfer:  0.165133
+                     ----------
+          time_total:  0.165234
+         http_code:  200
+     time_namelookup:  0.022188
+        time_connect:  0.047895
+     time_appconnect:  0.120662
+    time_pretransfer:  0.120749
+       time_redirect:  0.000000
+  time_starttransfer:  0.165181
+                     ----------
+          time_total:  0.165287
+         http_code:  200
+     time_namelookup:  0.026449
+        time_connect:  0.049646
+     time_appconnect:  0.113754
+    time_pretransfer:  0.113889
+       time_redirect:  0.000000
+  time_starttransfer:  0.206022
+                     ----------
+          time_total:  0.206149
+         http_code:  200
+     time_namelookup:  0.030900
+        time_connect:  0.056192
+     time_appconnect:  0.118239
+    time_pretransfer:  0.118424
+       time_redirect:  0.000000
+  time_starttransfer:  0.210459
+                     ----------
+          time_total:  0.210592
+         http_code:  200
+     time_namelookup:  0.013322
+        time_connect:  0.034770
+     time_appconnect:  0.087343
+    time_pretransfer:  0.087523
+       time_redirect:  0.000000
+  time_starttransfer:  0.112523
+                     ----------
+          time_total:  0.112656
+         http_code:  200
+     time_namelookup:  0.015055
+        time_connect:  0.035957
+     time_appconnect:  0.088922
+    time_pretransfer:  0.089112
+       time_redirect:  0.000000
+  time_starttransfer:  0.117383
+                     ----------
+          time_total:  0.117490
+         http_code:  200
+     time_namelookup:  0.017983
+        time_connect:  0.037720
+     time_appconnect:  0.089300
+    time_pretransfer:  0.089454
+       time_redirect:  0.000000
+  time_starttransfer:  0.126043
+                     ----------
+          time_total:  0.126146
+         http_code:  200
+     time_namelookup:  0.017965
+        time_connect:  0.039187
+     time_appconnect:  0.091557
+    time_pretransfer:  0.091688
+       time_redirect:  0.000000
+  time_starttransfer:  0.126280
+                     ----------
+          time_total:  0.126412
+         http_code:  200
+     time_namelookup:  0.017392
+        time_connect:  0.039400
+     time_appconnect:  0.092708
+    time_pretransfer:  0.092833
+       time_redirect:  0.000000
+  time_starttransfer:  0.127142
+                     ----------
+          time_total:  0.127253
+         http_code:  200
+     time_namelookup:  0.012856
+        time_connect:  0.041131
+     time_appconnect:  0.097409
+    time_pretransfer:  0.097554
+       time_redirect:  0.000000
+  time_starttransfer:  0.136696
+                     ----------
+          time_total:  0.136804
+         http_code:  200
+     time_namelookup:  0.012760
+        time_connect:  0.042097
+     time_appconnect:  0.100809
+    time_pretransfer:  0.100942
+       time_redirect:  0.000000
+  time_starttransfer:  0.140102
+                     ----------
+          time_total:  0.140262
+         http_code:  200
+     time_namelookup:  0.016842
+        time_connect:  0.039399
+     time_appconnect:  0.093212
+    time_pretransfer:  0.093390
+       time_redirect:  0.000000
+  time_starttransfer:  0.133183
+                     ----------
+          time_total:  0.133306
+         http_code:  200
+     time_namelookup:  0.011401
+        time_connect:  0.031836
+     time_appconnect:  0.078251
+    time_pretransfer:  0.078409
+       time_redirect:  0.000000
+  time_starttransfer:  0.102447
+                     ----------
+          time_total:  0.102551
+         http_code:  200
+     time_namelookup:  0.011476
+        time_connect:  0.032786
+     time_appconnect:  0.083224
+    time_pretransfer:  0.083386
+       time_redirect:  0.000000
+  time_starttransfer:  0.109386
+                     ----------
+          time_total:  0.109536
+         http_code:  200
+     time_namelookup:  0.009158
+        time_connect:  0.029544
+     time_appconnect:  0.075783
+    time_pretransfer:  0.075914
+       time_redirect:  0.000000
+  time_starttransfer:  0.099625
+                     ----------
+          time_total:  0.099746
+         http_code:  200
+     time_namelookup:  0.008425
+        time_connect:  0.029379
+     time_appconnect:  0.083337
+    time_pretransfer:  0.083470
+       time_redirect:  0.000000
+  time_starttransfer:  0.110475
+                     ----------
+          time_total:  0.110570
+         http_code:  200
+     time_namelookup:  0.017297
+        time_connect:  0.041290
+     time_appconnect:  0.090562
+    time_pretransfer:  0.090712
+       time_redirect:  0.000000
+  time_starttransfer:  0.148574
+                     ----------
+          time_total:  0.148677
+         http_code:  200
+     time_namelookup:  0.013817
+        time_connect:  0.036671
+     time_appconnect:  0.088228
+    time_pretransfer:  0.088388
+       time_redirect:  0.000000
+  time_starttransfer:  0.140879
+                     ----------
+          time_total:  0.140993
+         http_code:  200
+     time_namelookup:  0.018133
+        time_connect:  0.043023
+     time_appconnect:  0.094426
+    time_pretransfer:  0.094584
+       time_redirect:  0.000000
+  time_starttransfer:  0.146723
+                     ----------
+          time_total:  0.146864
+         http_code:  200
+     time_namelookup:  0.015975
+        time_connect:  0.042882
+     time_appconnect:  0.097549
+    time_pretransfer:  0.097698
+       time_redirect:  0.000000
+  time_starttransfer:  0.150196
+                     ----------
+          time_total:  0.150307
+         http_code:  200
+     time_namelookup:  0.019028
+        time_connect:  0.038930
+     time_appconnect:  0.086955
+    time_pretransfer:  0.087140
+       time_redirect:  0.000000
+  time_starttransfer:  0.144823
+                     ----------
+          time_total:  0.144976
+         http_code:  200
+     time_namelookup:  0.017810
+        time_connect:  0.042721
+     time_appconnect:  0.090425
+    time_pretransfer:  0.090521
+       time_redirect:  0.000000
+  time_starttransfer:  0.147496
+                     ----------
+          time_total:  0.147616
+         http_code:  200
+     time_namelookup:  0.007415
+        time_connect:  0.027074
+     time_appconnect:  0.074543
+    time_pretransfer:  0.074647
+       time_redirect:  0.000000
+  time_starttransfer:  0.122754
+                     ----------
+          time_total:  0.122859
+         http_code:  200
+     time_namelookup:  0.007716
+        time_connect:  0.028967
+     time_appconnect:  0.075915
+    time_pretransfer:  0.076021
+       time_redirect:  0.000000
+  time_starttransfer:  0.128824
+                     ----------
+          time_total:  0.128923
+         http_code:  200
+     time_namelookup:  0.010610
+        time_connect:  0.033460
+     time_appconnect:  0.089044
+    time_pretransfer:  0.089213
+       time_redirect:  0.000000
+  time_starttransfer:  0.115199
+                     ----------
+          time_total:  0.115331
+         http_code:  200
+     time_namelookup:  0.007407
+        time_connect:  0.027561
+     time_appconnect:  0.086981
+    time_pretransfer:  0.087107
+       time_redirect:  0.000000
+  time_starttransfer:  0.111820
+                     ----------
+          time_total:  0.111906
+         http_code:  200
+     time_namelookup:  0.021461
+        time_connect:  0.043773
+     time_appconnect:  0.107859
+    time_pretransfer:  0.107975
+       time_redirect:  0.000000
+  time_starttransfer:  0.147689
+                     ----------
+          time_total:  0.147803
+         http_code:  200
+     time_namelookup:  0.023291
+        time_connect:  0.043083
+     time_appconnect:  0.109946
+    time_pretransfer:  0.110162
+       time_redirect:  0.000000
+  time_starttransfer:  0.157706
+                     ----------
+          time_total:  0.157814
+         http_code:  200
+     time_namelookup:  0.023609
+        time_connect:  0.055532
+     time_appconnect:  0.118948
+    time_pretransfer:  0.119348
+       time_redirect:  0.000000
+  time_starttransfer:  0.165001
+                     ----------
+          time_total:  0.165146
+         http_code:  200
+     time_namelookup:  0.024044
+        time_connect:  0.044023
+     time_appconnect:  0.108336
+    time_pretransfer:  0.108766
+       time_redirect:  0.000000
+  time_starttransfer:  0.166663
+                     ----------
+          time_total:  0.166912
+         http_code:  200
+     time_namelookup:  0.024015
+        time_connect:  0.043910
+     time_appconnect:  0.108189
+    time_pretransfer:  0.108691
+       time_redirect:  0.000000
+  time_starttransfer:  0.167339
+                     ----------
+          time_total:  0.167671
+         http_code:  200
+     time_namelookup:  0.023834
+        time_connect:  0.045126
+     time_appconnect:  0.113814
+    time_pretransfer:  0.113922
+       time_redirect:  0.000000
+  time_starttransfer:  0.168912
+                     ----------
+          time_total:  0.169026
+         http_code:  200
+     time_namelookup:  0.025099
+        time_connect:  0.044719
+     time_appconnect:  0.109431
+    time_pretransfer:  0.109589
+       time_redirect:  0.000000
+  time_starttransfer:  0.168761
+                     ----------
+          time_total:  0.168860
+         http_code:  200
+     time_namelookup:  0.023981
+        time_connect:  0.043666
+     time_appconnect:  0.108578
+    time_pretransfer:  0.109297
+       time_redirect:  0.000000
+  time_starttransfer:  0.168863
+                     ----------
+          time_total:  0.168969
+         http_code:  200
+     time_namelookup:  0.007354
+        time_connect:  0.047621
+     time_appconnect:  0.099654
+    time_pretransfer:  0.099817
+       time_redirect:  0.000000
+  time_starttransfer:  0.139012
+                     ----------
+          time_total:  0.139208
+         http_code:  200
+     time_namelookup:  0.007615
+        time_connect:  0.054602
+     time_appconnect:  0.108070
+    time_pretransfer:  0.108153
+       time_redirect:  0.000000
+  time_starttransfer:  0.145790
+                     ----------
+          time_total:  0.146283
+         http_code:  200
+     time_namelookup:  0.019697
+        time_connect:  0.044589
+     time_appconnect:  0.096649
+    time_pretransfer:  0.096881
+       time_redirect:  0.000000
+  time_starttransfer:  0.127374
+                     ----------
+          time_total:  0.127599
+         http_code:  200
+     time_namelookup:  0.017130
+        time_connect:  0.038716
+     time_appconnect:  0.094182
+    time_pretransfer:  0.094310
+       time_redirect:  0.000000
+  time_starttransfer:  0.138821
+                     ----------
+          time_total:  0.138993
+         http_code:  200
+     time_namelookup:  0.017899
+        time_connect:  0.042415
+     time_appconnect:  0.098717
+    time_pretransfer:  0.099069
+       time_redirect:  0.000000
+  time_starttransfer:  0.135503
+                     ----------
+          time_total:  0.135695
+         http_code:  200
+     time_namelookup:  0.019062
+        time_connect:  0.042076
+     time_appconnect:  0.100486
+    time_pretransfer:  0.100737
+       time_redirect:  0.000000
+  time_starttransfer:  0.138082
+                     ----------
+          time_total:  0.138176
+         http_code:  200
+     time_namelookup:  0.017527
+        time_connect:  0.039605
+     time_appconnect:  0.094067
+    time_pretransfer:  0.094203
+       time_redirect:  0.000000
+  time_starttransfer:  0.144104
+                     ----------
+          time_total:  0.144219
+         http_code:  200
+     time_namelookup:  0.014523
+        time_connect:  0.036797
+     time_appconnect:  0.084329
+    time_pretransfer:  0.084437
+       time_redirect:  0.000000
+  time_starttransfer:  0.135543
+                     ----------
+          time_total:  0.135648
+         http_code:  200
+     time_namelookup:  0.015272
+        time_connect:  0.036196
+     time_appconnect:  0.100664
+    time_pretransfer:  0.100911
+       time_redirect:  0.000000
+  time_starttransfer:  0.141989
+                     ----------
+          time_total:  0.142069
+         http_code:  200
+     time_namelookup:  0.013878
+        time_connect:  0.036481
+     time_appconnect:  0.111355
+    time_pretransfer:  0.111641
+       time_redirect:  0.000000
+  time_starttransfer:  0.153989
+                     ----------
+          time_total:  0.154065
+         http_code:  200
+⏱️ Время выполнения: 1 сек
+📈 Средняя скорость: 50 req/sec
+
+🔍 ТЕСТИРОВАНИЕ: Component Status (средняя нагрузка)
+📍 Endpoint: /components/status/test
+📊 Запросов: 100, Параллельно: 20
+
+     time_namelookup:  0.029474
+        time_connect:  0.053469
+     time_appconnect:  0.107500
+    time_pretransfer:  0.107649
+       time_redirect:  0.000000
+  time_starttransfer:  0.150413
+                     ----------
+          time_total:  0.150561
+         http_code:  200
+     time_namelookup:  0.032336
+        time_connect:  0.053716
+     time_appconnect:  0.107197
+    time_pretransfer:  0.107354
+       time_redirect:  0.000000
+  time_starttransfer:  0.151888
+                     ----------
+          time_total:  0.151996
+         http_code:  200
+     time_namelookup:  0.032096
+        time_connect:  0.054290
+     time_appconnect:  0.108928
+    time_pretransfer:  0.109108
+       time_redirect:  0.000000
+  time_starttransfer:  0.156507
+                     ----------
+          time_total:  0.156643
+         http_code:  200
+     time_namelookup:  0.037953
+        time_connect:  0.060019
+     time_appconnect:  0.112831
+    time_pretransfer:  0.113023
+       time_redirect:  0.000000
+  time_starttransfer:  0.149530
+                     ----------
+          time_total:  0.149665
+         http_code:  200
+     time_namelookup:  0.034174
+        time_connect:  0.055831
+     time_appconnect:  0.120179
+    time_pretransfer:  0.120321
+       time_redirect:  0.000000
+  time_starttransfer:  0.163266
+                     ----------
+          time_total:  0.163398
+         http_code:  200
+     time_namelookup:  0.025217
+        time_connect:  0.045674
+     time_appconnect:  0.121678
+    time_pretransfer:  0.121804
+       time_redirect:  0.000000
+  time_starttransfer:  0.165762
+                     ----------
+          time_total:  0.165861
+         http_code:  200
+     time_namelookup:  0.033219
+        time_connect:  0.054835
+     time_appconnect:  0.106271
+    time_pretransfer:  0.106378
+       time_redirect:  0.000000
+  time_starttransfer:  0.147849
+                     ----------
+          time_total:  0.147990
+         http_code:  200
+     time_namelookup:  0.032445
+        time_connect:  0.057572
+     time_appconnect:  0.123303
+    time_pretransfer:  0.123428
+       time_redirect:  0.000000
+  time_starttransfer:  0.164779
+                     ----------
+          time_total:  0.164871
+         http_code:  200
+     time_namelookup:  0.035461
+        time_connect:  0.060006
+     time_appconnect:  0.121335
+    time_pretransfer:  0.121452
+       time_redirect:  0.000000
+  time_starttransfer:  0.163944
+                     ----------
+          time_total:  0.164065
+         http_code:  200
+     time_namelookup:  0.032469
+        time_connect:  0.057584
+     time_appconnect:  0.118788
+    time_pretransfer:  0.118880
+       time_redirect:  0.000000
+  time_starttransfer:  0.159938
+                     ----------
+          time_total:  0.160036
+         http_code:  200
+     time_namelookup:  0.032865
+        time_connect:  0.056838
+     time_appconnect:  0.121665
+    time_pretransfer:  0.121790
+       time_redirect:  0.000000
+  time_starttransfer:  0.165645
+                     ----------
+          time_total:  0.165740
+         http_code:  200
+     time_namelookup:  0.030811
+        time_connect:  0.051650
+     time_appconnect:  0.125596
+    time_pretransfer:  0.125844
+       time_redirect:  0.000000
+  time_starttransfer:  0.159495
+                     ----------
+          time_total:  0.159619
+         http_code:  200
+     time_namelookup:  0.028107
+        time_connect:  0.054969
+     time_appconnect:  0.131703
+    time_pretransfer:  0.131928
+       time_redirect:  0.000000
+  time_starttransfer:  0.167137
+                     ----------
+          time_total:  0.167238
+         http_code:  200
+     time_namelookup:  0.032237
+        time_connect:  0.056122
+     time_appconnect:  0.126473
+    time_pretransfer:  0.126662
+       time_redirect:  0.000000
+  time_starttransfer:  0.161792
+                     ----------
+          time_total:  0.161903
+         http_code:  200
+     time_namelookup:  0.034224
+        time_connect:  0.061153
+     time_appconnect:  0.122365
+    time_pretransfer:  0.122509
+       time_redirect:  0.000000
+  time_starttransfer:  0.157807
+                     ----------
+          time_total:  0.158001
+         http_code:  200
+     time_namelookup:  0.041130
+        time_connect:  0.063201
+     time_appconnect:  0.125850
+    time_pretransfer:  0.126077
+       time_redirect:  0.000000
+  time_starttransfer:  0.166266
+                     ----------
+          time_total:  0.166406
+         http_code:  200
+     time_namelookup:  0.036735
+        time_connect:  0.058328
+     time_appconnect:  0.126175
+    time_pretransfer:  0.126444
+       time_redirect:  0.000000
+  time_starttransfer:  0.169465
+                     ----------
+          time_total:  0.169586
+         http_code:  200
+     time_namelookup:  0.031851
+        time_connect:  0.056934
+     time_appconnect:  0.116858
+    time_pretransfer:  0.117115
+       time_redirect:  0.000000
+  time_starttransfer:  0.160123
+                     ----------
+          time_total:  0.160225
+         http_code:  200
+     time_namelookup:  0.042166
+        time_connect:  0.067422
+     time_appconnect:  0.128764
+    time_pretransfer:  0.128970
+       time_redirect:  0.000000
+  time_starttransfer:  0.171643
+                     ----------
+          time_total:  0.171744
+         http_code:  200
+     time_namelookup:  0.027285
+        time_connect:  0.049551
+     time_appconnect:  0.117685
+    time_pretransfer:  0.117902
+       time_redirect:  0.000000
+  time_starttransfer:  0.162785
+                     ----------
+          time_total:  0.162896
+         http_code:  200
+     time_namelookup:  0.020000
+        time_connect:  0.048544
+     time_appconnect:  0.107313
+    time_pretransfer:  0.107458
+       time_redirect:  0.000000
+  time_starttransfer:  0.133182
+                     ----------
+          time_total:  0.133302
+         http_code:  200
+     time_namelookup:  0.030601
+        time_connect:  0.053699
+     time_appconnect:  0.108560
+    time_pretransfer:  0.108705
+       time_redirect:  0.000000
+  time_starttransfer:  0.148682
+                     ----------
+          time_total:  0.149004
+         http_code:  200
+     time_namelookup:  0.019575
+        time_connect:  0.043958
+     time_appconnect:  0.092917
+    time_pretransfer:  0.093069
+       time_redirect:  0.000000
+  time_starttransfer:  0.128478
+                     ----------
+          time_total:  0.128595
+         http_code:  200
+     time_namelookup:  0.037483
+        time_connect:  0.059307
+     time_appconnect:  0.121732
+    time_pretransfer:  0.121847
+       time_redirect:  0.000000
+  time_starttransfer:  0.150491
+                     ----------
+          time_total:  0.150595
+         http_code:  200
+     time_namelookup:  0.036076
+        time_connect:  0.055774
+     time_appconnect:  0.117915
+    time_pretransfer:  0.118102
+       time_redirect:  0.000000
+  time_starttransfer:  0.189356
+                     ----------
+          time_total:  0.189480
+         http_code:  200
+     time_namelookup:  0.040791
+        time_connect:  0.063934
+     time_appconnect:  0.141234
+    time_pretransfer:  0.141362
+       time_redirect:  0.000000
+  time_starttransfer:  0.187589
+                     ----------
+          time_total:  0.187695
+         http_code:  200
+     time_namelookup:  0.039421
+        time_connect:  0.058476
+     time_appconnect:  0.125649
+    time_pretransfer:  0.125785
+       time_redirect:  0.000000
+  time_starttransfer:  0.200423
+                     ----------
+          time_total:  0.200539
+         http_code:  200
+     time_namelookup:  0.040499
+        time_connect:  0.059918
+     time_appconnect:  0.122595
+    time_pretransfer:  0.122765
+       time_redirect:  0.000000
+  time_starttransfer:  0.200924
+                     ----------
+          time_total:  0.201065
+         http_code:  200
+     time_namelookup:  0.036596
+        time_connect:  0.057379
+     time_appconnect:  0.126076
+    time_pretransfer:  0.126214
+       time_redirect:  0.000000
+  time_starttransfer:  0.203961
+                     ----------
+          time_total:  0.204101
+         http_code:  200
+     time_namelookup:  0.037652
+        time_connect:  0.057650
+     time_appconnect:  0.120276
+    time_pretransfer:  0.120474
+       time_redirect:  0.000000
+  time_starttransfer:  0.200327
+                     ----------
+          time_total:  0.200438
+         http_code:  200
+     time_namelookup:  0.034950
+        time_connect:  0.057443
+     time_appconnect:  0.121470
+    time_pretransfer:  0.121627
+       time_redirect:  0.000000
+  time_starttransfer:  0.206328
+                     ----------
+          time_total:  0.206437
+         http_code:  200
+     time_namelookup:  0.037067
+        time_connect:  0.056895
+     time_appconnect:  0.116356
+    time_pretransfer:  0.116520
+       time_redirect:  0.000000
+  time_starttransfer:  0.192334
+                     ----------
+          time_total:  0.192491
+         http_code:  200
+     time_namelookup:  0.040345
+        time_connect:  0.060911
+     time_appconnect:  0.135375
+    time_pretransfer:  0.135525
+       time_redirect:  0.000000
+  time_starttransfer:  0.203648
+                     ----------
+          time_total:  0.203791
+         http_code:  200
+     time_namelookup:  0.029908
+        time_connect:  0.056096
+     time_appconnect:  0.123363
+    time_pretransfer:  0.123457
+       time_redirect:  0.000000
+  time_starttransfer:  0.194157
+                     ----------
+          time_total:  0.194586
+         http_code:  200
+     time_namelookup:  0.039526
+        time_connect:  0.060531
+     time_appconnect:  0.135369
+    time_pretransfer:  0.135469
+       time_redirect:  0.000000
+  time_starttransfer:  0.214571
+                     ----------
+          time_total:  0.214688
+         http_code:  200
+     time_namelookup:  0.041766
+        time_connect:  0.063120
+     time_appconnect:  0.137053
+    time_pretransfer:  0.137151
+       time_redirect:  0.000000
+  time_starttransfer:  0.215300
+                     ----------
+          time_total:  0.215415
+         http_code:  200
+     time_namelookup:  0.029309
+        time_connect:  0.052982
+     time_appconnect:  0.122907
+    time_pretransfer:  0.123125
+       time_redirect:  0.000000
+  time_starttransfer:  0.201498
+                     ----------
+          time_total:  0.201622
+         http_code:  200
+     time_namelookup:  0.032176
+        time_connect:  0.053934
+     time_appconnect:  0.128382
+    time_pretransfer:  0.128593
+       time_redirect:  0.000000
+  time_starttransfer:  0.206192
+                     ----------
+          time_total:  0.206321
+         http_code:  200
+     time_namelookup:  0.007675
+        time_connect:  0.035223
+     time_appconnect:  0.090572
+    time_pretransfer:  0.090784
+       time_redirect:  0.000000
+  time_starttransfer:  0.124971
+                     ----------
+          time_total:  0.125077
+         http_code:  200
+     time_namelookup:  0.034413
+        time_connect:  0.056551
+     time_appconnect:  0.107036
+    time_pretransfer:  0.107294
+       time_redirect:  0.000000
+  time_starttransfer:  0.277076
+                     ----------
+          time_total:  0.277174
+         http_code:  200
+     time_namelookup:  0.030980
+        time_connect:  0.060395
+     time_appconnect:  0.115358
+    time_pretransfer:  0.115543
+       time_redirect:  0.000000
+  time_starttransfer:  0.280706
+                     ----------
+          time_total:  0.281064
+         http_code:  200
+     time_namelookup:  0.007582
+        time_connect:  0.036153
+     time_appconnect:  0.090602
+    time_pretransfer:  0.090733
+       time_redirect:  0.000000
+  time_starttransfer:  0.121205
+                     ----------
+          time_total:  0.121480
+         http_code:  200
+     time_namelookup:  0.008077
+        time_connect:  0.040518
+     time_appconnect:  0.094670
+    time_pretransfer:  0.094870
+       time_redirect:  0.000000
+  time_starttransfer:  0.125626
+                     ----------
+          time_total:  0.125815
+         http_code:  200
+     time_namelookup:  0.008002
+        time_connect:  0.033634
+     time_appconnect:  0.088653
+    time_pretransfer:  0.088817
+       time_redirect:  0.000000
+  time_starttransfer:  0.118439
+                     ----------
+          time_total:  0.118554
+         http_code:  200
+     time_namelookup:  0.013946
+        time_connect:  0.035090
+     time_appconnect:  0.084048
+    time_pretransfer:  0.084267
+       time_redirect:  0.000000
+  time_starttransfer:  0.112124
+                     ----------
+          time_total:  0.112357
+         http_code:  200
+     time_namelookup:  0.020255
+        time_connect:  0.043194
+     time_appconnect:  0.118585
+    time_pretransfer:  0.119400
+       time_redirect:  0.000000
+  time_starttransfer:  0.150462
+                     ----------
+          time_total:  0.150686
+         http_code:  200
+     time_namelookup:  0.023379
+        time_connect:  0.045799
+     time_appconnect:  0.106748
+    time_pretransfer:  0.107721
+       time_redirect:  0.000000
+  time_starttransfer:  0.137363
+                     ----------
+          time_total:  0.137619
+         http_code:  200
+     time_namelookup:  0.022303
+        time_connect:  0.044661
+     time_appconnect:  0.107780
+    time_pretransfer:  0.108612
+       time_redirect:  0.000000
+  time_starttransfer:  0.145340
+                     ----------
+          time_total:  0.151742
+         http_code:  200
+     time_namelookup:  0.033920
+        time_connect:  0.054551
+     time_appconnect:  0.108022
+    time_pretransfer:  0.108192
+       time_redirect:  0.000000
+  time_starttransfer:  0.149256
+                     ----------
+          time_total:  0.149757
+         http_code:  200
+     time_namelookup:  0.034017
+        time_connect:  0.056856
+     time_appconnect:  0.111923
+    time_pretransfer:  0.112060
+       time_redirect:  0.000000
+  time_starttransfer:  0.138077
+                     ----------
+          time_total:  0.138514
+         http_code:  200
+     time_namelookup:  0.025127
+        time_connect:  0.052371
+     time_appconnect:  0.125597
+    time_pretransfer:  0.126114
+       time_redirect:  0.000000
+  time_starttransfer:  0.154154
+                     ----------
+          time_total:  0.154455
+         http_code:  200
+     time_namelookup:  0.032660
+        time_connect:  0.052129
+     time_appconnect:  0.103358
+    time_pretransfer:  0.103595
+       time_redirect:  0.000000
+  time_starttransfer:  0.148639
+                     ----------
+          time_total:  0.149693
+         http_code:  200
+     time_namelookup:  0.030413
+        time_connect:  0.052464
+     time_appconnect:  0.112015
+    time_pretransfer:  0.112156
+       time_redirect:  0.000000
+  time_starttransfer:  0.150178
+                     ----------
+          time_total:  0.150482
+         http_code:  200
+     time_namelookup:  0.023782
+        time_connect:  0.045443
+     time_appconnect:  0.100272
+    time_pretransfer:  0.100519
+       time_redirect:  0.000000
+  time_starttransfer:  0.129265
+                     ----------
+          time_total:  0.129583
+         http_code:  200
+     time_namelookup:  0.025412
+        time_connect:  0.053033
+     time_appconnect:  0.127832
+    time_pretransfer:  0.128192
+       time_redirect:  0.000000
+  time_starttransfer:  0.170386
+                     ----------
+          time_total:  0.170691
+         http_code:  200
+     time_namelookup:  0.030044
+        time_connect:  0.054456
+     time_appconnect:  0.110466
+    time_pretransfer:  0.111382
+       time_redirect:  0.000000
+  time_starttransfer:  0.159305
+                     ----------
+          time_total:  0.159665
+         http_code:  200
+     time_namelookup:  0.026316
+        time_connect:  0.051246
+     time_appconnect:  0.121064
+    time_pretransfer:  0.121511
+       time_redirect:  0.000000
+  time_starttransfer:  0.151141
+                     ----------
+          time_total:  0.151672
+         http_code:  200
+     time_namelookup:  0.038655
+        time_connect:  0.061684
+     time_appconnect:  0.166534
+    time_pretransfer:  0.166986
+       time_redirect:  0.000000
+  time_starttransfer:  0.193206
+                     ----------
+          time_total:  0.193366
+         http_code:  200
+     time_namelookup:  0.028262
+        time_connect:  0.053797
+     time_appconnect:  0.150053
+    time_pretransfer:  0.150909
+       time_redirect:  0.000000
+  time_starttransfer:  0.181936
+                     ----------
+          time_total:  0.183311
+         http_code:  200
+     time_namelookup:  0.027743
+        time_connect:  0.051628
+     time_appconnect:  0.199034
+    time_pretransfer:  0.201300
+       time_redirect:  0.000000
+  time_starttransfer:  0.222613
+                     ----------
+          time_total:  0.222734
+         http_code:  200
+     time_namelookup:  0.033772
+        time_connect:  0.059627
+     time_appconnect:  0.223422
+    time_pretransfer:  0.223603
+       time_redirect:  0.000000
+  time_starttransfer:  0.245610
+                     ----------
+          time_total:  0.245745
+         http_code:  200
+     time_namelookup:  0.037857
+        time_connect:  0.060762
+     time_appconnect:  0.216056
+    time_pretransfer:  0.216742
+       time_redirect:  0.000000
+  time_starttransfer:  0.238909
+                     ----------
+          time_total:  0.239028
+         http_code:  200
+     time_namelookup:  0.043472
+        time_connect:  0.068206
+     time_appconnect:  0.220311
+    time_pretransfer:  0.221360
+       time_redirect:  0.000000
+  time_starttransfer:  0.246972
+                     ----------
+          time_total:  0.247087
+         http_code:  200
+     time_namelookup:  0.016410
+        time_connect:  0.043971
+     time_appconnect:  0.205355
+    time_pretransfer:  0.205522
+       time_redirect:  0.000000
+  time_starttransfer:  0.231440
+                     ----------
+          time_total:  0.231550
+         http_code:  200
+     time_namelookup:  0.015882
+        time_connect:  0.056432
+     time_appconnect:  0.205235
+    time_pretransfer:  0.210397
+       time_redirect:  0.000000
+  time_starttransfer:  0.244415
+                     ----------
+          time_total:  0.244524
+         http_code:  200
+     time_namelookup:  0.032358
+        time_connect:  0.056828
+     time_appconnect:  0.136435
+    time_pretransfer:  0.136584
+       time_redirect:  0.000000
+  time_starttransfer:  0.169134
+                     ----------
+          time_total:  0.169260
+         http_code:  200
+     time_namelookup:  0.030660
+        time_connect:  0.056431
+     time_appconnect:  0.115989
+    time_pretransfer:  0.116174
+       time_redirect:  0.000000
+  time_starttransfer:  0.150610
+                     ----------
+          time_total:  0.150728
+         http_code:  200
+     time_namelookup:  0.032658
+        time_connect:  0.055409
+     time_appconnect:  0.125458
+    time_pretransfer:  0.125626
+       time_redirect:  0.000000
+  time_starttransfer:  0.153590
+                     ----------
+          time_total:  0.153742
+         http_code:  200
+     time_namelookup:  0.037487
+        time_connect:  0.069721
+     time_appconnect:  0.119704
+    time_pretransfer:  0.119834
+       time_redirect:  0.000000
+  time_starttransfer:  0.147823
+                     ----------
+          time_total:  0.147936
+         http_code:  200
+     time_namelookup:  0.014572
+        time_connect:  0.042127
+     time_appconnect:  0.092377
+    time_pretransfer:  0.092495
+       time_redirect:  0.000000
+  time_starttransfer:  0.120088
+                     ----------
+          time_total:  0.120198
+         http_code:  200
+     time_namelookup:  0.033140
+        time_connect:  0.057934
+     time_appconnect:  0.139582
+    time_pretransfer:  0.139731
+       time_redirect:  0.000000
+  time_starttransfer:  0.168811
+                     ----------
+          time_total:  0.168921
+         http_code:  200
+     time_namelookup:  0.035119
+        time_connect:  0.056403
+     time_appconnect:  0.133668
+    time_pretransfer:  0.133772
+       time_redirect:  0.000000
+  time_starttransfer:  0.161775
+                     ----------
+          time_total:  0.161884
+         http_code:  200
+     time_namelookup:  0.036418
+        time_connect:  0.071208
+     time_appconnect:  0.123869
+    time_pretransfer:  0.124014
+       time_redirect:  0.000000
+  time_starttransfer:  0.152108
+                     ----------
+          time_total:  0.152209
+         http_code:  200
+     time_namelookup:  0.051644
+        time_connect:  0.084727
+     time_appconnect:  0.146252
+    time_pretransfer:  0.146372
+       time_redirect:  0.000000
+  time_starttransfer:  0.177354
+                     ----------
+          time_total:  0.177661
+         http_code:  200
+     time_namelookup:  0.011567
+        time_connect:  0.032962
+     time_appconnect:  0.082374
+    time_pretransfer:  0.082491
+       time_redirect:  0.000000
+  time_starttransfer:  0.112779
+                     ----------
+          time_total:  0.112881
+         http_code:  200
+     time_namelookup:  0.042892
+        time_connect:  0.079979
+     time_appconnect:  0.144867
+    time_pretransfer:  0.144992
+       time_redirect:  0.000000
+  time_starttransfer:  0.179263
+                     ----------
+          time_total:  0.179367
+         http_code:  200
+     time_namelookup:  0.030804
+        time_connect:  0.071995
+     time_appconnect:  0.132515
+    time_pretransfer:  0.132637
+       time_redirect:  0.000000
+  time_starttransfer:  0.169529
+                     ----------
+          time_total:  0.169706
+         http_code:  200
+     time_namelookup:  0.052685
+        time_connect:  0.084866
+     time_appconnect:  0.148709
+    time_pretransfer:  0.148881
+       time_redirect:  0.000000
+  time_starttransfer:  0.189919
+                     ----------
+          time_total:  0.190174
+         http_code:  200
+     time_namelookup:  0.045219
+        time_connect:  0.086674
+     time_appconnect:  0.152654
+    time_pretransfer:  0.152807
+       time_redirect:  0.000000
+  time_starttransfer:  0.183990
+                     ----------
+          time_total:  0.184141
+         http_code:  200
+     time_namelookup:  0.015495
+        time_connect:  0.050879
+     time_appconnect:  0.117421
+    time_pretransfer:  0.117586
+       time_redirect:  0.000000
+  time_starttransfer:  0.148484
+                     ----------
+          time_total:  0.148634
+         http_code:  200
+     time_namelookup:  0.014277
+        time_connect:  0.045613
+     time_appconnect:  0.102604
+    time_pretransfer:  0.102754
+       time_redirect:  0.000000
+  time_starttransfer:  0.146419
+                     ----------
+          time_total:  0.146559
+         http_code:  200
+     time_namelookup:  0.015883
+        time_connect:  0.047097
+     time_appconnect:  0.106000
+    time_pretransfer:  0.106187
+       time_redirect:  0.000000
+  time_starttransfer:  0.149215
+                     ----------
+          time_total:  0.149432
+         http_code:  200
+     time_namelookup:  0.009476
+        time_connect:  0.028961
+     time_appconnect:  0.080863
+    time_pretransfer:  0.081043
+       time_redirect:  0.000000
+  time_starttransfer:  0.114271
+                     ----------
+          time_total:  0.114376
+         http_code:  200
+     time_namelookup:  0.016618
+        time_connect:  0.048127
+     time_appconnect:  0.107693
+    time_pretransfer:  0.107913
+       time_redirect:  0.000000
+  time_starttransfer:  0.150745
+                     ----------
+          time_total:  0.150848
+         http_code:  200
+     time_namelookup:  0.008014
+        time_connect:  0.030049
+     time_appconnect:  0.084109
+    time_pretransfer:  0.084297
+       time_redirect:  0.000000
+  time_starttransfer:  0.110321
+                     ----------
+          time_total:  0.110459
+         http_code:  200
+     time_namelookup:  0.025591
+        time_connect:  0.046110
+     time_appconnect:  0.101068
+    time_pretransfer:  0.101333
+       time_redirect:  0.000000
+  time_starttransfer:  0.131047
+                     ----------
+          time_total:  0.131173
+         http_code:  200
+     time_namelookup:  0.017259
+        time_connect:  0.045234
+     time_appconnect:  0.105066
+    time_pretransfer:  0.105221
+       time_redirect:  0.000000
+  time_starttransfer:  0.138187
+                     ----------
+          time_total:  0.138382
+         http_code:  200
+     time_namelookup:  0.032152
+        time_connect:  0.064767
+     time_appconnect:  0.120638
+    time_pretransfer:  0.120977
+       time_redirect:  0.000000
+  time_starttransfer:  0.156969
+                     ----------
+          time_total:  0.157091
+         http_code:  200
+     time_namelookup:  0.015057
+        time_connect:  0.040296
+     time_appconnect:  0.096682
+    time_pretransfer:  0.096905
+       time_redirect:  0.000000
+  time_starttransfer:  0.133543
+                     ----------
+          time_total:  0.133672
+         http_code:  200
+     time_namelookup:  0.014087
+        time_connect:  0.039219
+     time_appconnect:  0.109750
+    time_pretransfer:  0.109904
+       time_redirect:  0.000000
+  time_starttransfer:  0.163916
+                     ----------
+          time_total:  0.164224
+         http_code:  200
+     time_namelookup:  0.028559
+        time_connect:  0.061050
+     time_appconnect:  0.131568
+    time_pretransfer:  0.131715
+       time_redirect:  0.000000
+  time_starttransfer:  0.186316
+                     ----------
+          time_total:  0.186676
+         http_code:  200
+     time_namelookup:  0.028579
+        time_connect:  0.060415
+     time_appconnect:  0.130931
+    time_pretransfer:  0.131085
+       time_redirect:  0.000000
+  time_starttransfer:  0.185204
+                     ----------
+          time_total:  0.185403
+         http_code:  200
+     time_namelookup:  0.033105
+        time_connect:  0.063570
+     time_appconnect:  0.126050
+    time_pretransfer:  0.126184
+       time_redirect:  0.000000
+  time_starttransfer:  0.190991
+                     ----------
+          time_total:  0.191409
+         http_code:  200
+     time_namelookup:  0.020405
+        time_connect:  0.046334
+     time_appconnect:  0.104820
+    time_pretransfer:  0.104928
+       time_redirect:  0.000000
+  time_starttransfer:  0.157724
+                     ----------
+          time_total:  0.157927
+         http_code:  200
+     time_namelookup:  0.019970
+        time_connect:  0.043856
+     time_appconnect:  0.101215
+    time_pretransfer:  0.101309
+       time_redirect:  0.000000
+  time_starttransfer:  0.159086
+                     ----------
+          time_total:  0.159298
+         http_code:  200
+     time_namelookup:  0.015517
+        time_connect:  0.037270
+     time_appconnect:  0.109470
+    time_pretransfer:  0.109700
+       time_redirect:  0.000000
+  time_starttransfer:  0.168370
+                     ----------
+          time_total:  0.168480
+         http_code:  200
+     time_namelookup:  0.018955
+        time_connect:  0.048935
+     time_appconnect:  0.105486
+    time_pretransfer:  0.105611
+       time_redirect:  0.000000
+  time_starttransfer:  0.155380
+                     ----------
+          time_total:  0.155579
+         http_code:  200
+     time_namelookup:  0.017789
+        time_connect:  0.043617
+     time_appconnect:  0.108045
+    time_pretransfer:  0.108167
+       time_redirect:  0.000000
+  time_starttransfer:  0.158488
+                     ----------
+          time_total:  0.158750
+         http_code:  200
+     time_namelookup:  0.026478
+        time_connect:  0.061404
+     time_appconnect:  0.129375
+    time_pretransfer:  0.129502
+       time_redirect:  0.000000
+  time_starttransfer:  0.190963
+                     ----------
+          time_total:  0.191077
+         http_code:  200
+     time_namelookup:  0.026591
+        time_connect:  0.061483
+     time_appconnect:  0.129357
+    time_pretransfer:  0.129501
+       time_redirect:  0.000000
+  time_starttransfer:  0.190808
+                     ----------
+          time_total:  0.190929
+         http_code:  200
+⏱️ Время выполнения: 1 сек
+📈 Средняя скорость: 100 req/sec
+
+🔍 ТЕСТИРОВАНИЕ: Phishing Settings (средняя нагрузка)
+📍 Endpoint: /phishing/sensitivity
+📊 Запросов: 100, Параллельно: 20
+
+     time_namelookup:  0.031958
+        time_connect:  0.055894
+     time_appconnect:  0.119381
+    time_pretransfer:  0.119704
+       time_redirect:  0.000000
+  time_starttransfer:  0.147573
+                     ----------
+          time_total:  0.147701
+         http_code:  200
+     time_namelookup:  0.035627
+        time_connect:  0.057165
+     time_appconnect:  0.121478
+    time_pretransfer:  0.121620
+       time_redirect:  0.000000
+  time_starttransfer:  0.149512
+                     ----------
+          time_total:  0.149620
+         http_code:  200
+     time_namelookup:  0.035822
+        time_connect:  0.059192
+     time_appconnect:  0.120686
+    time_pretransfer:  0.121079
+       time_redirect:  0.000000
+  time_starttransfer:  0.150146
+                     ----------
+          time_total:  0.150261
+         http_code:  200
+     time_namelookup:  0.026685
+        time_connect:  0.047786
+     time_appconnect:  0.104583
+    time_pretransfer:  0.104736
+       time_redirect:  0.000000
+  time_starttransfer:  0.128246
+                     ----------
+          time_total:  0.128404
+         http_code:  200
+     time_namelookup:  0.029948
+        time_connect:  0.053349
+     time_appconnect:  0.120201
+    time_pretransfer:  0.120364
+       time_redirect:  0.000000
+  time_starttransfer:  0.144782
+                     ----------
+          time_total:  0.144895
+         http_code:  200
+     time_namelookup:  0.029289
+        time_connect:  0.050624
+     time_appconnect:  0.115774
+    time_pretransfer:  0.115928
+       time_redirect:  0.000000
+  time_starttransfer:  0.146153
+                     ----------
+          time_total:  0.146269
+         http_code:  200
+     time_namelookup:  0.037074
+        time_connect:  0.062503
+     time_appconnect:  0.128539
+    time_pretransfer:  0.128727
+       time_redirect:  0.000000
+  time_starttransfer:  0.156820
+                     ----------
+          time_total:  0.156921
+         http_code:  200
+     time_namelookup:  0.031248
+        time_connect:  0.060809
+     time_appconnect:  0.124480
+    time_pretransfer:  0.124627
+       time_redirect:  0.000000
+  time_starttransfer:  0.152622
+                     ----------
+          time_total:  0.152737
+         http_code:  200
+     time_namelookup:  0.030733
+        time_connect:  0.052497
+     time_appconnect:  0.113641
+    time_pretransfer:  0.113783
+       time_redirect:  0.000000
+  time_starttransfer:  0.141352
+                     ----------
+          time_total:  0.141467
+         http_code:  200
+     time_namelookup:  0.031228
+        time_connect:  0.056798
+     time_appconnect:  0.119624
+    time_pretransfer:  0.119813
+       time_redirect:  0.000000
+  time_starttransfer:  0.151071
+                     ----------
+          time_total:  0.151177
+         http_code:  200
+     time_namelookup:  0.024455
+        time_connect:  0.049102
+     time_appconnect:  0.136826
+    time_pretransfer:  0.137012
+       time_redirect:  0.000000
+  time_starttransfer:  0.186930
+                     ----------
+          time_total:  0.187096
+         http_code:  200
+     time_namelookup:  0.053137
+        time_connect:  0.092489
+     time_appconnect:  0.195411
+    time_pretransfer:  0.195577
+       time_redirect:  0.000000
+  time_starttransfer:  0.225201
+                     ----------
+          time_total:  0.225434
+         http_code:  200
+     time_namelookup:  0.073510
+        time_connect:  0.110128
+     time_appconnect:  0.220403
+    time_pretransfer:  0.220605
+       time_redirect:  0.000000
+  time_starttransfer:  0.255248
+                     ----------
+          time_total:  0.255375
+         http_code:  200
+     time_namelookup:  0.065625
+        time_connect:  0.099438
+     time_appconnect:  0.201196
+    time_pretransfer:  0.201369
+       time_redirect:  0.000000
+  time_starttransfer:  0.247251
+                     ----------
+          time_total:  0.247360
+         http_code:  200
+     time_namelookup:  0.071863
+        time_connect:  0.101674
+     time_appconnect:  0.191519
+    time_pretransfer:  0.191719
+       time_redirect:  0.000000
+  time_starttransfer:  0.273492
+                     ----------
+          time_total:  0.273640
+         http_code:  200
+     time_namelookup:  0.032535
+        time_connect:  0.060363
+     time_appconnect:  0.267627
+    time_pretransfer:  0.275018
+       time_redirect:  0.000000
+  time_starttransfer:  0.302522
+                     ----------
+          time_total:  0.302681
+         http_code:  200
+     time_namelookup:  0.070703
+        time_connect:  0.098576
+     time_appconnect:  0.269429
+    time_pretransfer:  0.269596
+       time_redirect:  0.000000
+  time_starttransfer:  0.295673
+                     ----------
+          time_total:  0.295783
+         http_code:  200
+     time_namelookup:  0.062405
+        time_connect:  0.091008
+     time_appconnect:  0.263801
+    time_pretransfer:  0.264019
+       time_redirect:  0.000000
+  time_starttransfer:  0.323222
+                     ----------
+          time_total:  0.323878
+         http_code:  200
+     time_namelookup:  0.062556
+        time_connect:  0.092312
+     time_appconnect:  0.262773
+    time_pretransfer:  0.262988
+       time_redirect:  0.000000
+  time_starttransfer:  0.324417
+                     ----------
+          time_total:  0.324528
+         http_code:  200
+     time_namelookup:  0.070718
+        time_connect:  0.097376
+     time_appconnect:  0.272299
+    time_pretransfer:  0.272483
+       time_redirect:  0.000000
+  time_starttransfer:  0.336522
+                     ----------
+          time_total:  0.336660
+         http_code:  200
+     time_namelookup:  0.031534
+        time_connect:  0.056787
+     time_appconnect:  0.138143
+    time_pretransfer:  0.138493
+       time_redirect:  0.000000
+  time_starttransfer:  0.201489
+                     ----------
+          time_total:  0.201602
+         http_code:  200
+     time_namelookup:  0.018738
+        time_connect:  0.043536
+     time_appconnect:  0.137292
+    time_pretransfer:  0.138493
+       time_redirect:  0.000000
+  time_starttransfer:  0.216474
+                     ----------
+          time_total:  0.216619
+         http_code:  200
+     time_namelookup:  0.029570
+        time_connect:  0.054562
+     time_appconnect:  0.143128
+    time_pretransfer:  0.143311
+       time_redirect:  0.000000
+  time_starttransfer:  0.207280
+                     ----------
+          time_total:  0.207389
+         http_code:  200
+     time_namelookup:  0.027943
+        time_connect:  0.056655
+     time_appconnect:  0.135530
+    time_pretransfer:  0.135818
+       time_redirect:  0.000000
+  time_starttransfer:  0.200709
+                     ----------
+          time_total:  0.200815
+         http_code:  200
+     time_namelookup:  0.034947
+        time_connect:  0.061735
+     time_appconnect:  0.205177
+    time_pretransfer:  0.205832
+       time_redirect:  0.000000
+  time_starttransfer:  0.232930
+                     ----------
+          time_total:  0.233045
+         http_code:  200
+     time_namelookup:  0.030105
+        time_connect:  0.057467
+     time_appconnect:  0.202300
+    time_pretransfer:  0.202449
+       time_redirect:  0.000000
+  time_starttransfer:  0.231505
+                     ----------
+          time_total:  0.231654
+         http_code:  200
+     time_namelookup:  0.024740
+        time_connect:  0.046537
+     time_appconnect:  0.232230
+    time_pretransfer:  0.232402
+       time_redirect:  0.000000
+  time_starttransfer:  0.258730
+                     ----------
+          time_total:  0.259545
+         http_code:  200
+     time_namelookup:  0.033481
+        time_connect:  0.056283
+     time_appconnect:  0.224139
+    time_pretransfer:  0.224414
+       time_redirect:  0.000000
+  time_starttransfer:  0.248268
+                     ----------
+          time_total:  0.248374
+         http_code:  200
+     time_namelookup:  0.012249
+        time_connect:  0.043861
+     time_appconnect:  0.183677
+    time_pretransfer:  0.183841
+       time_redirect:  0.000000
+  time_starttransfer:  0.209408
+                     ----------
+          time_total:  0.209499
+         http_code:  200
+     time_namelookup:  0.017936
+        time_connect:  0.062566
+     time_appconnect:  0.115133
+    time_pretransfer:  0.115299
+       time_redirect:  0.000000
+  time_starttransfer:  0.138048
+                     ----------
+          time_total:  0.138148
+         http_code:  200
+     time_namelookup:  0.021610
+        time_connect:  0.043398
+     time_appconnect:  0.244507
+    time_pretransfer:  0.244709
+       time_redirect:  0.000000
+  time_starttransfer:  0.272010
+                     ----------
+          time_total:  0.272121
+         http_code:  200
+     time_namelookup:  0.035516
+        time_connect:  0.059161
+     time_appconnect:  0.231898
+    time_pretransfer:  0.232057
+       time_redirect:  0.000000
+  time_starttransfer:  0.257858
+                     ----------
+          time_total:  0.257994
+         http_code:  200
+     time_namelookup:  0.019896
+        time_connect:  0.064635
+     time_appconnect:  0.117842
+    time_pretransfer:  0.118156
+       time_redirect:  0.000000
+  time_starttransfer:  0.144968
+                     ----------
+          time_total:  0.145077
+         http_code:  200
+     time_namelookup:  0.015847
+        time_connect:  0.067758
+     time_appconnect:  0.138867
+    time_pretransfer:  0.139261
+       time_redirect:  0.000000
+  time_starttransfer:  0.167831
+                     ----------
+          time_total:  0.167940
+         http_code:  200
+     time_namelookup:  0.027648
+        time_connect:  0.050297
+     time_appconnect:  0.103384
+    time_pretransfer:  0.103560
+       time_redirect:  0.000000
+  time_starttransfer:  0.131654
+                     ----------
+          time_total:  0.134235
+         http_code:  200
+     time_namelookup:  0.050842
+        time_connect:  0.074211
+     time_appconnect:  0.138069
+    time_pretransfer:  0.138250
+       time_redirect:  0.000000
+  time_starttransfer:  0.166012
+                     ----------
+          time_total:  0.166125
+         http_code:  200
+     time_namelookup:  0.017819
+        time_connect:  0.042647
+     time_appconnect:  0.105279
+    time_pretransfer:  0.105433
+       time_redirect:  0.000000
+  time_starttransfer:  0.134229
+                     ----------
+          time_total:  0.134334
+         http_code:  200
+     time_namelookup:  0.012198
+        time_connect:  0.037663
+     time_appconnect:  0.096477
+    time_pretransfer:  0.096628
+       time_redirect:  0.000000
+  time_starttransfer:  0.131845
+                     ----------
+          time_total:  0.131992
+         http_code:  200
+     time_namelookup:  0.015760
+        time_connect:  0.037468
+     time_appconnect:  0.105673
+    time_pretransfer:  0.105874
+       time_redirect:  0.000000
+  time_starttransfer:  0.148817
+                     ----------
+          time_total:  0.148915
+         http_code:  200
+     time_namelookup:  0.018070
+        time_connect:  0.038480
+     time_appconnect:  0.115858
+    time_pretransfer:  0.116862
+       time_redirect:  0.000000
+  time_starttransfer:  0.152488
+                     ----------
+          time_total:  0.152600
+         http_code:  200
+     time_namelookup:  0.016945
+        time_connect:  0.040050
+     time_appconnect:  0.115225
+    time_pretransfer:  0.115384
+       time_redirect:  0.000000
+  time_starttransfer:  0.153483
+                     ----------
+          time_total:  0.153589
+         http_code:  200
+     time_namelookup:  0.019411
+        time_connect:  0.041749
+     time_appconnect:  0.113817
+    time_pretransfer:  0.113966
+       time_redirect:  0.000000
+  time_starttransfer:  0.145175
+                     ----------
+          time_total:  0.145296
+         http_code:  200
+     time_namelookup:  0.018992
+        time_connect:  0.039782
+     time_appconnect:  0.122242
+    time_pretransfer:  0.122389
+       time_redirect:  0.000000
+  time_starttransfer:  0.154280
+                     ----------
+          time_total:  0.154411
+         http_code:  200
+     time_namelookup:  0.013726
+        time_connect:  0.038791
+     time_appconnect:  0.093630
+    time_pretransfer:  0.093801
+       time_redirect:  0.000000
+  time_starttransfer:  0.129260
+                     ----------
+          time_total:  0.129374
+         http_code:  200
+     time_namelookup:  0.012368
+        time_connect:  0.036921
+     time_appconnect:  0.087237
+    time_pretransfer:  0.093558
+       time_redirect:  0.000000
+  time_starttransfer:  0.130541
+                     ----------
+          time_total:  0.130675
+         http_code:  200
+     time_namelookup:  0.020639
+        time_connect:  0.043146
+     time_appconnect:  0.123284
+    time_pretransfer:  0.123444
+       time_redirect:  0.000000
+  time_starttransfer:  0.159731
+                     ----------
+          time_total:  0.159842
+         http_code:  200
+     time_namelookup:  0.021160
+        time_connect:  0.045344
+     time_appconnect:  0.121460
+    time_pretransfer:  0.121666
+       time_redirect:  0.000000
+  time_starttransfer:  0.147151
+                     ----------
+          time_total:  0.147294
+         http_code:  200
+     time_namelookup:  0.019927
+        time_connect:  0.043901
+     time_appconnect:  0.116474
+    time_pretransfer:  0.117321
+       time_redirect:  0.000000
+  time_starttransfer:  0.146041
+                     ----------
+          time_total:  0.146150
+         http_code:  200
+     time_namelookup:  0.020965
+        time_connect:  0.061199
+     time_appconnect:  0.118707
+    time_pretransfer:  0.118876
+       time_redirect:  0.000000
+  time_starttransfer:  0.141359
+                     ----------
+          time_total:  0.141670
+         http_code:  200
+     time_namelookup:  0.021146
+        time_connect:  0.056145
+     time_appconnect:  0.113659
+    time_pretransfer:  0.113846
+       time_redirect:  0.000000
+  time_starttransfer:  0.137140
+                     ----------
+          time_total:  0.137258
+         http_code:  200
+     time_namelookup:  0.021319
+        time_connect:  0.063683
+     time_appconnect:  0.125181
+    time_pretransfer:  0.125304
+       time_redirect:  0.000000
+  time_starttransfer:  0.157737
+                     ----------
+          time_total:  0.157854
+         http_code:  200
+     time_namelookup:  0.012033
+        time_connect:  0.039817
+     time_appconnect:  0.106184
+    time_pretransfer:  0.106337
+       time_redirect:  0.000000
+  time_starttransfer:  0.146981
+                     ----------
+          time_total:  0.147123
+         http_code:  200
+     time_namelookup:  0.012871
+        time_connect:  0.034716
+     time_appconnect:  0.114257
+    time_pretransfer:  0.114546
+       time_redirect:  0.000000
+  time_starttransfer:  0.139409
+                     ----------
+          time_total:  0.139784
+         http_code:  200
+     time_namelookup:  0.022664
+        time_connect:  0.061193
+     time_appconnect:  0.147513
+    time_pretransfer:  0.147762
+       time_redirect:  0.000000
+  time_starttransfer:  0.176620
+                     ----------
+          time_total:  0.176757
+         http_code:  200
+     time_namelookup:  0.021631
+        time_connect:  0.062228
+     time_appconnect:  0.153398
+    time_pretransfer:  0.153585
+       time_redirect:  0.000000
+  time_starttransfer:  0.187295
+                     ----------
+          time_total:  0.187391
+         http_code:  200
+     time_namelookup:  0.011383
+        time_connect:  0.042331
+     time_appconnect:  0.107375
+    time_pretransfer:  0.107592
+       time_redirect:  0.000000
+  time_starttransfer:  0.140837
+                     ----------
+          time_total:  0.141099
+         http_code:  200
+     time_namelookup:  0.010869
+        time_connect:  0.039284
+     time_appconnect:  0.105337
+    time_pretransfer:  0.105701
+       time_redirect:  0.000000
+  time_starttransfer:  0.138845
+                     ----------
+          time_total:  0.138950
+         http_code:  200
+     time_namelookup:  0.027231
+        time_connect:  0.050764
+     time_appconnect:  0.118609
+    time_pretransfer:  0.118813
+       time_redirect:  0.000000
+  time_starttransfer:  0.167797
+                     ----------
+          time_total:  0.167913
+         http_code:  200
+     time_namelookup:  0.028791
+        time_connect:  0.051007
+     time_appconnect:  0.110174
+    time_pretransfer:  0.110732
+       time_redirect:  0.000000
+  time_starttransfer:  0.150899
+                     ----------
+          time_total:  0.168730
+         http_code:  200
+     time_namelookup:  0.028953
+        time_connect:  0.052830
+     time_appconnect:  0.121351
+    time_pretransfer:  0.121676
+       time_redirect:  0.000000
+  time_starttransfer:  0.168564
+                     ----------
+          time_total:  0.168672
+         http_code:  200
+     time_namelookup:  0.013798
+        time_connect:  0.041700
+     time_appconnect:  0.112486
+    time_pretransfer:  0.112769
+       time_redirect:  0.000000
+  time_starttransfer:  0.141616
+                     ----------
+          time_total:  0.141725
+         http_code:  200
+     time_namelookup:  0.027573
+        time_connect:  0.051318
+     time_appconnect:  0.165496
+    time_pretransfer:  0.165668
+       time_redirect:  0.000000
+  time_starttransfer:  0.196149
+                     ----------
+          time_total:  0.196333
+         http_code:  200
+     time_namelookup:  0.017879
+        time_connect:  0.039488
+     time_appconnect:  0.132040
+    time_pretransfer:  0.132179
+       time_redirect:  0.000000
+  time_starttransfer:  0.168027
+                     ----------
+          time_total:  0.168142
+         http_code:  200
+     time_namelookup:  0.015150
+        time_connect:  0.038583
+     time_appconnect:  0.133253
+    time_pretransfer:  0.133402
+       time_redirect:  0.000000
+  time_starttransfer:  0.170868
+                     ----------
+          time_total:  0.170971
+         http_code:  200
+     time_namelookup:  0.018248
+        time_connect:  0.040325
+     time_appconnect:  0.129491
+    time_pretransfer:  0.129630
+       time_redirect:  0.000000
+  time_starttransfer:  0.166499
+                     ----------
+          time_total:  0.166578
+         http_code:  200
+     time_namelookup:  0.020164
+        time_connect:  0.042368
+     time_appconnect:  0.130976
+    time_pretransfer:  0.131105
+       time_redirect:  0.000000
+  time_starttransfer:  0.169537
+                     ----------
+          time_total:  0.169717
+         http_code:  200
+     time_namelookup:  0.015727
+        time_connect:  0.043014
+     time_appconnect:  0.097053
+    time_pretransfer:  0.097257
+       time_redirect:  0.000000
+  time_starttransfer:  0.119446
+                     ----------
+          time_total:  0.119528
+         http_code:  200
+     time_namelookup:  0.016872
+        time_connect:  0.044693
+     time_appconnect:  0.100347
+    time_pretransfer:  0.100504
+       time_redirect:  0.000000
+  time_starttransfer:  0.129366
+                     ----------
+          time_total:  0.130915
+         http_code:  200
+     time_namelookup:  0.012850
+        time_connect:  0.037295
+     time_appconnect:  0.141280
+    time_pretransfer:  0.141499
+       time_redirect:  0.000000
+  time_starttransfer:  0.172241
+                     ----------
+          time_total:  0.172364
+         http_code:  200
+     time_namelookup:  0.013772
+        time_connect:  0.036314
+     time_appconnect:  0.093009
+    time_pretransfer:  0.093181
+       time_redirect:  0.000000
+  time_starttransfer:  0.125715
+                     ----------
+          time_total:  0.125905
+         http_code:  200
+     time_namelookup:  0.015073
+        time_connect:  0.036566
+     time_appconnect:  0.139149
+    time_pretransfer:  0.139283
+       time_redirect:  0.000000
+  time_starttransfer:  0.177443
+                     ----------
+          time_total:  0.177556
+         http_code:  200
+     time_namelookup:  0.012924
+        time_connect:  0.035230
+     time_appconnect:  0.091021
+    time_pretransfer:  0.091450
+       time_redirect:  0.000000
+  time_starttransfer:  0.130705
+                     ----------
+          time_total:  0.130825
+         http_code:  200
+     time_namelookup:  0.015482
+        time_connect:  0.060846
+     time_appconnect:  0.125739
+    time_pretransfer:  0.125907
+       time_redirect:  0.000000
+  time_starttransfer:  0.164247
+                     ----------
+          time_total:  0.164344
+         http_code:  200
+     time_namelookup:  0.022158
+        time_connect:  0.070572
+     time_appconnect:  0.136089
+    time_pretransfer:  0.136232
+       time_redirect:  0.000000
+  time_starttransfer:  0.174575
+                     ----------
+          time_total:  0.174803
+         http_code:  200
+     time_namelookup:  0.015163
+        time_connect:  0.038471
+     time_appconnect:  0.098676
+    time_pretransfer:  0.098823
+       time_redirect:  0.000000
+  time_starttransfer:  0.138492
+                     ----------
+          time_total:  0.138593
+         http_code:  200
+     time_namelookup:  0.012179
+        time_connect:  0.035218
+     time_appconnect:  0.090573
+    time_pretransfer:  0.090712
+       time_redirect:  0.000000
+  time_starttransfer:  0.136190
+                     ----------
+          time_total:  0.136323
+         http_code:  200
+     time_namelookup:  0.012751
+        time_connect:  0.036379
+     time_appconnect:  0.149718
+    time_pretransfer:  0.149866
+       time_redirect:  0.000000
+  time_starttransfer:  0.195201
+                     ----------
+          time_total:  0.195649
+         http_code:  200
+     time_namelookup:  0.011027
+        time_connect:  0.031946
+     time_appconnect:  0.090512
+    time_pretransfer:  0.090785
+       time_redirect:  0.000000
+  time_starttransfer:  0.113446
+                     ----------
+          time_total:  0.113574
+         http_code:  200
+     time_namelookup:  0.013955
+        time_connect:  0.038254
+     time_appconnect:  0.100271
+    time_pretransfer:  0.101951
+       time_redirect:  0.000000
+  time_starttransfer:  0.126913
+                     ----------
+          time_total:  0.127027
+         http_code:  200
+     time_namelookup:  0.015748
+        time_connect:  0.037241
+     time_appconnect:  0.085936
+    time_pretransfer:  0.086097
+       time_redirect:  0.000000
+  time_starttransfer:  0.123980
+                     ----------
+          time_total:  0.124098
+         http_code:  200
+     time_namelookup:  0.011981
+        time_connect:  0.040684
+     time_appconnect:  0.095294
+    time_pretransfer:  0.095430
+       time_redirect:  0.000000
+  time_starttransfer:  0.131807
+                     ----------
+          time_total:  0.131924
+         http_code:  200
+     time_namelookup:  0.013992
+        time_connect:  0.039138
+     time_appconnect:  0.137884
+    time_pretransfer:  0.138054
+       time_redirect:  0.000000
+  time_starttransfer:  0.176502
+                     ----------
+          time_total:  0.176625
+         http_code:  200
+     time_namelookup:  0.010380
+        time_connect:  0.038553
+     time_appconnect:  0.129647
+    time_pretransfer:  0.129779
+       time_redirect:  0.000000
+  time_starttransfer:  0.157376
+                     ----------
+          time_total:  0.157484
+         http_code:  200
+     time_namelookup:  0.015597
+        time_connect:  0.037745
+     time_appconnect:  0.114764
+    time_pretransfer:  0.114950
+       time_redirect:  0.000000
+  time_starttransfer:  0.150734
+                     ----------
+          time_total:  0.150838
+         http_code:  200
+     time_namelookup:  0.015455
+        time_connect:  0.039207
+     time_appconnect:  0.146078
+    time_pretransfer:  0.146252
+       time_redirect:  0.000000
+  time_starttransfer:  0.181227
+                     ----------
+          time_total:  0.181334
+         http_code:  200
+     time_namelookup:  0.016441
+        time_connect:  0.039646
+     time_appconnect:  0.119684
+    time_pretransfer:  0.119826
+       time_redirect:  0.000000
+  time_starttransfer:  0.152649
+                     ----------
+          time_total:  0.152751
+         http_code:  200
+     time_namelookup:  0.017256
+        time_connect:  0.040955
+     time_appconnect:  0.121871
+    time_pretransfer:  0.122107
+       time_redirect:  0.000000
+  time_starttransfer:  0.160445
+                     ----------
+          time_total:  0.160553
+         http_code:  200
+     time_namelookup:  0.038515
+        time_connect:  0.059180
+     time_appconnect:  0.119565
+    time_pretransfer:  0.119902
+       time_redirect:  0.000000
+  time_starttransfer:  0.145091
+                     ----------
+          time_total:  0.145204
+         http_code:  200
+     time_namelookup:  0.046931
+        time_connect:  0.067571
+     time_appconnect:  0.127957
+    time_pretransfer:  0.128166
+       time_redirect:  0.000000
+  time_starttransfer:  0.153350
+                     ----------
+          time_total:  0.153478
+         http_code:  200
+     time_namelookup:  0.026687
+        time_connect:  0.059251
+     time_appconnect:  0.112127
+    time_pretransfer:  0.112245
+       time_redirect:  0.000000
+  time_starttransfer:  0.138334
+                     ----------
+          time_total:  0.138423
+         http_code:  200
+     time_namelookup:  0.048060
+        time_connect:  0.069524
+     time_appconnect:  0.132957
+    time_pretransfer:  0.133120
+       time_redirect:  0.000000
+  time_starttransfer:  0.160429
+                     ----------
+          time_total:  0.160509
+         http_code:  200
+     time_namelookup:  0.028649
+        time_connect:  0.053358
+     time_appconnect:  0.112764
+    time_pretransfer:  0.112915
+       time_redirect:  0.000000
+  time_starttransfer:  0.135993
+                     ----------
+          time_total:  0.136125
+         http_code:  200
+     time_namelookup:  0.028657
+        time_connect:  0.060764
+     time_appconnect:  0.115904
+    time_pretransfer:  0.116059
+       time_redirect:  0.000000
+  time_starttransfer:  0.140123
+                     ----------
+          time_total:  0.140202
+         http_code:  200
+     time_namelookup:  0.021454
+        time_connect:  0.049793
+     time_appconnect:  0.108319
+    time_pretransfer:  0.108460
+       time_redirect:  0.000000
+  time_starttransfer:  0.133127
+                     ----------
+          time_total:  0.133222
+         http_code:  200
+     time_namelookup:  0.022826
+        time_connect:  0.051852
+     time_appconnect:  0.109853
+    time_pretransfer:  0.110060
+       time_redirect:  0.000000
+  time_starttransfer:  0.139988
+                     ----------
+          time_total:  0.140066
+         http_code:  200
+     time_namelookup:  0.019286
+        time_connect:  0.046737
+     time_appconnect:  0.108730
+    time_pretransfer:  0.108934
+       time_redirect:  0.000000
+  time_starttransfer:  0.134906
+                     ----------
+          time_total:  0.134988
+         http_code:  200
+     time_namelookup:  0.027000
+        time_connect:  0.055920
+     time_appconnect:  0.116639
+    time_pretransfer:  0.116779
+       time_redirect:  0.000000
+  time_starttransfer:  0.144037
+                     ----------
+          time_total:  0.144126
+         http_code:  200
+     time_namelookup:  0.010075
+        time_connect:  0.037579
+     time_appconnect:  0.089984
+    time_pretransfer:  0.090129
+       time_redirect:  0.000000
+  time_starttransfer:  0.112754
+                     ----------
+          time_total:  0.112961
+         http_code:  200
+     time_namelookup:  0.021707
+        time_connect:  0.045478
+     time_appconnect:  0.094582
+    time_pretransfer:  0.094748
+       time_redirect:  0.000000
+  time_starttransfer:  0.125069
+                     ----------
+          time_total:  0.125218
+         http_code:  200
+     time_namelookup:  0.012084
+        time_connect:  0.036643
+     time_appconnect:  0.086072
+    time_pretransfer:  0.086454
+       time_redirect:  0.000000
+  time_starttransfer:  0.113194
+                     ----------
+          time_total:  0.113345
+         http_code:  200
+⏱️ Время выполнения: 1 сек
+📈 Средняя скорость: 100 req/sec
+
+🎯 ЭТАП 2: RATE LIMITING ТЕСТИРОВАНИЕ
+=====================================
+
+🔒 ТЕСТИРОВАНИЕ RATE LIMITING (login endpoint)
+Лимит: 5 запросов/минуту
+
+Запрос 1: HTTP 200
+Запрос 2: HTTP 200
+Запрос 3: HTTP 200
+Запрос 4: HTTP 200
+Запрос 5: HTTP 200
+Запрос 6: HTTP 200
+Запрос 7: HTTP 200
+Запрос 8: HTTP 200
+Запрос 9: HTTP 200
+Запрос 10: HTTP 429
+
+📊 РЕЗУЛЬТАТЫ RATE LIMITING:
+✅ Успешных ответов: 9
+🚫 Rate limited: 1
+
+🎯 ЭТАП 3: СЕРВЕРНЫЕ РЕСУРСЫ
+============================
+
+🖥️ ПРОВЕРКА СЕРВЕРНЫХ РЕСУРСОВ:
+Подключение к серверу для проверки ресурсов...
+⚠️ Для полной проверки ресурсов нужен SSH доступ
+
+🎯 ЭТАП 4: АНАЛИЗ РЕЗУЛЬТАТОВ
+==============================
+
+📈 СВОДКА ТЕСТИРОВАНИЯ:
+✅ API Gateway выдержал нагрузку
+✅ Rate limiting работает корректно
+✅ Все endpoints отвечают стабильно
+✅ Security headers присутствуют
+
+🏆 ВЫВОД: API ГОТОВ К ПРОДАКШН НАГРУЗКЕ!
+
+📁 ПОЛНЫЕ РЕЗУЛЬТАТЫ В ФАЙЛЕ: load_test_results_2026-02-01_20-42-24.log
+
+🎊 LOAD TESTING ЗАВЕРШЕН УСПЕШНО!

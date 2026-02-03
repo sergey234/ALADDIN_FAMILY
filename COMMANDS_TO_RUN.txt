@@ -1,0 +1,46 @@
+==========================================
+🚀 КОМАНДЫ ДЛЯ РАЗВЕРТЫВАНИЯ ALADDIN
+==========================================
+
+Выполните эти команды по порядку в вашем терминале:
+
+1. ПЕРЕЙТИ В ДИРЕКТОРИЮ ПРОЕКТА:
+cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+
+2. ЗАГРУЗИТЬ ФАЙЛЫ НА СЕРВЕР:
+scp api_gateway_complete.py root@149.154.65.180:/opt/aladdin-backend/
+scp sfm_adapter.py root@149.154.65.180:/opt/aladdin-backend/
+
+3. ПОДКЛЮЧИТЬСЯ К СЕРВЕРУ:
+ssh root@149.154.65.180
+
+4. НА СЕРВЕРЕ ВЫПОЛНИТЬ:
+cd /opt/aladdin-backend
+cp api_gateway.py api_gateway_backup_$(date +%Y%m%d_%H%M%S).py
+python3 -m py_compile api_gateway_complete.py
+cp api_gateway_complete.py api_gateway.py
+systemctl restart aladdin-api-gateway || systemctl restart aladdin-main-api-gateway
+sleep 10
+curl http://127.0.0.1:8002/api/health | python3 -m json.tool
+
+5. ПРОВЕРКА ИЗВНЕ:
+curl http://149.154.65.180/api/health
+curl https://aladdin-ai.ru/api/health
+
+==========================================
+АЛЬТЕРНАТИВА: Использовать готовые скрипты
+==========================================
+
+Если у вас установлен expect, выполните:
+chmod +x deploy_api_gateway_final.exp
+./deploy_api_gateway_final.exp
+
+Или bash скрипт:
+chmod +x deploy_now.sh
+./deploy_now.sh
+
+Или Python скрипт:
+python3 deploy_python.py
+
+
+

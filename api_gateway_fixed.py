@@ -23,17 +23,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 from fastapi.responses import JSONResponse
-# Import SFM mapping for production
-try:
-    from complete_api_sfm_mapping import get_sfm_function_name, API_TO_SFM_MAPPING
-    SFM_MAPPING_AVAILABLE = True
-    print(f"SFM mapping loaded: {len(API_TO_SFM_MAPPING)} functions")
-except ImportError as e:
-    SFM_MAPPING_AVAILABLE = False
-    print(f"SFM mapping not available: {e}")
-    API_TO_SFM_MAPPING = {}
-    def get_sfm_function_name(name):
-        return name
 from fastapi import HTTPException
 import time
 from datetime import datetime
@@ -59,7 +48,20 @@ if backend_path not in sys.path:
 
 try:
     from sfm_adapter import sfm_adapter
-    SFM_ADAPTER_AVAILABLE = True
+    
+# Import SFM mapping for production
+try:
+    from complete_api_sfm_mapping import get_sfm_function_name, API_TO_SFM_MAPPING
+    SFM_MAPPING_AVAILABLE = True
+    print(f"SFM mapping loaded: {len(API_TO_SFM_MAPPING)} functions")
+except ImportError as e:
+    SFM_MAPPING_AVAILABLE = False
+    print(f"SFM mapping not available: {e}")
+    API_TO_SFM_MAPPING = {}
+    def get_sfm_function_name(name):
+        return name
+
+SFM_ADAPTER_AVAILABLE = True
     print("SFM Adapter loaded successfully")
 except ImportError as e:
     print(f"SFM Adapter not available: {e}")

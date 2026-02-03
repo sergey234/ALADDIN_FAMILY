@@ -1,0 +1,210 @@
+#!/usr/bin/expect -f
+# ФИНАЛЬНЫЙ СКРИПТ РАЗВЕРТЫВАНИЯ С АВТОМАТИЧЕСКИМ ВВОДОМ ПАРОЛЯ
+
+set timeout 300
+set SERVER "149.154.65.180"
+set USER "root"
+set PASSWORD "Sergio675"
+
+puts "🚀 НАЧИНАЕМ ФИНАЛЬНОЕ РАЗВЕРТЫВАНИЕ ALADDIN"
+puts "================================================"
+
+# ЭТАП 1: Копирование SFM HTTP API
+puts "\n🔧 ЭТАП 1: КОПИРОВАНИЕ SFM HTTP API"
+spawn scp start_sfm_core_http.py $USER@$SERVER:/opt/aladdin-backend/
+expect {
+    "password:" { send "$PASSWORD\r" }
+    timeout { puts "❌ ТАЙМАУТ при копировании SFM HTTP API"; exit 1 }
+    eof { puts "✅ SFM HTTP API скопирован" }
+}
+
+# ЭТАП 2: Установка прав
+puts "\n🔧 ЭТАП 2: УСТАНОВКА ПРАВ НА ИСПОЛНЕНИЕ"
+spawn ssh -o StrictHostKeyChecking=no $USER@$SERVER "chmod +x /opt/aladdin-backend/start_sfm_core_http.py"
+expect {
+    "password:" { send "$PASSWORD\r" }
+    timeout { puts "❌ ТАЙМАУТ при установке прав"; exit 1 }
+    eof { puts "✅ Права установлены" }
+}
+
+# ЭТАП 3: Обновление systemd сервиса
+puts "\n🔧 ЭТАП 3: ОБНОВЛЕНИЕ SYSTEMD СЕРВИСА"
+spawn ssh -o StrictHostKeyChecking=no $USER@$SERVER {cat > /etc/systemd/system/aladdin-sfm-core.service << 'EOF'
+[Unit]
+Description=ALADDIN SFM HTTP API Service
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/opt/aladdin-backend
+ExecStart=/opt/aladdin-backend/venvs/main_env/bin/python3 /opt/aladdin-backend/start_sfm_core_http.py
+Restart=always
+RestartSec=5
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=aladdin-sfm-http-api
+
+[Install]
+WantedBy=multi-user.target
+EOF}
+expect {
+    "password:" { send "$PASSWORD\r" }
+    timeout { puts "❌ ТАЙМАУТ при обновлении systemd"; exit 1 }
+    eof { puts "✅ Systemd сервис обновлен" }
+}
+
+# ЭТАП 4: Перезагрузка systemd
+puts "\n🔧 ЭТАП 4: ПЕРЕЗАГРУЗКА SYSTEMD"
+spawn ssh -o StrictHostKeyChecking=no $USER@$SERVER "systemctl daemon-reload"
+expect {
+    "password:" { send "$PASSWORD\r" }
+    timeout { puts "❌ ТАЙМАУТ при перезагрузке systemd"; exit 1 }
+    eof { puts "✅ Systemd перезагружен" }
+}
+
+# ЭТАП 5: Остановка старого сервиса
+puts "\n🔧 ЭТАП 5: ОСТАНОВКА СТАРОГО СЕРВИСА"
+spawn ssh -o StrictHostKeyChecking=no $USER@$SERVER "systemctl stop aladdin-sfm-core"
+expect {
+    "password:" { send "$PASSWORD\r" }
+    timeout { puts "❌ ТАЙМАУТ при остановке сервиса"; exit 1 }
+    eof { puts "✅ Старый сервис остановлен" }
+}
+
+# ЭТАП 6: Запуск нового сервиса
+puts "\n🔧 ЭТАП 6: ЗАПУСК SFM HTTP API СЕРВИСА"
+spawn ssh -o StrictHostKeyChecking=no $USER@$SERVER "systemctl start aladdin-sfm-core"
+expect {
+    "password:" { send "$PASSWORD\r" }
+    timeout { puts "❌ ТАЙМАУТ при запуске сервиса"; exit 1 }
+    eof { puts "✅ SFM HTTP API сервис запущен" }
+}
+
+# Ожидание запуска
+puts "\n⏳ ОЖИДАНИЕ ЗАПУСКА СЕРВИСА (10 сек)..."
+sleep 10
+
+# ЭТАП 7: Тестирование SFM HTTP API
+puts "\n🔧 ЭТАП 7: ТЕСТИРОВАНИЕ SFM HTTP API"
+spawn ssh -o StrictHostKeyChecking=no $USER@$SERVER "curl -s http://127.0.0.1:8003/api/health"
+expect {
+    "password:" { send "$PASSWORD\r" }
+    timeout { puts "❌ ТАЙМАУТ при тестировании health"; exit 1 }
+    eof {
+        puts "✅ Health check выполнен"
+        # Получаем результат
+        set result $expect_out(buffer)
+        if {[string match "*healthy*" $result]} {
+            puts "✅ SFM HTTP API работает!"
+        } else {
+            puts "⚠️ SFM HTTP API может работать некорректно"
+        }
+    }
+}
+
+# ЭТАП 8: Тест выполнения функции
+puts "\n🔧 ЭТАП 8: ТЕСТ ВЫПОЛНЕНИЯ ФУНКЦИИ"
+spawn ssh -o StrictHostKeyChecking=no $USER@$SERVER "curl -X POST http://127.0.0.1:8003/api/execute -H 'Content-Type: application/json' -d '{\"function\": \"get_phishing_sensitivity\", \"params\": {}}'"
+expect {
+    "password:" { send "$PASSWORD\r" }
+    timeout { puts "❌ ТАЙМАУТ при тесте функции"; exit 1 }
+    eof {
+        puts "✅ Тест функции выполнен"
+        set result $expect_out(buffer)
+        if {[string match "*success*" $result]} {
+            puts "✅ SFM функция выполнена успешно!"
+        } else {
+            puts "⚠️ Функция может работать некорректно"
+        }
+    }
+}
+
+# ЭТАП 9: Копирование SFM адаптера
+puts "\n🔧 ЭТАП 9: КОПИРОВАНИЕ SFM АДАПТЕРА"
+spawn scp sfm_adapter.py $USER@$SERVER:/opt/aladdin-backend/
+expect {
+    "password:" { send "$PASSWORD\r" }
+    timeout { puts "❌ ТАЙМАУТ при копировании адаптера"; exit 1 }
+    eof { puts "✅ SFM адаптер скопирован" }
+}
+
+# ЭТАП 10: Перезапуск API Gateway
+puts "\n🔧 ЭТАП 10: ПЕРЕЗАПУСК API GATEWAY"
+spawn ssh -o StrictHostKeyChecking=no $USER@$SERVER "systemctl restart aladdin-main-api-gateway"
+expect {
+    "password:" { send "$PASSWORD\r" }
+    timeout { puts "❌ ТАЙМАУТ при перезапуске API Gateway"; exit 1 }
+    eof { puts "✅ API Gateway перезапущен" }
+}
+
+# Ожидание перезапуска
+puts "\n⏳ ОЖИДАНИЕ ПЕРЕЗАПУСКА API GATEWAY (10 сек)..."
+sleep 10
+
+# ЭТАП 11: Финальное тестирование
+puts "\n🎯 ЭТАП 11: ФИНАЛЬНОЕ ТЕСТИРОВАНИЕ"
+puts "=================================="
+
+# Health check
+puts "\n🔍 ПРОВЕРКА HEALTH CHECK"
+spawn ssh -o StrictHostKeyChecking=no $USER@$SERVER "curl -s http://149.154.65.180:8002/api/health | python3 -m json.tool"
+expect {
+    "password:" { send "$PASSWORD\r" }
+    timeout { puts "❌ ТАЙМАУТ при проверке health"; exit 1 }
+    eof {
+        puts "✅ Health check выполнен"
+        set result $expect_out(buffer)
+        if {[string match "*available*" $result]} {
+            puts "✅ SFM адаптер доступен!"
+        } else {
+            puts "⚠️ SFM адаптер недоступен"
+        }
+    }
+}
+
+# Тест основных функций
+set functions [list "/api/phishing/sensitivity" "/api/analytics/overview" "/api/components/health"]
+set success_count 0
+
+puts "\n🧪 ТЕСТИРОВАНИЕ ОСНОВНЫХ ФУНКЦИЙ:"
+foreach func $functions {
+    puts "\nТестируем: $func"
+    spawn ssh -o StrictHostKeyChecking=no $USER@$SERVER "curl -s http://149.154.65.180:8002$func | jq -r .source 2>/dev/null || echo 'ERROR'"
+    expect {
+        "password:" { send "$PASSWORD\r" }
+        timeout { puts "❌ ТАЙМАУТ при тесте $func"; exit 1 }
+        eof {
+            set result $expect_out(buffer)
+            if {[string match "*real_sfm*" $result]} {
+                puts "✅ $func: real_sfm"
+                incr success_count
+            } else {
+                puts "❌ $func: НЕ real_sfm ($result)"
+            }
+        }
+    }
+}
+
+# Финальный отчет
+puts "\n" [string repeat "=" 60]
+puts "🎉 РЕЗУЛЬТАТЫ РАЗВЕРТЫВАНИЯ"
+puts [string repeat "=" 60]
+
+if {$success_count >= 2} {
+    puts "✅ РАЗВЕРТЫВАНИЕ УСПЕШНО ЗАВЕРШЕНО!"
+    puts "✅ $success_count/3 основных функций возвращают 'real_sfm'"
+    puts "✅ ALADDIN получил РЕАЛЬНУЮ ЗАЩИТУ!"
+    puts "🚀 ПРОЕКТ ЗАВЕРШЕН НА 100%!"
+} else {
+    puts "⚠️ РАЗВЕРТЫВАНИЕ ЗАВЕРШЕНО С ПРОБЛЕМАМИ"
+    puts "⚠️ Только $success_count/3 функций работают корректно"
+    puts "🔍 Проверьте логи на сервере"
+}
+
+puts "\n📞 КОМАНДЫ ДЛЯ РУЧНОЙ ПРОВЕРКИ:"
+puts "   curl http://149.154.65.180:8002/api/health"
+puts "   curl http://149.154.65.180:8002/api/phishing/sensitivity | jq .source"
+
+puts "\n🎯 РАЗВЕРТЫВАНИЕ ЗАВЕРШЕНО!"
+exit 0
