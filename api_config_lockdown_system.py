@@ -147,24 +147,33 @@ class APIConfigLockdown:
             {"method": "POST", "path": "/api/ai/categories/block", "status": "locked"}
         ],
         "components": [
+            {"method": "GET", "path": "/", "status": "locked"},
             {"method": "GET", "path": "/api/components/health", "status": "locked"},
+            {"method": "GET", "path": "/api/components/status/{component_id}", "status": "locked"},
+            {"method": "POST", "path": "/api/components/enable/{component_id}", "status": "locked"},
+            {"method": "POST", "path": "/api/components/disable/{component_id}", "status": "locked"},
+            {"method": "GET", "path": "/api/components/config/{component_id}", "status": "locked"},
+            {"method": "PUT", "path": "/api/components/config/{component_id}", "status": "locked"},
+            {"method": "POST", "path": "/api/components/restart/{component_id}", "status": "locked"},
+            {"method": "GET", "path": "/api/components/logs/{component_id}", "status": "locked"},
+            {"method": "POST", "path": "/api/components/backup/{component_id}", "status": "locked"},
             {"method": "GET", "path": "/api/components/status/sfm_core", "status": "locked"},
             {"method": "GET", "path": "/api/components/config/sfm_core", "status": "locked"},
             {"method": "GET", "path": "/api/components/logs/sfm_core", "status": "locked"},
             {"method": "POST", "path": "/api/components/enable/sfm_core", "status": "locked"},
             {"method": "POST", "path": "/api/components/disable/sfm_core", "status": "locked"},
-            {"method": "POST", "path": "/api/components/restart/sfm_core", "status": "locked"},
-            {"method": "POST", "path": "/api/components/backup/sfm_core", "status": "locked"},
-            {"method": "GET", "path": "/api/components/restore/sfm_core", "status": "locked"},
-            {"method": "PUT", "path": "/api/components/config/sfm_core", "status": "locked"}
+            {"method": "POST", "path": "/api/components/restart/sfm_core", "status": "locked"}
         ],
         "antiphishing": [
             {"method": "GET", "path": "/api/phishing/sensitivity", "status": "locked"},
+            {"method": "PUT", "path": "/api/phishing/sensitivity", "status": "locked"},
             {"method": "GET", "path": "/api/phishing/block_suspicious", "status": "locked"},
+            {"method": "PUT", "path": "/api/phishing/block_suspicious", "status": "locked"},
             {"method": "GET", "path": "/api/phishing/exclusions", "status": "locked"}
         ],
         "antivirus": [
             {"method": "GET", "path": "/api/malware/scan_scheduled", "status": "locked"},
+            {"method": "PUT", "path": "/api/malware/scan_scheduled", "status": "locked"},
             {"method": "GET", "path": "/api/malware/quarantine", "status": "locked"},
             {"method": "POST", "path": "/api/malware/scan_now", "status": "locked"}
         ],
