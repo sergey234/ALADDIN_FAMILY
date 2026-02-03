@@ -12,12 +12,12 @@
 | **Secure Logging** | ❌ НЕТ | - | Encrypted audit logs |
 | **Incident Response** | ✅ 20% | UI компоненты | Automated workflows |
 
-### **Сервер (API Gateway):**
+### **Сервер (API Gateway + Backend):**
 | Компонент | Статус | Что есть | Что нужно добавить |
 |-----------|--------|----------|-------------------|
-| **Crash Reporting** | ❌ НЕТ | - | Интеграция с мобильным |
-| **Performance Monitoring** | ✅ 40% | Prometheus метрики | Firebase Performance |
-| **Certificate Pinning** | ❌ НЕТ | - | SSL pinning на сервере |
+| **Crash Reporting** | ❌ Н/Д | - | Не применяется (клиентский компонент) |
+| **Performance Monitoring** | ✅ 40% | Prometheus метрики | System-wide monitoring |
+| **Certificate Pinning** | ❌ Н/Д | - | Не применяется (клиентский компонент) |
 | **Threat Detection** | ✅ 30% | Malware endpoints | ML-based anomaly detection |
 | **Secure Logging** | ✅ 20% | Базовое логирование | Encrypted audit logs |
 | **Incident Response** | ❌ НЕТ | - | Automated workflows |

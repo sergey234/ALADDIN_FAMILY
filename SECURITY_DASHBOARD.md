@@ -12,21 +12,21 @@
 
 ### **📈 СТАТУС ПО КОМПОНЕНТАМ:**
 
-| Компонент | Прогресс | Статус | Приоритет |
-|-----------|----------|--------|-----------|
-| **Crash Reporting** | 0% (0/6) | ❌ НЕ НАЧАТО | 🔥 КРИТИЧНЫЙ |
-| **Certificate Pinning** | 50% (2/4) | ✅ ЧАСТИЧНО | 🟡 ВЫСОКИЙ |
-| **Secure Logging** | 0% (0/7) | ❌ НЕ НАЧАТО | 🔥 КРИТИЧНЫЙ |
-| **Threat Detection** | 0% (0/6) | ❌ НЕ НАЧАТО | 🔥 КРИТИЧНЫЙ |
-| **Incident Response** | 20% (1/5) | ✅ ЧАСТИЧНО | 🟡 ВЫСОКИЙ |
-| **Performance Monitoring** | 0% (0/5) | ❌ НЕ НАЧАТО | 🟢 СРЕДНИЙ |
+| Компонент | Прогресс | Статус | Приоритет | Где реализуется |
+|-----------|----------|--------|-----------|-----------------|
+| **Crash Reporting** | 0% (0/6) | ❌ НЕ НАЧАТО | 🔥 КРИТИЧНЫЙ | 📱 МОБИЛЬНОЕ |
+| **Certificate Pinning** | 50% (2/4) | ✅ ЧАСТИЧНО | 🟡 ВЫСОКИЙ | 📱 МОБИЛЬНОЕ |
+| **Performance Monitoring** | 0% (0/5) | ❌ НЕ НАЧАТО | 🟢 СРЕДНИЙ | 📱 МОБИЛЬНОЕ |
+| **Secure Logging** | 0% (0/7) | ❌ НЕ НАЧАТО | 🔥 КРИТИЧНЫЙ | 🖥️ СЕРВЕР |
+| **Threat Detection** | 0% (0/6) | ❌ НЕ НАЧАТО | 🔥 КРИТИЧНЫЙ | 🖥️ СЕРВЕР |
+| **Incident Response** | 20% (1/5) | ✅ ЧАСТИЧНО | 🟡 ВЫСОКИЙ | 🖥️ СЕРВЕР |
 
 ---
 
 ## 🔥 **КРИТИЧЕСКИЕ ЗАДАЧИ (БЛОКЕРЫ ПРОДАКШНА)**
 
-### **🚨 Crash Reporting - Firebase Crashlytics (0/6)**
-**Дедлайн: День 2** | **Причина критичности: Без этого нельзя выпускать в продакшен**
+### **📱 Crash Reporting - Firebase Crashlytics (0/6)**
+**Дедлайн: День 2** | **Где: МОБИЛЬНОЕ ПРИЛОЖЕНИЕ** | **Причина критичности: Без этого нельзя выпускать в продакшен**
 
 - [ ] **Создание Firebase проекта для ALADDIN**
 - [ ] **Добавление iOS приложения (Bundle ID: com.aladdin.ios)**
@@ -35,19 +35,19 @@
 - [ ] **Добавление логирования ошибок в NetworkError**
 - [ ] **Тестирование crash collection в Firebase Console**
 
-### **🚨 Secure Logging - Encrypted audit logs (0/7)**
-**Дедлайн: День 12** | **Причина критичности: GDPR/HIPAA compliance**
+### **🖥️ Secure Logging - Encrypted audit logs (0/7)**
+**Дедлайн: День 12** | **Где: СЕРВЕР** | **Причина критичности: GDPR/HIPAA compliance**
 
 - [ ] **Создание SecureLogger класса на сервере (Fernet шифрование)**
 - [ ] **Реализация generate_integrity_hash() на сервере**
 - [ ] **Интеграция в API Gateway middleware**
-- [ ] **Создание EncryptedLogger класса для iOS (AES-GCM)**
-- [ ] **Интеграция с KeychainManager на iOS**
-- [ ] **Добавление логирования security событий**
-- [ ] **Настройка синхронизации логов между сервером и мобильным**
+- [ ] **Добавление логирования auth событий (login/logout/refresh)**
+- [ ] **Добавление логирования security инцидентов (rate limit, anomalies)**
+- [ ] **Добавление логирования SFM операций с integrity checks**
+- [ ] **Настройка ротации encrypted логов с backup**
 
-### **🚨 Advanced Threat Detection - ML-based anomaly detection (0/6)**
-**Дедлайн: День 25** | **Причина критичности: Защита от кибератак**
+### **🖥️ Advanced Threat Detection - ML-based anomaly detection (0/6)**
+**Дедлайн: День 25** | **Где: СЕРВЕР** | **Причина критичности: Защита от кибератак**
 
 - [ ] **Сбор тренировочных данных (30 дней логов API)**
 - [ ] **Создание feature extraction для HTTP запросов**
@@ -60,20 +60,20 @@
 
 ## 🛡️ **ВАЖНЫЕ ЗАДАЧИ (ENTERPRISE УРОВЕНЬ)**
 
-### **🟡 Certificate Pinning - Production сертификаты (2/4)**
-**Дедлайн: День 7** | **Текущий статус: 50% готово**
+### **📱 Certificate Pinning - Production сертификаты (2/4)**
+**Дедлайн: День 7** | **Где: МОБИЛЬНОЕ ПРИЛОЖЕНИЕ** | **Текущий статус: 50% готово**
 
 - [x] **Код SSL pinning реализован в NetworkManager** *(ГОТОВО)*
 - [x] **Поддержка fallback механизма** *(ГОТОВО)*
 - [ ] **Экспорт production SSL сертификатов сервера**
 - [ ] **Добавление .cer файлов в Xcode проект**
 
-### **🟡 Incident Response - Automated workflows (1/5)**
-**Дедлайн: День 14** | **Текущий статус: 20% готово**
+### **🖥️ Incident Response - Automated workflows (1/5)**
+**Дедлайн: День 14** | **Где: СЕРВЕР** | **Текущий статус: 20% готово**
 
-- [x] **UI компоненты для incident response** *(ГОТОВО)*
+- [x] **UI компоненты для incident response в мобильном** *(ГОТОВО)*
 - [ ] **Создание IncidentResponseManager на сервере**
-- [ ] **Реализация automated IP blocking**
+- [ ] **Реализация automated IP blocking на сервере**
 - [ ] **Настройка email alerts для security team**
 - [ ] **Интеграция с ML threat detection**
 
@@ -81,8 +81,8 @@
 
 ## 📊 **МОНИТОРИНГ (КАЧЕСТВО ОБСЛУЖИВАНИЯ)**
 
-### **🟢 Performance Monitoring - Firebase Performance (0/5)**
-**Дедлайн: День 21** | **Причина: UX и производительность**
+### **📱 Performance Monitoring - Firebase Performance (0/5)**
+**Дедлайн: День 21** | **Где: МОБИЛЬНОЕ ПРИЛОЖЕНИЕ** | **Причина: UX и производительность**
 
 - [ ] **Добавление Firebase Performance SDK**
 - [ ] **Создание custom traces для SFM операций**

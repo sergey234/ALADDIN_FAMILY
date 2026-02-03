@@ -30,12 +30,14 @@ struct SettingsScreen: View {
     }
     
     // MARK: - State
-    
+
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager // ✅ Добавляем LocalizationManager
-    @ObservedObject private var notificationManager = NotificationManager.shared
-    @ObservedObject private var securityManager = SecurityManager.shared
+
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @StateObject для избежания крашей на устройстве
+    @StateObject private var notificationManager = NotificationManager.shared
+    @StateObject private var securityManager = SecurityManager.shared
     @State private var isNetworkProtectionEnabled: Bool = true
     @AppStorage("profile_name") private var storedName: String = ""
     @AppStorage("profile_alias") private var storedAlias: String = ""
@@ -50,10 +52,11 @@ struct SettingsScreen: View {
     @State private var selectedTheme: ThemeMode = .system
     @State private var showProtectionExplanation: Bool = false
     @State private var showAdvancedProtection: Bool = false
-    @ObservedObject private var featuresManager = ProtectionFeaturesManager.shared
-    @ObservedObject private var toastManager = ToastManager.shared
-    @ObservedObject private var historyManager = ProtectionLevelHistoryManager.shared
-    @ObservedObject private var tariffManager = TariffManager.shared
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @StateObject для избежания крашей на устройстве
+    @StateObject private var featuresManager = ProtectionFeaturesManager.shared
+    @StateObject private var toastManager = ToastManager.shared
+    @StateObject private var historyManager = ProtectionLevelHistoryManager.shared
+    @StateObject private var tariffManager = TariffManager.shared
     @State private var showProtectionHistory: Bool = false
     
     // Navigation для менеджеров

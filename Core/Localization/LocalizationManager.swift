@@ -58,17 +58,55 @@ class LocalizationManager: ObservableObject {
         if let savedLanguage = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage),
            let language = Language(rawValue: savedLanguage) {
             currentLanguage = language
-        } else if let systemLanguage = Locale.current.languageCode,
-                  let language = Language(rawValue: systemLanguage) {
-            // Если сохранённого нет, используем системный
-            currentLanguage = language
+#if DEBUG
+            print("🌍 LocalizationManager: Используем сохранённый язык: \(language.displayName)")
+#endif
         } else {
-            // По умолчанию русский
-            currentLanguage = .russian
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Расширенная логика определения языка для России
+            let systemLanguage = Locale.current.languageCode
+            let regionCode = Locale.current.regionCode
+            let preferredLanguages = Locale.preferredLanguages
+
+#if DEBUG
+            print("🌍 LocalizationManager: Определение языка...")
+            print("   - systemLanguage: \(systemLanguage ?? "nil")")
+            print("   - regionCode: \(regionCode ?? "nil")")
+            print("   - preferredLanguages: \(preferredLanguages)")
+#endif
+
+            // Специальная логика для России - если регион RU, то всегда русский
+            if regionCode == "RU" {
+                currentLanguage = .russian
+#if DEBUG
+                print("   ✅ Регион RU - устанавливаем русский язык")
+#endif
+            } else if let systemLang = systemLanguage,
+                      let language = Language(rawValue: systemLang) {
+                // Если сохранённого нет, используем системный
+                currentLanguage = language
+#if DEBUG
+                print("   ✅ Используем системный язык: \(language.displayName)")
+#endif
+            } else if let firstPreferred = preferredLanguages.first,
+                      let preferredLangCode = Locale(identifier: firstPreferred).languageCode,
+                      let language = Language(rawValue: preferredLangCode) {
+                // Проверяем preferred languages
+                currentLanguage = language
+#if DEBUG
+                print("   ✅ Используем preferred language: \(language.displayName)")
+#endif
+            } else {
+                // По умолчанию русский
+                currentLanguage = .russian
+#if DEBUG
+                print("   ⚠️ Язык не определён - используем русский по умолчанию")
+#endif
+            }
         }
-        
+
 #if DEBUG
         LocalizationDiagnostics.runInitialChecks(with: self)
+        print("🌍 LocalizationManager: Финальный язык: \(currentLanguage.displayName)")
 #endif
     }
     
