@@ -195,6 +195,111 @@
 "support.guides" = "GUIDES AND TUTORIALS";
 
 /* ═══════════════════════════════════════════════════════════════
+ * SETTINGS FOOTER CARDS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"help_support" = "Help & Support";
+"help_support_subtitle" = "We're always here to help";
+"privacy_policy_subtitle" = "Read our privacy policy";
+"terms_of_service_subtitle" = "Read terms of service";
+"share_app" = "Share App";
+"share_app_subtitle" = "Tell friends about ALADDIN AI";
+
+/* ═══════════════════════════════════════════════════════════════
+ * DEVICE DETAIL SCREEN
+ * ═══════════════════════════════════════════════════════════════ */
+
+"device_detail_tab_info" = "Info";
+"device_detail_tab_stats" = "Statistics";
+"device_detail_tab_threats" = "Threats";
+"device_detail_tab_settings" = "Settings";
+"device_detail_device_type" = "Device type: %@";
+"device_detail_status" = "Status: %@";
+"device_detail_last_activity" = "Last activity: %@";
+"device_detail_block_device" = "Block Device";
+"device_detail_remove_device" = "Remove Device";
+"device_detail_block_device_hint" = "Double tap to block this device";
+"device_detail_remove_device_hint" = "Double tap to remove this device";
+"device_detail_nav_accessibility" = "Device details navigation";
+"device_detail_stats_threats_blocked" = "Threats Blocked";
+"device_detail_stats_traffic_downloaded" = "Downloaded";
+"device_detail_stats_traffic_uploaded" = "Uploaded";
+"device_detail_stats_usage_time" = "Usage Time";
+"device_detail_stats_protection_level" = "Protection Level";
+"device_detail_settings_protection" = "Device Protection";
+"device_detail_settings_scanning" = "Automatic Scanning";
+"device_detail_settings_notifications" = "Notifications";
+"device_detail_status_protected" = "Protected";
+"device_detail_status_warning" = "Warning";
+"device_detail_status_danger" = "Danger";
+"device_detail_status_inactive" = "Inactive";
+"device_detail_info_owner" = "Owner";
+"device_detail_info_type" = "Type";
+"device_detail_info_model" = "Model";
+"device_detail_info_system" = "System";
+"device_detail_info_ip" = "IP Address";
+"device_detail_info_mac" = "MAC Address";
+"device_detail_tab_accessibility" = "Tab: %@";
+"device_detail_tab_selected_hint" = "%@ tab selected";
+"device_detail_tab_switch_hint" = "Switch to %@ tab";
+"device_detail_tab_selector" = "Tab selector, current: %@";
+"device_detail_accessibility" = "Device details for %@";
+"device_detail_stats_protection_level" = "Protection Level";
+"device_detail_block_confirmation_title" = "Block Device";
+"device_detail_block_confirmation_message" = "Are you sure you want to block %@? Access to the device will be restricted.";
+"device_detail_remove_confirmation_title" = "Remove Device";
+"device_detail_remove_confirmation_message" = "Are you sure you want to remove %@? This action cannot be undone.";
+"device_detail_action_success" = "Action completed successfully";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ADD DEVICE FORM
+ * ═══════════════════════════════════════════════════════════════ */
+
+"devices_add_device" = "Add Device";
+"devices_device_name" = "Device Name";
+"devices_device_name_placeholder" = "Enter device name";
+"devices_device_type" = "Device Type";
+"devices_device_owner" = "Device Owner";
+"devices_add_device_button" = "Add Device";
+"devices_add_device_hint_enabled" = "Double tap to add device";
+"devices_add_device_hint_disabled" = "Fill all fields to add device";
+"devices_success_added" = "Device added successfully";
+"devices_add_form_label" = "Add device form";
+
+/* ═══════════════════════════════════════════════════════════════
+ * DARK WEB MONITORING
+ * ═══════════════════════════════════════════════════════════════ */
+
+"dark_web_error_critical" = "Critical error: %@";
+"dark_web_error_service_unavailable" = "Dark Web monitoring service is temporarily unavailable";
+"dark_web_error_temporary" = "Temporary connection error: %@";
+"dark_web_error_try_later" = "Unable to connect to service. Please try again later.";
+"dark_web_retry_scan" = "Retry Scan";
+
+/* ═══════════════════════════════════════════════════════════════
+ * DRIVING REPORTS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"driving_reports_modal_title" = "Driving Reports";
+"driving_reports_select_user" = "Select User";
+"driving_reports_current_user" = "Me";
+"driving_reports_filter_all" = "All";
+"driving_reports_filter_with_violations" = "With Violations";
+"driving_reports_filter_without_violations" = "Without Violations";
+"driving_reports_filter_period" = "Period";
+"driving_reports_filter_today" = "Today";
+"driving_reports_filter_week" = "Week";
+"driving_reports_filter_month" = "Month";
+"driving_reports_stats_title" = "Statistics";
+"driving_reports_trips_count" = "Trips";
+"driving_reports_safety_score" = "Safety Score";
+"driving_reports_violations" = "Violations";
+"driving_reports_history_title" = "Trip History";
+"driving_reports_empty" = "No driving data available";
+"driving_reports_error_load_failed" = "Failed to load reports: %@";
+"driving_reports_unit_min" = "min";
+
+/* ═══════════════════════════════════════════════════════════════
  * AUTH
  * ═══════════════════════════════════════════════════════════════ */
 

@@ -589,8 +589,8 @@ struct SettingsScreen: View {
             VStack(spacing: Spacing.s) {
                 settingsButton(
                     icon: "questionmark.circle",
-                    title: localizationManager.localized("help_support"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("help_support_subtitle"), // ✅ Локализованный подзаголовок
+                    title: localizationManager.localized("support.title"), // ✅ Локализованный заголовок
+                    subtitle: localizationManager.localized("support.subtitle"), // ✅ Локализованный подзаголовок
                     action: {
                         showSupportScreen = true
                     }
@@ -598,7 +598,7 @@ struct SettingsScreen: View {
                 
                 settingsButton(
                     icon: "doc.text",
-                    title: localizationManager.localized("privacy_policy"), // ✅ Локализованный заголовок
+                    title: localizationManager.localized("auth.privacy.policy"), // ✅ Локализованный заголовок
                     subtitle: localizationManager.localized("privacy_policy_subtitle"), // ✅ Локализованный подзаголовок
                     action: {
                         showPrivacyPolicy = true
@@ -607,7 +607,7 @@ struct SettingsScreen: View {
                 
                 settingsButton(
                     icon: "doc.plaintext",
-                    title: localizationManager.localized("terms_of_service"), // ✅ Локализованный заголовок
+                    title: localizationManager.localized("auth.terms.of.service"), // ✅ Локализованный заголовок
                     subtitle: localizationManager.localized("terms_of_service_subtitle"), // ✅ Локализованный подзаголовок
                     action: {
                         showTermsOfService = true

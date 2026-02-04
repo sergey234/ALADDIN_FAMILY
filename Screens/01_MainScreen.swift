@@ -233,8 +233,9 @@ struct MainScreen: View {
             }
 
             loadProfileImage()
-            // ✅ ИСПРАВЛЕНИЕ: Убираем loadDashboardData() из onAppear - загрузка происходит в MainViewModel.onAppear()
-            // mainViewModel.loadDashboardData() // УБРАНО чтобы избежать двойной загрузки
+
+            // ✅ ВЫЗОВ onAppear MainViewModel для автоматической загрузки данных из API
+            mainViewModel.onAppear()
         }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("main_lang_\(localizationManager.currentLanguage.rawValue)")

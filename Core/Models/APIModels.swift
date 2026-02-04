@@ -169,14 +169,144 @@ struct ThreatByType: Codable {
 
 struct ChatMessageRequest: Codable {
     let message: String
-    let userId: String
-    let timestamp: Date
+    let context: String?
+    let userId: String?
+    let timestamp: Date?
+
+    init(message: String, context: String? = nil, userId: String? = nil, timestamp: Date? = nil) {
+        self.message = message
+        self.context = context
+        self.userId = userId
+        self.timestamp = timestamp ?? Date()
+    }
 }
 
 struct ChatMessageResponse: Codable {
-    let message: String
-    let timestamp: Date
+    let response: String
+    let confidence: Double?
     let suggestions: [String]?
+    let followUpQuestions: [String]?
+    let timestamp: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case response, confidence, suggestions
+        case followUpQuestions = "follow_up_questions"
+        case timestamp
+    }
+}
+
+// История чата
+struct AIChatHistoryResponse: Codable {
+    let conversations: [AIConversation]
+
+    struct AIConversation: Codable {
+        let date: String
+        let messages: Int
+        let topics: [String]
+    }
+}
+
+// Обратная связь
+struct AIFeedbackRequest: Codable {
+    let rating: Int
+    let comment: String?
+    let messageId: String?
+}
+
+struct AIFeedbackResponse: Codable {
+    let feedbackRecorded: Bool
+    let averageRating: Double
+    let totalFeedbacks: Int
+
+    enum CodingKeys: String, CodingKey {
+        case feedbackRecorded = "feedback_recorded"
+        case averageRating = "average_rating"
+        case totalFeedbacks = "total_feedbacks"
+    }
+}
+
+// Возможности AI
+struct AICapabilitiesResponse: Codable {
+    let features: [String]
+    let languages: [String]
+    let responseTime: String
+    let accuracy: String
+
+    enum CodingKeys: String, CodingKey {
+        case features, languages
+        case responseTime = "response_time"
+        case accuracy
+    }
+}
+
+// Анализ угрозы
+struct AIAnalyzeThreatRequest: Codable {
+    let threat: String
+    let type: String?
+    let context: String?
+}
+
+struct AIAnalyzeThreatResponse: Codable {
+    let threatLevel: String
+    let analysis: String
+    let actionsTaken: [String]
+    let preventionTips: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case threatLevel = "threat_level"
+        case analysis
+        case actionsTaken = "actions_taken"
+        case preventionTips = "prevention_tips"
+    }
+}
+
+// Персональные рекомендации
+struct AIRecommendationsResponse: Codable {
+    let personalRecommendations: [String]
+    let securityScore: Int
+    let improvementAreas: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case personalRecommendations = "personal_recommendations"
+        case securityScore = "security_score"
+        case improvementAreas = "improvement_areas"
+    }
+}
+
+// Сообщение об инциденте
+struct AIReportIncidentRequest: Codable {
+    let type: String
+    let description: String
+    let severity: String?
+}
+
+struct AIReportIncidentResponse: Codable {
+    let incidentId: String
+    let status: String
+    let estimatedResolution: String
+    let assignedSpecialist: String
+    let followUpActions: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case incidentId = "incident_id"
+        case status
+        case estimatedResolution = "estimated_resolution"
+        case assignedSpecialist = "assigned_specialist"
+        case followUpActions = "follow_up_actions"
+    }
+}
+
+// Советы по безопасности
+struct AISecurityTipsResponse: Codable {
+    let dailyTips: [String]
+    let weeklyFocus: String
+    let monthlyGoal: String
+
+    enum CodingKeys: String, CodingKey {
+        case dailyTips = "daily_tips"
+        case weeklyFocus = "weekly_focus"
+        case monthlyGoal = "monthly_goal"
+    }
 }
 
 // MARK: - User Models

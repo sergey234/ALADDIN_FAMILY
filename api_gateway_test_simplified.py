@@ -595,6 +595,125 @@ async def identity_theft_settings():
 async def subscription_payment_method():
     return mock_sfm_success("subscription_payment_method")
 
+# AI ASSISTANT (8 endpoints)
+@app.post("/api/ai/assistant/chat")
+async def ai_assistant_chat(data: dict):
+    """AI помощник - обработка сообщений пользователя"""
+    user_message = data.get("message", "")
+    context = data.get("context", "general")
+
+    # Имитация AI ответов
+    responses = {
+        "protection_status": "Ваша защита ALADDIN активна! Все 187 функций безопасности работают корректно.",
+        "threat_analysis": "Анализ угроз завершен. Обнаружено 3 потенциальные угрозы, все заблокированы.",
+        "recommendations": "Рекомендую включить все уровни защиты для максимальной безопасности.",
+        "help": "Я - ваш AI помощник по безопасности ALADDIN. Могу помочь с анализом угроз, настройками защиты и ответами на вопросы.",
+        "general": "Привет! Я AI помощник ALADDIN. Как я могу помочь вам с безопасностью?"
+    }
+
+    response_text = responses.get(context, responses["general"])
+
+    return mock_sfm_success("ai_assistant_chat", {
+        "response": response_text,
+        "confidence": 0.95,
+        "suggestions": ["Проверить статус защиты", "Посмотреть статистику", "Настроить параметры"],
+        "follow_up_questions": ["Что вас беспокоит?", "Нужна ли дополнительная защита?"]
+    })
+
+@app.get("/api/ai/assistant/history")
+async def ai_assistant_history():
+    """История разговоров с AI помощником"""
+    return mock_sfm_success("ai_assistant_history", {
+        "conversations": [
+            {"date": "2026-02-04", "messages": 12, "topics": ["protection", "threats"]},
+            {"date": "2026-02-03", "messages": 8, "topics": ["settings", "analysis"]}
+        ]
+    })
+
+@app.post("/api/ai/assistant/feedback")
+async def ai_assistant_feedback(data: dict):
+    """Обратная связь по работе AI помощника"""
+    rating = data.get("rating", 5)
+    comment = data.get("comment", "")
+
+    return mock_sfm_success("ai_assistant_feedback", {
+        "feedback_recorded": True,
+        "average_rating": 4.8,
+        "total_feedbacks": 1250
+    })
+
+@app.get("/api/ai/assistant/capabilities")
+async def ai_assistant_capabilities():
+    """Возможности AI помощника"""
+    return mock_sfm_success("ai_assistant_capabilities", {
+        "features": [
+            "Анализ угроз в реальном времени",
+            "Персональные рекомендации по безопасности",
+            "Объяснение работы функций защиты",
+            "Мониторинг подозрительной активности",
+            "Советы по улучшению безопасности",
+            "Ответы на вопросы о кибербезопасности"
+        ],
+        "languages": ["Русский", "English"],
+        "response_time": "<2 сек",
+        "accuracy": "95%"
+    })
+
+@app.post("/api/ai/assistant/analyze_threat")
+async def ai_assistant_analyze_threat(data: dict):
+    """AI анализ конкретной угрозы"""
+    threat_description = data.get("threat", "")
+    threat_type = data.get("type", "unknown")
+
+    return mock_sfm_success("ai_assistant_analyze_threat", {
+        "threat_level": "medium",
+        "analysis": "Угроза проанализирована. Рекомендуется усилить защиту.",
+        "actions_taken": ["Заблокирован IP", "Отправлено уведомление", "Добавлен в черный список"],
+        "prevention_tips": ["Включите VPN", "Обновите пароли", "Используйте 2FA"]
+    })
+
+@app.get("/api/ai/assistant/recommendations")
+async def ai_assistant_recommendations():
+    """Персональные рекомендации по безопасности"""
+    return mock_sfm_success("ai_assistant_recommendations", {
+        "personal_recommendations": [
+            "Включите все уровни защиты для максимальной безопасности",
+            "Настройте автоматические обновления",
+            "Используйте сложные пароли",
+            "Регулярно проверяйте подключенные устройства"
+        ],
+        "security_score": 95,
+        "improvement_areas": ["VPN использование", "Парольная политика"]
+    })
+
+@app.post("/api/ai/assistant/report_incident")
+async def ai_assistant_report_incident(data: dict):
+    """Сообщить о инциденте через AI помощника"""
+    incident_type = data.get("type", "")
+    description = data.get("description", "")
+
+    return mock_sfm_success("ai_assistant_report_incident", {
+        "incident_id": "INC-2026-004-001",
+        "status": "investigating",
+        "estimated_resolution": "2 hours",
+        "assigned_specialist": "AI Security Team",
+        "follow_up_actions": ["Анализ логов", "Проверка систем", "Уведомление пользователя"]
+    })
+
+@app.get("/api/ai/assistant/security_tips")
+async def ai_assistant_security_tips():
+    """Полезные советы по безопасности от AI"""
+    return mock_sfm_success("ai_assistant_security_tips", {
+        "daily_tips": [
+            "Всегда проверяйте URL перед вводом личных данных",
+            "Используйте менеджер паролей для сложных комбинаций",
+            "Регулярно обновляйте приложения и ОС",
+            "Будьте осторожны с email от неизвестных отправителей"
+        ],
+        "weekly_focus": "Защита от фишинга",
+        "monthly_goal": "Достичь 100% безопасности"
+    })
+
 # ADDITIONAL APIs (2 endpoints)
 @app.post("/api/darkweb/resolve")
 async def darkweb_resolve():
@@ -603,6 +722,84 @@ async def darkweb_resolve():
 @app.post("/api/system/backup")
 async def system_backup():
     return mock_sfm_success("system_backup")
+
+# FAMILY STATS - РЕАЛИЗОВАН!
+@app.get("/api/family/stats")
+async def get_family_stats():
+    """Статистика семейной защиты"""
+    return mock_sfm_success("family_stats", {
+        "totalMembers": 4,
+        "totalDevices": 6,
+        "totalThreats": 2847,
+        "familyStatus": "active",
+        "familyStatusMessage": "Все устройства защищены",
+        "lastUpdate": "2026-02-04T12:00:00Z",
+        "protectionScore": 95,
+        "activeFunctions": 187
+    })
+
+# PROTECTION STATS - ДОБАВЛЕНО!
+@app.get("/api/protection/stats")
+async def protection_stats():
+    """Статистика защиты - решение проблемы 'черного ящика'"""
+    return mock_sfm_success("protection_stats", {
+        "isActive": True,
+        "functionsActive": 187,
+        "threatsBlocked": 2847,
+        "lastScan": "2026-02-04T12:00:00Z",
+        "securityScore": 95,
+        "protectionLevel": "high",
+        "activeComponents": [
+            "VPN", "Антивирус", "Антифишинг", "Родительский контроль",
+            "Защита от трекеров", "Мониторинг даркнета", "Защита от мошенничества"
+        ],
+        "recommendations": [
+            "Включите все уровни защиты для максимальной безопасности",
+            "Регулярно обновляйте приложения",
+            "Используйте сложные пароли"
+        ]
+    })
+
+# ANALYTICS ENDPOINTS - ДОБАВЛЕНЫ!
+@app.get("/api/analytics/overview")
+async def analytics_overview():
+    """Общая аналитика"""
+    return mock_sfm_success("analytics_overview", {
+        "totalScans": 1250,
+        "threatsDetected": 2847,
+        "threatsBlocked": 2847,
+        "safeDays": 45,
+        "protectionUptime": "99.8%",
+        "topThreatCategories": [
+            {"name": "Фишинг", "count": 1200},
+            {"name": "Малварь", "count": 800},
+            {"name": "Трекеры", "count": 600},
+            {"name": "Мошенничество", "count": 247}
+        ]
+    })
+
+@app.get("/api/analytics/threats")
+async def analytics_threats():
+    """Статистика угроз"""
+    return mock_sfm_success("analytics_threats", {
+        "today": {"detected": 12, "blocked": 12},
+        "week": {"detected": 84, "blocked": 84},
+        "month": {"detected": 365, "blocked": 365},
+        "year": {"detected": 4380, "blocked": 4380}
+    })
+
+@app.get("/api/analytics/top-threats")
+async def analytics_top_threats():
+    """Топ угроз"""
+    return mock_sfm_success("analytics_top-threats", {
+        "threats": [
+            {"name": "Подозрительные SMS", "count": 450, "category": "мошенничество"},
+            {"name": "Фишинговые сайты", "count": 380, "category": "фишинг"},
+            {"name": "Вредоносное ПО", "count": 320, "category": "малварь"},
+            {"name": "Трекеры рекламы", "count": 280, "category": "трекинг"},
+            {"name": "Подозрительные звонки", "count": 150, "category": "мошенничество"}
+        ]
+    })
 
 if __name__ == "__main__":
     import uvicorn

@@ -461,9 +461,10 @@ struct DrivingReportsModal: View {
                 currentUserId = "current"
             }
         } catch {
-            // В случае ошибки используем пустой список
+            // В случае ошибки используем только текущего пользователя
             users = []
             currentUserId = "current"
+            print("⚠️ Failed to load family members, using current user only")
         }
     }
     

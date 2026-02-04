@@ -316,6 +316,111 @@
 "support.guides" = "РУКОВОДСТВА И УРОКИ";
 
 /* ═══════════════════════════════════════════════════════════════
+ * КАРТОЧКИ В НИЗУ НАСТРОЕК
+ * ═══════════════════════════════════════════════════════════════ */
+
+"help_support" = "Помощь и поддержка";
+"help_support_subtitle" = "Мы всегда готовы помочь";
+"privacy_policy_subtitle" = "Ознакомьтесь с политикой конфиденциальности";
+"terms_of_service_subtitle" = "Ознакомьтесь с условиями использования";
+"share_app" = "Поделиться приложением";
+"share_app_subtitle" = "Расскажите друзьям об ALADDIN AI";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ЭКРАН ДЕТАЛЕЙ УСТРОЙСТВА
+ * ═══════════════════════════════════════════════════════════════ */
+
+"device_detail_tab_info" = "Инфо";
+"device_detail_tab_stats" = "Статистика";
+"device_detail_tab_threats" = "Угрозы";
+"device_detail_tab_settings" = "Настройки";
+"device_detail_device_type" = "Тип устройства: %@";
+"device_detail_status" = "Статус: %@";
+"device_detail_last_activity" = "Последняя активность: %@";
+"device_detail_block_device" = "Заблокировать устройство";
+"device_detail_remove_device" = "Удалить устройство";
+"device_detail_block_device_hint" = "Двойное нажатие для блокировки устройства";
+"device_detail_remove_device_hint" = "Двойное нажатие для удаления устройства";
+"device_detail_nav_accessibility" = "Навигация деталей устройства";
+"device_detail_stats_threats_blocked" = "Заблокировано угроз";
+"device_detail_stats_traffic_downloaded" = "Загружено";
+"device_detail_stats_traffic_uploaded" = "Отправлено";
+"device_detail_stats_usage_time" = "Время использования";
+"device_detail_stats_protection_level" = "Уровень защиты";
+"device_detail_settings_protection" = "Защита устройства";
+"device_detail_settings_scanning" = "Автоматическое сканирование";
+"device_detail_settings_notifications" = "Уведомления";
+"device_detail_status_protected" = "Защищено";
+"device_detail_status_warning" = "Требует внимания";
+"device_detail_status_danger" = "Опасность";
+"device_detail_status_inactive" = "Неактивно";
+"device_detail_info_owner" = "Владелец";
+"device_detail_info_type" = "Тип";
+"device_detail_info_model" = "Модель";
+"device_detail_info_system" = "Система";
+"device_detail_info_ip" = "IP адрес";
+"device_detail_info_mac" = "MAC адрес";
+"device_detail_tab_accessibility" = "Вкладка: %@";
+"device_detail_tab_selected_hint" = "Вкладка %@ выбрана";
+"device_detail_tab_switch_hint" = "Переключиться на вкладку %@";
+"device_detail_tab_selector" = "Выбор вкладки, текущая: %@";
+"device_detail_accessibility" = "Детали устройства для %@";
+"device_detail_stats_protection_level" = "Уровень защиты";
+"device_detail_block_confirmation_title" = "Блокировка устройства";
+"device_detail_block_confirmation_message" = "Вы уверены, что хотите заблокировать %@? Доступ к устройству будет ограничен.";
+"device_detail_remove_confirmation_title" = "Удаление устройства";
+"device_detail_remove_confirmation_message" = "Вы уверены, что хотите удалить %@? Это действие нельзя отменить.";
+"device_detail_action_success" = "Действие выполнено успешно";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ФОРМА ДОБАВЛЕНИЯ УСТРОЙСТВА
+ * ═══════════════════════════════════════════════════════════════ */
+
+"devices_add_device" = "Добавить устройство";
+"devices_device_name" = "Название устройства";
+"devices_device_name_placeholder" = "Введите название устройства";
+"devices_device_type" = "Тип устройства";
+"devices_device_owner" = "Владелец устройства";
+"devices_add_device_button" = "Добавить устройство";
+"devices_add_device_hint_enabled" = "Двойное нажатие для добавления устройства";
+"devices_add_device_hint_disabled" = "Заполните все поля для добавления устройства";
+"devices_success_added" = "Устройство добавлено успешно";
+"devices_add_form_label" = "Форма добавления устройства";
+
+/* ═══════════════════════════════════════════════════════════════
+ * МОНИТОРИНГ DARK WEB
+ * ═══════════════════════════════════════════════════════════════ */
+
+"dark_web_error_critical" = "Критическая ошибка: %@";
+"dark_web_error_service_unavailable" = "Сервис мониторинга Dark Web временно недоступен";
+"dark_web_error_temporary" = "Временная ошибка подключения: %@";
+"dark_web_error_try_later" = "Не удается подключиться к сервису. Попробуйте позже.";
+"dark_web_retry_scan" = "Повторить сканирование";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ОТЧЕТЫ О ВОЖДЕНИИ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"driving_reports_modal_title" = "Отчеты о вождении";
+"driving_reports_select_user" = "Выбрать пользователя";
+"driving_reports_current_user" = "Я";
+"driving_reports_filter_all" = "Все";
+"driving_reports_filter_with_violations" = "С нарушениями";
+"driving_reports_filter_without_violations" = "Без нарушений";
+"driving_reports_filter_period" = "Период";
+"driving_reports_filter_today" = "Сегодня";
+"driving_reports_filter_week" = "Неделя";
+"driving_reports_filter_month" = "Месяц";
+"driving_reports_stats_title" = "Статистика";
+"driving_reports_trips_count" = "Поездки";
+"driving_reports_safety_score" = "Оценка безопасности";
+"driving_reports_violations" = "Нарушения";
+"driving_reports_history_title" = "История поездок";
+"driving_reports_empty" = "Данные о вождении недоступны";
+"driving_reports_error_load_failed" = "Не удалось загрузить отчеты: %@";
+"driving_reports_unit_min" = "мин";
+
+/* ═══════════════════════════════════════════════════════════════
  * АВТОРИЗАЦИЯ
  * ═══════════════════════════════════════════════════════════════ */
 

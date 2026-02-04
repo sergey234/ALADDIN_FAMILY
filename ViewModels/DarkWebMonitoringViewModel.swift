@@ -79,14 +79,21 @@ class DarkWebMonitoringViewModel: ObservableObject {
                 return
             }
             
-            // Показываем ошибку только для реальных проблем
-            if networkError.isCritical || !networkError.isRetryable {
-                let errorKey = "dark_web_error_resource_not_found"
+            // Показываем понятные сообщения об ошибках
+            if networkError.isCritical {
+                let errorKey = "dark_web_error_critical"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            } else if case .notFound = networkError {
+                // Для 404 показываем специальное сообщение
+                errorMessage = localizationManager.localized("dark_web_error_service_unavailable")
+            } else if !networkError.isRetryable {
+                let errorKey = "dark_web_error_temporary"
                 let errorFormat = localizationManager.localized(errorKey)
                 errorMessage = String(format: errorFormat, networkError.localizedDescription)
             } else {
-                // Для временных ошибок тоже не показываем, просто используем пустые данные
-                errorMessage = nil
+                // Для других ошибок показываем обобщенное сообщение
+                errorMessage = localizationManager.localized("dark_web_error_try_later")
             }
             
             // В случае ошибки используем пустые данные

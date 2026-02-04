@@ -114,14 +114,8 @@ struct DevicesScreen: View {
             showProfileButton: false,
             showListButton: false,
             onBack: {
-                // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
-                // Это гарантирует правильную навигацию на реальном устройстве
-                if navigationManager.canGoBack {
-                    navigationManager.goBack()
-                } else {
-                    // Если стек пуст, возвращаемся на главную
-                    navigationManager.currentScreen = .main
-                }
+                // ✅ ПРОСТОЙ ПОДХОД: dismiss() для NavigationView
+                dismiss()
             },
             onAdd: { 
                 showAddDevice = true 

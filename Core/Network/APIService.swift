@@ -7,7 +7,7 @@ import Combine
  * Используется ViewModels для загрузки данных
  */
 
-class APIService {
+class APIService: ObservableObject {
 
     let networkManager: NetworkManager
 
@@ -265,14 +265,54 @@ class APIService {
     }
     
     // MARK: - AI Assistant API
-    
-    func sendMessageToAI(message: String, completion: @escaping (Result<ChatMessageResponse, Error>) -> Void) {
+
+    // Основной чат с AI
+    func sendMessageToAI(message: String, context: String = "general", completion: @escaping (Result<ChatMessageResponse, Error>) -> Void) {
         let request = ChatMessageRequest(
             message: message,
+            context: context,
             userId: AppConfig.authToken ?? "guest",
             timestamp: Date()
         )
-        networkManager.post(endpoint: AppConfig.Endpoint.aiSendMessage, body: request, completion: completion)
+        networkManager.post(endpoint: "/api/ai/assistant/chat", body: request, completion: completion)
+    }
+
+    // История чата
+    func getAIChatHistory(completion: @escaping (Result<AIChatHistoryResponse, Error>) -> Void) {
+        networkManager.get(endpoint: "/api/ai/assistant/history", completion: completion)
+    }
+
+    // Обратная связь
+    func sendAIFeedback(rating: Int, comment: String?, messageId: String?, completion: @escaping (Result<AIFeedbackResponse, Error>) -> Void) {
+        let request = AIFeedbackRequest(rating: rating, comment: comment, messageId: messageId)
+        networkManager.post(endpoint: "/api/ai/assistant/feedback", body: request, completion: completion)
+    }
+
+    // Возможности AI
+    func getAICapabilities(completion: @escaping (Result<AICapabilitiesResponse, Error>) -> Void) {
+        networkManager.get(endpoint: "/api/ai/assistant/capabilities", completion: completion)
+    }
+
+    // Анализ угрозы
+    func analyzeThreat(threat: String, type: String?, completion: @escaping (Result<AIAnalyzeThreatResponse, Error>) -> Void) {
+        let request = AIAnalyzeThreatRequest(threat: threat, type: type, context: nil)
+        networkManager.post(endpoint: "/api/ai/assistant/analyze_threat", body: request, completion: completion)
+    }
+
+    // Персональные рекомендации
+    func getAIRecommendations(completion: @escaping (Result<AIRecommendationsResponse, Error>) -> Void) {
+        networkManager.get(endpoint: "/api/ai/assistant/recommendations", completion: completion)
+    }
+
+    // Сообщить об инциденте
+    func reportIncident(type: String, description: String, severity: String = "medium", completion: @escaping (Result<AIReportIncidentResponse, Error>) -> Void) {
+        let request = AIReportIncidentRequest(type: type, description: description, severity: severity)
+        networkManager.post(endpoint: "/api/ai/assistant/report_incident", body: request, completion: completion)
+    }
+
+    // Советы по безопасности
+    func getSecurityTips(completion: @escaping (Result<AISecurityTipsResponse, Error>) -> Void) {
+        networkManager.get(endpoint: "/api/ai/assistant/security_tips", completion: completion)
     }
     
     // MARK: - User API
@@ -603,6 +643,25 @@ class APIService {
                 continuation.resume(with: result)
             }
         }
+    }
+
+    // MARK: - Device Management API
+
+    /// Заблокировать устройство
+    func blockDevice(deviceId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct EmptyBody: Codable {}
+        networkManager.post(endpoint: "\(AppConfig.Endpoint.devices)/\(deviceId)/block", body: EmptyBody(), completion: completion)
+    }
+
+    /// Разблокировать устройство
+    func unblockDevice(deviceId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct EmptyBody: Codable {}
+        networkManager.post(endpoint: "\(AppConfig.Endpoint.devices)/\(deviceId)/unblock", body: EmptyBody(), completion: completion)
+    }
+
+    /// Удалить устройство
+    func removeDevice(deviceId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        networkManager.delete(endpoint: "\(AppConfig.Endpoint.devices)/\(deviceId)", completion: completion)
     }
     
     /// Запустить сканирование IoT устройств

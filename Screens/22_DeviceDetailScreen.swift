@@ -23,8 +23,11 @@ struct DeviceDetailScreen: View {
     // @State переменные, которые синхронизируются с UserDefaults
     @State private var isProtectionOn: Bool = true
     @State private var isScanningEnabled: Bool = true
-    
     @State private var selectedTab: DetailTab = .info
+    @State private var isLoadingAction: Bool = false
+    @State private var actionErrorMessage: String? = nil
+    @State private var showBlockConfirmation: Bool = false
+    @State private var showRemoveConfirmation: Bool = false
     
     enum DetailTab: String, CaseIterable {
         case info = "info"
@@ -51,16 +54,9 @@ struct DeviceDetailScreen: View {
                     showProfileButton: false,
                     showListButton: false,
                     onBack: {
-                        // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                        // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
+                        // ✅ ПРОСТОЙ ПОДХОД: только dismiss() для NavigationView
+                        // NavigationView сам управляет стеком, дополнительные вызовы могут конфликтовать
                         dismiss()
-                        
-                        // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                        DispatchQueue.main.async {
-                            if navigationManager.canGoBack {
-                                navigationManager.goBack()
-                            }
-                        }
                     }
                 )
                 .padding(.bottom, Spacing.m)
@@ -145,13 +141,13 @@ struct DeviceDetailScreen: View {
                 // Action Buttons
                 VStack(spacing: Spacing.m) {
                     SecondaryButton(localizationManager.localized("device_detail_block_device")) {
-                        print("Block device")
+                        blockDevice()
                     }
                     .accessibilityLabel(localizationManager.localized("device_detail_block_device"))
                     .accessibilityHint(localizationManager.localized("device_detail_block_device_hint"))
-                    
+
                     SecondaryButton(localizationManager.localized("device_detail_remove_device")) {
-                        print("Remove device")
+                        removeDevice()
                     }
                     .foregroundColor(.dangerRed)
                     .accessibilityLabel(localizationManager.localized("device_detail_remove_device"))
@@ -164,6 +160,39 @@ struct DeviceDetailScreen: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel(String(format: localizationManager.localized("device_detail_accessibility"), device.name))
         .navigationBarHidden(true)
+        .alert(localizationManager.localized("device_detail_block_confirmation_title"), isPresented: $showBlockConfirmation) {
+            Button(localizationManager.localized("common_cancel"), role: .cancel) { }
+            Button(localizationManager.localized("device_detail_block_device"), role: .destructive) {
+                confirmBlockDevice()
+            }
+        } message: {
+            Text(String(format: localizationManager.localized("device_detail_block_confirmation_message"), device.name))
+        }
+        .alert(localizationManager.localized("device_detail_remove_confirmation_title"), isPresented: $showRemoveConfirmation) {
+            Button(localizationManager.localized("common_cancel"), role: .cancel) { }
+            Button(localizationManager.localized("device_detail_remove_device"), role: .destructive) {
+                confirmRemoveDevice()
+            }
+        } message: {
+            Text(String(format: localizationManager.localized("device_detail_remove_confirmation_message"), device.name))
+        }
+        .alert("Ошибка", isPresented: .constant(actionErrorMessage != nil)) {
+            Button("OK") {
+                actionErrorMessage = nil
+            }
+        } message: {
+            if let error = actionErrorMessage {
+                Text(error)
+            }
+        }
+        .overlay {
+            if isLoadingAction {
+                ProgressView()
+                    .scaleEffect(1.5)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black.opacity(0.3))
+            }
+        }
         .safeAreaInset(edge: .top) {
             Color.clear.frame(height: Spacing.m)
         }
@@ -182,7 +211,61 @@ struct DeviceDetailScreen: View {
         case .inactive: return localizationManager.localized("device_detail_status_inactive")
         }
     }
-    
+
+    // MARK: - Device Actions
+
+    private func blockDevice() {
+        showBlockConfirmation = true
+    }
+
+    private func confirmBlockDevice() {
+        isLoadingAction = true
+        actionErrorMessage = nil
+
+        apiService.blockDevice(deviceId: device.id) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.isLoadingAction = false
+
+                switch result {
+                case .success:
+                    // Успешная блокировка - показать сообщение и вернуться
+                    print("✅ Device blocked successfully")
+                    self.dismiss()
+                case .failure(let error):
+                    let networkError = NetworkError.from(error)
+                    self.actionErrorMessage = networkError.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func removeDevice() {
+        showRemoveConfirmation = true
+    }
+
+    private func confirmRemoveDevice() {
+        isLoadingAction = true
+        actionErrorMessage = nil
+
+        apiService.removeDevice(deviceId: device.id) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.isLoadingAction = false
+
+                switch result {
+                case .success:
+                    // Успешное удаление - показать сообщение и вернуться
+                    print("✅ Device removed successfully")
+                    self.dismiss()
+                case .failure(let error):
+                    let networkError = NetworkError.from(error)
+                    self.actionErrorMessage = networkError.localizedDescription
+                }
+            }
+        }
+    }
+
     // MARK: - Settings Persistence
     
     /// Загружает настройки устройства из UserDefaults

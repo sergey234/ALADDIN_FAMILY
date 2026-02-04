@@ -1,18 +1,30 @@
 import SwiftUI
+import Speech
+import AVFoundation
 
 /// 🤖 AI Assistant Screen
 /// Экран AI помощника - чат с искусственным интеллектом
 /// Источник дизайна: /mobile/wireframes/08_ai_assistant.html
 struct AIAssistantScreen: View {
-    
+
     // MARK: - State
-    
+
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.dismiss) private var dismiss
     @State private var messageText: String = ""
     @State private var messages: [ChatMessage] = []
-    
+    @State private var isLoading = false
+    @State private var showError = false
+    @State private var errorMessage = ""
+    @State private var isRecording = false
+    @State private var showVoicePermissionAlert = false
+    @State private var showFeedbackSheet = false
+
+    // Сервисы
+    @StateObject private var apiService = APIService.shared
+    @StateObject private var speechManager = SpeechManager()
+
     // Ключ для сохранения истории сообщений
     private let messagesKey = "ai_assistant_messages_list"
     private let hasReceivedWelcomeKey = "ai_assistant_welcome_sent"
@@ -125,7 +137,12 @@ struct AIAssistantScreen: View {
                                 chatBubble(message: message)
                             }
                         }
-                        
+
+                        // Индикатор загрузки
+                        if isLoading {
+                            TypingIndicatorView(typingUsers: ["AI Assistant"])
+                        }
+
                         // Spacer для клавиатуры
                         Spacer()
                             .frame(height: 16)
@@ -136,19 +153,33 @@ struct AIAssistantScreen: View {
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel(localizationManager.localized("ai_assistant_chat"))
                 
+                // Быстрые действия
+                if !isLoading {
+                    QuickActionsView(onActionSelected: handleQuickAction)
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 10)
+                }
+
                 // Поле ввода
                 messageInputBar
             }
         }
         .onAppear {
             loadMessages()
+            setupNotifications()
             // Если сообщений нет и приветствие еще не отправлено - показываем приветствие
             if messages.isEmpty && !UserDefaults.standard.bool(forKey: hasReceivedWelcomeKey) {
                 // Приветствие будет показано в ScrollView выше
             }
         }
+        .onDisappear {
+            removeNotifications()
+        }
         .navigationBarHidden(true)
         .id("ai_assistant_lang_\(localizationManager.currentLanguage.rawValue)")
+        .sheet(isPresented: $showFeedbackSheet) {
+            AIFeedbackSheet(isPresented: $showFeedbackSheet, apiService: apiService)
+        }
     }
     
     // MARK: - Chat Bubble
@@ -201,6 +232,18 @@ struct AIAssistantScreen: View {
     
     private var messageInputBar: some View {
         HStack(spacing: 8) {
+            // Кнопка голосового ввода
+            Button(action: toggleVoiceRecording) {
+                Image(systemName: isRecording ? "mic.fill" : "mic")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(isRecording ? .red : .blue)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        Circle()
+                            .fill(isRecording ? Color.red.opacity(0.2) : Color.blue.opacity(0.2))
+                    )
+            }
+
             // Текстовое поле
             TextField(localizationManager.localized("ai_assistant_placeholder"), text: $messageText)
                 .font(.body)
@@ -210,7 +253,7 @@ struct AIAssistantScreen: View {
                     RoundedRectangle(cornerRadius: 16)
                         .fill(Color.gray.opacity(0.3))
                 )
-            
+
             // Кнопка отправки
             Button(action: sendMessage) {
                 Image(systemName: messageText.isEmpty ? "paperplane" : "paperplane.fill")
@@ -231,6 +274,18 @@ struct AIAssistantScreen: View {
                     )
             }
             .disabled(messageText.isEmpty)
+
+            // Кнопка обратной связи
+            Button(action: { showFeedbackSheet = true }) {
+                Image(systemName: "star")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.orange)
+                    .frame(width: 44, height: 44)
+                    .background(
+                        Circle()
+                            .fill(Color.orange.opacity(0.2))
+                    )
+            }
         }
         .padding(12)
         .background(
@@ -240,31 +295,272 @@ struct AIAssistantScreen: View {
     
     private func sendMessage() {
         guard !messageText.isEmpty else { return }
-        
+
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
-        
+
         // Добавляем сообщение пользователя
         messages.append(
             ChatMessage(text: messageText, isUser: true, time: currentTime())
         )
-        
+
+        let userMessage = messageText
+        let context = determineMessageContext(userMessage)
+
         messageText = ""
-        
+
         // Сохраняем сообщение
         saveMessages()
-        
-        // Имитация ответа AI (через 1 секунду)
-        // ⚠️ ВРЕМЕННО: Декоративный режим - API будет подключен в Этап 3
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            let aiResponse = ChatMessage(
-                text: localizationManager.localized("ai_assistant_development"),
-                isUser: false,
-                time: currentTime()
-            )
-            messages.append(aiResponse)
-            saveMessages() // Сохраняем ответ AI
+
+        // Показываем индикатор загрузки
+        isLoading = true
+
+        // Если это feedback сообщение - отправляем как обратную связь
+        if context == "feedback" {
+            sendFeedbackMessage(userMessage)
+        } else {
+            // Обычное сообщение AI
+            sendRegularMessage(userMessage, context: context)
         }
+    }
+
+    private func sendFeedbackMessage(_ message: String) {
+        // Определяем тип feedback для персонализированного ответа
+        let feedbackType = determineFeedbackType(message)
+
+        // Отправляем как обратную связь
+        apiService.sendAIFeedback(rating: 5, comment: message, messageId: nil) { [self] result in
+            DispatchQueue.main.async {
+                isLoading = false
+
+                switch result {
+                case .success:
+                    let feedbackResponse = ChatMessage(
+                        text: getPersonalizedFeedbackResponse(feedbackType, message),
+                        isUser: false,
+                        time: currentTime()
+                    )
+                    messages.append(feedbackResponse)
+                    saveMessages()
+
+                case .failure(let error):
+                    showError = true
+                    errorMessage = "Не удалось отправить отзыв: \(error.localizedDescription)"
+
+                    let errorResponse = ChatMessage(
+                        text: "Извините, не удалось отправить ваш отзыв. Попробуйте позже через раздел обратной связи.",
+                        isUser: false,
+                        time: currentTime()
+                    )
+                    messages.append(errorResponse)
+                    saveMessages()
+                }
+            }
+        }
+    }
+
+    private func getPersonalizedFeedbackResponse(_ feedbackType: String, _ originalMessage: String) -> String {
+        let baseResponse: String
+
+        switch feedbackType {
+        case "FEATURE_REQUEST":
+            baseResponse = """
+            Спасибо за ваше предложение! 🚀
+            ALADDIN стремится стать лучше и мы обязательно рассмотрим
+            добавление этой функции в следующих обновлениях.
+
+            Ваша обратная связь очень важна для нас! 💡
+
+            Расскажите подробнее:
+            • На каких экранах вы хотели бы видеть эту функцию?
+            • Как вы представляете её работу?
+            • Есть ли похожие функции в других приложениях?
+
+            Хотите поделиться еще какими-то идеями?
+            """
+
+        case "IMPROVEMENT":
+            baseResponse = """
+            Спасибо за замечание! 💡 Ваше предложение поможет сделать
+            приложение еще лучше и удобнее.
+
+            Мы проанализируем возможность этого улучшения и
+            рассмотрим его реализацию в ближайших обновлениях.
+
+            Что именно неудобно в текущей реализации?
+            Есть ли другие аспекты, которые можно улучшить?
+
+            Ваши идеи помогают развивать ALADDIN! 🙏
+            """
+
+        case "BUG_REPORT":
+            baseResponse = """
+            Спасибо за информацию о проблеме! 🐛
+            Мы сожалеем о неудобствах и передадим эту информацию
+            нашей команде разработчиков для скорейшего исправления.
+
+            Для быстрого решения проблемы:
+            • Какая версия приложения у вас установлена?
+            • В какой момент происходит ошибка?
+            • Можете ли вы описать последовательность действий?
+
+            Ваша помощь в решении проблем очень ценна! 💪
+            """
+
+        case "UX_IMPROVEMENT":
+            baseResponse = """
+            Спасибо за отзыв об интерфейсе! 🎨 Ваше мнение поможет нам
+            сделать приложение более удобным и красивым.
+
+            Мы внимательно изучим ваше предложение и учтем его
+            при следующей итерации дизайна.
+
+            Как бы вы хотели видеть этот элемент интерфейса?
+            Есть ли другие аспекты дизайна, которые можно улучшить?
+
+            Спасибо за вашу заботу о UX ALADDIN! ✨
+            """
+
+        default: // GENERAL_FEEDBACK
+            baseResponse = """
+            Спасибо за вашу обратную связь! 💝 Мы ценим ваше время и
+            внимание к деталям. Ваши идеи помогают развивать ALADDIN.
+
+            Мы внимательно изучим ваше предложение и обязательно
+            учтем его при планировании будущих обновлений.
+
+            Хотите поделиться еще чем-то или у вас есть другие вопросы?
+            Мы всегда открыты к диалогу! 🙏
+            """
+        }
+
+        return baseResponse
+    }
+
+    private func determineFeedbackType(_ message: String) -> String {
+        let lowerMessage = message.lowercased()
+
+        // FEATURE_REQUEST - запросы на новые функции
+        if lowerMessage.contains("добавить") || lowerMessage.contains("создать") ||
+           lowerMessage.contains("новая функция") || lowerMessage.contains("хотел бы видеть") ||
+           lowerMessage.contains("add") || lowerMessage.contains("new feature") ||
+           lowerMessage.contains("would like to see") || lowerMessage.contains("implement") {
+            return "FEATURE_REQUEST"
+        }
+
+        // IMPROVEMENT - улучшения существующих функций
+        if lowerMessage.contains("улучшить") || lowerMessage.contains("оптимизировать") ||
+           lowerMessage.contains("ускорить") || lowerMessage.contains("сделать лучше") ||
+           lowerMessage.contains("improve") || lowerMessage.contains("optimize") ||
+           lowerMessage.contains("faster") || lowerMessage.contains("better") {
+            return "IMPROVEMENT"
+        }
+
+        // BUG_REPORT - сообщения об ошибках
+        if lowerMessage.contains("не работает") || lowerMessage.contains("ошибка") ||
+           lowerMessage.contains("глюк") || lowerMessage.contains("вылетает") ||
+           lowerMessage.contains("тормозит") || lowerMessage.contains("зависает") ||
+           lowerMessage.contains("bug") || lowerMessage.contains("error") ||
+           lowerMessage.contains("crash") || lowerMessage.contains("slow") ||
+           lowerMessage.contains("freeze") {
+            return "BUG_REPORT"
+        }
+
+        // UX_IMPROVEMENT - улучшения интерфейса
+        if lowerMessage.contains("интерфейс") || lowerMessage.contains("дизайн") ||
+           lowerMessage.contains("удобнее") || lowerMessage.contains("красивее") ||
+           lowerMessage.contains("понятнее") || lowerMessage.contains("ui") ||
+           lowerMessage.contains("ux") || lowerMessage.contains("design") ||
+           lowerMessage.contains("easier") || lowerMessage.contains("clearer") {
+            return "UX_IMPROVEMENT"
+        }
+
+        // GENERAL_FEEDBACK - общая обратная связь
+        return "GENERAL_FEEDBACK"
+    }
+
+    private func sendRegularMessage(_ message: String, context: String) {
+        // Отправляем обычное сообщение AI
+        apiService.sendMessageToAI(message: message, context: context) { [self] result in
+            DispatchQueue.main.async {
+                isLoading = false
+
+                switch result {
+                case .success(let response):
+                    let aiResponse = ChatMessage(
+                        text: response.response,
+                        isUser: false,
+                        time: currentTime()
+                    )
+                    messages.append(aiResponse)
+                    saveMessages()
+
+                case .failure(let error):
+                    showError = true
+                    errorMessage = "Не удалось получить ответ от AI: \(error.localizedDescription)"
+
+                    let errorResponse = ChatMessage(
+                        text: "Извините, произошла ошибка. Попробуйте позже.",
+                        isUser: false,
+                        time: currentTime()
+                    )
+                    messages.append(errorResponse)
+                    saveMessages()
+                }
+            }
+        }
+    }
+
+    private func determineMessageContext(_ message: String) -> String {
+        let lowerMessage = message.lowercased()
+
+        // Проверяем на предложения и пожелания
+        if isFeedbackMessage(message) {
+            return "feedback"
+        }
+
+        if lowerMessage.contains("защит") || lowerMessage.contains("protection") || lowerMessage.contains("security") {
+            return "protection_status"
+        } else if lowerMessage.contains("угроз") || lowerMessage.contains("threat") || lowerMessage.contains("attack") {
+            return "threat_analysis"
+        } else if lowerMessage.contains("рекоменд") || lowerMessage.contains("совет") || lowerMessage.contains("tip") {
+            return "recommendations"
+        } else if lowerMessage.contains("помощ") || lowerMessage.contains("help") {
+            return "help"
+        } else {
+            return "general"
+        }
+    }
+
+    private func isFeedbackMessage(_ message: String) -> Bool {
+        let lowerMessage = message.lowercased()
+
+        // Ключевые слова для предложений и пожеланий
+        let feedbackKeywords = [
+            "предложение", "пожелание", "улучшить", "улучшение", "предлагаю",
+            "хотелось бы", "было бы хорошо", "можно добавить", "нужно исправить",
+            "suggestion", "wish", "improve", "enhancement", "would like",
+            "it would be good", "can add", "need to fix", "feedback",
+            "отзыв", "замечание", "идея", "мысль"
+        ]
+
+        // Проверяем наличие ключевых слов
+        for keyword in feedbackKeywords {
+            if lowerMessage.contains(keyword) {
+                return true
+            }
+        }
+
+        // Проверяем специальные префиксы
+        if lowerMessage.hasPrefix("предложение:") ||
+           lowerMessage.hasPrefix("пожелание:") ||
+           lowerMessage.hasPrefix("идея:") ||
+           lowerMessage.hasPrefix("suggestion:") ||
+           lowerMessage.hasPrefix("feedback:") {
+            return true
+        }
+
+        return false
     }
     
     // MARK: - Data Loading and Saving
@@ -295,6 +591,335 @@ struct AIAssistantScreen: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: Date())
+    }
+
+    private func handleQuickAction(_ action: QuickActionType) {
+        let message: String
+        switch action {
+        case .protectionStatus:
+            message = "Какой статус моей защиты ALADDIN?"
+        case .analyzeThreats:
+            message = "Проанализируй возможные угрозы для моей семьи"
+        case .securityTips:
+            message = "Дай советы по улучшению безопасности"
+        case .help:
+            message = "Помоги настроить приложение"
+        case .familySetup:
+            message = "Как настроить семейную защиту?"
+        case .reportIncident:
+            message = "Я заметил подозрительную активность"
+        }
+
+        messageText = message
+        sendMessage()
+    }
+
+    private func setupNotifications() {
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("SpeechPermissionDenied"), object: nil, queue: .main) { _ in
+            showVoicePermissionAlert = true
+        }
+    }
+
+    private func removeNotifications() {
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("SpeechPermissionDenied"), object: nil)
+    }
+
+    private func toggleVoiceRecording() {
+        if speechManager.isRecording {
+            speechManager.stopRecording()
+        } else {
+            speechManager.startRecording { recognizedText in
+                if let text = recognizedText, !text.isEmpty {
+                    messageText = text
+                    // Автоматически отправляем сообщение
+                    sendMessage()
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Quick Actions
+
+enum QuickActionType {
+    case protectionStatus
+    case analyzeThreats
+    case securityTips
+    case help
+    case familySetup
+    case reportIncident
+}
+
+struct QuickAction: Identifiable {
+    let id = UUID()
+    let type: QuickActionType
+    let icon: String
+    let title: String
+}
+
+struct QuickActionsView: View {
+    let onActionSelected: (QuickActionType) -> Void
+
+    private let actions = [
+        QuickAction(type: .protectionStatus, icon: "🛡️", title: "Статус защиты"),
+        QuickAction(type: .analyzeThreats, icon: "🔍", title: "Анализ угроз"),
+        QuickAction(type: .securityTips, icon: "💡", title: "Советы"),
+        QuickAction(type: .help, icon: "❓", title: "Помощь"),
+        QuickAction(type: .familySetup, icon: "👨‍👩‍👧‍👦", title: "Семья"),
+        QuickAction(type: .reportIncident, icon: "🚨", title: "Инцидент")
+    ]
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(actions) { action in
+                    Button(action: {
+                        onActionSelected(action.type)
+                    }) {
+                        VStack(spacing: 4) {
+                            Text(action.icon)
+                                .font(.system(size: 20))
+                            Text(action.title)
+                                .font(.system(size: 10, weight: .medium))
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                        }
+                        .frame(width: 60, height: 60)
+                        .background(Color.blue.opacity(0.1))
+                        .foregroundColor(.blue)
+                        .cornerRadius(12)
+                    }
+                }
+            }
+            .padding(.horizontal, 4)
+        }
+    }
+
+    private func openSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
+    }
+}
+
+// MARK: - Speech Manager
+
+class SpeechManager: ObservableObject {
+    @Published var isRecording = false
+    @Published var recognizedText: String?
+
+    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ru-RU"))
+    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    private var recognitionTask: SFSpeechRecognitionTask?
+    private let audioEngine = AVAudioEngine()
+
+    func startRecording(completion: @escaping (String?) -> Void) {
+        // Проверяем разрешение
+        SFSpeechRecognizer.requestAuthorization { status in
+            DispatchQueue.main.async {
+                switch status {
+                case .authorized:
+                    self.startRecordingInternal(completion: completion)
+                case .denied, .restricted:
+                    self.showPermissionAlert()
+                case .notDetermined:
+                    // Разрешение еще не запрошено
+                    break
+                @unknown default:
+                    break
+                }
+            }
+        }
+
+        // Запрашиваем разрешение на микрофон
+        AVAudioSession.sharedInstance().requestRecordPermission { granted in
+            if !granted {
+                DispatchQueue.main.async {
+                    self.showPermissionAlert()
+                }
+            }
+        }
+    }
+
+    private func startRecordingInternal(completion: @escaping (String?) -> Void) {
+        do {
+            // Настраиваем аудио сессию
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+
+            // Создаем запрос распознавания
+            recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
+            guard let recognitionRequest = recognitionRequest else { return }
+
+            recognitionRequest.shouldReportPartialResults = true
+
+            // Создаем задачу распознавания
+            recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { result, error in
+                if let result = result {
+                    let text = result.bestTranscription.formattedString
+                    DispatchQueue.main.async {
+                        self.recognizedText = text
+                    }
+                }
+
+                if error != nil || result?.isFinal == true {
+                    self.stopRecording()
+                    DispatchQueue.main.async {
+                        completion(result?.bestTranscription.formattedString)
+                    }
+                }
+            }
+
+            // Настраиваем входной узел
+            let inputNode = audioEngine.inputNode
+            let recordingFormat = inputNode.outputFormat(forBus: 0)
+            inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
+                self.recognitionRequest?.append(buffer)
+            }
+
+            // Запускаем запись
+            audioEngine.prepare()
+            try audioEngine.start()
+
+            isRecording = true
+
+        } catch {
+            print("Ошибка запуска записи: \(error)")
+            completion(nil)
+        }
+    }
+
+    func stopRecording() {
+        audioEngine.stop()
+        recognitionRequest?.endAudio()
+        recognitionTask?.cancel()
+        recognitionTask = nil
+        recognitionRequest = nil
+        isRecording = false
+
+        // Восстанавливаем аудио сессию
+        do {
+            try AVAudioSession.sharedInstance().setActive(false)
+        } catch {
+            print("Ошибка остановки аудио сессии: \(error)")
+        }
+    }
+
+    private func showPermissionAlert() {
+        // Показываем алерт через NotificationCenter
+        NotificationCenter.default.post(name: NSNotification.Name("SpeechPermissionDenied"), object: nil)
+    }
+}
+
+// MARK: - AI Feedback Sheet
+
+struct AIFeedbackSheet: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Binding var isPresented: Bool
+    @State private var rating: Int = 5
+    @State private var comment: String = ""
+    @State private var isSubmitting = false
+    @State private var showSuccess = false
+
+    let apiService: APIService
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Text(localizationManager.localized("ai_assistant_feedback_title"))
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .multilineTextAlignment(.center)
+
+                Text(localizationManager.localized("ai_assistant_feedback_description"))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+
+                // Рейтинг
+                VStack(spacing: 12) {
+                    Text(localizationManager.localized("ai_assistant_feedback_rating"))
+                        .font(.headline)
+
+                    HStack(spacing: 8) {
+                        ForEach(1...5, id: \.self) { star in
+                            Image(systemName: star <= rating ? "star.fill" : "star")
+                                .font(.system(size: 30))
+                                .foregroundColor(star <= rating ? .yellow : .gray)
+                                .onTapGesture {
+                                    rating = star
+                                }
+                        }
+                    }
+                }
+
+                // Комментарий
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(localizationManager.localized("ai_assistant_feedback_comment"))
+                        .font(.headline)
+
+                    TextEditor(text: $comment)
+                        .frame(height: 100)
+                        .padding(8)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        )
+                }
+
+                Spacer()
+
+                // Кнопки
+                HStack(spacing: 12) {
+                    Button("Отмена") {
+                        isPresented = false
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(.gray)
+
+                    Button(action: submitFeedback) {
+                        if isSubmitting {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Text(localizationManager.localized("ai_assistant_feedback_submit"))
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(isSubmitting)
+                }
+            }
+            .padding()
+            .navigationBarHidden(true)
+            .alert("Спасибо!", isPresented: $showSuccess) {
+                Button("OK") {
+                    isPresented = false
+                }
+            } message: {
+                Text(localizationManager.localized("ai_assistant_feedback_success"))
+            }
+        }
+    }
+
+    private func submitFeedback() {
+        isSubmitting = true
+
+        apiService.sendAIFeedback(rating: rating, comment: comment.isEmpty ? nil : comment, messageId: nil) { result in
+            DispatchQueue.main.async {
+                isSubmitting = false
+
+                switch result {
+                case .success:
+                    showSuccess = true
+                case .failure(let error):
+                    print("Ошибка отправки обратной связи: \(error)")
+                    // Показываем ошибку пользователю
+                }
+            }
+        }
     }
 }
 
