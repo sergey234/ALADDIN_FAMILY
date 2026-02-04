@@ -245,6 +245,109 @@
 "device_detail_tab_selector" = "Tab selector, current: %@";
 "device_detail_accessibility" = "Device details for %@";
 "device_detail_stats_protection_level" = "Protection Level";
+
+/* ═══════════════════════════════════════════════════════════════
+ * CHILD INTERFACE - BASIC
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child_interface_back" = "Back";
+"child_interface_background" = "Child interface background";
+"child_interface_content" = "Child interface content";
+"child_interface_hello" = "Hello, %s!";
+"child_interface_welcome_back" = "Welcome back!";
+"child_interface_time_left" = "Time left";
+"child_interface_time_minutes" = "%d minutes";
+"child_interface_unicorn_balance" = "My Unicorns";
+"child_interface_unicorn_count" = "%d unicorns";
+
+/* ═══════════════════════════════════════════════════════════════
+ * CHILD INTERFACE - AGE GROUPS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child_interface_age_kids" = "1-6 years";
+"child_interface_age_school" = "7-12 years";
+"child_interface_age_teen" = "13-17 years";
+"child_interface_age_young_adult" = "18-22 years";
+
+/* ═══════════════════════════════════════════════════════════════
+ * CHILD INTERFACE - CONTENT CATEGORIES
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* 1-6 YEARS */
+"child_interface_category_toys" = "Toys";
+"child_interface_category_drawing" = "Drawing";
+"child_interface_category_songs" = "Songs";
+"child_interface_category_stories" = "Stories";
+
+/* 7-12 YEARS */
+"child_interface_category_games" = "Games";
+"child_interface_category_study" = "Study";
+"child_interface_category_safety" = "Safety";
+"child_interface_category_cartoons" = "Cartoons";
+"child_interface_category_creativity" = "Creativity";
+
+/* 13-17 YEARS */
+"child_interface_category_programming" = "Programming";
+"child_interface_category_social" = "Social Media";
+"child_interface_category_music" = "Music";
+"child_interface_category_video" = "Video";
+
+/* 18-22 YEARS */
+"child_interface_category_education" = "Education";
+"child_interface_category_career" = "Career";
+"child_interface_category_internet" = "Internet Safety";
+"child_interface_category_movies" = "Movies";
+
+/* ═══════════════════════════════════════════════════════════════
+ * CHILD INTERFACE - SAFETY & INSTRUCTIONS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child_interface_safety_title" = "Stay Safe Online";
+"child_interface_dont_trust_calls" = "Don't trust calls from strangers";
+"child_interface_dont_share_info" = "Never share personal information";
+"child_interface_tell_parents" = "Always tell your parents";
+"child_interface_emergency_contacts" = "Emergency Contacts";
+"child_interface_safe_websites" = "Safe Websites";
+"child_interface_privacy_settings" = "Privacy Settings";
+
+/* ═══════════════════════════════════════════════════════════════
+ * CHILD INTERFACE - CONTENT TEXTS
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child_game_welcome" = "Welcome to Games!";
+"child_game_greeting" = "Let's play!";
+"child_game_zone" = "Game Zone";
+"child_game_adventures" = "Adventures";
+"child_game_puzzles" = "Puzzles";
+"child_game_logic" = "Logic Games";
+"child_game_speed" = "Speed Games";
+
+"child_study_welcome" = "Let's learn!";
+"child_study_learning" = "Learning Zone";
+"child_study_subject_russian" = "Russian";
+"child_study_subject_math" = "Math";
+"child_study_subject_world" = "World Around Us";
+
+"child_creativity_welcome" = "Let's create!";
+"child_creativity_create" = "Creativity Zone";
+"child_creativity_drawing" = "Drawing";
+"child_creativity_application" = "Applications";
+"child_creativity_coloring" = "Coloring";
+"child_creativity_photo" = "Photo Art";
+
+"child_cartoons_welcome" = "Watch cartoons!";
+"child_cartoons_favorites" = "Favorite Cartoons";
+"child_cartoons_robots" = "Robots Adventures";
+"child_cartoons_adventures" = "Great Adventures";
+"child_cartoons_fantasy" = "Fantasy World";
+
+"child_daily_tip_title" = "Daily Tip";
+"child_daily_tip_kids" = "Always wash your hands before eating!";
+"child_daily_tip_school" = "Read at least 20 minutes every day!";
+"child_daily_tip_teen" = "Check your social media privacy settings!";
+"child_daily_tip_young_adult" = "Save 10% of your income!";
+
+"child_game_content_coming_soon" = "Content coming soon...";
 "device_detail_block_confirmation_title" = "Block Device";
 "device_detail_block_confirmation_message" = "Are you sure you want to block %@? Access to the device will be restricted.";
 "device_detail_remove_confirmation_title" = "Remove Device";

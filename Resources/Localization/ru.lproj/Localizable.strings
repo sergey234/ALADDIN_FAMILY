@@ -366,6 +366,109 @@
 "device_detail_tab_selector" = "Выбор вкладки, текущая: %@";
 "device_detail_accessibility" = "Детали устройства для %@";
 "device_detail_stats_protection_level" = "Уровень защиты";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ДЕТСКИЙ ИНТЕРФЕЙС - ОСНОВНЫЕ ЭЛЕМЕНТЫ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child_interface_back" = "Назад";
+"child_interface_background" = "Фон детского интерфейса";
+"child_interface_content" = "Содержимое детского интерфейса";
+"child_interface_hello" = "Привет, %s!";
+"child_interface_welcome_back" = "С возвращением!";
+"child_interface_time_left" = "Осталось времени";
+"child_interface_time_minutes" = "%d минут";
+"child_interface_unicorn_balance" = "Мои единороги";
+"child_interface_unicorn_count" = "%d единорогов";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ДЕТСКИЙ ИНТЕРФЕЙС - ВОЗРАСТНЫЕ ГРУППЫ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child_interface_age_kids" = "1-6 лет";
+"child_interface_age_school" = "7-12 лет";
+"child_interface_age_teen" = "13-17 лет";
+"child_interface_age_young_adult" = "18-22 лет";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ДЕТСКИЙ ИНТЕРФЕЙС - КАТЕГОРИИ КОНТЕНТА
+ * ═══════════════════════════════════════════════════════════════ */
+
+/* 1-6 ЛЕТ */
+"child_interface_category_toys" = "Игрушки";
+"child_interface_category_drawing" = "Рисование";
+"child_interface_category_songs" = "Песенки";
+"child_interface_category_stories" = "Сказки";
+
+/* 7-12 ЛЕТ */
+"child_interface_category_games" = "Игры";
+"child_interface_category_study" = "Учёба";
+"child_interface_category_safety" = "Безопасность";
+"child_interface_category_cartoons" = "Мультфильмы";
+"child_interface_category_creativity" = "Творчество";
+
+/* 13-17 ЛЕТ */
+"child_interface_category_programming" = "Программирование";
+"child_interface_category_social" = "Социальные сети";
+"child_interface_category_music" = "Музыка";
+"child_interface_category_video" = "Видео";
+
+/* 18-22 ЛЕТ */
+"child_interface_category_education" = "Образование";
+"child_interface_category_career" = "Карьера";
+"child_interface_category_internet" = "Безопасность в интернете";
+"child_interface_category_movies" = "Фильмы";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ДЕТСКИЙ ИНТЕРФЕЙС - БЕЗОПАСНОСТЬ И ИНСТРУКЦИИ
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child_interface_safety_title" = "Будь в безопасности онлайн";
+"child_interface_dont_trust_calls" = "Не доверяй звонкам от незнакомцев";
+"child_interface_dont_share_info" = "Никогда не делись личной информацией";
+"child_interface_tell_parents" = "Всегда рассказывай родителям";
+"child_interface_emergency_contacts" = "Экстренные контакты";
+"child_interface_safe_websites" = "Безопасные сайты";
+"child_interface_privacy_settings" = "Настройки приватности";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ДЕТСКИЙ ИНТЕРФЕЙС - ТЕКСТЫ КОНТЕНТА
+ * ═══════════════════════════════════════════════════════════════ */
+
+"child_game_welcome" = "Добро пожаловать в игры!";
+"child_game_greeting" = "Давай играть!";
+"child_game_zone" = "Игровая зона";
+"child_game_adventures" = "Приключения";
+"child_game_puzzles" = "Головоломки";
+"child_game_logic" = "Логические игры";
+"child_game_speed" = "Игры на скорость";
+
+"child_study_welcome" = "Давай учиться!";
+"child_study_learning" = "Зона обучения";
+"child_study_subject_russian" = "Русский язык";
+"child_study_subject_math" = "Математика";
+"child_study_subject_world" = "Мир вокруг нас";
+
+"child_creativity_welcome" = "Давай творить!";
+"child_creativity_create" = "Зона творчества";
+"child_creativity_drawing" = "Рисование";
+"child_creativity_application" = "Аппликации";
+"child_creativity_coloring" = "Раскраски";
+"child_creativity_photo" = "Фото искусство";
+
+"child_cartoons_welcome" = "Смотри мультфильмы!";
+"child_cartoons_favorites" = "Любимые мультфильмы";
+"child_cartoons_robots" = "Приключения роботов";
+"child_cartoons_adventures" = "Великие приключения";
+"child_cartoons_fantasy" = "Мир фантазии";
+
+"child_daily_tip_title" = "Совет дня";
+"child_daily_tip_kids" = "Всегда мой руки перед едой!";
+"child_daily_tip_school" = "Читай минимум 20 минут каждый день!";
+"child_daily_tip_teen" = "Проверяй настройки приватности в соцсетях!";
+"child_daily_tip_young_adult" = "Откладывай 10% от дохода!";
+
+"child_game_content_coming_soon" = "Контент скоро появится...";
 "device_detail_block_confirmation_title" = "Блокировка устройства";
 "device_detail_block_confirmation_message" = "Вы уверены, что хотите заблокировать %@? Доступ к устройству будет ограничен.";
 "device_detail_remove_confirmation_title" = "Удаление устройства";

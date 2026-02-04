@@ -72,16 +72,8 @@ struct ChildContentScreen: View {
         HStack(spacing: 16) {
             // Кнопка назад
             Button(action: {
-                // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
+                // ✅ ПРОСТОЙ ПОДХОД: только dismiss() для NavigationView
                 dismiss()
-                
-                // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                DispatchQueue.main.async {
-                    if navigationManager.canGoBack {
-                        navigationManager.goBack()
-                    }
-                }
             }) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 20, weight: .semibold))
@@ -92,7 +84,7 @@ struct ChildContentScreen: View {
                             .fill(Color.white.opacity(0.2))
                     )
             }
-            .accessibilityLabel("Назад")
+            .accessibilityLabel(localizationManager.localized("child_interface_back"))
             
             // Заголовок
             VStack(alignment: .leading, spacing: 4) {
@@ -160,28 +152,28 @@ struct ChildContentScreen: View {
     
     private var greetingText: String {
         // Используем только локализованные значения
-        if category == localizationManager.localized("child_interface_category_games") {
+        if category == "child_interface_category_games" {
             return localizationManager.localized("child_game_greeting")
         }
-        if category == localizationManager.localized("child_interface_category_study") {
+        if category == "child_interface_category_study" {
             return localizationManager.localized("child_study_welcome")
         }
-        if category == localizationManager.localized("child_interface_category_creativity") {
+        if category == "child_interface_category_creativity" {
             return localizationManager.localized("child_creativity_welcome")
         }
-        if category == localizationManager.localized("child_interface_category_cartoons") {
+        if category == "child_interface_category_cartoons" {
             return localizationManager.localized("child_cartoons_welcome")
         }
-        if category == localizationManager.localized("child_interface_category_toys") {
+        if category == "child_interface_category_toys" {
             return localizationManager.localized("child_game_welcome")
         }
-        if category == localizationManager.localized("child_interface_category_drawing") {
+        if category == "child_interface_category_drawing" {
             return localizationManager.localized("child_creativity_welcome")
         }
-        if category == localizationManager.localized("child_interface_category_songs") {
+        if category == "child_interface_category_songs" {
             return localizationManager.localized("child_game_welcome")
         }
-        if category == localizationManager.localized("child_interface_category_stories") {
+        if category == "child_interface_category_stories" {
             return localizationManager.localized("child_game_welcome")
         }
         // Fallback только на локализованное значение
@@ -209,14 +201,14 @@ struct ChildContentScreen: View {
     
     private var kidsContent: some View {
         VStack(spacing: 16) {
-            // Используем только локализованные значения
-            if category == localizationManager.localized("child_interface_category_toys") {
+            // Сравниваем с ключами локализации
+            if category == "child_interface_category_toys" {
                 toysContent
-            } else if category == localizationManager.localized("child_interface_category_drawing") {
+            } else if category == "child_interface_category_drawing" {
                 drawingContent
-            } else if category == localizationManager.localized("child_interface_category_songs") {
+            } else if category == "child_interface_category_songs" {
                 songsContent
-            } else if category == localizationManager.localized("child_interface_category_stories") {
+            } else if category == "child_interface_category_stories" {
                 fairyTalesContent
             } else {
                 defaultContent
@@ -396,13 +388,13 @@ struct ChildContentScreen: View {
     private var schoolContent: some View {
         VStack(spacing: 16) {
             // Сначала проверяем локализованные значения
-            if category == localizationManager.localized("child_interface_category_games") {
+            if category == "child_interface_category_games" {
                 gamesContent
-            } else if category == localizationManager.localized("child_interface_category_study") {
+            } else if category == "child_interface_category_study" {
                 studyContent
-            } else if category == localizationManager.localized("child_interface_category_creativity") {
+            } else if category == "child_interface_category_creativity" {
                 creativityContent
-            } else if category == localizationManager.localized("child_interface_category_cartoons") {
+            } else if category == "child_interface_category_cartoons" {
                 cartoonsContent
             } else {
                 defaultContent
@@ -587,13 +579,13 @@ struct ChildContentScreen: View {
     private var teenContent: some View {
         VStack(spacing: 16) {
             // Используем только локализованные значения
-            if category == localizationManager.localized("child_interface_category_programming") {
+            if category == "child_interface_category_programming" {
                 programmingContent
-            } else if category == localizationManager.localized("child_interface_category_social") {
+            } else if category == "child_interface_category_social" {
                 socialMediaContent
-            } else if category == localizationManager.localized("child_interface_category_music") {
+            } else if category == "child_interface_category_music" {
                 musicContent
-            } else if category == localizationManager.localized("child_interface_category_video") {
+            } else if category == "child_interface_category_video" {
                 videoContent
             } else {
                 defaultContent
@@ -770,13 +762,13 @@ struct ChildContentScreen: View {
     private var youngAdultContent: some View {
         VStack(spacing: 16) {
             // Используем только локализованные значения
-            if category == localizationManager.localized("child_interface_category_education") {
+            if category == "child_interface_category_education" {
                 educationContent
-            } else if category == localizationManager.localized("child_interface_category_career") {
+            } else if category == "child_interface_category_career" {
                 careerContent
-            } else if category == localizationManager.localized("child_interface_category_internet") {
+            } else if category == "child_interface_category_internet" {
                 internetContent
-            } else if category == localizationManager.localized("child_interface_category_movies") {
+            } else if category == "child_interface_category_movies" {
                 cinemaContent
             } else {
                 defaultContent

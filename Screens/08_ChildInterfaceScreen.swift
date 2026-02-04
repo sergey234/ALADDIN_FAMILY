@@ -131,16 +131,8 @@ struct ChildInterfaceScreen: View {
         HStack(spacing: 12) {
             // Кнопка назад
             Button(action: {
-                // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
+                // ✅ ПРОСТОЙ ПОДХОД: только dismiss() для NavigationView
                 dismiss()
-                
-                // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                DispatchQueue.main.async {
-                    if navigationManager.canGoBack {
-                        navigationManager.goBack()
-                    }
-                }
             }) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 18, weight: .semibold))
@@ -196,7 +188,7 @@ struct ChildInterfaceScreen: View {
             
             // Приветствие
             VStack(alignment: .leading, spacing: 2) {
-                Text(String(format: localizationManager.localized("child_interface_hello"), "Маша"))
+                Text(String(format: localizationManager.localized("child_interface_hello"), getUserName()))
                     .font(.title)
                     .foregroundColor(.white)
                 
@@ -503,7 +495,16 @@ struct ChildInterfaceScreen: View {
         )
         .padding(.horizontal, 20)
     }
-    
+
+    // MARK: - User Name Management
+
+    private func getUserName() -> String {
+        // Получаем имя текущего пользователя из профиля
+        // TODO: Реализовать получение имени из FamilyViewModel или UserDefaults
+        // Пока возвращаем fallback
+        return "Friend"
+    }
+
     // MARK: - Profile Image Management
     
     private func loadProfileImage() {
