@@ -454,6 +454,12 @@ struct ALADDINApp: App {
             storeManager.activateFreeTariff()
             print("✅ First launch: Free tariff activated automatically")
         }
+
+        // ✅ ЗАГРУЖАЕМ ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ
+        // UserProfileManager инициализируется автоматически при первом обращении
+        // и загружает профиль в фоне
+        _ = UserProfileManager.shared
+        print("✅ UserProfileManager initialized and profile loading started")
         
         let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
         print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")

@@ -48,6 +48,10 @@ class ProfileViewModel: ObservableObject {
                     self?.threatsBlocked = profile.threatsBlocked
                     self?.familyMembers = profile.familyMembers
                     self?.devices = profile.devices
+
+                    // ✅ ДОБАВЛЕНО: Сохраняем имя пользователя для детского интерфейса
+                    self?.saveUserNameToCache(profile.name)
+                case .failure(let error):
                     
                     // ✅ ПЛАНИРОВАНИЕ УВЕДОМЛЕНИЙ О ПОДПИСКЕ (при загрузке профиля)
                     // Если есть активная подписка с датой окончания, планируем уведомления
@@ -124,6 +128,17 @@ class ProfileViewModel: ObservableObject {
         
         print("⚠️ Не удалось распарсить дату окончания подписки: \(dateString)")
         return nil
+    }
+
+    // MARK: - User Name Caching
+
+    /// Сохраняет имя пользователя в кеш для быстрого доступа из детского интерфейса
+    private func saveUserNameToCache(_ name: String) {
+        UserDefaults.standard.set(name, forKey: "user_display_name")
+        UserDefaults.standard.set(name, forKey: "user_profile_name") // Дублируем для совместимости
+        UserDefaults.standard.synchronize()
+
+        print("✅ User name cached for child interface: \(name)")
     }
 }
 

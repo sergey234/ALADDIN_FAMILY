@@ -499,10 +499,9 @@ struct ChildInterfaceScreen: View {
     // MARK: - User Name Management
 
     private func getUserName() -> String {
-        // Получаем имя текущего пользователя из профиля
-        // TODO: Реализовать получение имени из FamilyViewModel или UserDefaults
-        // Пока возвращаем fallback
-        return "Friend"
+        // Используем UserProfileManager для получения имени пользователя
+        // Менеджер автоматически загружает и кеширует профиль
+        return UserProfileManager.shared.displayName
     }
 
     // MARK: - Profile Image Management

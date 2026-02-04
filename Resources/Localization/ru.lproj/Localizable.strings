@@ -430,6 +430,7 @@
 "child_interface_emergency_contacts" = "Экстренные контакты";
 "child_interface_safe_websites" = "Безопасные сайты";
 "child_interface_privacy_settings" = "Настройки приватности";
+"child_interface_default_name" = "Друг";
 
 /* ═══════════════════════════════════════════════════════════════
  * ДЕТСКИЙ ИНТЕРФЕЙС - ТЕКСТЫ КОНТЕНТА

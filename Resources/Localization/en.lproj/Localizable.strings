@@ -309,6 +309,7 @@
 "child_interface_emergency_contacts" = "Emergency Contacts";
 "child_interface_safe_websites" = "Safe Websites";
 "child_interface_privacy_settings" = "Privacy Settings";
+"child_interface_default_name" = "Friend";
 
 /* ═══════════════════════════════════════════════════════════════
  * CHILD INTERFACE - CONTENT TEXTS
