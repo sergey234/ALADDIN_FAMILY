@@ -40,40 +40,6 @@
 			<key>uniqueIdentifier</key>
 			<string>0CA2F288-B40F-48BA-96E1-B7ABB702EDDC</string>
 		</dict>
-		<key>9AA815E6-741D-4485-8E8F-426186FE34F4</key>
-		<dict>
-			<key>className</key>
-			<string>IDECommandLineBuildLog</string>
-			<key>documentTypeString</key>
-			<string>&lt;nil&gt;</string>
-			<key>domainType</key>
-			<string>Xcode.IDEActivityLogDomainType.BuildLog</string>
-			<key>fileName</key>
-			<string>9AA815E6-741D-4485-8E8F-426186FE34F4.xcactivitylog</string>
-			<key>hasPrimaryLog</key>
-			<true/>
-			<key>primaryObservable</key>
-			<dict>
-				<key>highLevelStatus</key>
-				<string>S</string>
-			</dict>
-			<key>schemeIdentifier-containerName</key>
-			<string>ALADDIN project</string>
-			<key>schemeIdentifier-schemeName</key>
-			<string>ALADDIN</string>
-			<key>schemeIdentifier-sharedScheme</key>
-			<integer>1</integer>
-			<key>signature</key>
-			<string>Building project ALADDIN with scheme ALADDIN</string>
-			<key>timeStartedRecording</key>
-			<real>788823989.10365605</real>
-			<key>timeStoppedRecording</key>
-			<real>788823989.84929395</real>
-			<key>title</key>
-			<string>Building project ALADDIN with scheme ALADDIN</string>
-			<key>uniqueIdentifier</key>
-			<string>9AA815E6-741D-4485-8E8F-426186FE34F4</string>
-		</dict>
 	</dict>
 </dict>
 </plist>

@@ -74,6 +74,10 @@
 		5E61A0A12EFB38ED0039093A /* blockerList.json in Resources */ = {isa = PBXBuildFile; fileRef = 5E61A0A02EFB38ED0039093A /* blockerList.json */; };
 		5E61A0A72EFB38ED0039093A /* ALADDINContentBlocker.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5E61A0AC2EFB38ED0039093A /* ActionRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */; };
+		5E6C6AFE2F34C97800F6FFEA /* GeofenceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6AFD2F34C97800F6FFEA /* GeofenceModels.swift */; };
+		5E6C6B002F34C98400F6FFEA /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6AFF2F34C98400F6FFEA /* LocationManager.swift */; };
+		3C60A5AAB8864F8D9C6B26CD /* CrashDetectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C60A5AAB8864F8D9C6B26CC /* CrashDetectionManager.swift */; };
+		4939F9FBCAB0451CA5AC66AC /* CrashDetectionAlertModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4939F9FBCAB0451CA5AC66AB /* CrashDetectionAlertModal.swift */; };
 		5E6F38F72F151E1400CEC103 /* MediaMessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */; };
 		5E6F38F92F151E2800CEC103 /* MessageActionsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */; };
 		5E6F38FB2F151E3700CEC103 /* MessageReactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */; };
@@ -89,14 +93,12 @@
 		5E6F390F2F15211800CEC103 /* ChatSearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F390E2F15211800CEC103 /* ChatSearchBar.swift */; };
 		5E6F39132F15AC3300CEC103 /* NetworkProtectionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39122F15AC3300CEC103 /* NetworkProtectionViewModel.swift */; };
 		5E6F39152F15AC4400CEC103 /* ProtectionSettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39142F15AC4400CEC103 /* ProtectionSettingsViewModel.swift */; };
-		5E6F39172F15AC5600CEC103 /* ParentalControlViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000034 /* ViewModels/ParentalControlViewModel.swift */; };
 		5E6F391C2F15ADF200CEC103 /* NetworkProtectionViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39102F15ABF200CEC103 /* NetworkProtectionViewModelTests.swift */; };
 		5E6F391D2F15AE1500CEC103 /* NetworkProtectionScreenUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F391A2F15AC7B00CEC103 /* NetworkProtectionScreenUITests.swift */; };
 		5E6F391E2F15AE3600CEC103 /* ParentalControlScreenUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39182F15AC6F00CEC103 /* ParentalControlScreenUITests.swift */; };
 		5E6F39202F15AED900CEC103 /* ComponentCacheServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F391F2F15AED900CEC103 /* ComponentCacheServiceTests.swift */; };
 		5E6F39222F15AEE800CEC103 /* ComponentConfigurationServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39212F15AEE800CEC103 /* ComponentConfigurationServiceTests.swift */; };
 		5E6F39242F15AEF200CEC103 /* ComponentStatusServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39232F15AEF200CEC103 /* ComponentStatusServiceTests.swift */; };
-		5E6F39262F15AF2A00CEC103 /* FamilyNotificationSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E07981E2F17D2AB00D20CF6 /* FamilyNotificationSettingsModal.swift */; };
 		5E6F39282F15AF3700CEC103 /* AnalyticsSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39272F15AF3700CEC103 /* AnalyticsSettingsModal.swift */; };
 		5E6F392A2F15AF4000CEC103 /* IncidentResponseSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39292F15AF4000CEC103 /* IncidentResponseSettingsModal.swift */; };
 		5E6F392C2F15AF4E00CEC103 /* PasswordGeneratorModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F392B2F15AF4E00CEC103 /* PasswordGeneratorModal.swift */; };
@@ -111,7 +113,6 @@
 		5E6F393E2F15AFF700CEC103 /* ComponentCacheService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F393D2F15AFF700CEC103 /* ComponentCacheService.swift */; };
 		5E6F39402F15B00100CEC103 /* ComponentConfigurationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F393F2F15B00100CEC103 /* ComponentConfigurationService.swift */; };
 		5E6F39422F15B00B00CEC103 /* ComponentStatusService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39412F15B00B00CEC103 /* ComponentStatusService.swift */; };
-		5E6F39442F15B02C00CEC103 /* APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000004 /* Core/Models/APIModels.swift */; };
 		5E6F39462F15B03800CEC103 /* ComponentConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39452F15B03700CEC103 /* ComponentConfiguration.swift */; };
 		5E6F39482F15B04400CEC103 /* ComponentError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39472F15B04400CEC103 /* ComponentError.swift */; };
 		5E6F394A2F15B05000CEC103 /* ComponentStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39492F15B05000CEC103 /* ComponentStatus.swift */; };
@@ -366,6 +367,10 @@
 		5E61A0A02EFB38ED0039093A /* blockerList.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = blockerList.json; sourceTree = "<group>"; };
 		5E61A0A42EFB38ED0039093A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionRequestHandler.swift; sourceTree = "<group>"; };
+		5E6C6AFD2F34C97800F6FFEA /* GeofenceModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceModels.swift; path = Core/Models/GeofenceModels.swift; sourceTree = "<group>"; };
+		5E6C6AFF2F34C98400F6FFEA /* LocationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocationManager.swift; path = Core/Managers/LocationManager.swift; sourceTree = "<group>"; };
+		3C60A5AAB8864F8D9C6B26CC /* CrashDetectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CrashDetectionManager.swift; path = Core/Managers/CrashDetectionManager.swift; sourceTree = "<group>"; };
+		4939F9FBCAB0451CA5AC66AB /* CrashDetectionAlertModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CrashDetectionAlertModal.swift; path = Shared/Components/Modals/CrashDetectionAlertModal.swift; sourceTree = "<group>"; };
 		5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MediaMessageBubble.swift; path = Shared/Components/Chat/MediaMessageBubble.swift; sourceTree = "<group>"; };
 		5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MessageActionsMenu.swift; path = Shared/Components/Chat/MessageActionsMenu.swift; sourceTree = "<group>"; };
 		5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MessageReactionsView.swift; path = Shared/Components/Chat/MessageReactionsView.swift; sourceTree = "<group>"; };
@@ -690,6 +695,9 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5E6C6AFF2F34C98400F6FFEA /* LocationManager.swift */,
+				3C60A5AAB8864F8D9C6B26CC /* CrashDetectionManager.swift */,
+				5E6C6AFD2F34C97800F6FFEA /* GeofenceModels.swift */,
 				5E07983C2F18566300D20CF6 /* DarkWebDataInputView.swift */,
 				5E07983A2F18563500D20CF6 /* DarkWebScanMethodSelector.swift */,
 				5E0798382F18561A00D20CF6 /* DarkWebScanExplanationView.swift */,
@@ -704,6 +712,7 @@
 				5E07981C2F17D29400D20CF6 /* DarkWebMonitoringModal.swift */,
 				5E07982C2F17D9C500D20CF6 /* DarkWebMonitoringViewModel.swift */,
 				5E07981A2F17D28200D20CF6 /* IdentityTheftModal.swift */,
+				4939F9FBCAB0451CA5AC66AB /* CrashDetectionAlertModal.swift */,
 				5E07982E2F17D9EB00D20CF6 /* IdentityTheftViewModel.swift */,
 				5E0798182F17D26E00D20CF6 /* PrivacyReportsModal.swift */,
 				5E0798302F17DA1E00D20CF6 /* PrivacyReportsViewModel.swift */,
@@ -1217,6 +1226,9 @@
 				5E07981D2F17D29400D20CF6 /* DarkWebMonitoringModal.swift in Sources */,
 				5EC309162EA6B62B00C7D34B /* 14_OnboardingScreen.swift in Sources */,
 				5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */,
+				5E6C6B002F34C98400F6FFEA /* LocationManager.swift in Sources */,
+				3C60A5AAB8864F8D9C6B26CD /* CrashDetectionManager.swift in Sources */,
+				4939F9FBCAB0451CA5AC66AC /* CrashDetectionAlertModal.swift in Sources */,
 				A3000039 /* ViewModels/PaymentQRViewModel.swift in Sources */,
 				5E6F38F72F151E1400CEC103 /* MediaMessageBubble.swift in Sources */,
 				A3000041 /* Core/Navigation/NavigationManager.swift in Sources */,
@@ -1271,6 +1283,7 @@
 				5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */,
 				5E0058132EC4A66600024F7E /* ProtectionSettings.swift in Sources */,
 				A4BBB101 /* RemoteNotificationsService.swift in Sources */,
+				5E6C6AFE2F34C97800F6FFEA /* GeofenceModels.swift in Sources */,
 				5E6F39462F15B03800CEC103 /* ComponentConfiguration.swift in Sources */,
 				5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */,
 				5E07981F2F17D2AB00D20CF6 /* FamilyNotificationSettingsModal.swift in Sources */,
@@ -1382,7 +1395,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1414,7 +1427,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1570,7 +1583,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1602,7 +1615,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1633,7 +1646,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1658,7 +1671,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1681,7 +1694,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1705,7 +1718,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 26;
+				CURRENT_PROJECT_VERSION = 27;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;

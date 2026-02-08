@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreLocation
 
 /**
  * 🔒 Privacy Reports Modal
@@ -13,6 +14,9 @@ struct PrivacyReportsModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var viewModel = PrivacyReportsViewModel()
+    
+    // ✅ ИНТЕГРАЦИЯ LocationManager
+    @StateObject private var locationManager = LocationManager.shared
     
     @State private var selectedTab: PrivacyTabType = .location
     @State private var showAccuracySheet: Bool = false

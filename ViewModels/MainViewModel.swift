@@ -140,7 +140,8 @@ class MainViewModel: ObservableObject {
                 self.lastUpdateTime = Date()
                 self.errorMessage = nil
                 self.familyProtectionStatus = .active
-                self.familyProtectionStatusMessage = "Демо режим - используйте performRealLogin() для реальной авторизации"
+                let localizationManager = LocalizationManager()
+                self.familyProtectionStatusMessage = localizationManager.localized("main_family_protection_status_message")
                 NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
             }
             return

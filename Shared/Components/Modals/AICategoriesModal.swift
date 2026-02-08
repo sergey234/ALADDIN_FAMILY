@@ -79,7 +79,7 @@ struct AICategoriesModal: View {
         }
         .task {
             await loadChildren()
-            await loadReports()
+            loadReports()
         }
         .overlay(alignment: .center) {
             if viewModel.isLoading {

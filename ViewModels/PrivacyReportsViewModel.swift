@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import CoreLocation
 
 /**
  * 🔒 Privacy Reports ViewModel
@@ -31,6 +32,7 @@ class PrivacyReportsViewModel: ObservableObject {
     
     private let apiService: APIService
     private let localizationManager: LocalizationManager
+    private let locationManager = LocationManager.shared
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
@@ -203,22 +205,87 @@ class PrivacyReportsViewModel: ObservableObject {
     
     // MARK: - Location Actions
     
+    /// ✅ ИНТЕГРАЦИЯ: Разрешить запрос местоположения с отправкой координат
     func allowLocationRequest(requestId: String) async {
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
         
         do {
+            // ✅ ИНТЕГРАЦИЯ: Получаем текущее местоположение перед разрешением
+            let location = try await locationManager.getCurrentLocation()
+            print("📍 PrivacyReportsViewModel: Получено местоположение для запроса \(requestId): \(location.coordinate.latitude), \(location.coordinate.longitude)")
+            
+            // Отправляем разрешение на сервер
             try await withCheckedThrowingContinuation { continuation in
                 apiService.allowLocationRequest(requestId: requestId) { result in
                     continuation.resume(with: result.map { _ in () })
                 }
             }
+            
+            // ✅ ИНТЕГРАЦИЯ: Отправляем координаты на сервер
+            try await withCheckedThrowingContinuation { continuation in
+                apiService.sendLocationForRequest(requestId: requestId, latitude: location.coordinate.latitude, longitude: location.coordinate.longitude) { result in
+                    continuation.resume(with: result.map { _ in () })
+                }
+            }
+            
+            await loadLocationData()
+        } catch {
+            // Если ошибка получения местоположения - все равно разрешаем запрос
+            if error is LocationManagerError {
+                print("⚠️ PrivacyReportsViewModel: Ошибка получения местоположения, но разрешаем запрос: \(error.localizedDescription)")
+                // Продолжаем без координат
+                do {
+                    try await withCheckedThrowingContinuation { continuation in
+                        apiService.allowLocationRequest(requestId: requestId) { result in
+                            continuation.resume(with: result.map { _ in () })
+                        }
+                    }
+                    await loadLocationData()
+                } catch {
+                    let networkError = NetworkError.from(error)
+                    if networkError.isCritical || !networkError.isRetryable {
+                        let errorKey = "privacy_location_error_action_failed"
+                        let errorFormat = localizationManager.localized(errorKey)
+                        errorMessage = String(format: errorFormat, networkError.localizedDescription)
+                    }
+                }
+            } else {
+                let networkError = NetworkError.from(error)
+                if networkError.isCritical || !networkError.isRetryable {
+                    let errorKey = "privacy_location_error_action_failed"
+                    let errorFormat = localizationManager.localized(errorKey)
+                    errorMessage = String(format: errorFormat, networkError.localizedDescription)
+                }
+            }
+        }
+    }
+    
+    /// ✅ ИНТЕГРАЦИЯ: Отправить Location Bubble (точные координаты для генерации приблизительного)
+    func sendLocationBubble() async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            // ✅ ИНТЕГРАЦИЯ: Получаем текущее местоположение
+            let location = try await locationManager.getCurrentLocation()
+            print("📍 PrivacyReportsViewModel: Отправка Location Bubble: \(location.coordinate.latitude), \(location.coordinate.longitude)")
+            
+            // ✅ ИНТЕГРАЦИЯ: Отправляем координаты на сервер для генерации "пузыря"
+            try await withCheckedThrowingContinuation { continuation in
+                apiService.sendLocationBubble(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude) { result in
+                    continuation.resume(with: result.map { _ in () })
+                }
+            }
+            
+            // Обновляем данные
             await loadLocationData()
         } catch {
             let networkError = NetworkError.from(error)
             if networkError.isCritical || !networkError.isRetryable {
-                let errorKey = "privacy_location_error_action_failed"
+                let errorKey = "privacy_location_error_bubble_failed"
                 let errorFormat = localizationManager.localized(errorKey)
                 errorMessage = String(format: errorFormat, networkError.localizedDescription)
             }

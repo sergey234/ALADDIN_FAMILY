@@ -1,0 +1,14 @@
+{
+  "aladdin_cert": {
+    "exists": true,
+    "size": 936,
+    "readable": true,
+    "bundle_path": "aladdin_cert.cer"
+  },
+  "aladdin_cert_backup": {
+    "exists": true,
+    "size": 936,
+    "readable": true,
+    "bundle_path": "aladdin_cert_backup.cer"
+  }
+}

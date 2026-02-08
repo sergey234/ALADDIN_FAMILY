@@ -244,7 +244,6 @@
 "device_detail_tab_switch_hint" = "Switch to %@ tab";
 "device_detail_tab_selector" = "Tab selector, current: %@";
 "device_detail_accessibility" = "Device details for %@";
-"device_detail_stats_protection_level" = "Protection Level";
 
 /* ═══════════════════════════════════════════════════════════════
  * CHILD INTERFACE - BASIC
@@ -354,6 +353,24 @@
 "device_detail_remove_confirmation_title" = "Remove Device";
 "device_detail_remove_confirmation_message" = "Are you sure you want to remove %@? This action cannot be undone.";
 "device_detail_action_success" = "Action completed successfully";
+"device_detail_threat_severity" = "Threat level: %@";
+"device_detail_threat_time" = "time: %@";
+"device_detail_threat_accessibility" = "Threat from %@, level %@, %@";
+"device_detail_threat_severity_low" = "Low";
+"device_detail_threat_severity_medium" = "Medium";
+"device_detail_threat_severity_high" = "High";
+"device_detail_protection_enabled" = "Protection enabled";
+"device_detail_scanning_enabled" = "Scanning enabled";
+"device_detail_threat_malicious_site" = "Malicious site";
+"device_detail_threat_tracker_blocked" = "Tracker blocked";
+"device_detail_threat_phishing_attempt" = "Phishing attempt";
+"device_detail_threat_time_5_min" = "5 min ago";
+"device_detail_threat_time_15_min" = "15 min ago";
+"device_detail_threat_time_1_hour" = "1 hour ago";
+"main_demo_mode_message" = "Demo mode - use performRealLogin() for real authentication";
+"common_cancel" = "Cancel";
+"common_error" = "Error";
+"common_ok" = "OK";
 
 /* ═══════════════════════════════════════════════════════════════
  * ADD DEVICE FORM
@@ -913,6 +930,20 @@
 "analytics_settings_frequency_weekly" = "Weekly";
 "analytics_settings_frequency_monthly" = "Monthly";
 "analytics_settings_button" = "Analytics Settings";
+
+/* ═══════════════════════════════════════════════════════════════
+ * CRASH DETECTION
+ * ═══════════════════════════════════════════════════════════════ */
+
+"crash_detection_monitoring_active" = "Monitoring active";
+"crash_detection_crash_detected" = "Crash detected!";
+"crash_detection_countdown" = "Calling 112 in %d sec";
+"crash_detection_cancel" = "Cancel";
+"crash_detection_call_112" = "Call 112";
+"crash_detection_sensitivity" = "Sensitivity";
+"crash_detection_sensitivity_low" = "Low";
+"crash_detection_sensitivity_medium" = "Medium";
+"crash_detection_sensitivity_high" = "High";
 
 /* ═══════════════════════════════════════════════════════════════
  * ACCESSIBILITY

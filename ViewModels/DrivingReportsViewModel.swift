@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import CoreLocation
 
 /**
  * 🚗 Driving Reports ViewModel
@@ -20,6 +21,7 @@ class DrivingReportsViewModel: ObservableObject {
     
     private let apiService: APIService
     private let localizationManager: LocalizationManager
+    private let locationManager = LocationManager.shared
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Initialization
@@ -88,6 +90,80 @@ class DrivingReportsViewModel: ObservableObject {
         return try await withCheckedThrowingContinuation { continuation in
             apiService.exportDrivingReport(reportId: reportId, format: format) { result in
                 continuation.resume(with: result)
+            }
+        }
+    }
+    
+    // ✅ ИНТЕГРАЦИЯ: Начать поездку с получением координат
+    func startTrip(userId: String?) async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            // ✅ ИНТЕГРАЦИЯ: Получаем текущее местоположение при начале поездки
+            let startLocation = try await locationManager.getCurrentLocation()
+            print("📍 DrivingReportsViewModel: Начало поездки для пользователя \(userId ?? "current"): \(startLocation.coordinate.latitude), \(startLocation.coordinate.longitude)")
+            
+            // ✅ ИНТЕГРАЦИЯ: Отправляем координаты начала поездки на сервер
+            try await withCheckedThrowingContinuation { continuation in
+                apiService.startDrivingTrip(userId: userId, startLatitude: startLocation.coordinate.latitude, startLongitude: startLocation.coordinate.longitude) { result in
+                    continuation.resume(with: result.map { _ in () })
+                }
+            }
+            
+            // Обновляем отчеты
+            await loadReports(userId: userId, period: "week")
+        } catch {
+            // Если ошибка получения местоположения - все равно начинаем поездку
+            if error is LocationManagerError {
+                print("⚠️ DrivingReportsViewModel: Ошибка получения местоположения, но начинаем поездку: \(error.localizedDescription)")
+                // Продолжаем без координат
+                await loadReports(userId: userId, period: "week")
+            } else {
+                let networkError = NetworkError.from(error)
+                if networkError.isCritical || !networkError.isRetryable {
+                    let errorKey = "driving_reports_error_start_failed"
+                    let errorFormat = localizationManager.localized(errorKey)
+                    errorMessage = String(format: errorFormat, networkError.localizedDescription)
+                }
+            }
+        }
+    }
+    
+    // ✅ ИНТЕГРАЦИЯ: Завершить поездку с получением координат
+    func endTrip(userId: String?, tripId: String?) async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        
+        do {
+            // ✅ ИНТЕГРАЦИЯ: Получаем текущее местоположение при завершении поездки
+            let endLocation = try await locationManager.getCurrentLocation()
+            print("📍 DrivingReportsViewModel: Завершение поездки \(tripId ?? "current"): \(endLocation.coordinate.latitude), \(endLocation.coordinate.longitude)")
+            
+            // ✅ ИНТЕГРАЦИЯ: Отправляем координаты конца поездки на сервер
+            try await withCheckedThrowingContinuation { continuation in
+                apiService.endDrivingTrip(tripId: tripId ?? "current", endLatitude: endLocation.coordinate.latitude, endLongitude: endLocation.coordinate.longitude) { result in
+                    continuation.resume(with: result.map { _ in () })
+                }
+            }
+            
+            // Обновляем отчеты
+            await loadReports(userId: userId, period: "week")
+        } catch {
+            // Если ошибка получения местоположения - все равно завершаем поездку
+            if error is LocationManagerError {
+                print("⚠️ DrivingReportsViewModel: Ошибка получения местоположения, но завершаем поездку: \(error.localizedDescription)")
+                // Продолжаем без координат
+                await loadReports(userId: userId, period: "week")
+            } else {
+                let networkError = NetworkError.from(error)
+                if networkError.isCritical || !networkError.isRetryable {
+                    let errorKey = "driving_reports_error_end_failed"
+                    let errorFormat = localizationManager.localized(errorKey)
+                    errorMessage = String(format: errorFormat, networkError.localizedDescription)
+                }
             }
         }
     }

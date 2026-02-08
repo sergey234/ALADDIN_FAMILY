@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreLocation
 
 /**
  * 🚗 Driving Reports Modal
@@ -15,6 +16,9 @@ struct DrivingReportsModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var positioningService = PositioningSystemService.shared
     @StateObject private var viewModel = DrivingReportsViewModel()
+    
+    // ✅ ИНТЕГРАЦИЯ LocationManager
+    @StateObject private var locationManager = LocationManager.shared
     
     // Выбранный пользователь
     @AppStorage("driving_reports_selected_user_id") private var selectedUserId: String = ""
@@ -436,13 +440,17 @@ struct DrivingReportsModal: View {
         isLoadingUsers = true
         defer { isLoadingUsers = false }
         
+        print("🔍 DrivingReportsModal: Начинаем загрузку пользователей...")
+        
         do {
-            // Загружаем список членов семьи
+            // Загружаем список членов семьи из API
             let familyMembers: [FamilyMemberResponse] = try await withCheckedThrowingContinuation { continuation in
                 APIService.shared.getFamilyMembers { result in
                     continuation.resume(with: result)
                 }
             }
+            
+            print("✅ DrivingReportsModal: Загружено \(familyMembers.count) членов семьи из API")
             
             // Преобразуем в UserOption
             users = familyMembers.map { member in
@@ -454,17 +462,82 @@ struct DrivingReportsModal: View {
                 )
             }
             
+            print("✅ DrivingReportsModal: Создано \(users.count) опций пользователей")
+            
             // Устанавливаем текущего пользователя (первый родитель или текущий пользователь)
             if let currentUser = familyMembers.first(where: { $0.role == "parent" }) {
                 currentUserId = currentUser.id
+                print("✅ DrivingReportsModal: Текущий пользователь установлен: \(currentUser.name) (ID: \(currentUser.id))")
+            } else if let firstMember = familyMembers.first {
+                // Если нет родителя, используем первого члена семьи
+                currentUserId = firstMember.id
+                print("✅ DrivingReportsModal: Текущий пользователь установлен (первый член): \(firstMember.name) (ID: \(firstMember.id))")
             } else {
+                // Если список пуст, используем "current"
                 currentUserId = "current"
+                print("⚠️ DrivingReportsModal: Список членов семьи пуст, используем 'current'")
             }
+            
+            // Если список пуст после загрузки, пробуем загрузить из UserDefaults как fallback
+            if users.isEmpty {
+                print("⚠️ DrivingReportsModal: Список пользователей пуст, пробуем загрузить из UserDefaults...")
+                await loadUsersFromUserDefaults()
+            }
+            
         } catch {
-            // В случае ошибки используем только текущего пользователя
-            users = []
-            currentUserId = "current"
-            print("⚠️ Failed to load family members, using current user only")
+            let errorDescription = error.localizedDescription
+            print("❌ DrivingReportsModal: Ошибка загрузки членов семьи из API: \(errorDescription)")
+            print("   Тип ошибки: \(type(of: error))")
+            
+            // Пробуем загрузить из UserDefaults как fallback
+            await loadUsersFromUserDefaults()
+            
+            // Если и из UserDefaults ничего не загрузилось, используем только текущего пользователя
+            if users.isEmpty {
+                currentUserId = "current"
+                print("⚠️ DrivingReportsModal: Используем только текущего пользователя (fallback)")
+            }
+        }
+        
+        print("✅ DrivingReportsModal: Загрузка пользователей завершена. Всего: \(users.count), текущий: \(currentUserId)")
+    }
+    
+    /// Загрузка пользователей из UserDefaults как fallback
+    private func loadUsersFromUserDefaults() async {
+        let familyMembersKey = "family_members_list"
+        if let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
+           let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
+            
+            print("✅ DrivingReportsModal: Загружено \(decoded.count) членов семьи из UserDefaults")
+            
+            users = decoded.map { member in
+                // Преобразуем FamilyRole в строку для UserOption
+                let roleString: String
+                switch member.role {
+                case .parent: roleString = "parent"
+                case .child: roleString = "child"
+                case .teenager: roleString = "teenager"
+                case .elderly: roleString = "elderly"
+                }
+                
+                return UserSelectorView.UserOption(
+                    id: member.id.uuidString,
+                    name: member.name,
+                    role: roleString,
+                    avatar: member.avatar
+                )
+            }
+            
+            // Устанавливаем текущего пользователя (первый родитель или первый член)
+            if let currentUser = decoded.first(where: { $0.role == .parent }) {
+                currentUserId = currentUser.id.uuidString
+                print("✅ DrivingReportsModal: Текущий пользователь из UserDefaults: \(currentUser.name)")
+            } else if let firstMember = decoded.first {
+                currentUserId = firstMember.id.uuidString
+                print("✅ DrivingReportsModal: Текущий пользователь из UserDefaults (первый): \(firstMember.name)")
+            }
+        } else {
+            print("⚠️ DrivingReportsModal: Нет данных в UserDefaults")
         }
     }
     

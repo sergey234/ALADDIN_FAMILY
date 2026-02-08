@@ -1,0 +1,90 @@
+{
+  "status": [
+    {
+      "url": "https://aladdin-ai.ru/api/components/status/crash_detection_agent",
+      "method": "GET",
+      "status_code": 200,
+      "response_time": 0.124,
+      "success": true,
+      "error": null,
+      "response_preview": "{\n  \"status\": \"enabled\",\n  \"uptime\": 99.8,\n  \"last_check\": \"2026-02-03T12:00:00Z\",\n  \"version\": \"1.0.0\",\n  \"source\": \"real_sfm\",\n  \"function\": \"get_component_status\",\n  \"timestamp\": \"2026-02-07T12:10:..."
+    },
+    {
+      "url": "https://aladdin-ai.ru/api/components/status/sfm_core",
+      "method": "GET",
+      "status_code": 200,
+      "response_time": 0.097,
+      "success": true,
+      "error": null,
+      "response_preview": "{\n  \"status\": \"enabled\",\n  \"uptime\": 99.8,\n  \"last_check\": \"2026-02-03T12:00:00Z\",\n  \"version\": \"1.0.0\",\n  \"source\": \"real_sfm\",\n  \"function\": \"get_component_status\",\n  \"timestamp\": \"2026-02-07T12:10:..."
+    },
+    {
+      "url": "https://aladdin-ai.ru/components/status/crash_detection_agent",
+      "method": "GET",
+      "status_code": 404,
+      "response_time": 0.106,
+      "success": false,
+      "error": null
+    },
+    {
+      "url": "https://aladdin-ai.ru/components/status/sfm_core",
+      "method": "GET",
+      "status_code": 404,
+      "response_time": 0.116,
+      "success": false,
+      "error": null
+    }
+  ],
+  "config": [
+    {
+      "url": "https://aladdin-ai.ru/api/components/configuration/crash_detection_agent",
+      "method": "GET",
+      "status_code": 404,
+      "response_time": 0.108,
+      "success": false,
+      "error": null
+    },
+    {
+      "url": "https://aladdin-ai.ru/api/components/config/sfm_core",
+      "method": "GET",
+      "status_code": 200,
+      "response_time": 0.114,
+      "success": true,
+      "error": null,
+      "response_preview": "{\n  \"config\": {\n    \"enabled\": true,\n    \"auto_start\": true,\n    \"log_level\": \"INFO\",\n    \"max_connections\": 100\n  },\n  \"last_modified\": \"2026-02-03T12:00:00Z\",\n  \"source\": \"real_sfm\",\n  \"function\": \"..."
+    },
+    {
+      "url": "https://aladdin-ai.ru/components/configuration/crash_detection_agent",
+      "method": "GET",
+      "status_code": 404,
+      "response_time": 0.094,
+      "success": false,
+      "error": null
+    },
+    {
+      "url": "https://aladdin-ai.ru/components/config/sfm_core",
+      "method": "GET",
+      "status_code": 404,
+      "response_time": 0.099,
+      "success": false,
+      "error": null
+    },
+    {
+      "url": "https://aladdin-ai.ru/api/components/config/crash_detection_agent",
+      "method": "GET",
+      "status_code": 200,
+      "response_time": 0.127,
+      "success": true,
+      "error": null,
+      "response_preview": "{\n  \"config\": {\n    \"enabled\": true,\n    \"auto_start\": true,\n    \"log_level\": \"INFO\",\n    \"max_connections\": 100\n  },\n  \"last_modified\": \"2026-02-03T12:00:00Z\",\n  \"source\": \"real_sfm\",\n  \"function\": \"..."
+    },
+    {
+      "url": "https://aladdin-ai.ru/components/config/crash_detection_agent",
+      "method": "GET",
+      "status_code": 404,
+      "response_time": 0.099,
+      "success": false,
+      "error": null
+    }
+  ]
+}

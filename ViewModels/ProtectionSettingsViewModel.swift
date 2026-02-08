@@ -138,7 +138,7 @@ class ProtectionSettingsViewModel: ObservableObject {
                     let results = try await ParallelLoader.executeWithLimit(
                         items: prioritizedItems,
                         maxConcurrent: 10
-                    ) { [weak self] componentId, status in
+                    ) { componentId, status in
                         // Статусы автоматически сохраняются в ComponentStatusService
                         print("✅ ProtectionSettingsViewModel: Загружен статус для \(componentId): \(status.isEnabled)")
                     }
@@ -362,8 +362,7 @@ class ProtectionSettingsViewModel: ObservableObject {
             // Откат при ошибке
             updateClosure(oldValue)
             // ✅ ИСПРАВЛЕНИЕ: Не показываем технические детали ошибки пользователю
-            if let networkError = error as? NetworkError,
-               case .invalidStatusCode(let code) = networkError,
+            if case .invalidStatusCode(let code) = error,
                code == 405 {
                 // HTTP 405 - сервер не поддерживает метод, но это не критично
                 print("⚠️ ProtectionSettingsViewModel: HTTP 405 - сервер не поддерживает метод обновления")

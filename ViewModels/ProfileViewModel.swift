@@ -52,17 +52,6 @@ class ProfileViewModel: ObservableObject {
                     // ✅ ДОБАВЛЕНО: Сохраняем имя пользователя для детского интерфейса
                     self?.saveUserNameToCache(profile.name)
                 case .failure(let error):
-                    
-                    // ✅ ПЛАНИРОВАНИЕ УВЕДОМЛЕНИЙ О ПОДПИСКЕ (при загрузке профиля)
-                    // Если есть активная подписка с датой окончания, планируем уведомления
-                    if let endDateString = profile.subscriptionEndDate,
-                       !endDateString.isEmpty,
-                       let endDate = self?.parseSubscriptionEndDate(endDateString),
-                       endDate > Date() {
-                        NotificationManager.shared.scheduleRenewalNotifications(subscriptionEndDate: endDate)
-                        print("✅ Уведомления о подписке запланированы при загрузке профиля до \(endDate)")
-                    }
-                case .failure(let error):
                     self?.errorMessage = error.localizedDescription
                     print("❌ Ошибка загрузки профиля: \(error.localizedDescription)")
                 }

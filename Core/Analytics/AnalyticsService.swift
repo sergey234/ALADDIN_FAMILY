@@ -1,5 +1,42 @@
 import Foundation
 
+// MARK: - Types from ProductionMonitoringService
+
+enum AlertType: String {
+    case performance = "performance"
+    case error = "error"
+    case security = "security"
+}
+
+enum AlertSeverity: String {
+    case info = "info"
+    case warning = "warning"
+    case critical = "critical"
+}
+
+struct Alert {
+    let id: String
+    let type: AlertType
+    let message: String
+    let severity: AlertSeverity
+    let timestamp: Date
+}
+
+struct HealthStatus {
+    enum Status: String {
+        case healthy = "healthy"
+        case warning = "warning"
+        case critical = "critical"
+    }
+
+    let status: Status
+    let uptime: Double
+    let lastCheck: Date
+    let activeComponents: Int
+    let totalComponents: Int
+    let issues: [String] = []
+}
+
 // MARK: - Data Models
 
 /// Фильтры для аналитики
@@ -242,6 +279,13 @@ protocol AnalyticsService {
     func fetchFamilyAnalytics(period: String) async throws -> FamilyAnalytics
     func fetchUsageAnalytics(period: String) async throws -> UsageAnalytics
     func fetchDevicesAnalytics(period: String) async throws -> DevicesAnalytics
+
+    // Production monitoring methods
+    func trackAPIRequest(endpoint: String, method: String, responseTime: TimeInterval, statusCode: Int, success: Bool)
+    func trackUserAction(action: String, parameters: [String: Any]?)
+    func trackError(error: Error, context: String?)
+    func trackAlert(alert: Alert)
+    func trackHealthReport(healthStatus: HealthStatus)
 }
 
 // MARK: - Local Implementation
@@ -395,5 +439,46 @@ final class LocalAnalyticsService: AnalyticsService {
                 protection: "100%"
             )
         )
+    }
+
+    // MARK: - Production Monitoring Implementation
+
+    func trackAPIRequest(endpoint: String, method: String, responseTime: TimeInterval, statusCode: Int, success: Bool) {
+        #if DEBUG
+        print("📊 API Request: \(method) \(endpoint) - \(String(format: "%.3f", responseTime))s - Status: \(statusCode) - Success: \(success)")
+        #endif
+
+        // В локальном сервисе просто логируем
+        // В продакшене можно отправлять на сервер аналитики
+    }
+
+    func trackUserAction(action: String, parameters: [String: Any]?) {
+        #if DEBUG
+        print("👤 User Action: \(action) - Parameters: \(parameters ?? [:])")
+        #endif
+    }
+
+    func trackError(error: Error, context: String?) {
+        #if DEBUG
+        print("❌ Error: \(error.localizedDescription) - Context: \(context ?? "unknown")")
+        #endif
+    }
+
+    func trackAlert(alert: Alert) {
+        #if DEBUG
+        print("🚨 Alert [\(alert.severity.rawValue)]: \(alert.message)")
+        #else
+        // В продакшене отправляем алерты разработчикам
+        print("🚨 PRODUCTION ALERT: [\(alert.severity.rawValue.uppercased())] \(alert.message)")
+        #endif
+    }
+
+    func trackHealthReport(healthStatus: HealthStatus) {
+        #if DEBUG
+        print("💚 Health Report: \(healthStatus.status.rawValue) - Issues: \(healthStatus.issues.count)")
+        for issue in healthStatus.issues {
+            print("   - \(issue)")
+        }
+        #endif
     }
 }

@@ -54,8 +54,8 @@ struct DeviceDetailScreen: View {
                     showProfileButton: false,
                     showListButton: false,
                     onBack: {
-                        // ✅ ПРОСТОЙ ПОДХОД: только dismiss() для NavigationView
-                        // NavigationView сам управляет стеком, дополнительные вызовы могут конфликтовать
+                        // ✅ ИСПРАВЛЕНИЕ: Используем dismiss() для SwiftUI NavigationView
+                        // NavigationLink работает на уровне SwiftUI, поэтому dismiss() вернет к DevicesScreen
                         dismiss()
                     }
                 )
@@ -176,8 +176,8 @@ struct DeviceDetailScreen: View {
         } message: {
             Text(String(format: localizationManager.localized("device_detail_remove_confirmation_message"), device.name))
         }
-        .alert("Ошибка", isPresented: .constant(actionErrorMessage != nil)) {
-            Button("OK") {
+        .alert(localizationManager.localized("common_error"), isPresented: .constant(actionErrorMessage != nil)) {
+            Button(localizationManager.localized("common_ok")) {
                 actionErrorMessage = nil
             }
         } message: {
@@ -222,9 +222,8 @@ struct DeviceDetailScreen: View {
         isLoadingAction = true
         actionErrorMessage = nil
 
-        apiService.blockDevice(deviceId: device.id) { [weak self] result in
+                apiService.blockDevice(deviceId: device.id.uuidString) { result in
             DispatchQueue.main.async {
-                guard let self = self else { return }
                 self.isLoadingAction = false
 
                 switch result {
@@ -248,9 +247,8 @@ struct DeviceDetailScreen: View {
         isLoadingAction = true
         actionErrorMessage = nil
 
-        apiService.removeDevice(deviceId: device.id) { [weak self] result in
+                apiService.removeDevice(deviceId: device.id.uuidString) { result in
             DispatchQueue.main.async {
-                guard let self = self else { return }
                 self.isLoadingAction = false
 
                 switch result {
@@ -402,9 +400,9 @@ struct DeviceThreatsView: View {
     var body: some View {
         VStack(spacing: Spacing.m) {
             // Mock данные - в реальном приложении будут приходить из API
-            ThreatItemRow(name: "Вредоносный сайт", time: "5 мин назад", severity: .high)
-            ThreatItemRow(name: "Трекер заблокирован", time: "15 мин назад", severity: .medium)
-            ThreatItemRow(name: "Фишинг попытка", time: "1 час назад", severity: .high)
+            ThreatItemRow(name: localizationManager.localized("device_detail_threat_malicious_site"), time: localizationManager.localized("device_detail_threat_time_5_min"), severity: .high)
+            ThreatItemRow(name: localizationManager.localized("device_detail_threat_tracker_blocked"), time: localizationManager.localized("device_detail_threat_time_15_min"), severity: .medium)
+            ThreatItemRow(name: localizationManager.localized("device_detail_threat_phishing_attempt"), time: localizationManager.localized("device_detail_threat_time_1_hour"), severity: .high)
         }
         .padding(.horizontal, Spacing.screenPadding)
     }

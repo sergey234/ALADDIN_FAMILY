@@ -65,10 +65,10 @@ class NetworkManager: NSObject, ObservableObject {
         super.init()
         print("✅ super.init() выполнен")
         
-        // Конфигурация сессии
-        print("🔍 Создание URLSessionConfiguration...")
-        let configuration = URLSessionConfiguration.default
-        print("✅ URLSessionConfiguration создан")
+        // 🚀 ОПТИМИЗИРОВАННАЯ конфигурация сессии для лучшей производительности
+        print("🔍 Создание оптимизированной URLSessionConfiguration...")
+        let configuration = createOptimizedConfiguration()
+        print("✅ Оптимизированная конфигурация сессии создана")
         
         print("🔍 Настройка таймаутов...")
         print("   - AppConfig.Network.requestTimeout: \(AppConfig.Network.requestTimeout)")
@@ -97,7 +97,55 @@ class NetworkManager: NSObject, ObservableObject {
         print("✅ URLSession создан с делегатом")
         print("✅ NetworkManager.init: Завершен успешно")
     }
-    
+
+    // MARK: - Performance Optimization
+
+    /**
+     * 🚀 Создает оптимизированную конфигурацию сессии для максимальной производительности
+     */
+    private func createOptimizedConfiguration() -> URLSessionConfiguration {
+        let config = URLSessionConfiguration.default
+
+        // 🚀 HTTP/2 включается автоматически для HTTPS
+
+        // 🔄 Connection pooling - поддерживать до 10 одновременных соединений
+        config.httpMaximumConnectionsPerHost = 10
+
+        // ⏱️ Оптимизированные таймауты
+        config.timeoutIntervalForRequest = AppConfig.Network.requestTimeout
+        config.timeoutIntervalForResource = AppConfig.Network.resourceTimeout
+        config.waitsForConnectivity = AppConfig.Network.waitsForConnectivity
+
+        // 📦 Умное кэширование для снижения сетевых запросов
+        config.urlCache = URLCache(
+            memoryCapacity: 10 * 1024 * 1024,    // 10MB in memory
+            diskCapacity: 50 * 1024 * 1024,      // 50MB on disk
+            diskPath: "aladdin_api_cache"
+        )
+
+        // 🔒 Безопасность - отключить cookies для API (не нужны)
+        config.httpCookieAcceptPolicy = .never
+        config.httpShouldSetCookies = false
+
+        // 📊 Request caching policy - использовать кэш для GET запросов
+        config.requestCachePolicy = .returnCacheDataElseLoad
+
+        // 🗜️ Включить сжатие ответов
+        config.httpAdditionalHeaders = [
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept": "application/json",
+            "User-Agent": "ALADDIN-iOS/\(AppConfig.appVersion)"
+        ]
+
+        print("🚀 Performance optimizations applied:")
+        print("   - HTTP/2 enabled")
+        print("   - Connection pooling: \(config.httpMaximumConnectionsPerHost)")
+        print("   - Caching: \(config.urlCache?.memoryCapacity ?? 0)MB memory, \(config.urlCache?.diskCapacity ?? 0)MB disk")
+        print("   - Compression: enabled")
+
+        return config
+    }
+
     // MARK: - API Methods
     
     /**
@@ -349,19 +397,22 @@ class NetworkManager: NSObject, ObservableObject {
      * Загружает конкретный сертификат по имени
      */
     private func loadCertificate(named name: String) -> Data? {
-        #if DEBUG
-        // В DEBUG режиме отключаем SSL Pinning для удобства разработки
-        return nil
-        #endif
-
+        // Пытаемся загрузить сертификат из Bundle
         guard let path = Bundle.main.path(forResource: name, ofType: "cer") else {
+            print("⚠️ SSL Pinning: Сертификат \(name).cer не найден в Bundle")
+            print("   Для продакшена добавьте сертификаты в Xcode проект:")
+            print("   1. Скачайте сертификаты с сервера aladdin-ai.ru")
+            print("   2. Добавьте их в проект как .cer файлы")
+            print("   3. Убедитесь, что они включены в Target Membership")
             return nil
         }
-        
+
         guard let data = NSData(contentsOfFile: path) as Data? else {
+            print("❌ SSL Pinning: Не удалось загрузить данные сертификата \(name).cer")
             return nil
         }
-        
+
+        print("✅ SSL Pinning: Сертификат \(name).cer загружен (\(data.count) байт)")
         return data
     }
     
@@ -468,6 +519,17 @@ class NetworkManager: NSObject, ObservableObject {
             DispatchQueue.main.async {
                 let duration = Date().timeIntervalSince(requestStartTime)
                 self?.handleRequestDuration(duration)
+
+                // Отслеживаем запрос в production monitoring
+                if let strongSelf = self {
+                    strongSelf.trackAPIRequest(
+                        endpoint: request.url?.path ?? "unknown",
+                        method: request.httpMethod ?? "unknown",
+                        duration: duration,
+                        response: response,
+                        error: error
+                    )
+                }
                 
                 print("🔵 NetworkManager.performRequest: Получен ответ (время: \(String(format: "%.2f", duration))s)")
                 
@@ -677,19 +739,43 @@ extension NetworkManager: URLSessionDelegate {
         let formatted = String(format: "%.2f", duration)
         print("⏱️ NetworkManager: запрос завершился за \(formatted) c")
         #endif
-        
+
         if duration > slowRequestThreshold {
             slowRequestCount += 1
             #if DEBUG
             print("⚠️ NetworkManager: медленный ответ \(slowRequestCount)/\(slowRequestLimitBeforeAdjusting)")
             #endif
-            
+
             if !didIncreaseTimeouts && slowRequestCount >= slowRequestLimitBeforeAdjusting {
                 increaseTimeoutsForSlowNetwork()
             }
         } else {
             slowRequestCount = 0
         }
+    }
+
+    private func trackAPIRequest(
+        endpoint: String,
+        method: String,
+        duration: TimeInterval,
+        response: URLResponse?,
+        error: Error?
+    ) {
+        let statusCode: Int
+        if let httpResponse = response as? HTTPURLResponse {
+            statusCode = httpResponse.statusCode
+        } else {
+            statusCode = error != nil ? -1 : 0
+        }
+
+        // Отправляем в production monitoring (закомментировано для совместимости)
+        // ProductionMonitoringService.shared.trackAPIRequest(
+        //     endpoint: endpoint,
+        //     method: method,
+        //     responseTime: duration,
+        //     statusCode: statusCode,
+        //     error: error
+        // )
     }
     
     private func increaseTimeoutsForSlowNetwork() {

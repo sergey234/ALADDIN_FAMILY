@@ -68,7 +68,7 @@ struct DevicesScreen: View {
                     .padding(.bottom, Spacing.xxl)
                 }
                 .accessibilityElement(children: .contain)
-                .accessibilityLabel("Список устройств семьи")
+                .accessibilityLabel(localizationManager.localized("devices_list_accessibility"))
             }
         }
         .navigationBarHidden(true)
@@ -92,8 +92,8 @@ struct DevicesScreen: View {
                     .background(Color.black.opacity(0.3))
             }
         }
-        .alert("Ошибка", isPresented: .constant(errorMessage != nil)) {
-            Button("ОК") {
+        .alert(localizationManager.localized("common_error"), isPresented: .constant(errorMessage != nil)) {
+            Button(localizationManager.localized("common_ok")) {
                 errorMessage = nil
             }
         } message: {
@@ -107,15 +107,15 @@ struct DevicesScreen: View {
     
     private var navigationHeader: some View {
         ALADDINNavigationBar(
-            title: "УСТРОЙСТВА",
-            subtitle: "\(devices.count) устройств под защитой",
+            title: localizationManager.localized("devices_title"),
+            subtitle: String(format: localizationManager.localized("devices_subtitle"), devices.count),
             showBackButton: true,
             showAddButton: true,
             showProfileButton: false,
             showListButton: false,
             onBack: {
-                // ✅ ПРОСТОЙ ПОДХОД: dismiss() для NavigationView
-                dismiss()
+                // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
+                navigationManager.goBack(reason: "DevicesScreen back button")
             },
             onAdd: { 
                 showAddDevice = true 
@@ -123,7 +123,7 @@ struct DevicesScreen: View {
         )
         .padding(.bottom, Spacing.m)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Навигационная панель устройств")
+        .accessibilityLabel(localizationManager.localized("devices_nav_accessibility"))
     }
     
     // MARK: - Device Stats

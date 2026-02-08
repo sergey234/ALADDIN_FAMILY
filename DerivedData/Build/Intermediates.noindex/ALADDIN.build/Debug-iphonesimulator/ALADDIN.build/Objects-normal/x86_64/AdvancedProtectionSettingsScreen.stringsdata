@@ -1,5 +1,28 @@
 {
   "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/AdvancedProtectionSettingsScreen.swift",
-  "tables": {},
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "🛡️"
+      },
+      {
+        "comment": "",
+        "key": "👀"
+      },
+      {
+        "comment": "",
+        "key": "⏱️"
+      },
+      {
+        "comment": "",
+        "key": "⏰"
+      },
+      {
+        "comment": "",
+        "key": "🟣"
+      }
+    ]
+  },
   "version": 1
 }

@@ -188,6 +188,7 @@ typedef unsigned int swift_uint4  __attribute__((__ext_vector_type__(4)));
 #if __has_warning("-Watimport-in-framework-header")
 #pragma clang diagnostic ignored "-Watimport-in-framework-header"
 #endif
+@import AVFAudio;
 @import AVFoundation;
 @import Foundation;
 @import ObjectiveC;
@@ -223,6 +224,21 @@ SWIFT_CLASS("_TtC7ALADDIN11AppDelegate")
 @end
 
 
+@class NSURLSession;
+@class NSURLSessionWebSocketTask;
+@class NSString;
+
+/// 🌐 Family Chat WebSocket Manager
+/// Real-time обновления для семейного чата
+SWIFT_CLASS("_TtC7ALADDIN19FamilyChatWebSocket")
+@interface FamilyChatWebSocket : NSObject <NSURLSessionWebSocketDelegate>
+- (void)URLSession:(NSURLSession * _Nonnull)session webSocketTask:(NSURLSessionWebSocketTask * _Nonnull)webSocketTask didOpenWithProtocol:(NSString * _Nullable)protocol;
+- (void)URLSession:(NSURLSession * _Nonnull)session webSocketTask:(NSURLSessionWebSocketTask * _Nonnull)webSocketTask didCloseWithCode:(NSURLSessionWebSocketCloseCode)closeCode reason:(NSData * _Nullable)reason;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
+
 /// 🌐 Network Manager
 /// API клиент для подключения к Python backend
 /// Управляет всеми HTTP запросами
@@ -234,7 +250,6 @@ SWIFT_CLASS("_TtC7ALADDIN14NetworkManager")
 
 
 
-@class NSURLSession;
 @class NSURLAuthenticationChallenge;
 @class NSURLCredential;
 
@@ -265,6 +280,20 @@ SWIFT_CLASS("_TtC7ALADDIN19NotificationManager")
 - (void)userNotificationCenter:(UNUserNotificationCenter * _Nonnull)center didReceiveNotificationResponse:(UNNotificationResponse * _Nonnull)response withCompletionHandler:(void (^ _Nonnull)(void))completionHandler;
 @end
 
+
+/// 🔔 Push Notification Service
+/// Управление push-уведомлениями для семейного чата
+SWIFT_CLASS("_TtC7ALADDIN23PushNotificationService")
+@interface PushNotificationService : NSObject
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
+
+@interface PushNotificationService (SWIFT_EXTENSION(ALADDIN)) <UNUserNotificationCenterDelegate>
+- (void)userNotificationCenter:(UNUserNotificationCenter * _Nonnull)center willPresentNotification:(UNNotification * _Nonnull)notification withCompletionHandler:(void (^ _Nonnull)(UNNotificationPresentationOptions))completionHandler;
+- (void)userNotificationCenter:(UNUserNotificationCenter * _Nonnull)center didReceiveNotificationResponse:(UNNotificationResponse * _Nonnull)response withCompletionHandler:(void (^ _Nonnull)(void))completionHandler;
+@end
+
 @class AVCaptureMetadataOutput;
 @class AVMetadataObject;
 @class AVCaptureConnection;
@@ -273,6 +302,37 @@ SWIFT_CLASS("_TtC7ALADDIN9QRScanner")
 @interface QRScanner : NSObject <AVCaptureMetadataOutputObjectsDelegate>
 - (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
 - (void)captureOutput:(AVCaptureMetadataOutput * _Nonnull)output didOutputMetadataObjects:(NSArray<AVMetadataObject *> * _Nonnull)metadataObjects fromConnection:(AVCaptureConnection * _Nonnull)connection;
+@end
+
+
+/// 🔊 Voice Message Player
+/// Воспроизведение голосовых сообщений в семейном чате
+SWIFT_CLASS("_TtC7ALADDIN18VoiceMessagePlayer")
+@interface VoiceMessagePlayer : NSObject
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
+@class AVAudioPlayer;
+@class NSNumber;
+
+@interface VoiceMessagePlayer (SWIFT_EXTENSION(ALADDIN)) <AVAudioPlayerDelegate>
+- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer * _Nonnull)player successfully:(BOOL)flag;
+- (void)audioPlayerDecodeErrorDidOccur:(AVAudioPlayer * _Nonnull)player error:(NSError * _Nullable)error;
+@end
+
+
+/// 🎤 Voice Message Recorder
+/// Запись голосовых сообщений для семейного чата
+SWIFT_CLASS("_TtC7ALADDIN20VoiceMessageRecorder")
+@interface VoiceMessageRecorder : NSObject
+- (nonnull instancetype)init OBJC_DESIGNATED_INITIALIZER;
+@end
+
+@class AVAudioRecorder;
+
+@interface VoiceMessageRecorder (SWIFT_EXTENSION(ALADDIN)) <AVAudioRecorderDelegate>
+- (void)audioRecorderDidFinishRecording:(AVAudioRecorder * _Nonnull)recorder successfully:(BOOL)flag;
+- (void)audioRecorderEncodeErrorDidOccur:(AVAudioRecorder * _Nonnull)recorder error:(NSError * _Nullable)error;
 @end
 
 #if __has_attribute(external_source_symbol)

@@ -72,7 +72,7 @@ class ComponentStatusService: ObservableObject {
 
         isLoading = true
         defer { isLoading = false }
-        
+
         // Список критичных компонентов (первые 10 для NetworkProtectionScreen)
         let criticalComponents = [
             "crash_detection_agent",
@@ -171,14 +171,15 @@ class ComponentStatusService: ObservableObject {
             )
             componentStatuses[componentId] = newStatus
         }
-        
+
+
         // Отправить на сервер
         try await apiService.updateComponentStatus(
             componentId: componentId,
             isEnabled: isEnabled,
             configuration: configuration
         )
-        
+
         // Обновить кэш
         if let status = componentStatuses[componentId] {
             await cacheManager.saveStatus(componentId: componentId, status: status)
@@ -232,5 +233,6 @@ class ComponentStatusService: ObservableObject {
             }
         }
     }
+
 }
 

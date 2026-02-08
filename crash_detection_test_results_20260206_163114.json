@@ -1,0 +1,109 @@
+{
+  "test_date": "2026-02-06T16:31:14.379903",
+  "server": "http://149.154.65.180:8002",
+  "target_time_ms": 15,
+  "requests_per_endpoint": 10,
+  "overall_stats": {
+    "avg_time_ms": 87.34582014285718,
+    "min_time_ms": 65.61716600000089,
+    "max_time_ms": 356.7633830000001,
+    "total_requests": 70,
+    "total_success": 70,
+    "total_sfm": 60,
+    "success_rate": 100.0,
+    "sfm_rate": 85.71428571428571
+  },
+  "endpoints": [
+    {
+      "name": "1️⃣ GET /api/health",
+      "endpoint": "/api/health",
+      "method": "GET",
+      "avg_time_ms": 76.21970369999997,
+      "min_time_ms": 68.29638900000002,
+      "max_time_ms": 88.42233600000004,
+      "median_time_ms": 75.4307414999999,
+      "percentile_95_ms": 88.42233600000004,
+      "success_rate": 100.0,
+      "sfm_rate": 0.0,
+      "meets_target": false
+    },
+    {
+      "name": "2️⃣ GET /api/crash-detection/status",
+      "endpoint": "/api/crash-detection/status",
+      "method": "GET",
+      "avg_time_ms": 116.63501879999995,
+      "min_time_ms": 73.96420400000014,
+      "max_time_ms": 356.7633830000001,
+      "median_time_ms": 84.56509199999984,
+      "percentile_95_ms": 356.7633830000001,
+      "success_rate": 100.0,
+      "sfm_rate": 100.0,
+      "meets_target": false
+    },
+    {
+      "name": "3️⃣ POST /api/crash-detection/setup",
+      "endpoint": "/api/crash-detection/setup",
+      "method": "POST",
+      "avg_time_ms": 86.09159489999998,
+      "min_time_ms": 79.95989100000057,
+      "max_time_ms": 95.7105389999997,
+      "median_time_ms": 85.7716810000002,
+      "percentile_95_ms": 95.7105389999997,
+      "success_rate": 100.0,
+      "sfm_rate": 100.0,
+      "meets_target": false
+    },
+    {
+      "name": "4️⃣ POST /api/crash-detection/start",
+      "endpoint": "/api/crash-detection/start",
+      "method": "POST",
+      "avg_time_ms": 79.7108745,
+      "min_time_ms": 69.84695699999932,
+      "max_time_ms": 99.92117200000017,
+      "median_time_ms": 76.58149600000019,
+      "percentile_95_ms": 99.92117200000017,
+      "success_rate": 100.0,
+      "sfm_rate": 100.0,
+      "meets_target": false
+    },
+    {
+      "name": "5️⃣ POST /api/crash-detection/data",
+      "endpoint": "/api/crash-detection/data",
+      "method": "POST",
+      "avg_time_ms": 90.13708789999998,
+      "min_time_ms": 67.89439399999964,
+      "max_time_ms": 162.64773300000002,
+      "median_time_ms": 81.79302899999996,
+      "percentile_95_ms": 162.64773300000002,
+      "success_rate": 100.0,
+      "sfm_rate": 100.0,
+      "meets_target": false
+    },
+    {
+      "name": "6️⃣ POST /api/crash-detection/alert",
+      "endpoint": "/api/crash-detection/alert",
+      "method": "POST",
+      "avg_time_ms": 83.7765742000002,
+      "min_time_ms": 65.64409100000113,
+      "max_time_ms": 153.752625000001,
+      "median_time_ms": 75.05354099999994,
+      "percentile_95_ms": 153.752625000001,
+      "success_rate": 100.0,
+      "sfm_rate": 100.0,
+      "meets_target": false
+    },
+    {
+      "name": "7️⃣ POST /api/crash-detection/stop",
+      "endpoint": "/api/crash-detection/stop",
+      "method": "POST",
+      "avg_time_ms": 78.84988700000015,
+      "min_time_ms": 65.61716600000089,
+      "max_time_ms": 116.03680900000057,
+      "median_time_ms": 72.02539299999967,
+      "percentile_95_ms": 116.03680900000057,
+      "success_rate": 100.0,
+      "sfm_rate": 100.0,
+      "meets_target": false
+    }
+  ]
+}

@@ -89,7 +89,39 @@ final class RemoteAnalyticsService: AnalyticsService {
             return try await fallbackService.fetchDevicesAnalytics(period: period)
         }
     }
-    
+
+    // MARK: - Production monitoring methods
+
+    func trackAPIRequest(endpoint: String, method: String, responseTime: TimeInterval, statusCode: Int, success: Bool) {
+        // TODO: Отправить на сервер аналитики
+        // Пока используем fallback на локальный сервис
+        fallbackService.trackAPIRequest(endpoint: endpoint, method: method, responseTime: responseTime, statusCode: statusCode, success: success)
+    }
+
+    func trackUserAction(action: String, parameters: [String: Any]?) {
+        // TODO: Отправить на сервер аналитики
+        // Пока используем fallback на локальный сервис
+        fallbackService.trackUserAction(action: action, parameters: parameters)
+    }
+
+    func trackError(error: Error, context: String?) {
+        // TODO: Отправить на сервер аналитики
+        // Пока используем fallback на локальный сервис
+        fallbackService.trackError(error: error, context: context)
+    }
+
+    func trackAlert(alert: Alert) {
+        // TODO: Отправить на сервер аналитики
+        // Пока используем fallback на локальный сервис
+        fallbackService.trackAlert(alert: alert)
+    }
+
+    func trackHealthReport(healthStatus: HealthStatus) {
+        // TODO: Отправить на сервер аналитики
+        // Пока используем fallback на локальный сервис
+        fallbackService.trackHealthReport(healthStatus: healthStatus)
+    }
+
     // MARK: - Networking helper
     private func performGET<T: Decodable>(path: String, queryItems: [URLQueryItem]) async throws -> T {
         guard var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false) else {

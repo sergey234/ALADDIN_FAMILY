@@ -1,4 +1,11 @@
 import SwiftUI
+import Combine
+import CoreMotion
+import CoreLocation
+
+// ✅ Settings Modal - scope issue в Xcode
+// Modal существует и работает, но имеет проблему с module resolution
+// Временно отключен до настройки Xcode target/modules
 
 /**
  * 🔒 Network Protection Screen
@@ -23,6 +30,11 @@ struct NetworkProtectionScreen: View {
     @State private var showMalwareSettings = false
     @State private var showMobileSecuritySettings = false
     @State private var showNetworkSecuritySettings = false
+    @State private var showCrashDetectionAlert = false
+    @State private var showCrashDetectionSettings = false
+
+    // Временный тестовый триггер для демонстрации модала
+    @State private var testCrashDetection = false
     
     // Состояния для аккордеонов
     @State private var emergencyHelpExpanded = false
@@ -101,6 +113,13 @@ struct NetworkProtectionScreen: View {
         .navigationBarHidden(true)
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("network_protection_screen_lang_\(localizationManager.currentLanguage.rawValue)")
+        // 🚨 Наблюдение за обнаружением аварии
+        // Временный тестовый триггер для демонстрации
+        .onChange(of: testCrashDetection) { crashDetected in
+            if crashDetected {
+                showCrashDetectionAlert = true
+            }
+        }
         .sheet(isPresented: $showingSettings) {
             NetworkProtectionSettingsView()
         }
@@ -146,6 +165,22 @@ struct NetworkProtectionScreen: View {
             )
             .environmentObject(localizationManager)
         }
+        .sheet(isPresented: $showCrashDetectionAlert) {
+            CrashDetectionAlertModal(
+                isPresented: $showCrashDetectionAlert
+            )
+            .environmentObject(localizationManager)
+        }
+        // ⚠️ SETTINGS MODAL: Temporarily disabled due to Xcode scope issue
+        // Modal exists at Shared/Components/Modals/CrashDetectionSettingsModal.swift
+        // Requires Xcode module/target configuration to resolve
+        // .sheet(isPresented: $showCrashDetectionSettings) {
+        //     CrashDetectionSettingsModal(
+        //         componentId: "crash_detection_agent",
+        //         isPresented: $showCrashDetectionSettings
+        //     )
+        //     .environmentObject(localizationManager)
+        // }
         // ✅ УДАЛЕНО: .sheet для showingStatistics и showingHelp (Quick Actions удалены)
     }
     
@@ -165,9 +200,43 @@ struct NetworkProtectionScreen: View {
                     title: localizationManager.localized("component.crash_detection_agent.title"),
                     description: localizationManager.localized("component.crash_detection_agent.desc"),
                     isEnabled: $viewModel.crashDetectionEnabled,
-                    hasSettings: false,
-                    onToggle: { newValue in viewModel.toggleCrashDetection(newValue) }
+                    hasSettings: false, // ⚠️ Temporarily disabled due to scope issue
+                    onToggle: { newValue in Task { await viewModel.toggleCrashDetection(newValue) } }
+                    // onSettingsTap: { showCrashDetectionSettings = true } // ⚠️ Temporarily disabled
                 )
+
+                // 🚨 Тестовая кнопка для демонстрации Crash Detection
+                Button(action: {
+                    // Используем новый метод симуляции краха
+                    Task {
+                        await CrashDetectionManager.shared.simulateCrashForTesting(gForce: 5.0)
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.red)
+                        VStack(alignment: .leading) {
+                            Text("🚨 ТЕСТ: Симулировать аварию")
+                                .foregroundColor(.red)
+                                .font(.subheadline)
+                                .fontWeight(.bold)
+                            Text("G-сила: 5.0 (критическая)")
+                                .foregroundColor(.red.opacity(0.7))
+                                .font(.caption)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.gray)
+                    }
+                    .padding()
+                    .background(Color.red.opacity(0.1))
+                    .cornerRadius(8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                    )
+                }
+                .padding(.horizontal)
                 
                 SecurityFeatureRow(
                     componentId: "roadside_assistance_agent",
@@ -175,7 +244,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.roadside_assistance_agent.desc"),
                     isEnabled: $viewModel.roadsideAssistanceEnabled,
                     hasSettings: false,
-                    onToggle: { newValue in viewModel.toggleRoadsideAssistance(newValue) }
+                    onToggle: { newValue in Task { await viewModel.toggleRoadsideAssistance(newValue) } }
                 )
                 
                 SecurityFeatureRow(
@@ -184,7 +253,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.emergency_response_bot.desc"),
                     isEnabled: $viewModel.emergencyResponseEnabled,
                     hasSettings: false,
-                    onToggle: { newValue in viewModel.toggleEmergencyResponse(newValue) }
+                    onToggle: { newValue in Task { await viewModel.toggleEmergencyResponse(newValue) } }
                 )
                 
                 SecurityFeatureRow(
@@ -193,7 +262,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.emergency_event_manager.desc"),
                     isEnabled: $viewModel.emergencyEventEnabled,
                     hasSettings: false,
-                    onToggle: { newValue in viewModel.toggleEmergencyEvent(newValue) }
+                    onToggle: { newValue in Task { await viewModel.toggleEmergencyEvent(newValue) } }
                 )
             }
             
@@ -210,7 +279,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.phishing_protection_agent.desc"),
                     isEnabled: $viewModel.phishingProtectionEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.togglePhishingProtection(newValue) },
+                    onToggle: { newValue in Task { await viewModel.togglePhishingProtection(newValue) } },
                     onSettingsTap: { showPhishingSettings = true }
                 )
                 
@@ -220,7 +289,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.malware_detection_agent.desc"),
                     isEnabled: $viewModel.malwareDetectionEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.toggleMalwareDetection(newValue) },
+                    onToggle: { newValue in Task { await viewModel.toggleMalwareDetection(newValue) } },
                     onSettingsTap: { showMalwareSettings = true }
                 )
                 
@@ -230,7 +299,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.mobile_security_agent.desc"),
                     isEnabled: $viewModel.mobileSecurityEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.toggleMobileSecurity(newValue) },
+                    onToggle: { newValue in Task { await viewModel.toggleMobileSecurity(newValue) } },
                     onSettingsTap: { showMobileSecuritySettings = true }
                 )
                 
@@ -240,7 +309,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.network_security_agent.desc"),
                     isEnabled: $viewModel.networkSecurityEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.toggleNetworkSecurity(newValue) },
+                    onToggle: { newValue in Task { await viewModel.toggleNetworkSecurity(newValue) } },
                     onSettingsTap: { showNetworkSecuritySettings = true }
                 )
             }
@@ -258,7 +327,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.incident_response_agent.desc"),
                     isEnabled: $viewModel.incidentResponseEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.toggleIncidentResponse(newValue) },
+                    onToggle: { newValue in Task { await viewModel.toggleIncidentResponse(newValue) } },
                     onSettingsTap: { showIncidentResponseSettings = true }
                 )
             }
@@ -276,7 +345,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.password_security_agent.desc"),
                     isEnabled: $viewModel.passwordSecurityEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.togglePasswordSecurity(newValue) },
+                    onToggle: { newValue in Task { await viewModel.togglePasswordSecurity(newValue) } },
                     onSettingsTap: { showPasswordGenerator = true }
                 )
             }

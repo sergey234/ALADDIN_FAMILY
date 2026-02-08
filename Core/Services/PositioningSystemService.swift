@@ -130,7 +130,7 @@ class PositioningSystemService: ObservableObject {
     func determineSystemByRegion() -> PositioningSystem {
         // Получаем регион из Locale
         let regionCode = Locale.current.regionCode ?? ""
-        let timeZoneIdentifier = TimeZone.current.identifier
+        _ = TimeZone.current.identifier
         
         // Маппинг регионов на системы позиционирования
         switch regionCode {

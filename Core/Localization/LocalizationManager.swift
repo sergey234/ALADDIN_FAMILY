@@ -58,60 +58,50 @@ class LocalizationManager: ObservableObject {
         if let savedLanguage = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage),
            let language = Language(rawValue: savedLanguage) {
             currentLanguage = language
-#if DEBUG
-            print("🌍 LocalizationManager: Используем сохранённый язык: \(language.displayName)")
-#endif
+        } else if let systemLanguage = Locale.current.languageCode,
+                  let language = detectLanguage(from: systemLanguage) {
+            // Если сохранённого нет, используем системный (с поддержкой префиксов)
+            currentLanguage = language
         } else {
-            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Расширенная логика определения языка для России
-            let systemLanguage = Locale.current.languageCode
-            let regionCode = Locale.current.regionCode
-            let preferredLanguages = Locale.preferredLanguages
-
-#if DEBUG
-            print("🌍 LocalizationManager: Определение языка...")
-            print("   - systemLanguage: \(systemLanguage ?? "nil")")
-            print("   - regionCode: \(regionCode ?? "nil")")
-            print("   - preferredLanguages: \(preferredLanguages)")
-#endif
-
-            // Специальная логика для России - если регион RU, то всегда русский
-            if regionCode == "RU" {
-                currentLanguage = .russian
-#if DEBUG
-                print("   ✅ Регион RU - устанавливаем русский язык")
-#endif
-            } else if let systemLang = systemLanguage,
-                      let language = Language(rawValue: systemLang) {
-                // Если сохранённого нет, используем системный
-                currentLanguage = language
-#if DEBUG
-                print("   ✅ Используем системный язык: \(language.displayName)")
-#endif
-            } else if let firstPreferred = preferredLanguages.first,
-                      let preferredLangCode = Locale(identifier: firstPreferred).languageCode,
-                      let language = Language(rawValue: preferredLangCode) {
-                // Проверяем preferred languages
-                currentLanguage = language
-#if DEBUG
-                print("   ✅ Используем preferred language: \(language.displayName)")
-#endif
-            } else {
-                // По умолчанию русский
-                currentLanguage = .russian
-#if DEBUG
-                print("   ⚠️ Язык не определён - используем русский по умолчанию")
-#endif
-            }
+            // По умолчанию русский
+            currentLanguage = .russian
         }
-
+        
 #if DEBUG
         LocalizationDiagnostics.runInitialChecks(with: self)
-        print("🌍 LocalizationManager: Финальный язык: \(currentLanguage.displayName)")
 #endif
     }
     
+    // MARK: - Language Detection
+
+    /**
+     * Определить язык по коду (с поддержкой префиксов)
+     * Например: "en-US" -> .english, "zh-CN" -> .chinese
+     */
+    private func detectLanguage(from languageCode: String) -> Language? {
+        // Сначала пробуем точное совпадение
+        if let exactMatch = Language(rawValue: languageCode) {
+            return exactMatch
+        }
+
+        // Если не нашли, пробуем по префиксу (для случаев "en-US", "zh-CN" и т.д.)
+        let prefix = languageCode.prefix(2).lowercased()
+        switch prefix {
+        case "en":
+            return .english
+        case "ru":
+            return .russian
+        case "zh":
+            return .chinese
+        case "ar":
+            return .arabic
+        default:
+            return nil
+        }
+    }
+
     // MARK: - Change Language
-    
+
     /**
      * Сменить язык приложения
      */
@@ -2075,16 +2065,6 @@ class LocalizationManager: ObservableObject {
             "ai_assistant_placeholder": "Задайте вопрос AI помощнику...",
             "ai_assistant_welcome": "Здравствуйте! Я AI помощник ALADDIN. Чем могу помочь?",
             "ai_assistant_development": "🚧 AI Помощник в разработке. Скоро будет подключен к реальному API!\n\nПриложение сейчас работает в демо-режиме с тестовыми данными.",
-            "ai_assistant_voice_permission_title": "Разрешение на микрофон",
-            "ai_assistant_voice_permission_message": "Для голосового ввода нужно разрешение на использование микрофона. Перейдите в настройки приложения.",
-            "ai_assistant_feedback_title": "Обратная связь по AI помощнику",
-            "ai_assistant_feedback_description": "Помогите нам улучшить AI помощника",
-            "ai_assistant_feedback_rating": "Оцените работу AI",
-            "ai_assistant_feedback_comment": "Комментарий (необязательно)",
-            "ai_assistant_feedback_submit": "Отправить",
-            "ai_assistant_feedback_success": "Спасибо! Ваша обратная связь отправлена.",
-            "ai_assistant_recording": "Говорите...",
-            "ai_assistant_voice_input": "Голосовой ввод",
             "role_selection_title": "Выберите роль",
             "role_selection_subtitle": "Это поможет настроить интерфейс под ваши потребности",
             "family_role_parent_name": "Родитель",
@@ -3523,6 +3503,34 @@ class LocalizationManager: ObservableObject {
             "device_detail_threat_time": "время: %@",
             "device_detail_protection_enabled": "Защита устройства",
             "device_detail_scanning_enabled": "Автоматическое сканирование",
+            
+            // Device Detail Screen - Statistics Tab
+            "device_detail_stats_threats_blocked": "Заблокировано угроз",
+            "device_detail_stats_traffic_downloaded": "Загружено",
+            "device_detail_stats_traffic_uploaded": "Отправлено",
+            "device_detail_stats_usage_time": "Время использования",
+            
+            // Device Detail Screen - Threats Tab
+            "device_detail_threat_malicious_site": "Вредоносный сайт",
+            "device_detail_threat_tracker_blocked": "Трекер заблокирован",
+            "device_detail_threat_phishing_attempt": "Фишинг попытка",
+            "device_detail_threat_time_5_min": "5 мин назад",
+            "device_detail_threat_time_15_min": "15 мин назад",
+            "device_detail_threat_time_1_hour": "1 час назад",
+            
+            // Device Detail Screen - Confirmation Dialogs
+            "device_detail_block_confirmation_title": "Заблокировать устройство",
+            "device_detail_block_confirmation_message": "Вы уверены, что хотите заблокировать %@? Доступ к устройству будет ограничен.",
+            "device_detail_remove_confirmation_title": "Удалить устройство",
+            "device_detail_remove_confirmation_message": "Вы уверены, что хотите удалить %@? Это действие нельзя отменить.",
+            
+            // Devices Screen
+            "devices_subtitle": "%d устройств под защитой",
+            "devices_nav_accessibility": "Навигационная панель устройств",
+            "devices_list_accessibility": "Список устройств семьи",
+            "devices_warning": "Требует внимания",
+            "devices_inactive": "Неактивно",
+            
             // Family Chat Screen
             "family_chat_title": "СЕМЕЙНЫЙ ЧАТ",
             "family_chat_subtitle": "%d участника онлайн",
@@ -3936,6 +3944,7 @@ class LocalizationManager: ObservableObject {
             "main_family_protection_info": "Семейная защита активна",
             "main_family_vpn_info": "%d угроз заблокировано",
             "main_family_network_protection_info": "%d угроз обнаружено",
+            "main_family_protection_status_message": "Семейная защита активна",
             "main_family_tariff_label": "Тариф:",
             "main_family_subscription_valid_until": "Действует до:",
             "main_family_manage": "Управление",
@@ -4073,6 +4082,13 @@ class LocalizationManager: ObservableObject {
             // Компонент 1: crash_detection_agent (для проверки)
             "component.crash_detection_agent.title": "Обнаружение аварий",
             "component.crash_detection_agent.desc": "Автоматическое обнаружение ДТП и вызов помощи",
+            
+            // Crash Detection - Alert Modal
+            "crash_detection_crash_detected": "Обнаружена авария!",
+            "crash_detection_countdown": "Автоматический вызов через %d секунд",
+            "crash_detection_call_112": "Вызвать 112",
+            "crash_detection_cancel": "Отменить",
+            "crash_detection_monitoring_active": "Мониторинг активен. Если вы в безопасности, нажмите \"Отменить\".",
             
             // Компонент 2: roadside_assistance_agent
             "component.roadside_assistance_agent.title": "Помощь на дороге",
@@ -4404,6 +4420,34 @@ class LocalizationManager: ObservableObject {
             "tip_show_how_hint": "Open the tip",
             "tip_later": "Later",
             "tip_later_hint": "Dismiss the tip",
+            "help_support": "Help & Support",
+            "help_support_subtitle": "Frequently asked questions and contact options",
+            "privacy_policy": "Privacy Policy",
+            "privacy_policy_subtitle": "How we protect your data",
+            "terms_of_service": "Terms of Service",
+            "terms_of_service_subtitle": "Service usage rules",
+            "share_app": "Share App",
+            "share_app_subtitle": "Invite friends and get bonus",
+            "language_settings_title": "APP LANGUAGE",
+            "language_settings_subtitle": "Select interface language",
+            "language_settings_auto_selection": "Automatic selection",
+            "language_settings_follow_system": "Follow system language",
+            "language_settings_follow_system_desc": "Use the language selected in device settings",
+            "language_settings_available_languages": "Available languages",
+            "language_settings_additional": "Additional",
+            "language_settings_font_size": "Font size",
+            "language_settings_font_size_small": "Small",
+            "language_settings_font_size_medium": "Medium",
+            "language_settings_font_size_large": "Large",
+            "language_settings_font_size_extra_large": "Extra large",
+            "language_settings_text_direction": "Text direction",
+            "language_settings_text_direction_ltr": "Left to right",
+            "language_settings_text_direction_rtl": "Right to left",
+            "language_settings_date_format": "Date format",
+            "language_settings_date_format_dd_mm_yyyy": "DD.MM.YYYY",
+            "language_settings_date_format_mm_dd_yyyy": "MM/DD/YYYY",
+            "language_settings_date_format_yyyy_mm_dd": "YYYY-MM-DD",
+            "language_settings_cancel": "Cancel",
             
             // Navigation menu
             "nav_screen_main": "Home",
@@ -5450,6 +5494,7 @@ class LocalizationManager: ObservableObject {
             "main_family_protection_info": "Family protection active",
             "main_family_vpn_info": "%d threats blocked",
             "main_family_network_protection_info": "%d threats detected",
+            "main_family_protection_status_message": "Family protection active",
             "main_family_tariff_label": "Tariff:",
             "main_family_subscription_valid_until": "Valid until:",
             "main_family_manage": "Manage",
@@ -6258,16 +6303,6 @@ Settings
             "ai_assistant_placeholder": "Ask AI assistant...",
             "ai_assistant_welcome": "Hello! I'm ALADDIN AI assistant. How can I help?",
             "ai_assistant_development": "🚧 AI Assistant under development. Will connect to real API soon!\\n\\nThe app is currently running in demo mode with mock data.",
-            "ai_assistant_voice_permission_title": "Microphone Permission",
-            "ai_assistant_voice_permission_message": "Voice input requires microphone permission. Please go to app settings.",
-            "ai_assistant_feedback_title": "AI Assistant Feedback",
-            "ai_assistant_feedback_description": "Help us improve the AI assistant",
-            "ai_assistant_feedback_rating": "Rate AI performance",
-            "ai_assistant_feedback_comment": "Comment (optional)",
-            "ai_assistant_feedback_submit": "Submit",
-            "ai_assistant_feedback_success": "Thank you! Your feedback has been sent.",
-            "ai_assistant_recording": "Speak now...",
-            "ai_assistant_voice_input": "Voice input",
             // Child Interface Screen
             "child_interface_background": "Bright child interface background",
             "child_interface_content": "Child interface content",
@@ -7443,10 +7478,6 @@ Settings
             "device_detail_info_system": "System",
             "device_detail_info_ip": "IP address",
             "device_detail_info_mac": "MAC address",
-            // ARCHIVED 2025-11-10: "device_detail_stats_threats_blocked": "Threats blocked",
-            // ARCHIVED 2025-11-10: "device_detail_stats_traffic_downloaded": "Traffic downloaded",
-            // ARCHIVED 2025-11-10: "device_detail_stats_traffic_uploaded": "Traffic uploaded",
-            // ARCHIVED 2025-11-10: "device_detail_stats_usage_time": "Usage time",
             "device_detail_threat_severity": "Threat level: %@",
             "device_detail_threat_severity_low": "low",
             "device_detail_threat_severity_medium": "medium",
@@ -7455,6 +7486,26 @@ Settings
             "device_detail_threat_time": "time: %@",
             "device_detail_protection_enabled": "Device protection",
             "device_detail_scanning_enabled": "Automatic scanning",
+            
+            // Device Detail Screen - Statistics Tab
+            "device_detail_stats_threats_blocked": "Threats Blocked",
+            "device_detail_stats_traffic_downloaded": "Downloaded",
+            "device_detail_stats_traffic_uploaded": "Uploaded",
+            "device_detail_stats_usage_time": "Usage Time",
+            
+            // Device Detail Screen - Threats Tab
+            "device_detail_threat_malicious_site": "Malicious site",
+            "device_detail_threat_tracker_blocked": "Tracker blocked",
+            "device_detail_threat_phishing_attempt": "Phishing attempt",
+            "device_detail_threat_time_5_min": "5 min ago",
+            "device_detail_threat_time_15_min": "15 min ago",
+            "device_detail_threat_time_1_hour": "1 hour ago",
+            
+            // Device Detail Screen - Confirmation Dialogs
+            "device_detail_block_confirmation_title": "Block Device",
+            "device_detail_block_confirmation_message": "Are you sure you want to block %@? Device access will be restricted.",
+            "device_detail_remove_confirmation_title": "Remove Device",
+            "device_detail_remove_confirmation_message": "Are you sure you want to remove %@? This action cannot be undone.",
             
             // Security Education Screen
             "security_education_title": "Security",
@@ -7943,6 +7994,13 @@ Settings
             // Component 1: crash_detection_agent (for testing)
             "component.crash_detection_agent.title": "Crash Detection",
             "component.crash_detection_agent.desc": "Automatic crash detection and emergency call",
+            
+            // Crash Detection - Alert Modal
+            "crash_detection_crash_detected": "Crash Detected!",
+            "crash_detection_countdown": "Automatic call in %d seconds",
+            "crash_detection_call_112": "Call 112",
+            "crash_detection_cancel": "Cancel",
+            "crash_detection_monitoring_active": "Monitoring active. If you are safe, press \"Cancel\".",
             
             // Component 2: roadside_assistance_agent
             "component.roadside_assistance_agent.title": "Roadside Assistance",
@@ -8510,6 +8568,40 @@ Settings
             "incident_response.block": "Block",
             "incident_response.notify": "Notify",
             "incident_response.escalate": "Escalate",
+            // Advanced Settings translations
+            "settings_title": "SETTINGS",
+            "settings_subtitle": "App Management",
+            "settings_advanced_title": "Advanced Settings",
+            "settings_advanced_subtitle": "Protection Components Management",
+            "advanced_safari_section_title": "Safari",
+            "advanced_safari_section_subtitle": "Browser Restrictions",
+            "advanced_family_section_title": "Control and Monitoring",
+            "advanced_family_section_subtitle": "Family",
+            "advanced_safari_sites_filter_title": "Site Filtering",
+            "advanced_safari_sites_filter_subtitle": "Dangerous and Undesirable Content",
+            "advanced_safari_status_error": "Status Check Error",
+            "advanced_safari_configure_categories": "Configure Categories",
+            "advanced_safari_social_restriction_title": "Social Networks Restriction",
+            "advanced_safari_social_restriction_subtitle": "Blocking Popular Social Networks in Safari",
+            "advanced_family_activity_title": "Activity Monitoring",
+            "advanced_family_activity_subtitle": "Websites and Applications",
+            "advanced_family_activity_metrics": "Sites/week: %d • Apps: %d",
+            "advanced_family_details": "Details",
+            "advanced_family_messages_toggle_title": "Messages",
+            "advanced_family_screenshots_toggle_title": "Screenshots",
+            "advanced_family_time_title": "Time Control",
+            "advanced_family_time_subtitle": "Screen Time and Modes",
+            "advanced_family_time_metrics": "Today: %@ / %@",
+            "advanced_family_app_limits_title": "App Limits",
+            "advanced_family_app_limits_subtitle": "Application Restrictions",
+            "advanced_family_app_limits_metrics": "Limits: %d",
+            "advanced_threat_card_title": "Threat Blocking",
+            "advanced_threat_card_subtitle": "Phishing • Malware • Mobile • Network",
+            "advanced_threat_status_on": "On",
+            "advanced_threat_status_off": "Off",
+            "advanced_threat_status_partial": "Partial: %d/%d",
+            "advanced_threat_configure": "Configure",
+            "advanced_threat_refresh": "Refresh",
         ],
         .chinese: [
             "settings_title": "设置",

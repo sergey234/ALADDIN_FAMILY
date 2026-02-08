@@ -18,20 +18,6 @@
       "moduleName": "ALADDINContentBlocker"
     },
     {
-      "kind": "Import",
-      "name": "SwiftOnoneSupport",
-      "printedName": "SwiftOnoneSupport",
-      "declKind": "Import",
-      "moduleName": "ALADDINContentBlocker"
-    },
-    {
-      "kind": "Import",
-      "name": "_Concurrency",
-      "printedName": "_Concurrency",
-      "declKind": "Import",
-      "moduleName": "ALADDINContentBlocker"
-    },
-    {
       "kind": "TypeDecl",
       "name": "ActionRequestHandler",
       "printedName": "ActionRequestHandler",
@@ -56,7 +42,9 @@
           "declAttributes": [
             "HasInitialValue",
             "Final",
-            "HasStorage"
+            "HasStorage",
+            "AccessControl",
+            "RawDocComment"
           ],
           "fixedbinaryorder": 0,
           "isLet": true,
@@ -82,7 +70,8 @@
           "declAttributes": [
             "HasInitialValue",
             "Final",
-            "HasStorage"
+            "HasStorage",
+            "AccessControl"
           ],
           "fixedbinaryorder": 1,
           "isLet": true,
@@ -112,7 +101,8 @@
           "isOpen": true,
           "objc_name": "beginRequestWithExtensionContext:",
           "declAttributes": [
-            "ObjC"
+            "ObjC",
+            "RawDocComment"
           ],
           "funcSelfKind": "NonMutating"
         },
@@ -149,6 +139,7 @@
       "moduleName": "ALADDINContentBlocker",
       "isOpen": true,
       "declAttributes": [
+        "RawDocComment",
         "ObjC"
       ],
       "superclassUsr": "c:objc(cs)NSObject",
@@ -308,57 +299,6 @@
           ]
         },
         {
-          "kind": "Function",
-          "name": "encode",
-          "printedName": "encode(to:)",
-          "children": [
-            {
-              "kind": "TypeNominal",
-              "name": "Void",
-              "printedName": "()"
-            },
-            {
-              "kind": "TypeNominal",
-              "name": "Encoder",
-              "printedName": "Swift.Encoder",
-              "usr": "s:s7EncoderP"
-            }
-          ],
-          "declKind": "Func",
-          "usr": "s:21ALADDINContentBlocker07ContentB4RuleV6encode2toys7Encoder_p_tKF",
-          "mangledName": "$s21ALADDINContentBlocker07ContentB4RuleV6encode2toys7Encoder_p_tKF",
-          "moduleName": "ALADDINContentBlocker",
-          "implicit": true,
-          "throwing": true,
-          "funcSelfKind": "NonMutating"
-        },
-        {
-          "kind": "Constructor",
-          "name": "init",
-          "printedName": "init(from:)",
-          "children": [
-            {
-              "kind": "TypeNominal",
-              "name": "ContentBlockerRule",
-              "printedName": "ALADDINContentBlocker.ContentBlockerRule",
-              "usr": "s:21ALADDINContentBlocker07ContentB4RuleV"
-            },
-            {
-              "kind": "TypeNominal",
-              "name": "Decoder",
-              "printedName": "Swift.Decoder",
-              "usr": "s:s7DecoderP"
-            }
-          ],
-          "declKind": "Constructor",
-          "usr": "s:21ALADDINContentBlocker07ContentB4RuleV4fromACs7Decoder_p_tKcfc",
-          "mangledName": "$s21ALADDINContentBlocker07ContentB4RuleV4fromACs7Decoder_p_tKcfc",
-          "moduleName": "ALADDINContentBlocker",
-          "implicit": true,
-          "throwing": true,
-          "init_kind": "Designated"
-        },
-        {
           "kind": "Constructor",
           "name": "init",
           "printedName": "init(trigger:action:)",
@@ -388,12 +328,66 @@
           "moduleName": "ALADDINContentBlocker",
           "implicit": true,
           "init_kind": "Designated"
+        },
+        {
+          "kind": "Constructor",
+          "name": "init",
+          "printedName": "init(from:)",
+          "children": [
+            {
+              "kind": "TypeNominal",
+              "name": "ContentBlockerRule",
+              "printedName": "ALADDINContentBlocker.ContentBlockerRule",
+              "usr": "s:21ALADDINContentBlocker07ContentB4RuleV"
+            },
+            {
+              "kind": "TypeNominal",
+              "name": "Decoder",
+              "printedName": "Swift.Decoder",
+              "usr": "s:s7DecoderP"
+            }
+          ],
+          "declKind": "Constructor",
+          "usr": "s:21ALADDINContentBlocker07ContentB4RuleV4fromACs7Decoder_p_tKcfc",
+          "mangledName": "$s21ALADDINContentBlocker07ContentB4RuleV4fromACs7Decoder_p_tKcfc",
+          "moduleName": "ALADDINContentBlocker",
+          "implicit": true,
+          "throwing": true,
+          "init_kind": "Designated"
+        },
+        {
+          "kind": "Function",
+          "name": "encode",
+          "printedName": "encode(to:)",
+          "children": [
+            {
+              "kind": "TypeNominal",
+              "name": "Void",
+              "printedName": "()"
+            },
+            {
+              "kind": "TypeNominal",
+              "name": "Encoder",
+              "printedName": "Swift.Encoder",
+              "usr": "s:s7EncoderP"
+            }
+          ],
+          "declKind": "Func",
+          "usr": "s:21ALADDINContentBlocker07ContentB4RuleV6encode2toys7Encoder_p_tKF",
+          "mangledName": "$s21ALADDINContentBlocker07ContentB4RuleV6encode2toys7Encoder_p_tKF",
+          "moduleName": "ALADDINContentBlocker",
+          "implicit": true,
+          "throwing": true,
+          "funcSelfKind": "NonMutating"
         }
       ],
       "declKind": "Struct",
       "usr": "s:21ALADDINContentBlocker07ContentB4RuleV",
       "mangledName": "$s21ALADDINContentBlocker07ContentB4RuleV",
       "moduleName": "ALADDINContentBlocker",
+      "declAttributes": [
+        "RawDocComment"
+      ],
       "conformances": [
         {
           "kind": "Conformance",
@@ -408,13 +402,6 @@
           "printedName": "Encodable",
           "usr": "s:SE",
           "mangledName": "$sSE"
-        },
-        {
-          "kind": "Conformance",
-          "name": "Sendable",
-          "printedName": "Sendable",
-          "usr": "s:s8SendableP",
-          "mangledName": "$ss8SendableP"
         }
       ]
     },
@@ -1132,127 +1119,6 @@
               "init_kind": "Designated"
             },
             {
-              "kind": "Constructor",
-              "name": "init",
-              "printedName": "init(stringValue:)",
-              "children": [
-                {
-                  "kind": "TypeNominal",
-                  "name": "Optional",
-                  "printedName": "ALADDINContentBlocker.Trigger.CodingKeys?",
-                  "children": [
-                    {
-                      "kind": "TypeNominal",
-                      "name": "CodingKeys",
-                      "printedName": "ALADDINContentBlocker.Trigger.CodingKeys",
-                      "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO"
-                    }
-                  ],
-                  "usr": "s:Sq"
-                },
-                {
-                  "kind": "TypeNominal",
-                  "name": "String",
-                  "printedName": "Swift.String",
-                  "usr": "s:SS"
-                }
-              ],
-              "declKind": "Constructor",
-              "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO11stringValueAESgSS_tcfc",
-              "mangledName": "$s21ALADDINContentBlocker7TriggerV10CodingKeysO11stringValueAESgSS_tcfc",
-              "moduleName": "ALADDINContentBlocker",
-              "implicit": true,
-              "init_kind": "Designated"
-            },
-            {
-              "kind": "Constructor",
-              "name": "init",
-              "printedName": "init(intValue:)",
-              "children": [
-                {
-                  "kind": "TypeNominal",
-                  "name": "Optional",
-                  "printedName": "ALADDINContentBlocker.Trigger.CodingKeys?",
-                  "children": [
-                    {
-                      "kind": "TypeNominal",
-                      "name": "CodingKeys",
-                      "printedName": "ALADDINContentBlocker.Trigger.CodingKeys",
-                      "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO"
-                    }
-                  ],
-                  "usr": "s:Sq"
-                },
-                {
-                  "kind": "TypeNominal",
-                  "name": "Int",
-                  "printedName": "Swift.Int",
-                  "usr": "s:Si"
-                }
-              ],
-              "declKind": "Constructor",
-              "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueAESgSi_tcfc",
-              "mangledName": "$s21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueAESgSi_tcfc",
-              "moduleName": "ALADDINContentBlocker",
-              "implicit": true,
-              "init_kind": "Designated"
-            },
-            {
-              "kind": "Var",
-              "name": "intValue",
-              "printedName": "intValue",
-              "children": [
-                {
-                  "kind": "TypeNominal",
-                  "name": "Optional",
-                  "printedName": "Swift.Int?",
-                  "children": [
-                    {
-                      "kind": "TypeNominal",
-                      "name": "Int",
-                      "printedName": "Swift.Int",
-                      "usr": "s:Si"
-                    }
-                  ],
-                  "usr": "s:Sq"
-                }
-              ],
-              "declKind": "Var",
-              "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueSiSgvp",
-              "mangledName": "$s21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueSiSgvp",
-              "moduleName": "ALADDINContentBlocker",
-              "implicit": true,
-              "accessors": [
-                {
-                  "kind": "Accessor",
-                  "name": "Get",
-                  "printedName": "Get()",
-                  "children": [
-                    {
-                      "kind": "TypeNominal",
-                      "name": "Optional",
-                      "printedName": "Swift.Int?",
-                      "children": [
-                        {
-                          "kind": "TypeNominal",
-                          "name": "Int",
-                          "printedName": "Swift.Int",
-                          "usr": "s:Si"
-                        }
-                      ],
-                      "usr": "s:Sq"
-                    }
-                  ],
-                  "declKind": "Accessor",
-                  "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueSiSgvg",
-                  "mangledName": "$s21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueSiSgvg",
-                  "moduleName": "ALADDINContentBlocker",
-                  "implicit": true,
-                  "accessorKind": "get"
-                }
-              ]
-            },
-            {
               "kind": "Var",
               "name": "rawValue",
               "printedName": "rawValue",
@@ -1329,6 +1195,127 @@
                   "accessorKind": "get"
                 }
               ]
+            },
+            {
+              "kind": "Constructor",
+              "name": "init",
+              "printedName": "init(stringValue:)",
+              "children": [
+                {
+                  "kind": "TypeNominal",
+                  "name": "Optional",
+                  "printedName": "ALADDINContentBlocker.Trigger.CodingKeys?",
+                  "children": [
+                    {
+                      "kind": "TypeNominal",
+                      "name": "CodingKeys",
+                      "printedName": "ALADDINContentBlocker.Trigger.CodingKeys",
+                      "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO"
+                    }
+                  ],
+                  "usr": "s:Sq"
+                },
+                {
+                  "kind": "TypeNominal",
+                  "name": "String",
+                  "printedName": "Swift.String",
+                  "usr": "s:SS"
+                }
+              ],
+              "declKind": "Constructor",
+              "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO11stringValueAESgSS_tcfc",
+              "mangledName": "$s21ALADDINContentBlocker7TriggerV10CodingKeysO11stringValueAESgSS_tcfc",
+              "moduleName": "ALADDINContentBlocker",
+              "implicit": true,
+              "init_kind": "Designated"
+            },
+            {
+              "kind": "Var",
+              "name": "intValue",
+              "printedName": "intValue",
+              "children": [
+                {
+                  "kind": "TypeNominal",
+                  "name": "Optional",
+                  "printedName": "Swift.Int?",
+                  "children": [
+                    {
+                      "kind": "TypeNominal",
+                      "name": "Int",
+                      "printedName": "Swift.Int",
+                      "usr": "s:Si"
+                    }
+                  ],
+                  "usr": "s:Sq"
+                }
+              ],
+              "declKind": "Var",
+              "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueSiSgvp",
+              "mangledName": "$s21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueSiSgvp",
+              "moduleName": "ALADDINContentBlocker",
+              "implicit": true,
+              "accessors": [
+                {
+                  "kind": "Accessor",
+                  "name": "Get",
+                  "printedName": "Get()",
+                  "children": [
+                    {
+                      "kind": "TypeNominal",
+                      "name": "Optional",
+                      "printedName": "Swift.Int?",
+                      "children": [
+                        {
+                          "kind": "TypeNominal",
+                          "name": "Int",
+                          "printedName": "Swift.Int",
+                          "usr": "s:Si"
+                        }
+                      ],
+                      "usr": "s:Sq"
+                    }
+                  ],
+                  "declKind": "Accessor",
+                  "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueSiSgvg",
+                  "mangledName": "$s21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueSiSgvg",
+                  "moduleName": "ALADDINContentBlocker",
+                  "implicit": true,
+                  "accessorKind": "get"
+                }
+              ]
+            },
+            {
+              "kind": "Constructor",
+              "name": "init",
+              "printedName": "init(intValue:)",
+              "children": [
+                {
+                  "kind": "TypeNominal",
+                  "name": "Optional",
+                  "printedName": "ALADDINContentBlocker.Trigger.CodingKeys?",
+                  "children": [
+                    {
+                      "kind": "TypeNominal",
+                      "name": "CodingKeys",
+                      "printedName": "ALADDINContentBlocker.Trigger.CodingKeys",
+                      "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO"
+                    }
+                  ],
+                  "usr": "s:Sq"
+                },
+                {
+                  "kind": "TypeNominal",
+                  "name": "Int",
+                  "printedName": "Swift.Int",
+                  "usr": "s:Si"
+                }
+              ],
+              "declKind": "Constructor",
+              "usr": "s:21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueAESgSi_tcfc",
+              "mangledName": "$s21ALADDINContentBlocker7TriggerV10CodingKeysO8intValueAESgSi_tcfc",
+              "moduleName": "ALADDINContentBlocker",
+              "implicit": true,
+              "init_kind": "Designated"
             }
           ],
           "declKind": "Enum",
@@ -1340,17 +1327,17 @@
           "conformances": [
             {
               "kind": "Conformance",
-              "name": "CustomDebugStringConvertible",
-              "printedName": "CustomDebugStringConvertible",
-              "usr": "s:s28CustomDebugStringConvertibleP",
-              "mangledName": "$ss28CustomDebugStringConvertibleP"
+              "name": "Equatable",
+              "printedName": "Equatable",
+              "usr": "s:SQ",
+              "mangledName": "$sSQ"
             },
             {
               "kind": "Conformance",
-              "name": "CodingKey",
-              "printedName": "CodingKey",
-              "usr": "s:s9CodingKeyP",
-              "mangledName": "$ss9CodingKeyP"
+              "name": "Hashable",
+              "printedName": "Hashable",
+              "usr": "s:SH",
+              "mangledName": "$sSH"
             },
             {
               "kind": "Conformance",
@@ -1376,17 +1363,17 @@
             },
             {
               "kind": "Conformance",
-              "name": "Hashable",
-              "printedName": "Hashable",
-              "usr": "s:SH",
-              "mangledName": "$sSH"
+              "name": "CodingKey",
+              "printedName": "CodingKey",
+              "usr": "s:s9CodingKeyP",
+              "mangledName": "$ss9CodingKeyP"
             },
             {
               "kind": "Conformance",
-              "name": "Equatable",
-              "printedName": "Equatable",
-              "usr": "s:SQ",
-              "mangledName": "$sSQ"
+              "name": "CustomDebugStringConvertible",
+              "printedName": "CustomDebugStringConvertible",
+              "usr": "s:s28CustomDebugStringConvertibleP",
+              "mangledName": "$ss28CustomDebugStringConvertibleP"
             },
             {
               "kind": "Conformance",
@@ -1403,57 +1390,6 @@
               "mangledName": "$ss8SendableP"
             }
           ]
-        },
-        {
-          "kind": "Function",
-          "name": "encode",
-          "printedName": "encode(to:)",
-          "children": [
-            {
-              "kind": "TypeNominal",
-              "name": "Void",
-              "printedName": "()"
-            },
-            {
-              "kind": "TypeNominal",
-              "name": "Encoder",
-              "printedName": "Swift.Encoder",
-              "usr": "s:s7EncoderP"
-            }
-          ],
-          "declKind": "Func",
-          "usr": "s:21ALADDINContentBlocker7TriggerV6encode2toys7Encoder_p_tKF",
-          "mangledName": "$s21ALADDINContentBlocker7TriggerV6encode2toys7Encoder_p_tKF",
-          "moduleName": "ALADDINContentBlocker",
-          "implicit": true,
-          "throwing": true,
-          "funcSelfKind": "NonMutating"
-        },
-        {
-          "kind": "Constructor",
-          "name": "init",
-          "printedName": "init(from:)",
-          "children": [
-            {
-              "kind": "TypeNominal",
-              "name": "Trigger",
-              "printedName": "ALADDINContentBlocker.Trigger",
-              "usr": "s:21ALADDINContentBlocker7TriggerV"
-            },
-            {
-              "kind": "TypeNominal",
-              "name": "Decoder",
-              "printedName": "Swift.Decoder",
-              "usr": "s:s7DecoderP"
-            }
-          ],
-          "declKind": "Constructor",
-          "usr": "s:21ALADDINContentBlocker7TriggerV4fromACs7Decoder_p_tKcfc",
-          "mangledName": "$s21ALADDINContentBlocker7TriggerV4fromACs7Decoder_p_tKcfc",
-          "moduleName": "ALADDINContentBlocker",
-          "implicit": true,
-          "throwing": true,
-          "init_kind": "Designated"
         },
         {
           "kind": "Constructor",
@@ -1589,6 +1525,57 @@
           "moduleName": "ALADDINContentBlocker",
           "implicit": true,
           "init_kind": "Designated"
+        },
+        {
+          "kind": "Constructor",
+          "name": "init",
+          "printedName": "init(from:)",
+          "children": [
+            {
+              "kind": "TypeNominal",
+              "name": "Trigger",
+              "printedName": "ALADDINContentBlocker.Trigger",
+              "usr": "s:21ALADDINContentBlocker7TriggerV"
+            },
+            {
+              "kind": "TypeNominal",
+              "name": "Decoder",
+              "printedName": "Swift.Decoder",
+              "usr": "s:s7DecoderP"
+            }
+          ],
+          "declKind": "Constructor",
+          "usr": "s:21ALADDINContentBlocker7TriggerV4fromACs7Decoder_p_tKcfc",
+          "mangledName": "$s21ALADDINContentBlocker7TriggerV4fromACs7Decoder_p_tKcfc",
+          "moduleName": "ALADDINContentBlocker",
+          "implicit": true,
+          "throwing": true,
+          "init_kind": "Designated"
+        },
+        {
+          "kind": "Function",
+          "name": "encode",
+          "printedName": "encode(to:)",
+          "children": [
+            {
+              "kind": "TypeNominal",
+              "name": "Void",
+              "printedName": "()"
+            },
+            {
+              "kind": "TypeNominal",
+              "name": "Encoder",
+              "printedName": "Swift.Encoder",
+              "usr": "s:s7EncoderP"
+            }
+          ],
+          "declKind": "Func",
+          "usr": "s:21ALADDINContentBlocker7TriggerV6encode2toys7Encoder_p_tKF",
+          "mangledName": "$s21ALADDINContentBlocker7TriggerV6encode2toys7Encoder_p_tKF",
+          "moduleName": "ALADDINContentBlocker",
+          "implicit": true,
+          "throwing": true,
+          "funcSelfKind": "NonMutating"
         }
       ],
       "declKind": "Struct",
@@ -1609,13 +1596,6 @@
           "printedName": "Encodable",
           "usr": "s:SE",
           "mangledName": "$sSE"
-        },
-        {
-          "kind": "Conformance",
-          "name": "Sendable",
-          "printedName": "Sendable",
-          "usr": "s:s8SendableP",
-          "mangledName": "$ss8SendableP"
         }
       ]
     },
@@ -1735,57 +1715,6 @@
           ]
         },
         {
-          "kind": "Function",
-          "name": "encode",
-          "printedName": "encode(to:)",
-          "children": [
-            {
-              "kind": "TypeNominal",
-              "name": "Void",
-              "printedName": "()"
-            },
-            {
-              "kind": "TypeNominal",
-              "name": "Encoder",
-              "printedName": "Swift.Encoder",
-              "usr": "s:s7EncoderP"
-            }
-          ],
-          "declKind": "Func",
-          "usr": "s:21ALADDINContentBlocker6ActionV6encode2toys7Encoder_p_tKF",
-          "mangledName": "$s21ALADDINContentBlocker6ActionV6encode2toys7Encoder_p_tKF",
-          "moduleName": "ALADDINContentBlocker",
-          "implicit": true,
-          "throwing": true,
-          "funcSelfKind": "NonMutating"
-        },
-        {
-          "kind": "Constructor",
-          "name": "init",
-          "printedName": "init(from:)",
-          "children": [
-            {
-              "kind": "TypeNominal",
-              "name": "Action",
-              "printedName": "ALADDINContentBlocker.Action",
-              "usr": "s:21ALADDINContentBlocker6ActionV"
-            },
-            {
-              "kind": "TypeNominal",
-              "name": "Decoder",
-              "printedName": "Swift.Decoder",
-              "usr": "s:s7DecoderP"
-            }
-          ],
-          "declKind": "Constructor",
-          "usr": "s:21ALADDINContentBlocker6ActionV4fromACs7Decoder_p_tKcfc",
-          "mangledName": "$s21ALADDINContentBlocker6ActionV4fromACs7Decoder_p_tKcfc",
-          "moduleName": "ALADDINContentBlocker",
-          "implicit": true,
-          "throwing": true,
-          "init_kind": "Designated"
-        },
-        {
           "kind": "Constructor",
           "name": "init",
           "printedName": "init(type:selector:)",
@@ -1823,6 +1752,57 @@
           "moduleName": "ALADDINContentBlocker",
           "implicit": true,
           "init_kind": "Designated"
+        },
+        {
+          "kind": "Constructor",
+          "name": "init",
+          "printedName": "init(from:)",
+          "children": [
+            {
+              "kind": "TypeNominal",
+              "name": "Action",
+              "printedName": "ALADDINContentBlocker.Action",
+              "usr": "s:21ALADDINContentBlocker6ActionV"
+            },
+            {
+              "kind": "TypeNominal",
+              "name": "Decoder",
+              "printedName": "Swift.Decoder",
+              "usr": "s:s7DecoderP"
+            }
+          ],
+          "declKind": "Constructor",
+          "usr": "s:21ALADDINContentBlocker6ActionV4fromACs7Decoder_p_tKcfc",
+          "mangledName": "$s21ALADDINContentBlocker6ActionV4fromACs7Decoder_p_tKcfc",
+          "moduleName": "ALADDINContentBlocker",
+          "implicit": true,
+          "throwing": true,
+          "init_kind": "Designated"
+        },
+        {
+          "kind": "Function",
+          "name": "encode",
+          "printedName": "encode(to:)",
+          "children": [
+            {
+              "kind": "TypeNominal",
+              "name": "Void",
+              "printedName": "()"
+            },
+            {
+              "kind": "TypeNominal",
+              "name": "Encoder",
+              "printedName": "Swift.Encoder",
+              "usr": "s:s7EncoderP"
+            }
+          ],
+          "declKind": "Func",
+          "usr": "s:21ALADDINContentBlocker6ActionV6encode2toys7Encoder_p_tKF",
+          "mangledName": "$s21ALADDINContentBlocker6ActionV6encode2toys7Encoder_p_tKF",
+          "moduleName": "ALADDINContentBlocker",
+          "implicit": true,
+          "throwing": true,
+          "funcSelfKind": "NonMutating"
         }
       ],
       "declKind": "Struct",
@@ -1843,13 +1823,6 @@
           "printedName": "Encodable",
           "usr": "s:SE",
           "mangledName": "$sSE"
-        },
-        {
-          "kind": "Conformance",
-          "name": "Sendable",
-          "printedName": "Sendable",
-          "usr": "s:s8SendableP",
-          "mangledName": "$ss8SendableP"
         }
       ]
     }

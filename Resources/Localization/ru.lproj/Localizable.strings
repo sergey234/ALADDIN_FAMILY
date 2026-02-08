@@ -365,7 +365,6 @@
 "device_detail_tab_switch_hint" = "Переключиться на вкладку %@";
 "device_detail_tab_selector" = "Выбор вкладки, текущая: %@";
 "device_detail_accessibility" = "Детали устройства для %@";
-"device_detail_stats_protection_level" = "Уровень защиты";
 
 /* ═══════════════════════════════════════════════════════════════
  * ДЕТСКИЙ ИНТЕРФЕЙС - ОСНОВНЫЕ ЭЛЕМЕНТЫ
@@ -475,6 +474,24 @@
 "device_detail_remove_confirmation_title" = "Удаление устройства";
 "device_detail_remove_confirmation_message" = "Вы уверены, что хотите удалить %@? Это действие нельзя отменить.";
 "device_detail_action_success" = "Действие выполнено успешно";
+"device_detail_threat_severity" = "Уровень угрозы: %@";
+"device_detail_threat_time" = "время: %@";
+"device_detail_threat_accessibility" = "Угроза от %@, уровень %@, %@";
+"device_detail_threat_severity_low" = "Низкий";
+"device_detail_threat_severity_medium" = "Средний";
+"device_detail_threat_severity_high" = "Высокий";
+"device_detail_protection_enabled" = "Защита включена";
+"device_detail_scanning_enabled" = "Сканирование включено";
+"device_detail_threat_malicious_site" = "Вредоносный сайт";
+"device_detail_threat_tracker_blocked" = "Трекер заблокирован";
+"device_detail_threat_phishing_attempt" = "Фишинг попытка";
+"device_detail_threat_time_5_min" = "5 мин назад";
+"device_detail_threat_time_15_min" = "15 мин назад";
+"device_detail_threat_time_1_hour" = "1 час назад";
+"main_demo_mode_message" = "Демо режим - используйте performRealLogin() для реальной авторизации";
+"common_cancel" = "Отмена";
+"common_error" = "Ошибка";
+"common_ok" = "OK";
 
 /* ═══════════════════════════════════════════════════════════════
  * ФОРМА ДОБАВЛЕНИЯ УСТРОЙСТВА
@@ -1063,6 +1080,20 @@
 "analytics_settings_frequency_weekly" = "Еженедельно";
 "analytics_settings_frequency_monthly" = "Ежемесячно";
 "analytics_settings_button" = "Настройки аналитики";
+
+/* ═══════════════════════════════════════════════════════════════
+ * ОБНАРУЖЕНИЕ АВАРИЙ (CRASH DETECTION)
+ * ═══════════════════════════════════════════════════════════════ */
+
+"crash_detection_monitoring_active" = "Мониторинг активен";
+"crash_detection_crash_detected" = "Обнаружена авария!";
+"crash_detection_countdown" = "Вызов 112 через %d сек";
+"crash_detection_cancel" = "Отменить";
+"crash_detection_call_112" = "Вызвать 112";
+"crash_detection_sensitivity" = "Чувствительность";
+"crash_detection_sensitivity_low" = "Низкая";
+"crash_detection_sensitivity_medium" = "Средняя";
+"crash_detection_sensitivity_high" = "Высокая";
 
 /* ═══════════════════════════════════════════════════════════════
  * ДОСТУПНОСТЬ (ACCESSIBILITY)

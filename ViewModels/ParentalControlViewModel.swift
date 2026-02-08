@@ -60,12 +60,6 @@ class ParentalControlViewModel: ObservableObject {
     
     /// Загрузить статусы всех компонентов
     func loadComponentStatuses() async {
-        // ✅ ПРОВЕРКА ДЕМО-РЕЖИМА: В демо-режиме загружаем из UserDefaults
-        let isDemoMode = AppConfig.authToken == nil
-        if isDemoMode {
-            await loadDemoSettings()
-            return
-        }
 
         // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
         // Критичные компоненты загружаются первыми
@@ -103,32 +97,6 @@ class ParentalControlViewModel: ObservableObject {
         }
     }
 
-    /// Загрузить настройки из демо-режима (UserDefaults)
-    private func loadDemoSettings() async {
-        print("🔄 ParentalControlViewModel: Загружаем демо-настройки из UserDefaults")
-
-        await MainActor.run {
-            let userDefaults = UserDefaults.standard
-
-            // Загружаем сохраненные значения для каждого компонента
-            selfHarmDetectionEnabled = userDefaults.bool(forKey: "demo_self_harm_detection_agent")
-                ? userDefaults.bool(forKey: "demo_self_harm_detection_agent") : selfHarmDetectionEnabled
-
-            groomingDetectionEnabled = userDefaults.bool(forKey: "demo_grooming_detection_agent")
-                ? userDefaults.bool(forKey: "demo_grooming_detection_agent") : groomingDetectionEnabled
-
-            onlinePredatorsEnabled = userDefaults.bool(forKey: "demo_online_predators_agent")
-                ? userDefaults.bool(forKey: "demo_online_predators_agent") : onlinePredatorsEnabled
-
-            parentalControlBotEnabled = userDefaults.bool(forKey: "demo_parental_control_bot")
-                ? userDefaults.bool(forKey: "demo_parental_control_bot") : parentalControlBotEnabled
-
-            psychologicalSupportEnabled = userDefaults.bool(forKey: "demo_psychological_support_agent")
-                ? userDefaults.bool(forKey: "demo_psychological_support_agent") : psychologicalSupportEnabled
-
-            print("✅ ParentalControlViewModel: Демо-настройки загружены из UserDefaults")
-        }
-    }
 
     // MARK: - Toggle Methods
     
@@ -192,16 +160,6 @@ class ParentalControlViewModel: ObservableObject {
     ) async {
         // Оптимистичное обновление UI с переданным значением
         updateClosure(newValue)
-
-        // Проверяем демо-режим (нет токена авторизации)
-        let isDemoMode = AppConfig.authToken == nil
-
-        if isDemoMode {
-            // В демо-режиме сохраняем локально в UserDefaults
-            UserDefaults.standard.set(newValue, forKey: "demo_\(componentId)")
-            toastManager.showSuccess("Компонент обновлен (демо-режим)")
-            return
-        }
 
         let result: Result<Void, NetworkError> = await retryManager.execute(
             operation: {

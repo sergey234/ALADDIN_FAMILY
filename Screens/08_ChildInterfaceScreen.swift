@@ -1,4 +1,6 @@
 import SwiftUI
+import Foundation
+import Combine
 
 /// 👶 Child Interface Screen
 /// Детский интерфейс - упрощённый экран для детей
@@ -131,8 +133,8 @@ struct ChildInterfaceScreen: View {
         HStack(spacing: 12) {
             // Кнопка назад
             Button(action: {
-                // ✅ ПРОСТОЙ ПОДХОД: только dismiss() для NavigationView
-                dismiss()
+                // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
+                navigationManager.goBack(reason: "ChildInterfaceScreen back button")
             }) {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 18, weight: .semibold))

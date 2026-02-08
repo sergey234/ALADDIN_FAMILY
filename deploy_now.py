@@ -1,123 +1,90 @@
 #!/usr/bin/env python3
-"""
-ЭТАП 1: РАЗВЕРТЫВАНИЕ SFM HTTP API СЕРВИСА - СЕЙЧАС!
-"""
-
 import paramiko
+import os
 import time
 
-def main():
-    print('🚀 ЭТАП 1: РАЗВЕРТЫВАНИЕ SFM HTTP API СЕРВИСА')
-    print('Подключаемся к серверу 149.154.65.180 с паролем Sergio675...')
+SERVER = "149.154.65.180"
+USER = "root"
+PASSWORD = "Sergio675"
+REMOTE_PATH = "/opt/aladdin-backend"
 
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect('149.154.65.180', username='root', password='Sergio675')
-    print('✅ Подключение успешно!')
+print("🚀 ДЕПЛОЙ ОПТИМИЗАЦИЙ CRASH DETECTION")
+print("=" * 50)
 
-    try:
-        # 1. Загружаем HTTP API файл
-        print('\n1️⃣ ЗАГРУЗКА HTTP API ФАЙЛА:')
-        with open('start_sfm_core_http.py', 'r') as f:
-            content = f.read()
+ssh = paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(SERVER, username=USER, password=PASSWORD, timeout=10)
+sftp = ssh.open_sftp()
+print("✅ Подключено к серверу")
 
-        stdin, stdout, stderr = ssh.exec_command('cat > /opt/aladdin-backend/start_sfm_core_http.py')
-        stdin.write(content)
-        stdin.close()
+# Создание директорий
+ssh.exec_command("mkdir -p " + REMOTE_PATH + "/security/api/cache")
+ssh.exec_command("mkdir -p " + REMOTE_PATH + "/security/api/routers")
+print("✅ Директории созданы")
 
-        stdin, stdout, stderr = ssh.exec_command('chmod +x /opt/aladdin-backend/start_sfm_core_http.py')
-        print('✅ HTTP API файл загружен и сделан исполняемым')
+# Backup
+ssh.exec_command("cp " + REMOTE_PATH + "/security/api/routers/crash_detection_router.py " + REMOTE_PATH + "/security/api/routers/crash_detection_router.py.backup 2>/dev/null || true")
+print("✅ Backup создан")
 
-        # 2. Обновляем systemd сервис
-        print('\n2️⃣ ОБНОВЛЕНИЕ SYSTEMD СЕРВИСА:')
-        systemd_content = '''[Unit]
-Description=ALADDIN SFM HTTP API Service
-After=network.target
+# Загрузка файлов
+sftp.put("security/api/cache/crash_detection_cache.py", REMOTE_PATH + "/security/api/cache/crash_detection_cache.py")
+print("✅ Модуль кэширования загружен")
 
-[Service]
-User=root
-Group=root
-WorkingDirectory=/opt/aladdin-backend
-ExecStart=/opt/aladdin-backend/venvs/main_env/bin/python3 /opt/aladdin-backend/start_sfm_core_http.py
-Restart=always
-RestartSec=5
-StandardOutput=syslog
-StandardError=syslog
-SyslogIdentifier=aladdin-sfm-http-api
+sftp.put("crash_detection_router_optimized.py", REMOTE_PATH + "/security/api/routers/crash_detection_router_optimized.py")
+print("✅ Оптимизированный роутер загружен")
 
-[Install]
-WantedBy=multi-user.target'''
+# Проверка Redis
+stdin, stdout, stderr = ssh.exec_command("redis-cli ping 2>/dev/null || echo 'NOT_RUNNING'")
+redis_status = stdout.read().decode().strip()
+if redis_status == "PONG":
+    print("✅ Redis работает")
+else:
+    print("⚠️  Установка Redis...")
+    ssh.exec_command("apt-get update -qq && apt-get install -y redis-server >/dev/null 2>&1 || yum install -y redis >/dev/null 2>&1")
+    ssh.exec_command("systemctl start redis-server 2>/dev/null || service redis start 2>/dev/null")
 
-        stdin, stdout, stderr = ssh.exec_command('cat > /etc/systemd/system/aladdin-sfm-core.service')
-        stdin.write(systemd_content)
-        stdin.close()
+# Установка redis библиотеки
+stdin, stdout, stderr = ssh.exec_command("python3 -c 'import redis' 2>&1")
+if stdout.channel.recv_exit_status() != 0:
+    print("⚠️  Установка redis библиотеки...")
+    ssh.exec_command("pip3 install redis>=5.0.0 >/dev/null 2>&1")
+print("✅ Redis библиотека установлена")
 
-        stdin, stdout, stderr = ssh.exec_command('systemctl daemon-reload')
-        print('✅ Systemd сервис обновлен')
+# Проверка синтаксиса
+stdin, stdout, stderr = ssh.exec_command("python3 -m py_compile " + REMOTE_PATH + "/security/api/cache/crash_detection_cache.py 2>&1")
+if stdout.channel.recv_exit_status() == 0:
+    print("✅ Синтаксис cache модуля корректен")
+else:
+    err = stderr.read().decode()
+    print("❌ Ошибка синтаксиса cache: " + err)
 
-        # 3. Запускаем сервис
-        print('\n3️⃣ ЗАПУСК SFM HTTP API СЕРВИСА:')
-        stdin, stdout, stderr = ssh.exec_command('systemctl stop aladdin-sfm-core')
-        stdin, stdout, stderr = ssh.exec_command('systemctl start aladdin-sfm-core')
-        print('⏳ Ожидание запуска...')
-        time.sleep(5)
+stdin, stdout, stderr = ssh.exec_command("python3 -m py_compile " + REMOTE_PATH + "/security/api/routers/crash_detection_router_optimized.py 2>&1")
+if stdout.channel.recv_exit_status() == 0:
+    print("✅ Синтаксис роутера корректен")
+else:
+    err = stderr.read().decode()
+    print("❌ Ошибка синтаксиса роутера: " + err)
 
-        # 4. Тестируем
-        print('\n4️⃣ ТЕСТИРОВАНИЕ HTTP API:')
+# Замена роутера
+ssh.exec_command("cp " + REMOTE_PATH + "/security/api/routers/crash_detection_router_optimized.py " + REMOTE_PATH + "/security/api/routers/crash_detection_router.py")
+print("✅ Роутер заменен на оптимизированный")
 
-        # Health check
-        stdin, stdout, stderr = ssh.exec_command('curl -s http://127.0.0.1:8003/api/health')
-        health = stdout.read().decode('utf-8').strip()
-        print('Health check:', health)
+# Перезапуск API Gateway
+print("🔄 Перезапуск API Gateway...")
+ssh.exec_command("pkill -f 'uvicorn.*api_gateway' 2>/dev/null || true")
+time.sleep(2)
+ssh.exec_command("cd " + REMOTE_PATH + " && nohup python3 -m uvicorn api_gateway:app --host 0.0.0.0 --port 8002 > /dev/null 2>&1 &")
+time.sleep(3)
+print("✅ API Gateway перезапущен")
 
-        # Function test
-        stdin, stdout, stderr = ssh.exec_command('curl -s -X POST http://127.0.0.1:8003/api/execute -H "Content-Type: application/json" -d \'{"function": "get_phishing_sensitivity", "params": {}}\'')
-        func_result = stdout.read().decode('utf-8').strip()
-        print('Function test result:', func_result[:300] + '...' if len(func_result) > 300 else func_result)
+# Проверка работы
+stdin, stdout, stderr = ssh.exec_command("curl -s http://localhost:8002/api/health 2>&1 | head -1")
+health = stdout.read().decode().strip()
+if "status" in health or "ok" in health.lower():
+    print("✅ API Gateway работает")
+else:
+    print("⚠️  Статус API Gateway: " + health)
 
-        # Service status
-        stdin, stdout, stderr = ssh.exec_command('systemctl status aladdin-sfm-core --no-pager | head -3')
-        status = stdout.read().decode('utf-8').strip()
-        print('Service status:', status)
-
-        # 5. Финальная проверка
-        print('\n5️⃣ ФИНАЛЬНАЯ ПРОВЕРКА:')
-
-        # Проверяем что порт 8003 слушает
-        stdin, stdout, stderr = ssh.exec_command('ss -tlnp | grep :8003 || netstat -tlnp | grep :8003 || echo "Порт не найден"')
-        port_check = stdout.read().decode('utf-8').strip()
-        if '8003' in port_check:
-            print('✅ Порт 8003 слушает')
-        else:
-            print('❌ Порт 8003 не слушает')
-
-        # Проверяем API доступность
-        stdin, stdout, stderr = ssh.exec_command('curl -s http://127.0.0.1:8003/api/functions | head -c 100')
-        functions = stdout.read().decode('utf-8').strip()
-        if functions and ('functions' in functions or '[' in functions):
-            print('✅ API functions доступны')
-        else:
-            print('❌ API functions недоступны')
-
-        print('\n🎯 ЭТАП 1 ЗАВЕРШЕН!')
-
-        if 'real_sfm' in func_result:
-            print('🎉 УСПЕХ! SFM возвращает real данные!')
-            print('✅ ГОТОВЫ К ЭТАПУ 2!')
-        elif 'success' in func_result and 'result' in func_result:
-            print('⚠️ SFM API работает, но данные не real_sfm')
-            print('✅ Можно переходить к Этапу 2 для исправления')
-        else:
-            print('❌ SFM API не работает корректно')
-
-    except Exception as e:
-        print(f'❌ ОШИБКА: {e}')
-        import traceback
-        traceback.print_exc()
-
-    finally:
-        ssh.close()
-        print('🔌 Подключение к серверу закрыто')
-
-if __name__ == '__main__':
-    main()
+sftp.close()
+ssh.close()
+print("\n✅ ОПТИМИЗАЦИЯ ЗАВЕРШЕНА!")

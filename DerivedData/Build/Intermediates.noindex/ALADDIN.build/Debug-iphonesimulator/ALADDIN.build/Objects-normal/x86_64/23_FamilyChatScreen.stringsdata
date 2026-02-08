@@ -1,12 +1,5 @@
 {
   "source": "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/Screens/23_FamilyChatScreen.swift",
-  "tables": {
-    "Localizable": [
-      {
-        "comment": "",
-        "key": "%@: %@, %@ %@"
-      }
-    ]
-  },
+  "tables": {},
   "version": 1
 }

@@ -1,0 +1,71 @@
+#!/usr/bin/expect -f
+
+set timeout 60
+set password "Sergio675"
+set server "root@149.154.65.180"
+set sfm_registry "/opt/aladdin-backend/data/sfm/function_registry.json"
+
+puts "🔍 ПРОВЕРКА SFM REGISTRY НА СЕРВЕРЕ"
+puts "=================================="
+puts ""
+
+# Подключение к серверу
+spawn ssh $server
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "#" {
+        # Уже подключены
+    }
+}
+
+# Проверка существования registry
+send "echo '📁 Проверка файла registry...'\r"
+expect "# "
+send "ls -la $sfm_registry\r"
+expect "# "
+
+# Чтение структуры registry
+send "echo ''\r"
+expect "# "
+send "echo '📊 Чтение структуры registry...'\r"
+expect "# "
+send "head -20 $sfm_registry\r"
+expect "# "
+
+# Подсчет агентов
+send "echo ''\r"
+expect "# "
+send "echo '🔢 Подсчет агентов...'\r"
+expect "# "
+send "python3 -c 'import json; f=open(\"$sfm_registry\"); data=json.load(f); f.close(); agents = data.get(\"agents\", []) if isinstance(data, dict) else data if isinstance(data, list) else []; print(f\"Всего агентов: {len(agents)}\"); [print(f\"- {agent.get(\\\"name\\\", \\\"unknown\\\")}: {len(agent.get(\\\"functions\\\", []))} функций\") for agent in agents[:10]]' 2>/dev/null || echo 'Ошибка подсчета'\r"
+expect "# "
+
+# Проверка SFM сервиса
+send "echo ''\r"
+expect "# "
+send "echo '🔧 Проверка SFM сервиса...'\r"
+expect "# "
+send "systemctl status sfm-core 2>/dev/null | head -3 || echo 'SFM сервис не найден'\r"
+expect "# "
+
+# Проверка backend сервиса
+send "echo ''\r"
+expect "# "
+send "echo '🔧 Проверка backend сервиса...'\r"
+expect "# "
+send "systemctl status aladdin-backend 2>/dev/null | grep Active || echo 'Backend сервис не найден'\r"
+expect "# "
+
+# Завершение
+send "echo ''\r"
+expect "# "
+send "echo '✅ Проверка завершена!'\r"
+expect "# "
+send "exit\r"
+expect eof
+
+puts ""
+puts "🎯 Результаты проверки SFM registry получены!"

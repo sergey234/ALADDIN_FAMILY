@@ -175,6 +175,7 @@ class NavigationManager: ObservableObject {
         case settings = "SettingsModal"
         case help = "HelpModal"
         case about = "AboutModal"
+        case crashDetectionAlert = "CrashDetectionAlertModal"
         
         var displayName: String {
             switch self {
@@ -186,6 +187,7 @@ class NavigationManager: ObservableObject {
             case .settings: return "Настройки"
             case .help: return "Помощь"
             case .about: return "О приложении"
+            case .crashDetectionAlert: return "Предупреждение об аварии"
             }
         }
     }

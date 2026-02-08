@@ -127,52 +127,29 @@ struct PhishingProtectionSettingsModal: View {
     private func loadSettings() {
         isLoading = true
         Task {
-            // Проверяем демо-режим (работаем через UserDefaults)
-            let isDemoMode = AppConfig.authToken == nil
+            // Загружаем через API
+            do {
+                let config = try await configurationService.getConfiguration(for: componentId)
+                if let settings = config.additionalSettings {
+                    let newBlockSuspiciousLinks = (settings["blockSuspiciousLinks"]?.value as? Bool) ?? blockSuspiciousLinks
+                    let newWarnBeforeOpening = (settings["warnBeforeOpening"]?.value as? Bool) ?? warnBeforeOpening
+                    let newCheckEmailLinks = (settings["checkEmailLinks"]?.value as? Bool) ?? checkEmailLinks
+                    let newCheckSMSLinks = (settings["checkSMSLinks"]?.value as? Bool) ?? checkSMSLinks
+                    let newBlockKnownPhishingDomains = (settings["blockKnownPhishingDomains"]?.value as? Bool) ?? blockKnownPhishingDomains
+                    let newSensitivityLevel = (settings["sensitivityLevel"]?.value as? String) ?? sensitivityLevel
 
-            if isDemoMode {
-                // Загружаем из UserDefaults
-                await MainActor.run {
-                    let userDefaults = UserDefaults.standard
-                    blockSuspiciousLinks = userDefaults.bool(forKey: "demo_\(componentId)_blockSuspiciousLinks")
-                        ? userDefaults.bool(forKey: "demo_\(componentId)_blockSuspiciousLinks") : blockSuspiciousLinks
-                    warnBeforeOpening = userDefaults.bool(forKey: "demo_\(componentId)_warnBeforeOpening")
-                        ? userDefaults.bool(forKey: "demo_\(componentId)_warnBeforeOpening") : warnBeforeOpening
-                    checkEmailLinks = userDefaults.bool(forKey: "demo_\(componentId)_checkEmailLinks")
-                        ? userDefaults.bool(forKey: "demo_\(componentId)_checkEmailLinks") : checkEmailLinks
-                    checkSMSLinks = userDefaults.bool(forKey: "demo_\(componentId)_checkSMSLinks")
-                        ? userDefaults.bool(forKey: "demo_\(componentId)_checkSMSLinks") : checkSMSLinks
-                    blockKnownPhishingDomains = userDefaults.bool(forKey: "demo_\(componentId)_blockKnownPhishingDomains")
-                        ? userDefaults.bool(forKey: "demo_\(componentId)_blockKnownPhishingDomains") : blockKnownPhishingDomains
-                    sensitivityLevel = userDefaults.string(forKey: "demo_\(componentId)_sensitivityLevel") ?? sensitivityLevel
-
-                    print("✅ PhishingProtectionSettingsModal: Демо-настройки загружены")
-                }
-            } else {
-                // Загружаем через API
-                do {
-                    let config = try await configurationService.getConfiguration(for: componentId)
-                    if let settings = config.additionalSettings {
-                        let newBlockSuspiciousLinks = (settings["blockSuspiciousLinks"]?.value as? Bool) ?? blockSuspiciousLinks
-                        let newWarnBeforeOpening = (settings["warnBeforeOpening"]?.value as? Bool) ?? warnBeforeOpening
-                        let newCheckEmailLinks = (settings["checkEmailLinks"]?.value as? Bool) ?? checkEmailLinks
-                        let newCheckSMSLinks = (settings["checkSMSLinks"]?.value as? Bool) ?? checkSMSLinks
-                        let newBlockKnownPhishingDomains = (settings["blockKnownPhishingDomains"]?.value as? Bool) ?? blockKnownPhishingDomains
-                        let newSensitivityLevel = (settings["sensitivityLevel"]?.value as? String) ?? sensitivityLevel
-
-                        await MainActor.run {
-                            blockSuspiciousLinks = newBlockSuspiciousLinks
-                            warnBeforeOpening = newWarnBeforeOpening
-                            checkEmailLinks = newCheckEmailLinks
-                            checkSMSLinks = newCheckSMSLinks
-                            blockKnownPhishingDomains = newBlockKnownPhishingDomains
-                            sensitivityLevel = newSensitivityLevel
-                        }
+                    await MainActor.run {
+                        blockSuspiciousLinks = newBlockSuspiciousLinks
+                        warnBeforeOpening = newWarnBeforeOpening
+                        checkEmailLinks = newCheckEmailLinks
+                        checkSMSLinks = newCheckSMSLinks
+                        blockKnownPhishingDomains = newBlockKnownPhishingDomains
+                        sensitivityLevel = newSensitivityLevel
                     }
-                    print("✅ PhishingProtectionSettingsModal: Настройки загружены из API")
-                } catch {
-                    print("⚠️ PhishingProtectionSettingsModal: Ошибка загрузки настроек: \(error.localizedDescription)")
                 }
+                print("✅ PhishingProtectionSettingsModal: Настройки загружены из API")
+            } catch {
+                print("⚠️ PhishingProtectionSettingsModal: Ошибка загрузки настроек: \(error.localizedDescription)")
             }
             await MainActor.run {
                 isLoading = false
@@ -183,26 +160,7 @@ struct PhishingProtectionSettingsModal: View {
     // ✅ Сохранение настроек
     private func saveSettings() {
         Task {
-            // Проверяем демо-режим
-            let isDemoMode = AppConfig.authToken == nil
-
-            if isDemoMode {
-                // Сохраняем в UserDefaults
-                await MainActor.run {
-                    let userDefaults = UserDefaults.standard
-                    userDefaults.set(blockSuspiciousLinks, forKey: "demo_\(componentId)_blockSuspiciousLinks")
-                    userDefaults.set(warnBeforeOpening, forKey: "demo_\(componentId)_warnBeforeOpening")
-                    userDefaults.set(checkEmailLinks, forKey: "demo_\(componentId)_checkEmailLinks")
-                    userDefaults.set(checkSMSLinks, forKey: "demo_\(componentId)_checkSMSLinks")
-                    userDefaults.set(blockKnownPhishingDomains, forKey: "demo_\(componentId)_blockKnownPhishingDomains")
-                    userDefaults.set(sensitivityLevel, forKey: "demo_\(componentId)_sensitivityLevel")
-
-                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                    isPresented = false
-                    print("✅ PhishingProtectionSettingsModal: Демо-настройки сохранены")
-                }
-            } else {
-                // Сохраняем через API
+            // Сохраняем через API
                 do {
                     let isComponentEnabled = await MainActor.run {
                         ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
@@ -242,5 +200,3 @@ struct PhishingProtectionSettingsModal: View {
             }
         }
     }
-}
-

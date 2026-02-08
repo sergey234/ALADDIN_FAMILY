@@ -127,9 +127,10 @@ struct AppConfig {
         
         // Components (42 components API)
         static let componentStatus = "/components/status"
+        static let componentStatusBatch = "/components/status/batch"  // 🚀 Batch endpoint для оптимизации
         static let componentEnable = "/components/enable"
         static let componentDisable = "/components/disable"
-        static let componentConfiguration = "/components/configuration"
+        static let componentConfiguration = "/components/config"
         
         // Analytics
         static let analytics = "/analytics"
@@ -236,6 +237,24 @@ struct AppConfig {
         static let referralStats = "/referral/stats"
         static let referralHistory = "/referral/history"
         static let referralRewards = "/referral/rewards"
+
+        // Crash Detection
+        static let crashDetectionSetup = "/api/crash-detection/setup"
+        static let crashDetectionAlert = "/api/crash-detection/alert"
+        static let crashDetectionStart = "/api/crash-detection/start"
+        static let crashDetectionStop = "/api/crash-detection/stop"
+        static let crashDetectionData = "/api/crash-detection/data"
+        static let crashDetectionStatus = "/api/crash-detection/status"
+
+        // Location & Privacy
+        static let locationBubble = "/reports/privacy/location/bubble"
+        static let locationSend = "/reports/privacy/location/send"
+        static let geofences = "/api/v1/parental-control/location/geofences"
+        static let geofenceTrack = "/api/v1/parental-control/location/track"
+
+        // Driving Reports
+        static let drivingStart = "/reports/driving/start"
+        static let drivingEnd = "/reports/driving/end"
     }
     
     // MARK: - Feature Flags

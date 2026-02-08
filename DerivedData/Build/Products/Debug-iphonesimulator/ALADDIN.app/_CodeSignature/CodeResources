@@ -18,7 +18,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		pUIDdJT2oNsFb8C9yO1YDOHQgtk=
+		s4LIDCkcyFJHXyQLRDCxN79acXU=
 		</data>
 		<key>PkgInfo</key>
 		<data>
@@ -26,15 +26,15 @@
 		</data>
 		<key>PlugIns/ALADDINContentBlocker.appex/ALADDINContentBlocker</key>
 		<data>
-		qxXjw5r0xfIwqGsGv/0gPJO62Pc=
+		nudnogj8NaYmVgpC1E5qbl/y2hA=
 		</data>
 		<key>PlugIns/ALADDINContentBlocker.appex/Info.plist</key>
 		<data>
-		kTxoDVZVwg1fYjUNlQvTJozSv/Y=
+		HKypMj2sLqzRedWyu/6kN3wcYpI=
 		</data>
 		<key>PlugIns/ALADDINContentBlocker.appex/_CodeSignature/CodeResources</key>
 		<data>
-		EMby26XJg7IIJDk9V5oOWYjdCjI=
+		q0yndgp9yf5dMA6rOoHlpQZzqLs=
 		</data>
 		<key>PlugIns/ALADDINContentBlocker.appex/blockerList.json</key>
 		<data>
@@ -76,21 +76,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			qfuijVbDVRLE79ImH4P3ymOqWgI0q20lhVEsHDXqVXA=
+			avjb5susVW1TpRJmf8V4oEYGGmR9C1/p74SKA/UOmoY=
 			</data>
 		</dict>
 		<key>PlugIns/ALADDINContentBlocker.appex/Info.plist</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			s8nVLwE2fxn0BDwEisYTZl18kCan9Om30wWMhgBYdDs=
+			sxN5ErKiIL+pmJELmOLSMIWskceJ6047N/vOBMwXVg4=
 			</data>
 		</dict>
 		<key>PlugIns/ALADDINContentBlocker.appex/_CodeSignature/CodeResources</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			QGjyW34tcA14poKF/OvOSFwM0wvnjjZ5vIUEa90mOHI=
+			ReHvgBsWSaFzva+c2AkbfPtKnLSQDTJO/CKk1hX7Fjk=
 			</data>
 		</dict>
 		<key>PlugIns/ALADDINContentBlocker.appex/blockerList.json</key>

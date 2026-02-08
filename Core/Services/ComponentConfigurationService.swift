@@ -41,7 +41,7 @@ class ComponentConfigurationService: ObservableObject {
         if let cached = configurations[componentId] {
             return cached
         }
-        
+
         // Загрузить из API
         return try await loadConfigurationFromAPI(for: componentId)
     }
@@ -53,16 +53,16 @@ class ComponentConfigurationService: ObservableObject {
     ) async throws {
         // Валидация
         try validateConfiguration(configuration)
-        
+
         // Сохранить локально
         configurations[componentId] = configuration
-        
+
         // Отправить на сервер
         try await apiService.updateComponentConfiguration(
             componentId: componentId,
             configuration: configuration
         )
-        
+
         // Сохранить в кэш
         await cacheManager.saveConfiguration(componentId: componentId, configuration: configuration)
     }
@@ -103,5 +103,6 @@ class ComponentConfigurationService: ObservableObject {
             }
         }
     }
+
 }
 

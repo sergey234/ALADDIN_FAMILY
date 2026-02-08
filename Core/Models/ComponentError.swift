@@ -119,7 +119,7 @@ extension ComponentError {
     /// Конвертировать ComponentError в NetworkError
     func toNetworkError() -> NetworkError {
         switch self {
-        case .networkError(let message):
+        case .networkError(_):
             return .noConnection
         case .apiError(let message):
             return .badRequest(message)

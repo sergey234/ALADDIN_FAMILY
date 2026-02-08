@@ -1,0 +1,79 @@
+#!/usr/bin/expect -f
+
+set server "149.154.65.180"
+set username "root"
+set password "Sergio675"
+set files [list "crash_detection_router.py" "crash_detection_agent.py" "deploy_crash_detection_server.sh"]
+
+puts "🚀 ЗАГРУЗКА ФАЙЛОВ CRASH DETECTION НА СЕРВЕР"
+puts "==========================================="
+
+foreach file $files {
+    puts "\\n📤 Загружаю $file..."
+
+    # SCP команда
+    set scp_cmd "scp $file $username@$server:/tmp/"
+    puts "Выполняю: $scp_cmd"
+
+    spawn $scp_cmd
+    expect {
+        "password:" {
+            send "$password\\r"
+            expect {
+                "100%" {
+                    puts "✅ $file успешно загружен"
+                }
+                eof {
+                    puts "✅ $file загружен (завершено)"
+                }
+            }
+        }
+        "yes/no" {
+            send "yes\\r"
+            expect "password:"
+            send "$password\\r"
+            expect {
+                "100%" {
+                    puts "✅ $file успешно загружен"
+                }
+                eof {
+                    puts "✅ $file загружен (завершено)"
+                }
+            }
+        }
+        eof {
+            puts "⚠️  Возможная ошибка при загрузке $file"
+        }
+        timeout {
+            puts "❌ Таймаут при загрузке $file"
+        }
+    }
+}
+
+puts "\\n🔍 ПРОВЕРКА ЗАГРУЖЕННЫХ ФАЙЛОВ"
+puts "-----------------------------"
+
+# Подключаемся и проверяем файлы
+spawn ssh -o StrictHostKeyChecking=no $username@$server
+expect "password:"
+send "$password\\r"
+expect "# "
+
+send "echo '📂 Содержимое /tmp:'\\r"
+expect "# "
+send "ls -la /tmp/crash_detection_*\\r"
+expect "# "
+
+send "echo ''\\r"
+send "echo '📊 Размеры файлов:'\\r"
+expect "# "
+send "ls -lh /tmp/crash_detection_*\\r"
+expect "# "
+
+send "echo ''\\r"
+send "echo '✅ ПРОВЕРКА ЗАВЕРШЕНА'\\r"
+expect "# "
+send "exit\\r"
+
+puts "\\n🎉 ЗАГРУЗКА ФАЙЛОВ ЗАВЕРШЕНА!"
+puts "📋 Следующий шаг: выполнение деплоя на сервере"

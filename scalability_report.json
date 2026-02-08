@@ -1,0 +1,20 @@
+{
+  "timestamp": "1770468741.787633",
+  "server_ip": "149.154.65.180",
+  "target_users": 100000,
+  "current_capacity": {
+    "estimated_users": 1000,
+    "concurrent_requests": 100,
+    "response_time_p95": 95,
+    "error_rate": 0.001
+  },
+  "projected_capacity": {
+    "concurrent_requests": 2511.8864315095793,
+    "response_time_p95": 378.2018120258224,
+    "error_rate": 0.1
+  },
+  "recommendations": [
+    "\u041a\u0420\u0418\u0422\u0418\u0427\u041d\u041e: \u041d\u0443\u0436\u0435\u043d Load Balancer + \u043d\u0435\u0441\u043a\u043e\u043b\u044c\u043a\u043e \u0441\u0435\u0440\u0432\u0435\u0440\u043e\u0432",
+    "\u041a\u0420\u0418\u0422\u0418\u0427\u041d\u041e: \u041d\u0443\u0436\u043d\u0430 \u0438\u043d\u0444\u0440\u0430\u0441\u0442\u0440\u0443\u043a\u0442\u0443\u0440\u0430 \u043e\u0442\u043a\u0430\u0437\u043e\u0443\u0441\u0442\u043e\u0439\u0447\u0438\u0432\u043e\u0441\u0442\u0438"
+  ]
+}

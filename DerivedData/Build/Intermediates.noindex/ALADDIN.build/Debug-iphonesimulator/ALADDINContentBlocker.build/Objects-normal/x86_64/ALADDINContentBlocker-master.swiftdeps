@@ -1,6 +1,6 @@
 version: "Apple Swift version 5.5.2 (swiftlang-1300.0.47.5 clang-1300.0.29.30)"
-options: "59c190ccd604fc8963ab11f4c5ffd8265188e164cac3b11b74fd6b2a7aba2a43"
-build_start_time: [1767126942, 82280158]
-build_end_time: [1767126946, 304311990]
+options: "98ea4ee7f79c0a7ac23c71df5c7ab1e05fdebb0fa01365e2d4ec6fd432063184"
+build_start_time: [1770285885, 864368915]
+build_end_time: [1770285885, 919942855]
 inputs:
-  "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/ALADDINContentBlocker/ActionRequestHandler.swift": [1766521831, 56468963]
+  "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/ALADDINContentBlocker/ActionRequestHandler.swift": !private [1766521831, 56468963]

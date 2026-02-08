@@ -1,0 +1,9 @@
+{
+  "test_passed": true,
+  "target_url": "https://aladdin-ai.ru/api/health",
+  "cert_files": [
+    "ALADDIN/Certificates/aladdin_cert.cer",
+    "ALADDIN/Certificates/aladdin_cert_backup.cer"
+  ],
+  "timestamp": "2026-02-07 16:27:30.378245"
+}

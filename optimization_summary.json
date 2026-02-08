@@ -1,0 +1,10 @@
+{
+  "test_timestamp": "2026-02-07 16:43:37.899260",
+  "optimization_status": "FAILED",
+  "key_metrics": {
+    "batch_p95": "N/A",
+    "individual_avg_p95": "N/A",
+    "improvement_percent": "N/A",
+    "connection_reuse_improvement": "N/A"
+  }
+}

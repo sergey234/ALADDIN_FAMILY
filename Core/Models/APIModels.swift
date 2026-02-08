@@ -1154,8 +1154,38 @@ struct ProtectionStatsResponse: Codable {
 // MARK: - Component Models
 
 struct ComponentStatusResponse: Codable {
-    let status: ComponentStatus
-    let message: String?
+    // API возвращает плоскую структуру, а не вложенную
+    let status: String  // "enabled" или "disabled"
+    let uptime: Double?  // Процент uptime
+    let last_check: String?  // ISO дата последней проверки
+    let version: String?  // Версия компонента
+    let source: String?  // Источник данных
+    let function: String?  // Название функции
+    let timestamp: String?  // Время ответа
+
+    // Вычисляемое свойство для конвертации в ComponentStatus
+    var componentStatus: ComponentStatus {
+        let componentId = function?.replacingOccurrences(of: "get_component_status", with: "")
+            .trimmingCharacters(in: CharacterSet(charactersIn: "/")) ?? "unknown"
+
+        let isEnabled = status.lowercased() == "enabled"
+
+        // Парсим дату last_check
+        let lastUpdate: Date?
+        if let lastCheckString = last_check {
+            let formatter = ISO8601DateFormatter()
+            lastUpdate = formatter.date(from: lastCheckString)
+        } else {
+            lastUpdate = nil
+        }
+
+        return ComponentStatus(
+            componentId: componentId,
+            isEnabled: isEnabled,
+            lastUpdate: lastUpdate,
+            configuration: nil
+        )
+    }
 }
 
 struct ComponentConfigurationResponse: Codable {
