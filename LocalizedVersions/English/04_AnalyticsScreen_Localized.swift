@@ -1024,3 +1024,8 @@ struct AnalyticsFiltersSheet: View {
         }
     }
 }
+
+// ✅ ЗАДАЧА 64: Локализация для индикатора офлайн режима
+private extension AnalyticsScreen {
+    static let offlineModeText = "Offline mode - showing cached data"
+}

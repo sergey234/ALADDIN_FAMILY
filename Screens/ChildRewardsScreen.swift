@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import UIKit
 
 /// 🦄 Child Rewards Screen
 /// Экран наград для детского интерфейса
@@ -75,7 +76,19 @@ struct ChildRewardsScreen: View {
     @State private var punishReason: String = ""
     @State private var loadErrorMessage: String?
     @State private var isInitialLoadCompleted: Bool = false
-@State private var showSettingsSheet: Bool = false
+    @State private var showSettingsSheet: Bool = false
+    
+    // ✅ ГЕЙМИФИКАЦИЯ: API синхронизация
+    @State private var isLoadingRewards: Bool = false
+    @State private var isLoadingHistory: Bool = false
+    @State private var apiError: String? = nil
+    
+    private let apiService = APIService.shared
+    
+    // Получаем userId для API вызовов
+    private var userId: String {
+        AppConfig.authToken ?? UserDefaults.standard.string(forKey: "user_id") ?? "guest"
+    }
     
     // MARK: - Tabs
     
@@ -176,6 +189,10 @@ struct ChildRewardsScreen: View {
                             .frame(height: Spacing.xxl)
                     }
                     .padding(.top, Spacing.m)
+                }
+                .refreshable {
+                    // ✅ ГЕЙМИФИКАЦИЯ: Обновление данных с сервера
+                    await refreshData()
                 }
             }
         }
@@ -360,6 +377,19 @@ struct ChildRewardsScreen: View {
                 goalTitle = localizationManager.localized("child_rewards_goal_default_title")
             } else if !storedGoalTitle.isEmpty && goalTitle.isEmpty {
                 goalTitle = storedGoalTitle
+            }
+            
+            // ✅ ГЕЙМИФИКАЦИЯ: Загружаем данные с сервера при открытии экрана
+            loadBalanceFromServer()
+            loadRewardsFromServer()
+            if selectedTab == .history {
+                loadHistoryFromServer()
+            }
+        }
+        .onChange(of: selectedTab) { newTab in
+            // Загружаем историю при переключении на вкладку истории
+            if newTab == .history {
+                loadHistoryFromServer()
             }
         }
         .onReceive(viewModel.$errorMessage) { message in
@@ -747,7 +777,7 @@ struct ChildRewardsScreen: View {
     
     // MARK: - Helper Methods
     
-    /// Загрузка наград магазина из UserDefaults
+    /// Загрузка наград магазина из UserDefaults (fallback)
     private func loadShopRewards() {
         if shopRewardsData.isEmpty {
             // Первый запуск - используем дефолтные награды
@@ -764,6 +794,107 @@ struct ChildRewardsScreen: View {
                 saveShopRewards()
             }
         }
+    }
+    
+    // MARK: - ✅ ГЕЙМИФИКАЦИЯ: API методы для синхронизации
+    
+    /// Загрузить баланс единорогов с сервера
+    private func loadBalanceFromServer() {
+        apiService.getGamificationBalance(userId: userId) { [self] result in
+            switch result {
+            case .success(let response):
+                unicornBalance = response.balance
+                storedUnicornBalance = response.balance
+            case .failure(let error):
+                // Используем кэшированное значение при ошибке
+                apiError = error.localizedDescription
+                if storedUnicornBalance > 0 {
+                    unicornBalance = storedUnicornBalance
+                }
+            }
+        }
+    }
+    
+    /// Загрузить награды магазина с сервера
+    private func loadRewardsFromServer() {
+        isLoadingRewards = true
+        apiError = nil
+        
+        // Используем локальные награды для быстрого отображения
+        loadShopRewards()
+        
+        apiService.getGamificationRewardsShop(userId: userId) { [self] result in
+            isLoadingRewards = false
+            switch result {
+            case .success(let response):
+                // Конвертируем RewardResponse в ShopReward
+                // Используем существующие награды и обновляем их данными с сервера
+                var updatedRewards: [ShopReward] = []
+                for serverReward in response.rewards {
+                    // Ищем существующую награду по ID или создаем новую
+                    if let existingReward = availableRewards.first(where: { $0.id == serverReward.id }) {
+                        // Обновляем существующую награду (создаем новую с обновленными данными)
+                        updatedRewards.append(ShopReward(
+                            id: serverReward.id,
+                            icon: existingReward.icon,
+                            titleKey: serverReward.name, // Используем название с сервера
+                            descKey: serverReward.description ?? existingReward.localizedDescription(localizationManager),
+                            price: serverReward.price,
+                            isEnabled: serverReward.available
+                        ))
+                    } else {
+                        // Создаем новую награду
+                        updatedRewards.append(ShopReward(
+                            id: serverReward.id,
+                            icon: "🎁",
+                            titleKey: serverReward.name,
+                            descKey: serverReward.description ?? "",
+                            price: serverReward.price,
+                            isEnabled: serverReward.available
+                        ))
+                    }
+                }
+                // Если наград с сервера нет, используем локальные
+                if updatedRewards.isEmpty {
+                    // Оставляем существующие награды
+                } else {
+                    availableRewards = updatedRewards
+                }
+                saveShopRewards()
+            case .failure(let error):
+                apiError = error.localizedDescription
+                // Используем локальные награды при ошибке
+            }
+        }
+    }
+    
+    /// Загрузить историю наград с сервера
+    private func loadHistoryFromServer() {
+        isLoadingHistory = true
+        
+        apiService.getGamificationRewardsHistory(userId: userId, limit: 50) { [self] result in
+            isLoadingHistory = false
+            switch result {
+            case .success(let rewards):
+                // Конвертируем RewardResponse в RewardHistoryEntry
+                // TODO: Обновить историю в локальном хранилище
+                print("✅ Загружено \(rewards.count) наград из истории")
+            case .failure(let error):
+                apiError = error.localizedDescription
+            }
+        }
+    }
+    
+    /// Обновить все данные с сервера (для pull-to-refresh)
+    @MainActor
+    private func refreshData() async {
+        loadBalanceFromServer()
+        loadRewardsFromServer()
+        if selectedTab == .history {
+            loadHistoryFromServer()
+        }
+        // Небольшая задержка для плавности анимации
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
     }
     
     /// Сохранение наград магазина в UserDefaults
@@ -1541,32 +1672,50 @@ struct ChildRewardsScreen: View {
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
         
-        // Тратим единороги (это разрешено для детей)
-        unicornBalance -= pendingPurchasePrice
-        storedUnicornBalance = unicornBalance
-        
-        // ✅ БЕЗОПАСНОСТЬ: Дети могут ТОЛЬКО тратить единороги, но НЕ могут их добавлять напрямую
-        // Обновляем в UserDefaults (единый источник истины)
-        UserDefaults.standard.set(unicornBalance, forKey: "child_unicorn_balance")
-        
-        // Синхронизируем @AppStorage
-        storedUnicornBalance = unicornBalance
-        
-        // Применяем награду в зависимости от типа
-        applyReward(pendingPurchaseTitle)
-        
-        // Отправляем уведомление для обновления других экранов
-        NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
-        
-        print("💰 ChildRewardsScreen: Баланс после покупки: \(unicornBalance) 🦄")
-        
-        // Успешный feedback
-        HapticFeedback.notification(.success)
-        
-        print("🎁 Куплена награда: \(pendingPurchaseTitle) за \(pendingPurchasePrice) 🦄. Осталось: \(unicornBalance) 🦄")
-        
-        // Закрываем модальное окно
-        showPurchaseConfirmation = false
+        // ✅ ГЕЙМИФИКАЦИЯ: Покупаем награду через API
+        // Находим награду по названию
+        if let reward = availableRewards.first(where: { $0.localizedTitle(localizationManager) == pendingPurchaseTitle }) {
+            apiService.purchaseGamificationReward(
+                userId: userId,
+                rewardId: reward.id,
+                deviceId: UIDevice.current.identifierForVendor?.uuidString
+            ) { [self] result in
+                switch result {
+                case .success(let response):
+                    // Обновляем баланс с сервера
+                    unicornBalance = response.newBalance
+                    storedUnicornBalance = response.newBalance
+                    UserDefaults.standard.set(unicornBalance, forKey: "child_unicorn_balance")
+                    
+                    // Применяем награду в зависимости от типа
+                    applyReward(pendingPurchaseTitle)
+                    
+                    // Отправляем уведомление для обновления других экранов
+                    NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+                    
+                    // Успешный feedback
+                    HapticFeedback.notification(.success)
+                    
+                    print("🎁 Куплена награда: \(pendingPurchaseTitle) за \(pendingPurchasePrice) 🦄. Осталось: \(unicornBalance) 🦄")
+                    
+                    // Закрываем модальное окно
+                    showPurchaseConfirmation = false
+                case .failure(let error):
+                    apiError = error.localizedDescription
+                    HapticFeedback.notification(.error)
+                    print("❌ Ошибка покупки награды: \(error.localizedDescription)")
+                }
+            }
+        } else {
+            // Fallback на локальную покупку, если награда не найдена
+            unicornBalance -= pendingPurchasePrice
+            storedUnicornBalance = unicornBalance
+            UserDefaults.standard.set(unicornBalance, forKey: "child_unicorn_balance")
+            applyReward(pendingPurchaseTitle)
+            NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+            HapticFeedback.notification(.success)
+            showPurchaseConfirmation = false
+        }
     }
     
     /// Применение купленной награды

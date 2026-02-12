@@ -95,6 +95,9 @@
 	<string>ALADDIN Family needs HomeKit access for smart home security and family safety.</string>
 	<key>NSSiriUsageDescription</key>
 	<string>ALADDIN Family uses Siri for voice-activated family safety and security features.</string>
+	<!-- ✅ ЗАДАЧА 4: Speech Recognition для AI Assistant -->
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>ALADDIN Family needs speech recognition access for AI assistant voice input and voice commands.</string>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>ALADDIN Family needs notification access for family safety and security alerts.</string>
 	<key>LSApplicationQueriesSchemes</key>

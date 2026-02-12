@@ -434,7 +434,7 @@ struct NotificationCard: View {
                         Circle()
                             .fill(notification.type.color.opacity(0.1))
                     )
-                    .accessibilityLabel(localizationManager.localized("notifications_notification_type", notification.type.rawValue))
+                    .accessibilityLabel(localizationManager.localized("notifications_notification_type", notification.type.localizedName()))
                 
                 // Содержимое уведомления
                 VStack(alignment: .leading, spacing: 4) {

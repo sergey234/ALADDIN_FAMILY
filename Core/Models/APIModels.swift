@@ -105,11 +105,71 @@ struct NetworkProtectionSettingsResponse: Codable {
 // MARK: - Family Models
 
 struct CreateFamilyResponse: Codable {
-    let success: Bool
+    // ✅ ИСПРАВЛЕНО: Модель соответствует реальному ответу сервера
+    let family_id: String
+    let short_code: String          // Сервер возвращает short_code вместо recovery_code
+    let creator_member_id: String  // Сервер возвращает creator_member_id вместо your_member_id
+    let qr_code_data: String
+    let expires_at: String
+    
+    // ✅ Опциональные поля для обратной совместимости (если сервер их вернет)
+    let success: Bool?
+    let members: [FamilyMemberResponse]?
+    let access_token: String?
+    let refresh_token: String?
+    
+    // ✅ CodingKeys для правильного маппинга
+    enum CodingKeys: String, CodingKey {
+        case family_id
+        case short_code
+        case creator_member_id
+        case qr_code_data
+        case expires_at
+        case success
+        case members
+        case access_token
+        case refresh_token
+    }
+    
+    // ✅ Вычисляемые свойства для обратной совместимости
+    var recovery_code: String {
+        // Преобразуем family_id в формат recovery code: FAM_ABC123 → FAM-ABC1-23
+        return formatRecoveryCode(from: family_id)
+    }
+    
+    var your_member_id: String {
+        return creator_member_id
+    }
+    
+    // ✅ Приватный метод для форматирования recovery code
+    private func formatRecoveryCode(from familyId: String) -> String {
+        // FAM_03F8BB425B7C → FAM-03F8-BB42-5B7C
+        let cleaned = familyId.replacingOccurrences(of: "FAM_", with: "")
+        guard cleaned.count >= 12 else {
+            // Если формат неожиданный, используем short_code
+            return "FAM-\(short_code)"
+        }
+        
+        // Разбиваем на группы по 4 символа
+        let part1 = String(cleaned.prefix(4))
+        let part2 = String(cleaned.dropFirst(4).prefix(4))
+        let part3 = String(cleaned.dropFirst(8).prefix(4))
+        
+        return "FAM-\(part1)-\(part2)-\(part3)"
+    }
+}
+
+// MARK: - Recovery Code Login Models
+
+struct RecoveryCodeLoginRequest: Codable {
     let family_id: String
     let recovery_code: String
-    let members: [FamilyMemberResponse]
-    let your_member_id: String
+}
+
+struct RecoveryCodeLoginResponse: Codable {
+    let access_token: String
+    let refresh_token: String?
+    let expires_in: TimeInterval?
 }
 
 struct JoinFamilyResponse: Codable {
@@ -618,6 +678,10 @@ enum NotificationType: String, CaseIterable {
         case .bypassAttempt: return .warningOrange
         }
     }
+    
+    func localizedName() -> String {
+        return self.rawValue
+    }
 }
 
 // MARK: - Parental Control API Models
@@ -698,6 +762,14 @@ struct ParentalControlStatsResponse: Codable {
     let screenTime: ScreenTimeStats
     let location: ParentalControlLocationStats
     let monitoring: MonitoringStats
+    
+    // ✅ ИСПРАВЛЕНО: CodingKeys для маппинга snake_case → camelCase
+    enum CodingKeys: String, CodingKey {
+        case contentBlocked = "content_blocked"
+        case screenTime = "screen_time"
+        case location
+        case monitoring
+    }
 }
 
 struct ContentBlockedStats: Codable {
@@ -705,6 +777,14 @@ struct ContentBlockedStats: Codable {
     let appsBlocked: Int
     let searchQueriesBlocked: Int
     let activeFilters: Int
+    
+    // ✅ ИСПРАВЛЕНО: CodingKeys для маппинга snake_case → camelCase
+    enum CodingKeys: String, CodingKey {
+        case websitesBlocked = "websites_blocked"
+        case appsBlocked = "apps_blocked"
+        case searchQueriesBlocked = "search_queries_blocked"
+        case activeFilters = "active_filters"
+    }
 }
 
 struct ScreenTimeStats: Codable {
@@ -712,6 +792,14 @@ struct ScreenTimeStats: Codable {
     let todayLimit: String // "2ч"
     let remaining: String // "36мин"
     let schedulesCount: Int
+    
+    // ✅ ИСПРАВЛЕНО: CodingKeys для маппинга snake_case → camelCase
+    enum CodingKeys: String, CodingKey {
+        case todayUsage = "today_usage"
+        case todayLimit = "today_limit"
+        case remaining
+        case schedulesCount = "schedules_count"
+    }
 }
 
 struct ParentalControlLocationStats: Codable {
@@ -719,6 +807,14 @@ struct ParentalControlLocationStats: Codable {
     let lastUpdate: String?
     let geofencesCount: Int
     let eventsToday: Int
+    
+    // ✅ ИСПРАВЛЕНО: CodingKeys для маппинга snake_case → camelCase
+    enum CodingKeys: String, CodingKey {
+        case currentLocation = "current_location"
+        case lastUpdate = "last_update"
+        case geofencesCount = "geofences_count"
+        case eventsToday = "events_today"
+    }
 }
 
 struct MonitoringStats: Codable {
@@ -726,7 +822,16 @@ struct MonitoringStats: Codable {
     let appsTracked: Int
     let contactsTracked: Int
     let messagesMonitored: Bool
-    let screenshotsEnabled: Bool
+    let screenshotsEnabled: Bool?  // ✅ ИСПРАВЛЕНО: Опциональное поле (сервер может не возвращать)
+    
+    // ✅ ИСПРАВЛЕНО: CodingKeys для маппинга snake_case → camelCase
+    enum CodingKeys: String, CodingKey {
+        case sitesTracked = "sites_tracked"
+        case appsTracked = "apps_tracked"
+        case contactsTracked = "contacts_tracked"
+        case messagesMonitored = "messages_monitored"
+        case screenshotsEnabled = "screenshots_enabled"
+    }
 }
 
 // История браузера/приложений
@@ -1144,11 +1249,27 @@ struct ThreatScenarioResponse: Codable, Identifiable {
     let category: String
 }
 
+// ✅ ИСПРАВЛЕНО: Обновлена структура для соответствия API
 struct ProtectionStatsResponse: Codable {
-    let totalThreatsBlocked: Int
-    let threatsByCategory: [String: Int]
-    let lastUpdate: Date
-    let protectionLevel: Int
+    let isActive: Bool
+    let functionsActive: Int
+    let threatsBlocked: Int
+    let lastScan: String
+    let securityScore: Int
+    let protectionLevel: String
+    let activeComponents: [String]
+    let recommendations: [String]?
+    
+    enum CodingKeys: String, CodingKey {
+        case isActive
+        case functionsActive
+        case threatsBlocked
+        case lastScan
+        case securityScore
+        case protectionLevel
+        case activeComponents
+        case recommendations
+    }
 }
 
 // MARK: - Component Models
@@ -1189,8 +1310,1142 @@ struct ComponentStatusResponse: Codable {
 }
 
 struct ComponentConfigurationResponse: Codable {
-    let configuration: ComponentConfiguration
+    let component_id: String
+    let config: ComponentConfigData
+    let version: String?
+    let last_updated: String?
+    
+    // Вычисляемое свойство для совместимости
+    var configuration: ComponentConfiguration {
+        // Преобразуем config в ComponentConfiguration
+        var additionalSettings: [String: AnyCodable] = [:]
+        
+        // Преобразуем дополнительные настройки из config
+        if let autoStart = self.config.auto_start {
+            additionalSettings["auto_start"] = AnyCodable(autoStart)
+        }
+        if let logLevel = self.config.log_level {
+            additionalSettings["log_level"] = AnyCodable(logLevel)
+        }
+        
+        return ComponentConfiguration(
+            isEnabled: self.config.enabled,
+            priority: .normal,
+            additionalSettings: additionalSettings.isEmpty ? nil : additionalSettings
+        )
+    }
+    
+    struct ComponentConfigData: Codable {
+        let enabled: Bool
+        let auto_start: Bool?
+        let log_level: String?
+    }
+}
+
+// ✅ ЗАДАЧА 22: Модель для общего здоровья компонентов
+struct ComponentsHealthResponse: Codable {
+    let overallHealth: String  // "healthy", "degraded", "critical"
+    let totalComponents: Int
+    let enabledComponents: Int
+    let disabledComponents: Int
+    let healthyComponents: Int
+    let degradedComponents: Int
+    let criticalComponents: Int
+    let lastCheck: String?  // ISO дата
+}
+
+// ✅ ЗАДАЧА 24-25: Roadside Assistance Models
+struct RoadsideRequest: Codable, Identifiable {
+    let id: String
+    let status: String  // "waiting", "en_route", "arrived", "completed", "cancelled"
+    let eta: String?  // Estimated time of arrival
+    let provider: String?  // Название службы помощи
+    let latitude: Double
+    let longitude: Double
+    let vehicleInfo: String?
+    let createdAt: String?  // ISO дата
+    let updatedAt: String?  // ISO дата
+}
+
+struct RoadsideStatus: Codable {
+    let requestId: String
+    let status: String  // "waiting", "en_route", "arrived", "completed", "cancelled"
+    let eta: String?  // Estimated time of arrival
+    let provider: String?  // Название службы помощи
+    let location: RoadsideLocation?
+    let updatedAt: String?  // ISO дата
+}
+
+struct RoadsideLocation: Codable {
+    let latitude: Double
+    let longitude: Double
+    let address: String?
+}
+
+// MARK: - ✅ ГЕЙМИФИКАЦИЯ: Gamification Models
+
+// Баланс единорогов
+struct GamificationBalanceResponse: Codable {
+    let balance: Int
+    let userId: String
+    let lastModified: String  // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct AddBalanceRequest: Codable {
+    let userId: String
+    let amount: Int
+    let reason: String?
+    let deviceId: String?
+}
+
+struct SubtractBalanceRequest: Codable {
+    let userId: String
+    let amount: Int
+    let reason: String?
+    let deviceId: String?
+}
+
+struct BalanceHistoryEntry: Codable, Identifiable {
+    let id: String  // operationId
+    let userId: String
+    let amount: Int
+    let balanceAfter: Int
+    let reason: String?
+    let timestamp: String  // ISO дата
+    let deviceId: String?
+}
+
+struct BalanceHistoryResponse: Codable {
+    let history: [BalanceHistoryEntry]
+    let total: Int
+    let currentBalance: Int
+}
+
+// Награды
+struct RewardResponse: Codable, Identifiable {
+    let id: String  // rewardId
+    let name: String
+    let description: String?
+    let price: Int
+    let category: String?
+    let available: Bool
+    
+    // ✅ ИСПРАВЛЕНО: Маппинг rewardId → id
+    enum CodingKeys: String, CodingKey {
+        case id = "rewardId"  // Сервер возвращает rewardId, маппим в id
+        case name
+        case description
+        case price
+        case category
+        case available
+    }
+    
+    var rewardId: String { id }
+}
+
+struct RewardsListResponse: Codable {
+    let rewards: [RewardResponse]
+    let total: Int
+}
+
+struct ClaimRewardRequest: Codable {
+    let userId: String
+    let rewardId: String
+    let deviceId: String?
+}
+
+struct ClaimRewardResponse: Codable {
+    let success: Bool
+    let newBalance: Int
+    let reward: RewardResponse?
     let message: String?
+}
+
+// Достижения
+struct AchievementResponse: Codable, Identifiable {
+    let id: String  // achievementId
+    let name: String
+    let description: String?
+    let icon: String?
+    let reward: Int
+    let unlocked: Bool
+    let unlockedAt: String?  // ISO дата
+    let progress: Double  // 0-1
+    
+    var achievementId: String { id }
+}
+
+struct AchievementsListResponse: Codable {
+    let achievements: [AchievementResponse]
+    let total: Int
+    let unlockedCount: Int
+}
+
+struct UnlockAchievementRequest: Codable {
+    let userId: String
+    let achievementId: String
+    let deviceId: String?
+}
+
+struct AchievementProgressResponse: Codable {
+    let achievements: [AchievementResponse]
+    let totalProgress: Double  // 0-1
+}
+
+// Турниры
+struct TournamentResponse: Codable, Identifiable {
+    let id: String  // tournamentId
+    let name: String
+    let description: String?
+    let startDate: String  // ISO дата
+    let endDate: String  // ISO дата
+    let status: String  // "upcoming", "active", "finished"
+    let participants: Int
+    let maxParticipants: Int?
+    let prize: Int
+    
+    // ✅ ИСПРАВЛЕНО: Маппинг tournamentId → id
+    enum CodingKeys: String, CodingKey {
+        case id = "tournamentId"  // Сервер возвращает tournamentId, маппим в id
+        case name
+        case description
+        case startDate
+        case endDate
+        case status
+        case participants
+        case maxParticipants
+        case prize
+    }
+    
+    var tournamentId: String { id }
+}
+
+struct TournamentsListResponse: Codable {
+    let tournaments: [TournamentResponse]
+    let total: Int
+}
+
+struct JoinTournamentRequest: Codable {
+    let userId: String
+    let tournamentId: String
+    let deviceId: String?
+}
+
+struct LeaderboardEntry: Codable, Identifiable {
+    let id: String  // userId
+    let username: String?
+    let score: Int
+    let rank: Int
+    let avatar: String?
+    
+    var userId: String { id }
+}
+
+struct LeaderboardResponse: Codable {
+    let leaderboard: [LeaderboardEntry]
+    let total: Int
+    let tournamentId: String
+}
+
+// Настройки игр
+struct GameSettingsResponse: Codable {
+    let userId: String
+    let soundEnabled: Bool
+    let musicEnabled: Bool
+    let notificationsEnabled: Bool
+    let difficulty: String  // "easy", "medium", "hard"
+    let language: String
+    let lastModified: String  // ISO дата
+    let version: Int
+}
+
+struct UpdateGameSettingsRequest: Codable {
+    let userId: String
+    let soundEnabled: Bool?
+    let musicEnabled: Bool?
+    let notificationsEnabled: Bool?
+    let difficulty: String?
+    let language: String?
+    let deviceId: String?
+    let version: Int?
+}
+
+struct NotificationSettingsResponse: Codable {
+    let userId: String
+    let achievementUnlocked: Bool
+    let tournamentStarted: Bool
+    let rewardAvailable: Bool
+    let levelUp: Bool
+    let lastModified: String  // ISO дата
+}
+
+struct UpdateNotificationSettingsRequest: Codable {
+    let userId: String
+    let achievementUnlocked: Bool?
+    let tournamentStarted: Bool?
+    let rewardAvailable: Bool?
+    let levelUp: Bool?
+    let deviceId: String?
+}
+
+// MARK: - ✅ РОДИТЕЛЬСКИЙ КОНТРОЛЬ: Parental Control Sync Models
+
+// Настройки родительского контроля
+struct ParentalControlSettingsResponse: Codable {
+    let familyId: String
+    let childId: String?
+    let isContentFilterEnabled: Bool
+    let isAppBlockingEnabled: Bool
+    let screenTimeLimitHours: Int
+    let allowedApps: [String]
+    let blockedWebsites: [String]
+    let bedtime: String?
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdateParentalControlSettingsRequest: Codable {
+    let familyId: String
+    let childId: String?
+    let isContentFilterEnabled: Bool?
+    let isAppBlockingEnabled: Bool?
+    let screenTimeLimitHours: Int?
+    let allowedApps: [String]?
+    let blockedWebsites: [String]?
+    let bedtime: String?
+    let deviceId: String?
+    let version: Int?
+}
+
+struct SettingsHistoryEntry: Codable {
+    let historyId: String
+    let familyId: String
+    let childId: String?
+    let changedBy: String
+    let changes: [String: String] // JSON как словарь
+    let timestamp: String // ISO дата
+    let deviceId: String?
+}
+
+struct SettingsHistoryResponse: Codable {
+    let history: [SettingsHistoryEntry]
+    let total: Int
+}
+
+struct SyncParentalControlSettingsRequest: Codable {
+    let familyId: String
+    let deviceId: String
+    let lastSyncTimestamp: String? // ISO дата
+}
+
+struct SyncParentalControlSettingsResponse: Codable {
+    let familyId: String
+    let settings: [ParentalControlSettingsResponse]
+    let conflicts: [[String: String]] // Массив конфликтов
+    let lastSyncTimestamp: String // ISO дата
+}
+
+struct SettingsConflictResponse: Codable {
+    let conflictId: String
+    let familyId: String
+    let childId: String?
+    let field: String
+    let localValue: String // JSON строка
+    let serverValue: String // JSON строка
+    let localTimestamp: String // ISO дата
+    let serverTimestamp: String // ISO дата
+    let localDeviceId: String
+    let serverDeviceId: String
+}
+
+struct SettingsConflictsResponse: Codable {
+    let conflicts: [SettingsConflictResponse]
+    let total: Int
+}
+
+// Лимиты времени
+struct TimeLimitResponse: Codable {
+    let childId: String
+    let dailyLimitMinutes: Int
+    let weeklyLimitMinutes: Int
+    let bedtimeStart: String?
+    let bedtimeEnd: String?
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdateTimeLimitRequest: Codable {
+    let childId: String
+    let dailyLimitMinutes: Int?
+    let weeklyLimitMinutes: Int?
+    let bedtimeStart: String?
+    let bedtimeEnd: String?
+    let deviceId: String?
+    let version: Int?
+}
+
+struct TimeLimitHistoryEntry: Codable {
+    let historyId: String
+    let childId: String
+    let changedBy: String
+    let changes: [String: String] // JSON как словарь
+    let timestamp: String // ISO дата
+    let deviceId: String?
+}
+
+struct TimeLimitHistoryResponse: Codable {
+    let history: [TimeLimitHistoryEntry]
+    let total: Int
+}
+
+struct ResetTimeLimitRequest: Codable {
+    let childId: String
+    let deviceId: String?
+}
+
+// Расписания
+struct ScheduleResponse: Codable {
+    let scheduleId: String
+    let childId: String
+    let name: String
+    let weekdays: [Int] // 0=понедельник, 6=воскресенье
+    let startTime: String // HH:mm
+    let endTime: String // HH:mm
+    let isActive: Bool
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdateScheduleRequest: Codable {
+    let scheduleId: String?
+    let childId: String
+    let name: String?
+    let weekdays: [Int]?
+    let startTime: String?
+    let endTime: String?
+    let isActive: Bool?
+    let deviceId: String?
+    let version: Int?
+}
+
+struct ScheduleHistoryEntry: Codable {
+    let historyId: String
+    let scheduleId: String
+    let childId: String
+    let changedBy: String
+    let action: String // "created", "updated", "deleted"
+    let changes: [String: String]? // JSON как словарь
+    let timestamp: String // ISO дата
+    let deviceId: String?
+}
+
+struct ScheduleHistoryResponse: Codable {
+    let history: [ScheduleHistoryEntry]
+    let total: Int
+}
+
+struct DeleteScheduleRequest: Codable {
+    let scheduleId: String
+    let deviceId: String?
+}
+
+// Геозоны
+struct GeofenceResponse: Codable {
+    let geofenceId: String
+    let childId: String
+    let name: String
+    let latitude: Double
+    let longitude: Double
+    let radius: Double // в метрах
+    let isActive: Bool
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct AddGeofenceRequest: Codable {
+    let childId: String
+    let name: String
+    let latitude: Double
+    let longitude: Double
+    let radius: Double
+    let isActive: Bool
+    let deviceId: String?
+}
+
+struct UpdateGeofenceRequest: Codable {
+    let geofenceId: String
+    let name: String?
+    let latitude: Double?
+    let longitude: Double?
+    let radius: Double?
+    let isActive: Bool?
+    let deviceId: String?
+    let version: Int?
+}
+
+// Блокировки приложений
+struct AppBlockResponse: Codable {
+    let childId: String
+    let blockedApps: [String]
+    let appLimits: [String: Int] // appName -> minutes
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdateAppBlocksRequest: Codable {
+    let childId: String
+    let blockedApps: [String]?
+    let appLimits: [String: Int]?
+    let deviceId: String?
+    let version: Int?
+}
+
+struct SyncAppBlocksRequest: Codable {
+    let childId: String
+    let deviceId: String
+    let lastSyncTimestamp: String? // ISO дата
+}
+
+struct SyncAppBlocksResponse: Codable {
+    let childId: String
+    let appBlocks: AppBlockResponse
+    let conflicts: [[String: String]] // Массив конфликтов
+    let lastSyncTimestamp: String // ISO дата
+}
+
+// MARK: - ✅ ЭТАП 2: User Profile Sync Models
+
+struct UserProfileSyncResponse: Codable {
+    let userId: String
+    let name: String
+    let email: String?
+    let phone: String?
+    let avatar: String?
+    let registrationDate: String // ISO дата
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdateUserProfileSyncRequest: Codable {
+    let userId: String
+    let name: String?
+    let email: String?
+    let phone: String?
+    let avatar: String?
+    let deviceId: String?
+    let version: Int?
+}
+
+struct SyncUserProfileRequest: Codable {
+    let userId: String
+    let deviceId: String
+    let lastSyncTimestamp: String? // ISO дата
+}
+
+struct SyncUserProfileResponse: Codable {
+    let userId: String
+    let profile: UserProfileSyncResponse
+    let conflicts: [[String: String]] // Массив конфликтов
+    let lastSyncTimestamp: String // ISO дата
+}
+
+struct ProfileHistoryEntry: Codable {
+    let historyId: String
+    let userId: String
+    let changedBy: String
+    let changes: [String: String] // JSON как словарь
+    let timestamp: String // ISO дата
+    let deviceId: String?
+}
+
+struct ProfileHistoryResponse: Codable {
+    let history: [ProfileHistoryEntry]
+    let total: Int
+}
+
+struct PrivacySettingsResponse: Codable {
+    let userId: String
+    let profileVisibility: String // "public", "private", "friends"
+    let showEmail: Bool
+    let showPhone: Bool
+    let showLocation: Bool
+    let allowDataSharing: Bool
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdatePrivacySettingsRequest: Codable {
+    let userId: String
+    let profileVisibility: String?
+    let showEmail: Bool?
+    let showPhone: Bool?
+    let showLocation: Bool?
+    let allowDataSharing: Bool?
+    let deviceId: String?
+    let version: Int?
+}
+
+// MARK: - ✅ ЭТАП 2: Subscription Sync Models
+
+struct SubscriptionResponse: Codable {
+    let userId: String
+    let subscriptionType: String // "free", "basic", "family", "premium"
+    let status: String // "active", "expired", "cancelled", "pending"
+    let startDate: String // ISO дата
+    let endDate: String? // ISO дата
+    let autoRenewal: Bool
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct SyncSubscriptionRequest: Codable {
+    let userId: String
+    let deviceId: String
+    let lastSyncTimestamp: String? // ISO дата
+}
+
+struct SyncSubscriptionResponse: Codable {
+    let userId: String
+    let subscription: SubscriptionResponse
+    let conflicts: [[String: String]] // Массив конфликтов
+    let lastSyncTimestamp: String // ISO дата
+}
+
+struct UpdateSubscriptionRequest: Codable {
+    let userId: String
+    let subscriptionType: String?
+    let status: String?
+    let endDate: String? // ISO дата
+    let deviceId: String?
+    let version: Int?
+}
+
+struct PurchaseHistoryEntry: Codable {
+    let purchaseId: String
+    let userId: String
+    let subscriptionType: String
+    let amount: Double
+    let currency: String
+    let purchaseDate: String // ISO дата
+    let transactionId: String?
+    let status: String // "success", "failed", "pending", "refunded"
+}
+
+struct PurchaseHistoryResponse: Codable {
+    let history: [PurchaseHistoryEntry]
+    let total: Int
+}
+
+struct SubscriptionStatusResponse: Codable {
+    let userId: String
+    let isActive: Bool
+    let daysRemaining: Int?
+    let canRenew: Bool
+    let lastModified: String // ISO дата
+}
+
+struct UpdateSubscriptionStatusRequest: Codable {
+    let userId: String
+    let status: String
+    let deviceId: String?
+    let version: Int?
+}
+
+struct AutoRenewalResponse: Codable {
+    let userId: String
+    let enabled: Bool
+    let nextRenewalDate: String? // ISO дата
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdateAutoRenewalRequest: Codable {
+    let userId: String
+    let enabled: Bool
+    let deviceId: String?
+    let version: Int?
+}
+
+struct CancelSubscriptionRequest: Codable {
+    let userId: String
+    let reason: String?
+    let deviceId: String?
+}
+
+// MARK: - ✅ ЭТАП 2: App Settings Sync Models
+
+struct AppSettingsResponse: Codable {
+    let userId: String
+    let theme: String // "light", "dark", "system"
+    let language: String // "ru", "en"
+    let notificationsEnabled: Bool
+    let biometryEnabled: Bool
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct SyncAppSettingsRequest: Codable {
+    let userId: String
+    let deviceId: String
+    let lastSyncTimestamp: String? // ISO дата
+}
+
+struct SyncAppSettingsResponse: Codable {
+    let userId: String
+    let settings: AppSettingsResponse
+    let conflicts: [[String: String]] // Массив конфликтов
+    let lastSyncTimestamp: String // ISO дата
+}
+
+struct UpdateAppSettingsRequest: Codable {
+    let userId: String
+    let theme: String?
+    let language: String?
+    let notificationsEnabled: Bool?
+    let biometryEnabled: Bool?
+    let deviceId: String?
+    let version: Int?
+}
+
+struct ThemeSettingsResponse: Codable {
+    let userId: String
+    let theme: String
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdateThemeSettingsRequest: Codable {
+    let userId: String
+    let theme: String
+    let deviceId: String?
+    let version: Int?
+}
+
+struct LanguageSettingsResponse: Codable {
+    let userId: String
+    let language: String
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdateLanguageSettingsRequest: Codable {
+    let userId: String
+    let language: String
+    let deviceId: String?
+    let version: Int?
+}
+
+struct NotificationSettingsAppResponse: Codable {
+    let userId: String
+    let enabled: Bool
+    let pushEnabled: Bool
+    let emailEnabled: Bool
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdateNotificationSettingsAppRequest: Codable {
+    let userId: String
+    let enabled: Bool?
+    let pushEnabled: Bool?
+    let emailEnabled: Bool?
+    let deviceId: String?
+    let version: Int?
+}
+
+struct BiometrySettingsResponse: Codable {
+    let userId: String
+    let enabled: Bool
+    let type: String? // "face", "touch", "none"
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdateBiometrySettingsRequest: Codable {
+    let userId: String
+    let enabled: Bool
+    let type: String?
+    let deviceId: String?
+    let version: Int?
+}
+
+// MARK: - ✅ ЭТАП 2: Location & Chat Sync Models
+
+// Геолокация и геозоны
+struct LocationGeofenceResponse: Codable {
+    let geofenceId: String
+    let userId: String
+    let name: String
+    let latitude: Double
+    let longitude: Double
+    let radius: Double // в метрах
+    let isActive: Bool
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct SyncLocationGeofencesRequest: Codable {
+    let userId: String
+    let deviceId: String
+    let lastSyncTimestamp: String? // ISO дата
+}
+
+struct SyncLocationGeofencesResponse: Codable {
+    let userId: String
+    let geofences: [LocationGeofenceResponse]
+    let conflicts: [[String: String]] // Массив конфликтов
+    let lastSyncTimestamp: String // ISO дата
+}
+
+struct UpdateLocationGeofenceRequest: Codable {
+    let geofenceId: String?
+    let userId: String
+    let name: String?
+    let latitude: Double?
+    let longitude: Double?
+    let radius: Double?
+    let isActive: Bool?
+    let deviceId: String?
+    let version: Int?
+}
+
+struct MovementHistoryEntry: Codable {
+    let entryId: String
+    let userId: String
+    let latitude: Double
+    let longitude: Double
+    let timestamp: String // ISO дата
+    let speed: Double?
+    let accuracy: Double?
+    let deviceId: String?
+}
+
+struct MovementHistoryResponse: Codable {
+    let history: [MovementHistoryEntry]
+    let total: Int
+}
+
+struct UpdateMovementHistoryRequest: Codable {
+    let userId: String
+    let entries: [MovementHistoryEntry]
+    let deviceId: String?
+}
+
+struct LocationStatusResponse: Codable {
+    let userId: String
+    let enabled: Bool
+    let lastKnownLocation: [String: Double]? // {latitude, longitude}
+    let lastUpdate: String? // ISO дата
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct UpdateLocationStatusRequest: Codable {
+    let userId: String
+    let enabled: Bool
+    let deviceId: String?
+    let version: Int?
+}
+
+// Семейный чат (офлайн)
+struct OfflineMessageResponse: Codable {
+    let messageId: String
+    let userId: String
+    let recipientId: String
+    let familyId: String
+    let content: String
+    let timestamp: String // ISO дата
+    let isRead: Bool
+    let deviceId: String?
+    let version: Int
+}
+
+struct SyncOfflineMessagesRequest: Codable {
+    let userId: String
+    let familyId: String
+    let deviceId: String
+    let lastSyncTimestamp: String? // ISO дата
+}
+
+struct SyncOfflineMessagesResponse: Codable {
+    let userId: String
+    let familyId: String
+    let messages: [OfflineMessageResponse]
+    let conflicts: [[String: String]] // Массив конфликтов
+    let lastSyncTimestamp: String // ISO дата
+}
+
+struct SendOfflineMessageRequest: Codable {
+    let userId: String
+    let recipientId: String
+    let familyId: String
+    let content: String
+    let deviceId: String?
+    let timestamp: String? // ISO дата
+}
+
+struct ResolveMessageConflictsRequest: Codable {
+    let userId: String
+    let familyId: String
+    let conflicts: [[String: String]] // Массив конфликтов
+    let deviceId: String?
+}
+
+// MARK: - ✅ ЭТАП 3: Offline Storage Sync Models
+
+struct OfflineDataResponse: Codable {
+    let dataId: String
+    let userId: String
+    let dataType: String // "settings", "cache", "temp", etc.
+    let data: [String: AnyCodable] // JSON данные
+    let size: Int // Размер в байтах
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct SyncOfflineStorageRequest: Codable {
+    let userId: String
+    let deviceId: String
+    let lastSyncTimestamp: String? // ISO дата
+    let dataTypes: [String]? // Типы данных для синхронизации
+}
+
+struct SyncOfflineStorageResponse: Codable {
+    let userId: String
+    let data: [OfflineDataResponse]
+    let conflicts: [[String: String]] // Массив конфликтов
+    let lastSyncTimestamp: String // ISO дата
+    let totalSize: Int // Общий размер в байтах
+}
+
+struct UpdateOfflineDataRequest: Codable {
+    let userId: String
+    let dataId: String?
+    let dataType: String
+    let data: [String: AnyCodable] // JSON данные
+    let deviceId: String?
+    let version: Int?
+}
+
+struct ResolveOfflineStorageConflictsRequest: Codable {
+    let userId: String
+    let conflicts: [[String: String]] // Массив конфликтов
+    let resolutionStrategy: String // "last-write-wins", "merge", "manual"
+    let deviceId: String?
+}
+
+// AnyCodable определен в ComponentConfiguration.swift
+
+// MARK: - ✅ ЭТАП 3: Crash Detection Sync Models
+
+struct CrashReportResponse: Codable {
+    let reportId: String
+    let userId: String
+    let deviceId: String
+    let crashType: String // "accident", "fall", "emergency", etc.
+    let severity: String // "low", "medium", "high", "critical"
+    let location: [String: Double]? // {latitude, longitude}
+    let timestamp: String // ISO дата
+    let details: [String: AnyCodable]? // Дополнительные детали
+    let isResolved: Bool
+    let lastModified: String // ISO дата
+    let version: Int
+}
+
+struct SyncCrashDetectionRequest: Codable {
+    let userId: String
+    let deviceId: String
+    let lastSyncTimestamp: String? // ISO дата
+}
+
+struct SyncCrashDetectionResponse: Codable {
+    let userId: String
+    let reports: [CrashReportResponse]
+    let conflicts: [[String: String]] // Массив конфликтов
+    let lastSyncTimestamp: String // ISO дата
+}
+
+struct ReportCrashRequest: Codable {
+    let userId: String
+    let deviceId: String
+    let crashType: String
+    let severity: String
+    let location: [String: Double]?
+    let timestamp: String? // ISO дата
+    let details: [String: AnyCodable]?
+}
+
+struct CrashNotificationResponse: Codable {
+    let notificationId: String
+    let userId: String
+    let reportId: String
+    let recipientId: String?
+    let message: String
+    let timestamp: String // ISO дата
+    let isRead: Bool
+}
+
+struct SendCrashNotificationRequest: Codable {
+    let userId: String
+    let reportId: String
+    let recipientId: String?
+    let message: String?
+    let deviceId: String?
+}
+
+// MARK: - ✅ ЭТАП 3: Elderly Interface Sync Models
+
+struct MedicationResponse: Codable {
+    let medicationId: String
+    let userId: String
+    let name: String
+    let dosage: String
+    let frequency: String // "daily", "weekly", "as_needed", etc.
+    let timeOfDay: String? // "HH:MM"
+    let startDate: String // ISO дата
+    let endDate: String? // ISO дата
+    let notes: String?
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct SyncMedicationsRequest: Codable {
+    let userId: String
+    let deviceId: String
+    let lastSyncTimestamp: String? // ISO дата
+}
+
+struct SyncMedicationsResponse: Codable {
+    let userId: String
+    let medications: [MedicationResponse]
+    let conflicts: [[String: String]] // Массив конфликтов
+    let lastSyncTimestamp: String // ISO дата
+}
+
+struct UpdateMedicationRequest: Codable {
+    let medicationId: String?
+    let userId: String
+    let name: String?
+    let dosage: String?
+    let frequency: String?
+    let timeOfDay: String?
+    let startDate: String? // ISO дата
+    let endDate: String? // ISO дата
+    let notes: String?
+    let deviceId: String?
+    let version: Int?
+}
+
+struct AppointmentResponse: Codable {
+    let appointmentId: String
+    let userId: String
+    let title: String
+    let description: String?
+    let dateTime: String // ISO дата
+    let location: String?
+    let contactName: String?
+    let contactPhone: String?
+    let reminderMinutes: Int?
+    let isCompleted: Bool
+    let lastModified: String // ISO дата
+    let deviceId: String?
+    let version: Int
+}
+
+struct SyncAppointmentsRequest: Codable {
+    let userId: String
+    let deviceId: String
+    let lastSyncTimestamp: String? // ISO дата
+}
+
+struct SyncAppointmentsResponse: Codable {
+    let userId: String
+    let appointments: [AppointmentResponse]
+    let conflicts: [[String: String]] // Массив конфликтов
+    let lastSyncTimestamp: String // ISO дата
+}
+
+struct UpdateAppointmentRequest: Codable {
+    let appointmentId: String?
+    let userId: String
+    let title: String?
+    let description: String?
+    let dateTime: String? // ISO дата
+    let location: String?
+    let contactName: String?
+    let contactPhone: String?
+    let reminderMinutes: Int?
+    let isCompleted: Bool?
+    let deviceId: String?
+    let version: Int?
+}
+
+// Прогресс игр
+struct GameProgressResponse: Codable, Identifiable {
+    let id: String  // gameId
+    let gameName: String
+    let level: Int
+    let experience: Int
+    let experienceToNextLevel: Int
+    let totalScore: Int
+    let lastPlayed: String?  // ISO дата
+    
+    var gameId: String { id }
+}
+
+struct GameProgressListResponse: Codable {
+    let progress: [GameProgressResponse]
+    let total: Int
+}
+
+struct UpdateProgressRequest: Codable {
+    let userId: String
+    let gameId: String
+    let experience: Int?
+    let score: Int?
+    let deviceId: String?
+}
+
+struct ProgressStatsResponse: Codable {
+    let totalGames: Int
+    let totalLevel: Int
+    let totalExperience: Int
+    let totalScore: Int
+    let gamesPlayed: Int
+}
+
+struct LevelResponse: Codable {
+    let userId: String
+    let currentLevel: Int
+    let experience: Int
+    let experienceToNextLevel: Int
+    let progress: Double  // 0-1
+}
+
+struct ResetProgressRequest: Codable {
+    let userId: String
+    let gameId: String?
+    let parentId: String
 }
 
 

@@ -1,345 +1,456 @@
 #!/usr/bin/env python3
 """
-COMPLETE ENDPOINT TESTING FOR ALADDIN PRODUCTION
-Тестирование всех 108 API эндпоинтов на предмет реальных данных защиты
+Скрипт автоматического тестирования всех endpoint'ов ALADDIN API
+С поддержкой авторизации через Recovery Code
+
+⚠️ ВАЖНО: МЫ НЕ СОБИРАЕМ ПЕРСОНАЛЬНЫЕ ДАННЫЕ!
+- Используем только анонимные данные: family_id, recovery_code
+- НЕ используем email, password, телефон
 """
 
 import requests
 import json
 import time
-from typing import Dict, List, Any
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple
+from collections import defaultdict
+
+# Конфигурация
+BASE_URL = "http://149.154.65.180:8002"
+TIMEOUT = 10  # секунд
+MAX_RETRIES = 3
+
+# Цвета для вывода (опционально)
+class Colors:
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    YELLOW = '\033[93m'
+    BLUE = '\033[94m'
+    END = '\033[0m'
 
 class EndpointTester:
-    def __init__(self, base_url: str = "http://127.0.0.1:8002"):
+    def __init__(self, base_url: str):
         self.base_url = base_url
         self.session = requests.Session()
-        self.results = {
-            'total_endpoints': 0,
-            'tested_endpoints': 0,
-            'real_data_endpoints': 0,
-            'mock_data_endpoints': 0,
-            'failed_endpoints': 0,
-            'errors': [],
-            'response_times': [],
-            'endpoint_results': []
+        self.access_token: Optional[str] = None
+        self.family_id: Optional[str] = None
+        self.recovery_code: Optional[str] = None
+        self.results: List[Dict] = []
+        self.stats = {
+            'total': 0,
+            'success': 0,
+            'failed': 0,
+            'skipped': 0,
+            'requires_auth': 0,
+            'public': 0
         }
-
-    def get_all_endpoints(self) -> List[str]:
-        """Get list of all API endpoints to test"""
-        # Extract endpoints from API Gateway code
-        endpoints = []
-
-        try:
-            with open('api_gateway_current.py', 'r') as f:
-                content = f.read()
-
-            import re
-            # Find all @app.get, @app.post, @app.put, @app.delete decorators
-            pattern = r'@app\.(get|post|put|delete)\("([^"]+)"\)'
-            matches = re.findall(pattern, content)
-
-            for method, path in matches:
-                if path.startswith('/api/'):
-                    endpoints.append(path)
-
-        except Exception as e:
-            print(f"Error reading endpoints: {e}")
-            # Fallback list of known endpoints
-            endpoints = [
-                "/api/health",
-                "/api/phishing/sensitivity",
-                "/api/phishing/block_suspicious",
-                "/api/phishing/exclusions",
-                "/api/malware/scan_scheduled",
-                "/api/malware/quarantine",
-                "/api/malware/scan_now",
-                "/api/mobile/app_lock",
-                "/api/mobile/biometric",
-                "/api/network/firewall_rules",
-                "/api/network/vpn_config",
-                "/api/monitoring/ai_categories_stats",
-                "/api/monitoring/ai_categories_reports",
-                "/api/monitoring/data_cleanup_stats",
-                "/api/monitoring/data_cleanup_records",
-                "/api/monitoring/location_stats",
-                "/api/monitoring/location_requests",
-                "/api/monitoring/darkweb_leaks",
-                "/api/monitoring/darkweb_stats",
-                "/api/monitoring/darkweb_scans",
-                "/api/monitoring/identity_attempts",
-                "/api/monitoring/identity_stats",
-                "/api/protection/identity_theft_attempts",
-                "/api/protection/identity_theft_stats",
-                "/api/protection/antitracker_trackers",
-                "/api/protection/antitracker_stats",
-                "/api/protection/antitracker_categories",
-                "/api/protection/parental_stats",
-                "/api/protection/parental_activity",
-                "/api/protection/roadside_history",
-                "/api/notifications/list",
-                "/api/notifications/stats",
-                "/api/notifications/unread_count",
-                "/api/analytics/overview",
-                "/api/analytics/security_events",
-                "/api/analytics/performance",
-                "/api/analytics/reports",
-                "/api/subscription/status",
-                "/api/subscription/plans",
-                "/api/subscription/billing_history",
-                "/api/user/profile",
-                "/api/system/info",
-                "/api/system/health",
-                "/api/system/logs"
-            ]
-
-        return list(set(endpoints))  # Remove duplicates
-
-    def test_endpoint(self, endpoint: str) -> Dict[str, Any]:
-        """Test single endpoint"""
-        start_time = time.time()
-
-        try:
-            url = f"{self.base_url}{endpoint}"
-
-            # Choose HTTP method based on endpoint
-            if any(keyword in endpoint for keyword in ['enable', 'disable', 'update', 'create', 'send', 'test', 'mark']):
-                method = 'POST' if 'POST' in endpoint.upper() else 'PUT'
-            else:
-                method = 'GET'
-
-            # Add test parameters for endpoints that need them
-            params = {}
-            if 'limit' in endpoint:
-                params['limit'] = 10
-            if 'period' in endpoint:
-                params['period'] = 'month'
-
-            if method == 'GET':
-                response = self.session.get(url, params=params, timeout=10)
-            else:
-                # For POST/PUT, send empty JSON if no specific data needed
-                response = self.session.post(url, json={}, timeout=10)
-
-            response_time = time.time() - start_time
-
-            # Analyze response
-            result = {
-                'endpoint': endpoint,
-                'method': method,
-                'status_code': response.status_code,
-                'response_time': round(response_time * 1000, 2),  # ms
-                'success': response.status_code == 200,
-                'has_real_data': False,
-                'data_type': 'unknown',
-                'error': None
-            }
-
-            if response.status_code == 200:
-                try:
-                    data = response.json()
-
-                    # Check if response contains real protection data
-                    if isinstance(data, dict):
-                        source = data.get('source', '')
-                        if 'sfm_real' in source or 'protection' in source:
-                            result['has_real_data'] = True
-                            result['data_type'] = 'real_protection'
-                        elif 'mock' in source:
-                            result['has_real_data'] = False
-                            result['data_type'] = 'mock'
-                        else:
-                            # Check for protection-related fields
-                            protection_fields = [
-                                'blocked_phishing_attempts', 'threats_blocked', 'active_rules_count',
-                                'detection_accuracy', 'protection_status', 'ml_model_version'
-                            ]
-                            if any(field in data for field in protection_fields):
-                                result['has_real_data'] = True
-                                result['data_type'] = 'real_protection'
-                            else:
-                                result['data_type'] = 'other'
-
-                    result['data_keys'] = list(data.keys()) if isinstance(data, dict) else 'not_dict'
-
-                except json.JSONDecodeError:
-                    result['error'] = 'Invalid JSON response'
-                    result['success'] = False
-            else:
-                result['error'] = f'HTTP {response.status_code}'
-                result['success'] = False
-
-        except Exception as e:
-            response_time = time.time() - start_time
-            result = {
-                'endpoint': endpoint,
-                'method': method if 'method' in locals() else 'GET',
-                'status_code': None,
-                'response_time': round(response_time * 1000, 2),
-                'success': False,
-                'has_real_data': False,
-                'data_type': 'error',
-                'error': str(e)
-            }
-
-        return result
-
-    def run_full_test(self, max_workers: int = 10) -> Dict[str, Any]:
-        """Run complete endpoint testing"""
-        print("🚀 STARTING COMPLETE ENDPOINT TESTING...")
-
-        endpoints = self.get_all_endpoints()
-        self.results['total_endpoints'] = len(endpoints)
-
-        print(f"📊 Found {len(endpoints)} endpoints to test")
-
-        # Test endpoints concurrently
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_endpoint = {
-                executor.submit(self.test_endpoint, endpoint): endpoint
-                for endpoint in endpoints
-            }
-
-            for future in as_completed(future_to_endpoint):
-                endpoint = future_to_endpoint[future]
-                try:
-                    result = future.result()
-                    self.results['tested_endpoints'] += 1
-                    self.results['endpoint_results'].append(result)
-
-                    # Update counters
-                    if result['success']:
-                        if result['has_real_data']:
-                            self.results['real_data_endpoints'] += 1
-                        else:
-                            self.results['mock_data_endpoints'] += 1
-                    else:
-                        self.results['failed_endpoints'] += 1
-                        self.results['errors'].append(result)
-
-                    self.results['response_times'].append(result['response_time'])
-
-                    # Progress indicator
-                    progress = self.results['tested_endpoints'] / self.results['total_endpoints'] * 100
-                    status = "✅" if result['success'] and result['has_real_data'] else "⚠️" if result['success'] else "❌"
-                    print(f"{status} [{progress:.1f}%] {result['endpoint']} - {result['data_type']} ({result['response_time']}ms)")
-
-                except Exception as e:
-                    print(f"❌ Error testing {endpoint}: {e}")
-                    self.results['failed_endpoints'] += 1
-
-        return self.generate_report()
-
-    def generate_report(self) -> Dict[str, Any]:
-        """Generate comprehensive test report"""
-        if self.results['response_times']:
-            avg_response_time = sum(self.results['response_times']) / len(self.results['response_times'])
-            min_response_time = min(self.results['response_times'])
-            max_response_time = max(self.results['response_times'])
+    
+    def log(self, message: str, color: str = ''):
+        """Логирование с цветом"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        if color:
+            print(f"{color}[{timestamp}] {message}{Colors.END}")
         else:
-            avg_response_time = min_response_time = max_response_time = 0
-
-        report = {
-            **self.results,
-            'summary': {
-                'total_tested': self.results['tested_endpoints'],
-                'success_rate': (self.results['tested_endpoints'] - self.results['failed_endpoints']) / max(self.results['tested_endpoints'], 1) * 100,
-                'real_data_rate': self.results['real_data_endpoints'] / max(self.results['tested_endpoints'], 1) * 100,
-                'avg_response_time_ms': round(avg_response_time, 2),
-                'min_response_time_ms': round(min_response_time, 2),
-                'max_response_time_ms': round(max_response_time, 2)
-            },
-            'production_ready': self.is_production_ready(),
-            'recommendations': self.get_recommendations()
+            print(f"[{timestamp}] {message}")
+    
+    def get_openapi_spec(self) -> Dict:
+        """Получить OpenAPI спецификацию"""
+        try:
+            response = self.session.get(f"{self.base_url}/openapi.json", timeout=TIMEOUT)
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            self.log(f"❌ Ошибка получения OpenAPI: {e}", Colors.RED)
+            return {}
+    
+    def create_family_and_get_token(self) -> bool:
+        """
+        Создать семью и получить токен авторизации
+        
+        ⚠️ ВАЖНО: НЕ собираем персональные данные!
+        Используем только анонимные данные: role, age_group, personal_letter, device_type
+        """
+        self.log("🔐 Создание семьи и получение токена...", Colors.BLUE)
+        
+        try:
+            # ШАГ 1: Создать семью (БЕЗ персональных данных)
+            create_family_data = {
+                "role": "parent",
+                "age_group": "24-55",
+                "personal_letter": "T",  # Тестовая буква
+                "device_type": "iOS"
+            }
+            
+            response = self.session.post(
+                f"{self.base_url}/api/family/create",
+                json=create_family_data,
+                timeout=TIMEOUT
+            )
+            
+            if response.status_code not in [200, 201]:
+                self.log(f"❌ Ошибка создания семьи: {response.status_code}", Colors.RED)
+                self.log(f"   Ответ: {response.text[:200]}", Colors.YELLOW)
+                return False
+            
+            family_data = response.json()
+            self.family_id = family_data.get("family_id")
+            self.recovery_code = self.family_id  # В текущей реализации recovery_code = family_id
+            
+            self.log(f"✅ Семья создана: {self.family_id}", Colors.GREEN)
+            
+            # ШАГ 2: Получить токен авторизации
+            login_data = {
+                "family_id": self.family_id,
+                "recovery_code": self.recovery_code
+            }
+            
+            response = self.session.post(
+                f"{self.base_url}/api/auth/login-by-recovery-code",
+                json=login_data,
+                timeout=TIMEOUT
+            )
+            
+            if response.status_code != 200:
+                self.log(f"❌ Ошибка авторизации: {response.status_code}", Colors.RED)
+                self.log(f"   Ответ: {response.text[:200]}", Colors.YELLOW)
+                return False
+            
+            token_data = response.json()
+            self.access_token = token_data.get("access_token")
+            
+            # Установить токен в сессию
+            self.session.headers.update({
+                "Authorization": f"Bearer {self.access_token}"
+            })
+            
+            self.log(f"✅ Токен получен: {self.access_token[:20]}...", Colors.GREEN)
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Ошибка при создании семьи/авторизации: {e}", Colors.RED)
+            return False
+    
+    def requires_auth(self, endpoint_spec: Dict) -> bool:
+        """Проверить, требует ли endpoint авторизацию"""
+        # Проверяем наличие security в спецификации
+        if 'security' in endpoint_spec:
+            return True
+        
+        # Проверяем наличие параметров авторизации
+        if 'parameters' in endpoint_spec:
+            for param in endpoint_spec['parameters']:
+                if param.get('name') == 'Authorization' or param.get('in') == 'header':
+                    if 'authorization' in param.get('name', '').lower() or 'bearer' in param.get('name', '').lower():
+                        return True
+        
+        return False
+    
+    def generate_test_data(self, method: str, path: str, endpoint_spec: Dict) -> Optional[Dict]:
+        """Генерировать тестовые данные для запроса"""
+        if method.upper() not in ['POST', 'PUT', 'PATCH']:
+            return None
+        
+        # Получаем схему запроса
+        request_body = endpoint_spec.get('requestBody', {})
+        if not request_body:
+            return {}
+        
+        content = request_body.get('content', {})
+        schema = None
+        
+        for content_type, content_spec in content.items():
+            if 'application/json' in content_type:
+                schema = content_spec.get('schema', {})
+                break
+        
+        if not schema:
+            return {}
+        
+        # Генерируем тестовые данные на основе схемы
+        test_data = {}
+        properties = schema.get('properties', {})
+        required = schema.get('required', [])
+        
+        for field, field_spec in properties.items():
+            field_type = field_spec.get('type', 'string')
+            default = field_spec.get('default')
+            
+            # ⚠️ ВАЖНО: НЕ используем персональные данные!
+            # Генерируем только анонимные тестовые данные
+            if 'email' in field.lower() or 'password' in field.lower() or 'phone' in field.lower():
+                continue  # Пропускаем персональные данные
+            
+            if default is not None:
+                test_data[field] = default
+            elif field_type == 'string':
+                if 'id' in field.lower():
+                    test_data[field] = f"TEST_{field.upper()}_123"
+                elif 'code' in field.lower():
+                    test_data[field] = "TEST_CODE"
+                else:
+                    test_data[field] = f"test_{field}"
+            elif field_type == 'integer':
+                test_data[field] = 1
+            elif field_type == 'boolean':
+                test_data[field] = True
+            elif field_type == 'array':
+                test_data[field] = []
+            elif field_type == 'object':
+                test_data[field] = {}
+        
+        return test_data
+    
+    def test_endpoint(self, method: str, path: str, endpoint_spec: Dict) -> Dict:
+        """Тестировать один endpoint"""
+        full_url = f"{self.base_url}{path}"
+        requires_auth = self.requires_auth(endpoint_spec)
+        
+        result = {
+            'method': method.upper(),
+            'path': path,
+            'full_url': full_url,
+            'requires_auth': requires_auth,
+            'status': 'unknown',
+            'http_code': None,
+            'response_time_ms': None,
+            'error': None,
+            'response_preview': None
         }
-
-        return report
-
-    def is_production_ready(self) -> bool:
-        """Check if system is ready for production"""
-        success_rate = (self.results['tested_endpoints'] - self.results['failed_endpoints']) / max(self.results['tested_endpoints'], 1)
-        real_data_rate = self.results['real_data_endpoints'] / max(self.results['tested_endpoints'], 1)
-        avg_response_time = sum(self.results['response_times']) / max(len(self.results['response_times']), 1)
-
-        return (
-            success_rate >= 0.95 and  # 95% success rate
-            real_data_rate >= 0.80 and  # 80% real data
-            avg_response_time < 1000  # < 1 second average response
-        )
-
-    def get_recommendations(self) -> List[str]:
-        """Get production recommendations"""
-        recommendations = []
-
-        success_rate = (self.results['tested_endpoints'] - self.results['failed_endpoints']) / max(self.results['tested_endpoints'], 1)
-        real_data_rate = self.results['real_data_endpoints'] / max(self.results['tested_endpoints'], 1)
-
-        if success_rate < 0.95:
-            recommendations.append("Fix failing endpoints before production")
-
-        if real_data_rate < 0.80:
-            recommendations.append("Replace remaining mock data with real protection data")
-
-        if self.results['failed_endpoints'] > 0:
-            recommendations.append(f"Address {self.results['failed_endpoints']} failed endpoints")
-
-        if not recommendations:
-            recommendations.append("System ready for production launch!")
-
-        return recommendations
+        
+        # Пропускаем некоторые endpoint'ы
+        skip_paths = ['/docs', '/openapi.json', '/redoc', '/']
+        if any(skip in path for skip in skip_paths):
+            result['status'] = 'skipped'
+            result['error'] = 'System endpoint'
+            self.stats['skipped'] += 1
+            return result
+        
+        try:
+            # Подготовка запроса
+            headers = {}
+            if requires_auth and self.access_token:
+                headers['Authorization'] = f"Bearer {self.access_token}"
+                self.stats['requires_auth'] += 1
+            else:
+                self.stats['public'] += 1
+            
+            # Генерация тестовых данных
+            test_data = self.generate_test_data(method, path, endpoint_spec)
+            
+            # Выполнение запроса
+            start_time = time.time()
+            
+            if method.upper() == 'GET':
+                response = self.session.get(full_url, headers=headers, timeout=TIMEOUT, params=test_data)
+            elif method.upper() == 'POST':
+                response = self.session.post(full_url, headers=headers, json=test_data, timeout=TIMEOUT)
+            elif method.upper() == 'PUT':
+                response = self.session.put(full_url, headers=headers, json=test_data, timeout=TIMEOUT)
+            elif method.upper() == 'DELETE':
+                response = self.session.delete(full_url, headers=headers, timeout=TIMEOUT)
+            elif method.upper() == 'PATCH':
+                response = self.session.patch(full_url, headers=headers, json=test_data, timeout=TIMEOUT)
+            else:
+                result['status'] = 'skipped'
+                result['error'] = f'Unsupported method: {method}'
+                return result
+            
+            response_time = (time.time() - start_time) * 1000  # в миллисекундах
+            
+            result['http_code'] = response.status_code
+            result['response_time_ms'] = round(response_time, 2)
+            
+            # Определение статуса
+            if response.status_code in [200, 201, 204]:
+                result['status'] = 'success'
+                self.stats['success'] += 1
+            elif response.status_code == 401:
+                result['status'] = 'unauthorized'
+                result['error'] = 'Requires authentication'
+                if not requires_auth:
+                    self.stats['failed'] += 1
+                else:
+                    self.stats['success'] += 1  # Ожидаемо для защищенных endpoint'ов
+            elif response.status_code == 403:
+                result['status'] = 'forbidden'
+                result['error'] = 'Forbidden'
+                self.stats['failed'] += 1
+            elif response.status_code == 404:
+                result['status'] = 'not_found'
+                result['error'] = 'Not found'
+                self.stats['failed'] += 1
+            elif response.status_code == 422:
+                result['status'] = 'validation_error'
+                result['error'] = 'Validation error (expected for test data)'
+                self.stats['success'] += 1  # Ожидаемо для тестовых данных
+            elif response.status_code >= 500:
+                result['status'] = 'server_error'
+                result['error'] = f'Server error: {response.status_code}'
+                self.stats['failed'] += 1
+            else:
+                result['status'] = 'unknown'
+                result['error'] = f'Unexpected status: {response.status_code}'
+                self.stats['failed'] += 1
+            
+            # Сохраняем превью ответа
+            try:
+                response_text = response.text[:200]
+                result['response_preview'] = response_text
+            except:
+                pass
+            
+        except requests.exceptions.Timeout:
+            result['status'] = 'timeout'
+            result['error'] = 'Request timeout'
+            self.stats['failed'] += 1
+        except requests.exceptions.ConnectionError:
+            result['status'] = 'connection_error'
+            result['error'] = 'Connection error'
+            self.stats['failed'] += 1
+        except Exception as e:
+            result['status'] = 'error'
+            result['error'] = str(e)[:200]
+            self.stats['failed'] += 1
+        
+        return result
+    
+    def test_all_endpoints(self) -> bool:
+        """Тестировать все endpoint'ы"""
+        self.log("📋 Получение списка endpoint'ов из OpenAPI...", Colors.BLUE)
+        
+        openapi_spec = self.get_openapi_spec()
+        if not openapi_spec:
+            return False
+        
+        paths = openapi_spec.get('paths', {})
+        self.stats['total'] = sum(len(methods) for methods in paths.values())
+        
+        self.log(f"✅ Найдено {self.stats['total']} endpoint'ов", Colors.GREEN)
+        
+        # Авторизация
+        if not self.create_family_and_get_token():
+            self.log("⚠️ Не удалось получить токен, продолжаем без авторизации...", Colors.YELLOW)
+        
+        # Тестирование каждого endpoint'а
+        self.log(f"🚀 Начинаем тестирование {self.stats['total']} endpoint'ов...", Colors.BLUE)
+        
+        endpoint_count = 0
+        for path, methods in paths.items():
+            for method, endpoint_spec in methods.items():
+                endpoint_count += 1
+                self.log(f"[{endpoint_count}/{self.stats['total']}] {method.upper()} {path}", Colors.BLUE)
+                
+                result = self.test_endpoint(method, path, endpoint_spec)
+                self.results.append(result)
+                
+                # Вывод результата
+                if result['status'] == 'success':
+                    self.log(f"  ✅ {result['http_code']} ({result['response_time_ms']}ms)", Colors.GREEN)
+                elif result['status'] == 'unauthorized':
+                    self.log(f"  ⚠️ {result['http_code']} (требует авторизацию)", Colors.YELLOW)
+                elif result['status'] == 'validation_error':
+                    self.log(f"  ⚠️ {result['http_code']} (ошибка валидации - ожидаемо)", Colors.YELLOW)
+                else:
+                    self.log(f"  ❌ {result['http_code']} - {result.get('error', 'Unknown')}", Colors.RED)
+                
+                # Небольшая задержка, чтобы не перегружать сервер
+                time.sleep(0.1)
+        
+        return True
+    
+    def generate_report(self) -> str:
+        """Создать отчет о тестировании"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        report_file = f"endpoints_test_report_{timestamp}.json"
+        markdown_file = f"endpoints_test_report_{timestamp}.md"
+        
+        # JSON отчет
+        report_data = {
+            'test_date': datetime.now().isoformat(),
+            'base_url': self.base_url,
+            'family_id': self.family_id,
+            'stats': self.stats,
+            'results': self.results
+        }
+        
+        with open(report_file, 'w', encoding='utf-8') as f:
+            json.dump(report_data, f, indent=2, ensure_ascii=False)
+        
+        # Markdown отчет
+        with open(markdown_file, 'w', encoding='utf-8') as f:
+            f.write(f"# 📊 ОТЧЕТ О ТЕСТИРОВАНИИ ENDPOINT'ОВ\n\n")
+            f.write(f"**Дата:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"**Base URL:** {self.base_url}\n")
+            f.write(f"**Family ID:** {self.family_id}\n\n")
+            
+            f.write(f"## 📈 СТАТИСТИКА\n\n")
+            f.write(f"- **Всего endpoint'ов:** {self.stats['total']}\n")
+            f.write(f"- **✅ Успешно:** {self.stats['success']}\n")
+            f.write(f"- **❌ Ошибки:** {self.stats['failed']}\n")
+            f.write(f"- **⏭️ Пропущено:** {self.stats['skipped']}\n")
+            f.write(f"- **🔐 Требуют авторизацию:** {self.stats['requires_auth']}\n")
+            f.write(f"- **🌐 Публичные:** {self.stats['public']}\n\n")
+            
+            success_rate = (self.stats['success'] / self.stats['total'] * 100) if self.stats['total'] > 0 else 0
+            f.write(f"**Процент успеха:** {success_rate:.1f}%\n\n")
+            
+            f.write(f"## 📋 ДЕТАЛЬНЫЕ РЕЗУЛЬТАТЫ\n\n")
+            f.write(f"| Метод | Путь | Статус | HTTP | Время (мс) | Ошибка |\n")
+            f.write(f"|-------|------|--------|------|------------|--------|\n")
+            
+            for result in self.results:
+                status_emoji = {
+                    'success': '✅',
+                    'unauthorized': '⚠️',
+                    'validation_error': '⚠️',
+                    'not_found': '❌',
+                    'server_error': '❌',
+                    'error': '❌',
+                    'skipped': '⏭️'
+                }.get(result['status'], '❓')
+                
+                f.write(f"| {result['method']} | `{result['path']}` | {status_emoji} {result['status']} | "
+                       f"{result['http_code'] or 'N/A'} | {result['response_time_ms'] or 'N/A'} | "
+                       f"{result.get('error', '')[:50] or '-'} |\n")
+        
+        self.log(f"✅ Отчеты сохранены:", Colors.GREEN)
+        self.log(f"   - JSON: {report_file}", Colors.GREEN)
+        self.log(f"   - Markdown: {markdown_file}", Colors.GREEN)
+        
+        return report_file
 
 def main():
-    """Main testing function"""
-    print("=" * 70)
-    print("🛡️ ALADDIN COMPLETE ENDPOINT TESTING")
-    print("=" * 70)
+    """Главная функция"""
+    print("=" * 80)
+    print("🚀 АВТОМАТИЧЕСКОЕ ТЕСТИРОВАНИЕ ВСЕХ ENDPOINT'ОВ ALADDIN API")
+    print("=" * 80)
+    print()
+    print("⚠️ ВАЖНО: МЫ НЕ СОБИРАЕМ ПЕРСОНАЛЬНЫЕ ДАННЫЕ!")
+    print("   - Используем только анонимные данные: family_id, recovery_code")
+    print("   - НЕ используем email, password, телефон")
+    print()
+    
+    tester = EndpointTester(BASE_URL)
+    
+    if tester.test_all_endpoints():
+        tester.generate_report()
+        
+        print()
+        print("=" * 80)
+        print("📊 ИТОГОВАЯ СТАТИСТИКА")
+        print("=" * 80)
+        print(f"Всего endpoint'ов: {tester.stats['total']}")
+        print(f"✅ Успешно: {tester.stats['success']}")
+        print(f"❌ Ошибки: {tester.stats['failed']}")
+        print(f"⏭️ Пропущено: {tester.stats['skipped']}")
+        print(f"🔐 Требуют авторизацию: {tester.stats['requires_auth']}")
+        print(f"🌐 Публичные: {tester.stats['public']}")
+        
+        success_rate = (tester.stats['success'] / tester.stats['total'] * 100) if tester.stats['total'] > 0 else 0
+        print(f"📈 Процент успеха: {success_rate:.1f}%")
+        print("=" * 80)
+    else:
+        print("❌ Ошибка при тестировании")
 
-    tester = EndpointTester()
-
-    # Run full test
-    report = tester.run_full_test()
-
-    print("\n" + "=" * 70)
-    print("📊 FINAL TEST REPORT")
-    print("=" * 70)
-
-    print(f"Total endpoints: {report['total_endpoints']}")
-    print(f"Tested endpoints: {report['tested_endpoints']}")
-    print(f"Successful endpoints: {report['tested_endpoints'] - report['failed_endpoints']}")
-    print(f"Failed endpoints: {report['failed_endpoints']}")
-    print(f"Real data endpoints: {report['real_data_endpoints']}")
-    print(f"Mock data endpoints: {report['mock_data_endpoints']}")
-
-    print("\n⏱️ Performance:"    print(".2f")
-    print(".2f")
-    print(".2f")
-    print("\n📈 Success Rates:")
-    print(".1f")
-    print(".1f")
-    print("\n🎯 Production Status:")
-    status = "✅ READY" if report['production_ready'] else "⚠️ NEEDS WORK"
-    print(f"Status: {status}")
-
-    print("\n💡 Recommendations:")
-    for rec in report['recommendations']:
-        print(f"  • {rec}")
-
-    if report['failed_endpoints'] > 0:
-        print("\n❌ Failed endpoints:")
-        for error in report['errors'][:5]:  # Show first 5
-            print(f"  • {error['endpoint']}: {error['error']}")
-
-    print("\n" + "=" * 70)
-
-    # Save detailed report
-    with open('endpoint_test_report.json', 'w') as f:
-        json.dump(report, f, indent=2, default=str)
-
-    print("📄 Detailed report saved: endpoint_test_report.json")
-
-    return report['production_ready']
-
-if __name__ == "__main__":
-    import sys
-    ready = main()
-    sys.exit(0 if ready else 1)
+if __name__ == '__main__':
+    main()

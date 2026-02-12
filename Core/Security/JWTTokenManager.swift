@@ -78,7 +78,7 @@ class JWTTokenManager {
         print("🔄 JWT: Принудительное обновление токена...")
 
         // Получаем refresh token
-        guard let refreshToken: String = keychainManager.load(String.self, forKey: .refreshToken) else {
+        guard let refreshToken = keychainManager.loadString(forKey: .refreshToken) else {
             print("❌ JWT: Refresh token не найден в Keychain")
             return false
         }
@@ -89,7 +89,7 @@ class JWTTokenManager {
 
     /// Проверяет, есть ли валидный токен
     func hasValidToken() -> Bool {
-        guard let accessToken: String = keychainManager.load(String.self, forKey: .authToken) else {
+        guard let accessToken = keychainManager.loadString(forKey: .authToken) else {
             return false
         }
         return !isTokenExpired(accessToken)
@@ -98,7 +98,7 @@ class JWTTokenManager {
     /// Проверяет и обновляет токен если нужно
     /// Возвращает true только если токен был действительно обновлен
     func refreshTokenIfNeeded() async -> Bool {
-        guard let accessToken: String = keychainManager.load(String.self, forKey: .authToken) else {
+        guard let accessToken = keychainManager.loadString(forKey: .authToken) else {
             print("❌ JWT: Access token не найден в Keychain")
             return false
         }
@@ -112,7 +112,7 @@ class JWTTokenManager {
         print("🔄 JWT: Access token истёк, обновляем...")
         
         // Получаем refresh token
-        guard let refreshToken: String = keychainManager.load(String.self, forKey: .refreshToken) else {
+        guard let refreshToken = keychainManager.loadString(forKey: .refreshToken) else {
             print("❌ JWT: Refresh token не найден в Keychain")
             return false
         }

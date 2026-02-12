@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// 🎮 Games Settings Manager
 /// Singleton для хранения всех настроек игр
@@ -57,10 +58,39 @@ class GamesSettingsManager: ObservableObject {
     @AppStorage("game_notifications_enabled") var notificationsEnabled: Bool = true
     @AppStorage("game_achievements_enabled") var achievementsEnabled: Bool = true
     
+    // ✅ ГЕЙМИФИКАЦИЯ: Настройки для синхронизации с сервером
+    @AppStorage("game_sound_enabled") var soundEnabled: Bool = true
+    @AppStorage("game_music_enabled") var musicEnabled: Bool = true
+    @AppStorage("game_difficulty") var difficulty: String = "medium"
+    @AppStorage("game_language") var gameLanguage: String = "ru"
+    @AppStorage("game_settings_version") var settingsVersion: Int = 1
+    
+    // Настройки уведомлений для синхронизации
+    @AppStorage("game_notification_achievement_unlocked") var achievementUnlocked: Bool = true
+    @AppStorage("game_notification_tournament_started") var tournamentStarted: Bool = true
+    @AppStorage("game_notification_reward_available") var rewardAvailable: Bool = true
+    @AppStorage("game_notification_level_up") var levelUp: Bool = true
+    
+    // Состояние синхронизации
+    @Published var isSyncing: Bool = false
+    @Published var syncError: String? = nil
+    
+    private let apiService = APIService.shared
+    
+    // Получаем userId для API вызовов
+    private var userId: String {
+        AppConfig.authToken ?? UserDefaults.standard.string(forKey: "user_id") ?? "guest"
+    }
+    
     // MARK: - Init
     
     private init() {
         print("✅ GamesSettingsManager инициализирован")
+        // Загружаем настройки с сервера при инициализации
+        Task {
+            await loadSettingsFromServer()
+            await loadNotificationSettingsFromServer()
+        }
     }
     
     // MARK: - Methods
@@ -101,6 +131,136 @@ class GamesSettingsManager: ObservableObject {
         pizzaPrice = 150
         cinemaPrice = 200
         giftPrice = 500
+        
+        // Сбрасываем синхронизируемые настройки
+        soundEnabled = true
+        musicEnabled = true
+        difficulty = "medium"
+        gameLanguage = "ru"
+        settingsVersion = 1
+        
+        achievementUnlocked = true
+        tournamentStarted = true
+        rewardAvailable = true
+        levelUp = true
+    }
+    
+    // MARK: - ✅ ГЕЙМИФИКАЦИЯ: API методы для синхронизации
+    
+    /// Загрузить настройки игр с сервера
+    @MainActor
+    func loadSettingsFromServer() async {
+        isSyncing = true
+        syncError = nil
+        
+        apiService.getGamificationSettings(userId: userId) { [weak self] result in
+            Task { @MainActor [weak self] in
+                guard let strongSelf = self else { return }
+                strongSelf.isSyncing = false
+                switch result {
+                case .success(let response):
+                    strongSelf.soundEnabled = response.soundEnabled
+                    strongSelf.musicEnabled = response.musicEnabled
+                    strongSelf.notificationsEnabled = response.notificationsEnabled
+                    strongSelf.difficulty = response.difficulty
+                    strongSelf.gameLanguage = response.language
+                    strongSelf.settingsVersion = response.version
+                    strongSelf.syncError = nil
+                case .failure(let error):
+                    strongSelf.syncError = error.localizedDescription
+                    // Используем локальные настройки при ошибке
+                }
+            }
+        }
+    }
+    
+    /// Сохранить настройки игр на сервер
+    @MainActor
+    func saveSettingsToServer() async {
+        isSyncing = true
+        syncError = nil
+        
+        apiService.updateGamificationSettings(
+            userId: userId,
+            soundEnabled: soundEnabled,
+            musicEnabled: musicEnabled,
+            notificationsEnabled: notificationsEnabled,
+            difficulty: difficulty,
+            language: gameLanguage,
+            deviceId: UIDevice.current.identifierForVendor?.uuidString,
+            version: settingsVersion
+        ) { [weak self] result in
+            Task { @MainActor [weak self] in
+                guard let strongSelf = self else { return }
+                strongSelf.isSyncing = false
+                switch result {
+                case .success(let response):
+                    strongSelf.soundEnabled = response.soundEnabled
+                    strongSelf.musicEnabled = response.musicEnabled
+                    strongSelf.notificationsEnabled = response.notificationsEnabled
+                    strongSelf.difficulty = response.difficulty
+                    strongSelf.gameLanguage = response.language
+                    strongSelf.settingsVersion = response.version
+                    strongSelf.syncError = nil
+                case .failure(let error):
+                    strongSelf.syncError = error.localizedDescription
+                }
+            }
+        }
+    }
+    
+    /// Загрузить настройки уведомлений с сервера
+    @MainActor
+    func loadNotificationSettingsFromServer() async {
+        apiService.getGamificationNotificationSettings(userId: userId) { [weak self] result in
+            Task { @MainActor [weak self] in
+                guard let strongSelf = self else { return }
+                switch result {
+                case .success(let response):
+                    strongSelf.achievementUnlocked = response.achievementUnlocked
+                    strongSelf.tournamentStarted = response.tournamentStarted
+                    strongSelf.rewardAvailable = response.rewardAvailable
+                    strongSelf.levelUp = response.levelUp
+                case .failure(let error):
+                    // Используем локальные настройки при ошибке
+                    print("⚠️ Ошибка загрузки настроек уведомлений: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    /// Сохранить настройки уведомлений на сервер
+    @MainActor
+    func saveNotificationSettingsToServer() async {
+        apiService.updateGamificationNotificationSettings(
+            userId: userId,
+            achievementUnlocked: achievementUnlocked,
+            tournamentStarted: tournamentStarted,
+            rewardAvailable: rewardAvailable,
+            levelUp: levelUp,
+            deviceId: UIDevice.current.identifierForVendor?.uuidString
+        ) { [weak self] result in
+            Task { @MainActor [weak self] in
+                guard let strongSelf = self else { return }
+                switch result {
+                case .success(let response):
+                    strongSelf.achievementUnlocked = response.achievementUnlocked
+                    strongSelf.tournamentStarted = response.tournamentStarted
+                    strongSelf.rewardAvailable = response.rewardAvailable
+                    strongSelf.levelUp = response.levelUp
+                case .failure(let error):
+                    strongSelf.syncError = error.localizedDescription
+                    print("⚠️ Ошибка сохранения настроек уведомлений: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    /// Синхронизировать все настройки (загрузить с сервера)
+    @MainActor
+    func syncAllSettings() async {
+        await loadSettingsFromServer()
+        await loadNotificationSettingsFromServer()
     }
 }
 

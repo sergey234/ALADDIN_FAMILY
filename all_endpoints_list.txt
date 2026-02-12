@@ -1,183 +1,379 @@
-1003:post("/api/data/cleanup/start")
-1012:get("/api/location/stats")
-101:post("/api/components/restart/{component_id}")
-1020:get("/api/location/requests")
-1028:post("/api/location/allow")
-1036:post("/api/location/block")
-1044:put("/api/location/accuracy")
-1053:get("/api/darkweb/leaks")
-1064:get("/api/darkweb/stats")
-1072:get("/api/darkweb/scans")
-1080:post("/api/darkweb/resolve")
-1088:post("/api/darkweb/scan_start")
-1097:get("/api/identity/attempts")
-109:get("/api/components/logs/{component_id}")
-1108:get("/api/identity/stats")
-1116:post("/api/identity/allow")
-1124:post("/api/identity/block")
-1132:post("/api/identity/whitelist")
-117:post("/api/components/backup/{component_id}")
-125:post("/api/components/restore/{component_id}")
-1264:get("/api/identity/theft/attempts")
-1275:get("/api/identity/theft/stats")
-1283:post("/api/identity/theft/allow/{attempt_id}")
-1291:post("/api/identity/theft/block/{attempt_id}")
-1299:post("/api/identity/theft/whitelist")
-1307:get("/api/identity/theft/history")
-1315:post("/api/identity/theft/report/{attempt_id}")
-1323:put("/api/identity/theft/settings")
-1332:get("/api/antitracker/trackers")
-1340:post("/api/antitracker/block/{tracker_id}")
-1348:post("/api/antitracker/allow/{tracker_id}")
-1356:get("/api/antitracker/stats")
-1364:post("/api/antitracker/whitelist")
-1372:get("/api/antitracker/categories")
-1380:put("/api/antitracker/category/{category_id}")
-1389:post("/api/antitracker/scan")
-138:get("/api/phishing/sensitivity")
-1397:get("/api/antitracker/reports")
-1406:get("/api/parental/stats")
-1414:put("/api/parental/settings")
-1422:post("/api/parental/restrict/{child_id}")
-1431:get("/api/parental/activity/{child_id}")
-1439:post("/api/parental/alert")
-1448:post("/api/roadside/emergency")
-1456:get("/api/roadside/history")
-1464:put("/api/roadside/settings")
-146:put("/api/phishing/sensitivity")
-154:get("/api/phishing/block_suspicious")
-1626:get("/api/notifications/list")
-162:put("/api/phishing/block_suspicious")
-1634:post("/api/notifications/mark_read/{notification_id}")
-1642:post("/api/notifications/delete/{notification_id}")
-1650:put("/api/notifications/settings")
-1658:post("/api/notifications/test")
-1666:get("/api/notifications/stats")
-1674:post("/api/notifications/bulk_mark_read")
-1682:get("/api/notifications/unread_count")
-1691:get("/api/analytics/overview")
-1699:get("/api/analytics/security_events")
-1707:get("/api/analytics/performance")
-170:get("/api/phishing/exclusions")
-1715:post("/api/analytics/export")
-1723:get("/api/analytics/reports")
-1731:put("/api/analytics/settings")
-1740:get("/api/subscription/status")
-1748:get("/api/subscription/plans")
-1756:post("/api/subscription/upgrade")
-1764:post("/api/subscription/cancel")
-1772:get("/api/subscription/billing_history")
-1780:put("/api/subscription/payment_method")
-1789:post("/api/auth/register")
-1797:post("/api/auth/login")
-179:get("/api/malware/scan_scheduled")
-1805:post("/api/auth/logout")
-1813:post("/api/auth/refresh")
-1821:get("/api/auth/profile")
-1829:put("/api/auth/profile")
-1838:get("/api/system/info")
-1846:get("/api/system/health")
-1854:post("/api/system/backup")
-1862:get("/api/system/logs")
-1870:post("/api/system/maintenance")
-187:put("/api/malware/scan_scheduled")
-195:get("/api/malware/quarantine")
-203:put("/api/malware/quarantine")
-211:post("/api/malware/scan_now")
-220:get("/api/mobile/app_lock")
-228:put("/api/mobile/app_lock")
-236:get("/api/mobile/biometric")
-245:get("/api/network/firewall_rules")
-253:put("/api/network/vpn_config")
-266:get("/api/ai/categories/stats")
-275:get("/api/ai/categories/reports")
-284:post("/api/ai/categories/allow")
-292:post("/api/ai/categories/block")
-301:get("/api/data/cleanup/stats")
-309:get("/api/data/cleanup/records")
-317:post("/api/data/cleanup/start")
-326:get("/api/location/stats")
-334:get("/api/location/requests")
-342:post("/api/location/allow")
-350:post("/api/location/block")
-358:put("/api/location/accuracy")
-35:get("/")
-367:get("/api/darkweb/leaks")
-378:get("/api/darkweb/stats")
-386:get("/api/darkweb/scans")
-394:post("/api/darkweb/resolve")
-39:get("/api/health")
-402:post("/api/darkweb/scan_start")
-411:get("/api/identity/attempts")
-422:get("/api/identity/stats")
-430:post("/api/identity/allow")
-438:post("/api/identity/block")
-446:post("/api/identity/whitelist")
-459:get("/api/identity/theft/attempts")
-470:get("/api/identity/theft/stats")
-478:post("/api/identity/theft/allow/{attempt_id}")
-486:post("/api/identity/theft/block/{attempt_id}")
-494:post("/api/identity/theft/whitelist")
-502:get("/api/identity/theft/history")
-510:post("/api/identity/theft/report/{attempt_id}")
-518:put("/api/identity/theft/settings")
-527:get("/api/antitracker/trackers")
-535:post("/api/antitracker/block/{tracker_id}")
-53:get("/api/components/status/{component_id}")
-543:post("/api/antitracker/allow/{tracker_id}")
-551:get("/api/antitracker/stats")
-559:post("/api/antitracker/whitelist")
-567:get("/api/antitracker/categories")
-575:put("/api/antitracker/category/{category_id}")
-584:post("/api/antitracker/scan")
-592:get("/api/antitracker/reports")
-601:get("/api/parental/stats")
-609:put("/api/parental/settings")
-617:post("/api/parental/restrict/{child_id}")
-61:post("/api/components/enable/{component_id}")
-626:get("/api/parental/activity/{child_id}")
-634:post("/api/parental/alert")
-643:post("/api/roadside/emergency")
-651:get("/api/roadside/history")
-659:put("/api/roadside/settings")
-672:get("/api/notifications/list")
-680:post("/api/notifications/mark_read/{notification_id}")
-688:post("/api/notifications/delete/{notification_id}")
-696:put("/api/notifications/settings")
-69:post("/api/components/disable/{component_id}")
-704:post("/api/notifications/test")
-712:get("/api/notifications/stats")
-720:post("/api/notifications/bulk_mark_read")
-728:get("/api/notifications/unread_count")
-737:get("/api/analytics/overview")
-745:get("/api/analytics/security_events")
-753:get("/api/analytics/performance")
-761:post("/api/analytics/export")
-769:get("/api/analytics/reports")
-777:put("/api/analytics/settings")
-77:get("/api/components/config/{component_id}")
-786:get("/api/subscription/status")
-794:get("/api/subscription/plans")
-802:post("/api/subscription/upgrade")
-810:post("/api/subscription/cancel")
-818:get("/api/subscription/billing_history")
-826:put("/api/subscription/payment_method")
-835:post("/api/auth/register")
-843:post("/api/auth/login")
-851:post("/api/auth/logout")
-859:post("/api/auth/refresh")
-85:put("/api/components/config/{component_id}")
-867:get("/api/auth/profile")
-875:put("/api/auth/profile")
-884:get("/api/system/info")
-892:get("/api/system/health")
-900:post("/api/system/backup")
-908:get("/api/system/logs")
-916:post("/api/system/maintenance")
-93:get("/api/components/health")
-952:get("/api/ai/categories/stats")
-961:get("/api/ai/categories/reports")
-970:post("/api/ai/categories/allow")
-978:post("/api/ai/categories/block")
-987:get("/api/data/cleanup/stats")
-995:get("/api/data/cleanup/records")
+
+================================================================================
+📋 ВСЕ ENDPOINTS ПО ПУНКТАМ (239 шт.)
+================================================================================
+
+  1. ⚠️ POST   /api/auth/login                                              [HTTP 422] (28.5ms)
+  2. ⚠️ POST   /api/auth/register                                           [HTTP 422] (80.9ms)
+  3. ⚠️ POST   /api/auth/refresh                                            [HTTP 422] (31.4ms)
+  4. ⚠️ POST   /api/auth/login-by-recovery-code                             [HTTP 422] (38.7ms)
+  5. ✅ POST   /api/auth/logout                                             [HTTP 200] (40.6ms)
+  6. ✅ GET    /api/referral/code                                           [HTTP 200] (103.2ms)
+  7. ✅ GET    /api/referral/stats                                          [HTTP 200] (31.9ms)
+  8. ✅ GET    /api/referral/history                                        [HTTP 200] (33.2ms)
+  9. ✅ GET    /api/referral/rewards                                        [HTTP 200] (38.1ms)
+ 10. ⚠️ POST   /api/referral/test/payment/create                            [HTTP 422] (37.4ms)
+ 11. ⚠️ POST   /api/referral/test/payment/confirm                           [HTTP 422] (30.2ms)
+ 12. ⚠️ GET    /api/referral/test/discount/apply                            [HTTP 422] (68.3ms)
+ 13. ⚠️ POST   /api/payments/create                                         [HTTP 422] (27.1ms)
+ 14. ❌ GET    /api/payments/status/{payment_id}                            [HTTP 404] (71.7ms)
+ 15. ⚠️ POST   /api/payments/confirm                                        [HTTP 422] (30.6ms)
+ 16. ⚠️ POST   /api/payments/recover                                        [HTTP 422] (38.7ms)
+ 17. ⚠️ POST   /api/activation/retrieve                                     [HTTP 422] (26.9ms)
+ 18. ❌ GET    /api/components/status/{component_id}                        [HTTP 404] (29.5ms)
+ 19. ❌ POST   /api/components/enable/{component_id}                        [HTTP 404] (33.1ms)
+ 20. ❌ POST   /api/components/disable/{component_id}                       [HTTP 404] (79.5ms)
+ 21. ❌ GET    /api/components/configuration/{component_id}                 [HTTP 404] (28.3ms)
+ 22. ⚠️ POST   /api/components/configuration/{component_id}                 [HTTP 422] (43.0ms)
+ 23. ⚠️ POST   /api/components/batch/status                                 [HTTP 422] (29.8ms)
+ 24. ✅ GET    /api/protection/settings                                     [HTTP 200] (47.1ms)
+ 25. ⚠️ POST   /api/protection/settings                                     [HTTP 422] (28.0ms)
+ 26. ✅ GET    /api/protection/status                                       [HTTP 200] (25.7ms)
+ 27. ✅ GET    /api/protection/threat-scenarios                             [HTTP 200] (33.5ms)
+ 28. ⚠️ POST   /api/protection/enable                                       [HTTP 422] (29.4ms)
+ 29. ⚠️ POST   /api/protection/disable                                      [HTTP 422] (24.9ms)
+ 30. ✅ GET    /api/protection/stats                                        [HTTP 200] (25.7ms)
+ 31. ⚠️ POST   /api/protection/sync                                         [HTTP 422] (29.2ms)
+ 32. ✅ GET    /api/family/stats                                            [HTTP 200] (31.3ms)
+ 33. ⚠️ POST   /api/family/create                                           [HTTP 422] (38.8ms)
+ 34. ✅ GET    /api/reports/ai-categories/stats                             [HTTP 200] (33.3ms)
+ 35. ✅ GET    /api/reports/ai-categories/reports                           [HTTP 200] (26.5ms)
+ 36. ⚠️ POST   /api/reports/ai-categories/allow                             [HTTP 422] (36.0ms)
+ 37. ⚠️ POST   /api/reports/ai-categories/block                             [HTTP 422] (27.7ms)
+ 38. ✅ GET    /api/reports/ai-categories/health                            [HTTP 200] (28.6ms)
+ 39. ✅ GET    /api/reports/privacy/tracker/stats                           [HTTP 200] (25.0ms)
+ 40. ✅ GET    /api/reports/privacy/tracker/top                             [HTTP 200] (26.6ms)
+ 41. ⚠️ POST   /api/reports/privacy/tracker/whitelist                       [HTTP 422] (27.6ms)
+ 42. ✅ GET    /api/reports/privacy/tracker/health                          [HTTP 200] (25.0ms)
+ 43. ⚠️ POST   /api/crash-detection/setup                                   [HTTP 422] (32.9ms)
+ 44. ⚠️ POST   /api/crash-detection/alert                                   [HTTP 422] (27.6ms)
+ 45. ✅ POST   /api/crash-detection/start                                   [HTTP 200] (29.2ms)
+ 46. ✅ POST   /api/crash-detection/stop                                    [HTTP 200] (48.7ms)
+ 47. ⚠️ POST   /api/crash-detection/data                                    [HTTP 422] (24.9ms)
+ 48. ✅ GET    /api/crash-detection/status                                  [HTTP 200] (32.6ms)
+ 49. ⚠️ POST   /reports/privacy/location/bubble                             [HTTP 422] (25.9ms)
+ 50. ⚠️ POST   /reports/privacy/location/send                               [HTTP 422] (38.5ms)
+ 51. ✅ GET    /api/reports/dark-web/stats                                  [HTTP 200] (33.8ms)
+ 52. ✅ GET    /api/reports/dark-web/leaks                                  [HTTP 200] (26.1ms)
+ 53. ✅ GET    /api/reports/dark-web/scans                                  [HTTP 200] (91.5ms)
+ 54. ⚠️ POST   /api/reports/dark-web/resolve                                [HTTP 422] (43.8ms)
+ 55. ✅ POST   /api/reports/dark-web/scan/start                             [HTTP 200] (37.1ms)
+ 56. ✅ POST   /api/reports/dark-web/scan/secure                            [HTTP 200] (34.0ms)
+ 57. ✅ POST   /api/reports/dark-web/scan/fast                              [HTTP 200] (29.4ms)
+ 58. ✅ GET    /api/reports/dark-web/health                                 [HTTP 200] (30.5ms)
+ 59. ✅ GET    /api/reports/privacy/cleanup/stats                           [HTTP 200] (36.4ms)
+ 60. ✅ GET    /api/reports/privacy/cleanup/records                         [HTTP 200] (81.6ms)
+ 61. ✅ POST   /api/reports/privacy/cleanup/start                           [HTTP 200] (24.4ms)
+ 62. ✅ GET    /api/reports/privacy/cleanup/health                          [HTTP 200] (37.5ms)
+ 63. ✅ GET    /api/reports/identity-theft/stats                            [HTTP 200] (42.1ms)
+ 64. ✅ GET    /api/reports/identity-theft/attempts                         [HTTP 200] (27.0ms)
+ 65. ⚠️ POST   /api/reports/identity-theft/allow                            [HTTP 422] (24.2ms)
+ 66. ⚠️ POST   /api/reports/identity-theft/block                            [HTTP 422] (38.9ms)
+ 67. ⚠️ POST   /api/reports/identity-theft/whitelist                        [HTTP 422] (29.5ms)
+ 68. ✅ GET    /api/reports/identity-theft/health                           [HTTP 200] (24.9ms)
+ 69. ✅ GET    /api/reports/privacy/location/stats                          [HTTP 200] (27.7ms)
+ 70. ✅ GET    /api/reports/privacy/location/requests                       [HTTP 200] (35.9ms)
+ 71. ⚠️ POST   /api/reports/privacy/location/allow                          [HTTP 422] (25.5ms)
+ 72. ⚠️ POST   /api/reports/privacy/location/block                          [HTTP 422] (25.7ms)
+ 73. ⚠️ POST   /api/reports/privacy/location/update-accuracy                [HTTP 422] (33.4ms)
+ 74. ✅ GET    /api/reports/privacy/location/health                         [HTTP 200] (36.2ms)
+ 75. ⚠️ POST   /api/roadside-assistance/call                                [HTTP 422] (26.1ms)
+ 76. ❌ GET    /api/roadside-assistance/status/{request_id}                 [HTTP 404] (27.2ms)
+ 77. ✅ POST   /api/roadside-assistance/cancel/{request_id}                 [HTTP 200] (25.6ms)
+ 78. ⚠️ GET    /api/roadside-assistance/history                             [HTTP 422] (31.5ms)
+ 79. ✅ GET    /api/roadside-assistance/health                              [HTTP 200] (34.3ms)
+ 80. ✅ GET    /api/v1/parental-control/stats                               [HTTP 200] (24.2ms)
+ 81. ✅ GET    /api/v1/parental-control/status                              [HTTP 200] (25.9ms)
+ 82. ✅ GET    /parental/bypass/stats                                       [HTTP 200] (26.3ms)
+ 83. ✅ GET    /parental/bypass/status                                      [HTTP 200] (33.8ms)
+ 84. ✅ GET    /api/iot/status/{homeId}                                     [HTTP 200] (23.7ms)
+ 85. ✅ GET    /api/iot/devices/{homeId}                                    [HTTP 200] (26.2ms)
+ 86. ✅ GET    /api/iot/threats/{homeId}                                    [HTTP 200] (26.6ms)
+ 87. ✅ POST   /api/iot/device/{deviceId}/block                             [HTTP 200] (28.3ms)
+ 88. ✅ POST   /api/iot/scan/{homeId}                                       [HTTP 200] (27.9ms)
+ 89. ✅ POST   /api/iot/fix/{threatId}                                      [HTTP 200] (27.2ms)
+ 90. ✅ GET    /api/reports/driving/stats                                   [HTTP 200] (36.6ms)
+ 91. ✅ GET    /api/reports/driving/export                                  [HTTP 200] (25.8ms)
+ 92. ✅ GET    /api/reports/driving/health                                  [HTTP 200] (27.0ms)
+ 93. ✅ GET    /api/notifications                                           [HTTP 200] (29.3ms)
+ 94. ⚠️ POST   /api/notifications/read                                      [HTTP 422] (103.1ms)
+ 95. ✅ GET    /api/notifications/stats                                     [HTTP 200] (27.5ms)
+ 96. ✅ GET    /api/notifications/unread_count                              [HTTP 200] (91.3ms)
+ 97. ❌ POST   /api/notifications/mark_read/{notification_id}               [HTTP 404] (33.0ms)
+ 98. ❌ POST   /api/notifications/delete/{notification_id}                  [HTTP 404] (27.4ms)
+ 99. ⚠️ POST   /api/notifications/bulk_mark_read                            [HTTP 422] (37.4ms)
+100. ✅ POST   /api/notifications/test                                      [HTTP 200] (38.0ms)
+101. ✅ PUT    /api/notifications/settings                                  [HTTP 200] (47.3ms)
+102. ✅ GET    /api/notifications/categories                                [HTTP 200] (55.5ms)
+103. ✅ GET    /api/notifications/preferences                               [HTTP 200] (27.9ms)
+104. ⚠️ PUT    /api/notifications/preferences                               [HTTP 422] (36.9ms)
+105. ✅ POST   /api/notifications/clear_all                                 [HTTP 200] (38.3ms)
+106. ✅ POST   /api/notifications/archive/{notification_id}                 [HTTP 200] (26.3ms)
+107. ✅ POST   /api/notifications/unarchive/{notification_id}               [HTTP 200] (28.8ms)
+108. ✅ GET    /api/notifications/filter                                    [HTTP 200] (63.9ms)
+109. ⚠️ GET    /api/notifications/search                                    [HTTP 422] (39.5ms)
+110. ✅ GET    /api/notifications/export                                    [HTTP 200] (25.9ms)
+111. ⚠️ POST   /api/ai/assistant/chat                                       [HTTP 422] (32.3ms)
+112. ✅ GET    /api/ai/assistant/history                                    [HTTP 200] (131.9ms)
+113. ⚠️ POST   /api/ai/assistant/feedback                                   [HTTP 422] (30.9ms)
+114. ✅ GET    /api/ai/assistant/capabilities                               [HTTP 200] (26.3ms)
+115. ⚠️ POST   /api/ai/assistant/analyze_threat                             [HTTP 422] (28.3ms)
+116. ✅ GET    /api/ai/assistant/recommendations                            [HTTP 200] (29.8ms)
+117. ⚠️ POST   /api/ai/assistant/report_incident                            [HTTP 422] (38.8ms)
+118. ✅ GET    /api/ai/assistant/security_tips                              [HTTP 200] (33.9ms)
+119. ✅ GET    /api/components/health                                       [HTTP 200] (25.3ms)
+120. ✅ GET    /api/components/list                                         [HTTP 200] (33.1ms)
+121. ❌ GET    /api/components/status/all                                   [HTTP 404] (32.8ms)
+122. ✅ GET    /api/components/config/{component_id}                        [HTTP 200] (33.9ms)
+123. ⚠️ POST   /api/components/config/update/{component_id}                 [HTTP 422] (35.7ms)
+124. ✅ POST   /api/components/restart/{component_id}                       [HTTP 200] (35.1ms)
+125. ✅ GET    /api/components/metrics/{component_id}                       [HTTP 200] (25.8ms)
+126. ✅ GET    /api/components/logs/{component_id}                          [HTTP 200] (30.6ms)
+127. ✅ GET    /api/components/dependencies/{component_id}                  [HTTP 200] (33.6ms)
+128. ✅ POST   /api/components/test/{component_id}                          [HTTP 200] (26.6ms)
+129. ✅ POST   /api/components/update/{component_id}                        [HTTP 200] (34.0ms)
+130. ✅ GET    /api/system/health                                           [HTTP 200] (38.5ms)
+131. ✅ GET    /api/system/info                                             [HTTP 200] (176.3ms)
+132. ✅ GET    /api/system/logs                                             [HTTP 200] (44.3ms)
+133. ⚠️ POST   /api/system/maintenance                                      [HTTP 422] (25.3ms)
+134. ✅ GET    /api/system/metrics                                          [HTTP 200] (29.2ms)
+135. ✅ POST   /api/system/backup                                           [HTTP 200] (27.4ms)
+136. ✅ GET    /api/system/backup/status                                    [HTTP 200] (34.2ms)
+137. ✅ GET    /api/system/uptime                                           [HTTP 200] (24.5ms)
+138. ✅ GET    /api/system/version                                          [HTTP 200] (30.4ms)
+139. ✅ POST   /api/system/restart                                          [HTTP 200] (29.1ms)
+140. ✅ GET    /api/system/resources                                        [HTTP 200] (30.3ms)
+141. ⚠️ POST   /api/metrics/upload                                          [HTTP 422] (37.7ms)
+142. ✅ GET    /api/gamification/balance/{userId}                           [HTTP 200] (29.4ms)
+143. ⚠️ POST   /api/gamification/balance/add                                [HTTP 422] (27.1ms)
+144. ⚠️ POST   /api/gamification/balance/subtract                           [HTTP 422] (43.0ms)
+145. ✅ GET    /api/gamification/balance/history                            [HTTP 200] (39.0ms)
+146. ✅ GET    /api/gamification/rewards                                    [HTTP 200] (31.4ms)
+147. ⚠️ POST   /api/gamification/rewards/claim                              [HTTP 422] (30.6ms)
+148. ⚠️ GET    /api/gamification/rewards/history                            [HTTP 422] (30.4ms)
+149. ⚠️ POST   /api/gamification/rewards/give                               [HTTP 422] (26.2ms)
+150. ✅ GET    /api/gamification/rewards/shop                               [HTTP 200] (28.0ms)
+151. ⚠️ POST   /api/gamification/rewards/purchase                           [HTTP 422] (31.7ms)
+152. ⚠️ GET    /api/gamification/achievements                               [HTTP 422] (26.3ms)
+153. ⚠️ POST   /api/gamification/achievements/unlock                        [HTTP 422] (33.6ms)
+154. ⚠️ GET    /api/gamification/achievements/progress                      [HTTP 422] (30.4ms)
+155. ✅ GET    /api/gamification/achievements/{achievementId}               [HTTP 200] (28.7ms)
+156. ⚠️ POST   /api/gamification/achievements/claim                         [HTTP 422] (25.8ms)
+157. ✅ GET    /api/gamification/tournaments                                [HTTP 200] (28.9ms)
+158. ⚠️ POST   /api/gamification/tournaments/join                           [HTTP 422] (29.8ms)
+159. ✅ GET    /api/gamification/tournaments/{tournamentId}                 [HTTP 200] (31.5ms)
+160. ✅ GET    /api/gamification/tournaments/leaderboard                    [HTTP 200] (24.9ms)
+161. ⚠️ POST   /api/gamification/tournaments/leave                          [HTTP 422] (45.5ms)
+162. ✅ GET    /api/gamification/tournaments/history                        [HTTP 200] (26.3ms)
+163. ⚠️ GET    /api/gamification/settings                                   [HTTP 422] (25.7ms)
+164. ⚠️ POST   /api/gamification/settings/update                            [HTTP 422] (33.3ms)
+165. ⚠️ GET    /api/gamification/settings/notifications                     [HTTP 422] (31.2ms)
+166. ⚠️ POST   /api/gamification/settings/notifications/update              [HTTP 422] (25.7ms)
+167. ⚠️ GET    /api/gamification/progress                                   [HTTP 422] (36.8ms)
+168. ⚠️ POST   /api/gamification/progress/update                            [HTTP 422] (46.9ms)
+169. ⚠️ GET    /api/gamification/progress/stats                             [HTTP 422] (25.4ms)
+170. ⚠️ GET    /api/gamification/progress/level                             [HTTP 422] (31.5ms)
+171. ⚠️ POST   /api/gamification/progress/reset                             [HTTP 422] (39.8ms)
+172. ✅ GET    /api/parental-control/settings/{familyId}                    [HTTP 200] (24.6ms)
+173. ⚠️ POST   /api/parental-control/settings/update                        [HTTP 422] (29.8ms)
+174. ✅ GET    /api/parental-control/settings/history                       [HTTP 200] (34.9ms)
+175. ⚠️ POST   /api/parental-control/settings/sync                          [HTTP 422] (37.0ms)
+176. ✅ GET    /api/parental-control/settings/conflicts                     [HTTP 200] (39.4ms)
+177. ✅ GET    /api/parental-control/time-limits/{childId}                  [HTTP 200] (36.0ms)
+178. ⚠️ POST   /api/parental-control/time-limits/update                     [HTTP 422] (33.8ms)
+179. ✅ GET    /api/parental-control/time-limits/history                    [HTTP 200] (36.4ms)
+180. ⚠️ POST   /api/parental-control/time-limits/reset                      [HTTP 422] (30.6ms)
+181. ✅ GET    /api/parental-control/schedules/{childId}                    [HTTP 200] (35.7ms)
+182. ⚠️ POST   /api/parental-control/schedules/update                       [HTTP 422] (25.9ms)
+183. ✅ GET    /api/parental-control/schedules/history                      [HTTP 200] (30.0ms)
+184. ⚠️ POST   /api/parental-control/schedules/delete                       [HTTP 422] (26.3ms)
+185. ✅ GET    /api/parental-control/geofences/{childId}                    [HTTP 200] (31.3ms)
+186. ⚠️ POST   /api/parental-control/geofences/add                          [HTTP 422] (32.7ms)
+187. ⚠️ POST   /api/parental-control/geofences/update                       [HTTP 422] (29.7ms)
+188. ✅ DELETE /api/parental-control/geofences/{geofenceId}                 [HTTP 200] (25.7ms)
+189. ✅ GET    /api/parental-control/app-blocks/{childId}                   [HTTP 200] (35.7ms)
+190. ⚠️ POST   /api/parental-control/app-blocks/update                      [HTTP 422] (26.6ms)
+191. ⚠️ POST   /api/parental-control/app-blocks/sync                        [HTTP 422] (32.1ms)
+192. ⚠️ POST   /api/user/profile/sync                                       [HTTP 422] (33.3ms)
+193. ⚠️ POST   /api/user/profile/update                                     [HTTP 422] (27.0ms)
+194. ⚠️ GET    /api/user/profile/history                                    [HTTP 422] (25.8ms)
+195. ⚠️ GET    /api/user/profile/privacy                                    [HTTP 422] (26.7ms)
+196. ⚠️ POST   /api/user/profile/privacy/update                             [HTTP 422] (38.0ms)
+197. ⚠️ POST   /api/subscription/sync                                       [HTTP 422] (27.2ms)
+198. ⚠️ POST   /api/subscription/update                                     [HTTP 422] (66.3ms)
+199. ⚠️ GET    /api/subscription/purchase-history                           [HTTP 422] (26.3ms)
+200. ⚠️ GET    /api/subscription/status                                     [HTTP 422] (27.1ms)
+201. ⚠️ POST   /api/subscription/status/update                              [HTTP 422] (31.5ms)
+202. ⚠️ GET    /api/subscription/auto-renewal                               [HTTP 422] (31.2ms)
+203. ⚠️ POST   /api/subscription/auto-renewal/update                        [HTTP 422] (37.5ms)
+204. ⚠️ POST   /api/subscription/cancel                                     [HTTP 422] (32.4ms)
+205. ⚠️ POST   /api/settings/sync                                           [HTTP 422] (25.3ms)
+206. ⚠️ POST   /api/settings/update                                         [HTTP 422] (29.5ms)
+207. ⚠️ GET    /api/settings/theme                                          [HTTP 422] (44.3ms)
+208. ⚠️ POST   /api/settings/theme/update                                   [HTTP 422] (30.1ms)
+209. ⚠️ GET    /api/settings/language                                       [HTTP 422] (33.0ms)
+210. ⚠️ POST   /api/settings/language/update                                [HTTP 422] (35.9ms)
+211. ⚠️ GET    /api/settings/notifications                                  [HTTP 422] (41.0ms)
+212. ⚠️ POST   /api/settings/notifications/update                           [HTTP 422] (36.9ms)
+213. ⚠️ GET    /api/settings/biometry                                       [HTTP 422] (26.8ms)
+214. ⚠️ POST   /api/settings/biometry/update                                [HTTP 422] (26.2ms)
+215. ⚠️ POST   /api/location/geofences/sync                                 [HTTP 422] (34.8ms)
+216. ⚠️ POST   /api/location/geofences/update                               [HTTP 422] (42.2ms)
+217. ✅ DELETE /api/location/geofences/{geofenceId}                         [HTTP 200] (62.5ms)
+218. ⚠️ GET    /api/location/movement-history                               [HTTP 422] (29.7ms)
+219. ⚠️ POST   /api/location/movement-history/update                        [HTTP 422] (27.4ms)
+220. ⚠️ GET    /api/location/status                                         [HTTP 422] (28.0ms)
+221. ⚠️ POST   /api/location/status/update                                  [HTTP 422] (29.0ms)
+222. ⚠️ POST   /api/chat/offline-messages/sync                              [HTTP 422] (28.1ms)
+223. ⚠️ POST   /api/chat/offline-messages/send                              [HTTP 422] (32.3ms)
+224. ⚠️ POST   /api/chat/offline-messages/resolve-conflicts                 [HTTP 422] (24.6ms)
+225. ⚠️ POST   /api/offline-storage/sync                                    [HTTP 422] (27.0ms)
+226. ⚠️ GET    /api/offline-storage/data                                    [HTTP 422] (27.1ms)
+227. ⚠️ POST   /api/offline-storage/data/update                             [HTTP 422] (27.2ms)
+228. ⚠️ DELETE /api/offline-storage/data/{dataId}                           [HTTP 422] (27.6ms)
+229. ⚠️ POST   /api/offline-storage/resolve-conflicts                       [HTTP 422] (32.0ms)
+230. ⚠️ POST   /api/crash-detection/sync                                    [HTTP 422] (25.2ms)
+231. ⚠️ POST   /api/crash-detection/report                                  [HTTP 422] (28.5ms)
+232. ⚠️ GET    /api/crash-detection/notifications                           [HTTP 422] (25.9ms)
+233. ⚠️ POST   /api/crash-detection/notifications/send                      [HTTP 422] (30.4ms)
+234. ⚠️ POST   /api/elderly/medications/sync                                [HTTP 422] (26.4ms)
+235. ⚠️ POST   /api/elderly/medications/update                              [HTTP 422] (27.1ms)
+236. ⚠️ POST   /api/elderly/appointments/sync                               [HTTP 422] (33.9ms)
+237. ⚠️ POST   /api/elderly/appointments/update                             [HTTP 422] (29.2ms)
+238. ❓ GET    /                                                            [HTTP None] (0.0ms)
+239. ✅ GET    /api/health                                                  [HTTP 200] (61.7ms)
+
+================================================================================
+📊 СТАТИСТИКА
+================================================================================
+
+Всего endpoints: 239
+✅ Успешно (200/201/204): 107
+⚠️  422 Validation Error: 122
+❌ 404 Not Found: 9
+🔒 401 Unauthorized: 0
+💥 500+ Server Error: 0
+
+================================================================================
+❌ ENDPOINTS С 404 (Not Found) - 9 шт.
+================================================================================
+  1. GET /api/payments/status/{payment_id}
+  2. GET /api/components/status/{component_id}
+  3. POST /api/components/enable/{component_id}
+  4. POST /api/components/disable/{component_id}
+  5. GET /api/components/configuration/{component_id}
+  6. GET /api/roadside-assistance/status/{request_id}
+  7. POST /api/notifications/mark_read/{notification_id}
+  8. POST /api/notifications/delete/{notification_id}
+  9. GET /api/components/status/all
+
+================================================================================
+✅ УСПЕШНЫЕ ENDPOINTS (200 OK) - 107 шт.
+================================================================================
+    1. POST   /api/auth/logout
+    2. GET    /api/referral/code
+    3. GET    /api/referral/stats
+    4. GET    /api/referral/history
+    5. GET    /api/referral/rewards
+    6. GET    /api/protection/settings
+    7. GET    /api/protection/status
+    8. GET    /api/protection/threat-scenarios
+    9. GET    /api/protection/stats
+   10. GET    /api/family/stats
+   11. GET    /api/reports/ai-categories/stats
+   12. GET    /api/reports/ai-categories/reports
+   13. GET    /api/reports/ai-categories/health
+   14. GET    /api/reports/privacy/tracker/stats
+   15. GET    /api/reports/privacy/tracker/top
+   16. GET    /api/reports/privacy/tracker/health
+   17. POST   /api/crash-detection/start
+   18. POST   /api/crash-detection/stop
+   19. GET    /api/crash-detection/status
+   20. GET    /api/reports/dark-web/stats
+   21. GET    /api/reports/dark-web/leaks
+   22. GET    /api/reports/dark-web/scans
+   23. POST   /api/reports/dark-web/scan/start
+   24. POST   /api/reports/dark-web/scan/secure
+   25. POST   /api/reports/dark-web/scan/fast
+   26. GET    /api/reports/dark-web/health
+   27. GET    /api/reports/privacy/cleanup/stats
+   28. GET    /api/reports/privacy/cleanup/records
+   29. POST   /api/reports/privacy/cleanup/start
+   30. GET    /api/reports/privacy/cleanup/health
+   31. GET    /api/reports/identity-theft/stats
+   32. GET    /api/reports/identity-theft/attempts
+   33. GET    /api/reports/identity-theft/health
+   34. GET    /api/reports/privacy/location/stats
+   35. GET    /api/reports/privacy/location/requests
+   36. GET    /api/reports/privacy/location/health
+   37. POST   /api/roadside-assistance/cancel/{request_id}
+   38. GET    /api/roadside-assistance/health
+   39. GET    /api/v1/parental-control/stats
+   40. GET    /api/v1/parental-control/status
+   41. GET    /parental/bypass/stats
+   42. GET    /parental/bypass/status
+   43. GET    /api/iot/status/{homeId}
+   44. GET    /api/iot/devices/{homeId}
+   45. GET    /api/iot/threats/{homeId}
+   46. POST   /api/iot/device/{deviceId}/block
+   47. POST   /api/iot/scan/{homeId}
+   48. POST   /api/iot/fix/{threatId}
+   49. GET    /api/reports/driving/stats
+   50. GET    /api/reports/driving/export
+   51. GET    /api/reports/driving/health
+   52. GET    /api/notifications
+   53. GET    /api/notifications/stats
+   54. GET    /api/notifications/unread_count
+   55. POST   /api/notifications/test
+   56. PUT    /api/notifications/settings
+   57. GET    /api/notifications/categories
+   58. GET    /api/notifications/preferences
+   59. POST   /api/notifications/clear_all
+   60. POST   /api/notifications/archive/{notification_id}
+   61. POST   /api/notifications/unarchive/{notification_id}
+   62. GET    /api/notifications/filter
+   63. GET    /api/notifications/export
+   64. GET    /api/ai/assistant/history
+   65. GET    /api/ai/assistant/capabilities
+   66. GET    /api/ai/assistant/recommendations
+   67. GET    /api/ai/assistant/security_tips
+   68. GET    /api/components/health
+   69. GET    /api/components/list
+   70. GET    /api/components/config/{component_id}
+   71. POST   /api/components/restart/{component_id}
+   72. GET    /api/components/metrics/{component_id}
+   73. GET    /api/components/logs/{component_id}
+   74. GET    /api/components/dependencies/{component_id}
+   75. POST   /api/components/test/{component_id}
+   76. POST   /api/components/update/{component_id}
+   77. GET    /api/system/health
+   78. GET    /api/system/info
+   79. GET    /api/system/logs
+   80. GET    /api/system/metrics
+   81. POST   /api/system/backup
+   82. GET    /api/system/backup/status
+   83. GET    /api/system/uptime
+   84. GET    /api/system/version
+   85. POST   /api/system/restart
+   86. GET    /api/system/resources
+   87. GET    /api/gamification/balance/{userId}
+   88. GET    /api/gamification/balance/history
+   89. GET    /api/gamification/rewards
+   90. GET    /api/gamification/rewards/shop
+   91. GET    /api/gamification/achievements/{achievementId}
+   92. GET    /api/gamification/tournaments
+   93. GET    /api/gamification/tournaments/{tournamentId}
+   94. GET    /api/gamification/tournaments/leaderboard
+   95. GET    /api/gamification/tournaments/history
+   96. GET    /api/parental-control/settings/{familyId}
+   97. GET    /api/parental-control/settings/history
+   98. GET    /api/parental-control/settings/conflicts
+   99. GET    /api/parental-control/time-limits/{childId}
+  100. GET    /api/parental-control/time-limits/history
+  101. GET    /api/parental-control/schedules/{childId}
+  102. GET    /api/parental-control/schedules/history
+  103. GET    /api/parental-control/geofences/{childId}
+  104. DELETE /api/parental-control/geofences/{geofenceId}
+  105. GET    /api/parental-control/app-blocks/{childId}
+  106. DELETE /api/location/geofences/{geofenceId}
+  107. GET    /api/health

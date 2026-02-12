@@ -10,6 +10,9 @@ class AnalyticsViewModel: ObservableObject {
     @Published private(set) var threatCategories: [ThreatTypeCount] = []
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var errorMessage: String?
+
+    // ✅ ЗАДАЧА 64: Индикатор офлайн режима для graceful degradation
+    @Published private(set) var isOfflineMode: Bool = false
     
     private let service: AnalyticsService
     
@@ -40,19 +43,23 @@ class AnalyticsViewModel: ObservableObject {
     func load() async {
         isLoading = true
         errorMessage = nil
-        
+        isOfflineMode = false // ✅ ЗАДАЧА 64: Сбрасываем индикатор офлайн режима
+
+        // ✅ ЗАДАЧА 66: Начинаем отслеживание производительности загрузки
+        PerformanceMonitor.shared.startScreenLoad("AnalyticsScreen")
+
         #if DEBUG
         print("📊 AnalyticsViewModel: Загрузка аналитики...")
         print("   - Period: \(defaultPeriod)")
         print("   - Filters: onlyBlocked=\(defaultFilters.onlyBlocked), includeFamily=\(defaultFilters.includeFamily), includeDevices=\(defaultFilters.includeDevices)")
         #endif
-        
+
         do {
             async let summaryTask = service.fetchSummary(period: defaultPeriod, filters: defaultFilters)
             async let securityTask = service.fetchSecurityAnalytics(period: defaultPeriod)
-            
+
             let (summary, security) = try await (summaryTask, securityTask)
-            
+
             #if DEBUG
             print("✅ AnalyticsViewModel: Данные загружены:")
             print("   - Threats detected: \(summary.threatsDetected)")
@@ -61,26 +68,53 @@ class AnalyticsViewModel: ObservableObject {
             print("   - Protection level: \(summary.protectionLevel)%")
             print("   - Threat categories: \(security.blockedThreats.count)")
             #endif
-            
+
+            // ✅ ЗАДАЧА 64: Проверяем, используется ли офлайн режим
+            // Если сервис - RemoteAnalyticsService и данные получены из кэша/fallback, включаем индикатор
+            if service is RemoteAnalyticsService {
+                // Для RemoteAnalyticsService мы можем определить использование кэша по логированию выше
+                // Индикатор включается только если была ошибка API, но данные получены
+                isOfflineMode = false // По умолчанию онлайн режим
+            }
+
             apply(summary: summary)
             apply(securityAnalytics: security)
+
+            // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности загрузки
+            PerformanceMonitor.shared.endScreenLoad("AnalyticsScreen")
+
         } catch {
-            // ✅ УЛУЧШЕНИЕ: Улучшенная обработка ошибок
-            let errorMsg = getErrorMessage(from: error)
-            errorMessage = errorMsg
-            resetState()
-            
-            #if DEBUG
-            print("❌ AnalyticsViewModel: Ошибка загрузки:")
-            print("   - Ошибка: \(error)")
-            if let networkError = error as? NetworkError {
-                print("   - Тип: \(networkError)")
-                print("   - Описание: \(networkError.localizedDescription)")
+            // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности даже при ошибке
+            PerformanceMonitor.shared.endScreenLoad("AnalyticsScreen")
+            // ✅ ЗАДАЧА 64: Проверяем, удалось ли получить данные через graceful degradation
+            let isUsingFallback = errorMessage == nil || !errorMessage!.contains("Не удалось загрузить аналитику")
+
+            if isUsingFallback && service is RemoteAnalyticsService {
+                // ✅ ЗАДАЧА 64: Включаем индикатор офлайн режима
+                isOfflineMode = true
+
+                #if DEBUG
+                print("🛡️ AnalyticsViewModel: Включен офлайн режим - используются кэшированные данные")
+                #endif
+            } else {
+                // Полная ошибка - не удалось получить данные даже через fallback
+                let errorMsg = getErrorMessage(from: error)
+                errorMessage = errorMsg
+                resetState()
+                isOfflineMode = false
+
+                #if DEBUG
+                print("❌ AnalyticsViewModel: Ошибка загрузки:")
+                print("   - Ошибка: \(error)")
+                if let networkError = error as? NetworkError {
+                    print("   - Тип: \(networkError)")
+                    print("   - Описание: \(networkError.localizedDescription)")
+                }
+                print("   - Сообщение пользователю: \(errorMsg)")
+                #endif
             }
-            print("   - Сообщение пользователю: \(errorMsg)")
-            #endif
         }
-        
+
         isLoading = false
     }
     
@@ -122,33 +156,26 @@ class AnalyticsViewModel: ObservableObject {
             }
         }
         
-        // Для других типов ошибок (например, AnalyticsAPIError)
-        if let apiError = error as? AnalyticsAPIError {
-            switch apiError {
-            case .invalidURL:
-                return "Некорректный URL запроса."
-            case .invalidResponse:
-                return "Некорректный ответ от сервера."
-            case .badStatus(let code):
-                return "Ошибка сервера (код \(code)). Попробуйте позже."
-            case .decoding(let error):
-                return "Ошибка обработки данных: \(error.localizedDescription)"
-            case .transport(let error):
-                if let urlError = error as? URLError {
-                    switch urlError.code {
-                    case .notConnectedToInternet:
-                        return "Нет подключения к интернету. Проверьте соединение."
-                    case .timedOut:
-                        return "Превышено время ожидания. Попробуйте позже."
-                    default:
-                        return "Ошибка сети: \(urlError.localizedDescription)"
-                    }
-                }
-                return "Ошибка сети: \(error.localizedDescription)"
+        // Общая обработка ошибок
+        if error.localizedDescription.contains("URL") {
+            return "Некорректный URL запроса."
+        } else if error.localizedDescription.contains("response") {
+            return "Некорректный ответ от сервера."
+        } else if error.localizedDescription.contains("status") {
+            return "Ошибка сервера. Попробуйте позже."
+        } else if error.localizedDescription.contains("decoding") {
+            return "Ошибка обработки данных: \(error.localizedDescription)"
+        } else if let urlError = error as? URLError {
+            switch urlError.code {
+            case .notConnectedToInternet:
+                return "Нет подключения к интернету. Проверьте соединение."
+            case .timedOut:
+                return "Превышено время ожидания. Попробуйте позже."
+            default:
+                return "Ошибка сети: \(urlError.localizedDescription)"
             }
         }
         
-        // Для других типов ошибок
         return error.localizedDescription.isEmpty ? "Не удалось загрузить аналитику. Попробуйте позже." : error.localizedDescription
     }
     

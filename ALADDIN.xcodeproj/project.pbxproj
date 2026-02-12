@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		378E2880F83D48D7BE7D5737 /* aladdin_cert_backup.cer in Resources */ = {isa = PBXBuildFile; fileRef = DD10070F12CB43428ABC432E /* aladdin_cert_backup.cer */; };
+		3C60A5AAB8864F8D9C6B26CD /* CrashDetectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C60A5AAB8864F8D9C6B26CC /* CrashDetectionManager.swift */; };
+		4939F9FBCAB0451CA5AC66AC /* CrashDetectionAlertModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4939F9FBCAB0451CA5AC66AB /* CrashDetectionAlertModal.swift */; };
 		5E0058032EC3C4F900024F7E /* ALADDINTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058022EC3C4F900024F7E /* ALADDINTextField.swift */; };
 		5E0058052EC3C50500024F7E /* ALADDINToggle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058042EC3C50500024F7E /* ALADDINToggle.swift */; };
 		5E0058072EC3C52B00024F7E /* SecondaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058062EC3C52B00024F7E /* SecondaryButton.swift */; };
@@ -76,8 +78,12 @@
 		5E61A0AC2EFB38ED0039093A /* ActionRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */; };
 		5E6C6AFE2F34C97800F6FFEA /* GeofenceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6AFD2F34C97800F6FFEA /* GeofenceModels.swift */; };
 		5E6C6B002F34C98400F6FFEA /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6AFF2F34C98400F6FFEA /* LocationManager.swift */; };
-		3C60A5AAB8864F8D9C6B26CD /* CrashDetectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C60A5AAB8864F8D9C6B26CC /* CrashDetectionManager.swift */; };
-		4939F9FBCAB0451CA5AC66AC /* CrashDetectionAlertModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4939F9FBCAB0451CA5AC66AB /* CrashDetectionAlertModal.swift */; };
+		5E6C6B022F3D349000F6FFEA /* MetricsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B012F3D349000F6FFEA /* MetricsService.swift */; };
+		5E6C6B042F3D34A400F6FFEA /* RateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B032F3D34A400F6FFEA /* RateLimiter.swift */; };
+		5E6C6B062F3D37FB00F6FFEA /* InputSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B052F3D37FB00F6FFEA /* InputSanitizer.swift */; };
+		5E6C6B082F3D381500F6FFEA /* PerformanceMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B072F3D381500F6FFEA /* PerformanceMonitor.swift */; };
+		5E6C6B0A2F3D405000F6FFEA /* APIResponseValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B092F3D405000F6FFEA /* APIResponseValidator.swift */; };
+		5E6C6B0C2F3D406F00F6FFEA /* RoadsideAssistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B0B2F3D406F00F6FFEA /* RoadsideAssistanceView.swift */; };
 		5E6F38F72F151E1400CEC103 /* MediaMessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */; };
 		5E6F38F92F151E2800CEC103 /* MessageActionsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */; };
 		5E6F38FB2F151E3700CEC103 /* MessageReactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */; };
@@ -296,6 +302,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3C60A5AAB8864F8D9C6B26CC /* CrashDetectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CrashDetectionManager.swift; path = Core/Managers/CrashDetectionManager.swift; sourceTree = "<group>"; };
+		4939F9FBCAB0451CA5AC66AB /* CrashDetectionAlertModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CrashDetectionAlertModal.swift; path = Shared/Components/Modals/CrashDetectionAlertModal.swift; sourceTree = "<group>"; };
 		5E0058002EC3C4C600024F7E /* ALADDINTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINTextField.swift; path = BACKUP_MOBILE_20251108_1800/Shared/Components/ALADDINTextField.swift; sourceTree = "<group>"; };
 		5E0058022EC3C4F900024F7E /* ALADDINTextField.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINTextField.swift; path = Shared/Components/Inputs/ALADDINTextField.swift; sourceTree = "<group>"; };
 		5E0058042EC3C50500024F7E /* ALADDINToggle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINToggle.swift; path = Shared/Components/Inputs/ALADDINToggle.swift; sourceTree = "<group>"; };
@@ -369,8 +377,12 @@
 		5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionRequestHandler.swift; sourceTree = "<group>"; };
 		5E6C6AFD2F34C97800F6FFEA /* GeofenceModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceModels.swift; path = Core/Models/GeofenceModels.swift; sourceTree = "<group>"; };
 		5E6C6AFF2F34C98400F6FFEA /* LocationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocationManager.swift; path = Core/Managers/LocationManager.swift; sourceTree = "<group>"; };
-		3C60A5AAB8864F8D9C6B26CC /* CrashDetectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CrashDetectionManager.swift; path = Core/Managers/CrashDetectionManager.swift; sourceTree = "<group>"; };
-		4939F9FBCAB0451CA5AC66AB /* CrashDetectionAlertModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CrashDetectionAlertModal.swift; path = Shared/Components/Modals/CrashDetectionAlertModal.swift; sourceTree = "<group>"; };
+		5E6C6B012F3D349000F6FFEA /* MetricsService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MetricsService.swift; path = Core/Monitoring/MetricsService.swift; sourceTree = "<group>"; };
+		5E6C6B032F3D34A400F6FFEA /* RateLimiter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RateLimiter.swift; path = Core/Network/RateLimiter.swift; sourceTree = "<group>"; };
+		5E6C6B052F3D37FB00F6FFEA /* InputSanitizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InputSanitizer.swift; path = Core/Validation/InputSanitizer.swift; sourceTree = "<group>"; };
+		5E6C6B072F3D381500F6FFEA /* PerformanceMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PerformanceMonitor.swift; path = Core/Monitoring/PerformanceMonitor.swift; sourceTree = "<group>"; };
+		5E6C6B092F3D405000F6FFEA /* APIResponseValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APIResponseValidator.swift; path = Core/Validation/APIResponseValidator.swift; sourceTree = "<group>"; };
+		5E6C6B0B2F3D406F00F6FFEA /* RoadsideAssistanceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RoadsideAssistanceView.swift; path = Screens/RoadsideAssistanceView.swift; sourceTree = "<group>"; };
 		5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MediaMessageBubble.swift; path = Shared/Components/Chat/MediaMessageBubble.swift; sourceTree = "<group>"; };
 		5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MessageActionsMenu.swift; path = Shared/Components/Chat/MessageActionsMenu.swift; sourceTree = "<group>"; };
 		5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MessageReactionsView.swift; path = Shared/Components/Chat/MessageReactionsView.swift; sourceTree = "<group>"; };
@@ -695,6 +707,12 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5E6C6B0B2F3D406F00F6FFEA /* RoadsideAssistanceView.swift */,
+				5E6C6B092F3D405000F6FFEA /* APIResponseValidator.swift */,
+				5E6C6B072F3D381500F6FFEA /* PerformanceMonitor.swift */,
+				5E6C6B052F3D37FB00F6FFEA /* InputSanitizer.swift */,
+				5E6C6B032F3D34A400F6FFEA /* RateLimiter.swift */,
+				5E6C6B012F3D349000F6FFEA /* MetricsService.swift */,
 				5E6C6AFF2F34C98400F6FFEA /* LocationManager.swift */,
 				3C60A5AAB8864F8D9C6B26CC /* CrashDetectionManager.swift */,
 				5E6C6AFD2F34C97800F6FFEA /* GeofenceModels.swift */,
@@ -1162,6 +1180,7 @@
 				5EC3092C2EA6B68000C7D34B /* WidgetConfigurationScreen.swift in Sources */,
 				5E6F39052F151F2500CEC103 /* FamilyChatWebSocket.swift in Sources */,
 				5E0C30BC2EAFF09800FD6647 /* SecurityEducationScreen.swift in Sources */,
+				5E6C6B022F3D349000F6FFEA /* MetricsService.swift in Sources */,
 				5E6F394A2F15B05000CEC103 /* ComponentStatus.swift in Sources */,
 				5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */,
 				5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */,
@@ -1187,6 +1206,7 @@
 				5E6F38FB2F151E3700CEC103 /* MessageReactionsView.swift in Sources */,
 				A3000025 /* ViewModels/ChildInterfaceViewModel.swift in Sources */,
 				5EC309142EA6B62500C7D34B /* 12_NotificationsScreen.swift in Sources */,
+				5E6C6B062F3D37FB00F6FFEA /* InputSanitizer.swift in Sources */,
 				5E6F39012F151E5900CEC103 /* VoiceMessageBubble.swift in Sources */,
 				A3000027 /* ViewModels/ElderlyInterfaceViewModel.swift in Sources */,
 				A3000029 /* ViewModels/AnalyticsViewModel.swift in Sources */,
@@ -1289,6 +1309,7 @@
 				5E07981F2F17D2AB00D20CF6 /* FamilyNotificationSettingsModal.swift in Sources */,
 				A4AAA002 /* ThreatProtectionScreen.swift in Sources */,
 				A4AAA004 /* ThreatProtectionCard.swift in Sources */,
+				5E6C6B0A2F3D405000F6FFEA /* APIResponseValidator.swift in Sources */,
 				A4AAA006 /* ThreatProtectionCategoriesView.swift in Sources */,
 				5E6F39282F15AF3700CEC103 /* AnalyticsSettingsModal.swift in Sources */,
 				5E6F39402F15B00100CEC103 /* ComponentConfigurationService.swift in Sources */,
@@ -1318,10 +1339,13 @@
 				B6000003 /* IoTSecurityModule.swift in Sources */,
 				5E0058212EC4B21A00024F7E /* ProtectionGroupSection.swift in Sources */,
 				A4BBB007 /* LocalThreatDatabase.swift in Sources */,
+				5E6C6B0C2F3D406F00F6FFEA /* RoadsideAssistanceView.swift in Sources */,
 				5E0058052EC3C50500024F7E /* ALADDINToggle.swift in Sources */,
 				5E6F39382F15AFCF00CEC103 /* EmergencyContactsView.swift in Sources */,
 				A4AAA212 /* EmptyStateView.swift in Sources */,
+				5E6C6B042F3D34A400F6FFEA /* RateLimiter.swift in Sources */,
 				5E6F38FF2F151E5000CEC103 /* TypingIndicatorView.swift in Sources */,
+				5E6C6B082F3D381500F6FFEA /* PerformanceMonitor.swift in Sources */,
 				A4AAA214 /* JWTTokenManager.swift in Sources */,
 				5E0058252EC4E69100024F7E /* ThreatItemRow.swift in Sources */,
 			);

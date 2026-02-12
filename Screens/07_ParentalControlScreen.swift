@@ -197,6 +197,7 @@ struct ParentalControlScreen: View {
             // ДОЛЖНО БЫТЬ В САМОМ НАЧАЛЕ .onAppear!
             UserDefaults.standard.set("parent", forKey: "current_user_role")
             UserDefaults.standard.synchronize() // Принудительная синхронизация
+            
             print("✅ ParentalControlScreen: Роль установлена как 'parent'")
             print("   Проверка: UserDefaults['current_user_role'] = '\(UserDefaults.standard.string(forKey: "current_user_role") ?? "НЕ УСТАНОВЛЕНА")'")
             
@@ -219,6 +220,14 @@ struct ParentalControlScreen: View {
             }
             
             loadChildMembers()
+            
+            // ✅ РОДИТЕЛЬСКИЙ КОНТРОЛЬ: Синхронизация с сервером
+            Task {
+                await syncParentalControlData()
+            }
+        }
+        .refreshable {
+            await syncParentalControlData()
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
             let newBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
@@ -683,7 +692,7 @@ struct ParentalControlScreen: View {
         // ✅ ИСПРАВЛЕНО: Не перезаписываем isReportsEnabled из статистики - это пользовательская настройка через @AppStorage
         
         additionalRequests = stats.location.geofencesCount
-        additionalProtection = stats.monitoring.screenshotsEnabled
+        additionalProtection = stats.monitoring.screenshotsEnabled ?? false  // ✅ ИСПРАВЛЕНО: Опциональное поле
         // ✅ ИСПРАВЛЕНО: Не перезаписываем isAdditionalEnabled из статистики - это пользовательская настройка через @AppStorage
     }
     
@@ -747,6 +756,96 @@ struct ParentalControlScreen: View {
             }
         }
         .padding(.vertical, Spacing.m)
+    }
+    
+    // MARK: - ✅ РОДИТЕЛЬСКИЙ КОНТРОЛЬ: Методы синхронизации с сервером
+    
+    /// Синхронизировать все данные родительского контроля с сервером
+    @MainActor
+    private func syncParentalControlData() async {
+        guard !selectedChild.isEmpty else { return }
+        
+        let familyId = UserDefaults.standard.string(forKey: "family_id") ?? "family_001"
+        
+        // Синхронизация настроек
+        manager.loadSettingsFromServer(familyId: familyId, childId: selectedChild) { result in
+            switch result {
+            case .success(let response):
+                // Обновляем локальные настройки из ответа сервера
+                isContentBlockEnabled = response.isContentFilterEnabled
+                isTimeControlEnabled = true // Включаем, если есть лимиты
+                // Сохраняем другие настройки
+                UserDefaults.standard.set(response.screenTimeLimitHours, forKey: "parental_screen_time_limit_hours")
+                UserDefaults.standard.set(response.allowedApps, forKey: "parental_allowed_apps")
+                UserDefaults.standard.set(response.blockedWebsites, forKey: "parental_blocked_websites")
+                if let bedtime = response.bedtime {
+                    UserDefaults.standard.set(bedtime, forKey: "parental_bedtime")
+                }
+            case .failure(let error):
+                print("⚠️ Ошибка загрузки настроек: \(error.localizedDescription)")
+            }
+        }
+        
+        // Синхронизация лимитов времени
+        manager.loadTimeLimitsFromServer(childId: selectedChild) { result in
+            switch result {
+            case .success(let response):
+                // Обновляем локальные лимиты
+                let dailyHours = response.dailyLimitMinutes / 60
+                UserDefaults.standard.set(dailyHours, forKey: "parental_screen_time_limit")
+                if let bedtimeStart = response.bedtimeStart {
+                    UserDefaults.standard.set(bedtimeStart, forKey: "parental_bedtime_start")
+                }
+                if let bedtimeEnd = response.bedtimeEnd {
+                    UserDefaults.standard.set(bedtimeEnd, forKey: "parental_bedtime_end")
+                }
+            case .failure(let error):
+                print("⚠️ Ошибка загрузки лимитов времени: \(error.localizedDescription)")
+            }
+        }
+        
+        // Синхронизация расписаний
+        manager.loadSchedulesFromServer(childId: selectedChild) { result in
+            switch result {
+            case .success(let schedules):
+                // Обновляем количество расписаний
+                timeSchedules = schedules.count
+                // Сохраняем расписания
+                if let encoded = try? JSONEncoder().encode(schedules) {
+                    UserDefaults.standard.set(encoded, forKey: "parental_schedules_\(selectedChild)")
+                }
+            case .failure(let error):
+                print("⚠️ Ошибка загрузки расписаний: \(error.localizedDescription)")
+            }
+        }
+        
+        // Синхронизация геозон
+        manager.loadGeofencesFromServer(childId: selectedChild) { result in
+            switch result {
+            case .success(let geofences):
+                // Обновляем количество геозон
+                // Сохраняем геозоны
+                if let encoded = try? JSONEncoder().encode(geofences) {
+                    UserDefaults.standard.set(encoded, forKey: "parental_geofences_\(selectedChild)")
+                }
+            case .failure(let error):
+                print("⚠️ Ошибка загрузки геозон: \(error.localizedDescription)")
+            }
+        }
+        
+        // Синхронизация блокировок приложений
+        manager.loadAppBlocksFromServer(childId: selectedChild) { result in
+            switch result {
+            case .success(let response):
+                // Обновляем локальные блокировки
+                UserDefaults.standard.set(response.blockedApps, forKey: "parental_blocked_apps_\(selectedChild)")
+                if let encoded = try? JSONEncoder().encode(response.appLimits) {
+                    UserDefaults.standard.set(encoded, forKey: "parental_app_limits_\(selectedChild)")
+                }
+            case .failure(let error):
+                print("⚠️ Ошибка загрузки блокировок приложений: \(error.localizedDescription)")
+            }
+        }
     }
 }
 

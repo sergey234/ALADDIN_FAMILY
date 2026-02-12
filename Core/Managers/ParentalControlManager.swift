@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UIKit
 
 /**
  * 👨‍👩‍👧‍👦 Parental Control Manager
@@ -651,6 +652,148 @@ class ParentalControlManager: ObservableObject {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
         return formatter.string(from: date)
+    }
+    
+    // MARK: - ✅ РОДИТЕЛЬСКИЙ КОНТРОЛЬ: API методы для синхронизации
+    
+    /// Получить familyId для API вызовов
+    private var familyId: String {
+        UserDefaults.standard.string(forKey: "family_id") ?? "family_001"
+    }
+    
+    /// Получить deviceId для API вызовов
+    private var deviceId: String {
+        UIDevice.current.identifierForVendor?.uuidString ?? "unknown_device"
+    }
+    
+    // Настройки родительского контроля
+    func loadSettingsFromServer(familyId: String? = nil, childId: String? = nil, completion: @escaping (Result<ParentalControlSettingsResponse, Error>) -> Void) {
+        let family = familyId ?? self.familyId
+        apiService.getParentalControlSettings(familyId: family, childId: childId, completion: completion)
+    }
+    
+    func saveSettingsToServer(familyId: String? = nil, childId: String? = nil, isContentFilterEnabled: Bool? = nil, isAppBlockingEnabled: Bool? = nil, screenTimeLimitHours: Int? = nil, allowedApps: [String]? = nil, blockedWebsites: [String]? = nil, bedtime: String? = nil, completion: @escaping (Result<ParentalControlSettingsResponse, Error>) -> Void) {
+        let family = familyId ?? self.familyId
+        apiService.updateParentalControlSettings(
+            familyId: family,
+            childId: childId,
+            isContentFilterEnabled: isContentFilterEnabled,
+            isAppBlockingEnabled: isAppBlockingEnabled,
+            screenTimeLimitHours: screenTimeLimitHours,
+            allowedApps: allowedApps,
+            blockedWebsites: blockedWebsites,
+            bedtime: bedtime,
+            deviceId: deviceId,
+            version: nil,
+            completion: completion
+        )
+    }
+    
+    func syncSettingsFromServer(familyId: String? = nil, completion: @escaping (Result<SyncParentalControlSettingsResponse, Error>) -> Void) {
+        let family = familyId ?? self.familyId
+        apiService.syncParentalControlSettings(familyId: family, deviceId: deviceId, lastSyncTimestamp: nil, completion: completion)
+    }
+    
+    // Лимиты времени
+    func loadTimeLimitsFromServer(childId: String, completion: @escaping (Result<TimeLimitResponse, Error>) -> Void) {
+        apiService.getTimeLimits(childId: childId, completion: completion)
+    }
+    
+    func saveTimeLimitsToServer(childId: String, dailyLimitMinutes: Int? = nil, weeklyLimitMinutes: Int? = nil, bedtimeStart: String? = nil, bedtimeEnd: String? = nil, completion: @escaping (Result<TimeLimitResponse, Error>) -> Void) {
+        apiService.updateTimeLimits(
+            childId: childId,
+            dailyLimitMinutes: dailyLimitMinutes,
+            weeklyLimitMinutes: weeklyLimitMinutes,
+            bedtimeStart: bedtimeStart,
+            bedtimeEnd: bedtimeEnd,
+            deviceId: deviceId,
+            version: nil,
+            completion: completion
+        )
+    }
+    
+    func resetTimeLimitsOnServer(childId: String, completion: @escaping (Result<TimeLimitResponse, Error>) -> Void) {
+        apiService.resetTimeLimits(childId: childId, deviceId: deviceId, completion: completion)
+    }
+    
+    // Расписания
+    func loadSchedulesFromServer(childId: String, completion: @escaping (Result<[ScheduleResponse], Error>) -> Void) {
+        apiService.getSchedules(childId: childId, completion: completion)
+    }
+    
+    func saveScheduleToServer(childId: String, scheduleId: String? = nil, name: String? = nil, weekdays: [Int]? = nil, startTime: String? = nil, endTime: String? = nil, isActive: Bool? = nil, completion: @escaping (Result<ScheduleResponse, Error>) -> Void) {
+        apiService.updateSchedule(
+            scheduleId: scheduleId,
+            childId: childId,
+            name: name,
+            weekdays: weekdays,
+            startTime: startTime,
+            endTime: endTime,
+            isActive: isActive,
+            deviceId: deviceId,
+            version: nil,
+            completion: completion
+        )
+    }
+    
+    func deleteScheduleOnServer(scheduleId: String, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        apiService.deleteSchedule(scheduleId: scheduleId, deviceId: deviceId, completion: completion)
+    }
+    
+    // Геозоны
+    func loadGeofencesFromServer(childId: String, completion: @escaping (Result<[GeofenceResponse], Error>) -> Void) {
+        apiService.getGeofences(childId: childId, completion: completion)
+    }
+    
+    func addGeofenceToServer(childId: String, name: String, latitude: Double, longitude: Double, radius: Double, isActive: Bool = true, completion: @escaping (Result<GeofenceResponse, Error>) -> Void) {
+        apiService.addGeofence(
+            childId: childId,
+            name: name,
+            latitude: latitude,
+            longitude: longitude,
+            radius: radius,
+            isActive: isActive,
+            deviceId: deviceId,
+            completion: completion
+        )
+    }
+    
+    func updateGeofenceOnServer(geofenceId: String, name: String? = nil, latitude: Double? = nil, longitude: Double? = nil, radius: Double? = nil, isActive: Bool? = nil, completion: @escaping (Result<GeofenceResponse, Error>) -> Void) {
+        apiService.updateGeofence(
+            geofenceId: geofenceId,
+            name: name,
+            latitude: latitude,
+            longitude: longitude,
+            radius: radius,
+            isActive: isActive,
+            deviceId: deviceId,
+            version: nil,
+            completion: completion
+        )
+    }
+    
+    func deleteGeofenceOnServer(geofenceId: String, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        apiService.deleteGeofence(geofenceId: geofenceId, completion: completion)
+    }
+    
+    // Блокировки приложений
+    func loadAppBlocksFromServer(childId: String, completion: @escaping (Result<AppBlockResponse, Error>) -> Void) {
+        apiService.getAppBlocks(childId: childId, completion: completion)
+    }
+    
+    func saveAppBlocksToServer(childId: String, blockedApps: [String]? = nil, appLimits: [String: Int]? = nil, completion: @escaping (Result<AppBlockResponse, Error>) -> Void) {
+        apiService.updateAppBlocks(
+            childId: childId,
+            blockedApps: blockedApps,
+            appLimits: appLimits,
+            deviceId: deviceId,
+            version: nil,
+            completion: completion
+        )
+    }
+    
+    func syncAppBlocksFromServer(childId: String, completion: @escaping (Result<SyncAppBlocksResponse, Error>) -> Void) {
+        apiService.syncAppBlocks(childId: childId, deviceId: deviceId, lastSyncTimestamp: nil, completion: completion)
     }
 }
 

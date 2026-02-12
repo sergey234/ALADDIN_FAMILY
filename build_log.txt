@@ -1,5 +1,5 @@
 Command line invocation:
-    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 15" clean build
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN -sdk iphonesimulator -destination "platform=iOS Simulator,name=iPhone 11 Pro Max" clean build
 
 User defaults from command line:
     IDEPackageSupportUseBuiltinSCM = YES
@@ -7,8 +7,112 @@ User defaults from command line:
 Build settings from command line:
     SDKROOT = iphonesimulator15.2
 
+objc[66394]: Class RemoteXPCPair is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429c708) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897a0d0). One of the two will be used. Which one is undefined.
+objc[66394]: Class RemoteXPCShim is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429c780) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897a148). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury11XPCEndpoint is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429ce58) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897a448). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury15XPCPeerEndpoint is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429cef8) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897a4f0). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury19XPCListenerEndpoint is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429cf98) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897a598). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury16XPCObjectEncoder is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429d0a8) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897a6b8). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury17_XPCObjectEncoder is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429d150) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897a768). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury16XPCObjectDecoder is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429d200) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897a820). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury17_XPCObjectDecoder is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429d2a8) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897a8d0). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury14XPCSideChannel is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429d5e8) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897ac20). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury19RemoteDeviceBrowser is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429d730) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897af68). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury17XPCFileDescriptor is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429d8b0) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897b0d8). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury12RemoteDevice is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429db00) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897b540). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury13XPCConnection is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429dd20) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897b7c0). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury19RemoteXPCConnection is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429dee8) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897b9a8). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury27RemoteXPCListenerConnection is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429e040) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897bb08). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury23RemoteXPCPeerConnection is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429e1e8) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897bcb8). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury19SystemXPCConnection is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429ea98) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897c5f8). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury27SystemXPCListenerConnection is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429ebe0) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897c750). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury23SystemXPCPeerConnection is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429ed50) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897c8d0). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7Mercury15XPCFileTransfer is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429efa8) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897cb18). One of the two will be used. Which one is undefined.
+objc[66394]: Class _TtC7MercuryP33_2B1830E49151A2D290BADAC81D16B73411_HandlerBox is implemented in both /Library/Developer/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x11429cae8) and /Library/Apple/System/Library/PrivateFrameworks/Mercury.framework/Versions/A/Mercury (0x12897a220). One of the two will be used. Which one is undefined.
+2026-02-12 23:57:15.053 xcodebuild[66394:5606041]  iPhoneConnect: 📱<DVTiOSDevice (0x7fb52b6c6dd0), iPhone, iPhone, 26.1 (23B85), 00008030-001C141E2660402E> unable to mount developer disk image, (Error Domain=com.apple.dtdevicekit Code=601 "Could not locate device support files" UserInfo={NSLocalizedDescription=Could not locate device support files, NSLocalizedRecoverySuggestion=iPhone may be running a version of iOS that is not supported by this version of Xcode. You can download the latest version of Xcode from the Mac App Store or developer.apple.com., DVTRadarComponentKey=487927, DeviceType=iPhone12,8, NSUnderlyingError=0x7fb52bb8c5b0 {Error Domain=com.apple.dt.DVTDeviceSupportFilesError Code=2 "Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85" UserInfo={NSLocalizedDescription=Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85, DVTRadarComponentKey=487927}}}) {
+    DVTRadarComponentKey = 487927;
+    DeviceType = "iPhone12,8";
+    NSLocalizedDescription = "Could not locate device support files";
+    NSLocalizedRecoverySuggestion = "iPhone may be running a version of iOS that is not supported by this version of Xcode. You can download the latest version of Xcode from the Mac App Store or developer.apple.com.";
+    NSUnderlyingError = "Error Domain=com.apple.dt.DVTDeviceSupportFilesError Code=2 \"Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85\" UserInfo={NSLocalizedDescription=Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85, DVTRadarComponentKey=487927}";
+}
+2026-02-12 23:57:15.055 xcodebuild[66394:5605945] [MT] iPhoneConnect: 📱<DVTiOSDevice (0x7fb52b6c6dd0), iPhone, iPhone, 26.1 (23B85), 00008030-001C141E2660402E> -- An error occurred whilst preparing device for development -- Could not locate device support files
+Domain: com.apple.dtdevicekit
+Code: 601
+Recovery Suggestion: iPhone may be running a version of iOS that is not supported by this version of Xcode. You can download the latest version of Xcode from the Mac App Store or developer.apple.com.
+User Info: {
+    DVTRadarComponentKey = 487927;
+    DeviceType = "iPhone12,8";
+}
+--
+Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85
+Domain: com.apple.dt.DVTDeviceSupportFilesError
+Code: 2
+User Info: {
+    DVTRadarComponentKey = 487927;
+}
+--
+2026-02-12 23:57:15.056 xcodebuild[66394:5605945] [MT] iPhoneConnect: 📱<DVTiOSDevice (0x7fb52b6c6dd0), iPhone, iPhone, 26.1 (23B85), 00008030-001C141E2660402E> == Underlying device preparation errors ==
+2026-02-12 23:57:15.056 xcodebuild[66394:5605945] [MT] iPhoneConnect: Could not locate device support files
+Domain: com.apple.dtdevicekit
+Code: 601
+Recovery Suggestion: iPhone may be running a version of iOS that is not supported by this version of Xcode. You can download the latest version of Xcode from the Mac App Store or developer.apple.com.
+User Info: {
+    DVTRadarComponentKey = 487927;
+    DeviceType = "iPhone12,8";
+}
+--
+Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85
+Domain: com.apple.dt.DVTDeviceSupportFilesError
+Code: 2
+User Info: {
+    DVTRadarComponentKey = 487927;
+}
+--
+2026-02-12 23:57:15.056 xcodebuild[66394:5605945] [MT] iPhoneConnect: 📱<DVTiOSDevice (0x7fb52b6c6dd0), iPhone, iPhone, 26.1 (23B85), 00008030-001C141E2660402E> == END: Underlying device preparation errors ==
+2026-02-12 23:57:15.131 xcodebuild[66394:5606041]  iPhoneConnect: 📱<DVTiOSDevice (0x7fb52b6c6dd0), iPhone, iPhone, 26.1 (23B85), 00008030-001C141E2660402E> unable to mount developer disk image, (Error Domain=com.apple.dtdevicekit Code=601 "Could not locate device support files" UserInfo={NSLocalizedDescription=Could not locate device support files, NSLocalizedRecoverySuggestion=iPhone may be running a version of iOS that is not supported by this version of Xcode. You can download the latest version of Xcode from the Mac App Store or developer.apple.com., DVTRadarComponentKey=487927, DeviceType=iPhone12,8, NSUnderlyingError=0x7fb52bac3760 {Error Domain=com.apple.dt.DVTDeviceSupportFilesError Code=2 "Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85" UserInfo={NSLocalizedDescription=Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85, DVTRadarComponentKey=487927}}}) {
+    DVTRadarComponentKey = 487927;
+    DeviceType = "iPhone12,8";
+    NSLocalizedDescription = "Could not locate device support files";
+    NSLocalizedRecoverySuggestion = "iPhone may be running a version of iOS that is not supported by this version of Xcode. You can download the latest version of Xcode from the Mac App Store or developer.apple.com.";
+    NSUnderlyingError = "Error Domain=com.apple.dt.DVTDeviceSupportFilesError Code=2 \"Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85\" UserInfo={NSLocalizedDescription=Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85, DVTRadarComponentKey=487927}";
+}
+2026-02-12 23:57:15.134 xcodebuild[66394:5605945] [MT] iPhoneConnect: 📱<DVTiOSDevice (0x7fb52b6c6dd0), iPhone, iPhone, 26.1 (23B85), 00008030-001C141E2660402E> -- An error occurred whilst preparing device for development -- Could not locate device support files
+Domain: com.apple.dtdevicekit
+Code: 601
+Recovery Suggestion: iPhone may be running a version of iOS that is not supported by this version of Xcode. You can download the latest version of Xcode from the Mac App Store or developer.apple.com.
+User Info: {
+    DVTRadarComponentKey = 487927;
+    DeviceType = "iPhone12,8";
+}
+--
+Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85
+Domain: com.apple.dt.DVTDeviceSupportFilesError
+Code: 2
+User Info: {
+    DVTRadarComponentKey = 487927;
+}
+--
+2026-02-12 23:57:15.134 xcodebuild[66394:5605945] [MT] iPhoneConnect: 📱<DVTiOSDevice (0x7fb52b6c6dd0), iPhone, iPhone, 26.1 (23B85), 00008030-001C141E2660402E> == Underlying device preparation errors ==
+2026-02-12 23:57:15.134 xcodebuild[66394:5605945] [MT] iPhoneConnect: Could not locate device support files
+Domain: com.apple.dtdevicekit
+Code: 601
+Recovery Suggestion: iPhone may be running a version of iOS that is not supported by this version of Xcode. You can download the latest version of Xcode from the Mac App Store or developer.apple.com.
+User Info: {
+    DVTRadarComponentKey = 487927;
+    DeviceType = "iPhone12,8";
+}
+--
+Unable to locate ideal DDI for platform: <DVTPlatform:0x7fb526697820:'com.apple.platform.iphoneos':<DVTFilePath:0x7fb5266977a0:'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform'>>, version: 26.1, build: 23B85
+Domain: com.apple.dt.DVTDeviceSupportFilesError
+Code: 2
+User Info: {
+    DVTRadarComponentKey = 487927;
+}
+--
+2026-02-12 23:57:15.134 xcodebuild[66394:5605945] [MT] iPhoneConnect: 📱<DVTiOSDevice (0x7fb52b6c6dd0), iPhone, iPhone, 26.1 (23B85), 00008030-001C141E2660402E> == END: Underlying device preparation errors ==
 xcodebuild: error: Unable to find a destination matching the provided destination specifier:
-		{ platform:iOS Simulator, OS:latest, name:iPhone 15 }
+		{ platform:iOS Simulator, OS:latest, name:iPhone 11 Pro Max }
 
 	The requested device could not be found because no available devices matched the request.
 
@@ -23,7 +127,7 @@ xcodebuild: error: Unable to find a destination matching the provided destinatio
 		{ platform:iOS Simulator, id:D6F31DD2-9156-4A70-BD6D-5259B8E1C703, OS:15.2, name:iPhone 8 Plus }
 		{ platform:iOS Simulator, id:D78B8561-CF19-41E4-BAC6-82A1D391614C, OS:15.2, name:iPhone 11 }
 		{ platform:iOS Simulator, id:5D942103-EA2D-48CD-AC1D-9462D6906021, OS:15.2, name:iPhone 11 Pro }
-		{ platform:iOS Simulator, id:DE1808F2-6FBD-4254-831C-68C1B8C70EBA, OS:15.2, name:iPhone 11 Pro Max }
+		{ platform:iOS Simulator, id:13EA3AB9-49EE-4349-95F1-015F8A0AFC1B, OS:15.2, name:iPhone 11 Pro Max (iOS 15.2) fresh }
 		{ platform:iOS Simulator, id:B888E7F1-CFFD-449B-9476-7C7C9D454C8E, OS:15.2, name:iPhone 12 }
 		{ platform:iOS Simulator, id:693D14D0-6435-4667-9111-EE3C937A8BC8, OS:15.2, name:iPhone 12 Pro }
 		{ platform:iOS Simulator, id:0DC1E7B5-C357-417D-8CCB-897C0D794F41, OS:15.2, name:iPhone 12 Pro Max }
@@ -38,3 +142,4 @@ xcodebuild: error: Unable to find a destination matching the provided destinatio
 	Ineligible destinations for the "ALADDIN" scheme:
 		{ platform:iOS, id:dvtdevice-DVTiPhonePlaceholder-iphoneos:placeholder, name:Any iOS Device }
 		{ platform:iOS Simulator, id:dvtdevice-DVTiOSDeviceSimulatorPlaceholder-iphonesimulator:placeholder, name:Any iOS Simulator Device }
+		{ platform:iOS, id:00008030-001C141E2660402E, name:iPhone, error:Xcode doesn’t support iPhone’s iOS 26.1 (23B85).  }

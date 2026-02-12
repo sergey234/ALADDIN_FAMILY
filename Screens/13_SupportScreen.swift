@@ -12,6 +12,10 @@ struct SupportScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var searchText: String = ""
     
+    // ✅ ЗАДАЧА 26: Roadside Assistance
+    @State private var showRoadsideAssistance: Bool = false
+    private let apiService = APIService.shared
+    
     struct FAQItem: Identifiable {
         let id = UUID()
         let icon: String
@@ -215,6 +219,9 @@ struct SupportScreen: View {
                         // Способы связи
                         contactMethods
                         
+                        // ✅ ЗАДАЧА 26: Помощь на дороге
+                        roadsideAssistanceSection
+                        
                         // FAQ
                         faqSection
                         
@@ -358,6 +365,64 @@ struct SupportScreen: View {
     private func openSupportURL(_ urlString: String) {
         guard let url = URL(string: urlString) else { return }
         UIApplication.shared.open(url)
+    }
+    
+    // MARK: - Roadside Assistance Section (✅ ЗАДАЧА 26)
+    
+    private var roadsideAssistanceSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("roadside_assistance_title"))
+                .font(.title2)
+                .foregroundColor(.primary)
+                .padding(.horizontal, 20)
+                .accessibilityLabel(localizationManager.localized("roadside_assistance_title"))
+                .accessibilityAddTraits(.isHeader)
+            
+            Button(action: {
+                showRoadsideAssistance = true
+            }) {
+                HStack(spacing: 12) {
+                    Image(systemName: "car.fill")
+                        .font(.system(size: 32))
+                        .foregroundColor(.red)
+                        .accessibilityLabel(localizationManager.localized("roadside_assistance_icon"))
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(localizationManager.localized("roadside_call_help"))
+                            .font(.body.bold())
+                            .foregroundColor(.primary)
+                            .accessibilityLabel(localizationManager.localized("roadside_call_help"))
+                        
+                        Text(localizationManager.localized("roadside_assistance_subtitle"))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .accessibilityLabel(localizationManager.localized("roadside_assistance_subtitle"))
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.red)
+                }
+                .padding(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.gray.opacity(0.3))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                        )
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+            .cardShadow()
+            .padding(.horizontal, 20)
+        }
+        .sheet(isPresented: $showRoadsideAssistance) {
+            // TODO: Добавить RoadsideAssistanceView в проект
+            Text("Roadside Assistance")
+                .environmentObject(localizationManager)
+        }
     }
     
     // MARK: - FAQ Section

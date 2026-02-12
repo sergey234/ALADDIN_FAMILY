@@ -142,17 +142,8 @@ struct ProtectionStatsScreen: View {
                     icon: "🛡️"
                 )
 
-                DetailRow(
-                    label: "Время работы",
-                    value: "99.8%", // Можно получить из API
-                    icon: "⏱️"
-                )
-
-                DetailRow(
-                    label: "Обновлений безопасности",
-                    value: "15", // Можно получить из API
-                    icon: "🔄"
-                )
+                // ✅ ИСПРАВЛЕНО: Удалены hardcoded значения
+                // Время работы и обновления безопасности можно добавить в API при необходимости
             }
         }
         .padding(Spacing.l)
@@ -242,19 +233,29 @@ struct ProtectionStatsScreen: View {
                 .font(.system(size: Size.title, weight: .bold))
                 .foregroundColor(.white)
 
-            // Простая визуализация (можно заменить на реальный график)
-            VStack(spacing: Spacing.s) {
-                ThreatBar(label: "Сегодня", count: 12, maxCount: 50)
-                ThreatBar(label: "Вчера", count: 8, maxCount: 50)
-                ThreatBar(label: "Неделя", count: 84, maxCount: 100)
-                ThreatBar(label: "Месяц", count: 365, maxCount: 400)
+            // ✅ ИСПРАВЛЕНО: Используем реальные данные из protectionStats
+            if let stats = viewModel.protectionStats {
+                VStack(spacing: Spacing.s) {
+                    // Показываем общее количество заблокированных угроз
+                    ThreatBar(
+                        label: "Всего заблокировано",
+                        count: stats.threatsBlocked,
+                        maxCount: max(stats.threatsBlocked, 100)
+                    )
+                    
+                    // Можно добавить больше данных, когда API будет поддерживать статистику по периодам
+                    Text("Все угрозы успешно заблокированы! 🛡️")
+                        .font(.system(size: Size.caption))
+                        .foregroundColor(.green)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, Spacing.s)
+                }
+            } else {
+                Text("Загрузка данных...")
+                    .foregroundColor(.white.opacity(0.7))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding()
             }
-
-            Text("Все угрозы успешно заблокированы! 🛡️")
-                .font(.system(size: Size.caption))
-                .foregroundColor(.green)
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.top, Spacing.s)
         }
         .padding(Spacing.l)
         .background(Color.black.opacity(0.3))
@@ -365,25 +366,9 @@ class ProtectionStatsViewModel: ObservableObject {
                 case .success(let stats):
                     self?.protectionStats = stats
                 case .failure(let error):
+                    // ✅ ИСПРАВЛЕНО: Убран fallback на mock данные
                     self?.errorMessage = "Ошибка загрузки статистики: \(error.localizedDescription)"
-                    // Mock data для демонстрации
-                    self?.protectionStats = ProtectionStatsResponse(
-                        isActive: true,
-                        functionsActive: 187,
-                        threatsBlocked: 2847,
-                        lastScan: "2026-02-04T12:00:00Z",
-                        securityScore: 95,
-                        protectionLevel: "high",
-                        activeComponents: [
-                            "VPN", "Антивирус", "Антифишинг", "Родительский контроль",
-                            "Защита от трекеров", "Мониторинг даркнета", "Защита от мошенничества"
-                        ],
-                        recommendations: [
-                            "Включите все уровни защиты для максимальной безопасности",
-                            "Регулярно обновляйте приложения",
-                            "Используйте сложные пароли"
-                        ]
-                    )
+                    print("⚠️ ProtectionStatsViewModel: Ошибка загрузки статистики: \(error)")
                 }
             }
         }

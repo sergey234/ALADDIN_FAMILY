@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// 🏆 Family Tournament View
 /// Семейный турнир с рейтингом
@@ -16,6 +17,22 @@ struct FamilyTournamentView: View {
     @AppStorage("tournament_selected_index") private var selectedTournamentIndex: Int = 0
     @AppStorage("tournament_quest_progress") private var questProgress: Double = 0.6
     @AppStorage("tournament_days_left") private var daysLeft: Int = 3
+    
+    // ✅ ГЕЙМИФИКАЦИЯ: Турниры с сервера
+    @State private var activeTournaments: [TournamentResponse] = []
+    @State private var currentTournament: TournamentResponse? = nil
+    @State private var leaderboard: [LeaderboardEntry] = []
+    @State private var isLoadingTournaments: Bool = false
+    @State private var isLoadingLeaderboard: Bool = false
+    @State private var tournamentError: String? = nil
+    @State private var isJoined: Bool = false
+    
+    private let apiService = APIService.shared
+    
+    // Получаем userId для API вызовов
+    private var userId: String {
+        AppConfig.authToken ?? UserDefaults.standard.string(forKey: "user_id") ?? "guest"
+    }
     
     private var tournamentTypes: [String] {
         [
@@ -73,14 +90,31 @@ struct FamilyTournamentView: View {
                         timerView
                         
                         // Рейтинг
-                        if participants.isEmpty {
-                            EmptyStateView(
-                                icon: "🏆",
-                                title: localizationManager.localized("family_tournament_empty_title"),
-                                description: localizationManager.localized("family_tournament_empty_desc"),
-                                actionTitle: nil,
-                                action: nil
-                            )
+                        if isLoadingLeaderboard {
+                            HStack {
+                                ProgressView()
+                                Text(localizationManager.localized("loading_leaderboard"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                            }
+                            .padding()
+                        } else if let error = tournamentError {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.dangerRed)
+                                .padding()
+                        } else if participants.isEmpty {
+                            VStack(spacing: Spacing.m) {
+                                EmptyStateView(
+                                    icon: "🏆",
+                                    title: localizationManager.localized("family_tournament_empty_title"),
+                                    description: localizationManager.localized("family_tournament_empty_desc"),
+                                    actionTitle: isJoined ? nil : localizationManager.localized("join_tournament"),
+                                    action: isJoined ? nil : {
+                                        joinTournament()
+                                    }
+                                )
+                            }
                             .padding()
                         } else {
                             leaderboardView
@@ -97,9 +131,13 @@ struct FamilyTournamentView: View {
         }
         .onAppear {
             loadParticipants()
+            loadTournamentsFromServer()
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
             loadParticipants() // Синхронизируем при изменении family_members_list
+        }
+        .refreshable {
+            await refreshTournamentData()
         }
         .navigationBarHidden(true)
     }
@@ -107,7 +145,7 @@ struct FamilyTournamentView: View {
     // MARK: - Data Loading
     
     private func loadParticipants() {
-        // Загружаем участников из family_members_list
+        // Загружаем участников из family_members_list (локальный fallback)
         guard let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
               let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
             participants = []
@@ -137,6 +175,111 @@ struct FamilyTournamentView: View {
         participants.sort { $0.points > $1.points }
         
         print("✅ Загружено участников турнира: \(participants.count)")
+    }
+    
+    // MARK: - ✅ ГЕЙМИФИКАЦИЯ: API методы для синхронизации турниров
+    
+    /// Загрузить активные турниры с сервера
+    private func loadTournamentsFromServer() {
+        isLoadingTournaments = true
+        tournamentError = nil
+        
+        apiService.getGamificationTournaments(status: "active") { [self] result in
+            isLoadingTournaments = false
+            switch result {
+            case .success(let response):
+                activeTournaments = response.tournaments
+                // Выбираем первый активный турнир, если есть
+                if let firstTournament = response.tournaments.first {
+                    currentTournament = firstTournament
+                    loadLeaderboardForTournament(tournamentId: firstTournament.id)
+                    checkIfJoined(tournamentId: firstTournament.id)
+                }
+            case .failure(let error):
+                tournamentError = error.localizedDescription
+                // Используем локальные данные при ошибке
+            }
+        }
+    }
+    
+    /// Загрузить таблицу лидеров для турнира
+    private func loadLeaderboardForTournament(tournamentId: String) {
+        isLoadingLeaderboard = true
+        
+        apiService.getGamificationTournamentLeaderboard(tournamentId: tournamentId, limit: 50) { [self] result in
+            isLoadingLeaderboard = false
+            switch result {
+            case .success(let response):
+                leaderboard = response.leaderboard
+                // Обновляем локальных участников данными с сервера
+                updateParticipantsFromLeaderboard(response.leaderboard)
+            case .failure(let error):
+                tournamentError = error.localizedDescription
+            }
+        }
+    }
+    
+    /// Обновить участников из таблицы лидеров сервера
+    private func updateParticipantsFromLeaderboard(_ serverLeaderboard: [LeaderboardEntry]) {
+        // Конвертируем LeaderboardEntry в формат участников
+        participants = serverLeaderboard.map { entry in
+            (
+                name: entry.username ?? entry.userId,
+                points: entry.score,
+                avatar: entry.avatar ?? "👤"
+            )
+        }
+        
+        // Если участников с сервера нет, используем локальных
+        if participants.isEmpty {
+            loadParticipants()
+        }
+    }
+    
+    /// Проверить, присоединен ли пользователь к турниру
+    private func checkIfJoined(tournamentId: String) {
+        // Загружаем историю турниров пользователя
+        apiService.getGamificationTournamentsHistory(userId: userId, limit: 10) { [self] result in
+            switch result {
+            case .success(let response):
+                // Проверяем, есть ли текущий турнир в истории
+                isJoined = response.tournaments.contains { $0.id == tournamentId }
+            case .failure:
+                isJoined = false
+            }
+        }
+    }
+    
+    /// Присоединиться к турниру
+    private func joinTournament() {
+        guard let tournament = currentTournament else { return }
+        
+        apiService.joinGamificationTournament(
+            userId: userId,
+            tournamentId: tournament.id,
+            deviceId: UIDevice.current.identifierForVendor?.uuidString
+        ) { [self] result in
+            switch result {
+            case .success:
+                isJoined = true
+                HapticFeedback.notification(.success)
+                // Обновляем данные турнира
+                loadLeaderboardForTournament(tournamentId: tournament.id)
+            case .failure(let error):
+                tournamentError = error.localizedDescription
+                HapticFeedback.notification(.error)
+            }
+        }
+    }
+    
+    /// Обновить все данные турнира (для pull-to-refresh)
+    @MainActor
+    private func refreshTournamentData() async {
+        loadTournamentsFromServer()
+        if let tournamentId = currentTournament?.id {
+            loadLeaderboardForTournament(tournamentId: tournamentId)
+        }
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
     }
     
     // MARK: - Header
@@ -170,14 +313,59 @@ struct FamilyTournamentView: View {
     // MARK: - Timer View
     
     private var timerView: some View {
-        Text(String(format: localizationManager.localized("family_tournament_timer"), daysLeft))
-            .font(.body)
-            .foregroundColor(.textSecondary)
-            .padding(Spacing.m)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(Color.backgroundMedium.opacity(0.5))
-            )
+        VStack(spacing: Spacing.xs) {
+            if let tournament = currentTournament {
+                // Показываем информацию о турнире с сервера
+                Text(tournament.name)
+                    .font(.bodyBold)
+                    .foregroundColor(.textPrimary)
+                
+                if let description = tournament.description {
+                    Text(description)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                
+                // Вычисляем дни до окончания
+                if let endDate = ISO8601DateFormatter().date(from: tournament.endDate) {
+                    let days = Calendar.current.dateComponents([.day], from: Date(), to: endDate).day ?? 0
+                    Text(String(format: localizationManager.localized("family_tournament_timer"), max(0, days)))
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                } else {
+                    Text(String(format: localizationManager.localized("family_tournament_timer"), daysLeft))
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                }
+                
+                // Кнопка присоединения, если не присоединен
+                if !isJoined {
+                    Button(action: {
+                        joinTournament()
+                    }) {
+                        Text(localizationManager.localized("join_tournament"))
+                            .font(.body)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, Spacing.l)
+                            .padding(.vertical, Spacing.s)
+                            .background(Color.primaryBlue)
+                            .cornerRadius(CornerRadius.medium)
+                    }
+                    .padding(.top, Spacing.xs)
+                }
+            } else {
+                // Fallback на локальные данные
+                Text(String(format: localizationManager.localized("family_tournament_timer"), daysLeft))
+                    .font(.body)
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.5))
+        )
+        .padding(.horizontal, Spacing.screenPadding)
     }
     
     private var leaderboardView: some View {

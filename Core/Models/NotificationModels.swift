@@ -50,5 +50,33 @@ enum NotificationType: String, CaseIterable {
         case .bypassAttempt: return .warningOrange
         }
     }
+    
+    // ✅ ЗАДАЧА 20: Локализованное название типа уведомления
+    func localizedName() -> String {
+        let localizationManager = LocalizationManager.shared
+        switch self {
+        case .threat:
+            return localizationManager.localized("notification_type_threat")
+        case .success:
+            return localizationManager.localized("notification_type_success")
+        case .info:
+            return localizationManager.localized("notification_type_info")
+        case .warning:
+            return localizationManager.localized("notification_type_warning")
+        case .bypassAttempt:
+            return localizationManager.localized("notification_type_bypass")
+        }
+    }
+    
+    // ✅ ЗАДАЧА 20: Ключ локализации для типа
+    var localizationKey: String {
+        switch self {
+        case .threat: return "notification_type_threat"
+        case .success: return "notification_type_success"
+        case .info: return "notification_type_info"
+        case .warning: return "notification_type_warning"
+        case .bypassAttempt: return "notification_type_bypass"
+        }
+    }
 }
 

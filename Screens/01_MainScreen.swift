@@ -232,6 +232,23 @@ struct MainScreen: View {
                 return
             }
 
+            // ✅ ОТЛАДКА: Проверяем наличие ID при загрузке экрана
+            let memberId = UserDefaults.standard.string(forKey: "your_member_id")
+            print("🔍 MainScreen.onAppear: your_member_id = \(memberId ?? "nil")")
+            if let id = memberId, !id.isEmpty {
+                print("✅ MainScreen.onAppear: ID найден: \(id)")
+            } else {
+                print("⚠️ MainScreen.onAppear: ID не найден в UserDefaults!")
+                print("   Проверьте, что регистрация прошла успешно и ID был сохранен.")
+                // ✅ ВРЕМЕННО: Для тестирования можно установить тестовый ID
+                #if DEBUG
+                if memberId == nil {
+                    print("   💡 Установлен тестовый ID для проверки отображения")
+                    UserDefaults.standard.set("TEST_MEMBER_123", forKey: "your_member_id")
+                }
+                #endif
+            }
+
             loadProfileImage()
 
             // ✅ ВЫЗОВ onAppear MainViewModel для автоматической загрузки данных из API
@@ -359,7 +376,10 @@ struct MainScreen: View {
                             }
                             
                             // Настройки карточка
-                            NavigationLink(destination: SettingsScreen()) {
+                            NavigationLink(destination: SettingsScreen()
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                            ) {
                                 VStack(spacing: 8) {
                                     Text("⚙️")
                                         .font(.system(size: 20))
@@ -397,6 +417,46 @@ struct MainScreen: View {
                                     .font(.system(size: 14, weight: .bold))
                                     .foregroundColor(.black)
                                 
+                                // ✅ НОВОЕ: ID пользователя справа от FAMILY
+                                Group {
+                                    let memberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
+                                    if !memberId.isEmpty {
+                                        Spacer()
+                                        
+                                        Button(action: {
+                                            UIPasteboard.general.string = memberId
+                                            let generator = UINotificationFeedbackGenerator()
+                                            generator.notificationOccurred(.success)
+                                            print("✅ ID скопирован: \(memberId)")
+                                        }) {
+                                            HStack(spacing: 4) {
+                                                Text("\(localizationManager.localized("main_family_user_id")) \(memberId)")
+                                                    .font(.system(size: 9, weight: .semibold))
+                                                    .foregroundColor(.black)
+                                                
+                                                Image(systemName: "doc.on.doc")
+                                                    .font(.system(size: 10, weight: .medium))
+                                                    .foregroundColor(.black.opacity(0.8))
+                                            }
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 5)
+                                            .background(
+                                                Capsule()
+                                                    .fill(Color.black.opacity(0.15))
+                                            )
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    } else {
+                                        // ✅ ОТЛАДКА: Выводим информацию если ID не найден
+                                        #if DEBUG
+                                        Spacer()
+                                        Text("(ID не найден)")
+                                            .font(.system(size: 8))
+                                            .foregroundColor(.red.opacity(0.5))
+                                        #endif
+                                    }
+                                }
+                                
                                 Spacer()
                                 
                                 // Капсула статуса (вместо тумблера)
@@ -407,6 +467,16 @@ struct MainScreen: View {
                                         navigationManager.navigateTo(.family)
                                     }
                                 )
+                            }
+                            .onAppear {
+                                // ✅ ОТЛАДКА: Проверяем наличие ID при появлении
+                                let memberId = UserDefaults.standard.string(forKey: "your_member_id")
+                                print("🔍 MainScreen: your_member_id = \(memberId ?? "nil")")
+                                if let id = memberId, !id.isEmpty {
+                                    print("✅ MainScreen: ID найден и будет отображен: \(id)")
+                                } else {
+                                    print("⚠️ MainScreen: ID не найден в UserDefaults!")
+                                }
                             }
                             
                             // Информация о семье - ДИНАМИЧЕСКАЯ из MainViewModel

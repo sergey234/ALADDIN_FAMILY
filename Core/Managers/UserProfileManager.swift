@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 /// 👤 User Profile Manager
 /// Singleton класс для управления профилем пользователя
@@ -8,6 +9,7 @@ class UserProfileManager {
 
     private let apiService = APIService.shared
     private let userDefaults = UserDefaults.standard
+    private let keychainManager = KeychainManager.shared
 
     private let displayNameKey = "user_display_name"
     private let profileNameKey = "user_profile_name"
@@ -17,6 +19,18 @@ class UserProfileManager {
     private init() {
         // Загружаем профиль при инициализации
         loadProfileInBackground()
+        
+        // ✅ УВЕДОМЛЕНИЕ: Подписываемся на уведомление о успешной авторизации
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleUserDidLogin),
+            name: NSNotification.Name("UserDidLogin"),
+            object: nil
+        )
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: - Public Methods
@@ -49,21 +63,72 @@ class UserProfileManager {
     }
 
     /// Загрузить профиль из API и сохранить в кеш
+    /// ✅ ИСПРАВЛЕНО: Использует гибридный подход - сначала getUserProfile, потом syncUserProfile
     func loadProfile(completion: ((Bool) -> Void)? = nil) {
+        // ✅ ПРОВЕРКА ТОКЕНА: Если нет токена, не загружаем профиль
+        guard keychainManager.isDataAvailable(forKey: .authToken) else {
+            print("⚠️ UserProfileManager: Нет токена - пропускаем загрузку профиля")
+            completion?(false)
+            return
+        }
+        
+        // ✅ ПОПЫТКА 1: Стандартный endpoint /api/user/profile
         apiService.getUserProfile { [weak self] result in
             guard let self = self else { return }
 
             DispatchQueue.main.async {
                 switch result {
                 case .success(let profile):
-                    // Сохраняем данные в кеш
+                    // ✅ Успех - используем стандартный endpoint
                     self.saveProfileToCache(profile)
-                    print("✅ User profile loaded and cached: \(profile.name)")
+                    print("✅ User profile loaded via /api/user/profile: \(profile.name)")
                     completion?(true)
 
                 case .failure(let error):
-                    print("⚠️ Failed to load user profile: \(error.localizedDescription)")
-                    completion?(false)
+                    // ✅ ПОПЫТКА 2: Fallback на syncUserProfile
+                    print("⚠️ UserProfileManager: getUserProfile failed: \(error.localizedDescription)")
+                    print("🔄 UserProfileManager: Попытка 2 - используем syncUserProfile")
+                    
+                    // Получаем userId из UserDefaults
+                    guard let userId = UserDefaults.standard.string(forKey: "your_member_id") else {
+                        print("❌ UserProfileManager: your_member_id не найден в UserDefaults")
+                        completion?(false)
+                        return
+                    }
+                    
+                    // Получаем deviceId
+                    let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? "unknown"
+                    
+                    // Используем syncUserProfile
+                    self.apiService.syncUserProfile(userId: userId, deviceId: deviceId) { [weak self] syncResult in
+                        guard let self = self else { return }
+                        
+                        DispatchQueue.main.async {
+                            switch syncResult {
+                            case .success(let syncResponse):
+                                // ✅ Конвертируем SyncUserProfileResponse в UserProfile
+                                let profile = UserProfile(
+                                    id: syncResponse.profile.userId,
+                                    name: syncResponse.profile.name,
+                                    email: syncResponse.profile.email ?? "",
+                                    phone: syncResponse.profile.phone,
+                                    registrationDate: syncResponse.profile.registrationDate,
+                                    subscriptionType: "free", // Дефолтное значение
+                                    subscriptionEndDate: nil,
+                                    threatsBlocked: 0, // Дефолтное значение
+                                    familyMembers: 0, // Дефолтное значение
+                                    devices: 1 // Дефолтное значение
+                                )
+                                self.saveProfileToCache(profile)
+                                print("✅ User profile loaded via syncUserProfile: \(profile.name)")
+                                completion?(true)
+                                
+                            case .failure(let syncError):
+                                print("❌ UserProfileManager: syncUserProfile failed: \(syncError.localizedDescription)")
+                                completion?(false)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -106,5 +171,19 @@ class UserProfileManager {
         userDefaults.set(profile.email, forKey: emailKey)
         userDefaults.set(Date().timeIntervalSince1970, forKey: lastUpdateKey)
         userDefaults.synchronize()
+    }
+    
+    // ✅ ОБРАБОТЧИК: Перезагружаем профиль после успешной авторизации
+    @objc private func handleUserDidLogin() {
+        print("🔄 UserProfileManager: Получено уведомление о авторизации - перезагружаем профиль")
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            self?.loadProfile { success in
+                if success {
+                    print("✅ UserProfileManager: Профиль успешно перезагружен после авторизации")
+                } else {
+                    print("⚠️ UserProfileManager: Не удалось перезагрузить профиль после авторизации")
+                }
+            }
+        }
     }
 }

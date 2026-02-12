@@ -6,11 +6,15 @@ import Combine
 /// Управляет списком членов семьи, их статусом, устройствами
 class FamilyViewModel: ObservableObject {
     
+    // MARK: - Dependencies
+    
+    private let apiService = APIService.shared
+    
     // MARK: - Published Properties
     
     @Published var familyMembers: [FamilyMember] = []
-    @Published var totalThreatsBlocked: Int = 47
-    @Published var totalDevices: Int = 8
+    @Published var totalThreatsBlocked: Int = 0
+    @Published var totalDevices: Int = 0
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     
@@ -35,19 +39,64 @@ class FamilyViewModel: ObservableObject {
     
     // MARK: - Public Methods
     
-    /// Загрузка списка членов семьи
+    /// ✅ ИСПРАВЛЕНО: Загрузка списка членов семьи с реального API
     func loadFamilyMembers() {
         isLoading = true
+        errorMessage = nil
+
+        // ✅ ЗАДАЧА 66: Начинаем отслеживание производительности загрузки семьи
+        PerformanceMonitor.shared.startScreenLoad("FamilyScreen")
         
-        // Имитация данных (в реальности - API)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            self?.familyMembers = [
-                FamilyMember(name: "Сергей", role: "Родитель", avatar: "👨", status: "protected", threatsBlocked: 47, lastActive: "Сейчас", devices: 3),
-                FamilyMember(name: "Мария", role: "Родитель", avatar: "👩", status: "protected", threatsBlocked: 32, lastActive: "5 мин назад", devices: 2),
-                FamilyMember(name: "Маша", role: "Ребёнок", avatar: "👧", status: "warning", threatsBlocked: 23, lastActive: "10 мин назад", devices: 2),
-                FamilyMember(name: "Бабушка", role: "Пожилой", avatar: "👵", status: "offline", threatsBlocked: 12, lastActive: "2 часа назад", devices: 1)
-            ]
-            self?.isLoading = false
+        // Загружаем членов семьи
+        apiService.getFamilyMembers { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let members):
+                    // Преобразуем FamilyMemberResponse в FamilyMember
+                    self?.familyMembers = members.map { member in
+                        FamilyMember(
+                            name: member.name,
+                            role: member.role,
+                            avatar: member.avatar,
+                            status: member.status,
+                            threatsBlocked: member.threatsBlocked,
+                            lastActive: member.lastActive,
+                            devices: member.devices
+                        )
+                    }
+                    self?.isLoading = false
+
+                    // Загружаем статистику семьи
+                    self?.loadFamilyStats()
+
+                    // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности загрузки семьи
+                    PerformanceMonitor.shared.endScreenLoad("FamilyScreen")
+
+                case .failure(let error):
+                    self?.errorMessage = error.localizedDescription
+                    self?.isLoading = false
+
+                    // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности даже при ошибке
+                    PerformanceMonitor.shared.endScreenLoad("FamilyScreen")
+                    print("⚠️ FamilyViewModel: Ошибка загрузки членов семьи: \(error)")
+                }
+            }
+        }
+    }
+    
+    /// ✅ ДОБАВЛЕНО: Загрузка статистики семьи
+    private func loadFamilyStats() {
+        apiService.getFamilyStats { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let stats):
+                    self?.totalThreatsBlocked = stats.totalThreats
+                    self?.totalDevices = stats.totalDevices
+                case .failure(let error):
+                    print("⚠️ FamilyViewModel: Ошибка загрузки статистики семьи: \(error)")
+                    // Не показываем ошибку пользователю, статистика не критична
+                }
+            }
         }
     }
     

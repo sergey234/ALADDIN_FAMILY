@@ -96,6 +96,10 @@ class MainViewModel: ObservableObject {
             print("⚠️ MainViewModel: Загрузка дашборда уже выполняется, пропускаем")
             return
         }
+
+        // ✅ ЗАДАЧА 66: Начинаем отслеживание производительности загрузки дашборда
+        PerformanceMonitor.shared.startScreenLoad("MainDashboard")
+
         loadDashboardDataWithRetry(maxAttempts: 3)
     }
     
@@ -124,16 +128,24 @@ class MainViewModel: ObservableObject {
         #endif
 
         if !hasAuthToken {
-            // ❌ НЕТ ТОКЕНА: Не делаем API вызов, показываем демо данные
+            // ❌ НЕТ ТОКЕНА: В продакшн требуем авторизацию, в DEBUG показываем демо данные
             #if DEBUG
-            print("ℹ️ MainViewModel: Debug токены - демо режим, без API загрузки")
+            print("ℹ️ MainViewModel: Debug режим - демо данные (токен отсутствует)")
+            #else
+            // ✅ В ПРОДАКШН: Демо режим НЕ допустим - требуем авторизацию
+            print("❌ MainViewModel: Токен отсутствует - требуется авторизация")
             #endif
 
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
                 self.isLoading = false
                 self.isLoadingDashboard = false
-                // Показываем демо данные вместо API данных
+
+                // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности загрузки дашборда
+                PerformanceMonitor.shared.endScreenLoad("MainDashboard")
+                
+                #if DEBUG
+                // Только в DEBUG режиме показываем демо данные
                 self.familyMembers = 1
                 self.devicesProtected = 1
                 self.threatsBlocked = 0
@@ -143,6 +155,11 @@ class MainViewModel: ObservableObject {
                 let localizationManager = LocalizationManager()
                 self.familyProtectionStatusMessage = localizationManager.localized("main_family_protection_status_message")
                 NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+                #else
+                // В продакшн: показываем ошибку и требуем авторизацию
+                self.errorMessage = "Требуется авторизация"
+                // TODO: Переход на экран авторизации
+                #endif
             }
             return
         }
@@ -184,6 +201,9 @@ class MainViewModel: ObservableObject {
                 case .success(let stats):
                     self.isLoading = false
                     self.isLoadingDashboard = false
+
+                    // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности загрузки дашборда
+                    PerformanceMonitor.shared.endScreenLoad("MainDashboard")
                     // ✅ ОБНОВЛЯЕМ ДАННЫЕ ИЗ API
                     self.familyMembers = stats.totalMembers
                     self.devicesProtected = stats.totalDevices
@@ -294,7 +314,7 @@ class MainViewModel: ObservableObject {
 
     /// Проверяет, используются ли debug токены
     private func isUsingDebugTokens() -> Bool {
-        guard let token: String = keychainManager.load(String.self, forKey: .authToken) else {
+        guard let token = keychainManager.loadString(forKey: .authToken) else {
             return false
         }
 

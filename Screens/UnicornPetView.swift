@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// 🦄 Unicorn Pet View
 /// Единорог-питомец (тамагочи)
@@ -17,6 +18,21 @@ struct UnicornPetView: View {
     @AppStorage("pet_energy") private var energy: Double = 0.8
     @AppStorage("pet_mood") private var mood: Double = 0.7
     @AppStorage("pet_evolution_stage") private var evolutionStage: String = "Teen"
+    
+    // ✅ ГЕЙМИФИКАЦИЯ: Баланс единорогов с синхронизацией
+    @State private var unicornBalance: Int = 0
+    @State private var isLoadingBalance: Bool = false
+    @State private var balanceError: String? = nil
+    
+    // Кэшированный баланс для офлайн режима
+    @AppStorage("child_unicorn_balance") private var cachedBalance: Int = 0
+    
+    private let apiService = APIService.shared
+    
+    // Получаем userId для API вызовов
+    private var userId: String {
+        AppConfig.authToken ?? UserDefaults.standard.string(forKey: "user_id") ?? "guest"
+    }
     
     var body: some View {
         ZStack {
@@ -52,6 +68,10 @@ struct UnicornPetView: View {
         .navigationBarHidden(true)
         .task {
             print("🚨 UnicornPetView загружен!")
+            loadBalance()
+        }
+        .refreshable {
+            await refreshBalance()
         }
     }
     
@@ -162,20 +182,44 @@ struct UnicornPetView: View {
     }
     
     private var actionsView: some View {
-        HStack(spacing: Spacing.m) {
-            actionButton(icon: "🍎", title: localizationManager.localized("unicorn_pet_feed"), cost: String(format: localizationManager.localized("unicorn_pet_cost_unicorns"), 10)) {
-                hunger = min(1.0, hunger + 0.2)
+        VStack(spacing: Spacing.m) {
+            // Показываем баланс единорогов
+            if isLoadingBalance {
+                HStack {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text(localizationManager.localized("loading_balance"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                .padding(.horizontal, Spacing.screenPadding)
+            } else if let error = balanceError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundColor(.dangerRed)
+                    .padding(.horizontal, Spacing.screenPadding)
+            } else {
+                Text(String(format: localizationManager.localized("unicorn_balance_display"), unicornBalance))
+                    .font(.bodyBold)
+                    .foregroundColor(.primaryBlue)
+                    .padding(.horizontal, Spacing.screenPadding)
             }
             
-            actionButton(icon: "🎮", title: localizationManager.localized("unicorn_pet_play"), cost: String(format: localizationManager.localized("unicorn_pet_cost_unicorns"), 5)) {
-                energy = min(1.0, energy + 0.15)
+            HStack(spacing: Spacing.m) {
+                actionButton(icon: "🍎", title: localizationManager.localized("unicorn_pet_feed"), cost: String(format: localizationManager.localized("unicorn_pet_cost_unicorns"), 10)) {
+                    feedPet()
+                }
+                
+                actionButton(icon: "🎮", title: localizationManager.localized("unicorn_pet_play"), cost: String(format: localizationManager.localized("unicorn_pet_cost_unicorns"), 5)) {
+                    playWithPet()
+                }
+                
+                actionButton(icon: "💕", title: localizationManager.localized("unicorn_pet_pet"), cost: localizationManager.localized("unicorn_pet_cost_free")) {
+                    petPet()
+                }
             }
-            
-            actionButton(icon: "💕", title: localizationManager.localized("unicorn_pet_pet"), cost: localizationManager.localized("unicorn_pet_cost_free")) {
-                love = min(1.0, love + 0.1)
-            }
+            .padding(.horizontal, Spacing.screenPadding)
         }
-        .padding(.horizontal, Spacing.screenPadding)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Действия с питомцем")
     }
@@ -223,6 +267,98 @@ struct UnicornPetView: View {
         default:
             return stage
         }
+    }
+    
+    // MARK: - ✅ ГЕЙМИФИКАЦИЯ: API методы для синхронизации баланса
+    
+    /// Загрузить баланс единорогов с сервера
+    private func loadBalance() {
+        isLoadingBalance = true
+        balanceError = nil
+        
+        // Используем кэшированное значение для быстрого отображения
+        unicornBalance = cachedBalance
+        
+        apiService.getGamificationBalance(userId: userId) { [self] result in
+            isLoadingBalance = false
+            switch result {
+            case .success(let response):
+                unicornBalance = response.balance
+                cachedBalance = response.balance
+                balanceError = nil
+            case .failure(let error):
+                balanceError = error.localizedDescription
+                // Используем кэшированное значение при ошибке
+                if cachedBalance > 0 {
+                    unicornBalance = cachedBalance
+                }
+            }
+        }
+    }
+    
+    /// Обновить баланс (pull-to-refresh)
+    @MainActor
+    private func refreshBalance() async {
+        loadBalance()
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
+    }
+    
+    /// Покормить питомца (списать 10 единорогов)
+    private func feedPet() {
+        guard unicornBalance >= 10 else {
+            balanceError = localizationManager.localized("unicorn_insufficient_balance")
+            return
+        }
+        
+        apiService.subtractGamificationBalance(
+            userId: userId,
+            amount: 10,
+            reason: "Feed pet",
+            deviceId: UIDevice.current.identifierForVendor?.uuidString
+        ) { [self] result in
+            switch result {
+            case .success(let response):
+                unicornBalance = response.balance
+                cachedBalance = response.balance
+                hunger = min(1.0, hunger + 0.2)
+                HapticFeedback.impact(.medium)
+            case .failure(let error):
+                balanceError = error.localizedDescription
+                HapticFeedback.notification(.error)
+            }
+        }
+    }
+    
+    /// Поиграть с питомцем (списать 5 единорогов)
+    private func playWithPet() {
+        guard unicornBalance >= 5 else {
+            balanceError = localizationManager.localized("unicorn_insufficient_balance")
+            return
+        }
+        
+        apiService.subtractGamificationBalance(
+            userId: userId,
+            amount: 5,
+            reason: "Play with pet",
+            deviceId: UIDevice.current.identifierForVendor?.uuidString
+        ) { [self] result in
+            switch result {
+            case .success(let response):
+                unicornBalance = response.balance
+                cachedBalance = response.balance
+                energy = min(1.0, energy + 0.15)
+                HapticFeedback.impact(.medium)
+            case .failure(let error):
+                balanceError = error.localizedDescription
+                HapticFeedback.notification(.error)
+            }
+        }
+    }
+    
+    /// Погладить питомца (бесплатно)
+    private func petPet() {
+        love = min(1.0, love + 0.1)
+        HapticFeedback.impact(.light)
     }
 }
 

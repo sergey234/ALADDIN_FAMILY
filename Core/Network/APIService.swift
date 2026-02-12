@@ -79,23 +79,31 @@ class APIService: ObservableObject {
     }
     
     func getNetworkProtectionConfig(completion: @escaping (Result<NetworkProtectionConfigResponse, Error>) -> Void) {
-        networkManager.get(endpoint: "/network-protection/config", completion: completion)
+        networkManager.get(endpoint: AppConfig.Endpoint.networkProtectionConfig, completion: completion)
     }
     
     func sendNetworkProtectionStats(_ stats: NetworkProtectionStats, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
-        networkManager.post(endpoint: "/network-protection/stats", body: stats, completion: completion)
+        networkManager.post(endpoint: AppConfig.Endpoint.networkProtectionStats, body: stats, completion: completion)
     }
 
     // MARK: - Family Registration API
 
     func createFamily(request: CreateFamilyRequest, completion: @escaping (Result<CreateFamilyResponse, Error>) -> Void) {
-        networkManager.post(endpoint: AppConfig.Endpoint.createFamily, body: request, completion: completion)
+        // ✅ Публичный endpoint - не требует авторизации
+        networkManager.post(endpoint: AppConfig.Endpoint.createFamily, body: request, requiresAuth: false, completion: completion)
     }
 
     func joinFamily(request: JoinFamilyRequest, completion: @escaping (Result<APIResponse<FamilyResponse>, Error>) -> Void) {
         networkManager.post(endpoint: AppConfig.Endpoint.joinFamily, body: request, completion: completion)
     }
-    
+
+    /// ✅ ДОБАВЛЕНО: Авторизация по recovery code (Попытка 2 - fallback)
+    func loginByRecoveryCode(familyID: String, recoveryCode: String, completion: @escaping (Result<RecoveryCodeLoginResponse, Error>) -> Void) {
+        let request = RecoveryCodeLoginRequest(family_id: familyID, recovery_code: recoveryCode)
+        // ✅ Публичный endpoint - не требует авторизации
+        networkManager.post(endpoint: AppConfig.Endpoint.loginByRecoveryCode, body: request, requiresAuth: false, completion: completion)
+    }
+
     // ✅ ДОБАВЛЕНО: Network Protection Settings API (для синхронизации между устройствами)
     
     /// Загрузить настройки сетевой защиты с сервера
@@ -287,48 +295,337 @@ class APIService: ObservableObject {
             userId: AppConfig.authToken ?? "guest",
             timestamp: Date()
         )
-        networkManager.post(endpoint: "/api/ai/assistant/chat", body: request, completion: completion)
+        networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantChat, body: request, completion: completion)
     }
 
     // История чата
     func getAIChatHistory(completion: @escaping (Result<AIChatHistoryResponse, Error>) -> Void) {
-        networkManager.get(endpoint: "/api/ai/assistant/history", completion: completion)
+        networkManager.get(endpoint: AppConfig.Endpoint.aiAssistantHistory, completion: completion)
     }
 
     // Обратная связь
     func sendAIFeedback(rating: Int, comment: String?, messageId: String?, completion: @escaping (Result<AIFeedbackResponse, Error>) -> Void) {
         let request = AIFeedbackRequest(rating: rating, comment: comment, messageId: messageId)
-        networkManager.post(endpoint: "/api/ai/assistant/feedback", body: request, completion: completion)
+        networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantFeedback, body: request, completion: completion)
     }
 
     // Возможности AI
     func getAICapabilities(completion: @escaping (Result<AICapabilitiesResponse, Error>) -> Void) {
-        networkManager.get(endpoint: "/api/ai/assistant/capabilities", completion: completion)
+        networkManager.get(endpoint: AppConfig.Endpoint.aiAssistantCapabilities, completion: completion)
     }
 
     // Анализ угрозы
     func analyzeThreat(threat: String, type: String?, completion: @escaping (Result<AIAnalyzeThreatResponse, Error>) -> Void) {
         let request = AIAnalyzeThreatRequest(threat: threat, type: type, context: nil)
-        networkManager.post(endpoint: "/api/ai/assistant/analyze_threat", body: request, completion: completion)
+        networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantAnalyzeThreat, body: request, completion: completion)
     }
 
     // Персональные рекомендации
     func getAIRecommendations(completion: @escaping (Result<AIRecommendationsResponse, Error>) -> Void) {
-        networkManager.get(endpoint: "/api/ai/assistant/recommendations", completion: completion)
+        networkManager.get(endpoint: AppConfig.Endpoint.aiAssistantRecommendations, completion: completion)
     }
 
     // Сообщить об инциденте
     func reportIncident(type: String, description: String, severity: String = "medium", completion: @escaping (Result<AIReportIncidentResponse, Error>) -> Void) {
         let request = AIReportIncidentRequest(type: type, description: description, severity: severity)
-        networkManager.post(endpoint: "/api/ai/assistant/report_incident", body: request, completion: completion)
+        networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantReportIncident, body: request, completion: completion)
     }
 
     // Советы по безопасности
     func getSecurityTips(completion: @escaping (Result<AISecurityTipsResponse, Error>) -> Void) {
-        networkManager.get(endpoint: "/api/ai/assistant/security_tips", completion: completion)
+        networkManager.get(endpoint: AppConfig.Endpoint.aiAssistantSecurityTips, completion: completion)
     }
     
-    // MARK: - User API
+    // MARK: - ✅ ГЕЙМИФИКАЦИЯ: Gamification API
+    
+    // Баланс единорогов (4 метода)
+    func getGamificationBalance(userId: String, completion: @escaping (Result<GamificationBalanceResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationBalance + "/\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func addGamificationBalance(userId: String, amount: Int, reason: String? = nil, deviceId: String? = nil, completion: @escaping (Result<GamificationBalanceResponse, Error>) -> Void) {
+        let request = AddBalanceRequest(userId: userId, amount: amount, reason: reason, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationBalanceAdd, body: request, completion: completion)
+    }
+    
+    func subtractGamificationBalance(userId: String, amount: Int, reason: String? = nil, deviceId: String? = nil, completion: @escaping (Result<GamificationBalanceResponse, Error>) -> Void) {
+        let request = SubtractBalanceRequest(userId: userId, amount: amount, reason: reason, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationBalanceSubtract, body: request, completion: completion)
+    }
+    
+    func getGamificationBalanceHistory(userId: String, limit: Int = 50, offset: Int = 0, completion: @escaping (Result<BalanceHistoryResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationBalanceHistory + "?userId=\(userId)&limit=\(limit)&offset=\(offset)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    // Награды (6 методов)
+    func getGamificationRewards(userId: String? = nil, completion: @escaping (Result<RewardsListResponse, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.gamificationRewards
+        if let userId = userId {
+            endpoint += "?userId=\(userId)"
+        }
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func claimGamificationReward(userId: String, rewardId: String, deviceId: String? = nil, completion: @escaping (Result<ClaimRewardResponse, Error>) -> Void) {
+        let request = ClaimRewardRequest(userId: userId, rewardId: rewardId, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationRewardsClaim, body: request, completion: completion)
+    }
+    
+    func getGamificationRewardsHistory(userId: String, limit: Int = 50, completion: @escaping (Result<[RewardResponse], Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationRewardsHistory + "?userId=\(userId)&limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func giveGamificationReward(childId: String, rewardId: String, parentId: String? = nil, completion: @escaping (Result<ClaimRewardResponse, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.gamificationRewardsGive + "?childId=\(childId)&rewardId=\(rewardId)"
+        if let parentId = parentId {
+            endpoint += "&parentId=\(parentId)"
+        }
+        networkManager.post(endpoint: endpoint, body: EmptyRequest(), completion: completion)
+    }
+    
+    func getGamificationRewardsShop(userId: String? = nil, completion: @escaping (Result<RewardsListResponse, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.gamificationRewardsShop
+        if let userId = userId {
+            endpoint += "?userId=\(userId)"
+        }
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func purchaseGamificationReward(userId: String, rewardId: String, deviceId: String? = nil, completion: @escaping (Result<ClaimRewardResponse, Error>) -> Void) {
+        let request = ClaimRewardRequest(userId: userId, rewardId: rewardId, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationRewardsPurchase, body: request, completion: completion)
+    }
+    
+    // Достижения (5 методов)
+    func getGamificationAchievements(userId: String, completion: @escaping (Result<AchievementsListResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationAchievements + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func unlockGamificationAchievement(userId: String, achievementId: String, deviceId: String? = nil, completion: @escaping (Result<AchievementResponse, Error>) -> Void) {
+        let request = UnlockAchievementRequest(userId: userId, achievementId: achievementId, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationAchievementsUnlock, body: request, completion: completion)
+    }
+    
+    func getGamificationAchievementsProgress(userId: String, completion: @escaping (Result<AchievementProgressResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationAchievementsProgress + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func getGamificationAchievement(achievementId: String, userId: String? = nil, completion: @escaping (Result<AchievementResponse, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.gamificationAchievement + "/\(achievementId)"
+        if let userId = userId {
+            endpoint += "?userId=\(userId)"
+        }
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func claimGamificationAchievementReward(userId: String, achievementId: String, deviceId: String? = nil, completion: @escaping (Result<GamificationBalanceResponse, Error>) -> Void) {
+        let request = UnlockAchievementRequest(userId: userId, achievementId: achievementId, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationAchievementsClaim, body: request, completion: completion)
+    }
+    
+    // Турниры (6 методов)
+    func getGamificationTournaments(status: String? = nil, completion: @escaping (Result<TournamentsListResponse, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.gamificationTournaments
+        if let status = status {
+            endpoint += "?status=\(status)"
+        }
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func joinGamificationTournament(userId: String, tournamentId: String, deviceId: String? = nil, completion: @escaping (Result<[String: AnyCodable], Error>) -> Void) {
+        let request = JoinTournamentRequest(userId: userId, tournamentId: tournamentId, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationTournamentsJoin, body: request, completion: completion)
+    }
+    
+    func getGamificationTournament(tournamentId: String, completion: @escaping (Result<TournamentResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationTournament + "/\(tournamentId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func getGamificationTournamentLeaderboard(tournamentId: String, limit: Int = 50, completion: @escaping (Result<LeaderboardResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationTournamentsLeaderboard + "?tournamentId=\(tournamentId)&limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func leaveGamificationTournament(userId: String, tournamentId: String, deviceId: String? = nil, completion: @escaping (Result<[String: AnyCodable], Error>) -> Void) {
+        let request = JoinTournamentRequest(userId: userId, tournamentId: tournamentId, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationTournamentsLeave, body: request, completion: completion)
+    }
+    
+    func getGamificationTournamentsHistory(userId: String, limit: Int = 50, completion: @escaping (Result<TournamentsListResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationTournamentsHistory + "?userId=\(userId)&limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    // Настройки игр (4 метода)
+    func getGamificationSettings(userId: String, completion: @escaping (Result<GameSettingsResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationSettings + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateGamificationSettings(userId: String, soundEnabled: Bool? = nil, musicEnabled: Bool? = nil, notificationsEnabled: Bool? = nil, difficulty: String? = nil, language: String? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<GameSettingsResponse, Error>) -> Void) {
+        let request = UpdateGameSettingsRequest(userId: userId, soundEnabled: soundEnabled, musicEnabled: musicEnabled, notificationsEnabled: notificationsEnabled, difficulty: difficulty, language: language, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationSettingsUpdate, body: request, completion: completion)
+    }
+    
+    func getGamificationNotificationSettings(userId: String, completion: @escaping (Result<NotificationSettingsResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationSettingsNotifications + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateGamificationNotificationSettings(userId: String, achievementUnlocked: Bool? = nil, tournamentStarted: Bool? = nil, rewardAvailable: Bool? = nil, levelUp: Bool? = nil, deviceId: String? = nil, completion: @escaping (Result<NotificationSettingsResponse, Error>) -> Void) {
+        let request = UpdateNotificationSettingsRequest(userId: userId, achievementUnlocked: achievementUnlocked, tournamentStarted: tournamentStarted, rewardAvailable: rewardAvailable, levelUp: levelUp, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationSettingsNotificationsUpdate, body: request, completion: completion)
+    }
+    
+    // Прогресс игр (5 методов)
+    func getGamificationProgress(userId: String, completion: @escaping (Result<GameProgressListResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationProgress + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateGamificationProgress(userId: String, gameId: String, experience: Int? = nil, score: Int? = nil, deviceId: String? = nil, completion: @escaping (Result<GameProgressResponse, Error>) -> Void) {
+        let request = UpdateProgressRequest(userId: userId, gameId: gameId, experience: experience, score: score, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationProgressUpdate, body: request, completion: completion)
+    }
+    
+    func getGamificationProgressStats(userId: String, completion: @escaping (Result<ProgressStatsResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationProgressStats + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func getGamificationLevel(userId: String, completion: @escaping (Result<LevelResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.gamificationProgressLevel + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func resetGamificationProgress(userId: String, gameId: String? = nil, parentId: String, completion: @escaping (Result<[String: AnyCodable], Error>) -> Void) {
+        let request = ResetProgressRequest(userId: userId, gameId: gameId, parentId: parentId)
+        networkManager.post(endpoint: AppConfig.Endpoint.gamificationProgressReset, body: request, completion: completion)
+    }
+    
+    // MARK: - ✅ РОДИТЕЛЬСКИЙ КОНТРОЛЬ: Parental Control Sync API
+    
+    // Настройки (5 методов)
+    func getParentalControlSettings(familyId: String, childId: String? = nil, completion: @escaping (Result<ParentalControlSettingsResponse, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.parentalControlSettings.replacingOccurrences(of: "{familyId}", with: familyId)
+        if let childId = childId {
+            endpoint += "?childId=\(childId)"
+        }
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateParentalControlSettings(familyId: String, childId: String? = nil, isContentFilterEnabled: Bool? = nil, isAppBlockingEnabled: Bool? = nil, screenTimeLimitHours: Int? = nil, allowedApps: [String]? = nil, blockedWebsites: [String]? = nil, bedtime: String? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<ParentalControlSettingsResponse, Error>) -> Void) {
+        let request = UpdateParentalControlSettingsRequest(familyId: familyId, childId: childId, isContentFilterEnabled: isContentFilterEnabled, isAppBlockingEnabled: isAppBlockingEnabled, screenTimeLimitHours: screenTimeLimitHours, allowedApps: allowedApps, blockedWebsites: blockedWebsites, bedtime: bedtime, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.parentalControlSettingsUpdate, body: request, completion: completion)
+    }
+    
+    func getParentalControlSettingsHistory(familyId: String, childId: String? = nil, limit: Int = 50, completion: @escaping (Result<SettingsHistoryResponse, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.parentalControlSettingsHistory + "?familyId=\(familyId)&limit=\(limit)"
+        if let childId = childId {
+            endpoint += "&childId=\(childId)"
+        }
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func syncParentalControlSettings(familyId: String, deviceId: String, lastSyncTimestamp: String? = nil, completion: @escaping (Result<SyncParentalControlSettingsResponse, Error>) -> Void) {
+        let request = SyncParentalControlSettingsRequest(familyId: familyId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.parentalControlSettingsSync, body: request, completion: completion)
+    }
+    
+    func getParentalControlSettingsConflicts(familyId: String, childId: String? = nil, completion: @escaping (Result<SettingsConflictsResponse, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.parentalControlSettingsConflicts + "?familyId=\(familyId)"
+        if let childId = childId {
+            endpoint += "&childId=\(childId)"
+        }
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    // Лимиты времени (4 метода)
+    func getTimeLimits(childId: String, completion: @escaping (Result<TimeLimitResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.parentalControlTimeLimits.replacingOccurrences(of: "{childId}", with: childId)
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateTimeLimits(childId: String, dailyLimitMinutes: Int? = nil, weeklyLimitMinutes: Int? = nil, bedtimeStart: String? = nil, bedtimeEnd: String? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<TimeLimitResponse, Error>) -> Void) {
+        let request = UpdateTimeLimitRequest(childId: childId, dailyLimitMinutes: dailyLimitMinutes, weeklyLimitMinutes: weeklyLimitMinutes, bedtimeStart: bedtimeStart, bedtimeEnd: bedtimeEnd, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.parentalControlTimeLimitsUpdate, body: request, completion: completion)
+    }
+    
+    func getTimeLimitsHistory(childId: String, limit: Int = 50, completion: @escaping (Result<TimeLimitHistoryResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.parentalControlTimeLimitsHistory + "?childId=\(childId)&limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func resetTimeLimits(childId: String, deviceId: String? = nil, completion: @escaping (Result<TimeLimitResponse, Error>) -> Void) {
+        let request = ResetTimeLimitRequest(childId: childId, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.parentalControlTimeLimitsReset, body: request, completion: completion)
+    }
+    
+    // Расписания (4 метода)
+    func getSchedules(childId: String, completion: @escaping (Result<[ScheduleResponse], Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.parentalControlSchedules.replacingOccurrences(of: "{childId}", with: childId)
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateSchedule(scheduleId: String? = nil, childId: String, name: String? = nil, weekdays: [Int]? = nil, startTime: String? = nil, endTime: String? = nil, isActive: Bool? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<ScheduleResponse, Error>) -> Void) {
+        let request = UpdateScheduleRequest(scheduleId: scheduleId, childId: childId, name: name, weekdays: weekdays, startTime: startTime, endTime: endTime, isActive: isActive, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.parentalControlSchedulesUpdate, body: request, completion: completion)
+    }
+    
+    func getSchedulesHistory(childId: String, limit: Int = 50, completion: @escaping (Result<ScheduleHistoryResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.parentalControlSchedulesHistory + "?childId=\(childId)&limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func deleteSchedule(scheduleId: String, deviceId: String? = nil, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        let request = DeleteScheduleRequest(scheduleId: scheduleId, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.parentalControlSchedulesDelete, body: request, completion: completion)
+    }
+    
+    // Геозоны (4 метода)
+    func getGeofences(childId: String, completion: @escaping (Result<[GeofenceResponse], Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.parentalControlGeofences.replacingOccurrences(of: "{childId}", with: childId)
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func addGeofence(childId: String, name: String, latitude: Double, longitude: Double, radius: Double, isActive: Bool = true, deviceId: String? = nil, completion: @escaping (Result<GeofenceResponse, Error>) -> Void) {
+        let request = AddGeofenceRequest(childId: childId, name: name, latitude: latitude, longitude: longitude, radius: radius, isActive: isActive, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.parentalControlGeofencesAdd, body: request, completion: completion)
+    }
+    
+    func updateGeofence(geofenceId: String, name: String? = nil, latitude: Double? = nil, longitude: Double? = nil, radius: Double? = nil, isActive: Bool? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<GeofenceResponse, Error>) -> Void) {
+        let request = UpdateGeofenceRequest(geofenceId: geofenceId, name: name, latitude: latitude, longitude: longitude, radius: radius, isActive: isActive, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.parentalControlGeofencesUpdate, body: request, completion: completion)
+    }
+    
+    func deleteGeofence(geofenceId: String, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.parentalControlGeofencesDelete.replacingOccurrences(of: "{geofenceId}", with: geofenceId)
+        networkManager.delete(endpoint: endpoint, completion: completion)
+    }
+    
+    // Блокировки приложений (3 метода)
+    func getAppBlocks(childId: String, completion: @escaping (Result<AppBlockResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.parentalControlAppBlocks.replacingOccurrences(of: "{childId}", with: childId)
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateAppBlocks(childId: String, blockedApps: [String]? = nil, appLimits: [String: Int]? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<AppBlockResponse, Error>) -> Void) {
+        let request = UpdateAppBlocksRequest(childId: childId, blockedApps: blockedApps, appLimits: appLimits, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.parentalControlAppBlocksUpdate, body: request, completion: completion)
+    }
+    
+    func syncAppBlocks(childId: String, deviceId: String, lastSyncTimestamp: String? = nil, completion: @escaping (Result<SyncAppBlocksResponse, Error>) -> Void) {
+        let request = SyncAppBlocksRequest(childId: childId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.parentalControlAppBlocksSync, body: request, completion: completion)
+    }
+    
+    // MARK: - User API (старые методы - оставляем для обратной совместимости)
     
     func getUserProfile(completion: @escaping (Result<UserProfile, Error>) -> Void) {
         networkManager.get(endpoint: AppConfig.Endpoint.profile, completion: completion)
@@ -344,6 +641,264 @@ class APIService: ObservableObject {
             let confirmationCode: String
         }
         networkManager.delete(endpoint: AppConfig.Endpoint.deleteAccount, body: DeleteAccountRequest(confirmationCode: confirmationCode), completion: completion)
+    }
+    
+    // MARK: - ✅ ЭТАП 2: User Profile Sync API
+    
+    func syncUserProfile(userId: String, deviceId: String, lastSyncTimestamp: String? = nil, completion: @escaping (Result<SyncUserProfileResponse, Error>) -> Void) {
+        let request = SyncUserProfileRequest(userId: userId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.userProfileSync, body: request, completion: completion)
+    }
+    
+    func updateUserProfileSync(userId: String, name: String? = nil, email: String? = nil, phone: String? = nil, avatar: String? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<UserProfileSyncResponse, Error>) -> Void) {
+        let request = UpdateUserProfileSyncRequest(userId: userId, name: name, email: email, phone: phone, avatar: avatar, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.userProfileUpdate, body: request, completion: completion)
+    }
+    
+    func getUserProfileHistory(userId: String, limit: Int = 50, completion: @escaping (Result<ProfileHistoryResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.userProfileHistory + "?userId=\(userId)&limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func getUserPrivacySettings(userId: String, completion: @escaping (Result<PrivacySettingsResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.userProfilePrivacy + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateUserPrivacySettings(userId: String, profileVisibility: String? = nil, showEmail: Bool? = nil, showPhone: Bool? = nil, showLocation: Bool? = nil, allowDataSharing: Bool? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<PrivacySettingsResponse, Error>) -> Void) {
+        let request = UpdatePrivacySettingsRequest(userId: userId, profileVisibility: profileVisibility, showEmail: showEmail, showPhone: showPhone, showLocation: showLocation, allowDataSharing: allowDataSharing, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.userProfilePrivacyUpdate, body: request, completion: completion)
+    }
+    
+    // MARK: - ✅ ЭТАП 2: Subscription Sync API
+    
+    func syncSubscription(userId: String, deviceId: String, lastSyncTimestamp: String? = nil, completion: @escaping (Result<SyncSubscriptionResponse, Error>) -> Void) {
+        let request = SyncSubscriptionRequest(userId: userId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.subscriptionSync, body: request, completion: completion)
+    }
+    
+    func updateSubscription(userId: String, subscriptionType: String? = nil, status: String? = nil, endDate: String? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<SubscriptionResponse, Error>) -> Void) {
+        let request = UpdateSubscriptionRequest(userId: userId, subscriptionType: subscriptionType, status: status, endDate: endDate, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.subscriptionUpdate, body: request, completion: completion)
+    }
+    
+    func getPurchaseHistory(userId: String, limit: Int = 50, completion: @escaping (Result<PurchaseHistoryResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.subscriptionPurchaseHistory + "?userId=\(userId)&limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func getSubscriptionStatus(userId: String, completion: @escaping (Result<SubscriptionStatusResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.subscriptionStatus + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateSubscriptionStatus(userId: String, status: String, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<SubscriptionStatusResponse, Error>) -> Void) {
+        let request = UpdateSubscriptionStatusRequest(userId: userId, status: status, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.subscriptionStatusUpdate, body: request, completion: completion)
+    }
+    
+    func getAutoRenewal(userId: String, completion: @escaping (Result<AutoRenewalResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.subscriptionAutoRenewal + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateAutoRenewal(userId: String, enabled: Bool, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<AutoRenewalResponse, Error>) -> Void) {
+        let request = UpdateAutoRenewalRequest(userId: userId, enabled: enabled, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.subscriptionAutoRenewalUpdate, body: request, completion: completion)
+    }
+    
+    func cancelSubscription(userId: String, reason: String? = nil, deviceId: String? = nil, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        let request = CancelSubscriptionRequest(userId: userId, reason: reason, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.subscriptionCancel, body: request, completion: completion)
+    }
+    
+    // MARK: - ✅ ЭТАП 2: App Settings Sync API
+    
+    func syncAppSettings(userId: String, deviceId: String, lastSyncTimestamp: String? = nil, completion: @escaping (Result<SyncAppSettingsResponse, Error>) -> Void) {
+        let request = SyncAppSettingsRequest(userId: userId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.appSettingsSync, body: request, completion: completion)
+    }
+    
+    func updateAppSettings(userId: String, theme: String? = nil, language: String? = nil, notificationsEnabled: Bool? = nil, biometryEnabled: Bool? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<AppSettingsResponse, Error>) -> Void) {
+        let request = UpdateAppSettingsRequest(userId: userId, theme: theme, language: language, notificationsEnabled: notificationsEnabled, biometryEnabled: biometryEnabled, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.appSettingsUpdate, body: request, completion: completion)
+    }
+    
+    func getThemeSettings(userId: String, completion: @escaping (Result<ThemeSettingsResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.appSettingsTheme + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateThemeSettings(userId: String, theme: String, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<ThemeSettingsResponse, Error>) -> Void) {
+        let request = UpdateThemeSettingsRequest(userId: userId, theme: theme, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.appSettingsThemeUpdate, body: request, completion: completion)
+    }
+    
+    func getLanguageSettings(userId: String, completion: @escaping (Result<LanguageSettingsResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.appSettingsLanguage + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateLanguageSettings(userId: String, language: String, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<LanguageSettingsResponse, Error>) -> Void) {
+        let request = UpdateLanguageSettingsRequest(userId: userId, language: language, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.appSettingsLanguageUpdate, body: request, completion: completion)
+    }
+    
+    func getNotificationSettingsApp(userId: String, completion: @escaping (Result<NotificationSettingsAppResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.appSettingsNotifications + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateNotificationSettingsApp(userId: String, enabled: Bool? = nil, pushEnabled: Bool? = nil, emailEnabled: Bool? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<NotificationSettingsAppResponse, Error>) -> Void) {
+        let request = UpdateNotificationSettingsAppRequest(userId: userId, enabled: enabled, pushEnabled: pushEnabled, emailEnabled: emailEnabled, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.appSettingsNotificationsUpdate, body: request, completion: completion)
+    }
+    
+    func getBiometrySettings(userId: String, completion: @escaping (Result<BiometrySettingsResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.appSettingsBiometry + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateBiometrySettings(userId: String, enabled: Bool, type: String? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<BiometrySettingsResponse, Error>) -> Void) {
+        let request = UpdateBiometrySettingsRequest(userId: userId, enabled: enabled, type: type, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.appSettingsBiometryUpdate, body: request, completion: completion)
+    }
+    
+    // MARK: - ✅ ЭТАП 2: Location & Chat Sync API
+    
+    // Геолокация и геозоны (7 методов)
+    func syncLocationGeofences(userId: String, deviceId: String, lastSyncTimestamp: String? = nil, completion: @escaping (Result<SyncLocationGeofencesResponse, Error>) -> Void) {
+        let request = SyncLocationGeofencesRequest(userId: userId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.locationGeofencesSync, body: request, completion: completion)
+    }
+    
+    func updateLocationGeofence(geofenceId: String? = nil, userId: String, name: String? = nil, latitude: Double? = nil, longitude: Double? = nil, radius: Double? = nil, isActive: Bool? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<LocationGeofenceResponse, Error>) -> Void) {
+        let request = UpdateLocationGeofenceRequest(geofenceId: geofenceId, userId: userId, name: name, latitude: latitude, longitude: longitude, radius: radius, isActive: isActive, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.locationGeofencesUpdate, body: request, completion: completion)
+    }
+    
+    func deleteLocationGeofence(geofenceId: String, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.locationGeofencesDelete.replacingOccurrences(of: "{geofenceId}", with: geofenceId)
+        networkManager.delete(endpoint: endpoint, completion: completion)
+    }
+    
+    func getMovementHistory(userId: String, limit: Int = 100, startDate: String? = nil, completion: @escaping (Result<MovementHistoryResponse, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.locationMovementHistory + "?userId=\(userId)&limit=\(limit)"
+        if let startDate = startDate {
+            endpoint += "&startDate=\(startDate)"
+        }
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateMovementHistory(userId: String, entries: [MovementHistoryEntry], deviceId: String? = nil, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        let request = UpdateMovementHistoryRequest(userId: userId, entries: entries, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.locationMovementHistoryUpdate, body: request, completion: completion)
+    }
+    
+    func getLocationStatus(userId: String, completion: @escaping (Result<LocationStatusResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.locationStatus + "?userId=\(userId)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateLocationStatus(userId: String, enabled: Bool, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<LocationStatusResponse, Error>) -> Void) {
+        let request = UpdateLocationStatusRequest(userId: userId, enabled: enabled, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.locationStatusUpdate, body: request, completion: completion)
+    }
+    
+    // Семейный чат (офлайн) (3 метода)
+    func syncOfflineMessages(userId: String, familyId: String, deviceId: String, lastSyncTimestamp: String? = nil, completion: @escaping (Result<SyncOfflineMessagesResponse, Error>) -> Void) {
+        let request = SyncOfflineMessagesRequest(userId: userId, familyId: familyId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.chatOfflineMessagesSync, body: request, completion: completion)
+    }
+    
+    func sendOfflineMessage(userId: String, recipientId: String, familyId: String, content: String, deviceId: String? = nil, timestamp: String? = nil, completion: @escaping (Result<OfflineMessageResponse, Error>) -> Void) {
+        let request = SendOfflineMessageRequest(userId: userId, recipientId: recipientId, familyId: familyId, content: content, deviceId: deviceId, timestamp: timestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.chatOfflineMessagesSend, body: request, completion: completion)
+    }
+    
+    func resolveMessageConflicts(userId: String, familyId: String, conflicts: [[String: String]], deviceId: String? = nil, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        let request = ResolveMessageConflictsRequest(userId: userId, familyId: familyId, conflicts: conflicts, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.chatOfflineMessagesResolveConflicts, body: request, completion: completion)
+    }
+    
+    // MARK: - ✅ ЭТАП 3: Offline Storage Sync API
+    
+    func syncOfflineStorage(userId: String, deviceId: String, lastSyncTimestamp: String? = nil, dataTypes: [String]? = nil, completion: @escaping (Result<SyncOfflineStorageResponse, Error>) -> Void) {
+        let request = SyncOfflineStorageRequest(userId: userId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp, dataTypes: dataTypes)
+        networkManager.post(endpoint: AppConfig.Endpoint.offlineStorageSync, body: request, completion: completion)
+    }
+    
+    func getOfflineData(userId: String, dataType: String? = nil, dataId: String? = nil, completion: @escaping (Result<[OfflineDataResponse], Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.offlineStorageData + "?userId=\(userId)"
+        if let dataType = dataType {
+            endpoint += "&dataType=\(dataType)"
+        }
+        if let dataId = dataId {
+            endpoint += "&dataId=\(dataId)"
+        }
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func updateOfflineData(userId: String, dataId: String? = nil, dataType: String, data: [String: AnyCodable], deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<OfflineDataResponse, Error>) -> Void) {
+        let request = UpdateOfflineDataRequest(userId: userId, dataId: dataId, dataType: dataType, data: data, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.offlineStorageDataUpdate, body: request, completion: completion)
+    }
+    
+    func deleteOfflineData(dataId: String, userId: String, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.offlineStorageDataDelete.replacingOccurrences(of: "{dataId}", with: dataId) + "?userId=\(userId)"
+        networkManager.delete(endpoint: endpoint, completion: completion)
+    }
+    
+    func resolveOfflineStorageConflicts(userId: String, conflicts: [[String: String]], resolutionStrategy: String = "last-write-wins", deviceId: String? = nil, completion: @escaping (Result<[String: String], Error>) -> Void) {
+        let request = ResolveOfflineStorageConflictsRequest(userId: userId, conflicts: conflicts, resolutionStrategy: resolutionStrategy, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.offlineStorageResolveConflicts, body: request, completion: completion)
+    }
+    
+    // MARK: - ✅ ЭТАП 3: Crash Detection Sync API
+    
+    func syncCrashDetection(userId: String, deviceId: String, lastSyncTimestamp: String? = nil, completion: @escaping (Result<SyncCrashDetectionResponse, Error>) -> Void) {
+        let request = SyncCrashDetectionRequest(userId: userId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.crashDetectionSync, body: request, completion: completion)
+    }
+    
+    func reportCrash(userId: String, deviceId: String, crashType: String, severity: String, location: [String: Double]? = nil, timestamp: String? = nil, details: [String: AnyCodable]? = nil, completion: @escaping (Result<CrashReportResponse, Error>) -> Void) {
+        let request = ReportCrashRequest(userId: userId, deviceId: deviceId, crashType: crashType, severity: severity, location: location, timestamp: timestamp, details: details)
+        networkManager.post(endpoint: AppConfig.Endpoint.crashDetectionReport, body: request, completion: completion)
+    }
+    
+    func getCrashNotifications(userId: String, limit: Int = 50, unreadOnly: Bool = false, completion: @escaping (Result<[CrashNotificationResponse], Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.crashDetectionNotifications + "?userId=\(userId)&limit=\(limit)"
+        if unreadOnly {
+            endpoint += "&unreadOnly=true"
+        }
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    func sendCrashNotification(userId: String, reportId: String, recipientId: String? = nil, message: String? = nil, deviceId: String? = nil, completion: @escaping (Result<CrashNotificationResponse, Error>) -> Void) {
+        let request = SendCrashNotificationRequest(userId: userId, reportId: reportId, recipientId: recipientId, message: message, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.crashDetectionNotificationsSend, body: request, completion: completion)
+    }
+    
+    // MARK: - ✅ ЭТАП 3: Elderly Interface Sync API
+    
+    func syncMedications(userId: String, deviceId: String, lastSyncTimestamp: String? = nil, completion: @escaping (Result<SyncMedicationsResponse, Error>) -> Void) {
+        let request = SyncMedicationsRequest(userId: userId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.elderlyMedicationsSync, body: request, completion: completion)
+    }
+    
+    func updateMedication(medicationId: String? = nil, userId: String, name: String? = nil, dosage: String? = nil, frequency: String? = nil, timeOfDay: String? = nil, startDate: String? = nil, endDate: String? = nil, notes: String? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<MedicationResponse, Error>) -> Void) {
+        let request = UpdateMedicationRequest(medicationId: medicationId, userId: userId, name: name, dosage: dosage, frequency: frequency, timeOfDay: timeOfDay, startDate: startDate, endDate: endDate, notes: notes, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.elderlyMedicationsUpdate, body: request, completion: completion)
+    }
+    
+    func syncAppointments(userId: String, deviceId: String, lastSyncTimestamp: String? = nil, completion: @escaping (Result<SyncAppointmentsResponse, Error>) -> Void) {
+        let request = SyncAppointmentsRequest(userId: userId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.elderlyAppointmentsSync, body: request, completion: completion)
+    }
+    
+    func updateAppointment(appointmentId: String? = nil, userId: String, title: String? = nil, description: String? = nil, dateTime: String? = nil, location: String? = nil, contactName: String? = nil, contactPhone: String? = nil, reminderMinutes: Int? = nil, isCompleted: Bool? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<AppointmentResponse, Error>) -> Void) {
+        let request = UpdateAppointmentRequest(appointmentId: appointmentId, userId: userId, title: title, description: description, dateTime: dateTime, location: location, contactName: contactName, contactPhone: contactPhone, reminderMinutes: reminderMinutes, isCompleted: isCompleted, deviceId: deviceId, version: version)
+        networkManager.post(endpoint: AppConfig.Endpoint.elderlyAppointmentsUpdate, body: request, completion: completion)
     }
     
     // ✅ ДОБАВЛЕНО: 2FA API (для синхронизации между устройствами)
@@ -491,7 +1046,7 @@ class APIService: ObservableObject {
         }
         
         let request = RefreshTokenRequest(refresh_token: refreshToken)
-        networkManager.post(endpoint: "/auth/refresh", body: request, completion: completion)
+        networkManager.post(endpoint: AppConfig.Endpoint.authRefresh, body: request, completion: completion)
     }
     
     // MARK: - Device API
@@ -558,15 +1113,14 @@ class APIService: ObservableObject {
     // MARK: - Payment API
     
     func createQRPayment(request: CreateQRPaymentRequest, completion: @escaping (Result<CreateQRPaymentResponse, Error>) -> Void) {
-        // ✅ ИСПРАВЛЕНИЕ: baseURL уже содержит /api, убираем из endpoint
-        // Было: "/api/payments/qr/create" → приводило к "/api/api/payments/qr/create"
-        // Стало: "/payments/qr/create" → правильно "/api/payments/qr/create"
-        networkManager.post(endpoint: "/payments/qr/create", body: request, completion: completion)
+        // ✅ ИСПРАВЛЕНО: Используем AppConfig.Endpoint вместо жесткой строки
+        networkManager.post(endpoint: AppConfig.Endpoint.paymentsQRCreate, body: request, completion: completion)
     }
     
     func checkQRPaymentStatus(paymentId: String, completion: @escaping (Result<CheckQRPaymentStatusResponse, Error>) -> Void) {
-        // ✅ ИСПРАВЛЕНИЕ: baseURL уже содержит /api, убираем из endpoint
-        networkManager.get(endpoint: "/payments/qr/status/\(paymentId)", completion: completion)
+        // ✅ ИСПРАВЛЕНО: Используем AppConfig.Endpoint вместо жесткой строки
+        let endpoint = AppConfig.Endpoint.paymentsQRStatus.replacingOccurrences(of: "{paymentId}", with: paymentId)
+        networkManager.get(endpoint: endpoint, completion: completion)
     }
     
     // MARK: - Parental Control API
@@ -624,7 +1178,8 @@ class APIService: ObservableObject {
     /// Получить статус IoT безопасности
     func getIoTStatus(homeId: String) async throws -> IoTStatusResponse {
         return try await withCheckedThrowingContinuation { continuation in
-            networkManager.get(endpoint: "/iot/status/\(homeId)") { (result: Result<IoTStatusResponse, Error>) in
+            let endpoint = AppConfig.Endpoint.iotStatus.replacingOccurrences(of: "{homeId}", with: homeId)
+            networkManager.get(endpoint: endpoint) { (result: Result<IoTStatusResponse, Error>) in
                 continuation.resume(with: result)
             }
         }
@@ -633,7 +1188,8 @@ class APIService: ObservableObject {
     /// Получить список IoT устройств
     func getIoTDevices(homeId: String) async throws -> IoTDevicesResponse {
         return try await withCheckedThrowingContinuation { continuation in
-            networkManager.get(endpoint: "/iot/devices/\(homeId)") { (result: Result<IoTDevicesResponse, Error>) in
+            let endpoint = AppConfig.Endpoint.iotDevices.replacingOccurrences(of: "{homeId}", with: homeId)
+            networkManager.get(endpoint: endpoint) { (result: Result<IoTDevicesResponse, Error>) in
                 continuation.resume(with: result)
             }
         }
@@ -642,7 +1198,8 @@ class APIService: ObservableObject {
     /// Получить список угроз
     func getIoTThreats(homeId: String) async throws -> IoTThreatsResponse {
         return try await withCheckedThrowingContinuation { continuation in
-            networkManager.get(endpoint: "/iot/threats/\(homeId)") { (result: Result<IoTThreatsResponse, Error>) in
+            let endpoint = AppConfig.Endpoint.iotThreats.replacingOccurrences(of: "{homeId}", with: homeId)
+            networkManager.get(endpoint: endpoint) { (result: Result<IoTThreatsResponse, Error>) in
                 continuation.resume(with: result)
             }
         }
@@ -652,7 +1209,8 @@ class APIService: ObservableObject {
     func blockIoTDevice(deviceId: String) async throws -> APIResponse<Bool> {
         return try await withCheckedThrowingContinuation { continuation in
             struct EmptyBody: Codable {}
-            networkManager.post(endpoint: "/iot/device/\(deviceId)/block", body: EmptyBody()) { (result: Result<APIResponse<Bool>, Error>) in
+            let endpoint = AppConfig.Endpoint.iotDeviceBlock.replacingOccurrences(of: "{deviceId}", with: deviceId)
+            networkManager.post(endpoint: endpoint, body: EmptyBody()) { (result: Result<APIResponse<Bool>, Error>) in
                 continuation.resume(with: result)
             }
         }
@@ -682,7 +1240,8 @@ class APIService: ObservableObject {
     func startIoTScan(homeId: String) async throws -> APIResponse<String> {
         return try await withCheckedThrowingContinuation { continuation in
             struct EmptyBody: Codable {}
-            networkManager.post(endpoint: "/iot/scan/\(homeId)", body: EmptyBody()) { (result: Result<APIResponse<String>, Error>) in
+            let endpoint = AppConfig.Endpoint.iotScan.replacingOccurrences(of: "{homeId}", with: homeId)
+            networkManager.post(endpoint: endpoint, body: EmptyBody()) { (result: Result<APIResponse<String>, Error>) in
                 continuation.resume(with: result)
             }
         }
@@ -692,7 +1251,8 @@ class APIService: ObservableObject {
     func fixIoTThreat(threatId: String) async throws -> APIResponse<Bool> {
         return try await withCheckedThrowingContinuation { continuation in
             struct EmptyBody: Codable {}
-            networkManager.post(endpoint: "/iot/fix/\(threatId)", body: EmptyBody()) { (result: Result<APIResponse<Bool>, Error>) in
+            let endpoint = AppConfig.Endpoint.iotFix.replacingOccurrences(of: "{threatId}", with: threatId)
+            networkManager.post(endpoint: endpoint, body: EmptyBody()) { (result: Result<APIResponse<Bool>, Error>) in
                 continuation.resume(with: result)
             }
         }
@@ -924,7 +1484,7 @@ class APIService: ObservableObject {
             networkManager.post(
                 endpoint: "\(AppConfig.Endpoint.componentConfiguration)/\(componentId)",
                 body: UpdateRequest(componentId: componentId, configuration: configuration)
-            ) { (result: Result<APIResponse<Bool>, Error>) in
+            ) { (result: Result<ComponentConfigurationResponse, Error>) in
                 switch result {
                 case .success:
                     continuation.resume()
@@ -1566,7 +2126,7 @@ class APIService: ObservableObject {
             }
 
             let request = BatchRequest(componentIds: componentIds)
-            let endpoint = AppConfig.Endpoint.componentStatusBatch ?? "/api/components/status/batch"
+            let endpoint = AppConfig.Endpoint.componentStatusBatch
 
             networkManager.post(
                 endpoint: endpoint,
@@ -1597,6 +2157,35 @@ class APIService: ObservableObject {
         }
     }
 
+    // MARK: - Components List (✅ ЗАДАЧА 22)
+    
+    /**
+     * ✅ ЗАДАЧА 22: Получить список всех системных компонентов
+     * Используется в SettingsScreen для отображения компонентов (только для админов)
+     */
+    func getComponentsList(completion: @escaping (Result<[ComponentStatus], Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.componentsList) { (result: Result<APIResponse<[ComponentStatusResponse]>, Error>) in
+            switch result {
+            case .success(let response):
+                guard let data = response.data else {
+                    completion(.success([]))
+                    return
+                }
+                let components = data.map { $0.componentStatus }
+                completion(.success(components))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    /**
+     * ✅ ЗАДАЧА 22: Получить общее здоровье всех компонентов
+     */
+    func getComponentsHealth(completion: @escaping (Result<ComponentsHealthResponse, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.componentsHealth, completion: completion)
+    }
+    
     /**
      * 🚀 Оптимизированный метод для обновления нескольких компонентов
      */
@@ -1621,7 +2210,7 @@ class APIService: ObservableObject {
             }
 
             let request = BulkUpdateRequest(updates: updateRequests)
-            let endpoint = "/api/components/bulk-update"
+            let endpoint = AppConfig.Endpoint.componentBulkUpdate
 
             networkManager.post(
                 endpoint: endpoint,
@@ -1699,6 +2288,66 @@ class APIService: ObservableObject {
         print("✅ Health check cached")
 
         return result
+    }
+    
+    // MARK: - Roadside Assistance (✅ ЗАДАЧА 24)
+    
+    /**
+     * ✅ ЗАДАЧА 24: Вызвать помощь на дороге
+     */
+    func callRoadsideAssistance(
+        location: CLLocationCoordinate2D,
+        vehicleInfo: String,
+        completion: @escaping (Result<RoadsideRequest, Error>) -> Void
+    ) {
+        struct RoadsideCallRequest: Codable {
+            let latitude: Double
+            let longitude: Double
+            let vehicleInfo: String
+        }
+        
+        let request = RoadsideCallRequest(
+            latitude: location.latitude,
+            longitude: location.longitude,
+            vehicleInfo: vehicleInfo
+        )
+        
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.roadsideCall,
+            body: request,
+            completion: completion
+        )
+    }
+    
+    /**
+     * ✅ ЗАДАЧА 24: Получить статус запроса помощи на дороге
+     */
+    func getRoadsideAssistanceStatus(
+        requestId: String,
+        completion: @escaping (Result<RoadsideStatus, Error>) -> Void
+    ) {
+        let endpoint = AppConfig.Endpoint.roadsideStatus.replacingOccurrences(of: "{request_id}", with: requestId)
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    /**
+     * ✅ ЗАДАЧА 24: Отменить запрос помощи на дороге
+     */
+    func cancelRoadsideAssistance(
+        requestId: String,
+        completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void
+    ) {
+        let endpoint = AppConfig.Endpoint.roadsideCancel.replacingOccurrences(of: "{request_id}", with: requestId)
+        networkManager.post(endpoint: endpoint, body: EmptyRequest(), completion: completion)
+    }
+    
+    /**
+     * ✅ ЗАДАЧА 24: Получить историю обращений за помощью на дороге
+     */
+    func getRoadsideAssistanceHistory(
+        completion: @escaping (Result<[RoadsideRequest], Error>) -> Void
+    ) {
+        networkManager.get(endpoint: AppConfig.Endpoint.roadsideHistory, completion: completion)
     }
 }
 

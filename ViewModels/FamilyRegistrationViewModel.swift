@@ -57,6 +57,17 @@ enum AgeGroup: String, Codable, CaseIterable, Identifiable {
     case adult = "Adult (18-64)"
     case senior = "Senior (65+)"
     var id: String { self.rawValue }
+    
+    // ✅ МАППИНГ: Преобразование в формат, который ожидает сервер
+    var serverValue: String {
+        switch self {
+        case .toddler: return "1-6"      // 0-3 → 1-6 (ближайший диапазон)
+        case .child: return "7-12"        // 4-12 → 7-12 (ближайший диапазон)
+        case .teen: return "13-17"        // 13-17 → 13-17 (точно совпадает)
+        case .adult: return "24-55"       // 18-64 → 24-55 (основной диапазон для взрослых)
+        case .senior: return "55+"         // 65+ → 55+ (ближайший диапазон)
+        }
+    }
 }
 
 struct FamilyMember: Codable, Identifiable {
@@ -209,29 +220,26 @@ class FamilyRegistrationViewModel: ObservableObject {
         selectedRole = role
         showRoleModal = false
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.currentStep = .selectingAgeGroup
-            self.showAgeGroupModal = true
-        }
+        // ✅ ИСПРАВЛЕНО: Убрана искусственная задержка, переход происходит сразу
+        currentStep = .selectingAgeGroup
+        showAgeGroupModal = true
     }
     
     func onAgeGroupSelected(_ ageGroup: AgeGroup) {
         selectedAgeGroup = ageGroup
         showAgeGroupModal = false
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.currentStep = .selectingLetter
-            self.showLetterModal = true
-        }
+        // ✅ ИСПРАВЛЕНО: Убрана искусственная задержка, переход происходит сразу
+        currentStep = .selectingLetter
+        showLetterModal = true
     }
     
     func onLetterSelected(_ letter: String) {
         selectedLetter = letter
         showLetterModal = false
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.createFamily()
-        }
+        // ✅ ИСПРАВЛЕНО: Убрана искусственная задержка, создание семьи происходит сразу
+        createFamily()
     }
     
     // MARK: - Create Family
@@ -253,95 +261,58 @@ class FamilyRegistrationViewModel: ObservableObject {
         currentStep = .creatingFamily
         isLoading = true
         
-        // API request (закомментировано, используем mock данные)
-        let _ = CreateFamilyRequest(
+        // API request
+        // ✅ ИСПРАВЛЕНО: Используем serverValue вместо rawValue для возрастной группы
+        let request = CreateFamilyRequest(
             role: role.rawValue,
-            age_group: ageGroup.rawValue,
+            age_group: ageGroup.serverValue,  // ✅ Преобразуем в формат сервера
             personal_letter: letter,
             device_type: getDeviceType()
         )
-        
-        // МОКОВЫЕ ДАННЫЕ для тестирования (без реального API)
-        isLoading = false
-        
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Генерируем фиктивные данные с логированием
-        let mockFamilyID = "FAM_\(UUID().uuidString.prefix(12))"
-        let mockRecoveryCode = "FAM-\(UUID().uuidString.prefix(4).uppercased())-\(UUID().uuidString.prefix(4).uppercased())-\(UUID().uuidString.prefix(4).uppercased())"
-        
+
         print("🏠 [FamilyRegistrationViewModel.createFamily] ========== СОЗДАНИЕ СЕМЬИ ==========")
         print("🏠 [FamilyRegistrationViewModel.createFamily] Роль: \(role.rawValue)")
-        print("🏠 [FamilyRegistrationViewModel.createFamily] Возрастная группа: \(ageGroup.rawValue)")
+        print("🏠 [FamilyRegistrationViewModel.createFamily] Возрастная группа (клиент): \(ageGroup.rawValue)")
+        print("🏠 [FamilyRegistrationViewModel.createFamily] Возрастная группа (сервер): \(ageGroup.serverValue)")
         print("🏠 [FamilyRegistrationViewModel.createFamily] Буква: \(letter)")
-        print("🏠 [FamilyRegistrationViewModel.createFamily] Сгенерированный familyID: \(mockFamilyID)")
-        print("🏠 [FamilyRegistrationViewModel.createFamily] Сгенерированный recoveryCode: \(mockRecoveryCode)")
-        
-        familyID = mockFamilyID
-        recoveryCode = mockRecoveryCode
-        
-        print("🏠 [FamilyRegistrationViewModel.createFamily] familyID установлен: \(familyID ?? "nil")")
-        print("🏠 [FamilyRegistrationViewModel.createFamily] recoveryCode установлен: \(recoveryCode ?? "nil")")
-        
-        // ✅ НОВОЕ: Сохраняем family_id в UserDefaults с принудительной синхронизацией
-        UserDefaults.standard.set(mockFamilyID, forKey: "family_id")
-        UserDefaults.standard.synchronize()
-        print("🏠 [FamilyRegistrationViewModel.createFamily] family_id сохранен в UserDefaults: \(mockFamilyID)")
-        
-        // ✅ НОВОЕ: Автоматически сохраняем Recovery Code в Keychain
-        if let recoveryCode = self.recoveryCode,
-           let familyID = self.familyID {
-            let saved = RecoveryCodeStorageManager.shared.saveRecoveryCode(
-                recoveryCode,
-                familyID: familyID
-            )
-            if saved {
-                print("✅ [FamilyRegistrationViewModel.createFamily] Recovery Code автоматически сохранен в Keychain")
-            } else {
-                print("❌ [FamilyRegistrationViewModel.createFamily] ОШИБКА: Recovery Code НЕ сохранен в Keychain")
-            }
-        } else {
-            print("❌ [FamilyRegistrationViewModel.createFamily] ОШИБКА: recoveryCode или familyID = nil")
-            print("   recoveryCode: \(self.recoveryCode ?? "nil")")
-            print("   familyID: \(self.familyID ?? "nil")")
-        }
-        
-        // ✅ НОВОЕ: Сохраняем создателя семьи в family_members_list
-        saveCreatorAsFamilyMember(role: role, ageGroup: ageGroup)
-        print("🏠 [FamilyRegistrationViewModel.createFamily] Создатель семьи сохранен в family_members_list")
-        
-        // ✅ НОВОЕ: Инициализируем стартовый баланс единорога для детей
-        // Если это ребенок, устанавливаем стартовый баланс 100 единорогов
-        if role == .child || role == .teenager {
-            let startBalance = 100 // Стартовый баланс для нового ребенка
-            UserDefaults.standard.set(startBalance, forKey: "child_unicorn_balance")
-            print("✅ [FamilyRegistrationViewModel.createFamily] Установлен стартовый баланс единорога: \(startBalance) 🦄")
-        }
-        
-        currentStep = .showingRecoveryCode
-        print("🏠 [FamilyRegistrationViewModel.createFamily] currentStep установлен: .showingRecoveryCode")
-        
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Увеличиваем задержку для TestFlight
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            print("🏠 [FamilyRegistrationViewModel.createFamily] Показываем модал через 1.0 сек")
-            print("🏠 [FamilyRegistrationViewModel.createFamily] showFamilyCreatedModal = true")
-            print("🏠 [FamilyRegistrationViewModel.createFamily] familyID перед показом: \(self.familyID ?? "nil")")
-            print("🏠 [FamilyRegistrationViewModel.createFamily] recoveryCode перед показом: \(self.recoveryCode ?? "nil")")
-            self.showFamilyCreatedModal = true
-            print("🏠 [FamilyRegistrationViewModel.createFamily] showFamilyCreatedModal установлен: \(self.showFamilyCreatedModal)")
-        }
-        
-        /* ЗАКОММЕНТИРОВАННЫЙ API КОД
+
+        // ✅ УДАЛЕНО: Моковые данные - теперь используем реальный API
+
+        // ✅ РАСКОММЕНТИРОВАН: Реальный API код
         apiService.createFamily(request: request) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false
-                
+
                 switch result {
                 case .success(let response):
                     self?.familyID = response.family_id
                     self?.recoveryCode = response.recovery_code
-                    
+
+                    // ✅ НОВОЕ: Сохраняем your_member_id
+                    UserDefaults.standard.set(response.your_member_id, forKey: "your_member_id")
+                    print("✅ your_member_id сохранен: \(response.your_member_id)")
+
+                    // ✅ ПОПЫТКА 1: Проверяем, есть ли токены в response
+                    if self?.isValidJWTToken(response.access_token) == true,
+                       self?.isValidJWTToken(response.refresh_token) == true,
+                       let accessToken = response.access_token,
+                       let refreshToken = response.refresh_token {
+                        // ✅ Токены есть - сохраняем (Попытка 1 успешна)
+                        if self?.saveTokens(accessToken: accessToken, refreshToken: refreshToken) == true {
+                            print("✅ Попытка 1 успешна: токены сохранены из response")
+                        } else {
+                            // Ошибка сохранения - используем fallback
+                            self?.loginByRecoveryCode(familyID: response.family_id, recoveryCode: response.recovery_code)
+                        }
+                    } else {
+                        // ✅ Токенов нет - используем fallback (Попытка 2)
+                        print("ℹ️ Попытка 1: токенов нет в response, используем fallback")
+                        self?.loginByRecoveryCode(familyID: response.family_id, recoveryCode: response.recovery_code)
+                    }
+
                     // Format recovery code for display
                     self?.recoveryCode = self?.formatRecoveryCode(response.family_id) ?? response.recovery_code
-                    
+
                     // ✅ НОВОЕ: Автоматически сохраняем Recovery Code в Keychain
                     if let recoveryCode = self?.recoveryCode,
                        let familyID = self?.familyID {
@@ -353,21 +324,163 @@ class FamilyRegistrationViewModel: ObservableObject {
                             print("✅ Recovery Code автоматически сохранен в Keychain")
                         }
                     }
-                    
+
                     self?.currentStep = .showingRecoveryCode
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self?.showFamilyCreatedModal = true
-                    }
-                    
+
+                    // ✅ ИСПРАВЛЕНО: Убрана искусственная задержка, модал показывается сразу
+                    self?.showFamilyCreatedModal = true
+
                 case .failure(let error):
+                    print("❌ [FamilyRegistrationViewModel.createFamily] Ошибка создания семьи: \(error)")
+                    print("   Тип ошибки: \(type(of: error))")
+                    if let decodingError = error as? DecodingError {
+                        print("   Детали декодирования:")
+                        switch decodingError {
+                        case .keyNotFound(let key, let context):
+                            print("     - Отсутствует ключ: \(key.stringValue)")
+                            print("     - Путь: \(context.codingPath)")
+                        case .typeMismatch(let type, let context):
+                            print("     - Несоответствие типа: \(type)")
+                            print("     - Путь: \(context.codingPath)")
+                        case .valueNotFound(let type, let context):
+                            print("     - Значение не найдено: \(type)")
+                            print("     - Путь: \(context.codingPath)")
+                        case .dataCorrupted(let context):
+                            print("     - Данные повреждены")
+                            print("     - Путь: \(context.codingPath)")
+                        @unknown default:
+                            print("     - Неизвестная ошибка декодирования")
+                        }
+                    }
                     self?.errorMessage = error.localizedDescription
+                    self?.isLoading = false
                 }
             }
         }
-        */
     }
-    
+
+    // MARK: - Recovery Code Login (Fallback - Попытка 2)
+
+    /// ✅ ДОБАВЛЕНО: Авторизация по recovery code (Попытка 2 - fallback)
+    private func loginByRecoveryCode(familyID: String, recoveryCode: String, retryCount: Int = 0) {
+        print("🔄 Попытка 2: авторизация по recovery code (попытка \(retryCount + 1))")
+
+        apiService.loginByRecoveryCode(familyID: familyID, recoveryCode: recoveryCode) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let loginResponse):
+                    print("✅ Попытка 2 успешна: получены токены")
+
+                    // Проверяем и сохраняем токены
+                    if self?.isValidJWTToken(loginResponse.access_token) == true {
+                        if self?.saveTokens(accessToken: loginResponse.access_token, refreshToken: loginResponse.refresh_token) == true {
+                            print("✅ Попытка 2 завершена: токены сохранены")
+                        } else {
+                            print("⚠️ Попытка 2: ошибка сохранения токенов")
+                            // Продолжаем без токенов (демо режим)
+                        }
+                    } else {
+                        print("⚠️ Попытка 2: невалидные токены в ответе")
+                        // Продолжаем без токенов (демо режим)
+                    }
+
+                case .failure(let error):
+                    print("❌ Попытка 2 не удалась: \(error.localizedDescription)")
+
+                    // Повторная попытка при сетевых ошибках
+                    if let urlError = error as? URLError,
+                       (urlError.code == .notConnectedToInternet || urlError.code == .timedOut),
+                       retryCount < 2 {
+                        print("🔄 Повторная попытка через 5 секунд...")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                            self?.loginByRecoveryCode(familyID: familyID, recoveryCode: recoveryCode, retryCount: retryCount + 1)
+                        }
+                    } else {
+                        print("⚠️ Попытка 2 окончательно не удалась. Продолжаем в демо режиме")
+                        // Продолжаем без токенов (демо режим)
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Token Validation & Security
+
+    /// ✅ ДОБАВЛЕНО: Валидация JWT токена
+    private func isValidJWTToken(_ token: String?) -> Bool {
+        guard let token = token,
+              !token.isEmpty,
+              token != "null",
+              token.count > 20, // Минимальная длина JWT
+              token.contains(".") else { // JWT содержит точки
+            return false
+        }
+        return true
+    }
+
+    /// ✅ ДОБАВЛЕНО: Безопасное логирование авторизации (без recovery code)
+    private func logAuthEvent(_ event: String, method: String, hasTokens: Bool = false, familyID: String? = nil) {
+        #if DEBUG
+        var logMessage = "🔐 [Auth] \(event)"
+        logMessage += " | Метод: \(method)"
+        logMessage += " | Токены: \(hasTokens ? "✅" : "❌")"
+        if let familyID = familyID {
+            logMessage += " | FamilyID: \(familyID)"
+        }
+        // НЕ логируем recovery code для безопасности
+        print(logMessage)
+        #endif
+    }
+
+    // MARK: - Token Management
+
+    /// ✅ ДОБАВЛЕНО: Сохранение токенов с проверкой и повторной попыткой
+    private func saveTokens(accessToken: String, refreshToken: String?) -> Bool {
+        print("🔐 Сохранение токенов в Keychain...")
+
+        // Попытка 1: Сохраняем токены
+        KeychainManager.shared.save(accessToken, forKey: .authToken)
+        if let refreshToken = refreshToken {
+            KeychainManager.shared.save(refreshToken, forKey: .refreshToken)
+        }
+
+        // ✅ ПРОВЕРКА: Убеждаемся, что токены действительно сохранены
+        let loadedAccessToken = KeychainManager.shared.loadString(forKey: .authToken)
+        let loadedRefreshToken = refreshToken != nil ? KeychainManager.shared.loadString(forKey: .refreshToken) : nil
+
+        if loadedAccessToken == accessToken &&
+           (refreshToken == nil || loadedRefreshToken == refreshToken) {
+            print("✅ Токены успешно сохранены и проверены")
+            // ✅ УВЕДОМЛЕНИЕ: Отправляем уведомление о успешной авторизации
+            NotificationCenter.default.post(name: NSNotification.Name("UserDidLogin"), object: nil)
+            return true
+        } else {
+            print("❌ Ошибка сохранения токенов в Keychain, повторная попытка...")
+
+            // Попытка 2: Повторяем сохранение через 0.5 секунды
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                KeychainManager.shared.save(accessToken, forKey: .authToken)
+                if let refreshToken = refreshToken {
+                    KeychainManager.shared.save(refreshToken, forKey: .refreshToken)
+                }
+
+                // Финальная проверка
+                let finalAccessToken = KeychainManager.shared.loadString(forKey: .authToken)
+                let finalRefreshToken = refreshToken != nil ? KeychainManager.shared.loadString(forKey: .refreshToken) : nil
+
+                if finalAccessToken == accessToken &&
+                   (refreshToken == nil || finalRefreshToken == refreshToken) {
+                    print("✅ Токены успешно сохранены после повторной попытки")
+                    // ✅ УВЕДОМЛЕНИЕ: Отправляем уведомление о успешной авторизации
+                    NotificationCenter.default.post(name: NSNotification.Name("UserDidLogin"), object: nil)
+                } else {
+                    print("❌ Критическая ошибка: токены не сохранены даже после повторной попытки")
+                }
+            }
+            return false
+        }
+    }
+
     // MARK: - Join Family
     
     func joinFamily(withCode code: String) {
@@ -376,13 +489,38 @@ class FamilyRegistrationViewModel: ObservableObject {
               let letter = selectedLetter else {
             return
         }
-        
+
+        // ✅ ЗАДАЧА 67: Санитизация кода семьи перед обработкой
+        do {
+            let sanitizedCode = try code.sanitizedAsFamilyId()
+            joinFamilySanitized(withCode: sanitizedCode)
+
+        } catch let error as InputSanitizer.SanitizationError {
+            errorMessage = error.localizedDescription
+            #if DEBUG
+            print("❌ FamilyRegistrationViewModel: Ошибка санитизации кода семьи: \(error.localizedDescription)")
+            #endif
+        } catch {
+            errorMessage = "Произошла неизвестная ошибка при обработке кода семьи."
+        }
+    }
+
+    // ✅ ЗАДАЧА 67: Приватный метод с санитизированными данными
+    private func joinFamilySanitized(withCode sanitizedCode: String) {
+        guard let role = selectedRole,
+              let ageGroup = selectedAgeGroup,
+              let letter = selectedLetter else {
+            return
+        }
+
         isLoading = true
+
+        let familyId = extractFamilyID(from: sanitizedCode)
         
         let request = JoinFamilyRequest(
-            family_id: extractFamilyID(from: code),
+            family_id: familyId,
             role: role.rawValue,
-            age_group: ageGroup.rawValue,
+            age_group: ageGroup.serverValue,  // ✅ ИСПРАВЛЕНО: Используем serverValue
             personal_letter: letter,
             device_type: getDeviceType()
         )
@@ -403,6 +541,10 @@ class FamilyRegistrationViewModel: ObservableObject {
 
                     // ✅ НОВОЕ: Сохраняем family_id в UserDefaults
                     UserDefaults.standard.set(data.family_id, forKey: "family_id")
+                    
+                    // ✅ НОВОЕ: Сохраняем your_member_id
+                    UserDefaults.standard.set(data.your_member_id, forKey: "your_member_id")
+                    print("✅ your_member_id сохранен: \(data.your_member_id)")
 
                     self?.familyMembers = data.members.map { member in
                         FamilyMember(
@@ -439,11 +581,61 @@ class FamilyRegistrationViewModel: ObservableObject {
 
     func recoverAccess(withCode code: String) {
         isLoading = true
+        errorMessage = nil
 
-        // TODO: Implement recoverFamily method in APIService
-        DispatchQueue.main.async {
-            self.isLoading = false
-            self.errorMessage = "Функция восстановления доступа временно недоступна"
+        // ✅ РЕАЛИЗОВАНО: Используем существующий метод recoverFamily из NetworkManager
+        let familyID = extractFamilyID(from: code)
+        
+        // Используем NetworkManager через apiService (метод уже реализован в extension, строка 788)
+        apiService.networkManager.recoverFamily(familyID: familyID) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.isLoading = false
+                
+                switch result {
+                case .success(let response):
+                    if response.success {
+                        // Сохраняем family_id
+                        self?.familyID = response.familyId
+                        UserDefaults.standard.set(response.familyId, forKey: "family_id")
+                        
+                        // Обновляем список участников
+                        self?.familyMembers = response.members.map { member in
+                            FamilyMember(
+                                id: member.id,
+                                name: member.name,
+                                role: FamilyRole(storageValue: member.role) ?? .parent,
+                                ageGroup: AgeGroup(rawValue: member.role) ?? .adult,
+                                isActive: member.status == "protected"
+                            )
+                        }
+                        
+                        // Уведомляем об успехе
+                        NotificationCenter.default.post(
+                            name: NSNotification.Name("FamilyRecoverySuccess"),
+                            object: nil
+                        )
+                        
+                        self?.currentStep = .completed
+                        self?.showSuccessModal = true
+                    } else {
+                        self?.errorMessage = response.message
+                        NotificationCenter.default.post(
+                            name: NSNotification.Name("FamilyRecoveryError"),
+                            object: nil,
+                            userInfo: ["error": response.message]
+                        )
+                    }
+                    
+                case .failure(let error):
+                    let errorMessage = error.localizedDescription
+                    self?.errorMessage = errorMessage
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("FamilyRecoveryError"),
+                        object: nil,
+                        userInfo: ["error": errorMessage]
+                    )
+                }
+            }
         }
     }
     

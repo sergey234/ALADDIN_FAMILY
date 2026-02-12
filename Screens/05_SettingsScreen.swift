@@ -35,9 +35,9 @@ struct SettingsScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager // ✅ Добавляем LocalizationManager
 
-    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @StateObject для избежания крашей на устройстве
-    @StateObject private var notificationManager = NotificationManager.shared
-    @StateObject private var securityManager = SecurityManager.shared
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @ObservedObject для singleton'ов (не @StateObject!)
+    @ObservedObject private var notificationManager = NotificationManager.shared
+    private let securityManager = SecurityManager.shared
     @State private var isNetworkProtectionEnabled: Bool = true
     @AppStorage("profile_name") private var storedName: String = ""
     @AppStorage("profile_alias") private var storedAlias: String = ""
@@ -52,11 +52,11 @@ struct SettingsScreen: View {
     @State private var selectedTheme: ThemeMode = .system
     @State private var showProtectionExplanation: Bool = false
     @State private var showAdvancedProtection: Bool = false
-    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @StateObject для избежания крашей на устройстве
-    @StateObject private var featuresManager = ProtectionFeaturesManager.shared
-    @StateObject private var toastManager = ToastManager.shared
-    @StateObject private var historyManager = ProtectionLevelHistoryManager.shared
-    @StateObject private var tariffManager = TariffManager.shared
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @ObservedObject для singleton'ов с binding, обычные переменные для остальных
+    private let featuresManager = ProtectionFeaturesManager.shared
+    private let toastManager = ToastManager.shared
+    private let historyManager = ProtectionLevelHistoryManager.shared
+    @ObservedObject private var tariffManager = TariffManager.shared
     @State private var showProtectionHistory: Bool = false
     
     // Navigation для менеджеров
@@ -70,8 +70,19 @@ struct SettingsScreen: View {
     @AppStorage("personal_data_consent_accepted") private var consentAccepted: Bool = false
     
     // ✅ Система позиционирования
-    @StateObject private var positioningService = PositioningSystemService.shared
+    private let positioningService = PositioningSystemService.shared
     @State private var showPositioningSystemPicker: Bool = false
+    
+    // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
+    @AppStorage("user_role") private var userRole: String = "user"
+    @State private var components: [ComponentStatus] = []
+    @State private var isLoadingComponents: Bool = false
+    @State private var componentsError: String? = nil
+    private let apiService = APIService.shared
+    
+    var isAdmin: Bool {
+        userRole == "admin" || userRole == "administrator"
+    }
     
     // MARK: - Body
     
@@ -102,6 +113,12 @@ struct SettingsScreen: View {
                         // Приложение
                         appSection
                             .id("app_section_\(localizationManager.currentLanguage.rawValue)")
+                        
+                        // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
+                        if isAdmin {
+                            systemComponentsSection
+                                .id("system_components_section_\(localizationManager.currentLanguage.rawValue)")
+                        }
                         
                         // Дополнительно
                         additionalSection
@@ -570,6 +587,160 @@ struct SettingsScreen: View {
                 currentRegion: positioningService.currentRegionName
             )
             .environmentObject(localizationManager)
+        }
+    }
+    
+    // MARK: - System Components Section (✅ ЗАДАЧА 22)
+    
+    private var systemComponentsSection: some View {
+        VStack(spacing: Spacing.m) {
+            HStack {
+                Text(localizationManager.localized("system_components_title"))
+                    .font(.h3)
+                    .foregroundColor(.textPrimary)
+                    .accessibilityAddTraits(.isHeader)
+                
+                Spacer()
+                
+                // Кнопка обновления
+                Button(action: {
+                    loadComponents()
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 16))
+                        .foregroundColor(.primaryBlue)
+                        .rotationEffect(.degrees(isLoadingComponents ? 360 : 0))
+                        .animation(isLoadingComponents ? Animation.linear(duration: 1).repeatForever(autoreverses: false) : .default, value: isLoadingComponents)
+                }
+                .disabled(isLoadingComponents)
+            }
+            
+            if isLoadingComponents {
+                ProgressView()
+                    .padding()
+            } else if let error = componentsError {
+                VStack(spacing: Spacing.s) {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                    Button(localizationManager.localized("retry")) {
+                        loadComponents()
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding()
+            } else if components.isEmpty {
+                Text(localizationManager.localized("system_components_empty"))
+                    .font(.body)
+                    .foregroundColor(.textSecondary)
+                    .padding()
+            } else {
+                VStack(spacing: Spacing.s) {
+                    ForEach(components) { component in
+                        ComponentRow(component: component) {
+                            toggleComponent(component)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(Spacing.cardPadding)
+        .background(cardBackground)
+        .cardShadow()
+        .onAppear {
+            if isAdmin && components.isEmpty {
+                loadComponents()
+            }
+        }
+    }
+    
+    private func loadComponents() {
+        guard isAdmin else { return }
+        isLoadingComponents = true
+        componentsError = nil
+        
+        apiService.getComponentsList { [self] result in
+            isLoadingComponents = false
+            switch result {
+            case .success(let loadedComponents):
+                components = loadedComponents
+            case .failure(let error):
+                componentsError = error.localizedDescription
+                print("❌ Ошибка загрузки компонентов: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func toggleComponent(_ component: ComponentStatus) {
+        guard isAdmin else { return }
+        
+        Task {
+            do {
+                if component.isEnabled {
+                    _ = try await apiService.disableComponent(componentId: component.componentId)
+                } else {
+                    _ = try await apiService.enableComponent(componentId: component.componentId)
+                }
+                // Обновляем список компонентов
+                await MainActor.run {
+                    loadComponents()
+                }
+            } catch {
+                await MainActor.run {
+                    componentsError = error.localizedDescription
+                }
+            }
+        }
+    }
+    
+    // MARK: - Component Row View
+    
+    private struct ComponentRow: View {
+        let component: ComponentStatus
+        let onToggle: () -> Void
+        @EnvironmentObject private var localizationManager: LocalizationManager
+        
+        var body: some View {
+            HStack(spacing: Spacing.m) {
+                // Индикатор статуса
+                Circle()
+                    .fill(component.isEnabled ? Color.green : Color.gray)
+                    .frame(width: 12, height: 12)
+                
+                // Название компонента
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(component.componentId)
+                        .font(.bodyBold)
+                        .foregroundColor(.textPrimary)
+                    
+                    if let lastUpdate = component.lastUpdate {
+                        Text(String(format: localizationManager.localized("system_components_last_update"), formatDate(lastUpdate)))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+                
+                Spacer()
+                
+                // Toggle
+                Toggle("", isOn: Binding(
+                    get: { component.isEnabled },
+                    set: { _ in onToggle() }
+                ))
+                .labelsHidden()
+            }
+            .padding(Spacing.s)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.small)
+                    .fill(Color.backgroundMedium.opacity(0.3))
+            )
+        }
+        
+        private func formatDate(_ date: Date) -> String {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            return formatter.string(from: date)
         }
     }
     

@@ -1587,6 +1587,7 @@ class LocalizationManager: ObservableObject {
             "analytics_period_day": "День",
             "analytics_period_week": "Неделя",
             "analytics_period_month": "Месяц",
+            "analytics_offline_mode": "Офлайн режим - показаны кэшированные данные",
             "analytics_hour": "ч",
             "analytics_min": "мин",
 
@@ -2882,6 +2883,7 @@ class LocalizationManager: ObservableObject {
             "profile_email": "Alias",
             "profile_email_placeholder": "Alias не указан",
             "profile_phone": "PIN (для активации)",
+            "profile_user_id": "ID пользователя",
             "profile_registration_date": "Дата регистрации",
             "profile_threats_blocked": "Угроз заблокировано",
             "profile_family_members": "Членов семьи",
@@ -3948,6 +3950,9 @@ class LocalizationManager: ObservableObject {
             "main_family_tariff_label": "Тариф:",
             "main_family_subscription_valid_until": "Действует до:",
             "main_family_manage": "Управление",
+            "main_family_user_id": "ID:",
+            "main_family_user_id_copy": "Скопировать ID",
+            "main_family_user_id_copied": "ID скопирован",
             "main_family_add_member": "Добавить",
             "main_ai_assistant_title": "AI Помощник",
             "main_ai_assistant_greeting": "Привет! Как я могу помочь?",
@@ -4073,6 +4078,89 @@ class LocalizationManager: ObservableObject {
             "notifications_mock_warning_message": "Некоторые функции защиты нуждаются в проверке.",
             "notifications_mock_info_title": "Система ALADDIN обновлена",
             "notifications_mock_info_message": "Проверка завершена успешно. Всё работает стабильно.",
+            
+            // ✅ ЗАДАЧА 20: Локализация типов уведомлений
+            "notification_type_threat": "Угроза безопасности",
+            "notification_type_success": "Успешная защита",
+            "notification_type_warning": "Предупреждение",
+            "notification_type_info": "Информация",
+            "notification_type_bypass": "Попытка обхода",
+            "notification_type_system": "Системное уведомление",
+            "notification_type_family": "Семейное уведомление",
+            "notification_type_device": "Уведомление устройства",
+            "notification_type_security": "Безопасность",
+            "notification_type_update": "Обновление",
+            
+            // ✅ ЗАДАЧА 20: Детальные сообщения для типов уведомлений
+            "notification_threat_detected": "Обнаружена угроза: %@",
+            "notification_threat_blocked": "Угроза заблокирована: %@",
+            "notification_protection_activated": "Защита активирована",
+            "notification_protection_deactivated": "Защита деактивирована",
+            "notification_protection_level_changed": "Уровень защиты изменен: %@",
+            "notification_warning_attention_required": "Требуется внимание",
+            "notification_warning_check_needed": "Необходима проверка: %@",
+            "notification_info_system_update": "Система обновлена",
+            "notification_info_maintenance": "Плановое обслуживание: %@",
+            "notification_bypass_attempt": "Попытка обхода защиты: %@",
+            "notification_bypass_blocked": "Обход заблокирован",
+            
+            // ✅ ЗАДАЧА 20: Действия с уведомлениями
+            "notification_mark_read": "Отметить как прочитанное",
+            "notification_mark_unread": "Отметить как непрочитанное",
+            "notification_delete": "Удалить уведомление",
+            "notification_delete_all": "Удалить все уведомления",
+            "notification_mark_all_read": "Отметить все как прочитанные",
+            "notification_view_details": "Просмотреть детали",
+            
+            // ✅ ЗАДАЧА 20: Статусы уведомлений
+            "notification_status_read": "Прочитано",
+            "notification_status_unread": "Непрочитано",
+            "notification_status_new": "Новое",
+            "notification_status_archived": "Архивировано",
+            
+            // ✅ ЗАДАЧА 3: Локализация AI Assistant feedback
+            "ai_assistant_feedback_title": "Обратная связь",
+            "ai_assistant_feedback_description": "Расскажите, как улучшить AI помощника",
+            "ai_assistant_feedback_rating": "Оценка",
+            "ai_assistant_feedback_rating_excellent": "Отлично",
+            "ai_assistant_feedback_rating_good": "Хорошо",
+            "ai_assistant_feedback_rating_fair": "Удовлетворительно",
+            "ai_assistant_feedback_rating_poor": "Плохо",
+            "ai_assistant_feedback_comment": "Комментарий",
+            "ai_assistant_feedback_comment_placeholder": "Ваши предложения по улучшению...",
+            "ai_assistant_feedback_submit": "Отправить",
+            "ai_assistant_feedback_success": "Спасибо за отзыв!",
+            "ai_assistant_feedback_error": "Ошибка при отправке отзыва",
+            "ai_assistant_feedback_cancel": "Отмена",
+            "ai_assistant_feedback_required": "Пожалуйста, выберите оценку",
+            
+            // ✅ ЗАДАЧА 22: Системные компоненты
+            "system_components_title": "Системные компоненты",
+            "system_components_empty": "Компоненты не найдены",
+            "system_components_last_update": "Обновлено: %@",
+            "system_components_loading": "Загрузка компонентов...",
+            "system_components_error": "Ошибка загрузки компонентов",
+            "retry": "Повторить",
+            
+            // ✅ ЗАДАЧА 27: Roadside Assistance (Russian)
+            "roadside_assistance_title": "Помощь на дороге",
+            "roadside_assistance_subtitle": "Вызвать помощь при поломке или аварии",
+            "roadside_call_help": "Вызвать помощь на дороге",
+            "roadside_call_dialog_title": "Вызов помощи на дороге",
+            "roadside_vehicle_info": "Информация о транспортном средстве",
+            "roadside_vehicle_info_placeholder": "Марка, модель, цвет, номер",
+            "roadside_status_waiting": "Ожидание помощи",
+            "roadside_status_en_route": "Помощь в пути",
+            "roadside_status_arrived": "Помощь прибыла",
+            "roadside_status_completed": "Завершено",
+            "roadside_status_cancelled": "Отменено",
+            "roadside_cancel_request": "Отменить запрос",
+            "roadside_eta": "Прибытие через: %@",
+            "roadside_provider": "Служба: %@",
+            "roadside_history": "История обращений",
+            "roadside_location_error": "Не удалось определить местоположение",
+            "close": "Закрыть",
+            
             "privacy_policy_web_accessibility": "Privacy policy webpage",
             
             // ═══════════════════════════════════════════════════════════════
@@ -4369,6 +4457,70 @@ class LocalizationManager: ObservableObject {
             "incident_response.block": "Блокировать",
             "incident_response.notify": "Уведомить",
             "incident_response.escalate": "Эскалировать",
+            
+            // ✅ ЭТАП 2-3: Новые функции - Профиль пользователя
+            "user_profile_sync": "Синхронизация профиля",
+            "user_profile_update": "Обновление профиля",
+            "user_profile_history": "История изменений",
+            "user_profile_privacy": "Настройки приватности",
+            "user_profile_privacy_update": "Обновление приватности",
+            
+            // ✅ ЭТАП 2-3: Новые функции - Тарифы и подписки
+            "subscription_sync": "Синхронизация подписки",
+            "subscription_update": "Обновление подписки",
+            "subscription_purchase_history": "История покупок",
+            "subscription_status": "Статус подписки",
+            "subscription_auto_renewal": "Автопродление",
+            "subscription_cancel": "Отмена подписки",
+            
+            // ✅ ЭТАП 2-3: Новые функции - Настройки приложения
+            "app_settings_sync": "Синхронизация настроек",
+            "app_settings_theme": "Тема",
+            "app_settings_theme_light": "Светлая",
+            "app_settings_theme_dark": "Темная",
+            "app_settings_theme_system": "Системная",
+            "app_settings_language": "Язык",
+            "app_settings_notifications": "Уведомления",
+            "app_settings_biometry": "Биометрия",
+            
+            // ✅ ЭТАП 2-3: Новые функции - Геолокация
+            "location_geofences_sync": "Синхронизация геозон",
+            "location_movement_history": "История перемещений",
+            "location_status": "Статус геолокации",
+            "location_enabled": "Геолокация включена",
+            "location_disabled": "Геолокация выключена",
+            
+            // ✅ ЭТАП 2-3: Новые функции - Семейный чат
+            "chat_offline_messages_sync": "Синхронизация сообщений",
+            "chat_offline_messages_send": "Отправка сообщения",
+            "chat_offline_messages_resolve_conflicts": "Разрешение конфликтов",
+            
+            // ✅ ЭТАП 3: Новые функции - Офлайн хранилище
+            "offline_storage_sync": "Синхронизация данных",
+            "offline_storage_data": "Данные",
+            "offline_storage_data_update": "Обновление данных",
+            "offline_storage_data_delete": "Удаление данных",
+            "offline_storage_resolve_conflicts": "Разрешение конфликтов",
+            
+            // ✅ ЭТАП 3: Новые функции - Crash Detection
+            "crash_detection_sync": "Синхронизация отчетов",
+            "crash_detection_report": "Отчет о краше",
+            "crash_detection_notifications": "Уведомления о крашах",
+            "crash_detection_severity_low": "Низкая",
+            "crash_detection_severity_medium": "Средняя",
+            "crash_detection_severity_high": "Высокая",
+            "crash_detection_severity_critical": "Критическая",
+            
+            // ✅ ЭТАП 3: Новые функции - Интерфейс для пожилых
+            "elderly_medications_sync": "Синхронизация лекарств",
+            "elderly_medications_update": "Обновление лекарств",
+            "elderly_appointments_sync": "Синхронизация встреч",
+            "elderly_appointments_update": "Обновление встреч",
+            "elderly_medication_name": "Название лекарства",
+            "elderly_medication_dosage": "Дозировка",
+            "elderly_medication_frequency": "Частота приема",
+            "elderly_appointment_title": "Название встречи",
+            "elderly_appointment_date": "Дата встречи",
         ],
         .english: [
             "profile_edit_background_accessibility": "Profile edit background",
@@ -4411,6 +4563,71 @@ class LocalizationManager: ObservableObject {
             "settings_history_stats_max": "Maximum",
             "settings_enabled": "Enabled",
             "settings_disabled": "Disabled",
+            
+            // ✅ ЭТАП 2-3: Новые функции - Профиль пользователя
+            "user_profile_sync": "Profile Sync",
+            "user_profile_update": "Update Profile",
+            "user_profile_history": "Change History",
+            "user_profile_privacy": "Privacy Settings",
+            "user_profile_privacy_update": "Update Privacy",
+            
+            // ✅ ЭТАП 2-3: Новые функции - Тарифы и подписки
+            "subscription_sync": "Subscription Sync",
+            "subscription_update": "Update Subscription",
+            "subscription_purchase_history": "Purchase History",
+            "subscription_status": "Subscription Status",
+            "subscription_auto_renewal": "Auto Renewal",
+            "subscription_cancel": "Cancel Subscription",
+            
+            // ✅ ЭТАП 2-3: Новые функции - Настройки приложения
+            "app_settings_sync": "Settings Sync",
+            "app_settings_theme": "Theme",
+            "app_settings_theme_light": "Light",
+            "app_settings_theme_dark": "Dark",
+            "app_settings_theme_system": "System",
+            "app_settings_language": "Language",
+            "app_settings_notifications": "Notifications",
+            "app_settings_biometry": "Biometry",
+            
+            // ✅ ЭТАП 2-3: Новые функции - Геолокация
+            "location_geofences_sync": "Geofences Sync",
+            "location_movement_history": "Movement History",
+            "location_status": "Location Status",
+            "location_enabled": "Location Enabled",
+            "location_disabled": "Location Disabled",
+            
+            // ✅ ЭТАП 2-3: Новые функции - Семейный чат
+            "chat_offline_messages_sync": "Messages Sync",
+            "chat_offline_messages_send": "Send Message",
+            "chat_offline_messages_resolve_conflicts": "Resolve Conflicts",
+            
+            // ✅ ЭТАП 3: Новые функции - Офлайн хранилище
+            "offline_storage_sync": "Data Sync",
+            "offline_storage_data": "Data",
+            "offline_storage_data_update": "Update Data",
+            "offline_storage_data_delete": "Delete Data",
+            "offline_storage_resolve_conflicts": "Resolve Conflicts",
+            
+            // ✅ ЭТАП 3: Новые функции - Crash Detection
+            "crash_detection_sync": "Reports Sync",
+            "crash_detection_report": "Crash Report",
+            "crash_detection_notifications": "Crash Notifications",
+            "crash_detection_severity_low": "Low",
+            "crash_detection_severity_medium": "Medium",
+            "crash_detection_severity_high": "High",
+            "crash_detection_severity_critical": "Critical",
+            
+            // ✅ ЭТАП 3: Новые функции - Интерфейс для пожилых
+            "elderly_medications_sync": "Medications Sync",
+            "elderly_medications_update": "Update Medications",
+            "elderly_appointments_sync": "Appointments Sync",
+            "elderly_appointments_update": "Update Appointments",
+            "elderly_medication_name": "Medication Name",
+            "elderly_medication_dosage": "Dosage",
+            "elderly_medication_frequency": "Frequency",
+            "elderly_appointment_title": "Appointment Title",
+            "elderly_appointment_date": "Appointment Date",
+            
             "settings_improve_protection": "Upgrade protection",
             "theme_light": "Light theme",
             "theme_dark": "Dark theme",
@@ -5498,6 +5715,9 @@ class LocalizationManager: ObservableObject {
             "main_family_tariff_label": "Tariff:",
             "main_family_subscription_valid_until": "Valid until:",
             "main_family_manage": "Manage",
+            "main_family_user_id": "ID:",
+            "main_family_user_id_copy": "Copy ID",
+            "main_family_user_id_copied": "ID copied",
             "main_family_add_member": "Add",
             "main_ai_assistant_title": "AI Assistant",
             "main_ai_assistant_greeting": "Hello! How can I help?",
@@ -6001,6 +6221,7 @@ class LocalizationManager: ObservableObject {
             "analytics_period_day": "Day",
             "analytics_period_week": "Week",
             "analytics_period_month": "Month",
+            "analytics_offline_mode": "Offline mode - showing cached data",
             // ARCHIVED 2025-11-10: "analytics_filters": "Filters",
             // ARCHIVED 2025-11-10: "analytics_stats_security": "Security",
             // ARCHIVED 2025-11-10: "analytics_stats_family": "Family",
@@ -6190,6 +6411,7 @@ Settings
             "profile_email": "Alias",
             "profile_email_placeholder": "Alias not set",
             "profile_phone": "PIN (activation)",
+            "profile_user_id": "User ID",
             "profile_registration_date": "Registration date",
             "profile_not_set": "Not specified",
             "profile_safety_reminder": "🛡️ Safety reminder for parents",
@@ -6937,6 +7159,89 @@ Settings
             "notifications_mock_warning_message": "Some protection modules need your confirmation.",
             "notifications_mock_info_title": "ALADDIN system updated",
             "notifications_mock_info_message": "System diagnostics completed successfully.",
+            
+            // ✅ ЗАДАЧА 20: Notification types localization (English)
+            "notification_type_threat": "Security Threat",
+            "notification_type_success": "Successful Protection",
+            "notification_type_warning": "Warning",
+            "notification_type_info": "Information",
+            "notification_type_bypass": "Bypass Attempt",
+            "notification_type_system": "System Notification",
+            "notification_type_family": "Family Notification",
+            "notification_type_device": "Device Notification",
+            "notification_type_security": "Security",
+            "notification_type_update": "Update",
+            
+            // ✅ ЗАДАЧА 20: Detailed messages for notification types (English)
+            "notification_threat_detected": "Threat detected: %@",
+            "notification_threat_blocked": "Threat blocked: %@",
+            "notification_protection_activated": "Protection activated",
+            "notification_protection_deactivated": "Protection deactivated",
+            "notification_protection_level_changed": "Protection level changed: %@",
+            "notification_warning_attention_required": "Attention required",
+            "notification_warning_check_needed": "Check needed: %@",
+            "notification_info_system_update": "System updated",
+            "notification_info_maintenance": "Scheduled maintenance: %@",
+            "notification_bypass_attempt": "Bypass attempt: %@",
+            "notification_bypass_blocked": "Bypass blocked",
+            
+            // ✅ ЗАДАЧА 20: Notification actions (English)
+            "notification_mark_read": "Mark as read",
+            "notification_mark_unread": "Mark as unread",
+            "notification_delete": "Delete notification",
+            "notification_delete_all": "Delete all notifications",
+            "notification_mark_all_read": "Mark all as read",
+            "notification_view_details": "View details",
+            
+            // ✅ ЗАДАЧА 20: Notification statuses (English)
+            "notification_status_read": "Read",
+            "notification_status_unread": "Unread",
+            "notification_status_new": "New",
+            "notification_status_archived": "Archived",
+            
+            // ✅ ЗАДАЧА 3: AI Assistant feedback localization (English)
+            "ai_assistant_feedback_title": "Feedback",
+            "ai_assistant_feedback_description": "Tell us how to improve the AI assistant",
+            "ai_assistant_feedback_rating": "Rating",
+            "ai_assistant_feedback_rating_excellent": "Excellent",
+            "ai_assistant_feedback_rating_good": "Good",
+            "ai_assistant_feedback_rating_fair": "Fair",
+            "ai_assistant_feedback_rating_poor": "Poor",
+            "ai_assistant_feedback_comment": "Comment",
+            "ai_assistant_feedback_comment_placeholder": "Your suggestions for improvement...",
+            "ai_assistant_feedback_submit": "Submit",
+            "ai_assistant_feedback_success": "Thank you for your feedback!",
+            "ai_assistant_feedback_error": "Error sending feedback",
+            "ai_assistant_feedback_cancel": "Cancel",
+            "ai_assistant_feedback_required": "Please select a rating",
+            
+            // ✅ ЗАДАЧА 22: System Components (English)
+            "system_components_title": "System Components",
+            "system_components_empty": "No components found",
+            "system_components_last_update": "Updated: %@",
+            "system_components_loading": "Loading components...",
+            "system_components_error": "Error loading components",
+            "retry": "Retry",
+            
+            // ✅ ЗАДАЧА 27: Roadside Assistance (English)
+            "roadside_assistance_title": "Roadside Assistance",
+            "roadside_assistance_subtitle": "Call for help in case of breakdown or accident",
+            "roadside_call_help": "Call Roadside Assistance",
+            "roadside_call_dialog_title": "Roadside Assistance Call",
+            "roadside_vehicle_info": "Vehicle Information",
+            "roadside_vehicle_info_placeholder": "Make, model, color, license plate",
+            "roadside_status_waiting": "Waiting for help",
+            "roadside_status_en_route": "Help on the way",
+            "roadside_status_arrived": "Help arrived",
+            "roadside_status_completed": "Completed",
+            "roadside_status_cancelled": "Cancelled",
+            "roadside_cancel_request": "Cancel Request",
+            "roadside_eta": "ETA: %@",
+            "roadside_provider": "Provider: %@",
+            "roadside_history": "Request History",
+            "roadside_location_error": "Failed to determine location",
+            "close": "Close",
+            
             "notifications_clear_all": "Clear all notifications",
             "notifications_statistics": "📊 STATISTICS",
             "notifications_total": "Total",
@@ -8601,7 +8906,7 @@ Settings
             "advanced_threat_status_off": "Off",
             "advanced_threat_status_partial": "Partial: %d/%d",
             "advanced_threat_configure": "Configure",
-            "advanced_threat_refresh": "Refresh",
+            "advanced_threat_refresh": "Refresh"
         ],
         .chinese: [
             "settings_title": "设置",

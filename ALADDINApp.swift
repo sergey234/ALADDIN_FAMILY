@@ -229,7 +229,8 @@ struct ALADDINApp: App {
 
                             // ✅ ПРОВЕРКА: Убеждаемся, что токены действительно сохранены
                             let keychain = KeychainManager.shared
-                            if let token: String = keychain.load(String.self, forKey: .authToken) {
+                            // ✅ ИСПРАВЛЕНО: Используем loadString вместо load(String.self, ...)
+                            if let token = keychain.loadString(forKey: .authToken) {
                                 print("✅ ALADDINApp: Токен подтвержден в Keychain (длина: \(token.count))")
                             } else {
                                 print("⚠️ ALADDINApp: ВНИМАНИЕ! Токен не найден в Keychain после успешного логина!")
@@ -321,7 +322,26 @@ struct ALADDINApp: App {
                                 #endif
                             })
                     case .tariffs:
-                        AnyView(TariffsScreen().id("tariffs").environmentObject(navigationManager).environmentObject(localizationManager))
+                        // 🚧 ВРЕМЕННО СКРЫТО: Экран тарифов временно недоступен
+                        // TODO: ВОССТАНОВИТЬ ПОСЛЕ ТЕСТИРОВАНИЯ
+                        // AnyView(TariffsScreen().id("tariffs").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(
+                            VStack(spacing: 20) {
+                                Text("💎")
+                                    .font(.system(size: 60))
+                                Text("Тарифы")
+                                    .font(.title)
+                                    .fontWeight(.bold)
+                                Text("Скоро будет доступно")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(LinearGradient.backgroundGradient)
+                            .id("tariffs_placeholder")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                        )
 #if !APP_STORE_BUILD
                     case .paymentQR:
                         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем AnyView для отложенного создания View
@@ -604,7 +624,8 @@ struct ALADDINApp: App {
         
         // Проверяем access token
         var isDebugToken = false
-        if let accessToken: String = keychain.load(String.self, forKey: .authToken) {
+        // ✅ ИСПРАВЛЕНО: Используем loadString вместо load(String.self, ...)
+        if let accessToken = keychain.loadString(forKey: .authToken) {
             // Проверяем признаки debug токена
             if accessToken.contains(".debugsignature") {
                 isDebugToken = true
@@ -616,7 +637,8 @@ struct ALADDINApp: App {
         }
         
         // Проверяем refresh token
-        if let refreshToken: String = keychain.load(String.self, forKey: .refreshToken) {
+        // ✅ ИСПРАВЛЕНО: Используем loadString вместо load(String.self, ...)
+        if let refreshToken = keychain.loadString(forKey: .refreshToken) {
             if refreshToken == "debug-refresh-token" {
                 isDebugToken = true
                 print("⚠️ ALADDINApp: Обнаружен debug refresh token")
@@ -686,14 +708,15 @@ func performRealLogin(email: String, password: String, completion: @escaping (Bo
             let keychain = KeychainManager.shared
             var tokensSaved = true
             
-            if let accessToken: String = keychain.load(String.self, forKey: .authToken) {
+            // ✅ ИСПРАВЛЕНО: Используем loadString вместо load(String.self, ...)
+            if let accessToken = keychain.loadString(forKey: .authToken) {
                 print("   - Access token сохранен (длина: \(accessToken.count))")
             } else {
                 print("   - ⚠️ Access token НЕ найден в Keychain!")
                 tokensSaved = false
             }
             
-            if let refreshToken: String = keychain.load(String.self, forKey: .refreshToken) {
+            if let refreshToken = keychain.loadString(forKey: .refreshToken) {
                 print("   - Refresh token сохранен (длина: \(refreshToken.count))")
             } else {
                 print("   - ⚠️ Refresh token НЕ найден в Keychain!")
@@ -768,14 +791,15 @@ func checkIfTokensAreDebug() -> Bool {
     let keychain = KeychainManager.shared
     var isDebug = false
     
-    if let accessToken: String = keychain.load(String.self, forKey: .authToken) {
+    // ✅ ИСПРАВЛЕНО: Используем loadString вместо load(String.self, ...)
+    if let accessToken = keychain.loadString(forKey: .authToken) {
         if accessToken.contains(".debugsignature") || (accessToken.count == 140 && accessToken.contains("eyJhbGciOi")) {
             print("⚠️ Обнаружен debug access token")
             isDebug = true
         }
     }
     
-    if let refreshToken: String = keychain.load(String.self, forKey: .refreshToken) {
+    if let refreshToken = keychain.loadString(forKey: .refreshToken) {
         if refreshToken == "debug-refresh-token" {
             print("⚠️ Обнаружен debug refresh token")
             isDebug = true

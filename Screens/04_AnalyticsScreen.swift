@@ -38,6 +38,22 @@ struct AnalyticsScreen: View {
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
+                        // ✅ ЗАДАЧА 64: Индикатор офлайн режима
+                        if viewModel.isOfflineMode {
+                            HStack(spacing: Spacing.s) {
+                                Image(systemName: "wifi.slash")
+                                    .foregroundColor(.orange)
+                                Text(localizationManager.localized("analytics_offline_mode"))
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.orange)
+                                Spacer()
+                            }
+                            .padding(.horizontal, Spacing.m)
+                            .padding(.vertical, Spacing.s)
+                            .background(Color.orange.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                        }
+
                         // Компактные карточки в 1 строку
                         mainStats
                         
@@ -484,8 +500,24 @@ struct AnalyticsScreen: View {
 }
 
 private extension AnalyticsScreen {
+    /// ✅ ИСПРАВЛЕНО: Переключение между Local и Remote сервисами
     static func makeViewModel() -> AnalyticsViewModel {
-        let service = RemoteAnalyticsService()
+        // Используем ту же логику что и для useMockAPI для консистентности
+        let service: AnalyticsService = {
+            if AppConfig.useMockAPI {
+                // Для разработки с флагом USE_MOCK_FOR_DEVELOPMENT используем локальные данные
+                return LocalAnalyticsService()
+            } else {
+                // Продакшен и обычный DEBUG используют реальный API
+                return RemoteAnalyticsService()
+            }
+        }()
+        
+        #if DEBUG
+        let serviceType = service is LocalAnalyticsService ? "LocalAnalyticsService" : "RemoteAnalyticsService"
+        print("📊 AnalyticsScreen: Используется \(serviceType) (useMockAPI: \(AppConfig.useMockAPI))")
+        #endif
+        
         return AnalyticsViewModel(service: service)
     }
 }

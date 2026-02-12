@@ -1,8 +1,9 @@
 # 📚 API ДОКУМЕНТАЦИЯ - ALADDIN iOS
 
-**Версия:** 1.0.0  
-**Дата:** 2025-11-25  
-**Базовый URL:** `https://aladdin-ai.ru/api`
+**Версия:** 2.0.0  
+**Дата:** 2026-02-11  
+**Базовый URL:** `https://aladdin-ai.ru/api`  
+**Обновлено:** Добавлено 96 новых endpoint'ов для синхронизации данных
 
 ---
 
@@ -23,7 +24,17 @@
 13. [IoT API](#iot-api)
 14. [Referral API](#referral-api)
 15. [Payment API](#payment-api)
-16. [Коды ошибок](#коды-ошибок)
+16. [Gamification API](#gamification-api)
+17. [Parental Control Sync API](#parental-control-sync-api)
+18. [User Profile Sync API](#user-profile-sync-api)
+19. [Subscription Sync API](#subscription-sync-api)
+20. [App Settings Sync API](#app-settings-sync-api)
+21. [Location & Geofences Sync API](#location--geofences-sync-api)
+22. [Offline Chat Sync API](#offline-chat-sync-api)
+23. [Offline Storage Sync API](#offline-storage-sync-api)
+24. [Crash Detection Sync API](#crash-detection-sync-api)
+25. [Elderly Interface Sync API](#elderly-interface-sync-api)
+26. [Коды ошибок](#коды-ошибок)
 
 ---
 

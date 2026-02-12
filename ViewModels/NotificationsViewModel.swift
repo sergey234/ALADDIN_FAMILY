@@ -141,67 +141,16 @@ class NotificationsViewModel: ObservableObject {
             }
         } catch {
             await MainActor.run {
-                if notifications.isEmpty {
-                    loadMockNotifications()
-                }
+                // ✅ ИСПРАВЛЕНО: Убран fallback на mock данные
+                // При ошибке показываем только сообщение об ошибке
                 errorMessage = error.localizedDescription
                 isLoading = false
             }
         }
     }
 
-    private func loadMockNotifications() {
-        let localizationManager = LocalizationManager()
-        let now = Date()
-        let fiveMinutesAgo = now.addingTimeInterval(-5 * 60)
-        let oneHourAgo = now.addingTimeInterval(-60 * 60)
-        let twoHoursAgo = now.addingTimeInterval(-2 * 60 * 60)
-        let yesterday = now.addingTimeInterval(-24 * 60 * 60)
-
-        notifications = [
-            AppNotification(
-                id: UUID().uuidString,
-                icon: "🛡️",
-                title: localizationManager.localized("notifications_mock_threat_title"),
-                message: localizationManager.localized("notifications_mock_threat_message"),
-                timestamp: fiveMinutesAgo,
-                isRead: false,
-                kind: .threat,
-                priority: .high
-            ),
-            AppNotification(
-                id: UUID().uuidString,
-                icon: "✅",
-                title: localizationManager.localized("notifications_mock_success_title"),
-                message: localizationManager.localized("notifications_mock_success_message"),
-                timestamp: oneHourAgo,
-                isRead: true,
-                kind: .success,
-                priority: .low
-            ),
-            AppNotification(
-                id: UUID().uuidString,
-                icon: "⚠️",
-                title: localizationManager.localized("notifications_mock_warning_title"),
-                message: localizationManager.localized("notifications_mock_warning_message"),
-                timestamp: twoHoursAgo,
-                isRead: true,
-                kind: .warning,
-                priority: .medium
-            ),
-            AppNotification(
-                id: UUID().uuidString,
-                icon: "ℹ️",
-                title: localizationManager.localized("notifications_mock_info_title"),
-                message: localizationManager.localized("notifications_mock_info_message"),
-                timestamp: yesterday,
-                isRead: true,
-                kind: .info,
-                priority: .low
-            )
-        ]
-        updateUnreadCount()
-    }
+    // ✅ ИСПРАВЛЕНО: Метод loadMockNotifications() удален
+    // Теперь используются только реальные API вызовы через RemoteNotificationsService
 
     func addNotificationFromPush(_ notification: UNNotification) async {
         let userInfo = notification.request.content.userInfo

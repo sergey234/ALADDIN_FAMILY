@@ -533,13 +533,21 @@ extension NetworkManager {
         // Симулируем задержку сети
         let delay = Double.random(in: 0.5...1.5)
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            let mockFamilyId = "FAM_\(UUID().uuidString.prefix(12).uppercased())"
+            let mockShortCode = String((0..<4).map { _ in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".randomElement()! })
+            let mockMemberId = "MEM_\(UUID().uuidString.prefix(8).uppercased())"
+            
+            // ✅ ИСПРАВЛЕНО: Используем новую структуру CreateFamilyResponse
             let response = CreateFamilyResponse(
-                success: true,
-                family_id: "family_mock_\(UUID().uuidString)",
-                recovery_code: "RECOVERY-\(Int.random(in: 1000...9999))",
+                family_id: mockFamilyId,
+                short_code: mockShortCode,
+                creator_member_id: mockMemberId,
+                qr_code_data: "{\"family_id\": \"\(mockFamilyId)\", \"timestamp\": \(Int(Date().timeIntervalSince1970)), \"type\": \"family_registration\"}",
+                expires_at: ISO8601DateFormatter().string(from: Date().addingTimeInterval(86400)), // +1 день
+                success: true,  // Опциональное поле для обратной совместимости
                 members: [
                     FamilyMemberResponse(
-                        id: "member_\(UUID().uuidString)",
+                        id: mockMemberId,
                         name: request.personal_letter,
                         role: request.role,
                         avatar: "👤",
@@ -549,7 +557,8 @@ extension NetworkManager {
                         devices: 1
                     )
                 ],
-                your_member_id: "member_\(UUID().uuidString)"
+                access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_access_token_\(UUID().uuidString)",
+                refresh_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_refresh_token_\(UUID().uuidString)"
             )
             completion(.success(response))
         }

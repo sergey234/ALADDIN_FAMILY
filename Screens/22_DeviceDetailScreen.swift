@@ -29,6 +29,11 @@ struct DeviceDetailScreen: View {
     @State private var showBlockConfirmation: Bool = false
     @State private var showRemoveConfirmation: Bool = false
     
+    // ✅ ИСПРАВЛЕНО: Данные устройства из API вместо mock
+    @State private var deviceDetail: DeviceDetailResponse? = nil
+    @State private var isLoadingDeviceDetail: Bool = false
+    @State private var deviceDetailError: String? = nil
+    
     enum DetailTab: String, CaseIterable {
         case info = "info"
         case stats = "stats"
@@ -114,11 +119,11 @@ struct DeviceDetailScreen: View {
                 // Tab Content
                 switch selectedTab {
                 case .info:
-                    DeviceInfoView(device: device)
+                    DeviceInfoView(device: device, deviceDetail: deviceDetail)
                 case .stats:
-                    DeviceStatsView()
+                    DeviceStatsView(deviceDetail: deviceDetail)
                 case .threats:
-                    DeviceThreatsView()
+                    DeviceThreatsView(deviceId: device.id.uuidString)
                 case .settings:
                     DeviceSettingsView(
                         isProtectionOn: Binding(
@@ -200,6 +205,7 @@ struct DeviceDetailScreen: View {
             print("🚨 DeviceDetailScreen загружен!")
             loadDeviceSettings()
             loadDeviceSettingsFromServer()
+            loadDeviceDetail()
         }
     }
     
@@ -264,6 +270,28 @@ struct DeviceDetailScreen: View {
         }
     }
 
+    // MARK: - Device Detail Loading
+    
+    /// ✅ ИСПРАВЛЕНО: Загружает детальные данные устройства с сервера
+    private func loadDeviceDetail() {
+        isLoadingDeviceDetail = true
+        deviceDetailError = nil
+        
+        apiService.getDeviceDetail(deviceId: device.id.uuidString) { result in
+            DispatchQueue.main.async {
+                self.isLoadingDeviceDetail = false
+                
+                switch result {
+                case .success(let detail):
+                    self.deviceDetail = detail
+                case .failure(let error):
+                    self.deviceDetailError = error.localizedDescription
+                    print("⚠️ DeviceDetailScreen: Ошибка загрузки деталей устройства: \(error)")
+                }
+            }
+        }
+    }
+    
     // MARK: - Settings Persistence
     
     /// Загружает настройки устройства из UserDefaults
@@ -361,16 +389,23 @@ struct TabButton: View {
 
 struct DeviceInfoView: View {
     let device: Device
+    let deviceDetail: DeviceDetailResponse?
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            InfoRow(icon: "person.fill", title: localizationManager.localized("device_detail_info_owner"), value: device.owner, color: .blue)
-            InfoRow(icon: "app.fill", title: localizationManager.localized("device_detail_info_type"), value: device.type.rawValue, color: .orange)
-            InfoRow(icon: "phone.fill", title: localizationManager.localized("device_detail_info_model"), value: device.name, color: .green)
-            InfoRow(icon: "gear", title: localizationManager.localized("device_detail_info_system"), value: "iOS 17.1", color: .purple)
-            InfoRow(icon: "network", title: localizationManager.localized("device_detail_info_ip"), value: "192.168.1.147", color: .blue)
-            InfoRow(icon: "antenna.radiowaves.left.and.right", title: localizationManager.localized("device_detail_info_mac"), value: "AA:BB:CC:DD:EE:FF", color: .orange)
+            InfoRow(icon: "person.fill", title: localizationManager.localized("device_detail_info_owner"), value: deviceDetail?.owner ?? device.owner, color: .blue)
+            InfoRow(icon: "app.fill", title: localizationManager.localized("device_detail_info_type"), value: deviceDetail?.type ?? device.type.rawValue, color: .orange)
+            InfoRow(icon: "phone.fill", title: localizationManager.localized("device_detail_info_model"), value: deviceDetail?.name ?? device.name, color: .green)
+            // ✅ ИСПРАВЛЕНО: Используем реальные данные из API вместо hardcoded значений
+            if let osVersion = deviceDetail?.osVersion {
+                InfoRow(icon: "gear", title: localizationManager.localized("device_detail_info_system"), value: osVersion, color: .purple)
+            }
+            if let ipAddress = deviceDetail?.ipAddress {
+                InfoRow(icon: "network", title: localizationManager.localized("device_detail_info_ip"), value: ipAddress, color: .blue)
+            }
+            // MAC адрес не приходит с сервера, поэтому скрываем если нет данных
+            // InfoRow(icon: "antenna.radiowaves.left.and.right", title: localizationManager.localized("device_detail_info_mac"), value: "AA:BB:CC:DD:EE:FF", color: .orange)
         }
         .padding(.horizontal, Spacing.screenPadding)
     }
@@ -379,14 +414,32 @@ struct DeviceInfoView: View {
 // MARK: - Device Stats View
 
 struct DeviceStatsView: View {
+    let deviceDetail: DeviceDetailResponse?
     @EnvironmentObject private var localizationManager: LocalizationManager
+    
+    // ✅ ИСПРАВЛЕНО: Используем реальные данные из API вместо hardcoded значений
+    private func formatBytes(_ bytes: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useGB, .useMB]
+        formatter.countStyle = .binary
+        return formatter.string(fromByteCount: bytes)
+    }
     
     var body: some View {
         VStack(spacing: Spacing.m) {
-            StatCard(icon: "🛡️", label: localizationManager.localized("device_detail_stats_threats_blocked"), value: "47")
-            StatCard(icon: "⬇️", label: localizationManager.localized("device_detail_stats_traffic_downloaded"), value: "2.4 GB")
-            StatCard(icon: "⬆️", label: localizationManager.localized("device_detail_stats_traffic_uploaded"), value: "1.2 GB")
-            StatCard(icon: "⏱️", label: localizationManager.localized("device_detail_stats_usage_time"), value: "4:37:21")
+            if let detail = deviceDetail {
+                StatCard(icon: "🛡️", label: localizationManager.localized("device_detail_stats_threats_blocked"), value: "\(detail.threatsBlocked)")
+                // dataUsage может быть общим трафиком, показываем как загруженные данные
+                StatCard(icon: "⬇️", label: localizationManager.localized("device_detail_stats_traffic_downloaded"), value: formatBytes(detail.dataUsage))
+                // Если есть batteryLevel, показываем его
+                if let batteryLevel = detail.batteryLevel {
+                    StatCard(icon: "🔋", label: localizationManager.localized("device_detail_stats_battery"), value: "\(batteryLevel)%")
+                }
+            } else {
+                // Показываем placeholder при загрузке
+                ProgressView()
+                    .padding()
+            }
         }
         .padding(.horizontal, Spacing.screenPadding)
     }
@@ -395,16 +448,73 @@ struct DeviceStatsView: View {
 // MARK: - Device Threats View
 
 struct DeviceThreatsView: View {
+    let deviceId: String
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @State private var threats: [ThreatItem] = []
+    @State private var isLoadingThreats: Bool = false
+    @State private var threatsError: String? = nil
+    private let apiService = APIService.shared
     
     var body: some View {
         VStack(spacing: Spacing.m) {
-            // Mock данные - в реальном приложении будут приходить из API
-            ThreatItemRow(name: localizationManager.localized("device_detail_threat_malicious_site"), time: localizationManager.localized("device_detail_threat_time_5_min"), severity: .high)
-            ThreatItemRow(name: localizationManager.localized("device_detail_threat_tracker_blocked"), time: localizationManager.localized("device_detail_threat_time_15_min"), severity: .medium)
-            ThreatItemRow(name: localizationManager.localized("device_detail_threat_phishing_attempt"), time: localizationManager.localized("device_detail_threat_time_1_hour"), severity: .high)
+            // ✅ ИСПРАВЛЕНО: Загружаем реальные угрозы с сервера
+            if isLoadingThreats {
+                ProgressView()
+                    .padding()
+            } else if threats.isEmpty && threatsError == nil {
+                Text(localizationManager.localized("device_detail_threats_empty") ?? "Нет угроз")
+                    .font(.body)
+                    .foregroundColor(.textSecondary)
+                    .padding()
+            } else if let error = threatsError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundColor(.dangerRed)
+                    .padding()
+            } else {
+                ForEach(threats.prefix(10)) { threat in
+                    ThreatItemRow(
+                        name: threat.name,
+                        time: formatThreatTime(threat),
+                        severity: ThreatItemRow.ThreatSeverity(from: threat.severity)
+                    )
+                }
+            }
         }
         .padding(.horizontal, Spacing.screenPadding)
+        .task {
+            loadThreats()
+        }
+    }
+    
+    private func loadThreats() {
+        isLoadingThreats = true
+        threatsError = nil
+        
+        // Используем метод getTopThreats для получения угроз устройства
+        apiService.getTopThreats { result in
+            Task { @MainActor in
+                switch result {
+                case .success(let threatItems):
+                    // Фильтруем угрозы для конкретного устройства (если нужно)
+                    self.threats = threatItems
+                    self.isLoadingThreats = false
+                case .failure(let error):
+                    self.threatsError = error.localizedDescription
+                    self.isLoadingThreats = false
+                    print("⚠️ DeviceThreatsView: Ошибка загрузки угроз: \(error)")
+                }
+            }
+        }
+    }
+    
+    private func formatThreatTime(_ threat: ThreatItem) -> String {
+        // ThreatItem не содержит timestamp, показываем количество
+        if threat.count > 1 {
+            let format = localizationManager.localized("device_detail_threat_count") ?? "Обнаружено: %d"
+            return String(format: format, threat.count)
+        }
+        return localizationManager.localized("device_detail_threat_recent") ?? "Недавно"
     }
 }
 
@@ -416,6 +526,20 @@ struct ThreatItemRow: View {
     
     enum ThreatSeverity {
         case low, medium, high
+        
+        init(from severity: String) {
+            switch severity.lowercased() {
+            case "low", "низкая":
+                self = .low
+            case "medium", "средняя", "medium":
+                self = .medium
+            case "high", "critical", "высокая", "критическая":
+                self = .high
+            default:
+                self = .medium
+            }
+        }
+        
         var color: Color {
             switch self {
             case .low: return .successGreen

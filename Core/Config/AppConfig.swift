@@ -45,7 +45,14 @@ struct AppConfig {
     static let apiBaseURL: String = currentEnvironment.baseURL
     
     /// Использовать Mock API вместо реального (только для DEBUG)
-    static let useMockAPI: Bool = false
+    /// ✅ ИСПРАВЛЕНО: Продакшен использует реальный API
+    static let useMockAPI: Bool = {
+        #if DEBUG && USE_MOCK_FOR_DEVELOPMENT
+        return true  // Только для разработки с флагом USE_MOCK_FOR_DEVELOPMENT
+        #else
+        return false // Продакшен использует реальный API
+        #endif
+    }()
     
     /// Режим съёмки скриншотов (принудительно включает русский язык)
     static let screenshotMode: Bool = false
@@ -72,8 +79,9 @@ struct AppConfig {
      */
     static var authToken: String? {
         get {
+            // ✅ ИСПРАВЛЕНО: Используем loadString вместо load(String.self, ...)
             // Сначала пробуем Keychain (основное хранилище)
-            if let keychainToken = KeychainManager.shared.load(String.self, forKey: .authToken) {
+            if let keychainToken = KeychainManager.shared.loadString(forKey: .authToken) {
                 return keychainToken
             }
             // Fallback на UserDefaults для обратной совместимости
@@ -110,11 +118,14 @@ struct AppConfig {
         static let networkProtectionDisconnect = "/network-protection/disconnect"
         static let networkProtectionServers = "/network-protection/servers"
         static let networkProtectionSettings = "/network-protection/settings"
+        static let networkProtectionConfig = "/network-protection/config"
+        static let networkProtectionStats = "/network-protection/stats"
         
         // Family
         static let createFamily = "/family/create"
         static let joinFamily = "/family/join"
         static let recoverFamily = "/family/recover"
+        static let loginByRecoveryCode = "/auth/login-by-recovery-code"
         static let familyMembers = "/family/members"
         static let addFamilyMember = "/family/add"
         static let removeFamilyMember = "/family/remove"
@@ -131,11 +142,17 @@ struct AppConfig {
         static let componentEnable = "/components/enable"
         static let componentDisable = "/components/disable"
         static let componentConfiguration = "/components/config"
+        static let componentBulkUpdate = "/components/bulk-update"  // Массовое обновление компонентов
+        static let componentsList = "/api/components/list"  // ✅ ЗАДАЧА 22: Список всех компонентов
+        static let componentsHealth = "/api/components/health"  // ✅ ЗАДАЧА 22: Общее здоровье компонентов
         
         // Analytics
         static let analytics = "/analytics"
         static let threats = "/analytics/threats"
         static let topThreats = "/analytics/top-threats"
+
+        // ✅ ЗАДАЧА 65: Metrics upload endpoint
+        static let metricsUpload = "/metrics/upload"
         
         // Component Reports
         // Driving Reports
@@ -182,23 +199,170 @@ struct AppConfig {
         static let aiChat = "/ai/chat"
         static let aiSendMessage = "/ai/message"
         
-        // Parental Control
+        // AI Assistant (новые endpoints для полной интеграции)
+        static let aiAssistantChat = "/api/ai/assistant/chat"
+        static let aiAssistantHistory = "/api/ai/assistant/history"
+        static let aiAssistantFeedback = "/api/ai/assistant/feedback"
+        static let aiAssistantCapabilities = "/api/ai/assistant/capabilities"
+        static let aiAssistantAnalyzeThreat = "/api/ai/assistant/analyze_threat"
+        static let aiAssistantRecommendations = "/api/ai/assistant/recommendations"
+        static let aiAssistantReportIncident = "/api/ai/assistant/report_incident"
+        static let aiAssistantSecurityTips = "/api/ai/assistant/security_tips"
+        
+        // ✅ ГЕЙМИФИКАЦИЯ: Gamification endpoints (30 endpoints)
+        // Баланс единорогов (4 endpoints)
+        static let gamificationBalance = "/gamification/balance"
+        static let gamificationBalanceAdd = "/gamification/balance/add"
+        static let gamificationBalanceSubtract = "/gamification/balance/subtract"
+        static let gamificationBalanceHistory = "/gamification/balance/history"
+        
+        // Награды (6 endpoints)
+        static let gamificationRewards = "/gamification/rewards"
+        static let gamificationRewardsClaim = "/gamification/rewards/claim"
+        static let gamificationRewardsHistory = "/gamification/rewards/history"
+        static let gamificationRewardsGive = "/gamification/rewards/give"
+        static let gamificationRewardsShop = "/gamification/rewards/shop"
+        static let gamificationRewardsPurchase = "/gamification/rewards/purchase"
+        
+        // Достижения (5 endpoints)
+        static let gamificationAchievements = "/gamification/achievements"
+        static let gamificationAchievementsUnlock = "/gamification/achievements/unlock"
+        static let gamificationAchievementsProgress = "/gamification/achievements/progress"
+        static let gamificationAchievement = "/gamification/achievements" // /{achievementId}
+        static let gamificationAchievementsClaim = "/gamification/achievements/claim"
+        
+        // Турниры (6 endpoints)
+        static let gamificationTournaments = "/gamification/tournaments"
+        static let gamificationTournamentsJoin = "/gamification/tournaments/join"
+        static let gamificationTournament = "/gamification/tournaments" // /{tournamentId}
+        static let gamificationTournamentsLeaderboard = "/gamification/tournaments/leaderboard"
+        static let gamificationTournamentsLeave = "/gamification/tournaments/leave"
+        static let gamificationTournamentsHistory = "/gamification/tournaments/history"
+        
+        // Настройки игр (4 endpoints)
+        static let gamificationSettings = "/gamification/settings"
+        static let gamificationSettingsUpdate = "/gamification/settings/update"
+        static let gamificationSettingsNotifications = "/gamification/settings/notifications"
+        static let gamificationSettingsNotificationsUpdate = "/gamification/settings/notifications/update"
+        
+        // Прогресс игр (5 endpoints)
+        static let gamificationProgress = "/gamification/progress"
+        static let gamificationProgressUpdate = "/gamification/progress/update"
+        static let gamificationProgressStats = "/gamification/progress/stats"
+        static let gamificationProgressLevel = "/gamification/progress/level"
+        static let gamificationProgressReset = "/gamification/progress/reset"
+        
+        // ✅ РОДИТЕЛЬСКИЙ КОНТРОЛЬ: Parental Control Sync endpoints (20 endpoints)
+        // Настройки (5 endpoints)
+        static let parentalControlSettings = "/api/parental-control/settings" // /{familyId}
+        static let parentalControlSettingsUpdate = "/api/parental-control/settings/update"
+        static let parentalControlSettingsHistory = "/api/parental-control/settings/history"
+        static let parentalControlSettingsSync = "/api/parental-control/settings/sync"
+        static let parentalControlSettingsConflicts = "/api/parental-control/settings/conflicts"
+        
+        // Лимиты времени (4 endpoints)
+        static let parentalControlTimeLimits = "/api/parental-control/time-limits" // /{childId}
+        static let parentalControlTimeLimitsUpdate = "/api/parental-control/time-limits/update"
+        static let parentalControlTimeLimitsHistory = "/api/parental-control/time-limits/history"
+        static let parentalControlTimeLimitsReset = "/api/parental-control/time-limits/reset"
+        
+        // Расписания (4 endpoints)
+        static let parentalControlSchedules = "/api/parental-control/schedules" // /{childId}
+        static let parentalControlSchedulesUpdate = "/api/parental-control/schedules/update"
+        static let parentalControlSchedulesHistory = "/api/parental-control/schedules/history"
+        static let parentalControlSchedulesDelete = "/api/parental-control/schedules/delete"
+        
+        // Геозоны (4 endpoints)
+        static let parentalControlGeofences = "/api/parental-control/geofences" // /{childId}
+        static let parentalControlGeofencesAdd = "/api/parental-control/geofences/add"
+        static let parentalControlGeofencesUpdate = "/api/parental-control/geofences/update"
+        static let parentalControlGeofencesDelete = "/api/parental-control/geofences" // /{geofenceId}
+        
+        // Блокировки приложений (3 endpoints)
+        static let parentalControlAppBlocks = "/api/parental-control/app-blocks" // /{childId}
+        static let parentalControlAppBlocksUpdate = "/api/parental-control/app-blocks/update"
+        static let parentalControlAppBlocksSync = "/api/parental-control/app-blocks/sync"
+        
+        // Parental Control (старые endpoints - оставляем для обратной совместимости)
+        // ✅ ИСПРАВЛЕНО: Убрали /api/ из начала, т.к. baseURL уже содержит /api
         static let parentalControl = "/parental/control"
-        static let applyBlocking = "/api/v1/parental-control/blocking"
-        static let applyRules = "/api/v1/parental-control/rules"
-        static let getAccessRequests = "/api/v1/parental-control/access-requests"
-        static let handleAccessRequest = "/api/v1/parental-control/access-requests"
-        static let getStats = "/api/v1/parental-control/stats"
+        static let applyBlocking = "/v1/parental-control/blocking"
+        static let applyRules = "/v1/parental-control/rules"
+        static let getAccessRequests = "/v1/parental-control/access-requests"
+        static let handleAccessRequest = "/v1/parental-control/access-requests"
+        static let getStats = "/v1/parental-control/stats"
         static let updateLimits = "/parental/limits"
         static let blockDevice = "/parental/block"
         
-        // User
+        // User (старые endpoints - оставляем для обратной совместимости)
         static let profile = "/user/profile"
         static let updateProfile = "/user/update"
         static let changePassword = "/user/password"
         static let deleteAccount = "/user/delete"
         static let twoFactorStatus = "/user/2fa/status"
         static let twoFactorUpdate = "/user/2fa/update"
+        
+        // ✅ ЭТАП 2: Профиль пользователя (5 endpoints)
+        static let userProfileSync = "/api/user/profile/sync"
+        static let userProfileUpdate = "/api/user/profile/update"
+        static let userProfileHistory = "/api/user/profile/history"
+        static let userProfilePrivacy = "/api/user/profile/privacy"
+        static let userProfilePrivacyUpdate = "/api/user/profile/privacy/update"
+        
+        // ✅ ЭТАП 2: Тарифы и подписки (8 endpoints)
+        static let subscriptionSync = "/api/subscription/sync"
+        static let subscriptionUpdate = "/api/subscription/update"
+        static let subscriptionPurchaseHistory = "/api/subscription/purchase-history"
+        static let subscriptionStatus = "/api/subscription/status"
+        static let subscriptionStatusUpdate = "/api/subscription/status/update"
+        static let subscriptionAutoRenewal = "/api/subscription/auto-renewal"
+        static let subscriptionAutoRenewalUpdate = "/api/subscription/auto-renewal/update"
+        static let subscriptionCancel = "/api/subscription/cancel"
+        
+        // ✅ ЭТАП 2: Настройки приложения (10 endpoints)
+        static let appSettingsSync = "/api/settings/sync"
+        static let appSettingsUpdate = "/api/settings/update"
+        static let appSettingsTheme = "/api/settings/theme"
+        static let appSettingsThemeUpdate = "/api/settings/theme/update"
+        static let appSettingsLanguage = "/api/settings/language"
+        static let appSettingsLanguageUpdate = "/api/settings/language/update"
+        static let appSettingsNotifications = "/api/settings/notifications"
+        static let appSettingsNotificationsUpdate = "/api/settings/notifications/update"
+        static let appSettingsBiometry = "/api/settings/biometry"
+        static let appSettingsBiometryUpdate = "/api/settings/biometry/update"
+        
+        // ✅ ЭТАП 2: Геолокация и геозоны (7 endpoints)
+        static let locationGeofencesSync = "/api/location/geofences/sync"
+        static let locationGeofencesUpdate = "/api/location/geofences/update"
+        static let locationGeofencesDelete = "/api/location/geofences" // /{geofenceId}
+        static let locationMovementHistory = "/api/location/movement-history"
+        static let locationMovementHistoryUpdate = "/api/location/movement-history/update"
+        static let locationStatus = "/api/location/status"
+        static let locationStatusUpdate = "/api/location/status/update"
+        
+        // ✅ ЭТАП 2: Семейный чат (офлайн) (3 endpoints)
+        static let chatOfflineMessagesSync = "/api/chat/offline-messages/sync"
+        static let chatOfflineMessagesSend = "/api/chat/offline-messages/send"
+        static let chatOfflineMessagesResolveConflicts = "/api/chat/offline-messages/resolve-conflicts"
+        
+        // ✅ ЭТАП 3: Офлайн хранилище (5 endpoints)
+        static let offlineStorageSync = "/api/offline-storage/sync"
+        static let offlineStorageData = "/api/offline-storage/data"
+        static let offlineStorageDataUpdate = "/api/offline-storage/data/update"
+        static let offlineStorageDataDelete = "/api/offline-storage/data" // /{dataId}
+        static let offlineStorageResolveConflicts = "/api/offline-storage/resolve-conflicts"
+        
+        // ✅ ЭТАП 3: Crash Detection (4 endpoints)
+        static let crashDetectionSync = "/api/crash-detection/sync"
+        static let crashDetectionReport = "/api/crash-detection/report"
+        static let crashDetectionNotifications = "/api/crash-detection/notifications"
+        static let crashDetectionNotificationsSend = "/api/crash-detection/notifications/send"
+        
+        // ✅ ЭТАП 3: Интерфейс для пожилых (4 endpoints)
+        static let elderlyMedicationsSync = "/api/elderly/medications/sync"
+        static let elderlyMedicationsUpdate = "/api/elderly/medications/update"
+        static let elderlyAppointmentsSync = "/api/elderly/appointments/sync"
+        static let elderlyAppointmentsUpdate = "/api/elderly/appointments/update"
         
         // Notifications
         static let notifications = "/notifications"
@@ -214,6 +378,13 @@ struct AppConfig {
         static let login = "/auth/login"
         static let logout = "/auth/logout"
         static let register = "/auth/register"
+        static let authRefresh = "/auth/refresh"
+        
+        // ✅ ЗАДАЧА 25: Roadside Assistance
+        static let roadsideCall = "/api/roadside-assistance/call"
+        static let roadsideStatus = "/api/roadside-assistance/status/{request_id}"
+        static let roadsideCancel = "/api/roadside-assistance/cancel/{request_id}"
+        static let roadsideHistory = "/api/roadside-assistance/history"
         
         // Subscription
         static let tariffs = "/subscription/tariffs"
@@ -255,6 +426,18 @@ struct AppConfig {
         // Driving Reports
         static let drivingStart = "/reports/driving/start"
         static let drivingEnd = "/reports/driving/end"
+        
+        // IoT Security (6 endpoints)
+        static let iotStatus = "/iot/status/{homeId}"
+        static let iotDevices = "/iot/devices/{homeId}"
+        static let iotThreats = "/iot/threats/{homeId}"
+        static let iotDeviceBlock = "/iot/device/{deviceId}/block"
+        static let iotScan = "/iot/scan/{homeId}"
+        static let iotFix = "/iot/fix/{threatId}"
+        
+        // Payments (2 endpoints)
+        static let paymentsQRCreate = "/payments/qr/create"
+        static let paymentsQRStatus = "/payments/qr/status/{paymentId}"
     }
     
     // MARK: - Feature Flags

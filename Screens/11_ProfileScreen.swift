@@ -298,6 +298,47 @@ struct ProfileScreen: View {
                 infoRow(icon: "person", label: localizationManager.localized("profile_name"), value: profileName.isEmpty ? "" : profileName, optional: profileName.isEmpty)
                 infoRow(icon: "envelope", label: localizationManager.localized("profile_email"), value: profileAlias.isEmpty ? "" : profileAlias, optional: profileAlias.isEmpty)
                 infoRow(icon: "key", label: localizationManager.localized("profile_phone"), value: profilePIN.isEmpty ? "" : String(repeating: "•", count: max(4, profilePIN.count)), optional: profilePIN.isEmpty)
+                
+                // ✅ НОВОЕ: ID пользователя с кнопкой копирования
+                if let memberId = UserDefaults.standard.string(forKey: "your_member_id"), !memberId.isEmpty {
+                    Button(action: {
+                        UIPasteboard.general.string = memberId
+                        let generator = UINotificationFeedbackGenerator()
+                        generator.notificationOccurred(.success)
+                    }) {
+                        HStack(spacing: Spacing.m) {
+                            Image(systemName: "number")
+                                .font(.system(size: 20))
+                                .foregroundColor(.primaryBlue)
+                                .frame(width: 24)
+                            
+                            VStack(alignment: .leading, spacing: Spacing.xs) {
+                                Text(localizationManager.localized("profile_user_id"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                
+                                HStack(spacing: 4) {
+                                    Text(memberId)
+                                        .font(.body)
+                                        .foregroundColor(.textPrimary)
+                                    
+                                    Image(systemName: "doc.on.doc")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(.primaryBlue)
+                                }
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(Spacing.m)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .fill(Color.backgroundMedium.opacity(0.3))
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                
                 infoRow(icon: "calendar", label: localizationManager.localized("profile_registration_date"), value: registrationDate.isEmpty ? localizationManager.localized("profile_not_set") : registrationDate)
             }
             .padding(.horizontal, Spacing.screenPadding)

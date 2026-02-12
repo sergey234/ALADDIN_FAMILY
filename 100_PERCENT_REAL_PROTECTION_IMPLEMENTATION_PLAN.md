@@ -4,6 +4,7 @@
 
 ### **🌐 СЕРВЕРНЫЕ КООРДИНАТЫ:**
 - **IP адрес:** `149.154.65.180`
+- **Домен:** `aladdin-ai.ru` (через Nginx прокси)
 - **Пользователь:** `root`
 - **Пароль:** `Sergio675`
 - **SSH порт:** `22` (стандартный)
@@ -18,53 +19,165 @@ sshpass -p 'Sergio675' ssh -o StrictHostKeyChecking=no root@149.154.65.180
 
 # Проверка доступности сервера
 ping 149.154.65.180
+
+# Проверка доступности через домен
+curl -I https://aladdin-ai.ru/api/health
 ```
 
-### **📁 СТРУКТУРА ПРОЕКТА НА СЕРВЕРЕ:**
+### **📁 СТРУКТУРА ПРОЕКТА НА СЕРВЕРЕ (АКТУАЛЬНАЯ):**
 ```bash
 /opt/aladdin-backend/
-├── api_gateway.py                 # ОСНОВНОЙ API GATEWAY
+├── main.py                        # ✅ ОСНОВНОЙ FASTAPI ПРИЛОЖЕНИЕ (запущен на порту 8002)
 ├── sfm_adapter.py                 # SFM АДАПТЕР
-├── start_sfm_core_http.py         # HTTP API ДЛЯ SFM (НОВЫЙ)
+├── start_sfm_core_http.py         # HTTP API ДЛЯ SFM (порт 8003)
+├── app/                           # FastAPI приложение
+│   ├── routers/                   # Роутеры API
+│   │   ├── auth_router.py
+│   │   ├── components.py
+│   │   ├── family.py
+│   │   ├── payments.py
+│   │   └── ...
+│   ├── models/                    # Модели данных
+│   └── database/                  # База данных
 ├── security/                      # SFM КОМПОНЕНТЫ
+│   ├── api/routers/               # Роутеры безопасности
+│   │   ├── metrics_router.py      # ✅ Роутер для /api/metrics/upload
+│   │   ├── location_bubble_router.py
+│   │   ├── identity_theft_protection_router.py
+│   │   └── ...
 │   ├── safe_function_manager.py
-│   ├── sfm_singleton.py
-│   └── ...
+│   └── sfm_singleton.py
 ├── venvs/main_env/               # PYTHON ВИРТУАЛЬНОЕ ОКРУЖЕНИЕ
 └── requirements.txt
 ```
 
-### **⚙️ СИСТЕМНЫЕ СЕРВИСЫ:**
+### **⚙️ СИСТЕМНЫЕ СЕРВИСЫ (АКТУАЛЬНЫЕ):**
 ```bash
-# API Gateway сервис
-sudo systemctl status aladdin-main-api-gateway
-sudo systemctl restart aladdin-main-api-gateway
+# ✅ Основной FastAPI сервис (порт 8002)
+sudo systemctl status aladdin-production-api
+sudo systemctl restart aladdin-production-api
 
-# SFM HTTP API сервис
+# ✅ SFM HTTP API сервис (порт 8003, внутренний)
 sudo systemctl status aladdin-sfm-core
 sudo systemctl restart aladdin-sfm-core
+
+# ✅ Backend сервис (порт 8000, резервный)
+sudo systemctl status aladdin-backend
+sudo systemctl restart aladdin-backend
+
+# Проверка всех сервисов
+systemctl list-units | grep aladdin
+```
+
+### **🌐 ПОРТЫ И ENDPOINTS:**
+```bash
+# Порт 8002 - Основной API (через Nginx прокси на aladdin-ai.ru)
+# Порт 8003 - SFM HTTP API (только localhost, внутренний)
+# Порт 8000 - Backend API (резервный)
+
+# Внешний доступ (через домен):
+https://aladdin-ai.ru/api/*
+
+# Внутренний доступ (на сервере):
+http://127.0.0.1:8002/api/*  # Основной API
+http://127.0.0.1:8003/api/*  # SFM HTTP API (только localhost)
 ```
 
 ### **🧪 ТЕСТИРОВАНИЕ API:**
 ```bash
-# Проверка API Gateway
+# Проверка основного API (через домен)
+curl https://aladdin-ai.ru/api/health
+
+# Проверка основного API (напрямую на сервере)
 curl http://127.0.0.1:8002/api/health
 
-# Проверка SFM HTTP API
+# Проверка SFM HTTP API (только на сервере, localhost)
 curl http://127.0.0.1:8003/api/health
 
 # Тестирование функции
-curl http://149.154.65.180:8002/api/phishing/sensitivity
+curl https://aladdin-ai.ru/api/phishing/sensitivity
+
+# ✅ Тестирование Metrics Upload endpoint
+curl -X POST https://aladdin-ai.ru/api/metrics/upload \
+  -H "Content-Type: application/json" \
+  -d '{"deviceId":"test","appVersion":"1.0.0","platform":"ios","metrics":[]}'
+
+# Проверка статуса Nginx
+sudo systemctl status nginx
+sudo nginx -t  # Проверка конфигурации
 ```
 
 ### **📋 РАБОЧИЙ ПРОЦЕСС:**
-1. **Подключиться к серверу** по SSH
-2. **Создать backup** перед изменениями
-3. **Скачать файлы** для редактирования
-4. **Внести изменения** в IDE
-5. **Загрузить обратно** на сервер
-6. **Перезапустить сервисы**
-7. **Протестировать** изменения
+1. **Подключиться к серверу** по SSH: `ssh root@149.154.65.180`
+2. **Создать backup** перед изменениями: `cp main.py main_backup_$(date +%Y%m%d_%H%M%S).py`
+3. **Скачать файлы** для редактирования: `scp root@149.154.65.180:/opt/aladdin-backend/main.py ./main_current.py`
+4. **Внести изменения** в IDE (VS Code, Cursor)
+5. **Проверить синтаксис**: `python3 -m py_compile ./main_current.py`
+6. **Загрузить обратно** на сервер: `scp ./main_current.py root@149.154.65.180:/opt/aladdin-backend/main.py`
+7. **Перезапустить сервисы**: `sudo systemctl restart aladdin-production-api`
+8. **Протестировать** изменения: `curl https://aladdin-ai.ru/api/health`
+
+### **🚨 ВАЖНЫЕ ЗАМЕЧАНИЯ:**
+- ✅ **Используется `main.py`**, а не `api_gateway.py` (старый файл не используется)
+- ✅ **Основной сервис**: `aladdin-production-api.service` (порт 8002)
+- ✅ **Nginx проксирует** `/api/*` на `127.0.0.1:8002`
+- ✅ **Metrics endpoint**: `/api/metrics/upload` должен быть подключен в `main.py`
+- ⚠️ **Проверка роутеров**: Убедиться что `metrics_router` подключен в `main.py`
+
+### **🔧 ИСПРАВЛЕНИЕ ПРОБЛЕМЫ С `/api/metrics/upload` (404 ERROR):**
+
+**Проблема:** iOS приложение получает 404 для `/api/metrics/upload`
+
+**Причина:** Роутер `metrics_router` не подключен в `main.py` или сервер не перезапущен
+
+**Решение:**
+
+1. **Проверить наличие роутера на сервере:**
+```bash
+ssh root@149.154.65.180
+ls -la /opt/aladdin-backend/security/api/routers/metrics_router.py
+```
+
+2. **Проверить подключение в main.py:**
+```bash
+grep -n "metrics_router" /opt/aladdin-backend/main.py
+```
+
+3. **Если роутер не подключен, добавить в main.py:**
+```python
+# Импорт роутера
+try:
+    from security.api.routers.metrics_router import router as metrics_router
+    metrics_router_available = True
+except ImportError as e:
+    print(f"⚠️ metrics_router недоступен: {e}")
+    metrics_router_available = False
+    metrics_router = None
+
+# Подключение роутера (в секции с другими роутерами)
+if metrics_router_available:
+    try:
+        app.include_router(metrics_router)
+        print("✅ Роутер Metrics подключен")
+    except Exception as e:
+        print(f"❌ Ошибка подключения Metrics: {e}")
+```
+
+4. **Перезапустить сервис:**
+```bash
+sudo systemctl restart aladdin-production-api
+sleep 5
+systemctl status aladdin-production-api
+```
+
+5. **Протестировать endpoint:**
+```bash
+curl -X POST https://aladdin-ai.ru/api/metrics/upload \
+  -H "Content-Type: application/json" \
+  -d '{"deviceId":"test","appVersion":"1.0.0","platform":"ios","metrics":[]}'
+```
+
+**Ожидаемый результат:** HTTP 200 OK с JSON ответом
 
 ---
 
@@ -123,11 +236,11 @@ curl http://149.154.65.180:8002/api/phishing/sensitivity
     - Убедиться что сервер доступен
 
 1.2 Проверить статус API Gateway
-    - Команда: systemctl status aladdin-main-api-gateway
+    - Команда: systemctl status aladdin-production-api
     - Должен быть: active (running)
 
 1.3 ВСЕГДА: Создать backup текущего состояния
-    - Команда: cp /opt/aladdin-backend/api_gateway.py /opt/aladdin-backend/api_gateway_backup_$(date +%Y%m%d_%H%M%S).py
+    - Команда: cp /opt/aladdin-backend/main.py /opt/aladdin-backend/main_backup_$(date +%Y%m%d_%H%M%S).py
     - Если нужно: cp /opt/aladdin-backend/sfm_adapter.py /opt/aladdin-backend/sfm_adapter_backup_$(date +%Y%m%d_%H%M%S).py
 ```
 
@@ -142,24 +255,26 @@ curl http://149.154.65.180:8002/api/phishing/sensitivity
     - Проверить что возвращает mock данные или ошибку
 
 2.3 Найти функцию в коде
-    - Команда: grep -n "[function_name]" /opt/aladdin-backend/api_gateway.py
+    - Команда: grep -n "[function_name]" /opt/aladdin-backend/main.py
 ```
 
 #### **ЭТАП 3: СКАЧИВАНИЕ КОДА**
 ```
-3.1 Скачать api_gateway.py с сервера
-    - Команда: scp root@149.154.65.180:/opt/aladdin-backend/api_gateway.py ./api_gateway_server_current.py
+3.1 Скачать main.py с сервера
+    - Команда: scp root@149.154.65.180:/opt/aladdin-backend/main.py ./main_server_current.py
     - Или: curl + перенаправление вывода
 
 3.2 Проверить целостность файла
-    - Команда: wc -l ./api_gateway_server_current.py
-    - Должно быть около 900 строк
+    - Команда: wc -l ./main_server_current.py
+    - Должно быть около 400+ строк (зависит от количества подключенных роутеров)
 ```
 
 #### **ЭТАП 4: АНАЛИЗ ТЕКУЩЕЙ РЕАЛИЗАЦИИ**
 ```
 4.1 Найти функцию в скачанном файле
-    - Команда: grep -n -A 20 "[endpoint_path]" ./api_gateway_server_current.py
+    - Команда: grep -n -A 20 "[endpoint_path]" ./main_server_current.py
+    - Или найти в роутерах: grep -r "[endpoint_path]" /opt/aladdin-backend/app/routers/
+    - Или в security роутерах: grep -r "[endpoint_path]" /opt/aladdin-backend/security/api/routers/
 
 4.2 Определить тип текущей реализации:
     - HARDCODED: return { "key": "value", ... }
@@ -173,12 +288,14 @@ curl http://149.154.65.180:8002/api/phishing/sensitivity
 #### **ЭТАП 5: ИСПРАВЛЕНИЕ ФУНКЦИИ**
 ```
 5.1 Определить тип функции и какие файлы исправлять:
-    - ПРОСТЫЕ ФУНКЦИИ: Только api_gateway.py
-    - СЛОЖНЫЕ ФУНКЦИИ: api_gateway.py + sfm_adapter.py
+    - ПРОСТЫЕ ФУНКЦИИ: Только main.py или соответствующий роутер
+    - СЛОЖНЫЕ ФУНКЦИИ: main.py/роутер + sfm_adapter.py
     - Правило: Если функция требует специальной обработки в SFM адаптере - исправлять оба файла
+    - Роутеры находятся в: `/opt/aladdin-backend/app/routers/` или `/opt/aladdin-backend/security/api/routers/`
 
 5.2 Открыть файл(ы) в IDE (VS Code, Cursor)
     - Найти функцию по названию эндпоинта
+    - Проверить в main.py (подключение роутеров) и в соответствующих роутерах
     - Выделить блок реализации
 
 5.3 Заменить реализацию на SFM вызов:
@@ -216,8 +333,9 @@ curl http://149.154.65.180:8002/api/phishing/sensitivity
 #### **ЭТАП 6: ПРОВЕРКА СИНТАКСИСА**
 ```
 6.1 Проверить Python синтаксис
-    - Команда: python3 -m py_compile ./api_gateway_server_current.py
+    - Команда: python3 -m py_compile ./main_server_current.py
     - Должно пройти без ошибок
+    - Если изменялись роутеры: проверить синтаксис каждого измененного роутера
 
 6.2 Проверить логику кода
     - Убедиться что отступы правильные
@@ -228,23 +346,24 @@ curl http://149.154.65.180:8002/api/phishing/sensitivity
 #### **ЭТАП 7: ЗАГРУЗКА НА СЕРВЕР**
 ```
 7.1 Загрузить исправленный файл
-    - Команда: scp ./api_gateway_server_current.py root@149.154.65.180:/opt/aladdin-backend/api_gateway.py
+    - Команда: scp ./main_server_current.py root@149.154.65.180:/opt/aladdin-backend/main.py
+    - Если изменялись роутеры: загрузить соответствующие файлы роутеров
 
 7.2 Проверить что файл загружен
-    - Команда: ssh root@149.154.65.180 "ls -la /opt/aladdin-backend/api_gateway.py"
+    - Команда: ssh root@149.154.65.180 "ls -la /opt/aladdin-backend/main.py"
 ```
 
 #### **ЭТАП 8: ПЕРЕЗАПУСК API GATEWAY**
 ```
 8.1 ПЕРЕЗАПУСТИТЬ ПОЛНОСТЬЮ (убивает все процессы и запускает заново)
     - Причина: Python кэширует импорты, Uvicorn workers не перезагружают модули
-    - Команда: systemctl restart aladdin-main-api-gateway
+    - Команда: systemctl restart aladdin-production-api
 
 8.2 Подождать полного запуска
     - Команда: sleep 5
 
 8.3 Проверить статус
-    - Команда: systemctl status aladdin-main-api-gateway
+    - Команда: systemctl status aladdin-production-api
     - Должен быть: active (running)
 ```
 
@@ -265,14 +384,14 @@ curl http://149.154.65.180:8002/api/phishing/sensitivity
 #### **ЭТАП 10: ПРОВЕРКА ЛОГОВ**
 ```
 10.1 Проверить логи API Gateway
-     - Команда: journalctl -u aladdin-main-api-gateway -n 10
+     - Команда: journalctl -u aladdin-production-api -n 10
 
 10.2 Найти записи о тестируемой функции
      - Должно быть: успешный вызов SFM
      - НЕ должно быть: ошибок выполнения
 
 10.3 Проверить на ошибки
-     - Команда: journalctl -u aladdin-main-api-gateway --since "5 minutes ago" | grep -i error
+     - Команда: journalctl -u aladdin-production-api --since "5 minutes ago" | grep -i error
 ```
 
 #### **ЭТАП 11: ПОДТВЕРЖДЕНИЕ УСПЕХА**

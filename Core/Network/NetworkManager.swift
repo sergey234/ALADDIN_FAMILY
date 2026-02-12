@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import Security
+import os.log  // ✅ ДОБАВЛЕНО: Для Production логирования
 
 /**
  * 🌐 Network Manager
@@ -10,11 +11,17 @@ import Security
 
 class NetworkManager: NSObject, ObservableObject {
     
-    // MARK: - Properties
+    // ✅ ДОБАВЛЕНО: Logger для Production логирования
+    private static let networkLogger = OSLog(
+        subsystem: "com.aladdin.network",
+        category: "NetworkManager"
+    )
     
+    // MARK: - Properties
+
     @Published var isOnline: Bool = true
     @Published var lastError: String?
-    
+
     private let baseURL: String
     private var session: URLSession
     private var sessionConfiguration: URLSessionConfiguration = URLSessionConfiguration.default
@@ -23,6 +30,10 @@ class NetworkManager: NSObject, ObservableObject {
     private let slowRequestLimitBeforeAdjusting: Int = 2
     private var didIncreaseTimeouts = false
     private var cancellables = Set<AnyCancellable>()
+
+    // ✅ ЗАДАЧА 62: Rate Limiting
+    /// Rate limiter для защиты от перегрузки API
+    private let rateLimiter = RateLimiter(maxRequests: 100, timeWindow: 60.0) // 100 запросов в минуту
     
     // MARK: - SSL Pinning Properties
     
@@ -90,6 +101,29 @@ class NetworkManager: NSObject, ObservableObject {
         self.pinnedCertificates = loadPinnedCertificates()
         print("✅ Сертификаты загружены, count: \(self.pinnedCertificates.count)")
         
+        // ✅ ЗАДАЧА 61: Проверка SSL Pinning в продакшене
+        #if !DEBUG
+        // В продакшене SSL Pinning ОБЯЗАТЕЛЬНО должен быть включен!
+        assert(isSSLPinningEnabled, "🚨 КРИТИЧЕСКАЯ ОШИБКА: SSL Pinning должен быть включен в продакшене!")
+        if !isSSLPinningEnabled {
+            os_log("🚨 КРИТИЧЕСКАЯ ОШИБКА: SSL Pinning отключен в продакшене!", log: Self.networkLogger, type: .error)
+        }
+        #endif
+        
+        // Логируем статус SSL Pinning
+        #if DEBUG
+        print("🔐 SSL Pinning статус: \(isSSLPinningEnabled ? "✅ ВКЛЮЧЕН" : "❌ ВЫКЛЮЧЕН")")
+        print("🔐 SSL Pinning домены: \(pinnedDomains)")
+        print("🔐 SSL Pinning сертификаты: \(pinnedCertificates.count) шт.")
+        #else
+        os_log("🔐 SSL Pinning: %{public}@, доменов: %d, сертификатов: %d", 
+               log: Self.networkLogger, 
+               type: .info,
+               isSSLPinningEnabled ? "ВКЛЮЧЕН" : "ВЫКЛЮЧЕН",
+               pinnedDomains.count,
+               pinnedCertificates.count)
+        #endif
+        
         print("🔍 Создание URLSession...")
         // Создаем сессию с делегатом для SSL Pinning
         self.sessionConfiguration = configuration
@@ -150,9 +184,11 @@ class NetworkManager: NSObject, ObservableObject {
     
     /**
      * GET запрос
+     * ✅ ИСПРАВЛЕНО: Добавлен параметр requiresAuth для обязательной авторизации
      */
     func get<T: Decodable>(
         endpoint: String,
+        requiresAuth: Bool = true,  // ✅ По умолчанию авторизация обязательна
         completion: @escaping (Result<T, Error>) -> Void
     ) {
         // Проверяем и обновляем токен если нужно
@@ -168,9 +204,21 @@ class NetworkManager: NSObject, ObservableObject {
             request.httpMethod = "GET"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             
-            // Добавляем токен если есть
-            if let token = AppConfig.authToken {
+            // ✅ ПРОВЕРКА АВТОРИЗАЦИИ: Если требуется авторизация, проверяем токен
+            if requiresAuth {
+                guard let token = AppConfig.authToken else {
+                    #if DEBUG
+                    print("⚠️ NetworkManager.get: Токен отсутствует для защищенного endpoint: \(endpoint)")
+                    #endif
+                    completion(.failure(NetworkError.unauthorized("Токен авторизации отсутствует")))
+                    return
+                }
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            } else {
+                // Для публичных endpoint'ов токен опциональный
+                if let token = AppConfig.authToken {
+                    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                }
             }
             
             performRequest(request: request, completion: completion)
@@ -179,10 +227,12 @@ class NetworkManager: NSObject, ObservableObject {
     
     /**
      * POST запрос
+     * ✅ ИСПРАВЛЕНО: Добавлен параметр requiresAuth для обязательной авторизации
      */
     func post<T: Decodable, B: Encodable>(
         endpoint: String,
         body: B,
+        requiresAuth: Bool = true,  // ✅ По умолчанию авторизация обязательна
         completion: @escaping (Result<T, Error>) -> Void
     ) {
         let fullURL = baseURL + endpoint
@@ -209,9 +259,23 @@ class NetworkManager: NSObject, ObservableObject {
                 print("   - Добавлен X-API-Key заголовок")
             }
             
-            if let token = AppConfig.authToken {
+            // ✅ ПРОВЕРКА АВТОРИЗАЦИИ: Если требуется авторизация, проверяем токен
+            if requiresAuth {
+                guard let token = AppConfig.authToken else {
+                    #if DEBUG
+                    print("⚠️ NetworkManager.post: Токен отсутствует для защищенного endpoint: \(endpoint)")
+                    #endif
+                    completion(.failure(NetworkError.unauthorized("Токен авторизации отсутствует")))
+                    return
+                }
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
                 print("   - Добавлен Authorization заголовок")
+            } else {
+                // Для публичных endpoint'ов токен опциональный
+                if let token = AppConfig.authToken {
+                    request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                    print("   - Добавлен Authorization заголовок (опционально)")
+                }
             }
             
             // Encode body
@@ -228,6 +292,34 @@ class NetworkManager: NSObject, ObservableObject {
             }
             
             print("🔵 NetworkManager.post: Отправка запроса...")
+            performRequest(request: request, completion: completion)
+        }
+    }
+    
+    /**
+     * DELETE запрос без body
+     */
+    func delete<T: Decodable>(
+        endpoint: String,
+        completion: @escaping (Result<T, Error>) -> Void
+    ) {
+        // Проверяем и обновляем токен если нужно
+        Task {
+            _ = await JWTTokenManager.shared.refreshTokenIfNeeded()
+            
+            guard let url = URL(string: baseURL + endpoint) else {
+                completion(.failure(NetworkError.invalidURL))
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "DELETE"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            if let token = AppConfig.authToken {
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+            
             performRequest(request: request, completion: completion)
         }
     }
@@ -510,9 +602,47 @@ class NetworkManager: NSObject, ObservableObject {
         request: URLRequest,
         completion: @escaping (Result<T, Error>) -> Void
     ) {
+        // ✅ ЗАДАЧА 62: Проверка rate limit перед запросом
+        let endpoint = request.url?.path ?? "unknown"
+
+        guard rateLimiter.canMakeRequest(to: endpoint) else {
+            // Лимит превышен - возвращаем ошибку
+            let timeUntilReset = rateLimiter.getTimeUntilReset(for: endpoint) ?? 60.0
+            let errorMessage = String(format: "Слишком много запросов. Повторите через %.0f секунд", timeUntilReset)
+
+            #if DEBUG
+            print("🚫 Rate Limit: Запрос заблокирован для \(endpoint)")
+            print("   - Время до сброса: \(String(format: "%.1f", timeUntilReset)) сек")
+            #endif
+
+            // Production логирование
+            os_log("🚫 Rate Limit: Request blocked for %{public}@, retry in %.1fs",
+                   log: Self.networkLogger,
+                   type: .error,
+                   endpoint,
+                   timeUntilReset)
+
+            completion(.failure(NetworkError.tooManyRequests(errorMessage)))
+            return
+        }
+
+        // Регистрируем запрос в rate limiter
+        rateLimiter.recordRequest(to: endpoint)
+
+        // ✅ Production логирование (видно в Xcode Console на реальном устройстве)
+        os_log("🌐 API Request: %{public}@ %{public}@", 
+               log: Self.networkLogger, 
+               type: .info,
+               request.httpMethod ?? "unknown",
+               request.url?.absoluteString ?? "unknown")
+        
+        #if DEBUG
         print("🔵 NetworkManager.performRequest: Начало")
         print("   - URL: \(request.url?.absoluteString ?? "unknown")")
         print("   - Method: \(request.httpMethod ?? "unknown")")
+        print("   - Rate limit: OK (\(rateLimiter.getRequestCount(for: endpoint))/100)")
+        #endif
+        
         let requestStartTime = Date()
         
         session.dataTask(with: request) { [weak self] data, response, error in
@@ -531,16 +661,36 @@ class NetworkManager: NSObject, ObservableObject {
                     )
                 }
                 
+                #if DEBUG
                 print("🔵 NetworkManager.performRequest: Получен ответ (время: \(String(format: "%.2f", duration))s)")
+                #endif
                 
                 // Проверка ошибки
                 if let error = error {
+                    // ✅ Production логирование ошибок (критично для диагностики!)
+                    os_log("❌ Network Error: %{public}@ - %{public}@", 
+                           log: Self.networkLogger, 
+                           type: .error,
+                           request.url?.absoluteString ?? "unknown",
+                           error.localizedDescription)
+                    
+                    if let nsError = error as NSError? {
+                        os_log("   Domain: %{public}@, Code: %d", 
+                               log: Self.networkLogger, 
+                               type: .error,
+                               nsError.domain,
+                               nsError.code)
+                    }
+                    
+                    #if DEBUG
                     print("❌ NetworkManager.performRequest: Ошибка сети: \(error)")
                     print("   - Описание: \(error.localizedDescription)")
                     if let nsError = error as NSError? {
                         print("   - Domain: \(nsError.domain)")
                         print("   - Code: \(nsError.code)")
                     }
+                    #endif
+                    
                     self?.lastError = error.localizedDescription
                     completion(.failure(error))
                     return
@@ -548,25 +698,86 @@ class NetworkManager: NSObject, ObservableObject {
                 
                 // Проверка HTTP статуса
                 guard let httpResponse = response as? HTTPURLResponse else {
+                    // ✅ Production логирование неверного ответа
+                    os_log("❌ Invalid Response: %{public}@", 
+                           log: Self.networkLogger, 
+                           type: .error,
+                           request.url?.absoluteString ?? "unknown")
+                    
+                    #if DEBUG
                     print("❌ NetworkManager.performRequest: Неверный ответ (не HTTPURLResponse)")
+                    #endif
+                    
                     completion(.failure(NetworkError.invalidResponse))
                     return
                 }
                 
+                // ✅ Production логирование HTTP статуса (только для ошибок)
+                if httpResponse.statusCode >= 400 {
+                    os_log("⚠️ HTTP Error: %d - %{public}@", 
+                           log: Self.networkLogger, 
+                           type: .error,
+                           httpResponse.statusCode,
+                           request.url?.absoluteString ?? "unknown")
+                }
+                
+                #if DEBUG
                 print("   - HTTP Status: \(httpResponse.statusCode)")
+                #endif
                 
                 // Логируем тело ответа для отладки
                 if let data = data, let responseString = String(data: data, encoding: .utf8) {
                     print("   - Response body: \(responseString.prefix(200))")
                 }
                 
+                // Обработка 429 ошибки (Too Many Requests) - rate limit
+                if httpResponse.statusCode == 429 {
+                    // ✅ ЗАДАЧА 62: Обработка 429 ошибки от сервера
+                    let retryAfter = httpResponse.value(forHTTPHeaderField: "Retry-After") ?? "60"
+                    let errorMessage = "Сервер ограничил частоту запросов. Повторите через \(retryAfter) секунд"
+
+                    #if DEBUG
+                    print("⚠️ NetworkManager: Получен 429 Too Many Requests")
+                    print("   - Retry-After: \(retryAfter) сек")
+                    print("   - Endpoint: \(request.url?.path ?? "unknown")")
+                    #endif
+
+                    // Production логирование
+                    os_log("⚠️ 429 Too Many Requests: %{public}@ - Retry-After: %{public}@",
+                           log: Self.networkLogger,
+                           type: .error,
+                           request.url?.absoluteString ?? "unknown",
+                           retryAfter)
+
+                    self?.lastError = errorMessage
+                    completion(.failure(NetworkError.tooManyRequests(errorMessage)))
+                    return
+                }
+
                 // Обработка 401 ошибки (Unauthorized) - токен истёк
                 if httpResponse.statusCode == 401 {
+                    // ✅ Production логирование 401 ошибки
+                    os_log("⚠️ 401 Unauthorized: %{public}@ - Attempting token refresh", 
+                           log: Self.networkLogger, 
+                           type: .error,
+                           request.url?.absoluteString ?? "unknown")
+                    
+                    #if DEBUG
                     print("⚠️ NetworkManager: Получен 401 - токен истёк, пытаемся обновить...")
+                    #endif
 
                     // Проверяем, есть ли токен в Keychain перед обновлением
                     guard JWTTokenManager.shared.hasValidToken() else {
+                        // ✅ Production логирование отсутствия токена
+                        os_log("❌ No valid token: %{public}@", 
+                               log: Self.networkLogger, 
+                               type: .error,
+                               request.url?.absoluteString ?? "unknown")
+                        
+                        #if DEBUG
                         print("❌ NetworkManager: Валидный токен отсутствует, не повторяем запрос")
+                        #endif
+                        
                         completion(.failure(NetworkError.tokenExpired))
                         return
                     }
@@ -576,7 +787,15 @@ class NetworkManager: NSObject, ObservableObject {
                         let tokenWasRefreshed = await JWTTokenManager.shared.forceRefreshToken()
                         
                         if tokenWasRefreshed {
+                            // ✅ Production логирование успешного обновления токена
+                            os_log("✅ Token refreshed: %{public}@ - Retrying request", 
+                                   log: Self.networkLogger, 
+                                   type: .info,
+                                   request.url?.absoluteString ?? "unknown")
+                            
+                            #if DEBUG
                             print("✅ NetworkManager: Токен обновлён, повторяем запрос...")
+                            #endif
                             
                             guard let strongSelf = self else {
                                 completion(.failure(NetworkError.tokenExpired))
@@ -606,7 +825,16 @@ class NetworkManager: NSObject, ObservableObject {
                             // Повторяем запрос с новым токеном
                             strongSelf.performRequest(request: retryRequest, completion: completion)
                         } else {
+                            // ✅ Production логирование ошибки обновления токена
+                            os_log("❌ Token refresh failed: %{public}@", 
+                                   log: Self.networkLogger, 
+                                   type: .error,
+                                   request.url?.absoluteString ?? "unknown")
+                            
+                            #if DEBUG
                             print("❌ NetworkManager: Не удалось обновить токен")
+                            #endif
+                            
                             completion(.failure(NetworkError.tokenExpired))
                         }
                     }
@@ -615,60 +843,135 @@ class NetworkManager: NSObject, ObservableObject {
                 
                 // Обработка ошибок HTTP
                 guard (200...299).contains(httpResponse.statusCode) else {
-                    print("❌ NetworkManager.performRequest: HTTP ошибка \(httpResponse.statusCode)")
-                    
                     // Пытаемся декодировать ошибку от сервера
+                    let errorMessage: String
                     if let data = data, let errorData = try? JSONDecoder().decode([String: String].self, from: data) {
-                        let errorMessage = errorData["detail"] ?? errorData["message"] ?? "HTTP ошибка \(httpResponse.statusCode)"
-                        print("   - Сообщение от сервера: \(errorMessage)")
-                        
-                        // Создаем более информативную ошибку
-                        let networkError: NetworkError
-                        switch httpResponse.statusCode {
-                        case 400:
-                            networkError = .badRequest(errorMessage)
-                        case 403:
-                            networkError = .forbidden(errorMessage)
-                        case 404:
-                            networkError = .notFound(errorMessage)
-                        case 429:
-                            networkError = .tooManyRequests(errorMessage)
-                        case 500:
-                            networkError = .internalServerError(errorMessage)
-                        case 502:
-                            networkError = .badGateway(errorMessage)
-                        case 503:
-                            networkError = .serviceUnavailable(errorMessage)
-                        default:
-                            networkError = .httpError(httpResponse.statusCode)
-                        }
-                        
-                        completion(.failure(networkError))
+                        errorMessage = errorData["detail"] ?? errorData["message"] ?? "HTTP ошибка \(httpResponse.statusCode)"
                     } else {
-                        completion(.failure(NetworkError.httpError(httpResponse.statusCode)))
+                        errorMessage = "HTTP ошибка \(httpResponse.statusCode)"
                     }
+                    
+                    // ✅ Production логирование HTTP ошибок
+                    os_log("❌ HTTP Error %d: %{public}@ - %{public}@", 
+                           log: Self.networkLogger, 
+                           type: .error,
+                           httpResponse.statusCode,
+                           request.url?.absoluteString ?? "unknown",
+                           errorMessage)
+                    
+                    #if DEBUG
+                    print("❌ NetworkManager.performRequest: HTTP ошибка \(httpResponse.statusCode)")
+                    print("   - Сообщение от сервера: \(errorMessage)")
+                    #endif
+                    
+                    // Создаем более информативную ошибку
+                    let networkError: NetworkError
+                    switch httpResponse.statusCode {
+                    case 400:
+                        networkError = .badRequest(errorMessage)
+                    case 403:
+                        networkError = .forbidden(errorMessage)
+                    case 404:
+                        networkError = .notFound(errorMessage)
+                    case 429:
+                        networkError = .tooManyRequests(errorMessage)
+                    case 500:
+                        networkError = .internalServerError(errorMessage)
+                    case 502:
+                        networkError = .badGateway(errorMessage)
+                    case 503:
+                        networkError = .serviceUnavailable(errorMessage)
+                    default:
+                        networkError = .httpError(httpResponse.statusCode)
+                    }
+                    
+                    completion(.failure(networkError))
                     return
                 }
                 
                 // Проверка данных
                 guard let data = data else {
+                    // ✅ Production логирование отсутствия данных
+                    os_log("❌ No data in response: %{public}@", 
+                           log: Self.networkLogger, 
+                           type: .error,
+                           request.url?.absoluteString ?? "unknown")
+                    
+                    #if DEBUG
                     print("❌ NetworkManager.performRequest: Нет данных в ответе")
+                    #endif
+                    
                     completion(.failure(NetworkError.noData))
                     return
                 }
                 
+                #if DEBUG
                 print("   - Размер данных: \(data.count) байт")
+                #endif
                 
                 // Декодирование
                 do {
                     let decoded = try JSONDecoder().decode(T.self, from: data)
+
+                    #if DEBUG
                     print("✅ NetworkManager.performRequest: Декодирование успешно")
-                    completion(.success(decoded))
+                    #endif
+
+                    // ✅ ЗАДАЧА 63: Валидация данных от API
+                    do {
+                        try APIResponseValidator.validate(decoded, type: T.self)
+
+                        #if DEBUG
+                        print("✅ NetworkManager.performRequest: Валидация успешна")
+                        #endif
+
+                        completion(.success(decoded))
+                    } catch let validationError as ValidationError {
+                        // Валидация не пройдена - логируем и возвращаем ошибку
+                        #if DEBUG
+                        print("❌ NetworkManager.performRequest: Валидация не пройдена")
+                        print("   - Ошибка: \(validationError.localizedDescription)")
+                        #endif
+
+                        // Production логирование ошибки валидации
+                        os_log("❌ Validation Error: %{public}@ - %{public}@",
+                               log: Self.networkLogger,
+                               type: .error,
+                               request.url?.absoluteString ?? "unknown",
+                               validationError.localizedDescription)
+
+                        self?.lastError = validationError.localizedDescription
+                        completion(.failure(validationError))
+                    } catch {
+                        // Неожиданная ошибка валидации
+                        #if DEBUG
+                        print("❌ NetworkManager.performRequest: Неожиданная ошибка валидации: \(error)")
+                        #endif
+
+                        os_log("❌ Unexpected validation error: %{public}@ - %{public}@",
+                               log: Self.networkLogger,
+                               type: .error,
+                               request.url?.absoluteString ?? "unknown",
+                               error.localizedDescription)
+
+                        self?.lastError = "Ошибка валидации данных: \(error.localizedDescription)"
+                        completion(.failure(error))
+                    }
                 } catch {
+                    // ✅ Production логирование ошибок декодирования
+                    os_log("❌ Decoding Error: %{public}@ - %{public}@", 
+                           log: Self.networkLogger, 
+                           type: .error,
+                           request.url?.absoluteString ?? "unknown",
+                           error.localizedDescription)
+                    
+                    #if DEBUG
                     print("❌ NetworkManager.performRequest: Ошибка декодирования: \(error)")
                     if let dataString = String(data: data, encoding: .utf8) {
                         print("   - Данные для декодирования: \(dataString.prefix(500))")
                     }
+                    #endif
+                    
                     self?.lastError = "Ошибка декодирования: \(error.localizedDescription)"
                     completion(.failure(error))
                 }
@@ -727,9 +1030,31 @@ extension NetworkManager: URLSessionDelegate {
             // Сертификат прошел проверку
             let credential = URLCredential(trust: serverTrust)
             completionHandler(.useCredential, credential)
+            
+            #if !DEBUG
+            // ✅ ЗАДАЧА 61: Логируем успешную проверку SSL Pinning в продакшене
+            os_log("✅ SSL Pinning: Сертификат для %{public}@ успешно проверен", 
+                   log: Self.networkLogger, 
+                   type: .info,
+                   host)
+            #endif
         } else {
             // Сертификат не прошел проверку - блокируем соединение
             print("🚫 SSL Pinning: Соединение заблокировано из-за неверного сертификата")
+            
+            // ✅ ЗАДАЧА 61: Метрика для отслеживания SSL Pinning ошибок
+            #if !DEBUG
+            os_log("🚨 SSL Pinning ERROR: Соединение заблокировано для %{public}@ - неверный сертификат", 
+                   log: Self.networkLogger, 
+                   type: .error,
+                   host)
+            #else
+            print("🚨 SSL Pinning ERROR: Соединение заблокировано для \(host) - неверный сертификат")
+            #endif
+            
+            // TODO: В будущем отправлять метрику на сервер аналитики
+            // metricsService.trackSSLPinningError(host: host, reason: "invalid_certificate")
+            
             completionHandler(.cancelAuthenticationChallenge, nil)
         }
     }
