@@ -42,7 +42,11 @@ struct SettingsScreen: View {
     @AppStorage("profile_name") private var storedName: String = ""
     @AppStorage("profile_alias") private var storedAlias: String = ""
     @AppStorage("settings_notifications_enabled") private var isNotificationsEnabled: Bool = true
-    @State private var isBiometricEnabled: Bool = UserDefaults.standard.bool(forKey: "biometricEnabled")
+    
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @State для синхронизации с notificationManager (избегаем binding к вложенным свойствам)
+    @State private var isSecurityNotificationsEnabled: Bool = false
+    @State private var isSoundNotificationsEnabled: Bool = false
+    @State private var isBiometricEnabled: Bool = false
     @State private var showProfileEdit: Bool = false
     @State private var showLanguageSettings: Bool = false
     @State private var showSupportScreen: Bool = false
@@ -191,7 +195,19 @@ struct SettingsScreen: View {
                 .environmentObject(localizationManager)
         }
         .onAppear {
-            initializeNotifications()
+            Task { @MainActor in
+                await initializeNotifications()
+            }
+        }
+        .onChange(of: notificationManager.notificationSettings.securityEnabled) { newValue in
+            Task { @MainActor in
+                isSecurityNotificationsEnabled = newValue
+            }
+        }
+        .onChange(of: notificationManager.notificationSettings.soundEnabled) { newValue in
+            Task { @MainActor in
+                isSoundNotificationsEnabled = newValue
+            }
         }
         .withToast()
     }
@@ -502,14 +518,26 @@ struct SettingsScreen: View {
                     icon: "bell.fill",
                     title: localizationManager.localized("push_notifications"), // ✅ Локализованный заголовок
                     subtitle: localizationManager.localized("push_notifications_subtitle"), // ✅ Локализованный подзаголовок
-                    isEnabled: $notificationManager.notificationSettings.securityEnabled
+                    isEnabled: $isSecurityNotificationsEnabled,
+                    onChange: { newValue in
+                        Task { @MainActor in
+                            notificationManager.notificationSettings.securityEnabled = newValue
+                            notificationManager.saveSettings()
+                        }
+                    }
                 )
                 
                 settingRow(
                     icon: "speaker.wave.2.fill",
                     title: localizationManager.localized("sound_notifications"), // ✅ Локализованный заголовок
                     subtitle: localizationManager.localized("sound_notifications_subtitle"), // ✅ Локализованный подзаголовок
-                    isEnabled: $notificationManager.notificationSettings.soundEnabled
+                    isEnabled: $isSoundNotificationsEnabled,
+                    onChange: { newValue in
+                        Task { @MainActor in
+                            notificationManager.notificationSettings.soundEnabled = newValue
+                            notificationManager.saveSettings()
+                        }
+                    }
                 )
             }
         }
@@ -649,32 +677,42 @@ struct SettingsScreen: View {
         .cardShadow()
         .onAppear {
             if isAdmin && components.isEmpty {
-                loadComponents()
+                Task { @MainActor in
+                    loadComponents()
+                }
             }
         }
     }
     
+    /// ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Загрузка компонентов на main thread
     private func loadComponents() {
         guard isAdmin else { return }
-        isLoadingComponents = true
-        componentsError = nil
         
-        apiService.getComponentsList { [self] result in
-            isLoadingComponents = false
-            switch result {
-            case .success(let loadedComponents):
-                components = loadedComponents
-            case .failure(let error):
-                componentsError = error.localizedDescription
-                print("❌ Ошибка загрузки компонентов: \(error.localizedDescription)")
+        Task { @MainActor in
+            isLoadingComponents = true
+            componentsError = nil
+        }
+        
+        apiService.getComponentsList { result in
+            Task { @MainActor in
+                isLoadingComponents = false
+                
+                switch result {
+                case .success(let loadedComponents):
+                    components = loadedComponents
+                case .failure(let error):
+                    componentsError = error.localizedDescription
+                    print("❌ Ошибка загрузки компонентов: \(error.localizedDescription)")
+                }
             }
         }
     }
     
+    /// ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Переключение компонентов на main thread
     private func toggleComponent(_ component: ComponentStatus) {
         guard isAdmin else { return }
         
-        Task {
+        Task { @MainActor in
             do {
                 if component.isEnabled {
                     _ = try await apiService.disableComponent(componentId: component.componentId)
@@ -682,13 +720,9 @@ struct SettingsScreen: View {
                     _ = try await apiService.enableComponent(componentId: component.componentId)
                 }
                 // Обновляем список компонентов
-                await MainActor.run {
-                    loadComponents()
-                }
+                loadComponents()
             } catch {
-                await MainActor.run {
-                    componentsError = error.localizedDescription
-                }
+                componentsError = error.localizedDescription
             }
         }
     }
@@ -818,17 +852,28 @@ struct SettingsScreen: View {
         title: String,
         subtitle: String,
         isEnabled: Binding<Bool>,
-        isBiometric: Bool = false
+        isBiometric: Bool = false,
+        onChange: ((Bool) -> Void)? = nil
     ) -> some View {
         let binding: Binding<Bool> = isBiometric
             ? Binding(
                 get: { isEnabled.wrappedValue },
                 set: { newValue in
-                    isEnabled.wrappedValue = newValue
-                    handleBiometricToggle(newValue)
+                    Task { @MainActor in
+                        isEnabled.wrappedValue = newValue
+                        handleBiometricToggle(newValue)
+                    }
                 }
             )
-            : isEnabled
+            : Binding(
+                get: { isEnabled.wrappedValue },
+                set: { newValue in
+                    Task { @MainActor in
+                        isEnabled.wrappedValue = newValue
+                        onChange?(newValue)
+                    }
+                }
+            )
         
         return HStack(spacing: Spacing.s) {
             Image(systemName: icon)
@@ -1110,15 +1155,29 @@ struct SettingsScreen: View {
     
     // MARK: - Notification Functions
     
-    private func initializeNotifications() {
+    /// ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Инициализация на main thread с защитой от крашей
+    @MainActor
+    private func initializeNotifications() async {
+        // Проверяем что мы на main thread
+        assert(Thread.isMainThread, "initializeNotifications must be called on main thread")
+        
+        // ✅ Синхронизируем состояние с notificationManager
+        isSecurityNotificationsEnabled = notificationManager.notificationSettings.securityEnabled
+        isSoundNotificationsEnabled = notificationManager.notificationSettings.soundEnabled
+        
+        // ✅ Инициализируем биометрию безопасно
+        isBiometricEnabled = UserDefaults.standard.bool(forKey: "biometricEnabled")
+        
         // Инициализация системы уведомлений
-        Task {
+        do {
             let granted = await notificationManager.requestAuthorization()
             if granted {
                 print("🔔 Разрешение на уведомления получено")
             } else {
                 print("🔕 Разрешение на уведомления отклонено")
             }
+        } catch {
+            print("❌ Ошибка при запросе разрешения на уведомления: \(error.localizedDescription)")
         }
     }
 }

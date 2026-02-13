@@ -370,8 +370,9 @@ class NotificationManager: NSObject, ObservableObject {
     
     /**
      * Сохранить настройки в UserDefaults
+     * ✅ Публичный метод для сохранения настроек извне
      */
-    private func saveSettings() {
+    func saveSettings() {
         do {
             let encoder = JSONEncoder()
             let data = try encoder.encode(notificationSettings)
