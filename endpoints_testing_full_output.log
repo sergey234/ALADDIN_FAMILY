@@ -1,0 +1,549 @@
+================================================================================
+🚀 УЛУЧШЕННОЕ АВТОМАТИЧЕСКОЕ ТЕСТИРОВАНИЕ ВСЕХ ENDPOINT'ОВ ALADDIN API
+================================================================================
+
+⚠️ ВАЖНО: МЫ НЕ СОБИРАЕМ ПЕРСОНАЛЬНЫЕ ДАННЫЕ!
+   - Используем только анонимные данные: family_id, recovery_code
+   - НЕ используем email, password, телефон
+
+📊 ПРОВЕРКИ:
+   ✅ Производительность (порог: 2000ms)
+   ✅ Безопасность (CSRF, XSS, Rate Limiting)
+   ✅ Валидация данных
+   ✅ Детальный анализ всех статус кодов
+
+[94m[23:44:06] 📋 Получение списка endpoint'ов из OpenAPI...[0m
+[92m[23:44:06] ✅ Найдено 238 endpoint'ов[0m
+[94m[23:44:06] 🔐 Создание семьи и получение токена...[0m
+[92m[23:44:06] ✅ Семья создана: FAM_EBFDF1EDB7FA[0m
+[92m[23:44:06] ✅ Токен получен[0m
+[94m[23:44:06] 🚀 Начинаем тестирование 238 endpoint'ов...[0m
+[96m[23:44:06]    (проверка производительности, безопасности и валидации включена)[0m
+[94m[23:44:06] [1/238] POST /api/auth/login[0m
+[93m[23:44:06]   ⚠️ 422 (30.29ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:06] [2/238] POST /api/auth/register[0m
+[93m[23:44:06]   ⚠️ 422 (28.78ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:06] [3/238] POST /api/auth/refresh[0m
+[93m[23:44:06]   ⚠️ 422 (28.06ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:06] [4/238] POST /api/auth/login-by-recovery-code[0m
+[93m[23:44:06]   ⚠️ 422 (25.5ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:07] [5/238] POST /api/auth/logout[0m
+[92m[23:44:07]   ✅ 200 (26.47ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:07] [6/238] GET /api/referral/code[0m
+[91m[23:44:07]   ❌ 500 (34.5ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:07]      Причина: Server Error - ошибка на сервере (500)[0m
+[94m[23:44:07] [7/238] GET /api/referral/stats[0m
+[91m[23:44:07]   ❌ 500 (71.14ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:07]      Причина: Server Error - ошибка на сервере (500)[0m
+[94m[23:44:07] [8/238] GET /api/referral/history[0m
+[91m[23:44:07]   ❌ 500 (125.99ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:07]      Причина: Server Error - ошибка на сервере (500)[0m
+[94m[23:44:07] [9/238] GET /api/referral/rewards[0m
+[91m[23:44:07]   ❌ 500 (60.47ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:07]      Причина: Server Error - ошибка на сервере (500)[0m
+[94m[23:44:07] [10/238] POST /api/referral/test/payment/create[0m
+[93m[23:44:07]   ⚠️ 422 (62.26ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:08] [11/238] POST /api/referral/test/payment/confirm[0m
+[93m[23:44:08]   ⚠️ 422 (25.73ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:08] [12/238] GET /api/referral/test/discount/apply[0m
+[93m[23:44:08]   ⚠️ 422 (26.6ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:08] [13/238] POST /api/payments/create[0m
+[93m[23:44:08]   ⚠️ 422 (27.73ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:08] [14/238] GET /api/payments/status/{payment_id}[0m
+[91m[23:44:08]   ❌ 404 (47.06ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:08]      Причина: Not Found - endpoint не найден[0m
+[94m[23:44:08] [15/238] POST /api/payments/confirm[0m
+[93m[23:44:08]   ⚠️ 422 (28.68ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:08] [16/238] POST /api/payments/recover[0m
+[93m[23:44:08]   ⚠️ 422 (26.35ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:08] [17/238] POST /api/activation/retrieve[0m
+[93m[23:44:08]   ⚠️ 422 (38.47ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:08] [18/238] GET /api/components/status/{component_id}[0m
+[91m[23:44:09]   ❌ 404 (28.73ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:09]      Причина: Not Found - endpoint не найден[0m
+[94m[23:44:09] [19/238] POST /api/components/enable/{component_id}[0m
+[91m[23:44:09]   ❌ 404 (33.63ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:09]      Причина: Not Found - endpoint не найден[0m
+[94m[23:44:09] [20/238] POST /api/components/disable/{component_id}[0m
+[91m[23:44:09]   ❌ 404 (28.97ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:09]      Причина: Not Found - endpoint не найден[0m
+[94m[23:44:09] [21/238] GET /api/components/configuration/{component_id}[0m
+[91m[23:44:09]   ❌ 404 (30.18ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:09]      Причина: Not Found - endpoint не найден[0m
+[94m[23:44:09] [22/238] POST /api/components/configuration/{component_id}[0m
+[93m[23:44:09]   ⚠️ 422 (30.87ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:09] [23/238] POST /api/components/batch/status[0m
+[93m[23:44:09]   ⚠️ 422 (30.21ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:09] [24/238] GET /api/protection/settings[0m
+[92m[23:44:09]   ✅ 200 (38.58ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:09] [25/238] POST /api/protection/settings[0m
+[93m[23:44:09]   ⚠️ 422 (28.06ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:10] [26/238] GET /api/protection/status[0m
+[92m[23:44:10]   ✅ 200 (30.69ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:10] [27/238] GET /api/protection/threat-scenarios[0m
+[92m[23:44:10]   ✅ 200 (28.27ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:10] [28/238] POST /api/protection/enable[0m
+[93m[23:44:10]   ⚠️ 422 (28.16ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:10] [29/238] POST /api/protection/disable[0m
+[93m[23:44:10]   ⚠️ 422 (29.22ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:10] [30/238] GET /api/protection/stats[0m
+[92m[23:44:10]   ✅ 200 (30.32ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:10] [31/238] POST /api/protection/sync[0m
+[93m[23:44:10]   ⚠️ 422 (29.0ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:10] [32/238] GET /api/family/stats[0m
+[92m[23:44:10]   ✅ 200 (31.67ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:10] [33/238] POST /api/family/create[0m
+[93m[23:44:11]   ⚠️ 422 (27.43ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:11] [34/238] GET /api/reports/ai-categories/stats[0m
+[92m[23:44:11]   ✅ 200 (27.06ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:11] [35/238] GET /api/reports/ai-categories/reports[0m
+[92m[23:44:11]   ✅ 200 (27.83ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:11] [36/238] POST /api/reports/ai-categories/allow[0m
+[93m[23:44:11]   ⚠️ 422 (26.31ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:11] [37/238] POST /api/reports/ai-categories/block[0m
+[93m[23:44:11]   ⚠️ 422 (25.83ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:11] [38/238] GET /api/reports/ai-categories/health[0m
+[92m[23:44:11]   ✅ 200 (27.02ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:11] [39/238] GET /api/reports/privacy/tracker/stats[0m
+[92m[23:44:11]   ✅ 200 (41.02ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:11] [40/238] GET /api/reports/privacy/tracker/top[0m
+[92m[23:44:11]   ✅ 200 (30.8ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:12] [41/238] POST /api/reports/privacy/tracker/whitelist[0m
+[93m[23:44:12]   ⚠️ 422 (26.33ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:12] [42/238] GET /api/reports/privacy/tracker/health[0m
+[92m[23:44:12]   ✅ 200 (27.15ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:12] [43/238] POST /api/crash-detection/setup[0m
+[93m[23:44:12]   ⚠️ 422 (27.57ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:12] [44/238] POST /api/crash-detection/alert[0m
+[93m[23:44:12]   ⚠️ 422 (28.69ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:12] [45/238] POST /api/crash-detection/start[0m
+[92m[23:44:12]   ✅ 200 (26.51ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:12] [46/238] POST /api/crash-detection/stop[0m
+[92m[23:44:12]   ✅ 200 (25.6ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:12] [47/238] POST /api/crash-detection/data[0m
+[93m[23:44:12]   ⚠️ 422 (28.02ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:12] [48/238] GET /api/crash-detection/status[0m
+[92m[23:44:12]   ✅ 200 (27.78ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:13] [49/238] POST /reports/privacy/location/bubble[0m
+[93m[23:44:13]   ⚠️ 422 (27.4ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:13] [50/238] POST /reports/privacy/location/send[0m
+[93m[23:44:13]   ⚠️ 422 (27.51ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:13] [51/238] GET /api/reports/dark-web/stats[0m
+[92m[23:44:13]   ✅ 200 (29.91ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:13] [52/238] GET /api/reports/dark-web/leaks[0m
+[92m[23:44:13]   ✅ 200 (25.83ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:13] [53/238] GET /api/reports/dark-web/scans[0m
+[92m[23:44:13]   ✅ 200 (27.84ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:13] [54/238] POST /api/reports/dark-web/resolve[0m
+[93m[23:44:13]   ⚠️ 422 (26.37ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:13] [55/238] POST /api/reports/dark-web/scan/start[0m
+[92m[23:44:13]   ✅ 200 (31.93ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:13] [56/238] POST /api/reports/dark-web/scan/secure[0m
+[92m[23:44:14]   ✅ 200 (29.55ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:14] [57/238] POST /api/reports/dark-web/scan/fast[0m
+[92m[23:44:14]   ✅ 200 (50.85ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:14] [58/238] GET /api/reports/dark-web/health[0m
+[92m[23:44:14]   ✅ 200 (33.8ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:14] [59/238] GET /api/reports/privacy/cleanup/stats[0m
+[92m[23:44:14]   ✅ 200 (28.74ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:14] [60/238] GET /api/reports/privacy/cleanup/records[0m
+[92m[23:44:14]   ✅ 200 (37.82ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:14] [61/238] POST /api/reports/privacy/cleanup/start[0m
+[92m[23:44:14]   ✅ 200 (25.75ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:14] [62/238] GET /api/reports/privacy/cleanup/health[0m
+[92m[23:44:14]   ✅ 200 (30.69ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:14] [63/238] GET /api/reports/identity-theft/stats[0m
+[92m[23:44:14]   ✅ 200 (30.56ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:15] [64/238] GET /api/reports/identity-theft/attempts[0m
+[92m[23:44:15]   ✅ 200 (31.05ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:15] [65/238] POST /api/reports/identity-theft/allow[0m
+[93m[23:44:15]   ⚠️ 422 (25.89ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:15] [66/238] POST /api/reports/identity-theft/block[0m
+[93m[23:44:15]   ⚠️ 422 (26.84ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:15] [67/238] POST /api/reports/identity-theft/whitelist[0m
+[93m[23:44:15]   ⚠️ 422 (33.21ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:15] [68/238] GET /api/reports/identity-theft/health[0m
+[92m[23:44:15]   ✅ 200 (27.62ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:15] [69/238] GET /api/reports/privacy/location/stats[0m
+[92m[23:44:15]   ✅ 200 (34.42ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:15] [70/238] GET /api/reports/privacy/location/requests[0m
+[92m[23:44:15]   ✅ 200 (28.51ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:16] [71/238] POST /api/reports/privacy/location/allow[0m
+[93m[23:44:16]   ⚠️ 422 (27.31ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:16] [72/238] POST /api/reports/privacy/location/block[0m
+[93m[23:44:16]   ⚠️ 422 (27.16ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:16] [73/238] POST /api/reports/privacy/location/update-accuracy[0m
+[93m[23:44:16]   ⚠️ 422 (25.91ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:16] [74/238] GET /api/reports/privacy/location/health[0m
+[92m[23:44:16]   ✅ 200 (28.11ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:16] [75/238] POST /api/roadside-assistance/call[0m
+[93m[23:44:16]   ⚠️ 422 (27.05ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:16] [76/238] GET /api/roadside-assistance/status/{request_id}[0m
+[91m[23:44:16]   ❌ 404 (26.43ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:16]      Причина: Not Found - endpoint не найден[0m
+[94m[23:44:16] [77/238] POST /api/roadside-assistance/cancel/{request_id}[0m
+[92m[23:44:16]   ✅ 200 (25.93ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:16] [78/238] GET /api/roadside-assistance/history[0m
+[93m[23:44:16]   ⚠️ 422 (27.81ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:17] [79/238] GET /api/roadside-assistance/health[0m
+[92m[23:44:17]   ✅ 200 (27.47ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:17] [80/238] GET /api/v1/parental-control/stats[0m
+[92m[23:44:17]   ✅ 200 (27.16ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:17] [81/238] GET /api/v1/parental-control/status[0m
+[92m[23:44:17]   ✅ 200 (26.41ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:17] [82/238] GET /parental/bypass/stats[0m
+[92m[23:44:17]   ✅ 200 (26.81ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:17] [83/238] GET /parental/bypass/status[0m
+[92m[23:44:17]   ✅ 200 (27.04ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:17] [84/238] GET /api/iot/status/{homeId}[0m
+[92m[23:44:17]   ✅ 200 (26.3ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:17] [85/238] GET /api/iot/devices/{homeId}[0m
+[92m[23:44:17]   ✅ 200 (27.59ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:17] [86/238] GET /api/iot/threats/{homeId}[0m
+[92m[23:44:17]   ✅ 200 (30.45ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:18] [87/238] POST /api/iot/device/{deviceId}/block[0m
+[92m[23:44:18]   ✅ 200 (26.71ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:18] [88/238] POST /api/iot/scan/{homeId}[0m
+[92m[23:44:18]   ✅ 200 (31.79ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:18] [89/238] POST /api/iot/fix/{threatId}[0m
+[92m[23:44:18]   ✅ 200 (30.24ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:18] [90/238] GET /api/reports/driving/stats[0m
+[92m[23:44:18]   ✅ 200 (26.5ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:18] [91/238] GET /api/reports/driving/export[0m
+[92m[23:44:18]   ✅ 200 (26.87ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:18] [92/238] GET /api/reports/driving/health[0m
+[92m[23:44:18]   ✅ 200 (31.21ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:18] [93/238] GET /api/notifications[0m
+[92m[23:44:18]   ✅ 200 (28.14ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:19] [94/238] POST /api/notifications/read[0m
+[93m[23:44:19]   ⚠️ 422 (25.12ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:19] [95/238] GET /api/notifications/stats[0m
+[92m[23:44:19]   ✅ 200 (29.55ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:19] [96/238] GET /api/notifications/unread_count[0m
+[92m[23:44:19]   ✅ 200 (25.53ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:19] [97/238] POST /api/notifications/mark_read/{notification_id}[0m
+[91m[23:44:19]   ❌ 404 (32.22ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:19]      Причина: Not Found - endpoint не найден[0m
+[94m[23:44:19] [98/238] POST /api/notifications/delete/{notification_id}[0m
+[91m[23:44:19]   ❌ 404 (27.32ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:19]      Причина: Not Found - endpoint не найден[0m
+[94m[23:44:19] [99/238] POST /api/notifications/bulk_mark_read[0m
+[93m[23:44:19]   ⚠️ 422 (28.43ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:19] [100/238] POST /api/notifications/test[0m
+[91m[23:44:19]   ❌ 500 (32.22ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:19]      Причина: Server Error - ошибка на сервере (500)[0m
+[94m[23:44:19] [101/238] PUT /api/notifications/settings[0m
+[92m[23:44:19]   ✅ 200 (57.66ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:20] [102/238] GET /api/notifications/categories[0m
+[92m[23:44:20]   ✅ 200 (27.58ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:20] [103/238] GET /api/notifications/preferences[0m
+[92m[23:44:20]   ✅ 200 (27.51ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:20] [104/238] PUT /api/notifications/preferences[0m
+[93m[23:44:20]   ⚠️ 422 (24.11ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:20] [105/238] POST /api/notifications/clear_all[0m
+[92m[23:44:20]   ✅ 200 (32.49ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:20] [106/238] POST /api/notifications/archive/{notification_id}[0m
+[92m[23:44:20]   ✅ 200 (33.14ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:20] [107/238] POST /api/notifications/unarchive/{notification_id}[0m
+[92m[23:44:20]   ✅ 200 (27.34ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:20] [108/238] GET /api/notifications/filter[0m
+[92m[23:44:20]   ✅ 200 (28.11ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:21] [109/238] GET /api/notifications/search[0m
+[93m[23:44:21]   ⚠️ 422 (25.57ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:21] [110/238] GET /api/notifications/export[0m
+[92m[23:44:21]   ✅ 200 (27.78ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:21] [111/238] POST /api/ai/assistant/chat[0m
+[93m[23:44:21]   ⚠️ 422 (30.08ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:21] [112/238] GET /api/ai/assistant/history[0m
+[92m[23:44:21]   ✅ 200 (27.85ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:21] [113/238] POST /api/ai/assistant/feedback[0m
+[93m[23:44:21]   ⚠️ 422 (28.12ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:21] [114/238] GET /api/ai/assistant/capabilities[0m
+[92m[23:44:21]   ✅ 200 (25.0ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:21] [115/238] POST /api/ai/assistant/analyze_threat[0m
+[93m[23:44:21]   ⚠️ 422 (25.81ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:21] [116/238] GET /api/ai/assistant/recommendations[0m
+[92m[23:44:21]   ✅ 200 (24.7ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:22] [117/238] POST /api/ai/assistant/report_incident[0m
+[93m[23:44:22]   ⚠️ 422 (29.35ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:22] [118/238] GET /api/ai/assistant/security_tips[0m
+[92m[23:44:22]   ✅ 200 (26.1ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:22] [119/238] GET /api/components/health[0m
+[92m[23:44:22]   ✅ 200 (26.51ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:22] [120/238] GET /api/components/list[0m
+[92m[23:44:22]   ✅ 200 (27.28ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:22] [121/238] GET /api/components/status/all[0m
+[91m[23:44:22]   ❌ 404 (26.63ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[93m[23:44:22]      Причина: Not Found - endpoint не найден[0m
+[94m[23:44:22] [122/238] GET /api/components/config/{component_id}[0m
+[92m[23:44:22]   ✅ 200 (31.73ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:22] [123/238] POST /api/components/config/update/{component_id}[0m
+[93m[23:44:22]   ⚠️ 422 (25.92ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:22] [124/238] POST /api/components/restart/{component_id}[0m
+[92m[23:44:22]   ✅ 200 (26.38ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:23] [125/238] GET /api/components/metrics/{component_id}[0m
+[92m[23:44:23]   ✅ 200 (26.27ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:23] [126/238] GET /api/components/logs/{component_id}[0m
+[92m[23:44:23]   ✅ 200 (29.18ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:23] [127/238] GET /api/components/dependencies/{component_id}[0m
+[92m[23:44:23]   ✅ 200 (32.74ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:23] [128/238] POST /api/components/test/{component_id}[0m
+[92m[23:44:23]   ✅ 200 (27.17ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:23] [129/238] POST /api/components/update/{component_id}[0m
+[92m[23:44:23]   ✅ 200 (26.28ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:23] [130/238] GET /api/system/health[0m
+[92m[23:44:23]   ✅ 200 (29.33ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:23] [131/238] GET /api/system/info[0m
+[92m[23:44:23]   ✅ 200 (43.43ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:24] [132/238] GET /api/system/logs[0m
+[92m[23:44:24]   ✅ 200 (36.15ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:24] [133/238] POST /api/system/maintenance[0m
+[93m[23:44:24]   ⚠️ 422 (29.08ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:24] [134/238] GET /api/system/metrics[0m
+[92m[23:44:24]   ✅ 200 (30.26ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:24] [135/238] POST /api/system/backup[0m
+[92m[23:44:24]   ✅ 200 (27.31ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:24] [136/238] GET /api/system/backup/status[0m
+[92m[23:44:24]   ✅ 200 (25.16ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:24] [137/238] GET /api/system/uptime[0m
+[92m[23:44:24]   ✅ 200 (30.78ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:24] [138/238] GET /api/system/version[0m
+[92m[23:44:24]   ✅ 200 (25.26ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:24] [139/238] POST /api/system/restart[0m
+[92m[23:44:24]   ✅ 200 (29.08ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:25] [140/238] GET /api/system/resources[0m
+[92m[23:44:25]   ✅ 200 (28.23ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:25] [141/238] GET /api/gamification/balance/{userId}[0m
+[92m[23:44:25]   ✅ 200 (27.84ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:25] [142/238] POST /api/gamification/balance/add[0m
+[93m[23:44:25]   ⚠️ 422 (28.39ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:25] [143/238] POST /api/gamification/balance/subtract[0m
+[93m[23:44:25]   ⚠️ 422 (26.91ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:25] [144/238] GET /api/gamification/balance/history[0m
+[92m[23:44:25]   ✅ 200 (26.78ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:25] [145/238] GET /api/gamification/rewards[0m
+[92m[23:44:25]   ✅ 200 (26.5ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:25] [146/238] POST /api/gamification/rewards/claim[0m
+[93m[23:44:25]   ⚠️ 422 (25.17ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:26] [147/238] GET /api/gamification/rewards/history[0m
+[93m[23:44:26]   ⚠️ 422 (25.31ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:26] [148/238] POST /api/gamification/rewards/give[0m
+[93m[23:44:26]   ⚠️ 422 (33.79ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:26] [149/238] GET /api/gamification/rewards/shop[0m
+[92m[23:44:26]   ✅ 200 (25.42ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:26] [150/238] POST /api/gamification/rewards/purchase[0m
+[93m[23:44:26]   ⚠️ 422 (24.24ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:26] [151/238] GET /api/gamification/achievements[0m
+[93m[23:44:26]   ⚠️ 422 (26.4ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:26] [152/238] POST /api/gamification/achievements/unlock[0m
+[93m[23:44:26]   ⚠️ 422 (27.31ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:26] [153/238] GET /api/gamification/achievements/progress[0m
+[93m[23:44:26]   ⚠️ 422 (27.3ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:26] [154/238] GET /api/gamification/achievements/{achievementId}[0m
+[92m[23:44:26]   ✅ 200 (27.88ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:27] [155/238] POST /api/gamification/achievements/claim[0m
+[93m[23:44:27]   ⚠️ 422 (34.16ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:27] [156/238] GET /api/gamification/tournaments[0m
+[92m[23:44:27]   ✅ 200 (28.49ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:27] [157/238] POST /api/gamification/tournaments/join[0m
+[93m[23:44:27]   ⚠️ 422 (26.51ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:27] [158/238] GET /api/gamification/tournaments/{tournamentId}[0m
+[92m[23:44:27]   ✅ 200 (24.85ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:27] [159/238] GET /api/gamification/tournaments/leaderboard[0m
+[92m[23:44:27]   ✅ 200 (27.36ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:27] [160/238] POST /api/gamification/tournaments/leave[0m
+[93m[23:44:27]   ⚠️ 422 (26.36ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:27] [161/238] GET /api/gamification/tournaments/history[0m
+[92m[23:44:27]   ✅ 200 (25.03ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:27] [162/238] GET /api/gamification/settings[0m
+[93m[23:44:27]   ⚠️ 422 (28.46ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:28] [163/238] POST /api/gamification/settings/update[0m
+[93m[23:44:28]   ⚠️ 422 (28.72ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:28] [164/238] GET /api/gamification/settings/notifications[0m
+[93m[23:44:28]   ⚠️ 422 (26.32ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:28] [165/238] POST /api/gamification/settings/notifications/update[0m
+[93m[23:44:28]   ⚠️ 422 (27.87ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:28] [166/238] GET /api/gamification/progress[0m
+[93m[23:44:28]   ⚠️ 422 (35.46ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:28] [167/238] POST /api/gamification/progress/update[0m
+[93m[23:44:28]   ⚠️ 422 (27.12ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:28] [168/238] GET /api/gamification/progress/stats[0m
+[93m[23:44:28]   ⚠️ 422 (26.68ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:28] [169/238] GET /api/gamification/progress/level[0m
+[93m[23:44:28]   ⚠️ 422 (27.1ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:29] [170/238] POST /api/gamification/progress/reset[0m
+[93m[23:44:29]   ⚠️ 422 (37.33ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:29] [171/238] GET /api/parental-control/settings/{familyId}[0m
+[92m[23:44:29]   ✅ 200 (26.4ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:29] [172/238] POST /api/parental-control/settings/update[0m
+[93m[23:44:29]   ⚠️ 422 (25.88ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:29] [173/238] GET /api/parental-control/settings/history[0m
+[92m[23:44:29]   ✅ 200 (27.82ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:29] [174/238] POST /api/parental-control/settings/sync[0m
+[93m[23:44:29]   ⚠️ 422 (26.53ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:29] [175/238] GET /api/parental-control/settings/conflicts[0m
+[92m[23:44:29]   ✅ 200 (27.21ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:29] [176/238] GET /api/parental-control/time-limits/{childId}[0m
+[92m[23:44:29]   ✅ 200 (28.71ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:29] [177/238] POST /api/parental-control/time-limits/update[0m
+[93m[23:44:29]   ⚠️ 422 (25.42ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:30] [178/238] GET /api/parental-control/time-limits/history[0m
+[92m[23:44:30]   ✅ 200 (27.29ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:30] [179/238] POST /api/parental-control/time-limits/reset[0m
+[93m[23:44:30]   ⚠️ 422 (26.38ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:30] [180/238] GET /api/parental-control/schedules/{childId}[0m
+[92m[23:44:30]   ✅ 200 (28.88ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:30] [181/238] POST /api/parental-control/schedules/update[0m
+[93m[23:44:30]   ⚠️ 422 (25.43ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:30] [182/238] GET /api/parental-control/schedules/history[0m
+[92m[23:44:30]   ✅ 200 (24.32ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:30] [183/238] POST /api/parental-control/schedules/delete[0m
+[93m[23:44:30]   ⚠️ 422 (27.48ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:30] [184/238] GET /api/parental-control/geofences/{childId}[0m
+[92m[23:44:30]   ✅ 200 (27.32ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:30] [185/238] POST /api/parental-control/geofences/add[0m
+[93m[23:44:30]   ⚠️ 422 (29.26ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:31] [186/238] POST /api/parental-control/geofences/update[0m
+[93m[23:44:31]   ⚠️ 422 (27.99ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:31] [187/238] DELETE /api/parental-control/geofences/{geofenceId}[0m
+[92m[23:44:31]   ✅ 200 (25.88ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:31] [188/238] GET /api/parental-control/app-blocks/{childId}[0m
+[92m[23:44:31]   ✅ 200 (26.66ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:31] [189/238] POST /api/parental-control/app-blocks/update[0m
+[93m[23:44:31]   ⚠️ 422 (25.31ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:31] [190/238] POST /api/parental-control/app-blocks/sync[0m
+[93m[23:44:31]   ⚠️ 422 (27.65ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:31] [191/238] POST /api/user/profile/sync[0m
+[93m[23:44:31]   ⚠️ 422 (25.76ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:31] [192/238] POST /api/user/profile/update[0m
+[93m[23:44:31]   ⚠️ 422 (31.47ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:31] [193/238] GET /api/user/profile/history[0m
+[93m[23:44:32]   ⚠️ 422 (27.69ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:32] [194/238] GET /api/user/profile/privacy[0m
+[93m[23:44:32]   ⚠️ 422 (26.38ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:32] [195/238] POST /api/user/profile/privacy/update[0m
+[93m[23:44:32]   ⚠️ 422 (25.81ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:32] [196/238] POST /api/subscription/sync[0m
+[93m[23:44:32]   ⚠️ 422 (26.89ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:32] [197/238] POST /api/subscription/update[0m
+[93m[23:44:32]   ⚠️ 422 (26.01ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:32] [198/238] GET /api/subscription/purchase-history[0m
+[93m[23:44:32]   ⚠️ 422 (26.23ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:32] [199/238] GET /api/subscription/status[0m
+[93m[23:44:32]   ⚠️ 422 (26.0ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:32] [200/238] POST /api/subscription/status/update[0m
+[93m[23:44:32]   ⚠️ 422 (26.2ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:33] [201/238] GET /api/subscription/auto-renewal[0m
+[93m[23:44:33]   ⚠️ 422 (28.88ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:33] [202/238] POST /api/subscription/auto-renewal/update[0m
+[93m[23:44:33]   ⚠️ 422 (29.99ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:33] [203/238] POST /api/subscription/cancel[0m
+[93m[23:44:33]   ⚠️ 422 (31.74ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:33] [204/238] POST /api/settings/sync[0m
+[93m[23:44:33]   ⚠️ 422 (25.03ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:33] [205/238] POST /api/settings/update[0m
+[93m[23:44:33]   ⚠️ 422 (28.49ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:33] [206/238] GET /api/settings/theme[0m
+[93m[23:44:33]   ⚠️ 422 (28.05ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:33] [207/238] POST /api/settings/theme/update[0m
+[93m[23:44:33]   ⚠️ 422 (27.79ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:33] [208/238] GET /api/settings/language[0m
+[93m[23:44:33]   ⚠️ 422 (25.26ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:34] [209/238] POST /api/settings/language/update[0m
+[93m[23:44:34]   ⚠️ 422 (27.86ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:34] [210/238] GET /api/settings/notifications[0m
+[93m[23:44:34]   ⚠️ 422 (27.28ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:34] [211/238] POST /api/settings/notifications/update[0m
+[93m[23:44:34]   ⚠️ 422 (28.8ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:34] [212/238] GET /api/settings/biometry[0m
+[93m[23:44:34]   ⚠️ 422 (25.45ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:34] [213/238] POST /api/settings/biometry/update[0m
+[93m[23:44:34]   ⚠️ 422 (27.28ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:34] [214/238] POST /api/location/geofences/sync[0m
+[93m[23:44:34]   ⚠️ 422 (26.44ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:34] [215/238] POST /api/location/geofences/update[0m
+[93m[23:44:34]   ⚠️ 422 (25.46ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:34] [216/238] DELETE /api/location/geofences/{geofenceId}[0m
+[92m[23:44:35]   ✅ 200 (25.6ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:35] [217/238] GET /api/location/movement-history[0m
+[93m[23:44:35]   ⚠️ 422 (27.03ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:35] [218/238] POST /api/location/movement-history/update[0m
+[93m[23:44:35]   ⚠️ 422 (28.16ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:35] [219/238] GET /api/location/status[0m
+[93m[23:44:35]   ⚠️ 422 (25.21ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:35] [220/238] POST /api/location/status/update[0m
+[93m[23:44:35]   ⚠️ 422 (25.68ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:35] [221/238] POST /api/chat/offline-messages/sync[0m
+[93m[23:44:35]   ⚠️ 422 (29.64ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:35] [222/238] POST /api/chat/offline-messages/send[0m
+[93m[23:44:35]   ⚠️ 422 (34.28ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:35] [223/238] POST /api/chat/offline-messages/resolve-conflicts[0m
+[93m[23:44:35]   ⚠️ 422 (26.1ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:36] [224/238] POST /api/offline-storage/sync[0m
+[93m[23:44:36]   ⚠️ 422 (32.15ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:36] [225/238] GET /api/offline-storage/data[0m
+[93m[23:44:36]   ⚠️ 422 (27.77ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:36] [226/238] POST /api/offline-storage/data/update[0m
+[93m[23:44:36]   ⚠️ 422 (40.1ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:36] [227/238] DELETE /api/offline-storage/data/{dataId}[0m
+[93m[23:44:36]   ⚠️ 422 (31.3ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:36] [228/238] POST /api/offline-storage/resolve-conflicts[0m
+[93m[23:44:36]   ⚠️ 422 (25.13ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:36] [229/238] POST /api/crash-detection/sync[0m
+[93m[23:44:36]   ⚠️ 422 (29.4ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:36] [230/238] POST /api/crash-detection/report[0m
+[93m[23:44:36]   ⚠️ 422 (26.82ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:36] [231/238] GET /api/crash-detection/notifications[0m
+[93m[23:44:36]   ⚠️ 422 (30.22ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:37] [232/238] POST /api/crash-detection/notifications/send[0m
+[93m[23:44:37]   ⚠️ 422 (29.92ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:37] [233/238] POST /api/elderly/medications/sync[0m
+[93m[23:44:37]   ⚠️ 422 (35.75ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:37] [234/238] POST /api/elderly/medications/update[0m
+[93m[23:44:37]   ⚠️ 422 (32.37ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:37] [235/238] POST /api/elderly/appointments/sync[0m
+[93m[23:44:37]   ⚠️ 422 (25.77ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:37] [236/238] POST /api/elderly/appointments/update[0m
+[93m[23:44:37]   ⚠️ 422 (24.34ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[94m[23:44:37] [237/238] GET /[0m
+[96m[23:44:37]   ⏭️ None (Nonems)[0m
+[94m[23:44:37] [238/238] GET /api/health[0m
+[92m[23:44:37]   ✅ 200 (26.73ms) [91m🔒 БЕЗОПАСНОСТЬ[0m[0m
+[92m[23:44:38] ✅ Отчеты сохранены:[0m
+[92m[23:44:38]    - JSON: endpoints_test_report_20260211_234437.json[0m
+[92m[23:44:38]    - Markdown: endpoints_test_report_20260211_234437.md[0m
+
+================================================================================
+📊 ИТОГОВАЯ СТАТИСТИКА
+================================================================================
+Всего endpoint'ов: 238
+✅ Успешно: 223
+❌ Ошибки: 14
+⏭️ Пропущено: 1
+
+📊 ПО СТАТУСАМ:
+  200 OK: 102
+  201 Created: 0
+  401 Unauthorized: 0
+  404 Not Found: 9
+  422 Validation Error: 121
+  500+ Server Error: 5
+
+⚡ ПРОИЗВОДИТЕЛЬНОСТЬ:
+  ✅ Быстрые: 237
+  🐌 Медленные: 0
+
+🔒 БЕЗОПАСНОСТЬ:
+  ✅ Без проблем: 0
+  ⚠️ Проблемы: 237
+
+✅ ВАЛИДАЦИЯ:
+  ✅ Без проблем: 116
+  ⚠️ Проблемы: 121
+
+📋 ДЕТАЛЬНЫЙ АНАЛИЗ:
+  401 (Unauthorized): 0 endpoint'ов
+  422 (Validation Error): 121 endpoint'ов
+  404 (Not Found): 9 endpoint'ов
+  500+ (Server Error): 5 endpoint'ов
+================================================================================

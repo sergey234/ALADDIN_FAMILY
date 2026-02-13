@@ -1,0 +1,17 @@
+# ✅ ЗАДАЧА 21: Импортируем Components Router
+try:
+    from security.api.routers.components_router import router as components_router
+    components_router_available = True
+except ImportError as e:
+    print(f"⚠️ components_router недоступен: {e}")
+    components_router_available = False
+    components_router = None
+
+# ✅ ЗАДАЧА 23: Импортируем System Router
+try:
+    from security.api.routers.system_router import router as system_router
+    system_router_available = True
+except ImportError as e:
+    print(f"⚠️ system_router недоступен: {e}")
+    system_router_available = False
+    system_router = None

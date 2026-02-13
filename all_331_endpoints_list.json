@@ -1,0 +1,446 @@
+{
+  "endpoints": [
+    {
+      "number": 1,
+      "method": "POST",
+      "path": "/api/auth/login",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "login",
+      "requires_auth": false,
+      "priority": "high"
+    },
+    {
+      "number": 2,
+      "method": "POST",
+      "path": "/api/auth/login-by-recovery-code",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "login_by_recovery_code",
+      "requires_auth": false,
+      "priority": "critical"
+    },
+    {
+      "number": 3,
+      "method": "POST",
+      "path": "/api/auth/refresh",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "refresh_token",
+      "requires_auth": false,
+      "priority": "high"
+    },
+    {
+      "number": 4,
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "logout",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 5,
+      "method": "GET",
+      "path": "/api/auth/me",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "get_current_user",
+      "requires_auth": true,
+      "priority": "high"
+    },
+    {
+      "number": 6,
+      "method": "POST",
+      "path": "/api/auth/verify-token",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "verify_token",
+      "requires_auth": false,
+      "priority": "medium"
+    },
+    {
+      "number": 7,
+      "method": "POST",
+      "path": "/api/auth/revoke-token",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "revoke_token",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 8,
+      "method": "GET",
+      "path": "/api/auth/sessions",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "get_sessions",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 9,
+      "method": "DELETE",
+      "path": "/api/auth/sessions/{session_id}",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "delete_session",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 10,
+      "method": "POST",
+      "path": "/api/auth/change-password",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "change_password",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 11,
+      "method": "POST",
+      "path": "/api/auth/reset-password",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "reset_password",
+      "requires_auth": false,
+      "priority": "low"
+    },
+    {
+      "number": 12,
+      "method": "GET",
+      "path": "/api/auth/permissions",
+      "category": "Authentication",
+      "router_file": "app/routers/auth_router.py",
+      "function_name": "get_permissions",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 13,
+      "method": "GET",
+      "path": "/api/subscription/status",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "get_subscription_status",
+      "requires_auth": true,
+      "priority": "high"
+    },
+    {
+      "number": 14,
+      "method": "GET",
+      "path": "/api/subscription/plans",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "get_subscription_plans",
+      "requires_auth": false,
+      "priority": "medium"
+    },
+    {
+      "number": 15,
+      "method": "POST",
+      "path": "/api/subscription/subscribe",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "subscribe",
+      "requires_auth": true,
+      "priority": "high"
+    },
+    {
+      "number": 16,
+      "method": "POST",
+      "path": "/api/subscription/cancel",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "cancel_subscription",
+      "requires_auth": true,
+      "priority": "high"
+    },
+    {
+      "number": 17,
+      "method": "GET",
+      "path": "/api/subscription/history",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "get_subscription_history",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 18,
+      "method": "POST",
+      "path": "/api/subscription/upgrade",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "upgrade_subscription",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 19,
+      "method": "POST",
+      "path": "/api/subscription/downgrade",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "downgrade_subscription",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 20,
+      "method": "GET",
+      "path": "/api/subscription/invoices",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "get_invoices",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 21,
+      "method": "GET",
+      "path": "/api/subscription/payment-methods",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "get_payment_methods",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 22,
+      "method": "POST",
+      "path": "/api/subscription/payment-methods",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "add_payment_method",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 23,
+      "method": "DELETE",
+      "path": "/api/subscription/payment-methods/{method_id}",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "delete_payment_method",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 24,
+      "method": "GET",
+      "path": "/api/subscription/trial",
+      "category": "Subscription",
+      "router_file": null,
+      "function_name": "get_trial_status",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 25,
+      "method": "GET",
+      "path": "/api/notifications",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "get_notifications",
+      "requires_auth": true,
+      "priority": "high"
+    },
+    {
+      "number": 26,
+      "method": "POST",
+      "path": "/api/notifications/read",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "mark_notification_read",
+      "requires_auth": true,
+      "priority": "high"
+    },
+    {
+      "number": 27,
+      "method": "GET",
+      "path": "/api/notifications/stats",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "get_notification_stats",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 28,
+      "method": "GET",
+      "path": "/api/notifications/unread_count",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "get_unread_count",
+      "requires_auth": true,
+      "priority": "high"
+    },
+    {
+      "number": 29,
+      "method": "POST",
+      "path": "/api/notifications/mark_read/{notification_id}",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "mark_single_notification_read",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 30,
+      "method": "POST",
+      "path": "/api/notifications/mark_all_read",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "mark_all_read",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 31,
+      "method": "DELETE",
+      "path": "/api/notifications/{notification_id}",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "delete_notification",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 32,
+      "method": "POST",
+      "path": "/api/notifications/push/send",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "send_push_notification",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 33,
+      "method": "GET",
+      "path": "/api/notifications/settings",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "get_notification_settings",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 34,
+      "method": "POST",
+      "path": "/api/notifications/settings",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "update_notification_settings",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 35,
+      "method": "GET",
+      "path": "/api/notifications/categories",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "get_notification_categories",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 36,
+      "method": "POST",
+      "path": "/api/notifications/categories/{category_id}/enable",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "enable_category",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 37,
+      "method": "POST",
+      "path": "/api/notifications/categories/{category_id}/disable",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "disable_category",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 38,
+      "method": "GET",
+      "path": "/api/notifications/preferences",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "get_preferences",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 39,
+      "method": "POST",
+      "path": "/api/notifications/preferences",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "update_preferences",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 40,
+      "method": "GET",
+      "path": "/api/notifications/history",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "get_notification_history",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 41,
+      "method": "POST",
+      "path": "/api/notifications/test",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "send_test_notification",
+      "requires_auth": true,
+      "priority": "low"
+    },
+    {
+      "number": 42,
+      "method": "GET",
+      "path": "/api/notifications/health",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "health_check",
+      "requires_auth": false,
+      "priority": "low"
+    },
+    {
+      "number": 43,
+      "method": "GET",
+      "path": "/api/notifications/badge",
+      "category": "Notifications",
+      "router_file": "security/api/routers/notifications_router.py",
+      "function_name": "get_badge_count",
+      "requires_auth": true,
+      "priority": "medium"
+    },
+    {
+      "number": 254,
+      "method": "POST",
+      "path": "/api/family/create",
+      "category": "Family",
+      "router_file": "app/routers/family.py",
+      "function_name": "create_family",
+      "requires_auth": false,
+      "priority": "critical"
+    }
+  ],
+  "total_endpoints": 331,
+  "note": "Это начальный список. Полный список будет дополнен всеми 331 endpoint'ом."
+}

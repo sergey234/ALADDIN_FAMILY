@@ -1,0 +1,151 @@
+🔑 Получение токена авторизации...
+⚠️  Не удалось получить токен. Тестирование продолжится без авторизации.
+   (Многие endpoint'ы могут вернуть 404/403 без токена)
+🧪 Начинаем тестирование ВСЕХ 331 endpoint'ов...
+
+[0;34m## 1. СТАРЫЕ ENDPOINT'Ы (183 endpoint'а)[0m
+### Network Protection (7 endpoints)
+Testing: GET /protection/network-protection/status ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /protection/network-protection/connect ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /protection/network-protection/disconnect ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /protection/network-protection/servers ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /protection/network-protection/settings ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /protection/network-protection/config ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /protection/network-protection/stats ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Family (9 endpoints)
+Testing: POST /api/family/create ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/family/join ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/family/recover ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/auth/login-by-recovery-code ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/family/members ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/family/add ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/family/remove ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/family/member/test_member ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/family/stats ... [1;33m⚠️  AUTH REQUIRED[0m (403) - требуется авторизация
+
+### Family Chat (2 endpoints)
+Testing: GET /api/family/chat/messages ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/family/chat/send ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Components (8 endpoints)
+Testing: GET /api/components/status ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/components/status/batch ... [0;31m❌ FAILED[0m (405)
+Testing: POST /api/components/enable ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/components/disable ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/components/config ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/components/bulk-update ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/components/list ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/components/health ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Analytics (3 endpoints)
+Testing: GET /api/analytics ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/analytics/threats ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/analytics/top-threats ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Driving Reports (3 endpoints)
+Testing: GET /api/driving-reports ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/driving-reports/stats ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/driving-reports/export ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Dark Web Monitoring (7 endpoints)
+Testing: GET /api/darkweb/leaks ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/darkweb/stats ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/darkweb/scans ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/darkweb/resolve ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/darkweb/scan/start ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/darkweb/scan/secure ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/darkweb/scan/fast ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Identity Theft (6 endpoints)
+Testing: GET /api/identity-theft/attempts ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/identity-theft/stats ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/identity-theft/allow ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/identity-theft/block ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/identity-theft/whitelist ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/identity-theft/whitelist/add ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Privacy Reports (10 endpoints)
+Testing: GET /api/location/bubble/stats ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/location/bubble/requests ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/location/bubble/allow ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/location/bubble/block ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/location/bubble/update-accuracy ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/data-cleanup/stats ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/data-cleanup/records ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/data-cleanup/start ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/anti-tracker/stats ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/anti-tracker/top ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/anti-tracker/whitelist ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### AI Categories (4 endpoints)
+Testing: GET /api/ai-categories/stats ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/ai-categories/reports ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/ai-categories/allow ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/ai-categories/block ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### AI Assistant (10 endpoints)
+Testing: POST /ai/chat ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /ai/message ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/ai/assistant/chat ... [0;32m✅ OK[0m (200)
+Testing: GET /api/ai/assistant/history ... [0;32m✅ OK[0m (200)
+Testing: POST /api/ai/assistant/feedback ... [1;33m⚠️  VALIDATION ERROR[0m (422) - это нормально
+Testing: GET /api/ai/assistant/capabilities ... [0;32m✅ OK[0m (200)
+Testing: POST /api/ai/assistant/analyze_threat ... [0;32m✅ OK[0m (200)
+Testing: GET /api/ai/assistant/recommendations ... [0;32m✅ OK[0m (200)
+Testing: POST /api/ai/assistant/report_incident ... [1;33m⚠️  VALIDATION ERROR[0m (422) - это нормально
+Testing: GET /api/ai/assistant/security_tips ... [0;32m✅ OK[0m (200)
+
+### User (6 endpoints)
+Testing: GET /api/user/profile ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/user/profile/update ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/auth/password ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/user/delete ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/user/2fa/status ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/user/2fa/update ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Notifications (старые 2 endpoints)
+Testing: GET /api/notifications ... [0;32m✅ OK[0m (200)
+Testing: POST /api/notifications/read ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Devices (4 endpoints)
+Testing: GET /api/devices ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/devices/register-ios ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/devices/test_device ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/devices/test_device/settings ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Auth (4 endpoints)
+Testing: POST /api/auth/login ... [1;33m⚠️  VALIDATION ERROR[0m (422) - это нормально
+Testing: POST /api/auth/logout ... [0;32m✅ OK[0m (200)
+Testing: POST /api/auth/register ... [1;33m⚠️  VALIDATION ERROR[0m (422) - это нормально
+Testing: POST /api/auth/refresh ... [1;33m⚠️  VALIDATION ERROR[0m (422) - это нормально
+
+### Subscription (6 endpoints)
+Testing: GET /api/subscription/tariffs ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/subscription/subscribe ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/subscription/cancel ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/subscription/activate ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/subscription/activation/verify ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/subscription/activation/activate ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Protection (3 endpoints)
+Testing: GET /protection/settings ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /protection/status ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /protection/threat-scenarios ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Parental Control (старые 7 endpoints)
+Testing: GET /parental/control ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/v1/parental-control/blocking ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/v1/parental-control/rules ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/v1/parental-control/access-requests ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/v1/parental-control/access-requests ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: GET /api/v1/parental-control/stats ... [0;32m✅ OK[0m (200)
+Testing: POST /parental/limits ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /parental/block ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+
+### Roadside Assistance (4 endpoints)
+Testing: POST /api/roadside-assistance/call ... [1;33m⚠️  VALIDATION ERROR[0m (422) - это нормально
+Testing: GET /api/roadside-assistance/status/test_request ... [1;33m⚠️  NOT FOUND[0m (404) - endpoint может быть не развернут
+Testing: POST /api/roadside-assistance/cancel/test_request ... [0;32m✅ OK[0m (200)
+Testing: GET /api/roadside-assistance/history ... [1;33m⚠️  VALIDATION ERROR[0m (422) - это нормально
+
