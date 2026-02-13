@@ -38,6 +38,9 @@ struct SettingsScreen: View {
     // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @ObservedObject для singleton'ов (не @StateObject!)
     @ObservedObject private var notificationManager = NotificationManager.shared
     private let securityManager = SecurityManager.shared
+    
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Флаг инициализации для защиты от крашей
+    @State private var isInitialized: Bool = false
     @State private var isNetworkProtectionEnabled: Bool = true
     @AppStorage("profile_name") private var storedName: String = ""
     @AppStorage("profile_alias") private var storedAlias: String = ""
@@ -91,12 +94,47 @@ struct SettingsScreen: View {
     // MARK: - Body
     
     var body: some View {
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Защита от краша - проверяем инициализацию перед использованием
+        Group {
+            if isInitialized {
+                settingsContent
+            } else {
+                // Показываем пустой экран пока инициализируется
+                ZStack {
+                    LinearGradient.backgroundGradient
+                        .ignoresSafeArea()
+                    ProgressView()
+                }
+            }
+        }
+        .onAppear {
+            Task { @MainActor in
+                await safeInitialize()
+            }
+        }
+    }
+    
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасная инициализация на main thread
+    @MainActor
+    private func safeInitialize() async {
+        // Небольшая задержка для гарантии что EnvironmentObject инициализирован
+        try? await Task.sleep(nanoseconds: 50_000_000) // 0.05 секунды
+        
+        // Инициализируем состояние
+        await initializeNotifications()
+        
+        // Устанавливаем флаг инициализации
+        isInitialized = true
+    }
+    
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Основной контент экрана
+    private var settingsContent: some View {
         ZStack {
             // Фон
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(localizationManager.localized("settings_accessibility_background"))
+                .accessibilityLabel(safeLocalized("settings_accessibility_background"))
             
             VStack(spacing: 0) {
                 // Навигационная панель
@@ -135,7 +173,7 @@ struct SettingsScreen: View {
                     .padding(.bottom, Spacing.xxl)
                 }
                 .accessibilityElement(children: .contain)
-                .accessibilityLabel(localizationManager.localized("settings_accessibility_list"))
+                .accessibilityLabel(safeLocalized("settings_accessibility_list"))
             }
         }
         .navigationBarHidden(true)
@@ -159,12 +197,15 @@ struct SettingsScreen: View {
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(activityItems: [
-                localizationManager.localized("settings_share_message")
+                safeLocalized("settings_share_message")
             ])
         }
         .sheet(isPresented: $showProtectionExplanation) {
-            ProtectionLevelExplanationModal(isPresented: $showProtectionExplanation, currentTariff: tariffManager.currentTariff)
-                .environmentObject(localizationManager)
+            ProtectionLevelExplanationModal(
+                isPresented: $showProtectionExplanation,
+                currentTariff: isInitialized ? tariffManager.currentTariff : .free
+            )
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showAdvancedProtection) {
             AdvancedProtectionSettingsScreen()
@@ -194,11 +235,7 @@ struct SettingsScreen: View {
             ComplianceView(section: .dataProtection)
                 .environmentObject(localizationManager)
         }
-        .onAppear {
-            Task { @MainActor in
-                await initializeNotifications()
-            }
-        }
+        // Инициализация перенесена в safeInitialize()
         .onChange(of: notificationManager.notificationSettings.securityEnabled) { newValue in
             Task { @MainActor in
                 isSecurityNotificationsEnabled = newValue
@@ -216,28 +253,36 @@ struct SettingsScreen: View {
     
     private var navigationHeader: some View {
         ALADDINNavigationBar(
-            title: localizationManager.localized("settings_title"), // ✅ Локализованный заголовок
-            subtitle: localizationManager.localized("settings_subtitle"), // ✅ Локализованный подзаголовок
+            title: safeLocalized("settings_title"), // ✅ Безопасная локализация
+            subtitle: safeLocalized("settings_subtitle"), // ✅ Безопасная локализация
             showBackButton: true,
             onBack: {
                 dismiss()
             }
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(localizationManager.localized("settings_accessibility_navbar"))
+        .accessibilityLabel(safeLocalized("settings_accessibility_navbar"))
+    }
+    
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасная локализация с защитой от nil
+    private func safeLocalized(_ key: String) -> String {
+        guard isInitialized else {
+            return key // Возвращаем ключ если еще не инициализировано
+        }
+        return safeLocalized(key)
     }
     
     // MARK: - Profile Section
     
     private var profileSection: some View {
         let userInitial = storedName.isEmpty ? "?" : String(storedName.prefix(1).uppercased())
-        let userName = storedName.isEmpty ? localizationManager.localized("profile_name_placeholder") : storedName
-        let userAlias = storedAlias.isEmpty ? localizationManager.localized("profile_email_placeholder") : storedAlias
-        let userStatus = localizationManager.localized("settings_profile_status")
+        let userName = storedName.isEmpty ? safeLocalized("profile_name_placeholder") : storedName
+        let userAlias = storedAlias.isEmpty ? safeLocalized("profile_email_placeholder") : storedAlias
+        let userStatus = safeLocalized("settings_profile_status")
         
         return VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("profile_section")) // ✅ Локализованный заголовок
+                Text(safeLocalized("profile_section")) // ✅ Безопасная локализация
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -259,7 +304,7 @@ struct SettingsScreen: View {
                             .font(.h2)
                             .foregroundColor(.white)
                     )
-                    .accessibilityLabel(localizationManager.localized("settings_profile_avatar_accessibility"))
+                    .accessibilityLabel(safeLocalized("settings_profile_avatar_accessibility"))
                 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(userName)
@@ -267,7 +312,7 @@ struct SettingsScreen: View {
                         .foregroundColor(.textPrimary)
                         .accessibilityLabel(
                             String(
-                                format: localizationManager.localized("settings_profile_name_accessibility"),
+                                format: safeLocalized("settings_profile_name_accessibility"),
                                 userName
                             )
                         )
@@ -277,7 +322,7 @@ struct SettingsScreen: View {
                         .foregroundColor(.textSecondary)
                         .accessibilityLabel(
                             String(
-                                format: localizationManager.localized("settings_profile_email_accessibility"),
+                                format: safeLocalized("settings_profile_email_accessibility"),
                                 userAlias
                             )
                         )
@@ -293,7 +338,7 @@ struct SettingsScreen: View {
                         )
                         .accessibilityLabel(
                             String(
-                                format: localizationManager.localized("settings_profile_status_accessibility"),
+                                format: safeLocalized("settings_profile_status_accessibility"),
                                 userStatus
                             )
                         )
@@ -313,7 +358,7 @@ struct SettingsScreen: View {
                                 .fill(Color.primaryBlue.opacity(0.1))
                         )
                 }
-                .accessibilityLabel(localizationManager.localized("settings_profile_edit_accessibility"))
+                .accessibilityLabel(safeLocalized("settings_profile_edit_accessibility"))
             }
         }
         .padding(Spacing.cardPadding)
@@ -326,7 +371,7 @@ struct SettingsScreen: View {
     private var securitySection: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("security_section")) // ✅ Локализованный заголовок
+                Text(safeLocalized("security_section")) // ✅ Безопасная локализация
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -338,16 +383,16 @@ struct SettingsScreen: View {
                 // Network Protection
                 settingRow(
                     icon: "shield.fill",
-                    title: localizationManager.localized("network_protection_protection"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("network_protection_protection_subtitle"), // ✅ Локализованный подзаголовок
+                    title: safeLocalized("network_protection_protection"), // ✅ Безопасная локализация
+                    subtitle: safeLocalized("network_protection_protection_subtitle"), // ✅ Безопасная локализация
                     isEnabled: $isNetworkProtectionEnabled
                 )
                 
                 // Биометрическая аутентификация
                 settingRow(
                     icon: "faceid",
-                    title: localizationManager.localized("biometric_auth"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("biometric_auth_subtitle"), // ✅ Локализованный подзаголовок
+                    title: safeLocalized("biometric_auth"), // ✅ Безопасная локализация
+                    subtitle: safeLocalized("biometric_auth_subtitle"), // ✅ Безопасная локализация
                     isEnabled: $isBiometricEnabled,
                     isBiometric: true
                 )
@@ -361,7 +406,7 @@ struct SettingsScreen: View {
                         
                         VStack(alignment: .leading, spacing: Spacing.xxs) {
                             HStack {
-                                Text(localizationManager.localized("protection_level")) // ✅ Локализованный заголовок
+                                Text(safeLocalized("protection_level")) // ✅ Безопасная локализация
                                     .font(.bodyBold)
                                     .foregroundColor(.textPrimary)
                                 
@@ -382,7 +427,7 @@ struct SettingsScreen: View {
                             
                             Text(
                                 String(
-                                    format: localizationManager.localized("settings_protection_level_value"),
+                                    format: safeLocalized("settings_protection_level_value"),
                                     Int(calculatedProtectionLevel),
                                     protectionLevelText
                                 ) + " (на основе тарифа)"
@@ -400,7 +445,7 @@ struct SettingsScreen: View {
                             .foregroundColor(.textSecondary)
                         
                         Slider(value: .constant(calculatedProtectionLevel), in: 0...100, step: 5) {
-                            Text(localizationManager.localized("settings_protection_level"))
+                            Text(safeLocalized("settings_protection_level"))
                         } minimumValueLabel: {
                             Text(percentText(0))
                         } maximumValueLabel: {
@@ -417,7 +462,7 @@ struct SettingsScreen: View {
                     // Кнопки дополнительных настроек
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.s), count: 3), spacing: Spacing.s) {
                         protectionActionButton(
-                            title: localizationManager.localized("settings_protection_history"),
+                            title: safeLocalized("settings_protection_history"),
                             icon: "chart.line.uptrend.xyaxis",
                             foreground: .primaryBlue,
                             background: Color.primaryBlue.opacity(0.12),
@@ -425,7 +470,7 @@ struct SettingsScreen: View {
                         )
                         
                         protectionActionButton(
-                            title: localizationManager.localized("settings_advanced_settings"),
+                            title: safeLocalized("settings_advanced_settings"),
                             icon: "slider.horizontal.3",
                             foreground: Color(hex: "#A855F7"),
                             background: Color(hex: "#A855F7").opacity(0.14),
@@ -433,7 +478,7 @@ struct SettingsScreen: View {
                         )
                         
                         protectionActionButton(
-                            title: localizationManager.localized("settings_improve_protection"),
+                            title: safeLocalized("settings_improve_protection"),
                             icon: "arrow.up.circle.fill",
                             foreground: .secondaryGold,
                             background: Color.secondaryGold.opacity(0.18),
@@ -448,7 +493,7 @@ struct SettingsScreen: View {
                         .fill(Color.backgroundMedium.opacity(0.3))
                 )
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel(String(format: localizationManager.localized("settings_protection_level_accessibility"), Int(calculatedProtectionLevel)))
+                .accessibilityLabel(String(format: safeLocalized("settings_protection_level_accessibility"), Int(calculatedProtectionLevel)))
                 
                 // ✅ Менеджеры (5 компонентов)
                 Divider()
@@ -457,40 +502,40 @@ struct SettingsScreen: View {
                 // Emergency Contacts
                 settingsButton(
                     icon: "person.2.fill",
-                    title: localizationManager.localized("component_emergency_contact_manager_title"),
-                    subtitle: localizationManager.localized("component_emergency_contact_manager_description"),
+                    title: safeLocalized("component_emergency_contact_manager_title"),
+                    subtitle: safeLocalized("component_emergency_contact_manager_description"),
                     action: { showEmergencyContacts = true }
                 )
                 
                 // Emergency Notifications
                 settingsButton(
                     icon: "bell.fill",
-                    title: localizationManager.localized("component_emergency_notification_manager_title"),
-                    subtitle: localizationManager.localized("component_emergency_notification_manager_description"),
+                    title: safeLocalized("component_emergency_notification_manager_title"),
+                    subtitle: safeLocalized("component_emergency_notification_manager_description"),
                     action: { showEmergencyNotifications = true }
                 )
                 
                 // Voice Control
                 settingsButton(
                     icon: "mic.fill",
-                    title: localizationManager.localized("component_voice_control_manager_title"),
-                    subtitle: localizationManager.localized("component_voice_control_manager_description"),
+                    title: safeLocalized("component_voice_control_manager_title"),
+                    subtitle: safeLocalized("component_voice_control_manager_description"),
                     action: { showVoiceControl = true }
                 )
                 
                 // Child Protection Compliance
                 settingsButton(
                     icon: "child.fill",
-                    title: localizationManager.localized("component_russian_child_protection_manager_title"),
-                    subtitle: localizationManager.localized("component_russian_child_protection_manager_description"),
+                    title: safeLocalized("component_russian_child_protection_manager_title"),
+                    subtitle: safeLocalized("component_russian_child_protection_manager_description"),
                     action: { showChildProtectionCompliance = true }
                 )
                 
                 // Data Protection Compliance
                 settingsButton(
                     icon: "lock.shield.fill",
-                    title: localizationManager.localized("component_russian_data_protection_manager_title"),
-                    subtitle: localizationManager.localized("component_russian_data_protection_manager_description"),
+                    title: safeLocalized("component_russian_data_protection_manager_title"),
+                    subtitle: safeLocalized("component_russian_data_protection_manager_description"),
                     action: { showDataProtectionCompliance = true }
                 )
             }
@@ -505,7 +550,7 @@ struct SettingsScreen: View {
     private var notificationsSection: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("notifications_section")) // ✅ Локализованный заголовок
+                Text(safeLocalized("notifications_section")) // ✅ Безопасная локализация
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -516,8 +561,8 @@ struct SettingsScreen: View {
             VStack(spacing: Spacing.m) {
                 settingRow(
                     icon: "bell.fill",
-                    title: localizationManager.localized("push_notifications"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("push_notifications_subtitle"), // ✅ Локализованный подзаголовок
+                    title: safeLocalized("push_notifications"), // ✅ Безопасная локализация
+                    subtitle: safeLocalized("push_notifications_subtitle"), // ✅ Безопасная локализация
                     isEnabled: $isSecurityNotificationsEnabled,
                     onChange: { newValue in
                         Task { @MainActor in
@@ -529,8 +574,8 @@ struct SettingsScreen: View {
                 
                 settingRow(
                     icon: "speaker.wave.2.fill",
-                    title: localizationManager.localized("sound_notifications"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("sound_notifications_subtitle"), // ✅ Локализованный подзаголовок
+                    title: safeLocalized("sound_notifications"), // ✅ Безопасная локализация
+                    subtitle: safeLocalized("sound_notifications_subtitle"), // ✅ Безопасная локализация
                     isEnabled: $isSoundNotificationsEnabled,
                     onChange: { newValue in
                         Task { @MainActor in
@@ -551,7 +596,7 @@ struct SettingsScreen: View {
     private var appSection: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("app_section")) // ✅ Локализованный заголовок
+                Text(safeLocalized("app_section")) // ✅ Локализованный заголовок
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -562,8 +607,8 @@ struct SettingsScreen: View {
             VStack(spacing: Spacing.s) {
                 settingsButton(
                     icon: "globe",
-                    title: localizationManager.localized("language"), // ✅ Локализованный язык
-                    subtitle: localizationManager.currentLanguage == .russian ? localizationManager.localized("language_subtitle") : localizationManager.currentLanguage.displayName, // ✅ Динамический подзаголовок
+                    title: safeLocalized("language"), // ✅ Локализованный язык
+                    subtitle: isInitialized && localizationManager.currentLanguage == .russian ? safeLocalized("language_subtitle") : (isInitialized ? localizationManager.currentLanguage.displayName : "Language"), // ✅ Безопасная локализация
                     action: {
                         showLanguageSettings = true
                     }
@@ -571,8 +616,8 @@ struct SettingsScreen: View {
                 
                 settingsButton(
                     icon: selectedTheme.icon,
-                    title: localizationManager.localized("dark_theme"), // ✅ Локализованный заголовок
-                    subtitle: selectedTheme.displayName(localizationManager), // ✅ Локализованная тема
+                    title: safeLocalized("dark_theme"), // ✅ Локализованный заголовок
+                    subtitle: isInitialized ? selectedTheme.displayName(localizationManager) : selectedTheme.rawValue, // ✅ Безопасная локализация
                     action: {
                         cycleTheme()
                     }
@@ -580,8 +625,8 @@ struct SettingsScreen: View {
                 
                 settingsButton(
                     icon: "arrow.clockwise",
-                    title: localizationManager.localized("updates"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("updates_subtitle"), // ✅ Локализованный подзаголовок
+                    title: safeLocalized("updates"), // ✅ Локализованный заголовок
+                    subtitle: safeLocalized("updates_subtitle"), // ✅ Локализованный подзаголовок
                     action: {
                         checkForUpdates()
                     }
@@ -590,9 +635,9 @@ struct SettingsScreen: View {
                 // ✅ Система позиционирования
                 settingsButton(
                     icon: positioningService.currentSystem.icon,
-                    title: localizationManager.localized("positioning_system_title"),
+                    title: safeLocalized("positioning_system_title"),
                     subtitle: positioningService.selectedSystem == .auto 
-                        ? "\(positioningService.currentSystem.displayName) (\(localizationManager.localized("positioning_system_auto")))"
+                        ? "\(positioningService.currentSystem.displayName) (\(safeLocalized("positioning_system_auto")))"
                         : positioningService.currentSystem.displayName,
                     action: {
                         showPositioningSystemPicker = true
@@ -623,7 +668,7 @@ struct SettingsScreen: View {
     private var systemComponentsSection: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("system_components_title"))
+                Text(safeLocalized("system_components_title"))
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -651,14 +696,14 @@ struct SettingsScreen: View {
                     Text(error)
                         .font(.caption)
                         .foregroundColor(.red)
-                    Button(localizationManager.localized("retry")) {
+                    Button(safeLocalized("retry")) {
                         loadComponents()
                     }
                     .buttonStyle(.bordered)
                 }
                 .padding()
             } else if components.isEmpty {
-                Text(localizationManager.localized("system_components_empty"))
+                Text(safeLocalized("system_components_empty"))
                     .font(.body)
                     .foregroundColor(.textSecondary)
                     .padding()
@@ -783,7 +828,7 @@ struct SettingsScreen: View {
     private var additionalSection: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("additional_section")) // ✅ Локализованный заголовок
+                Text(safeLocalized("additional_section")) // ✅ Локализованный заголовок
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -794,8 +839,8 @@ struct SettingsScreen: View {
             VStack(spacing: Spacing.s) {
                 settingsButton(
                     icon: "questionmark.circle",
-                    title: localizationManager.localized("help_support"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("help_support_subtitle"), // ✅ Локализованный подзаголовок
+                    title: safeLocalized("help_support"), // ✅ Локализованный заголовок
+                    subtitle: safeLocalized("help_support_subtitle"), // ✅ Локализованный подзаголовок
                     action: {
                         showSupportScreen = true
                     }
@@ -803,8 +848,8 @@ struct SettingsScreen: View {
                 
                 settingsButton(
                     icon: "doc.text",
-                    title: localizationManager.localized("privacy_policy"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("privacy_policy_subtitle"), // ✅ Локализованный подзаголовок
+                    title: safeLocalized("privacy_policy"), // ✅ Локализованный заголовок
+                    subtitle: safeLocalized("privacy_policy_subtitle"), // ✅ Локализованный подзаголовок
                     action: {
                         showPrivacyPolicy = true
                     }
@@ -812,8 +857,8 @@ struct SettingsScreen: View {
                 
                 settingsButton(
                     icon: "doc.plaintext",
-                    title: localizationManager.localized("terms_of_service"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("terms_of_service_subtitle"), // ✅ Локализованный подзаголовок
+                    title: safeLocalized("terms_of_service"), // ✅ Локализованный заголовок
+                    subtitle: safeLocalized("terms_of_service_subtitle"), // ✅ Локализованный подзаголовок
                     action: {
                         showTermsOfService = true
                     }
@@ -822,8 +867,8 @@ struct SettingsScreen: View {
                 // ✅ Согласие на обработку ПДн (152-ФЗ) - 4-й пункт
                 settingsButton(
                     icon: "checkmark.shield",
-                    title: localizationManager.localized("settings_consent_personal_data"),
-                    subtitle: consentAccepted ? localizationManager.localized("settings_consent_granted") : localizationManager.localized("settings_consent_manage"),
+                    title: safeLocalized("settings_consent_personal_data"),
+                    subtitle: consentAccepted ? safeLocalized("settings_consent_granted") : safeLocalized("settings_consent_manage"),
                     action: {
                         // Открываем экран политики конфиденциальности
                         showPrivacyPolicy = true
@@ -832,8 +877,8 @@ struct SettingsScreen: View {
                 
                 settingsButton(
                     icon: "square.and.arrow.up",
-                    title: localizationManager.localized("share_app"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("share_app_subtitle"), // ✅ Локализованный подзаголовок
+                    title: safeLocalized("share_app"), // ✅ Локализованный заголовок
+                    subtitle: safeLocalized("share_app_subtitle"), // ✅ Локализованный подзаголовок
                     action: {
                         showShareSheet = true
                     }
@@ -904,9 +949,9 @@ struct SettingsScreen: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
             String(
-                format: localizationManager.localized("settings_toggle_accessibility"),
+                format: safeLocalized("settings_toggle_accessibility"),
                 title,
-                localizationManager.localized(isEnabled.wrappedValue ? "settings_toggle_on" : "settings_toggle_off")
+                safeLocalized(isEnabled.wrappedValue ? "settings_toggle_on" : "settings_toggle_off")
             )
         )
     }
@@ -921,7 +966,7 @@ struct SettingsScreen: View {
                 isBiometricEnabled = false
                 UserDefaults.standard.set(false, forKey: "biometricEnabled")
                 toastManager.show(
-                    message: localizationManager.localized("settings_biometric_unavailable"),
+                    message: safeLocalized("settings_biometric_unavailable"),
                     type: .warning
                 )
                 return
@@ -939,14 +984,14 @@ struct SettingsScreen: View {
                     
                     // Показываем уведомление пользователю
                     toastManager.show(
-                        message: localizationManager.localized("settings_biometric_enable_failed"),
+                        message: safeLocalized("settings_biometric_enable_failed"),
                         type: .warning
                     )
                 } else {
                     print("✅ Биометрическая аутентификация успешна")
                     UserDefaults.standard.set(true, forKey: "biometricEnabled")
                     toastManager.show(
-                        message: localizationManager.localized("settings_biometric_enabled"),
+                        message: safeLocalized("settings_biometric_enabled"),
                         type: .success
                     )
                 }
@@ -956,7 +1001,7 @@ struct SettingsScreen: View {
             print("🔐 Биометрия выключена")
             UserDefaults.standard.set(false, forKey: "biometricEnabled")
             toastManager.show(
-                message: localizationManager.localized("settings_biometric_disabled"),
+                message: safeLocalized("settings_biometric_disabled"),
                 type: .info
             )
         }
@@ -1009,7 +1054,7 @@ struct SettingsScreen: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
             String(
-                format: localizationManager.localized("settings_button_accessibility"),
+                format: safeLocalized("settings_button_accessibility"),
                 title,
                 subtitle
             )
@@ -1017,7 +1062,7 @@ struct SettingsScreen: View {
     }
     
     private func percentText(_ value: Int) -> String {
-        String(format: localizationManager.localized("settings_percent_format"), value)
+        String(format: safeLocalized("settings_percent_format"), value)
     }
     
     @ViewBuilder
@@ -1061,7 +1106,10 @@ struct SettingsScreen: View {
     
     /// ✅ ИНДИКАТОР: Вычисляет уровень защиты на основе текущего тарифа
     /// Ползунок теперь только для чтения и показывает реальный уровень защиты
+    /// ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Защита от nil и крашей
     private var calculatedProtectionLevel: Double {
+        guard isInitialized else { return 0.0 }
+        
         let tariff = tariffManager.currentTariff
         let card = tariff.createCard(localizationManager: localizationManager)
         
@@ -1077,16 +1125,20 @@ struct SettingsScreen: View {
     }
     
     private var protectionLevelText: String {
+        guard isInitialized else { return "" }
+        
         switch calculatedProtectionLevel {
-        case 0...25: return localizationManager.localized("settings_protection_level_low")
-        case 26...50: return localizationManager.localized("settings_protection_level_medium")
-        case 51...75: return localizationManager.localized("settings_protection_level_high")
-        case 76...100: return localizationManager.localized("settings_protection_level_maximum")
-        default: return localizationManager.localized("settings_protection_level_medium")
+        case 0...25: return safeLocalized("settings_protection_level_low")
+        case 26...50: return safeLocalized("settings_protection_level_medium")
+        case 51...75: return safeLocalized("settings_protection_level_high")
+        case 76...100: return safeLocalized("settings_protection_level_maximum")
+        default: return safeLocalized("settings_protection_level_medium")
         }
     }
     
     private var protectionColor: Color {
+        guard isInitialized else { return .primaryBlue }
+        
         switch calculatedProtectionLevel {
         case 0...25: return .red
         case 26...50: return .orange
