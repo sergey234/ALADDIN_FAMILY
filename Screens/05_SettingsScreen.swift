@@ -12,11 +12,19 @@ struct SettingsScreen: View {
         case dark = "dark"
         case system = "system"
         
-        func displayName(_ localizationManager: LocalizationManager) -> String {
+        func displayName(_ localizationManager: LocalizationManager?, isInitialized: Bool) -> String {
+            guard isInitialized, let manager = localizationManager else {
+                // Дефолтные значения если manager не готов
+                switch self {
+                case .light: return "Light"
+                case .dark: return "Dark"
+                case .system: return "System"
+                }
+            }
             switch self {
-            case .light: return localizationManager.localized("theme_light")
-            case .dark: return localizationManager.localized("theme_dark")
-            case .system: return localizationManager.localized("theme_system")
+            case .light: return manager.localized("theme_light")
+            case .dark: return manager.localized("theme_dark")
+            case .system: return manager.localized("theme_system")
             }
         }
         
@@ -91,6 +99,18 @@ struct SettingsScreen: View {
         userRole == "admin" || userRole == "administrator"
     }
     
+    // ✅ Безопасный доступ к коду языка
+    private var safeLanguageCode: String {
+        guard isInitialized else { return "en" }
+        return localizationManager.currentLanguage.rawValue
+    }
+    
+    // ✅ Безопасный доступ к текущему тарифу
+    private var safeCurrentTariff: TariffType {
+        guard isInitialized else { return .free }
+        return tariffManager.currentTariff
+    }
+    
     // MARK: - Body
     
     var body: some View {
@@ -154,17 +174,17 @@ struct SettingsScreen: View {
                         
                         // Приложение
                         appSection
-                            .id("app_section_\(localizationManager.currentLanguage.rawValue)")
+                            .id("app_section_\(safeLanguageCode)")
                         
                         // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
                         if isAdmin {
                             systemComponentsSection
-                                .id("system_components_section_\(localizationManager.currentLanguage.rawValue)")
+                                .id("system_components_section_\(safeLanguageCode)")
                         }
                         
                         // Дополнительно
                         additionalSection
-                            .id("additional_section_\(localizationManager.currentLanguage.rawValue)")
+                            .id("additional_section_\(safeLanguageCode)")
                         
                         // Отступ снизу для удобства прокрутки
                         Spacer(minLength: 100)
@@ -178,7 +198,7 @@ struct SettingsScreen: View {
         }
         .navigationBarHidden(true)
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
-        .id("settings_lang_\(localizationManager.currentLanguage.rawValue)")
+        .id("settings_lang_\(safeLanguageCode)")
         .sheet(isPresented: $showProfileEdit) {
             ProfileEditView()
                 .environmentObject(localizationManager)
@@ -203,7 +223,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showProtectionExplanation) {
             ProtectionLevelExplanationModal(
                 isPresented: $showProtectionExplanation,
-                currentTariff: isInitialized ? tariffManager.currentTariff : .free
+                currentTariff: safeCurrentTariff
             )
             .environmentObject(localizationManager)
         }
@@ -237,11 +257,13 @@ struct SettingsScreen: View {
         }
         // Инициализация перенесена в safeInitialize()
         .onChange(of: notificationManager.notificationSettings.securityEnabled) { newValue in
+            guard isInitialized else { return } // ✅ Защита от раннего срабатывания
             Task { @MainActor in
                 isSecurityNotificationsEnabled = newValue
             }
         }
         .onChange(of: notificationManager.notificationSettings.soundEnabled) { newValue in
+            guard isInitialized else { return } // ✅ Защита от раннего срабатывания
             Task { @MainActor in
                 isSoundNotificationsEnabled = newValue
             }
@@ -269,7 +291,7 @@ struct SettingsScreen: View {
         guard isInitialized else {
             return key // Возвращаем ключ если еще не инициализировано
         }
-        return safeLocalized(key)
+        return localizationManager.localized(key) // ✅ Исправлено: вызываем localizationManager вместо рекурсии
     }
     
     // MARK: - Profile Section
@@ -617,7 +639,7 @@ struct SettingsScreen: View {
                 settingsButton(
                     icon: selectedTheme.icon,
                     title: safeLocalized("dark_theme"), // ✅ Локализованный заголовок
-                    subtitle: isInitialized ? selectedTheme.displayName(localizationManager) : selectedTheme.rawValue, // ✅ Безопасная локализация
+                    subtitle: selectedTheme.displayName(localizationManager, isInitialized: isInitialized), // ✅ Безопасная локализация
                     action: {
                         cycleTheme()
                     }
@@ -1110,8 +1132,17 @@ struct SettingsScreen: View {
     private var calculatedProtectionLevel: Double {
         guard isInitialized else { return 0.0 }
         
-        let tariff = tariffManager.currentTariff
-        let card = tariff.createCard(localizationManager: localizationManager)
+        // ✅ Дополнительная защита: безопасный доступ к тарифу
+        let tariff = safeCurrentTariff
+        
+        // ✅ Безопасный вызов createCard с обработкой ошибок
+        let card: TariffCard
+        do {
+            card = tariff.createCard(localizationManager: localizationManager)
+        } catch {
+            print("⚠️ Ошибка при создании карты тарифа: \(error)")
+            return 0.0
+        }
         
         // Вычисляем процент на основе доступных функций тарифа
         let totalProtectionFeatures = 100 // Всего функций защиты от угроз
@@ -1120,6 +1151,9 @@ struct SettingsScreen: View {
         
         let totalAvailable = Double(card.protectionCount + card.parentalControlCount + card.additionalFeatures.count)
         let totalPossible = Double(totalProtectionFeatures + totalParentalFeatures + totalAdditionalFeatures)
+        
+        // ✅ Защита от деления на ноль
+        guard totalPossible > 0 else { return 0.0 }
         
         return min(100, (totalAvailable / totalPossible) * 100)
     }

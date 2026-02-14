@@ -6,6 +6,7 @@ import UIKit
  * 🔔 Notification Manager
  * Управление push и локальными уведомлениями
  * Интеграция с сервером для отправки уведомлений
+ * ✅ @Published свойства автоматически обновляются на main thread
  */
 
 class NotificationManager: NSObject, ObservableObject {
@@ -39,8 +40,11 @@ class NotificationManager: NSObject, ObservableObject {
     private override init() {
         super.init()
         notificationCenter.delegate = self
-        checkAuthorizationStatus()
-        loadSettings()
+        // ✅ Инициализация на main thread для @Published свойств
+        DispatchQueue.main.async { [weak self] in
+            self?.checkAuthorizationStatus()
+            self?.loadSettings()
+        }
     }
     
     // MARK: - Authorization
@@ -386,21 +390,30 @@ class NotificationManager: NSObject, ObservableObject {
     
     /**
      * Загрузить настройки из UserDefaults
+     * ✅ Обновление @Published свойств на main thread
      */
     private func loadSettings() {
         guard let data = userDefaults.data(forKey: settingsKey) else {
             // Используем настройки по умолчанию
-            notificationSettings = NotificationSettings()
+            DispatchQueue.main.async { [weak self] in
+                self?.notificationSettings = NotificationSettings()
+            }
             return
         }
         
         do {
             let decoder = JSONDecoder()
-            notificationSettings = try decoder.decode(NotificationSettings.self, from: data)
-            print("✅ Notification settings loaded")
+            let settings = try decoder.decode(NotificationSettings.self, from: data)
+            // ✅ Обновляем @Published свойство на main thread
+            DispatchQueue.main.async { [weak self] in
+                self?.notificationSettings = settings
+                print("✅ Notification settings loaded")
+            }
         } catch {
             print("❌ Failed to load notification settings: \(error), using defaults")
-            notificationSettings = NotificationSettings()
+            DispatchQueue.main.async { [weak self] in
+                self?.notificationSettings = NotificationSettings()
+            }
         }
     }
     

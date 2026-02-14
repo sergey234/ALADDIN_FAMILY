@@ -78,6 +78,7 @@ class IoTSecurityModule: ObservableObject {
     /// ТОЛЬКО уведомление пользователя
     func alertCompromised(_ device: IoTDevice) {
         // Показываем уведомление
+        // ✅ sendLocalNotification безопасен для вызова из любого потока
         NotificationManager.shared.sendLocalNotification(
             title: "⚠️ Устройство скомпрометировано",
             body: "\(device.name) требует внимания",

@@ -618,6 +618,7 @@ class ParentalControlManager: ObservableObject {
         let _ = notificationManager.notificationSettings
         
         // Создаем уведомление для экрана уведомлений (через NotificationManager)
+        // ✅ sendLocalNotification безопасен для вызова из любого потока
         NotificationManager.shared.sendLocalNotification(
             title: "🚨 Попытка обхода",
             body: "\(type.displayName) заблокирован",
@@ -626,7 +627,8 @@ class ParentalControlManager: ObservableObject {
                 "type": "bypass",
                 "bypass_type": type.rawValue,
                 "child_id": childId
-            ]
+            ],
+            delay: 0
         )
         
         // Push-уведомление отправляется ТОЛЬКО если включено в настройках

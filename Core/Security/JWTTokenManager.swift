@@ -8,6 +8,10 @@ class JWTTokenManager {
     
     private let keychainManager = KeychainManager.shared
     
+    // ✅ Защита от множественных одновременных запросов на обновление токена
+    private var isRefreshing = false
+    private var refreshTask: Task<Bool, Never>?
+    
     private init() {}
     
     // MARK: - Token Expiration Check
@@ -74,7 +78,14 @@ class JWTTokenManager {
     // MARK: - Token Refresh
     
     /// Принудительно обновляет токен (для обработки 401 ошибок) - прямой HTTP запрос без рекурсии
+    /// ✅ ИСПРАВЛЕНО: Защита от множественных одновременных запросов
     func forceRefreshToken() async -> Bool {
+        // ✅ Если уже обновляется, ждём завершения существующей задачи
+        if let existingTask = refreshTask {
+            print("🔄 JWT: Обновление токена уже выполняется, ждём завершения...")
+            return await existingTask.value
+        }
+        
         print("🔄 JWT: Принудительное обновление токена...")
 
         // Получаем refresh token
@@ -83,8 +94,16 @@ class JWTTokenManager {
             return false
         }
 
-        // Делаем прямой HTTP запрос без использования NetworkManager, чтобы избежать бесконечного цикла
-        return await directRefreshTokenRequest(refreshToken: refreshToken)
+        // ✅ Создаём задачу обновления токена (защита от параллельных запросов)
+        refreshTask = Task {
+            // Делаем прямой HTTP запрос без использования NetworkManager, чтобы избежать бесконечного цикла
+            let result = await directRefreshTokenRequest(refreshToken: refreshToken)
+            return result
+        }
+        
+        let result = await refreshTask!.value
+        refreshTask = nil // Очищаем задачу после завершения
+        return result
     }
 
     /// Проверяет, есть ли валидный токен
@@ -97,7 +116,15 @@ class JWTTokenManager {
 
     /// Проверяет и обновляет токен если нужно
     /// Возвращает true только если токен был действительно обновлен
+    /// ✅ ИСПРАВЛЕНО: Использует прямой запрос вместо NetworkManager, чтобы избежать бесконечного цикла
+    /// ✅ ИСПРАВЛЕНО: Защита от множественных одновременных запросов
     func refreshTokenIfNeeded() async -> Bool {
+        // ✅ Если уже обновляется, ждём завершения существующей задачи
+        if let existingTask = refreshTask {
+            print("🔄 JWT: Обновление токена уже выполняется, ждём завершения...")
+            return await existingTask.value
+        }
+        
         guard let accessToken = keychainManager.loadString(forKey: .authToken) else {
             print("❌ JWT: Access token не найден в Keychain")
             return false
@@ -117,8 +144,18 @@ class JWTTokenManager {
             return false
         }
         
-        // Обновляем токен через API
-        return await refreshAccessToken(refreshToken: refreshToken)
+        // ✅ Создаём задачу обновления токена (защита от параллельных запросов)
+        refreshTask = Task {
+            // ✅ ИСПРАВЛЕНО: Используем прямой запрос вместо NetworkManager.post()
+            // Это предотвращает бесконечный цикл, так как directRefreshTokenRequest
+            // не использует NetworkManager, который снова вызывает refreshTokenIfNeeded()
+            let result = await directRefreshTokenRequest(refreshToken: refreshToken)
+            return result
+        }
+        
+        let result = await refreshTask!.value
+        refreshTask = nil // Очищаем задачу после завершения
+        return result
     }
     
     /// Прямой HTTP запрос на обновление токена (без использования NetworkManager, чтобы избежать бесконечного цикла)
