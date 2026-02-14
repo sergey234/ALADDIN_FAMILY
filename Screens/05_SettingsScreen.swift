@@ -43,9 +43,10 @@ struct SettingsScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager // ✅ Добавляем LocalizationManager
 
-    // ✅ ИСПРАВЛЕНО: Вернулись к @StateObject для singleton'ов (как в рабочей версии)
-    @StateObject private var notificationManager = NotificationManager.shared
-    @StateObject private var securityManager = SecurityManager.shared
+    // ✅ ИСПРАВЛЕНО: Используем @ObservedObject для singleton'ов с @Published свойствами
+    @ObservedObject private var notificationManager = NotificationManager.shared
+    // ✅ ИСПРАВЛЕНО: Используем let для singleton'ов без @Published свойств
+    private let securityManager = SecurityManager.shared
     
     // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Флаг инициализации для защиты от крашей
     @State private var isInitialized: Bool = false
@@ -67,11 +68,12 @@ struct SettingsScreen: View {
     @State private var selectedTheme: ThemeMode = .system
     @State private var showProtectionExplanation: Bool = false
     @State private var showAdvancedProtection: Bool = false
-    // ✅ ИСПРАВЛЕНО: Вернулись к @StateObject для singleton'ов (как в рабочей версии)
-    @StateObject private var featuresManager = ProtectionFeaturesManager.shared
-    @StateObject private var toastManager = ToastManager.shared
-    @StateObject private var historyManager = ProtectionLevelHistoryManager.shared
-    @StateObject private var tariffManager = TariffManager.shared
+    // ✅ ИСПРАВЛЕНО: Используем let для singleton'ов без @Published свойств
+    private let featuresManager = ProtectionFeaturesManager.shared
+    private let toastManager = ToastManager.shared
+    private let historyManager = ProtectionLevelHistoryManager.shared
+    // ✅ ИСПРАВЛЕНО: Используем @ObservedObject для singleton'ов с @Published свойствами
+    @ObservedObject private var tariffManager = TariffManager.shared
     @State private var showProtectionHistory: Bool = false
     
     // Navigation для менеджеров
@@ -117,7 +119,7 @@ struct SettingsScreen: View {
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Защита от краша - проверяем инициализацию перед использованием
         Group {
             if isInitialized {
-                settingsContent
+                settingsContent()
             } else {
                 // Показываем пустой экран пока инициализируется
                 ZStack {
@@ -130,8 +132,8 @@ struct SettingsScreen: View {
         .onAppear {
             print("🔄 SettingsScreen: onAppear вызван")
             print("🔍 SettingsScreen: Thread = \(Thread.isMainThread ? "Main" : "Background")")
-            print("🔍 SettingsScreen: localizationManager = \(localizationManager != nil ? "готов" : "nil")")
-            print("🔍 SettingsScreen: navigationManager = \(navigationManager != nil ? "готов" : "nil")")
+            print("🔍 SettingsScreen: localizationManager готов")
+            print("🔍 SettingsScreen: navigationManager готов")
             
             // ✅ ИСПРАВЛЕНО: Используем DispatchQueue.main.async вместо Task { @MainActor in }
             // Это более надежно работает на реальных устройствах в TestFlight
@@ -155,18 +157,8 @@ struct SettingsScreen: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             print("✅ SettingsScreen: Задержка завершена, проверка готовности EnvironmentObject...")
             
-            // ✅ ИСПРАВЛЕНО: Проверка готовности EnvironmentObject перед использованием
-            // EnvironmentObject - это объект, который передается через навигацию
-            // В TestFlight он может быть еще не готов, поэтому проверяем его наличие
-            // Простыми словами: проверяем, что данные "дошли" до этого экрана
-            guard self.localizationManager != nil else {
-                print("⚠️ SettingsScreen: EnvironmentObject не готов, повтор через 0.1 сек")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    self.safeInitialize()
-                }
-                return
-            }
-            
+            // ✅ ИСПРАВЛЕНО: EnvironmentObject всегда готов в SwiftUI
+            // EnvironmentObject передается через навигацию и всегда доступен
             print("✅ SettingsScreen: EnvironmentObject готов")
             print("🔄 SettingsScreen: Начало initializeNotifications()...")
             
@@ -182,7 +174,8 @@ struct SettingsScreen: View {
     }
     
     // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Основной контент экрана
-    private var settingsContent: some View {
+    @ViewBuilder
+    private func settingsContent() -> some View {
         ZStack {
             // Фон
             LinearGradient.backgroundGradient
@@ -192,32 +185,32 @@ struct SettingsScreen: View {
             
             VStack(spacing: 0) {
                 // Навигационная панель
-                navigationHeader
+                navigationHeader()
                 
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
                         // Профиль пользователя
-                        profileSection
+                        profileSection()
                         
                         // Защита и безопасность
-                        securitySection
+                        securitySection()
                         
                         // Уведомления
-                        notificationsSection
+                        notificationsSection()
                         
                         // Приложение
-                        appSection
+                        appSection()
                             .id("app_section_\(safeLanguageCode)")
                         
                         // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
                         if isAdmin {
-                            systemComponentsSection
+                            systemComponentsSection()
                                 .id("system_components_section_\(safeLanguageCode)")
                         }
                         
                         // Дополнительно
-                        additionalSection
+                        additionalSection()
                             .id("additional_section_\(safeLanguageCode)")
                         
                         // Отступ снизу для удобства прокрутки
@@ -307,7 +300,8 @@ struct SettingsScreen: View {
     
     // MARK: - Navigation Header
     
-    private var navigationHeader: some View {
+    @ViewBuilder
+    private func navigationHeader() -> some View {
         ALADDINNavigationBar(
             title: safeLocalized("settings_title"), // ✅ Безопасная локализация
             subtitle: safeLocalized("settings_subtitle"), // ✅ Безопасная локализация
@@ -330,13 +324,14 @@ struct SettingsScreen: View {
     
     // MARK: - Profile Section
     
-    private var profileSection: some View {
+    @ViewBuilder
+    private func profileSection() -> some View {
         let userInitial = storedName.isEmpty ? "?" : String(storedName.prefix(1).uppercased())
         let userName = storedName.isEmpty ? safeLocalized("profile_name_placeholder") : storedName
         let userAlias = storedAlias.isEmpty ? safeLocalized("profile_email_placeholder") : storedAlias
         let userStatus = safeLocalized("settings_profile_status")
         
-        return VStack(spacing: Spacing.m) {
+        VStack(spacing: Spacing.m) {
             HStack {
                 Text(safeLocalized("profile_section")) // ✅ Безопасная локализация
                     .font(.h3)
@@ -424,7 +419,8 @@ struct SettingsScreen: View {
     
     // MARK: - Security Section
     
-    private var securitySection: some View {
+    @ViewBuilder
+    private func securitySection() -> some View {
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(safeLocalized("security_section")) // ✅ Безопасная локализация
@@ -603,7 +599,8 @@ struct SettingsScreen: View {
     
     // MARK: - Notifications Section
     
-    private var notificationsSection: some View {
+    @ViewBuilder
+    private func notificationsSection() -> some View {
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(safeLocalized("notifications_section")) // ✅ Безопасная локализация
@@ -649,7 +646,8 @@ struct SettingsScreen: View {
     
     // MARK: - App Section
     
-    private var appSection: some View {
+    @ViewBuilder
+    private func appSection() -> some View {
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(safeLocalized("app_section")) // ✅ Локализованный заголовок
@@ -664,7 +662,7 @@ struct SettingsScreen: View {
                 settingsButton(
                     icon: "globe",
                     title: safeLocalized("language"), // ✅ Локализованный язык
-                    subtitle: isInitialized && localizationManager.currentLanguage == .russian ? safeLocalized("language_subtitle") : (isInitialized ? localizationManager.currentLanguage.displayName : "Language"), // ✅ Безопасная локализация
+                    subtitle: isInitialized ? (localizationManager.currentLanguage == .russian ? safeLocalized("language_subtitle") : localizationManager.currentLanguage.displayName) : "Language", // ✅ ИСПРАВЛЕНО: Проверяем isInitialized ПЕРЕД доступом к currentLanguage
                     action: {
                         showLanguageSettings = true
                     }
@@ -721,7 +719,8 @@ struct SettingsScreen: View {
     
     // MARK: - System Components Section (✅ ЗАДАЧА 22)
     
-    private var systemComponentsSection: some View {
+    @ViewBuilder
+    private func systemComponentsSection() -> some View {
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(safeLocalized("system_components_title"))
@@ -849,7 +848,7 @@ struct SettingsScreen: View {
                         .foregroundColor(.textPrimary)
                     
                     if let lastUpdate = component.lastUpdate {
-                        Text(String(format: localizationManager.localized("system_components_last_update"), formatDate(lastUpdate)))
+                        Text(String(format: safeLocalized("system_components_last_update"), formatDate(lastUpdate))) // ✅ ИСПРАВЛЕНО: Используем safeLocalized вместо прямого доступа
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                     }
@@ -881,7 +880,8 @@ struct SettingsScreen: View {
     
     // MARK: - Additional Section
     
-    private var additionalSection: some View {
+    @ViewBuilder
+    private func additionalSection() -> some View {
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(safeLocalized("additional_section")) // ✅ Локализованный заголовок

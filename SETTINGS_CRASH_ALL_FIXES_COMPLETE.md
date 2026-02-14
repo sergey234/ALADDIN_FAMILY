@@ -1,8 +1,8 @@
 # 🔧 ПОЛНЫЙ СПИСОК ВСЕХ ИСПРАВЛЕНИЙ КРАША SETTINGS SCREEN
 
-**Дата:** 2026-02-13  
-**Версия сборки:** 31 → 32  
-**Статус:** ✅ ВСЕ ИСПРАВЛЕНИЯ ВЫПОЛНЕНЫ
+**Дата:** 2026-02-14  
+**Версия сборки:** 31 → 33  
+**Статус:** ⚠️ КРАШ ПРОДОЛЖАЕТСЯ В BUILD 33 - НУЖНЫ ДОПОЛНИТЕЛЬНЫЕ ИСПРАВЛЕНИЯ
 
 ---
 
@@ -464,3 +464,156 @@ private func safeInitialize() async {
 **Дата завершения:** 2026-02-13  
 **Версия сборки:** 32  
 **Статус:** ✅ ВСЕ ИСПРАВЛЕНИЯ ВЫПОЛНЕНЫ И ПРОТЕСТИРОВАНЫ
+
+---
+
+## 🔴 НОВЫЕ ПРОБЛЕМЫ ОБНАРУЖЕНЫ В BUILD 33
+
+### ❌ КРАШ ПРОДОЛЖАЕТСЯ В TESTFLIGHT
+
+**Статус:** После всех исправлений краш продолжается на реальном устройстве в TestFlight  
+**Симулятор:** ✅ Работает  
+**TestFlight:** ❌ Крашится
+
+### 🔴 КРИТИЧЕСКАЯ ПРОБЛЕМА #1: Computed Properties Вычисляются ДО isInitialized
+
+**Проблема:**
+- SwiftUI вычисляет все computed properties при создании View
+- Даже если они внутри `if isInitialized { ... }`
+- Computed properties обращаются к `localizationManager` ДО инициализации
+- Это вызывает краш на реальном устройстве
+
+**Пример:**
+```swift
+var body: some View {
+    if isInitialized {
+        settingsContent  // ❌ Вычисляется ДО isInitialized = true!
+    }
+}
+
+private var settingsContent: some View {
+    // ❌ Это computed property, вычисляется при создании View
+    Text(safeLocalized("settings_title"))  // Вызывается ДО isInitialized
+}
+```
+
+**Решение:**
+- Заменить computed properties на функции с `@ViewBuilder`
+- Использовать функции вместо computed properties
+
+---
+
+### 🔴 КРИТИЧЕСКАЯ ПРОБЛЕМА #2: Прямой Доступ к localizationManager
+
+**Найдено в коде:**
+
+1. **Строка 667:** Прямой доступ к `localizationManager.currentLanguage` в условии
+2. **Строка 852:** Прямой доступ к `localizationManager.localized()` без проверки
+3. **Строка 1175:** Прямой доступ к `localizationManager` в `calculatedProtectionLevel`
+
+**Исправления:**
+- ✅ Строка 667: Исправлено - проверяем isInitialized ПЕРЕД доступом
+- ✅ Строка 852: Исправлено - используем safeLocalized()
+- ⚠️ Строка 1175: Требует дополнительной проверки
+
+---
+
+### 🔴 КРИТИЧЕСКАЯ ПРОБЛЕМА #3: Множество @StateObject Singleton'ов
+
+**Проблема:**
+- SettingsScreen использует 6 @StateObject singleton'ов
+- Это может вызывать проблемы с lifecycle на реальном устройстве
+- Другие экраны используют меньше singleton'ов
+
+**Решение:**
+- Возможно, нужно использовать другой подход для singleton'ов
+- Или уменьшить количество singleton'ов
+
+---
+
+### 🔴 КРИТИЧЕСКАЯ ПРОБЛЕМА #4: Множество Sheet Модификаторов
+
+**Проблема:**
+- SettingsScreen имеет 10+ sheet модификаторов
+- Каждый создает View и передает EnvironmentObject
+- Могут вызываться ДО isInitialized
+
+**Решение:**
+- Защитить все sheet модификаторы проверкой isInitialized
+- Или использовать функции вместо computed properties
+
+---
+
+## 📋 ФОРМУЛИРОВКА ПРОБЛЕМЫ ДЛЯ ДРУГОЙ ML СИСТЕМЫ
+
+### Контекст:
+
+**Приложение:** iOS приложение на SwiftUI  
+**Проблема:** SettingsScreen крашится при переходе на реальном устройстве в TestFlight  
+**Статус:** В симуляторе работает, на устройстве крашится  
+**Версия сборки:** 33 (после множества исправлений)
+
+### Техническое описание:
+
+**Архитектура:**
+- SwiftUI View с множеством `@StateObject` singleton'ов (6 штук)
+- Использует `@EnvironmentObject` для передачи данных через навигацию
+- Имеет флаг `isInitialized` для защиты от раннего доступа
+- Использует computed properties для организации кода
+
+**Основная проблема:**
+1. **Computed properties вычисляются ДО isInitialized:**
+   - SwiftUI вычисляет все computed properties при создании View
+   - Даже если они внутри `if isInitialized { ... }`
+   - Computed properties обращаются к `localizationManager` ДО инициализации
+   - Это вызывает краш на реальном устройстве
+
+2. **Прямой доступ к localizationManager:**
+   - В некоторых местах есть прямой доступ к `localizationManager.currentLanguage`
+   - Без проверки `isInitialized`
+   - Это вызывает краш на реальном устройстве
+
+3. **Множество @StateObject singleton'ов:**
+   - 6 singleton'ов с `@StateObject`
+   - Это может вызывать проблемы с lifecycle на реальном устройстве
+
+4. **Множество sheet модификаторов:**
+   - 10+ sheet модификаторов
+   - Каждый создает View и передает EnvironmentObject
+   - Могут вызываться ДО isInitialized
+
+### Почему именно эта страница крашится:
+
+1. **Множество computed properties** - больше, чем в других экранах
+2. **Множество @StateObject singleton'ов** - 6 штук (больше, чем в других экранах)
+3. **Множество sheet модификаторов** - 10+ штук (больше, чем в других экранах)
+4. **Сложная инициализация** - зависит от множества менеджеров
+5. **Множество вызовов safeLocalized()** - в computed properties
+
+### Что уже исправлено (13 исправлений):
+
+1. ✅ Исправлена бесконечная рекурсия в `safeLocalized()`
+2. ✅ Улучшена инициализация `NotificationManager` (обновление на main thread)
+3. ✅ Защищен `ThemeMode.displayName()` от nil
+4. ✅ Защищены `onChange` наблюдатели
+5. ✅ Защищен доступ к `tariffManager.currentTariff` в sheet
+6. ✅ Защищен доступ к `localizationManager.currentLanguage` через `safeLanguageCode`
+7. ✅ Улучшена защита в `calculatedProtectionLevel`
+8. ✅ Защищены sheet модификаторы с `localizationManager`
+9. ✅ Увеличена задержка до 0.2 секунды
+10. ✅ Добавлена проверка готовности EnvironmentObject
+11. ✅ Использование DispatchQueue.main.async вместо Task { @MainActor in }
+12. ✅ Убрали async/await из инициализации
+13. ✅ Вернулись к @StateObject для singleton'ов
+
+### Что еще нужно исправить:
+
+1. ❌ **Computed properties вычисляются ДО isInitialized** - нужно использовать функции вместо computed properties
+2. ❌ **Прямой доступ к localizationManager** - нужно заменить на safeLocalized() (частично исправлено)
+3. ❌ **Множество @StateObject singleton'ов** - возможно, нужно использовать другой подход
+
+---
+
+**Дата обновления:** 2026-02-14  
+**Версия сборки:** 33  
+**Статус:** ⚠️ КРАШ ПРОДОЛЖАЕТСЯ - ТРЕБУЮТСЯ ДОПОЛНИТЕЛЬНЫЕ ИСПРАВЛЕНИЯ
