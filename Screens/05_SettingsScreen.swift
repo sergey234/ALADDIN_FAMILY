@@ -848,7 +848,7 @@ struct SettingsScreen: View {
                         .foregroundColor(.textPrimary)
                     
                     if let lastUpdate = component.lastUpdate {
-                        Text(String(format: safeLocalized("system_components_last_update"), formatDate(lastUpdate))) // ✅ ИСПРАВЛЕНО: Используем safeLocalized вместо прямого доступа
+                        Text(String(format: localizationManager.localized("system_components_last_update"), formatDate(lastUpdate))) // ✅ ИСПРАВЛЕНО: ComponentRow имеет свой localizationManager
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                     }
