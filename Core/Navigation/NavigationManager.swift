@@ -361,9 +361,19 @@ class NavigationManager: ObservableObject {
     
     /// Переход к экрану с очисткой стека
     func navigateToRoot(_ screen: ALADDINScreen) {
+        #if DEBUG
+        if screen == .settings {
+            print("🔴 NAVIGATION: navigateToRoot(.settings) вызван")
+        }
+        #endif
         appendLog("⬆️ navigateToRoot(\(screen)) | до очистки стека = \(navigationStack)")
         navigationStack.removeAll()
         currentScreen = screen
+        #if DEBUG
+        if screen == .settings {
+            print("🔴 NAVIGATION: currentScreen установлен в .settings")
+        }
+        #endif
         appendLog("⬆️ navigateToRoot завершён | current = \(currentScreen)")
         objectWillChange.send()
     }
@@ -399,6 +409,9 @@ class NavigationManager: ObservableObject {
     }
     
     func switchToSettingsScreen() {
+        #if DEBUG
+        print("🔴 NAVIGATION: switchToSettingsScreen() вызван")
+        #endif
         navigateToRoot(.settings)
     }
     

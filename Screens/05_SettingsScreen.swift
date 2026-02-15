@@ -92,27 +92,71 @@ struct SettingsScreen: View {
     
     // ✅ ИСПРАВЛЕНО: Прямой доступ (как в бэкапах - работало)
     private var safeLanguageCode: String {
+        guard Thread.isMainThread else {
+            #if DEBUG
+            print("⚠️ SETTINGS: safeLanguageCode вызван не на main thread")
+            #endif
+            return "en" // Fallback для фоновых потоков
+        }
         return localizationManager.currentLanguage.rawValue
     }
     
     private var safeCurrentTariff: TariffType {
+        guard Thread.isMainThread else {
+            #if DEBUG
+            print("⚠️ SETTINGS: safeCurrentTariff вызван не на main thread")
+            #endif
+            return .free // Fallback для фоновых потоков
+        }
         return tariffManager.currentTariff
     }
     
     // MARK: - Body
     
+    // Счетчик перерисовок для диагностики
+    #if DEBUG
+    private static var bodyCallCount: Int = 0
+    private static var settingsContentCallCount: Int = 0
+    #endif
+    
     var body: some View {
         // ✅ ИСПРАВЛЕНО: Вернулись к прямому доступу (как в бэкапах - работало)
+        let _ = {
+            #if DEBUG
+            Self.bodyCallCount += 1
+            print("🔴 SETTINGS: body вычисляется - НАЧАЛО (#\(Self.bodyCallCount))")
+            print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+            print("🔴 SETTINGS: notificationManager = \(notificationManager)")
+            print("🔴 SETTINGS: securityManager = \(securityManager)")
+            print("🔴 SETTINGS: featuresManager = \(featuresManager)")
+            print("🔴 SETTINGS: tariffManager = \(tariffManager)")
+            print("🔴 SETTINGS: isNetworkProtectionEnabled = \(isNetworkProtectionEnabled)")
+            print("🔴 SETTINGS: isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled)")
+            print("🔴 SETTINGS: isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
+            print("🔴 SETTINGS: isBiometricEnabled = \(isBiometricEnabled)")
+            print("🔴 SETTINGS: selectedTheme = \(selectedTheme)")
+            print("🔴 SETTINGS: showProfileEdit = \(showProfileEdit)")
+            print("🔴 SETTINGS: localizationManager.currentLanguage = \(localizationManager.currentLanguage)")
+            #endif
+        }()
         settingsContent()
             .onAppear {
                 #if DEBUG
                 print("🔴 SETTINGS: onAppear вызван")
                 print("🔴 SETTINGS: notificationManager = \(notificationManager)")
                 print("🔴 SETTINGS: notificationSettings = \(notificationManager.notificationSettings)")
+                print("🔴 SETTINGS: Все @State переменные:")
+                print("  - isNetworkProtectionEnabled = \(isNetworkProtectionEnabled)")
+                print("  - isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled)")
+                print("  - isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
+                print("  - isBiometricEnabled = \(isBiometricEnabled)")
+                print("  - selectedTheme = \(selectedTheme)")
                 #endif
                 initializeNotifications()
+            }
+            .onDisappear {
                 #if DEBUG
-                print("🔴 SETTINGS: initializeNotifications() завершен")
+                print("🔴 SETTINGS: onDisappear вызван")
                 #endif
             }
     }
@@ -123,6 +167,21 @@ struct SettingsScreen: View {
     // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Основной контент экрана
     @ViewBuilder
     private func settingsContent() -> some View {
+        let _ = {
+            #if DEBUG
+            Self.settingsContentCallCount += 1
+            print("🔴 SETTINGS: settingsContent() вызывается (#\(Self.settingsContentCallCount))")
+            print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+            print("🔴 SETTINGS: localizationManager доступен = \(localizationManager != nil)")
+            print("🔴 SETTINGS: localizationManager.currentLanguage = \(localizationManager.currentLanguage)")
+            print("🔴 SETTINGS: tariffManager.currentTariff = \(tariffManager.currentTariff)")
+            print("🔴 SETTINGS: notificationManager.notificationSettings = \(notificationManager.notificationSettings)")
+            print("🔴 SETTINGS: safeLanguageCode = \(safeLanguageCode)")
+            print("🔴 SETTINGS: safeCurrentTariff = \(safeCurrentTariff)")
+            print("🔴 SETTINGS: Stack trace:")
+            Thread.callStackSymbols.prefix(5).forEach { print("  \($0)") }
+            #endif
+        }()
         ZStack {
             // Фон
             LinearGradient.backgroundGradient
@@ -231,9 +290,15 @@ struct SettingsScreen: View {
         }
         // Инициализация перенесена в safeInitialize()
         .onChange(of: notificationManager.notificationSettings.securityEnabled) { newValue in
+            #if DEBUG
+            print("🟡 SETTINGS: onChange securityEnabled = \(newValue)")
+            #endif
             isSecurityNotificationsEnabled = newValue
         }
         .onChange(of: notificationManager.notificationSettings.soundEnabled) { newValue in
+            #if DEBUG
+            print("🟡 SETTINGS: onChange soundEnabled = \(newValue)")
+            #endif
             isSoundNotificationsEnabled = newValue
         }
         .withToast()
@@ -255,9 +320,21 @@ struct SettingsScreen: View {
         .accessibilityLabel(safeLocalized("settings_accessibility_navbar"))
     }
     
-    // ✅ ИСПРАВЛЕНО: Прямая локализация (как в бэкапах - работало)
+    // ✅ ИСПРАВЛЕНО: Прямая локализация с защитой для реального устройства
     private func safeLocalized(_ key: String) -> String {
-        return localizationManager.localized(key)
+        guard Thread.isMainThread else {
+            #if DEBUG
+            print("⚠️ SETTINGS: safeLocalized вызван не на main thread для ключа '\(key)'")
+            #endif
+            return key // Fallback для фоновых потоков
+        }
+        let result = localizationManager.localized(key)
+        #if DEBUG
+        if result == key {
+            print("⚠️ SETTINGS: Локализация не найдена для ключа '\(key)'")
+        }
+        #endif
+        return result
     }
     
     // MARK: - Profile Section
