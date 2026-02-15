@@ -613,9 +613,8 @@ class ParentalControlManager: ObservableObject {
         
         saveBypassAttempt(attempt)
         
-        // Проверяем настройки уведомлений
-        let notificationManager = NotificationManager.shared
-        let _ = notificationManager.notificationSettings
+        // ✅ ИСПРАВЛЕНО: Проверяем настройки уведомлений на main thread
+        // Доступ к notificationSettings требует main thread
         
         // Создаем уведомление для экрана уведомлений (через NotificationManager)
         // ✅ sendLocalNotification безопасен для вызова из любого потока

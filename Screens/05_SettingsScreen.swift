@@ -43,13 +43,13 @@ struct SettingsScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager // ✅ Добавляем LocalizationManager
 
-    // ✅ ИСПРАВЛЕНО: Используем @ObservedObject для singleton'ов с @Published свойствами
-    @ObservedObject private var notificationManager = NotificationManager.shared
-    // ✅ ИСПРАВЛЕНО: Используем let для singleton'ов без @Published свойств
-    private let securityManager = SecurityManager.shared
+    // ✅ ИСПРАВЛЕНО: Вернулись к @StateObject для singleton'ов (как в бэкапе - работало)
+    @StateObject private var notificationManager = NotificationManager.shared
+    @StateObject private var securityManager = SecurityManager.shared
     
-    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Флаг инициализации для защиты от крашей
+    // ✅ ИСПРАВЛЕНО: Флаги инициализации для защиты от race condition
     @State private var isInitialized: Bool = false
+    @State private var isInitializing: Bool = false
     @State private var isNetworkProtectionEnabled: Bool = true
     @AppStorage("profile_name") private var storedName: String = ""
     @AppStorage("profile_alias") private var storedAlias: String = ""
@@ -68,12 +68,11 @@ struct SettingsScreen: View {
     @State private var selectedTheme: ThemeMode = .system
     @State private var showProtectionExplanation: Bool = false
     @State private var showAdvancedProtection: Bool = false
-    // ✅ ИСПРАВЛЕНО: Используем let для singleton'ов без @Published свойств
-    private let featuresManager = ProtectionFeaturesManager.shared
-    private let toastManager = ToastManager.shared
-    private let historyManager = ProtectionLevelHistoryManager.shared
-    // ✅ ИСПРАВЛЕНО: Используем @ObservedObject для singleton'ов с @Published свойствами
-    @ObservedObject private var tariffManager = TariffManager.shared
+    // ✅ ИСПРАВЛЕНО: Вернулись к @StateObject для singleton'ов (как в бэкапе - работало)
+    @StateObject private var featuresManager = ProtectionFeaturesManager.shared
+    @StateObject private var toastManager = ToastManager.shared
+    @StateObject private var historyManager = ProtectionLevelHistoryManager.shared
+    @StateObject private var tariffManager = TariffManager.shared
     @State private var showProtectionHistory: Bool = false
     
     // Navigation для менеджеров
@@ -130,48 +129,19 @@ struct SettingsScreen: View {
             }
         }
         .onAppear {
-            print("🔄 SettingsScreen: onAppear вызван")
-            print("🔍 SettingsScreen: Thread = \(Thread.isMainThread ? "Main" : "Background")")
-            print("🔍 SettingsScreen: localizationManager готов")
-            print("🔍 SettingsScreen: navigationManager готов")
-            
-            // ✅ ИСПРАВЛЕНО: Используем DispatchQueue.main.async вместо Task { @MainActor in }
-            // Это более надежно работает на реальных устройствах в TestFlight
-            // Примечание: SettingsScreen - это struct, поэтому [weak self] не нужен
-            DispatchQueue.main.async {
-                print("🔄 SettingsScreen: DispatchQueue.main.async выполнен")
-                self.safeInitialize()
+            // ✅ ИСПРАВЛЕНО: Упрощенная инициализация (как в бэкапе - работало)
+            // Убрали сложные задержки и race conditions
+            if !isInitializing && !isInitialized {
+                isInitializing = true
+                initializeNotifications()
+                isInitialized = true
+                isInitializing = false
             }
         }
     }
     
-    // ✅ ИСПРАВЛЕНО: Безопасная синхронная инициализация на main thread
-    // Убрали async/await для более надежной работы на реальных устройствах
-    private func safeInitialize() {
-        print("🔄 SettingsScreen: safeInitialize() начата")
-        print("🔍 SettingsScreen: isInitialized = \(isInitialized)")
-        
-        // ✅ ИСПРАВЛЕНО: Увеличили задержку до 0.2 секунды для TestFlight
-        // На реальных устройствах инициализация может занимать больше времени
-        print("⏳ SettingsScreen: Задержка 0.2 секунды...")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            print("✅ SettingsScreen: Задержка завершена, проверка готовности EnvironmentObject...")
-            
-            // ✅ ИСПРАВЛЕНО: EnvironmentObject всегда готов в SwiftUI
-            // EnvironmentObject передается через навигацию и всегда доступен
-            print("✅ SettingsScreen: EnvironmentObject готов")
-            print("🔄 SettingsScreen: Начало initializeNotifications()...")
-            
-            // Инициализируем состояние (синхронно)
-            self.initializeNotifications()
-            
-            print("✅ SettingsScreen: initializeNotifications() завершена")
-            
-            // Устанавливаем флаг инициализации
-            self.isInitialized = true
-            print("✅ SettingsScreen: isInitialized = true - экран готов к отображению")
-        }
-    }
+    // ✅ ИСПРАВЛЕНО: Упрощенная инициализация (как в бэкапе - работало)
+    // Убрали сложные задержки и race conditions
     
     // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Основной контент экрана
     @ViewBuilder
@@ -1275,43 +1245,24 @@ struct SettingsScreen: View {
     
     // MARK: - Notification Functions
     
-    /// ✅ ИСПРАВЛЕНО: Синхронная инициализация (убрали async/await для надежности на реальных устройствах)
+    /// ✅ ИСПРАВЛЕНО: Упрощенная инициализация (как в бэкапе - работало)
     private func initializeNotifications() {
-        print("🔄 SettingsScreen: initializeNotifications() начата")
-        print("🔍 SettingsScreen: Thread = \(Thread.isMainThread ? "Main" : "Background")")
-        
-        // Проверяем что мы на main thread
-        assert(Thread.isMainThread, "initializeNotifications must be called on main thread")
-        
         // ✅ Синхронизируем состояние с notificationManager
-        print("🔄 SettingsScreen: Синхронизация состояния с notificationManager...")
         isSecurityNotificationsEnabled = notificationManager.notificationSettings.securityEnabled
         isSoundNotificationsEnabled = notificationManager.notificationSettings.soundEnabled
-        print("✅ SettingsScreen: Состояние синхронизировано:")
-        print("   - isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled)")
-        print("   - isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
         
-        // ✅ Инициализируем биометрию безопасно
+        // ✅ Инициализируем биометрию
         isBiometricEnabled = UserDefaults.standard.bool(forKey: "biometricEnabled")
-        print("✅ SettingsScreen: isBiometricEnabled = \(isBiometricEnabled)")
         
-        // ✅ ИСПРАВЛЕНО: Запрос разрешения на уведомления делаем асинхронно отдельно
-        // Это не блокирует инициализацию экрана и не вызывает крашей
-        print("🔄 SettingsScreen: Запрос разрешения на уведомления (асинхронно)...")
-        Task { @MainActor in
-            do {
-                let granted = await notificationManager.requestAuthorization()
-                if granted {
-                    print("🔔 SettingsScreen: Разрешение на уведомления получено")
-                } else {
-                    print("🔕 SettingsScreen: Разрешение на уведомления отклонено")
-                }
-            } catch {
-                print("❌ SettingsScreen: Ошибка при запросе разрешения на уведомления: \(error.localizedDescription)")
+        // ✅ Запрос разрешения на уведомления (асинхронно, не блокирует)
+        Task {
+            let granted = await notificationManager.requestAuthorization()
+            if granted {
+                print("🔔 Разрешение на уведомления получено")
+            } else {
+                print("🔕 Разрешение на уведомления отклонено")
             }
         }
-        
-        print("✅ SettingsScreen: initializeNotifications() завершена")
     }
 }
 
