@@ -1,4 +1,5 @@
 import SwiftUI
+import os.log
 
 /// ⚙️ Settings Screen - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
 /// Экран настроек - управление приложением и профилем
@@ -6,14 +7,18 @@ import SwiftUI
 struct SettingsScreen: View {
     
     // ✅ КРИТИЧЕСКОЕ: Логирование для TestFlight (работает в RELEASE)
-    // В TestFlight сборка в RELEASE, поэтому #if DEBUG не работает
-    // Используем флаг для включения логов даже в RELEASE
-    #if DEBUG
-    private static let ENABLE_CRASH_LOGS = true
-    #else
-    // Включаем логи даже в RELEASE для диагностики краша в TestFlight
-    private static let ENABLE_CRASH_LOGS = true
-    #endif
+    // Используем SettingsDiagnosticsLogger для централизованного логирования
+    private let logger = SettingsDiagnosticsLogger.shared
+    private static let ENABLE_CRASH_LOGS = SettingsDiagnosticsLogger.ENABLE_LOGS
+    
+    // ✅ КРИТИЧЕСКОЕ: Инициализатор с логами для диагностики краша
+    init() {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("init", message: "ВЫЗВАН - НАЧАЛО СОЗДАНИЯ VIEW", section: "SettingsScreen")
+            logger.logFunction("init", message: "Thread.isMainThread = \(Thread.isMainThread)", section: "SettingsScreen")
+            logger.logFunction("init", message: "завершен успешно", section: "SettingsScreen")
+        }
+    }
     
     // MARK: - Theme Mode
     
@@ -108,23 +113,45 @@ struct SettingsScreen: View {
     
     // ✅ ИСПРАВЛЕНО: Прямой доступ (как в бэкапах - работало)
     private var safeLanguageCode: String {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("safeLanguageCode", message: "НАЧАЛО", section: "Localization")
+        }
+        
         guard Thread.isMainThread else {
-            #if DEBUG
-            print("⚠️ SETTINGS: safeLanguageCode вызван не на main thread")
-            #endif
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logCritical("safeLanguageCode", message: "КРИТИЧЕСКАЯ ОШИБКА - вызван не на main thread", section: "Localization")
+            }
             return "en" // Fallback для фоновых потоков
         }
-        return localizationManager.currentLanguage.rawValue
+        
+        // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к localizationManager
+        let result = localizationManager.currentLanguage.rawValue
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("safeLanguageCode", message: "ЗАВЕРШЕН, результат = '\(result)'", section: "Localization")
+        }
+        
+        return result
     }
     
     private var safeCurrentTariff: TariffType {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("safeCurrentTariff", message: "НАЧАЛО", section: "Tariff")
+        }
+        
         guard Thread.isMainThread else {
-            #if DEBUG
-            print("⚠️ SETTINGS: safeCurrentTariff вызван не на main thread")
-            #endif
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logCritical("safeCurrentTariff", message: "КРИТИЧЕСКАЯ ОШИБКА - вызван не на main thread", section: "Tariff")
+            }
             return .free // Fallback для фоновых потоков
         }
-        return tariffManager.currentTariff
+        
+        // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к tariffManager
+        let result = tariffManager.currentTariff
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("safeCurrentTariff", message: "ЗАВЕРШЕН, результат = \(result)", section: "Tariff")
+        }
+        
+        return result
     }
     
     // MARK: - Body
@@ -136,45 +163,64 @@ struct SettingsScreen: View {
     #endif
     
     var body: some View {
-        // ✅ ИСПРАВЛЕНО: Вернулись к прямому доступу (как в бэкапах - работало)
+        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале body - ПЕРВАЯ СТРОКА
+        // Это поможет понять, доходит ли выполнение до body
         let _ = {
-            #if DEBUG
-            Self.bodyCallCount += 1
-            print("🔴 SETTINGS: body вычисляется - НАЧАЛО (#\(Self.bodyCallCount))")
-            print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
-            print("🔴 SETTINGS: notificationManager = \(notificationManager)")
-            print("🔴 SETTINGS: securityManager = \(securityManager)")
-            print("🔴 SETTINGS: featuresManager = \(featuresManager)")
-            print("🔴 SETTINGS: tariffManager = \(tariffManager)")
-            print("🔴 SETTINGS: isNetworkProtectionEnabled = \(isNetworkProtectionEnabled)")
-            print("🔴 SETTINGS: isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled)")
-            print("🔴 SETTINGS: isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
-            print("🔴 SETTINGS: isBiometricEnabled = \(isBiometricEnabled)")
-            print("🔴 SETTINGS: selectedTheme = \(selectedTheme)")
-            print("🔴 SETTINGS: showProfileEdit = \(showProfileEdit)")
-            print("🔴 SETTINGS: localizationManager.currentLanguage = \(localizationManager.currentLanguage)")
-            #endif
+            if Self.ENABLE_CRASH_LOGS {
+                #if DEBUG
+                Self.bodyCallCount += 1
+                print("🔴 SETTINGS: body НАЧАЛО - ПЕРВАЯ СТРОКА (#\(Self.bodyCallCount))")
+                #else
+                print("🔴 SETTINGS: body НАЧАЛО - ПЕРВАЯ СТРОКА")
+                #endif
+                print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+            }
+        }()
+        
+        // ✅ КРИТИЧЕСКОЕ: Расширенные логи для диагностики
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                #if DEBUG
+                print("🔴 SETTINGS: body вычисляется - НАЧАЛО (#\(Self.bodyCallCount))")
+                #endif
+                print("🔴 SETTINGS: notificationManager = \(notificationManager)")
+                print("🔴 SETTINGS: securityManager = \(securityManager)")
+                print("🔴 SETTINGS: featuresManager = \(featuresManager)")
+                print("🔴 SETTINGS: tariffManager = \(tariffManager)")
+                print("🔴 SETTINGS: isNetworkProtectionEnabled = \(isNetworkProtectionEnabled)")
+                print("🔴 SETTINGS: isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled)")
+                print("🔴 SETTINGS: isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
+                print("🔴 SETTINGS: isBiometricEnabled = \(isBiometricEnabled)")
+                print("🔴 SETTINGS: selectedTheme = \(selectedTheme)")
+                print("🔴 SETTINGS: showProfileEdit = \(showProfileEdit)")
+                
+                // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к localizationManager
+                let language = localizationManager.currentLanguage
+                print("🔴 SETTINGS: localizationManager.currentLanguage = \(language)")
+            }
         }()
         settingsContent()
             .onAppear {
-                #if DEBUG
-                print("🔴 SETTINGS: onAppear вызван")
-                print("🔴 SETTINGS: notificationManager = \(notificationManager)")
-                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрали прямой доступ к notificationSettings в onAppear
-                // Это может вызвать краш, если notificationSettings еще не инициализирован
-                print("🔴 SETTINGS: Все @State переменные:")
-                print("  - isNetworkProtectionEnabled = \(isNetworkProtectionEnabled)")
-                print("  - isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled)")
-                print("  - isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
-                print("  - isBiometricEnabled = \(isBiometricEnabled)")
-                print("  - selectedTheme = \(selectedTheme)")
-                #endif
+                // ✅ КРИТИЧЕСКОЕ: Логи в onAppear с ENABLE_CRASH_LOGS (работает в TestFlight)
+                if Self.ENABLE_CRASH_LOGS {
+                    print("🔴 SETTINGS: onAppear вызван")
+                    print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+                    print("🔴 SETTINGS: notificationManager = \(notificationManager)")
+                    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрали прямой доступ к notificationSettings в onAppear
+                    // Это может вызвать краш, если notificationSettings еще не инициализирован
+                    print("🔴 SETTINGS: Все @State переменные:")
+                    print("  - isNetworkProtectionEnabled = \(isNetworkProtectionEnabled)")
+                    print("  - isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled)")
+                    print("  - isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
+                    print("  - isBiometricEnabled = \(isBiometricEnabled)")
+                    print("  - selectedTheme = \(selectedTheme)")
+                }
                 initializeNotifications()
             }
             .onDisappear {
-                #if DEBUG
-                print("🔴 SETTINGS: onDisappear вызван")
-                #endif
+                if Self.ENABLE_CRASH_LOGS {
+                    print("🔴 SETTINGS: onDisappear вызван")
+                }
             }
     }
     
@@ -184,22 +230,42 @@ struct SettingsScreen: View {
     // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Основной контент экрана
     @ViewBuilder
     private func settingsContent() -> some View {
+        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале settingsContent() - ПЕРВАЯ СТРОКА
+        // Это поможет понять, доходит ли выполнение до settingsContent()
         let _ = {
-            #if DEBUG
-            Self.settingsContentCallCount += 1
-            print("🔴 SETTINGS: settingsContent() вызывается (#\(Self.settingsContentCallCount))")
-            print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
-            print("🔴 SETTINGS: localizationManager доступен = \(localizationManager != nil)")
-            print("🔴 SETTINGS: localizationManager.currentLanguage = \(localizationManager.currentLanguage)")
-            print("🔴 SETTINGS: tariffManager.currentTariff = \(tariffManager.currentTariff)")
-            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрали прямой доступ к notificationSettings в settingsContent
-            // Это может вызвать краш, если notificationSettings еще не инициализирован
-            print("🔴 SETTINGS: safeLanguageCode = \(safeLanguageCode)")
-            print("🔴 SETTINGS: safeCurrentTariff = \(safeCurrentTariff)")
-            print("🔴 SETTINGS: Stack trace:")
-            Thread.callStackSymbols.prefix(5).forEach { print("  \($0)") }
-            #endif
+            if Self.ENABLE_CRASH_LOGS {
+                #if DEBUG
+                Self.settingsContentCallCount += 1
+                print("🔴 SETTINGS: settingsContent() НАЧАЛО - ПЕРВАЯ СТРОКА (#\(Self.settingsContentCallCount))")
+                #else
+                print("🔴 SETTINGS: settingsContent() НАЧАЛО - ПЕРВАЯ СТРОКА")
+                #endif
+                print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+            }
         }()
+        
+        // ✅ КРИТИЧЕСКОЕ: Расширенные логи для диагностики
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                #if DEBUG
+                print("🔴 SETTINGS: settingsContent() вызывается (#\(Self.settingsContentCallCount))")
+                #endif
+                
+                // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к менеджерам
+                // В SwiftUI EnvironmentObject не может быть nil, но проверим для безопасности
+                let language = localizationManager.currentLanguage
+                print("🔴 SETTINGS: localizationManager.currentLanguage = \(language)")
+                
+                print("🔴 SETTINGS: tariffManager.currentTariff = \(tariffManager.currentTariff)")
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрали прямой доступ к notificationSettings в settingsContent
+                // Это может вызвать краш, если notificationSettings еще не инициализирован
+                print("🔴 SETTINGS: safeLanguageCode = \(safeLanguageCode)")
+                print("🔴 SETTINGS: safeCurrentTariff = \(safeCurrentTariff)")
+                print("🔴 SETTINGS: Stack trace:")
+                Thread.callStackSymbols.prefix(5).forEach { print("  \($0)") }
+            }
+        }()
+        
         ZStack {
             // Фон
             LinearGradient.backgroundGradient
@@ -251,27 +317,62 @@ struct SettingsScreen: View {
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("settings_lang_\(safeLanguageCode)")
         .sheet(isPresented: $showProfileEdit) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showProfileEdit открывается", section: "Modals")
+                }
+            }()
             ProfileEditView()
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showLanguageSettings) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showLanguageSettings открывается", section: "Modals")
+                }
+            }()
             LanguageSettingsScreen()
         }
         .sheet(isPresented: $showSupportScreen) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showSupportScreen открывается", section: "Modals")
+                }
+            }()
             SupportScreen()
         }
         .sheet(isPresented: $showPrivacyPolicy) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showPrivacyPolicy открывается", section: "Modals")
+                }
+            }()
             PrivacyPolicyScreen()
         }
         .sheet(isPresented: $showTermsOfService) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showTermsOfService открывается", section: "Modals")
+                }
+            }()
             TermsOfServiceScreen()
         }
         .sheet(isPresented: $showShareSheet) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showShareSheet открывается", section: "Modals")
+                }
+            }()
             ShareSheet(activityItems: [
                 safeLocalized("settings_share_message")
             ])
         }
         .sheet(isPresented: $showProtectionExplanation) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showProtectionExplanation открывается", section: "Modals")
+                }
+            }()
             ProtectionLevelExplanationModal(
                 isPresented: $showProtectionExplanation,
                 currentTariff: safeCurrentTariff
@@ -279,30 +380,65 @@ struct SettingsScreen: View {
             .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showAdvancedProtection) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showAdvancedProtection открывается", section: "Modals")
+                }
+            }()
             AdvancedProtectionSettingsScreen()
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showProtectionHistory) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showProtectionHistory открывается", section: "Modals")
+                }
+            }()
             ProtectionLevelHistoryModal(isPresented: $showProtectionHistory)
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showEmergencyContacts) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showEmergencyContacts открывается", section: "Modals")
+                }
+            }()
             EmergencyContactsView()
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showEmergencyNotifications) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showEmergencyNotifications открывается", section: "Modals")
+                }
+            }()
             EmergencyNotificationsView()
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showVoiceControl) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showVoiceControl открывается", section: "Modals")
+                }
+            }()
             VoiceControlView()
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showChildProtectionCompliance) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showChildProtectionCompliance открывается", section: "Modals")
+                }
+            }()
             ComplianceView(section: .childProtection)
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showDataProtectionCompliance) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showDataProtectionCompliance открывается", section: "Modals")
+                }
+            }()
             ComplianceView(section: .dataProtection)
                 .environmentObject(localizationManager)
         }
@@ -310,28 +446,26 @@ struct SettingsScreen: View {
         .onChange(of: notificationManager.notificationSettings.securityEnabled) { newValue in
             // ✅ КРИТИЧЕСКОЕ: Логирование для диагностики краша
             if Self.ENABLE_CRASH_LOGS {
-                print("🔍 SETTINGS: onChange securityEnabled вызван, newValue = \(newValue)")
-                print("🔍 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+                logger.logFunction("onChange", message: "securityEnabled вызван, newValue = \(newValue)", section: "Notifications")
             }
             
             // ✅ NotificationManager инициализируется синхронно, поэтому настройки всегда готовы
             // Можно безопасно синхронизировать значения
             if Self.ENABLE_CRASH_LOGS {
-                print("🟡 SETTINGS: onChange securityEnabled = \(newValue) - синхронизация выполнена")
+                logger.logFunction("onChange", message: "securityEnabled = \(newValue) - синхронизация выполнена", section: "Notifications")
             }
             isSecurityNotificationsEnabled = newValue
         }
         .onChange(of: notificationManager.notificationSettings.soundEnabled) { newValue in
             // ✅ КРИТИЧЕСКОЕ: Логирование для диагностики краша
             if Self.ENABLE_CRASH_LOGS {
-                print("🔍 SETTINGS: onChange soundEnabled вызван, newValue = \(newValue)")
-                print("🔍 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+                logger.logFunction("onChange", message: "soundEnabled вызван, newValue = \(newValue)", section: "Notifications")
             }
             
             // ✅ NotificationManager инициализируется синхронно, поэтому настройки всегда готовы
             // Можно безопасно синхронизировать значения
             if Self.ENABLE_CRASH_LOGS {
-                print("🟡 SETTINGS: onChange soundEnabled = \(newValue) - синхронизация выполнена")
+                logger.logFunction("onChange", message: "soundEnabled = \(newValue) - синхронизация выполнена", section: "Notifications")
             }
             isSoundNotificationsEnabled = newValue
         }
@@ -342,6 +476,12 @@ struct SettingsScreen: View {
     
     @ViewBuilder
     private func navigationHeader() -> some View {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("navigationHeader", message: "НАЧАЛО", section: "Navigation")
+            }
+        }()
+        
         ALADDINNavigationBar(
             title: safeLocalized("settings_title"), // ✅ Безопасная локализация
             subtitle: safeLocalized("settings_subtitle"), // ✅ Безопасная локализация
@@ -356,18 +496,28 @@ struct SettingsScreen: View {
     
     // ✅ ИСПРАВЛЕНО: Прямая локализация с защитой для реального устройства
     private func safeLocalized(_ key: String) -> String {
+        // ✅ КРИТИЧЕСКОЕ: Логи для диагностики краша
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("safeLocalized", message: "НАЧАЛО для ключа '\(key)'", section: "Localization")
+        }
+        
         guard Thread.isMainThread else {
-            #if DEBUG
-            print("⚠️ SETTINGS: safeLocalized вызван не на main thread для ключа '\(key)'")
-            #endif
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logCritical("safeLocalized", message: "КРИТИЧЕСКАЯ ОШИБКА - вызван не на main thread для ключа '\(key)'", section: "Localization")
+            }
             return key // Fallback для фоновых потоков
         }
+        
+        // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к localizationManager
         let result = localizationManager.localized(key)
-        #if DEBUG
-        if result == key {
-            print("⚠️ SETTINGS: Локализация не найдена для ключа '\(key)'")
+        if Self.ENABLE_CRASH_LOGS {
+            if result == key {
+                logger.logWarning("safeLocalized", message: "Локализация не найдена для ключа '\(key)'", section: "Localization")
+            } else {
+                logger.logFunction("safeLocalized", message: "ЗАВЕРШЕН для ключа '\(key)', результат = '\(result)'", section: "Localization")
+            }
         }
-        #endif
+        
         return result
     }
     
@@ -375,6 +525,11 @@ struct SettingsScreen: View {
     
     @ViewBuilder
     private func profileSection() -> some View {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logSection("Profile", function: "profileSection", message: "НАЧАЛО")
+            }
+        }()
         let userInitial = storedName.isEmpty ? "?" : String(storedName.prefix(1).uppercased())
         let userName = storedName.isEmpty ? safeLocalized("profile_name_placeholder") : storedName
         let userAlias = storedAlias.isEmpty ? safeLocalized("profile_email_placeholder") : storedAlias
@@ -470,6 +625,12 @@ struct SettingsScreen: View {
     
     @ViewBuilder
     private func securitySection() -> some View {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logSection("Security", function: "securitySection", message: "НАЧАЛО")
+            }
+        }()
+        
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(safeLocalized("security_section")) // ✅ Безопасная локализация
@@ -650,6 +811,12 @@ struct SettingsScreen: View {
     
     @ViewBuilder
     private func notificationsSection() -> some View {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logSection("Notifications", function: "notificationsSection", message: "НАЧАЛО")
+            }
+        }()
+        
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(safeLocalized("notifications_section")) // ✅ Безопасная локализация
@@ -691,6 +858,11 @@ struct SettingsScreen: View {
         .padding(Spacing.cardPadding)
         .background(cardBackground)
         .cardShadow()
+        .onAppear {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logSection("Notifications", function: "notificationsSection", message: "ЗАВЕРШЕН")
+            }
+        }
     }
     
     // MARK: - App Section
@@ -752,6 +924,11 @@ struct SettingsScreen: View {
         .background(cardBackground)
         .cardShadow()
         .sheet(isPresented: $showPositioningSystemPicker) {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("sheet", message: "showPositioningSystemPicker открывается", section: "Modals")
+                }
+            }()
             PositioningSystemPickerView(
                 selectedSystem: Binding(
                     get: { positioningService.selectedSystem },
@@ -770,6 +947,12 @@ struct SettingsScreen: View {
     
     @ViewBuilder
     private func systemComponentsSection() -> some View {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logSection("SystemComponents", function: "systemComponentsSection", message: "НАЧАЛО")
+            }
+        }()
+        
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(safeLocalized("system_components_title"))
@@ -825,17 +1008,34 @@ struct SettingsScreen: View {
         .background(cardBackground)
         .cardShadow()
         .onAppear {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logSection("SystemComponents", function: "systemComponentsSection", message: "onAppear вызван")
+            }
             if isAdmin && components.isEmpty {
                 Task { @MainActor in
                     loadComponents()
                 }
             }
         }
+        .onDisappear {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logSection("SystemComponents", function: "systemComponentsSection", message: "ЗАВЕРШЕН")
+            }
+        }
     }
     
     /// ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Загрузка компонентов на main thread
     private func loadComponents() {
-        guard isAdmin else { return }
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("loadComponents", message: "НАЧАЛО", section: "SystemComponents")
+        }
+        
+        guard isAdmin else {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logWarning("loadComponents", message: "Пользователь не админ", section: "SystemComponents")
+            }
+            return
+        }
         
         Task { @MainActor in
             isLoadingComponents = true
@@ -848,10 +1048,19 @@ struct SettingsScreen: View {
                 
                 switch result {
                 case .success(let loadedComponents):
+                    if Self.ENABLE_CRASH_LOGS {
+                        logger.logFunction("loadComponents", message: "Успешно загружено \(loadedComponents.count) компонентов", section: "SystemComponents")
+                    }
                     components = loadedComponents
                 case .failure(let error):
                     componentsError = error.localizedDescription
-                    print("❌ Ошибка загрузки компонентов: \(error.localizedDescription)")
+                    if Self.ENABLE_CRASH_LOGS {
+                        logger.logError("loadComponents", message: "Ошибка загрузки компонентов", section: "SystemComponents", error: error)
+                    }
+                }
+                
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("loadComponents", message: "ЗАВЕРШЕН", section: "SystemComponents")
                 }
             }
         }
@@ -859,19 +1068,40 @@ struct SettingsScreen: View {
     
     /// ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Переключение компонентов на main thread
     private func toggleComponent(_ component: ComponentStatus) {
-        guard isAdmin else { return }
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("toggleComponent", message: "НАЧАЛО для компонента \(component.componentId), текущее состояние: \(component.isEnabled)", section: "SystemComponents")
+        }
+        
+        guard isAdmin else {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logWarning("toggleComponent", message: "Пользователь не админ", section: "SystemComponents")
+            }
+            return
+        }
         
         Task { @MainActor in
             do {
                 if component.isEnabled {
+                    if Self.ENABLE_CRASH_LOGS {
+                        logger.logFunction("toggleComponent", message: "Отключение компонента \(component.componentId)", section: "SystemComponents")
+                    }
                     _ = try await apiService.disableComponent(componentId: component.componentId)
                 } else {
+                    if Self.ENABLE_CRASH_LOGS {
+                        logger.logFunction("toggleComponent", message: "Включение компонента \(component.componentId)", section: "SystemComponents")
+                    }
                     _ = try await apiService.enableComponent(componentId: component.componentId)
                 }
                 // Обновляем список компонентов
                 loadComponents()
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("toggleComponent", message: "ЗАВЕРШЕН для компонента \(component.componentId)", section: "SystemComponents")
+                }
             } catch {
                 componentsError = error.localizedDescription
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logError("toggleComponent", message: "Ошибка переключения компонента \(component.componentId)", section: "SystemComponents", error: error)
+                }
             }
         }
     }
@@ -883,7 +1113,17 @@ struct SettingsScreen: View {
         let onToggle: () -> Void
         @EnvironmentObject private var localizationManager: LocalizationManager
         
+        // Логгер для ComponentRow
+        private let logger = SettingsDiagnosticsLogger.shared
+        private static let ENABLE_CRASH_LOGS = SettingsDiagnosticsLogger.ENABLE_LOGS
+        
         var body: some View {
+            let _ = {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("ComponentRow.body", message: "НАЧАЛО для компонента \(component.componentId)", section: "SystemComponents")
+                }
+            }()
+            
             HStack(spacing: Spacing.m) {
                 // Индикатор статуса
                 Circle()
@@ -917,6 +1157,11 @@ struct SettingsScreen: View {
                 RoundedRectangle(cornerRadius: CornerRadius.small)
                     .fill(Color.backgroundMedium.opacity(0.3))
             )
+            .onAppear {
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("ComponentRow.body", message: "ЗАВЕРШЕН для компонента \(component.componentId)", section: "SystemComponents")
+                }
+            }
         }
         
         private func formatDate(_ date: Date) -> String {
@@ -1005,6 +1250,12 @@ struct SettingsScreen: View {
         isBiometric: Bool = false,
         onChange: ((Bool) -> Void)? = nil
     ) -> some View {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("settingRow", message: "НАЧАЛО для '\(title)'", section: "HelperViews")
+            }
+        }()
+        
         let binding: Binding<Bool> = isBiometric
             ? Binding(
                 get: { isEnabled.wrappedValue },
@@ -1113,7 +1364,18 @@ struct SettingsScreen: View {
     }
     
     private func settingsButton(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("settingsButton", message: "НАЧАЛО для '\(title)'", section: "HelperViews")
+            }
+        }()
+        
+        return Button(action: {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("settingsButton", message: "Кнопка нажата для '\(title)'", section: "HelperViews")
+            }
+            action()
+        }) {
             HStack(spacing: Spacing.s) {
                 // ✅ Фиксированная ширина иконки для выравнивания
                 Image(systemName: icon)
@@ -1167,12 +1429,30 @@ struct SettingsScreen: View {
     }
     
     private func percentText(_ value: Int) -> String {
-        String(format: safeLocalized("settings_percent_format"), value)
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("percentText", message: "НАЧАЛО для значения \(value)", section: "HelperViews")
+        }
+        let result = String(format: safeLocalized("settings_percent_format"), value)
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("percentText", message: "ЗАВЕРШЕН, результат = '\(result)'", section: "HelperViews")
+        }
+        return result
     }
     
     @ViewBuilder
     private func protectionActionButton(title: String, icon: String, foreground: Color, background: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("protectionActionButton", message: "НАЧАЛО для '\(title)'", section: "HelperViews")
+            }
+        }()
+        
+        return Button(action: {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("protectionActionButton", message: "Кнопка нажата для '\(title)'", section: "HelperViews")
+            }
+            action()
+        }) {
             // Важно: фиксируем "контентную" высоту кнопки, чтобы сетка 3-х кнопок выглядела ровно
             // на разных размерах экранов (SE ↔ Pro Max), и чтобы 2 строки текста не "плясали".
             VStack(spacing: Spacing.xs) {
@@ -1212,6 +1492,10 @@ struct SettingsScreen: View {
     /// ✅ ИНДИКАТОР: Вычисляет уровень защиты на основе текущего тарифа
     /// Ползунок теперь только для чтения и показывает реальный уровень защиты
     private var calculatedProtectionLevel: Double {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("calculatedProtectionLevel", message: "НАЧАЛО вычисления", section: "ProtectionLevel")
+        }
+        
         // ✅ ИСПРАВЛЕНО: Прямой доступ (как в бэкапах - работало)
         let tariff = safeCurrentTariff
         
@@ -1220,7 +1504,9 @@ struct SettingsScreen: View {
         do {
             card = tariff.createCard(localizationManager: localizationManager)
         } catch {
-            print("⚠️ Ошибка при создании карты тарифа: \(error)")
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logError("calculatedProtectionLevel", message: "Ошибка при создании карты тарифа", section: "ProtectionLevel", error: error)
+            }
             return 0.0
         }
         
@@ -1233,19 +1519,36 @@ struct SettingsScreen: View {
         let totalPossible = Double(totalProtectionFeatures + totalParentalFeatures + totalAdditionalFeatures)
         
         // ✅ Защита от деления на ноль
-        guard totalPossible > 0 else { return 0.0 }
+        guard totalPossible > 0 else {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logWarning("calculatedProtectionLevel", message: "totalPossible = 0, возвращаем 0.0", section: "ProtectionLevel")
+            }
+            return 0.0
+        }
         
-        return min(100, (totalAvailable / totalPossible) * 100)
+        let result = min(100, (totalAvailable / totalPossible) * 100)
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("calculatedProtectionLevel", message: "ЗАВЕРШЕН, результат = \(result)", section: "ProtectionLevel")
+        }
+        return result
     }
     
     private var protectionLevelText: String {
-        switch calculatedProtectionLevel {
-        case 0...25: return safeLocalized("settings_protection_level_low")
-        case 26...50: return safeLocalized("settings_protection_level_medium")
-        case 51...75: return safeLocalized("settings_protection_level_high")
-        case 76...100: return safeLocalized("settings_protection_level_maximum")
-        default: return safeLocalized("settings_protection_level_medium")
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("protectionLevelText", message: "НАЧАЛО, уровень = \(calculatedProtectionLevel)", section: "ProtectionLevel")
         }
+        let result: String
+        switch calculatedProtectionLevel {
+        case 0...25: result = safeLocalized("settings_protection_level_low")
+        case 26...50: result = safeLocalized("settings_protection_level_medium")
+        case 51...75: result = safeLocalized("settings_protection_level_high")
+        case 76...100: result = safeLocalized("settings_protection_level_maximum")
+        default: result = safeLocalized("settings_protection_level_medium")
+        }
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("protectionLevelText", message: "ЗАВЕРШЕН, результат = '\(result)'", section: "ProtectionLevel")
+        }
+        return result
     }
     
     private var protectionColor: Color {
@@ -1262,7 +1565,13 @@ struct SettingsScreen: View {
     // Ползунок теперь только для чтения, защита управляется сервером через тариф
     
     private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: CornerRadius.large)
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("cardBackground", message: "НАЧАЛО", section: "HelperViews")
+            }
+        }()
+        
+        return RoundedRectangle(cornerRadius: CornerRadius.large)
             .fill(Color.backgroundMedium.opacity(0.5))
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.large)
@@ -1273,10 +1582,17 @@ struct SettingsScreen: View {
     // MARK: - Theme Functions
     
     private func cycleTheme() {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("cycleTheme", message: "НАЧАЛО, текущая тема = \(selectedTheme.rawValue)", section: "Theme")
+        }
+        
         let allThemes = ThemeMode.allCases
         if let currentIndex = allThemes.firstIndex(of: selectedTheme) {
             let nextIndex = (currentIndex + 1) % allThemes.count
             selectedTheme = allThemes[nextIndex]
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("cycleTheme", message: "ЗАВЕРШЕН, новая тема = \(selectedTheme.rawValue)", section: "Theme")
+            }
             
             // Сохраняем выбор пользователя
             UserDefaults.standard.set(selectedTheme.rawValue, forKey: "selected_theme")
@@ -1303,6 +1619,10 @@ struct SettingsScreen: View {
     // MARK: - Update Functions
     
     private func checkForUpdates() {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("checkForUpdates", message: "НАЧАЛО", section: "App")
+        }
+        
         // Тактильный отклик
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
@@ -1310,8 +1630,13 @@ struct SettingsScreen: View {
         // Проверка обновлений через App Store
         if let url = URL(string: "itms-apps://itunes.apple.com/app/id123456789") {
             UIApplication.shared.open(url)
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("checkForUpdates", message: "ЗАВЕРШЕН, открыт App Store", section: "App")
+            }
         } else {
-            print("📱 Проверка обновлений: приложение актуально")
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("checkForUpdates", message: "ЗАВЕРШЕН, приложение актуально", section: "App")
+            }
         }
     }
     
@@ -1322,8 +1647,7 @@ struct SettingsScreen: View {
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Защита от множественных вызовов
         guard !isInitializing else {
             if Self.ENABLE_CRASH_LOGS {
-                print("⚠️ SETTINGS: initializeNotifications() уже выполняется, пропускаем повторный вызов")
-                print("⚠️ SETTINGS: Stack trace: \(Thread.callStackSymbols.prefix(3))")
+                logger.logWarning("initializeNotifications", message: "Уже выполняется, пропускаем повторный вызов", section: "Notifications")
             }
             return
         }
@@ -1331,8 +1655,7 @@ struct SettingsScreen: View {
         isInitializing = true
         
         if Self.ENABLE_CRASH_LOGS {
-            print("🔴 SETTINGS: initializeNotifications() начат")
-            print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+            logger.logFunction("initializeNotifications", message: "НАЧАЛО", section: "Notifications")
         }
         
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасная синхронизация начальных значений
@@ -1340,9 +1663,7 @@ struct SettingsScreen: View {
         // NotificationManager инициализируется синхронно в init(), поэтому к моменту вызова
         // initializeNotifications() настройки уже готовы и можно безопасно синхронизировать
         if Self.ENABLE_CRASH_LOGS {
-            print("🔍 SETTINGS: Синхронизация начальных значений из notificationSettings")
-            print("🔍 SETTINGS: notificationSettings = \(notificationManager.notificationSettings)")
-            print("🔍 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+            logger.logFunction("initializeNotifications", message: "Синхронизация начальных значений из notificationSettings", section: "Notifications")
         }
         
         // ✅ Безопасная синхронизация - NotificationManager уже инициализирован
@@ -1377,8 +1698,7 @@ struct SettingsScreen: View {
             await MainActor.run {
                 isInitializing = false
                 if Self.ENABLE_CRASH_LOGS {
-                    print("🔴 SETTINGS: initializeNotifications() завершен")
-                    print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+                    logger.logFunction("initializeNotifications", message: "ЗАВЕРШЕН", section: "Notifications")
                 }
             }
         }

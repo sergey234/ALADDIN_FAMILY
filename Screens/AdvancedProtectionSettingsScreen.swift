@@ -1,10 +1,15 @@
 import SwiftUI
+import os.log
 
 /// ⚙️ Advanced Protection Settings Screen
 /// Экран расширенных настроек защиты с 13 компонентами
 /// Разделы: Защита в мессенджерах, Приватность, Мониторинг
 
 struct AdvancedProtectionSettingsScreen: View {
+    
+    // ✅ КРИТИЧЕСКОЕ: Логирование для TestFlight (работает в RELEASE)
+    private let logger = SettingsDiagnosticsLogger.shared
+    private static let ENABLE_CRASH_LOGS = SettingsDiagnosticsLogger.ENABLE_LOGS
     
     // MARK: - State
     
@@ -56,9 +61,22 @@ struct AdvancedProtectionSettingsScreen: View {
     @State private var showThreatProtectionSheet: Bool = false
     @State private var threatDestination: ThreatDestination? = nil
     
+    // MARK: - Initialization
+    
+    init() {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("init", message: "ВЫЗВАН", section: "AdvancedProtection")
+        }
+    }
+    
     // MARK: - Body
     
     var body: some View {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("body", message: "НАЧАЛО", section: "AdvancedProtection")
+            }
+        }()
         ZStack {
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
@@ -295,7 +313,13 @@ struct AdvancedProtectionSettingsScreen: View {
     // MARK: - Components Sections
     
     private var componentsSections: some View {
-        VStack(spacing: Spacing.l) {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("componentsSections", message: "НАЧАЛО", section: "AdvancedProtection")
+            }
+        }()
+        
+        return VStack(spacing: Spacing.l) {
             // Safari (Content Blocker)
             SettingsAccordion(
                 icon: "🌐",
@@ -584,11 +608,18 @@ struct AdvancedProtectionSettingsScreen: View {
     // MARK: - Safari helpers
     
     private func refreshContentBlockerStatus() {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("refreshContentBlockerStatus", message: "НАЧАЛО", section: "AdvancedProtection")
+        }
+        
         Task {
             await contentBlockerManager.checkBlockingStatus()
             contentBlockerManager.loadActiveCategories()
             await MainActor.run {
                 syncSafariCardsFromActiveCategories()
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("refreshContentBlockerStatus", message: "ЗАВЕРШЕН", section: "AdvancedProtection")
+                }
             }
         }
     }
@@ -596,6 +627,10 @@ struct AdvancedProtectionSettingsScreen: View {
     // MARK: - Threat helpers
     
     private func refreshThreatStatuses() {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("refreshThreatStatuses", message: "НАЧАЛО", section: "AdvancedProtection")
+        }
+        
         Task {
             await componentStatusService.refreshCriticalComponents()
         }
@@ -636,6 +671,10 @@ struct AdvancedProtectionSettingsScreen: View {
     }
     
     private func setThreatAggregate(isOn: Bool) {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("setThreatAggregate", message: "НАЧАЛО, isOn = \(isOn)", section: "AdvancedProtection")
+        }
+        
         Task {
             for componentId in threatComponentIds {
                 try? await componentStatusService.updateStatus(componentId: componentId, isEnabled: isOn)
@@ -644,7 +683,13 @@ struct AdvancedProtectionSettingsScreen: View {
     }
     
     private var threatProtectionAggregatorCard: some View {
-        VStack(spacing: Spacing.s) {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("threatProtectionAggregatorCard", message: "НАЧАЛО", section: "AdvancedProtection")
+            }
+        }()
+        
+        return VStack(spacing: Spacing.s) {
             HStack(alignment: .top, spacing: Spacing.m) {
                 Text("🛡️")
                     .font(.system(size: 24))
@@ -699,6 +744,10 @@ struct AdvancedProtectionSettingsScreen: View {
     }
 
     private func loadFamilyStats() {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("loadFamilyStats", message: "НАЧАЛО", section: "AdvancedProtection")
+        }
+        
         // Monitoring stats
         if let stats = UserDefaults.standard.dictionary(forKey: "parental_monitoring_stats") {
             familyBrowserSitesCount = stats["browserSitesCount"] as? Int ?? familyBrowserSitesCount
@@ -872,6 +921,12 @@ struct AdvancedProtectionSettingsScreen: View {
         configureAction: @escaping () -> Void,
         trigger: SafariSettingsSheet
     ) -> some View {
+        let _ = {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("safariCard", message: "НАЧАЛО для '\(title)'", section: "AdvancedProtection")
+            }
+        }()
+        
         let statusText: String = {
             switch contentBlockerManager.status {
             case .enabled:
@@ -956,8 +1011,15 @@ struct AdvancedProtectionSettingsScreen: View {
     }
 
     private func getSafariSitesCategories() -> [ContentBlockerCategory] {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("getSafariSitesCategories", message: "НАЧАЛО", section: "AdvancedProtection")
+        }
+        
         guard !safariSitesCategoriesData.isEmpty,
               let decoded = try? JSONDecoder().decode([String].self, from: safariSitesCategoriesData) else {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("getSafariSitesCategories", message: "ЗАВЕРШЕН, возвращаем дефолтные категории", section: "AdvancedProtection")
+            }
             return [.adult, .violence, .gambling, .forums, .fileSharing]
         }
         let categories = decoded.compactMap { ContentBlockerCategory(rawValue: $0) }
@@ -970,6 +1032,10 @@ struct AdvancedProtectionSettingsScreen: View {
     }
 
     private func syncSafariCardsFromActiveCategories() {
+        if Self.ENABLE_CRASH_LOGS {
+            logger.logFunction("syncSafariCardsFromActiveCategories", message: "НАЧАЛО", section: "AdvancedProtection")
+        }
+        
         // Ensure we always have a stored preset for sites categories (even on first launch)
         if safariSitesCategoriesData.isEmpty {
             setSafariSitesCategories([.adult, .violence, .gambling, .forums, .fileSharing])

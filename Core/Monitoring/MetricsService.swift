@@ -226,8 +226,10 @@ class MetricsService {
                type: .info,
                metricsCount)
 
-        // Отправляем на сервер
-        apiService.networkManager.post(endpoint: AppConfig.Endpoint.metricsUpload, body: request) { (result: Result<MetricsUploadResponse, Error>) in
+        // ✅ ИСПРАВЛЕНИЕ: Отправляем метрики БЕЗ требования авторизации
+        // Метрики должны отправляться даже для неавторизованных пользователей
+        // Это предотвращает краш при отсутствии токена и позволяет собирать метрики от всех пользователей
+        apiService.networkManager.post(endpoint: AppConfig.Endpoint.metricsUpload, body: request, requiresAuth: false) { (result: Result<MetricsUploadResponse, Error>) in
             switch result {
             case .success:
                 #if DEBUG

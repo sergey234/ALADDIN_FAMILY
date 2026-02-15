@@ -84,6 +84,7 @@
 		5E6C6B082F3D381500F6FFEA /* PerformanceMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B072F3D381500F6FFEA /* PerformanceMonitor.swift */; };
 		5E6C6B0A2F3D405000F6FFEA /* APIResponseValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B092F3D405000F6FFEA /* APIResponseValidator.swift */; };
 		5E6C6B0C2F3D406F00F6FFEA /* RoadsideAssistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B0B2F3D406F00F6FFEA /* RoadsideAssistanceView.swift */; };
+		5E6C6B0E2F427C3700F6FFEA /* SettingsDiagnosticsLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B0D2F427C3600F6FFEA /* SettingsDiagnosticsLogger.swift */; };
 		5E6F38F72F151E1400CEC103 /* MediaMessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */; };
 		5E6F38F92F151E2800CEC103 /* MessageActionsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */; };
 		5E6F38FB2F151E3700CEC103 /* MessageReactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */; };
@@ -383,6 +384,7 @@
 		5E6C6B072F3D381500F6FFEA /* PerformanceMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PerformanceMonitor.swift; path = Core/Monitoring/PerformanceMonitor.swift; sourceTree = "<group>"; };
 		5E6C6B092F3D405000F6FFEA /* APIResponseValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APIResponseValidator.swift; path = Core/Validation/APIResponseValidator.swift; sourceTree = "<group>"; };
 		5E6C6B0B2F3D406F00F6FFEA /* RoadsideAssistanceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RoadsideAssistanceView.swift; path = Screens/RoadsideAssistanceView.swift; sourceTree = "<group>"; };
+		5E6C6B0D2F427C3600F6FFEA /* SettingsDiagnosticsLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SettingsDiagnosticsLogger.swift; path = Core/Diagnostics/SettingsDiagnosticsLogger.swift; sourceTree = "<group>"; };
 		5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MediaMessageBubble.swift; path = Shared/Components/Chat/MediaMessageBubble.swift; sourceTree = "<group>"; };
 		5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MessageActionsMenu.swift; path = Shared/Components/Chat/MessageActionsMenu.swift; sourceTree = "<group>"; };
 		5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MessageReactionsView.swift; path = Shared/Components/Chat/MessageReactionsView.swift; sourceTree = "<group>"; };
@@ -707,6 +709,7 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5E6C6B0D2F427C3600F6FFEA /* SettingsDiagnosticsLogger.swift */,
 				5E6C6B0B2F3D406F00F6FFEA /* RoadsideAssistanceView.swift */,
 				5E6C6B092F3D405000F6FFEA /* APIResponseValidator.swift */,
 				5E6C6B072F3D381500F6FFEA /* PerformanceMonitor.swift */,
@@ -1201,6 +1204,7 @@
 				5E0C30B22EAE71D100FD6647 /* RoleSelectionModal.swift in Sources */,
 				B2000150B2000150B2000150 /* ProtectionLevelExplanationModal.swift in Sources */,
 				B2000160B2000160B2000160 /* ProtectionLevelHistoryModal.swift in Sources */,
+				5E6C6B0E2F427C3700F6FFEA /* SettingsDiagnosticsLogger.swift in Sources */,
 				B1000011 /* RecoveryCodeModal.swift in Sources */,
 				A3000023 /* ViewModels/SupportViewModel.swift in Sources */,
 				5E6F38FB2F151E3700CEC103 /* MessageReactionsView.swift in Sources */,
@@ -1419,7 +1423,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1451,7 +1455,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1607,7 +1611,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1639,7 +1643,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1670,7 +1674,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1695,7 +1699,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1718,7 +1722,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1742,7 +1746,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 38;
+				CURRENT_PROJECT_VERSION = 39;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
