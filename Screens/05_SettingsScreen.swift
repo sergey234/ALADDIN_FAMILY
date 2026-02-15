@@ -5,6 +5,16 @@ import SwiftUI
 /// Источник дизайна: /mobile/wireframes/05_settings_screen.html
 struct SettingsScreen: View {
     
+    // ✅ КРИТИЧЕСКОЕ: Логирование для TestFlight (работает в RELEASE)
+    // В TestFlight сборка в RELEASE, поэтому #if DEBUG не работает
+    // Используем флаг для включения логов даже в RELEASE
+    #if DEBUG
+    private static let ENABLE_CRASH_LOGS = true
+    #else
+    // Включаем логи даже в RELEASE для диагностики краша в TestFlight
+    private static let ENABLE_CRASH_LOGS = true
+    #endif
+    
     // MARK: - Theme Mode
     
     enum ThemeMode: String, CaseIterable {
@@ -35,9 +45,13 @@ struct SettingsScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager // ✅ Добавляем LocalizationManager
 
-    // ✅ ИСПРАВЛЕНО: Вернулись к @StateObject для singleton'ов (как в бэкапе - работало)
-    @StateObject private var notificationManager = NotificationManager.shared
-    @StateObject private var securityManager = SecurityManager.shared
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @ObservedObject для singleton'ов с @Published свойствами
+    // @StateObject создает новый экземпляр, что неправильно для singleton'ов!
+    @ObservedObject private var notificationManager = NotificationManager.shared
+    @ObservedObject private var tariffManager = TariffManager.shared
+    
+    // ✅ Для singleton'ов без @Published свойств используем let
+    private let securityManager = SecurityManager.shared
     
     // ✅ ИСПРАВЛЕНО: Убрали флаги инициализации (как в бэкапах - работало)
     @State private var isNetworkProtectionEnabled: Bool = true
@@ -58,12 +72,14 @@ struct SettingsScreen: View {
     @State private var selectedTheme: ThemeMode = .system
     @State private var showProtectionExplanation: Bool = false
     @State private var showAdvancedProtection: Bool = false
-    // ✅ ИСПРАВЛЕНО: Вернулись к @StateObject для singleton'ов (как в бэкапе - работало)
-    @StateObject private var featuresManager = ProtectionFeaturesManager.shared
-    @StateObject private var toastManager = ToastManager.shared
-    @StateObject private var historyManager = ProtectionLevelHistoryManager.shared
-    @StateObject private var tariffManager = TariffManager.shared
+    // ✅ Для singleton'ов без @Published свойств используем let
+    private let featuresManager = ProtectionFeaturesManager.shared
+    private let toastManager = ToastManager.shared
+    private let historyManager = ProtectionLevelHistoryManager.shared
     @State private var showProtectionHistory: Bool = false
+    
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Защита от множественных вызовов initializeNotifications()
+    @State private var isInitializing: Bool = false
     
     // Navigation для менеджеров
     @State private var showEmergencyContacts: Bool = false
@@ -144,7 +160,8 @@ struct SettingsScreen: View {
                 #if DEBUG
                 print("🔴 SETTINGS: onAppear вызван")
                 print("🔴 SETTINGS: notificationManager = \(notificationManager)")
-                print("🔴 SETTINGS: notificationSettings = \(notificationManager.notificationSettings)")
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрали прямой доступ к notificationSettings в onAppear
+                // Это может вызвать краш, если notificationSettings еще не инициализирован
                 print("🔴 SETTINGS: Все @State переменные:")
                 print("  - isNetworkProtectionEnabled = \(isNetworkProtectionEnabled)")
                 print("  - isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled)")
@@ -175,7 +192,8 @@ struct SettingsScreen: View {
             print("🔴 SETTINGS: localizationManager доступен = \(localizationManager != nil)")
             print("🔴 SETTINGS: localizationManager.currentLanguage = \(localizationManager.currentLanguage)")
             print("🔴 SETTINGS: tariffManager.currentTariff = \(tariffManager.currentTariff)")
-            print("🔴 SETTINGS: notificationManager.notificationSettings = \(notificationManager.notificationSettings)")
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрали прямой доступ к notificationSettings в settingsContent
+            // Это может вызвать краш, если notificationSettings еще не инициализирован
             print("🔴 SETTINGS: safeLanguageCode = \(safeLanguageCode)")
             print("🔴 SETTINGS: safeCurrentTariff = \(safeCurrentTariff)")
             print("🔴 SETTINGS: Stack trace:")
@@ -290,15 +308,31 @@ struct SettingsScreen: View {
         }
         // Инициализация перенесена в safeInitialize()
         .onChange(of: notificationManager.notificationSettings.securityEnabled) { newValue in
-            #if DEBUG
-            print("🟡 SETTINGS: onChange securityEnabled = \(newValue)")
-            #endif
+            // ✅ КРИТИЧЕСКОЕ: Логирование для диагностики краша
+            if Self.ENABLE_CRASH_LOGS {
+                print("🔍 SETTINGS: onChange securityEnabled вызван, newValue = \(newValue)")
+                print("🔍 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+            }
+            
+            // ✅ NotificationManager инициализируется синхронно, поэтому настройки всегда готовы
+            // Можно безопасно синхронизировать значения
+            if Self.ENABLE_CRASH_LOGS {
+                print("🟡 SETTINGS: onChange securityEnabled = \(newValue) - синхронизация выполнена")
+            }
             isSecurityNotificationsEnabled = newValue
         }
         .onChange(of: notificationManager.notificationSettings.soundEnabled) { newValue in
-            #if DEBUG
-            print("🟡 SETTINGS: onChange soundEnabled = \(newValue)")
-            #endif
+            // ✅ КРИТИЧЕСКОЕ: Логирование для диагностики краша
+            if Self.ENABLE_CRASH_LOGS {
+                print("🔍 SETTINGS: onChange soundEnabled вызван, newValue = \(newValue)")
+                print("🔍 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+            }
+            
+            // ✅ NotificationManager инициализируется синхронно, поэтому настройки всегда готовы
+            // Можно безопасно синхронизировать значения
+            if Self.ENABLE_CRASH_LOGS {
+                print("🟡 SETTINGS: onChange soundEnabled = \(newValue) - синхронизация выполнена")
+            }
             isSoundNotificationsEnabled = newValue
         }
         .withToast()
@@ -1283,12 +1317,49 @@ struct SettingsScreen: View {
     
     // MARK: - Notification Functions
     
-    /// ✅ ИСПРАВЛЕНО: Вернулись к подходу из бэкапа - только requestAuthorization (не обращаемся к notificationSettings)
+    /// ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасная инициализация без прямого доступа к notificationSettings
     private func initializeNotifications() {
-        #if DEBUG
-        print("🔴 SETTINGS: initializeNotifications() начат")
-        print("🔴 SETTINGS: notificationManager.notificationSettings = \(notificationManager.notificationSettings)")
-        #endif
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Защита от множественных вызовов
+        guard !isInitializing else {
+            if Self.ENABLE_CRASH_LOGS {
+                print("⚠️ SETTINGS: initializeNotifications() уже выполняется, пропускаем повторный вызов")
+                print("⚠️ SETTINGS: Stack trace: \(Thread.callStackSymbols.prefix(3))")
+            }
+            return
+        }
+        
+        isInitializing = true
+        
+        if Self.ENABLE_CRASH_LOGS {
+            print("🔴 SETTINGS: initializeNotifications() начат")
+            print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+        }
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасная синхронизация начальных значений
+        // onChange срабатывает только при ИЗМЕНЕНИИ, поэтому нужно синхронизировать начальные значения
+        // NotificationManager инициализируется синхронно в init(), поэтому к моменту вызова
+        // initializeNotifications() настройки уже готовы и можно безопасно синхронизировать
+        if Self.ENABLE_CRASH_LOGS {
+            print("🔍 SETTINGS: Синхронизация начальных значений из notificationSettings")
+            print("🔍 SETTINGS: notificationSettings = \(notificationManager.notificationSettings)")
+            print("🔍 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+        }
+        
+        // ✅ Безопасная синхронизация - NotificationManager уже инициализирован
+        let securityValue = notificationManager.notificationSettings.securityEnabled
+        let soundValue = notificationManager.notificationSettings.soundEnabled
+        
+        if Self.ENABLE_CRASH_LOGS {
+            print("🟢 SETTINGS: Значения из notificationSettings: securityEnabled = \(securityValue), soundEnabled = \(soundValue)")
+        }
+        
+        isSecurityNotificationsEnabled = securityValue
+        isSoundNotificationsEnabled = soundValue
+        
+        if Self.ENABLE_CRASH_LOGS {
+            print("🟢 SETTINGS: Синхронизация завершена успешно")
+            print("🟢 SETTINGS: isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled), isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
+        }
         
         // ✅ Инициализируем биометрию
         isBiometricEnabled = UserDefaults.standard.bool(forKey: "biometricEnabled")
@@ -1301,12 +1372,17 @@ struct SettingsScreen: View {
             } else {
                 print("🔕 Разрешение на уведомления отклонено")
             }
+            
+            // ✅ Освобождаем флаг после завершения
+            await MainActor.run {
+                isInitializing = false
+                if Self.ENABLE_CRASH_LOGS {
+                    print("🔴 SETTINGS: initializeNotifications() завершен")
+                    print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+                }
+            }
         }
         // ✅ Синхронизация состояния будет через onChange наблюдатели
-        
-        #if DEBUG
-        print("🔴 SETTINGS: initializeNotifications() завершен")
-        #endif
     }
 }
 
