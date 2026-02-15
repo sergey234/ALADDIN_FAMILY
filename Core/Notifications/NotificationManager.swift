@@ -6,11 +6,9 @@ import UIKit
  * 🔔 Notification Manager
  * Управление push и локальными уведомлениями
  * Интеграция с сервером для отправки уведомлений
- * ✅ @Published свойства автоматически обновляются на main thread
- * ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: @MainActor для безопасности на реальных устройствах
+ * ✅ ИСПРАВЛЕНО: Вернулись к подходу из бэкапа (без @MainActor, синхронная инициализация)
  */
 
-@MainActor
 class NotificationManager: NSObject, ObservableObject {
     
     // MARK: - Singleton
@@ -41,12 +39,16 @@ class NotificationManager: NSObject, ObservableObject {
     
     private override init() {
         super.init()
+        #if DEBUG
+        print("🔴 NOTIFICATION_MANAGER: init() начат")
+        #endif
         notificationCenter.delegate = self
-        // ✅ Инициализация на main thread для @Published свойств
-        DispatchQueue.main.async { [weak self] in
-            self?.checkAuthorizationStatus()
-            self?.loadSettings()
-        }
+        // ✅ ИСПРАВЛЕНО: Синхронная инициализация (как в бэкапах - работало)
+        checkAuthorizationStatus()
+        loadSettings()
+        #if DEBUG
+        print("🔴 NOTIFICATION_MANAGER: init() завершен, notificationSettings = \(notificationSettings)")
+        #endif
     }
     
     // MARK: - Authorization
@@ -80,6 +82,7 @@ class NotificationManager: NSObject, ObservableObject {
      */
     private func checkAuthorizationStatus() {
         notificationCenter.getNotificationSettings { settings in
+            // ✅ ИСПРАВЛЕНО: Обновляем СРАЗУ (callback уже на main thread)
             DispatchQueue.main.async {
                 self.isAuthorized = settings.authorizationStatus == .authorized
             }
@@ -395,30 +398,35 @@ class NotificationManager: NSObject, ObservableObject {
     
     /**
      * Загрузить настройки из UserDefaults
-     * ✅ Обновление @Published свойств на main thread
+     * ✅ ИСПРАВЛЕНО: Синхронная установка (как в бэкапах - работало)
      */
     private func loadSettings() {
+        #if DEBUG
+        print("🔴 NOTIFICATION_MANAGER: loadSettings() начат")
+        #endif
         guard let data = userDefaults.data(forKey: settingsKey) else {
             // Используем настройки по умолчанию
-            DispatchQueue.main.async { [weak self] in
-                self?.notificationSettings = NotificationSettings()
-            }
+            notificationSettings = NotificationSettings()
+            #if DEBUG
+            print("🔴 NOTIFICATION_MANAGER: loadSettings() - используем настройки по умолчанию")
+            #endif
             return
         }
         
         do {
             let decoder = JSONDecoder()
             let settings = try decoder.decode(NotificationSettings.self, from: data)
-            // ✅ Обновляем @Published свойство на main thread
-            DispatchQueue.main.async { [weak self] in
-                self?.notificationSettings = settings
-                print("✅ Notification settings loaded")
-            }
+            notificationSettings = settings
+            print("✅ Notification settings loaded")
+            #if DEBUG
+            print("🔴 NOTIFICATION_MANAGER: loadSettings() завершен, notificationSettings = \(notificationSettings)")
+            #endif
         } catch {
             print("❌ Failed to load notification settings: \(error), using defaults")
-            DispatchQueue.main.async { [weak self] in
-                self?.notificationSettings = NotificationSettings()
-            }
+            notificationSettings = NotificationSettings()
+            #if DEBUG
+            print("🔴 NOTIFICATION_MANAGER: loadSettings() - ошибка, используем настройки по умолчанию")
+            #endif
         }
     }
     

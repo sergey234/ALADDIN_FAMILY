@@ -12,19 +12,11 @@ struct SettingsScreen: View {
         case dark = "dark"
         case system = "system"
         
-        func displayName(_ localizationManager: LocalizationManager?, isInitialized: Bool) -> String {
-            guard isInitialized, let manager = localizationManager else {
-                // Дефолтные значения если manager не готов
-                switch self {
-                case .light: return "Light"
-                case .dark: return "Dark"
-                case .system: return "System"
-                }
-            }
+        func displayName(_ localizationManager: LocalizationManager) -> String {
             switch self {
-            case .light: return manager.localized("theme_light")
-            case .dark: return manager.localized("theme_dark")
-            case .system: return manager.localized("theme_system")
+            case .light: return localizationManager.localized("theme_light")
+            case .dark: return localizationManager.localized("theme_dark")
+            case .system: return localizationManager.localized("theme_system")
             }
         }
         
@@ -47,9 +39,7 @@ struct SettingsScreen: View {
     @StateObject private var notificationManager = NotificationManager.shared
     @StateObject private var securityManager = SecurityManager.shared
     
-    // ✅ ИСПРАВЛЕНО: Флаги инициализации для защиты от race condition
-    @State private var isInitialized: Bool = false
-    @State private var isInitializing: Bool = false
+    // ✅ ИСПРАВЛЕНО: Убрали флаги инициализации (как в бэкапах - работало)
     @State private var isNetworkProtectionEnabled: Bool = true
     @AppStorage("profile_name") private var storedName: String = ""
     @AppStorage("profile_alias") private var storedAlias: String = ""
@@ -100,44 +90,31 @@ struct SettingsScreen: View {
         userRole == "admin" || userRole == "administrator"
     }
     
-    // ✅ Безопасный доступ к коду языка
+    // ✅ ИСПРАВЛЕНО: Прямой доступ (как в бэкапах - работало)
     private var safeLanguageCode: String {
-        guard isInitialized else { return "en" }
         return localizationManager.currentLanguage.rawValue
     }
     
-    // ✅ Безопасный доступ к текущему тарифу
     private var safeCurrentTariff: TariffType {
-        guard isInitialized else { return .free }
         return tariffManager.currentTariff
     }
     
     // MARK: - Body
     
     var body: some View {
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Защита от краша - проверяем инициализацию перед использованием
-        Group {
-            if isInitialized {
-                settingsContent()
-            } else {
-                // Показываем пустой экран пока инициализируется
-                ZStack {
-                    LinearGradient.backgroundGradient
-                        .ignoresSafeArea()
-                    ProgressView()
-                }
-            }
-        }
-        .onAppear {
-            // ✅ ИСПРАВЛЕНО: Упрощенная инициализация (как в бэкапе - работало)
-            // Убрали сложные задержки и race conditions
-            if !isInitializing && !isInitialized {
-                isInitializing = true
+        // ✅ ИСПРАВЛЕНО: Вернулись к прямому доступу (как в бэкапах - работало)
+        settingsContent()
+            .onAppear {
+                #if DEBUG
+                print("🔴 SETTINGS: onAppear вызван")
+                print("🔴 SETTINGS: notificationManager = \(notificationManager)")
+                print("🔴 SETTINGS: notificationSettings = \(notificationManager.notificationSettings)")
+                #endif
                 initializeNotifications()
-                isInitialized = true
-                isInitializing = false
+                #if DEBUG
+                print("🔴 SETTINGS: initializeNotifications() завершен")
+                #endif
             }
-        }
     }
     
     // ✅ ИСПРАВЛЕНО: Упрощенная инициализация (как в бэкапе - работало)
@@ -254,16 +231,10 @@ struct SettingsScreen: View {
         }
         // Инициализация перенесена в safeInitialize()
         .onChange(of: notificationManager.notificationSettings.securityEnabled) { newValue in
-            guard isInitialized else { return } // ✅ Защита от раннего срабатывания
-            Task { @MainActor in
-                isSecurityNotificationsEnabled = newValue
-            }
+            isSecurityNotificationsEnabled = newValue
         }
         .onChange(of: notificationManager.notificationSettings.soundEnabled) { newValue in
-            guard isInitialized else { return } // ✅ Защита от раннего срабатывания
-            Task { @MainActor in
-                isSoundNotificationsEnabled = newValue
-            }
+            isSoundNotificationsEnabled = newValue
         }
         .withToast()
     }
@@ -284,12 +255,9 @@ struct SettingsScreen: View {
         .accessibilityLabel(safeLocalized("settings_accessibility_navbar"))
     }
     
-    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасная локализация с защитой от nil
+    // ✅ ИСПРАВЛЕНО: Прямая локализация (как в бэкапах - работало)
     private func safeLocalized(_ key: String) -> String {
-        guard isInitialized else {
-            return key // Возвращаем ключ если еще не инициализировано
-        }
-        return localizationManager.localized(key) // ✅ Исправлено: вызываем localizationManager вместо рекурсии
+        return localizationManager.localized(key)
     }
     
     // MARK: - Profile Section
@@ -632,7 +600,7 @@ struct SettingsScreen: View {
                 settingsButton(
                     icon: "globe",
                     title: safeLocalized("language"), // ✅ Локализованный язык
-                    subtitle: isInitialized ? (localizationManager.currentLanguage == .russian ? safeLocalized("language_subtitle") : localizationManager.currentLanguage.displayName) : "Language", // ✅ ИСПРАВЛЕНО: Проверяем isInitialized ПЕРЕД доступом к currentLanguage
+                    subtitle: localizationManager.currentLanguage == .russian ? safeLocalized("language_subtitle") : localizationManager.currentLanguage.displayName, // ✅ ИСПРАВЛЕНО: Прямой доступ (как в бэкапах)
                     action: {
                         showLanguageSettings = true
                     }
@@ -641,7 +609,7 @@ struct SettingsScreen: View {
                 settingsButton(
                     icon: selectedTheme.icon,
                     title: safeLocalized("dark_theme"), // ✅ Локализованный заголовок
-                    subtitle: selectedTheme.displayName(localizationManager, isInitialized: isInitialized), // ✅ Безопасная локализация
+                    subtitle: selectedTheme.displayName(localizationManager), // ✅ ИСПРАВЛЕНО: Прямой доступ (как в бэкапах)
                     action: {
                         cycleTheme()
                     }
@@ -1132,11 +1100,8 @@ struct SettingsScreen: View {
     
     /// ✅ ИНДИКАТОР: Вычисляет уровень защиты на основе текущего тарифа
     /// Ползунок теперь только для чтения и показывает реальный уровень защиты
-    /// ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Защита от nil и крашей
     private var calculatedProtectionLevel: Double {
-        guard isInitialized else { return 0.0 }
-        
-        // ✅ Дополнительная защита: безопасный доступ к тарифу
+        // ✅ ИСПРАВЛЕНО: Прямой доступ (как в бэкапах - работало)
         let tariff = safeCurrentTariff
         
         // ✅ Безопасный вызов createCard с обработкой ошибок
@@ -1163,8 +1128,6 @@ struct SettingsScreen: View {
     }
     
     private var protectionLevelText: String {
-        guard isInitialized else { return "" }
-        
         switch calculatedProtectionLevel {
         case 0...25: return safeLocalized("settings_protection_level_low")
         case 26...50: return safeLocalized("settings_protection_level_medium")
@@ -1175,8 +1138,6 @@ struct SettingsScreen: View {
     }
     
     private var protectionColor: Color {
-        guard isInitialized else { return .primaryBlue }
-        
         switch calculatedProtectionLevel {
         case 0...25: return .red
         case 26...50: return .orange
@@ -1245,16 +1206,17 @@ struct SettingsScreen: View {
     
     // MARK: - Notification Functions
     
-    /// ✅ ИСПРАВЛЕНО: Упрощенная инициализация (как в бэкапе - работало)
+    /// ✅ ИСПРАВЛЕНО: Вернулись к подходу из бэкапа - только requestAuthorization (не обращаемся к notificationSettings)
     private func initializeNotifications() {
-        // ✅ Синхронизируем состояние с notificationManager
-        isSecurityNotificationsEnabled = notificationManager.notificationSettings.securityEnabled
-        isSoundNotificationsEnabled = notificationManager.notificationSettings.soundEnabled
+        #if DEBUG
+        print("🔴 SETTINGS: initializeNotifications() начат")
+        print("🔴 SETTINGS: notificationManager.notificationSettings = \(notificationManager.notificationSettings)")
+        #endif
         
         // ✅ Инициализируем биометрию
         isBiometricEnabled = UserDefaults.standard.bool(forKey: "biometricEnabled")
         
-        // ✅ Запрос разрешения на уведомления (асинхронно, не блокирует)
+        // ✅ Запрос разрешения на уведомления (как в бэкапах - работало)
         Task {
             let granted = await notificationManager.requestAuthorization()
             if granted {
@@ -1263,6 +1225,11 @@ struct SettingsScreen: View {
                 print("🔕 Разрешение на уведомления отклонено")
             }
         }
+        // ✅ Синхронизация состояния будет через onChange наблюдатели
+        
+        #if DEBUG
+        print("🔴 SETTINGS: initializeNotifications() завершен")
+        #endif
     }
 }
 
