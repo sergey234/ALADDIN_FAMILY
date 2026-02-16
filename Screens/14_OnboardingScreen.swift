@@ -93,12 +93,25 @@ struct OnboardingScreen: View {
     private static let EXPECTED_PAGES_COUNT = 7
     
     private var pages: [OnboardingPage] {
-        [
+        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале pages computed property
+        let _ = {
+            print("🔴 OnboardingScreen.pages: ========== НАЧАЛО вычисления pages ==========")
+            print("🔴 OnboardingScreen.pages: Thread.isMainThread = \(Thread.isMainThread)")
+            print("🔴 OnboardingScreen.pages: localizationManager = \(localizationManager)")
+        }()
+        
+        return [
         // Страница 1: Защита всей семьи
         OnboardingPage(
             icon: "🛡️",
-            title: localizationManager.localized("onboarding_page1_title"),
-            description: localizationManager.localized("onboarding_page1_desc"),
+            title: {
+                print("🔴 OnboardingScreen.pages: Вызов localized для page1_title")
+                return localizationManager.localized("onboarding_page1_title")
+            }(),
+            description: {
+                print("🔴 OnboardingScreen.pages: Вызов localized для page1_desc")
+                return localizationManager.localized("onboarding_page1_desc")
+            }(),
             color: Color.primaryBlue
         ),
         // Страница 2: Персональный агент безопасности + Многоуровневая защита
@@ -149,7 +162,16 @@ struct OnboardingScreen: View {
     // MARK: - Body
     
     var body: some View {
-        ZStack {
+        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале body - ПЕРВАЯ СТРОКА
+        let _ = {
+            print("🔴 OnboardingScreen.body: ========== НАЧАЛО BODY ==========")
+            print("🔴 OnboardingScreen.body: Thread.isMainThread = \(Thread.isMainThread)")
+            print("🔴 OnboardingScreen.body: navigationManager = \(navigationManager)")
+            print("🔴 OnboardingScreen.body: localizationManager = \(localizationManager)")
+            print("🔴 OnboardingScreen.body: currentPage = \(currentPage)")
+        }()
+        
+        return ZStack {
             // Фон
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
