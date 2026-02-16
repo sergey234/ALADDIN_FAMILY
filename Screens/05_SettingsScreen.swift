@@ -1,5 +1,8 @@
 import SwiftUI
 import os.log
+#if !targetEnvironment(simulator)
+import Darwin
+#endif
 
 /// ⚙️ Settings Screen - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
 /// Экран настроек - управление приложением и профилем
@@ -86,6 +89,31 @@ struct SettingsScreen: View {
     // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Защита от множественных вызовов initializeNotifications()
     @State private var isInitializing: Bool = false
     
+    // ✅ ОПТИМИЗАЦИЯ ПРОИЗВОДИТЕЛЬНОСТИ: Кэширование для предотвращения множественных вычислений
+    // Это критично для реальных устройств, где множественные вычисления могут вызвать краш
+    @State private var cachedProtectionLevel: Double = 0.0
+    @State private var cachedTariff: TariffType = .free
+    @State private var cachedTariffId: String = ""
+    @State private var lastProtectionLevelCalculation: Date = Date.distantPast
+    @State private var cachedProtectionColor: Color = .primaryBlue  // ✅ Кэш для protectionColor
+    
+    // ✅ ДИАГНОСТИКА: Флаги для отключения секций (помогают выявить проблемную секцию)
+    // Используйте эти флаги в UserDefaults для отключения секций при диагностике краша
+    @AppStorage("settings_disable_profile_section") private var disableProfileSection: Bool = false
+    @AppStorage("settings_disable_security_section") private var disableSecuritySection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено для выявления краша
+    @AppStorage("settings_disable_notifications_section") private var disableNotificationsSection: Bool = false
+    @AppStorage("settings_disable_app_section") private var disableAppSection: Bool = false
+    @AppStorage("settings_disable_system_components_section") private var disableSystemComponentsSection: Bool = false
+    @AppStorage("settings_disable_additional_section") private var disableAdditionalSection: Bool = false
+    
+    // ✅ ДИАГНОСТИКА: Флаги для отключения подсекций секции Защита
+    @AppStorage("settings_disable_security_network_toggle") private var disableSecurityNetworkToggle: Bool = false
+    @AppStorage("settings_disable_security_biometric_toggle") private var disableSecurityBiometricToggle: Bool = false
+    @AppStorage("settings_disable_security_protection_level") private var disableSecurityProtectionLevel: Bool = false
+    @AppStorage("settings_disable_security_protection_buttons") private var disableSecurityProtectionButtons: Bool = false
+    @AppStorage("settings_disable_security_managers") private var disableSecurityManagers: Bool = false
+    @AppStorage("settings_disable_advanced_protection_screen") private var disableAdvancedProtectionScreen: Bool = false
+    
     // Navigation для менеджеров
     @State private var showEmergencyContacts: Bool = false
     @State private var showEmergencyNotifications: Bool = false
@@ -133,6 +161,7 @@ struct SettingsScreen: View {
         return result
     }
     
+    // ✅ ОПТИМИЗАЦИЯ: Кэшированный доступ к тарифу для предотвращения множественных вычислений
     private var safeCurrentTariff: TariffType {
         if Self.ENABLE_CRASH_LOGS {
             logger.logFunction("safeCurrentTariff", message: "НАЧАЛО", section: "Tariff")
@@ -142,16 +171,29 @@ struct SettingsScreen: View {
             if Self.ENABLE_CRASH_LOGS {
                 logger.logCritical("safeCurrentTariff", message: "КРИТИЧЕСКАЯ ОШИБКА - вызван не на main thread", section: "Tariff")
             }
-            return .free // Fallback для фоновых потоков
+            return cachedTariff // Возвращаем кэш для фоновых потоков
         }
         
-        // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к tariffManager
-        let result = tariffManager.currentTariff
+        // ✅ ОПТИМИЗАЦИЯ: Используем кэш, если тариф не изменился
+        let currentTariff = tariffManager.currentTariff
+        let currentTariffId = currentTariff.rawValue
+        
+        if cachedTariffId == currentTariffId && cachedTariff == currentTariff {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("safeCurrentTariff", message: "ИСПОЛЬЗОВАН КЭШ, результат = \(cachedTariff)", section: "Tariff")
+            }
+            return cachedTariff
+        }
+        
+        // ✅ Обновляем кэш
+        cachedTariff = currentTariff
+        cachedTariffId = currentTariffId
+        
         if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("safeCurrentTariff", message: "ЗАВЕРШЕН, результат = \(result)", section: "Tariff")
+            logger.logFunction("safeCurrentTariff", message: "ЗАВЕРШЕН, результат = \(currentTariff) (кэш обновлен)", section: "Tariff")
         }
         
-        return result
+        return currentTariff
     }
     
     // MARK: - Body
@@ -205,7 +247,17 @@ struct SettingsScreen: View {
                 if Self.ENABLE_CRASH_LOGS {
                     print("🔴 SETTINGS: onAppear вызван")
                     print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
+                    
+                    // ✅ ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА: Проверка EnvironmentObject
+                    print("🔴 SETTINGS: navigationManager = \(navigationManager)")
+                    print("🔴 SETTINGS: localizationManager = \(localizationManager)")
                     print("🔴 SETTINGS: notificationManager = \(notificationManager)")
+                    print("🔴 SETTINGS: tariffManager = \(tariffManager)")
+                    
+                    // ✅ ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА: Проверка инициализации менеджеров
+                    print("🔴 SETTINGS: localizationManager.currentLanguage = \(localizationManager.currentLanguage)")
+                    print("🔴 SETTINGS: tariffManager.currentTariff = \(tariffManager.currentTariff)")
+                    
                     // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрали прямой доступ к notificationSettings в onAppear
                     // Это может вызвать краш, если notificationSettings еще не инициализирован
                     print("🔴 SETTINGS: Все @State переменные:")
@@ -214,8 +266,43 @@ struct SettingsScreen: View {
                     print("  - isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
                     print("  - isBiometricEnabled = \(isBiometricEnabled)")
                     print("  - selectedTheme = \(selectedTheme)")
+                    print("  - cachedProtectionLevel = \(cachedProtectionLevel)")
+                    print("  - cachedTariff = \(cachedTariff)")
+                    print("  - cachedTariffId = \(cachedTariffId)")
+                    
+                    // ✅ ДИАГНОСТИКА ПАМЯТИ: Для реального устройства
+                    #if !targetEnvironment(simulator)
+                    var memoryInfo = mach_task_basic_info()
+                    var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
+                    let kerr: kern_return_t = withUnsafeMutablePointer(to: &memoryInfo) {
+                        $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
+                            task_info(mach_task_self_,
+                                     task_flavor_t(MACH_TASK_BASIC_INFO),
+                                     $0,
+                                     &count)
+                        }
+                    }
+                    if kerr == KERN_SUCCESS {
+                        let memoryUsageMB = Double(memoryInfo.resident_size) / 1024.0 / 1024.0
+                        print("🔴 SETTINGS: Использование памяти = \(String(format: "%.2f", memoryUsageMB)) MB")
+                        logger.logFunction("onAppear", message: "Использование памяти = \(String(format: "%.2f", memoryUsageMB)) MB", section: "Memory")
+                    } else {
+                        print("🔴 SETTINGS: Ошибка получения информации о памяти: \(kerr)")
+                    }
+                    #endif
                 }
                 initializeNotifications()
+            }
+            .onChange(of: tariffManager.currentTariff) { newTariff in
+                // ✅ ОПТИМИЗАЦИЯ: Сбрасываем кэш при изменении тарифа
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("onChange", message: "Тариф изменился на \(newTariff), сбрасываем кэш", section: "Tariff")
+                }
+                cachedProtectionLevel = 0.0
+                cachedProtectionColor = .primaryBlue  // ✅ Сбрасываем кэш цвета
+                cachedTariff = newTariff
+                cachedTariffId = newTariff.rawValue
+                lastProtectionLevelCalculation = Date.distantPast
             }
             .onDisappear {
                 if Self.ENABLE_CRASH_LOGS {
@@ -280,28 +367,57 @@ struct SettingsScreen: View {
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
+                        // ✅ ДИАГНОСТИКА: Логирование состояния всех секций
+                        let _ = {
+                            if Self.ENABLE_CRASH_LOGS {
+                                logger.logFunction("settingsContent", message: "СТАТУС СЕКЦИЙ: Profile=\(!disableProfileSection), Security=\(!disableSecuritySection), Notifications=\(!disableNotificationsSection), App=\(!disableAppSection), SystemComponents=\(!disableSystemComponentsSection), Additional=\(!disableAdditionalSection)", section: "Diagnostics")
+                            }
+                        }()
+                        
                         // Профиль пользователя
-                        profileSection()
+                        if !disableProfileSection {
+                            profileSection()
+                        } else if Self.ENABLE_CRASH_LOGS {
+                            let _ = logger.logSection("Profile", function: "profileSection", message: "❌ ОТКЛЮЧЕНА через флаг disableProfileSection")
+                        }
                         
                         // Защита и безопасность
-                        securitySection()
+                        if !disableSecuritySection {
+                            securitySection()
+                        } else if Self.ENABLE_CRASH_LOGS {
+                            let _ = logger.logSection("Security", function: "securitySection", message: "❌ ОТКЛЮЧЕНА через флаг disableSecuritySection")
+                        }
                         
                         // Уведомления
-                        notificationsSection()
+                        if !disableNotificationsSection {
+                            notificationsSection()
+                        } else if Self.ENABLE_CRASH_LOGS {
+                            let _ = logger.logSection("Notifications", function: "notificationsSection", message: "❌ ОТКЛЮЧЕНА через флаг disableNotificationsSection")
+                        }
                         
                         // Приложение
-                        appSection()
-                            .id("app_section_\(safeLanguageCode)")
+                        if !disableAppSection {
+                            appSection()
+                                .id("app_section_\(safeLanguageCode)")
+                        } else if Self.ENABLE_CRASH_LOGS {
+                            let _ = logger.logSection("App", function: "appSection", message: "❌ ОТКЛЮЧЕНА через флаг disableAppSection")
+                        }
                         
                         // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
-                        if isAdmin {
+                        if isAdmin && !disableSystemComponentsSection {
                             systemComponentsSection()
                                 .id("system_components_section_\(safeLanguageCode)")
+                        } else if isAdmin && disableSystemComponentsSection && Self.ENABLE_CRASH_LOGS {
+                            let _ = logger.logSection("SystemComponents", function: "systemComponentsSection", message: "❌ ОТКЛЮЧЕНА через флаг disableSystemComponentsSection")
                         }
                         
                         // Дополнительно
-                        additionalSection()
-                            .id("additional_section_\(safeLanguageCode)")
+                        if !disableAdditionalSection {
+                            additionalSection()
+                                .id("additional_section_\(safeLanguageCode)")
+                        } else if Self.ENABLE_CRASH_LOGS {
+                            let _ = logger.logSection("Additional", function: "additionalSection", message: "❌ ОТКЛЮЧЕНА через флаг disableAdditionalSection")
+                        }
                         
                         // Отступ снизу для удобства прокрутки
                         Spacer(minLength: 100)
@@ -509,6 +625,7 @@ struct SettingsScreen: View {
         }
         
         // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к localizationManager
+        // В SwiftUI EnvironmentObject всегда инициализирован
         let result = localizationManager.localized(key)
         if Self.ENABLE_CRASH_LOGS {
             if result == key {
@@ -517,7 +634,6 @@ struct SettingsScreen: View {
                 logger.logFunction("safeLocalized", message: "ЗАВЕРШЕН для ключа '\(key)', результат = '\(result)'", section: "Localization")
             }
         }
-        
         return result
     }
     
@@ -643,30 +759,41 @@ struct SettingsScreen: View {
             
             VStack(spacing: Spacing.m) {
                 // Network Protection
-                settingRow(
-                    icon: "shield.fill",
-                    title: safeLocalized("network_protection_protection"), // ✅ Безопасная локализация
-                    subtitle: safeLocalized("network_protection_protection_subtitle"), // ✅ Безопасная локализация
-                    isEnabled: $isNetworkProtectionEnabled
-                )
+                if !disableSecurityNetworkToggle {
+                    settingRow(
+                        icon: "shield.fill",
+                        title: safeLocalized("network_protection_protection"), // ✅ Безопасная локализация
+                        subtitle: safeLocalized("network_protection_protection_subtitle"), // ✅ Безопасная локализация
+                        isEnabled: $isNetworkProtectionEnabled
+                    )
+                } else if Self.ENABLE_CRASH_LOGS {
+                    let _ = logger.logSection("Security", function: "securitySection", message: "Network Protection отключен через флаг")
+                }
                 
                 // Биометрическая аутентификация
-                settingRow(
-                    icon: "faceid",
-                    title: safeLocalized("biometric_auth"), // ✅ Безопасная локализация
-                    subtitle: safeLocalized("biometric_auth_subtitle"), // ✅ Безопасная локализация
-                    isEnabled: $isBiometricEnabled,
-                    isBiometric: true
-                )
+                if !disableSecurityBiometricToggle {
+                    settingRow(
+                        icon: "faceid",
+                        title: safeLocalized("biometric_auth"), // ✅ Безопасная локализация
+                        subtitle: safeLocalized("biometric_auth_subtitle"), // ✅ Безопасная локализация
+                        isEnabled: $isBiometricEnabled,
+                        isBiometric: true
+                    )
+                } else if Self.ENABLE_CRASH_LOGS {
+                    let _ = logger.logSection("Security", function: "securitySection", message: "Biometric Toggle отключен через флаг")
+                }
                 
                 // Уровень защиты
-                VStack(spacing: Spacing.s) {
+                if !disableSecurityProtectionLevel {
+                    VStack(spacing: Spacing.s) {
                     HStack {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 20))
                             .foregroundColor(.primaryBlue)
                         
                         VStack(alignment: .leading, spacing: Spacing.xxs) {
+                            // ✅ ОПТИМИЗАЦИЯ: Используем локальную переменную для избежания множественных вычислений
+                            let buttonColor = protectionColor
                             HStack {
                                 Text(safeLocalized("protection_level")) // ✅ Безопасная локализация
                                     .font(.bodyBold)
@@ -677,11 +804,11 @@ struct SettingsScreen: View {
                                 }) {
                                     Image(systemName: "info.circle")
                                         .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(protectionColor)
+                                        .foregroundColor(buttonColor)
                                         .padding(6)
                                         .background(
                                             Circle()
-                                                .fill(protectionColor.opacity(0.15))
+                                                .fill(buttonColor.opacity(0.15))
                                         )
                                 }
                                 .padding(.leading, Spacing.xs)
@@ -701,19 +828,22 @@ struct SettingsScreen: View {
                         Spacer()
                     }
                     
+                    // ✅ ОПТИМИЗАЦИЯ: Используем локальные переменные для избежания множественных вычислений
+                    let sliderColor = protectionColor
+                    let sliderLevel = cachedProtectionLevel > 0 ? cachedProtectionLevel : calculatedProtectionLevel
                     HStack {
                         Text(percentText(0))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                         
-                        Slider(value: .constant(calculatedProtectionLevel), in: 0...100, step: 5) {
+                        Slider(value: .constant(sliderLevel), in: 0...100, step: 5) {
                             Text(safeLocalized("settings_protection_level"))
                         } minimumValueLabel: {
                             Text(percentText(0))
                         } maximumValueLabel: {
                             Text(percentText(100))
                         }
-                        .accentColor(protectionColor)
+                        .accentColor(sliderColor)
                         .disabled(true)
                         
                         Text(percentText(100))
@@ -722,32 +852,42 @@ struct SettingsScreen: View {
                     }
                     
                     // Кнопки дополнительных настроек
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.s), count: 3), spacing: Spacing.s) {
-                        protectionActionButton(
-                            title: safeLocalized("settings_protection_history"),
-                            icon: "chart.line.uptrend.xyaxis",
-                            foreground: .primaryBlue,
-                            background: Color.primaryBlue.opacity(0.12),
-                            action: { showProtectionHistory = true }
-                        )
-                        
-                        protectionActionButton(
-                            title: safeLocalized("settings_advanced_settings"),
-                            icon: "slider.horizontal.3",
-                            foreground: Color(hex: "#A855F7"),
-                            background: Color(hex: "#A855F7").opacity(0.14),
-                            action: { showAdvancedProtection = true }
-                        )
-                        
-                        protectionActionButton(
-                            title: safeLocalized("settings_improve_protection"),
-                            icon: "arrow.up.circle.fill",
-                            foreground: .secondaryGold,
-                            background: Color.secondaryGold.opacity(0.18),
-                            action: { navigationManager.navigateTo(.tariffs) }
-                        )
+                    if !disableSecurityProtectionButtons {
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.s), count: 3), spacing: Spacing.s) {
+                            protectionActionButton(
+                                title: safeLocalized("settings_protection_history"),
+                                icon: "chart.line.uptrend.xyaxis",
+                                foreground: .primaryBlue,
+                                background: Color.primaryBlue.opacity(0.12),
+                                action: { showProtectionHistory = true }
+                            )
+                            
+                            protectionActionButton(
+                                title: safeLocalized("settings_advanced_settings"),
+                                icon: "slider.horizontal.3",
+                                foreground: Color(hex: "#A855F7"),
+                                background: Color(hex: "#A855F7").opacity(0.14),
+                                action: { 
+                                    if !disableAdvancedProtectionScreen {
+                                        showAdvancedProtection = true 
+                                    } else if Self.ENABLE_CRASH_LOGS {
+                                        logger.logSection("Security", function: "securitySection", message: "AdvancedProtectionScreen отключен через флаг")
+                                    }
+                                }
+                            )
+                            
+                            protectionActionButton(
+                                title: safeLocalized("settings_improve_protection"),
+                                icon: "arrow.up.circle.fill",
+                                foreground: .secondaryGold,
+                                background: Color.secondaryGold.opacity(0.18),
+                                action: { navigationManager.navigateTo(.tariffs) }
+                            )
+                        }
+                        .padding(.top, Spacing.s)
+                    } else if Self.ENABLE_CRASH_LOGS {
+                        let _ = logger.logSection("Security", function: "securitySection", message: "Protection Buttons отключены через флаг")
                     }
-                    .padding(.top, Spacing.s)
                 }
                 .padding(Spacing.m)
                 .background(
@@ -756,50 +896,57 @@ struct SettingsScreen: View {
                 )
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(String(format: safeLocalized("settings_protection_level_accessibility"), Int(calculatedProtectionLevel)))
+                } else if Self.ENABLE_CRASH_LOGS {
+                    let _ = logger.logSection("Security", function: "securitySection", message: "Protection Level отключен через флаг")
+                }
                 
                 // ✅ Менеджеры (5 компонентов)
-                Divider()
-                    .padding(.vertical, Spacing.s)
-                
-                // Emergency Contacts
-                settingsButton(
-                    icon: "person.2.fill",
-                    title: safeLocalized("component_emergency_contact_manager_title"),
-                    subtitle: safeLocalized("component_emergency_contact_manager_description"),
-                    action: { showEmergencyContacts = true }
-                )
-                
-                // Emergency Notifications
-                settingsButton(
-                    icon: "bell.fill",
-                    title: safeLocalized("component_emergency_notification_manager_title"),
-                    subtitle: safeLocalized("component_emergency_notification_manager_description"),
-                    action: { showEmergencyNotifications = true }
-                )
-                
-                // Voice Control
-                settingsButton(
-                    icon: "mic.fill",
-                    title: safeLocalized("component_voice_control_manager_title"),
-                    subtitle: safeLocalized("component_voice_control_manager_description"),
-                    action: { showVoiceControl = true }
-                )
-                
-                // Child Protection Compliance
-                settingsButton(
-                    icon: "person.crop.circle.badge.checkmark", // ✅ ИСПРАВЛЕНО: figure.child не существует, используем person.crop.circle.badge.checkmark (как в ParentalControl)
-                    title: safeLocalized("component_russian_child_protection_manager_title"),
-                    subtitle: safeLocalized("component_russian_child_protection_manager_description"),
-                    action: { showChildProtectionCompliance = true }
-                )
-                
-                // Data Protection Compliance
-                settingsButton(
-                    icon: "lock.shield.fill",
-                    title: safeLocalized("component_russian_data_protection_manager_title"),
-                    subtitle: safeLocalized("component_russian_data_protection_manager_description"),
-                    action: { showDataProtectionCompliance = true }
-                )
+                if !disableSecurityManagers {
+                    Divider()
+                        .padding(.vertical, Spacing.s)
+                    
+                    // Emergency Contacts
+                    settingsButton(
+                        icon: "person.2.fill",
+                        title: safeLocalized("component_emergency_contact_manager_title"),
+                        subtitle: safeLocalized("component_emergency_contact_manager_description"),
+                        action: { showEmergencyContacts = true }
+                    )
+                    
+                    // Emergency Notifications
+                    settingsButton(
+                        icon: "bell.fill",
+                        title: safeLocalized("component_emergency_notification_manager_title"),
+                        subtitle: safeLocalized("component_emergency_notification_manager_description"),
+                        action: { showEmergencyNotifications = true }
+                    )
+                    
+                    // Voice Control
+                    settingsButton(
+                        icon: "mic.fill",
+                        title: safeLocalized("component_voice_control_manager_title"),
+                        subtitle: safeLocalized("component_voice_control_manager_description"),
+                        action: { showVoiceControl = true }
+                    )
+                    
+                    // Child Protection Compliance
+                    settingsButton(
+                        icon: "person.crop.circle.badge.checkmark", // ✅ ИСПРАВЛЕНО: figure.child не существует, используем person.crop.circle.badge.checkmark (как в ParentalControl)
+                        title: safeLocalized("component_russian_child_protection_manager_title"),
+                        subtitle: safeLocalized("component_russian_child_protection_manager_description"),
+                        action: { showChildProtectionCompliance = true }
+                    )
+                    
+                    // Data Protection Compliance
+                    settingsButton(
+                        icon: "lock.shield.fill",
+                        title: safeLocalized("component_russian_data_protection_manager_title"),
+                        subtitle: safeLocalized("component_russian_data_protection_manager_description"),
+                        action: { showDataProtectionCompliance = true }
+                    )
+                } else if Self.ENABLE_CRASH_LOGS {
+                    let _ = logger.logSection("Security", function: "securitySection", message: "Security Managers отключены через флаг")
+                }
             }
         }
         .padding(Spacing.cardPadding)
@@ -1447,7 +1594,7 @@ struct SettingsScreen: View {
             }
         }()
         
-        return Button(action: {
+        Button(action: {
             if Self.ENABLE_CRASH_LOGS {
                 logger.logFunction("protectionActionButton", message: "Кнопка нажата для '\(title)'", section: "HelperViews")
             }
@@ -1491,24 +1638,35 @@ struct SettingsScreen: View {
     
     /// ✅ ИНДИКАТОР: Вычисляет уровень защиты на основе текущего тарифа
     /// Ползунок теперь только для чтения и показывает реальный уровень защиты
+    /// ✅ ОПТИМИЗАЦИЯ: Использует кэширование для предотвращения множественных вычислений
     private var calculatedProtectionLevel: Double {
         if Self.ENABLE_CRASH_LOGS {
             logger.logFunction("calculatedProtectionLevel", message: "НАЧАЛО вычисления", section: "ProtectionLevel")
         }
         
-        // ✅ ИСПРАВЛЕНО: Прямой доступ (как в бэкапах - работало)
-        let tariff = safeCurrentTariff
-        
-        // ✅ Безопасный вызов createCard с обработкой ошибок
-        let card: TariffCard
-        do {
-            card = tariff.createCard(localizationManager: localizationManager)
-        } catch {
+        guard Thread.isMainThread else {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logError("calculatedProtectionLevel", message: "Ошибка при создании карты тарифа", section: "ProtectionLevel", error: error)
+                logger.logCritical("calculatedProtectionLevel", message: "КРИТИЧЕСКАЯ ОШИБКА - вызван не на main thread", section: "ProtectionLevel")
             }
-            return 0.0
+            return cachedProtectionLevel // Возвращаем кэш для фоновых потоков
         }
+        
+        // ✅ ОПТИМИЗАЦИЯ: Используем кэш, если тариф не изменился и прошло менее 1 секунды
+        let tariff = safeCurrentTariff
+        let tariffId = tariff.rawValue
+        let now = Date()
+        let timeSinceLastCalculation = now.timeIntervalSince(lastProtectionLevelCalculation)
+        
+        // Если тариф не изменился и прошло менее 1 секунды - используем кэш
+        if cachedTariffId == tariffId && cachedProtectionLevel > 0 && timeSinceLastCalculation < 1.0 {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("calculatedProtectionLevel", message: "ИСПОЛЬЗОВАН КЭШ, результат = \(cachedProtectionLevel)", section: "ProtectionLevel")
+            }
+            return cachedProtectionLevel
+        }
+        
+        // ✅ Безопасный вызов createCard
+        let card = tariff.createCard(localizationManager: localizationManager)
         
         // Вычисляем процент на основе доступных функций тарифа
         let totalProtectionFeatures = 100 // Всего функций защиты от угроз
@@ -1523,12 +1681,29 @@ struct SettingsScreen: View {
             if Self.ENABLE_CRASH_LOGS {
                 logger.logWarning("calculatedProtectionLevel", message: "totalPossible = 0, возвращаем 0.0", section: "ProtectionLevel")
             }
-            return 0.0
+            return cachedProtectionLevel > 0 ? cachedProtectionLevel : 0.0
         }
         
         let result = min(100, (totalAvailable / totalPossible) * 100)
+        
+        // ✅ Обновляем кэш
+        cachedProtectionLevel = result
+        cachedTariffId = tariffId
+        lastProtectionLevelCalculation = now
+        
+        // ✅ ОПТИМИЗАЦИЯ: Обновляем кэш protectionColor при изменении уровня защиты
+        let newColor: Color
+        switch result {
+        case 0...25: newColor = .red
+        case 26...50: newColor = .orange
+        case 51...75: newColor = .yellow
+        case 76...100: newColor = .green
+        default: newColor = .primaryBlue
+        }
+        cachedProtectionColor = newColor
+        
         if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("calculatedProtectionLevel", message: "ЗАВЕРШЕН, результат = \(result)", section: "ProtectionLevel")
+            logger.logFunction("calculatedProtectionLevel", message: "ЗАВЕРШЕН, результат = \(result) (кэш обновлен)", section: "ProtectionLevel")
         }
         return result
     }
@@ -1551,14 +1726,11 @@ struct SettingsScreen: View {
         return result
     }
     
+    // ✅ ОПТИМИЗАЦИЯ: Кэшированный protectionColor для предотвращения множественных вычислений
+    // Использует кэшированное значение, обновляется только при изменении calculatedProtectionLevel
     private var protectionColor: Color {
-        switch calculatedProtectionLevel {
-        case 0...25: return .red
-        case 26...50: return .orange
-        case 51...75: return .yellow
-        case 76...100: return .green
-        default: return .primaryBlue
-        }
+        // Просто возвращаем кэшированное значение - оно обновляется в calculatedProtectionLevel
+        return cachedProtectionColor
     }
     
     // ✅ УДАЛЕНО: handleProtectionLevelChange и связанные функции
