@@ -123,50 +123,50 @@ struct OnboardingScreen: View {
         // Страница 1: Защита всей семьи
         OnboardingPage(
             icon: "🛡️",
-            title: safeLocalized("onboarding_page1_title", fallback: "Защита всей семьи в одном кармане"),
-            description: safeLocalized("onboarding_page1_desc", fallback: "Комплексная система защиты от более чем 100 видов киберугроз"),
+            title: "Защита всей семьи в одном кармане",
+            description: "Комплексная система защиты от более чем 100 видов киберугроз",
             color: Color.primaryBlue
         ),
         // Страница 2: Персональный агент безопасности + Многоуровневая защита
         OnboardingPage(
             icon: "🕵️",
-            title: safeLocalized("onboarding_page2_title", fallback: "Ваш персональный агент безопасности"),
-            description: safeLocalized("onboarding_page2_desc", fallback: "AI охраняет семью 24/7"),
+            title: "Ваш персональный агент безопасности",
+            description: "AI охраняет семью 24/7",
             color: Color.successGreen
         ),
         // Страница 3: Родительский контроль
         OnboardingPage(
             icon: "👨‍👩‍👧",
-            title: safeLocalized("onboarding_page3_title", fallback: "Родительский контроль"),
-            description: safeLocalized("onboarding_page3_desc", fallback: "Система обучения безопасности детей\n\nВы видите весь интернет детей"),
+            title: "Родительский контроль",
+            description: "Система обучения безопасности детей\n\nВы видите весь интернет детей",
             color: Color.orange
         ),
         // Страница 4: Аналитика
         OnboardingPage(
             icon: "📊",
-            title: safeLocalized("onboarding_page4_title", fallback: "Аналитика рисков"),
-            description: safeLocalized("onboarding_page4_desc", fallback: "Точно и наглядно"),
+            title: "Аналитика рисков",
+            description: "Точно и наглядно",
             color: Color.red
         ),
         // Страница 5: Обучение детей безопасности
         OnboardingPage(
             icon: "🎮",
-            title: safeLocalized("onboarding_page5_title", fallback: "Защита для детей!"),
-            description: safeLocalized("onboarding_page5_desc", fallback: "Дети не смогут посещать опасные сайты, онлайн казино, сайты для взрослых, оплачивать покупки в игровых и стриминговых сервисах"),
+            title: "Защита для детей!",
+            description: "Дети не смогут посещать опасные сайты, онлайн казино, сайты для взрослых, оплачивать покупки в игровых и стриминговых сервисах",
             color: Color.purple
         ),
         // Страница 6: Интерфейс для людей 23+
         OnboardingPage(
             icon: "🧑",
-            title: safeLocalized("onboarding_page6_title", fallback: "Защита для людей 60+"),
-            description: safeLocalized("onboarding_page6_desc", fallback: "Один клик — помощь рядом. Определение поддельных видео, поддельного голоса, фейковых звонков и номеров!"),
+            title: "Защита для людей 60+",
+            description: "Один клик — помощь рядом. Определение поддельных видео, поддельного голоса, фейковых звонков и номеров!",
             color: Color.blue
         ),
         // Страница 7: Присоединяйтесь к ALADDIN AI
         OnboardingPage(
             icon: "🦄",
-            title: safeLocalized("onboarding_page7_title", fallback: "Присоединяйтесь к ALADDIN"),
-            description: safeLocalized("onboarding_page7_desc", fallback: "Спокойствие за близких — бесценно. Защита начинается сегодня!"),
+            title: "Присоединяйтесь к ALADDIN",
+            description: "Спокойствие за близких — бесценно. Защита начинается сегодня!",
             color: Color.green
         )
         ]
