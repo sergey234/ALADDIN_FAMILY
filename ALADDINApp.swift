@@ -288,9 +288,21 @@ struct ALADDINApp: App {
             }()
             
             // КРИТИЧНО: NavigationView для работы навигации
+            let _ = {
+                print("🔴 ALADDINApp.body: Создание NavigationView...")
+            }()
+            
             NavigationView {
                 // ✅ КРИТИЧНО: Используем AnyView для каждого case - это заставит SwiftUI пересчитать
+                let _ = {
+                    print("🔴 ALADDINApp.body: Внутри NavigationView, currentScreen = \(navigationManager.currentScreen)")
+                }()
+                
                 Group {
+                    let _ = {
+                        print("🔴 ALADDINApp.body: Внутри Group, начинаем switch по currentScreen = \(navigationManager.currentScreen)")
+                    }()
+                    
                     switch navigationManager.currentScreen {
                     case .main:
                         AnyView(MainScreen().id("main").environmentObject(navigationManager).environmentObject(localizationManager))
@@ -462,7 +474,20 @@ struct ALADDINApp: App {
                     case .termsOfService:
                         AnyView(TermsOfServiceScreen().id("termsOfService").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .onboarding:
-                        AnyView(OnboardingScreen().id("onboarding").environmentObject(navigationManager).environmentObject(localizationManager))
+                        // ✅ КРИТИЧЕСКОЕ: Логирование перед созданием OnboardingScreen
+                        let _ = {
+                            print("🔴 ALADDINApp.body: Создание OnboardingScreen - НАЧАЛО")
+                            print("🔴 ALADDINApp.body: navigationManager = \(navigationManager)")
+                            print("🔴 ALADDINApp.body: localizationManager = \(localizationManager)")
+                            print("🔴 ALADDINApp.body: Thread.isMainThread = \(Thread.isMainThread)")
+                        }()
+                        AnyView(OnboardingScreen()
+                            .id("onboarding")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .onAppear {
+                                print("🔴 ALADDINApp.body: OnboardingScreen onAppear вызван")
+                            })
                     case .devices:
                         AnyView(DevicesScreen().id("devices").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .referral:
