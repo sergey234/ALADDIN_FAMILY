@@ -162,7 +162,7 @@ struct SettingsScreen: View {
     }
     
     // ✅ ОПТИМИЗАЦИЯ: Кэшированный доступ к тарифу для предотвращения множественных вычислений
-    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавлена защита от неинициализированного TariffManager
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: НЕ изменяем @State в computed property - это вызывает "Modifying state during view update"
     private var safeCurrentTariff: TariffType {
         guard Thread.isMainThread else {
             print("🔴 SETTINGS: safeCurrentTariff вызван не на main thread, возвращаем кэш")
@@ -179,10 +179,9 @@ struct SettingsScreen: View {
                 return cachedTariff
             }
             
-            // ✅ Обновляем кэш
-            cachedTariff = currentTariff
-            cachedTariffId = currentTariffId
-            
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: НЕ изменяем @State здесь - это вызывает краш!
+            // Обновление кэша будет происходить в onChange или onAppear
+            // Возвращаем текущий тариф, но НЕ обновляем кэш в computed property
             return currentTariff
         } catch {
             print("🔴 SETTINGS: ❌ ОШИБКА в safeCurrentTariff: \(error), возвращаем кэш")
@@ -291,17 +290,35 @@ struct SettingsScreen: View {
                     #endif
                 }
                 initializeNotifications()
+                
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем кэш тарифа в onAppear (не в computed property)
+                Task { @MainActor in
+                    let currentTariff = tariffManager.currentTariff
+                    let currentTariffId = currentTariff.rawValue
+                    
+                    // Обновляем кэш только если тариф изменился
+                    if cachedTariffId != currentTariffId || cachedTariff != currentTariff {
+                        cachedTariff = currentTariff
+                        cachedTariffId = currentTariffId
+                        if Self.ENABLE_CRASH_LOGS {
+                            logger.logFunction("onAppear", message: "Кэш тарифа обновлен: \(currentTariff)", section: "Tariff")
+                        }
+                    }
+                }
             }
             .onChange(of: tariffManager.currentTariff) { newTariff in
                 // ✅ ОПТИМИЗАЦИЯ: Сбрасываем кэш при изменении тарифа
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем Task для асинхронного обновления @State
                 if Self.ENABLE_CRASH_LOGS {
                     logger.logFunction("onChange", message: "Тариф изменился на \(newTariff), сбрасываем кэш", section: "Tariff")
                 }
-                cachedProtectionLevel = 0.0
-                cachedProtectionColor = .primaryBlue  // ✅ Сбрасываем кэш цвета
-                cachedTariff = newTariff
-                cachedTariffId = newTariff.rawValue
-                lastProtectionLevelCalculation = Date.distantPast
+                Task { @MainActor in
+                    cachedProtectionLevel = 0.0
+                    cachedProtectionColor = .primaryBlue  // ✅ Сбрасываем кэш цвета
+                    cachedTariff = newTariff
+                    cachedTariffId = newTariff.rawValue
+                    lastProtectionLevelCalculation = Date.distantPast
+                }
             }
             .onDisappear {
                 if Self.ENABLE_CRASH_LOGS {
@@ -1709,24 +1726,27 @@ struct SettingsScreen: View {
         
         let result = min(100, (totalAvailable / totalPossible) * 100)
         
-        // ✅ Обновляем кэш
-        cachedProtectionLevel = result
-        cachedTariffId = tariffId
-        lastProtectionLevelCalculation = now
-        
-        // ✅ ОПТИМИЗАЦИЯ: Обновляем кэш protectionColor при изменении уровня защиты
-        let newColor: Color
-        switch result {
-        case 0...25: newColor = .red
-        case 26...50: newColor = .orange
-        case 51...75: newColor = .yellow
-        case 76...100: newColor = .green
-        default: newColor = .primaryBlue
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: НЕ изменяем @State в computed property - это вызывает "Modifying state during view update"!
+        // Обновление кэша будет происходить асинхронно через Task
+        Task { @MainActor in
+            cachedProtectionLevel = result
+            cachedTariffId = tariffId
+            lastProtectionLevelCalculation = now
+            
+            // ✅ ОПТИМИЗАЦИЯ: Обновляем кэш protectionColor при изменении уровня защиты
+            let newColor: Color
+            switch result {
+            case 0...25: newColor = .red
+            case 26...50: newColor = .orange
+            case 51...75: newColor = .yellow
+            case 76...100: newColor = .green
+            default: newColor = .primaryBlue
+            }
+            cachedProtectionColor = newColor
         }
-        cachedProtectionColor = newColor
         
         if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("calculatedProtectionLevel", message: "ЗАВЕРШЕН, результат = \(result) (кэш обновлен)", section: "ProtectionLevel")
+            logger.logFunction("calculatedProtectionLevel", message: "ЗАВЕРШЕН, результат = \(result) (кэш будет обновлен асинхронно)", section: "ProtectionLevel")
         }
         return result
     }
