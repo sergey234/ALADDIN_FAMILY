@@ -123,50 +123,50 @@ struct OnboardingScreen: View {
         // Страница 1: Защита всей семьи
         OnboardingPage(
             icon: "🛡️",
-            title: "Защита всей семьи в одном кармане",
-            description: "Комплексная система защиты от более чем 100 видов киберугроз",
+            title: localizationManager.localized("onboarding_page1_title"),
+            description: localizationManager.localized("onboarding_page1_desc"),
             color: Color.primaryBlue
         ),
         // Страница 2: Персональный агент безопасности + Многоуровневая защита
         OnboardingPage(
             icon: "🕵️",
-            title: "Ваш персональный агент безопасности",
-            description: "AI охраняет семью 24/7",
+            title: localizationManager.localized("onboarding_page2_title"),
+            description: localizationManager.localized("onboarding_page2_desc"),
             color: Color.successGreen
         ),
         // Страница 3: Родительский контроль
         OnboardingPage(
             icon: "👨‍👩‍👧",
-            title: "Родительский контроль",
-            description: "Система обучения безопасности детей\n\nВы видите весь интернет детей",
+            title: localizationManager.localized("onboarding_page3_title"),
+            description: localizationManager.localized("onboarding_page3_desc"),
             color: Color.orange
         ),
         // Страница 4: Аналитика
         OnboardingPage(
             icon: "📊",
-            title: "Аналитика рисков",
-            description: "Точно и наглядно",
+            title: localizationManager.localized("onboarding_page4_title"),
+            description: localizationManager.localized("onboarding_page4_desc"),
             color: Color.red
         ),
         // Страница 5: Обучение детей безопасности
         OnboardingPage(
             icon: "🎮",
-            title: "Защита для детей!",
-            description: "Дети не смогут посещать опасные сайты, онлайн казино, сайты для взрослых, оплачивать покупки в игровых и стриминговых сервисах",
+            title: localizationManager.localized("onboarding_page5_title"),
+            description: localizationManager.localized("onboarding_page5_desc"),
             color: Color.purple
         ),
         // Страница 6: Интерфейс для людей 23+
         OnboardingPage(
             icon: "🧑",
-            title: "Защита для людей 60+",
-            description: "Один клик — помощь рядом. Определение поддельных видео, поддельного голоса, фейковых звонков и номеров!",
+            title: localizationManager.localized("onboarding_page6_title"),
+            description: localizationManager.localized("onboarding_page6_desc"),
             color: Color.blue
         ),
         // Страница 7: Присоединяйтесь к ALADDIN AI
         OnboardingPage(
             icon: "🦄",
-            title: "Присоединяйтесь к ALADDIN",
-            description: "Спокойствие за близких — бесценно. Защита начинается сегодня!",
+            title: localizationManager.localized("onboarding_page7_title"),
+            description: localizationManager.localized("onboarding_page7_desc"),
             color: Color.green
         )
         ]
