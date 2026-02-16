@@ -376,10 +376,18 @@ struct MainScreen: View {
                             }
                             
                             // Настройки карточка
-                            NavigationLink(destination: SettingsScreen()
-                                .environmentObject(navigationManager)
-                                .environmentObject(localizationManager)
-                            ) {
+                            NavigationLink(destination: Group {
+                                // 🔥 КРИТИЧЕСКОЕ: ДИАГНОСТИЧЕСКИЙ РЕЖИМ ОТКЛЮЧЕН
+                                // Расскомментируйте диагностический режим для поиска краша
+                                // SettingsScreenDiagnostic()
+                                //     .environmentObject(navigationManager)
+                                //     .environmentObject(localizationManager)
+
+                                // Обычный режим (активирован для исправления ошибок)
+                                SettingsScreen()
+                                    .environmentObject(navigationManager)
+                                    .environmentObject(localizationManager)
+                            }) {
                                 VStack(spacing: 8) {
                                     Text("⚙️")
                                         .font(.system(size: 20))

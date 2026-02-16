@@ -1,5 +1,103 @@
 import SwiftUI
 import Foundation
+import os.log
+#if !targetEnvironment(simulator)
+import Darwin
+#endif
+
+/// 🩺 CRASH LOGGING СИСТЕМА ДЛЯ PRODUCTION
+/// Работает в RELEASE (TestFlight) в отличие от #if DEBUG
+extension ALADDINApp {
+
+    /// Настройка системы логирования крашей
+    static func setupCrashLogging() {
+        // Регистрируем обработчик неотловленных исключений
+        NSSetUncaughtExceptionHandler { exception in
+            let crashInfo = """
+            🚨 CRASH DETECTED: \(exception.name.rawValue)
+            Reason: \(exception.reason ?? "Unknown")
+            Stack trace:
+            \(exception.callStackSymbols.joined(separator: "\n"))
+            Thread: \(Thread.current)
+            Date: \(Date())
+            """
+            crashLog(crashInfo)
+        }
+
+        // Регистрируем обработчик сигналов
+        signal(SIGABRT) { _ in crashLog("🚨 SIGNAL: SIGABRT received") }
+        signal(SIGILL) { _ in crashLog("🚨 SIGNAL: SIGILL received") }
+        signal(SIGSEGV) { _ in crashLog("🚨 SIGNAL: SIGSEGV received") }
+        signal(SIGBUS) { _ in crashLog("🚨 SIGNAL: SIGBUS received") }
+        signal(SIGTRAP) { _ in crashLog("🚨 SIGNAL: SIGTRAP received") }
+
+        crashLog("🩺 Crash logging system initialized")
+    }
+}
+
+/// Глобальная функция для логирования крашей (работает в RELEASE)
+func crashLog(_ message: String) {
+    let timestamp = Date().formatted(.iso8601)
+    let logMessage = "[\(timestamp)] \(message)"
+
+    // 🔥 КРИТИЧЕСКОЕ: Всегда логируем в консоль (видно в Xcode и device logs)
+    print("🔥 CRASH_LOG: \(logMessage)")
+
+    // 🔥 КРИТИЧЕСКОЕ: Логируем через os_log с высоким приоритетом
+    os_log(.fault, log: .default, "🔥 CRASH_LOG: %{public}@", logMessage)
+
+    // 🔥 КРИТИЧЕСКОЕ: Сохраняем в NSUserDefaults для чтения на устройстве
+    // Это работает на реальном устройстве и сохраняется при краше
+    let defaults = UserDefaults.standard
+    let key = "crash_logs_array"
+    var logs = defaults.array(forKey: key) as? [String] ?? []
+
+    // Ограничиваем до 50 последних логов
+    if logs.count >= 50 {
+        logs.removeFirst()
+    }
+    logs.append(logMessage)
+
+    defaults.set(logs, forKey: key)
+    defaults.synchronize() // Принудительно сохраняем
+
+    // Также сохраняем последний лог отдельно
+    defaults.set(logMessage, forKey: "last_crash_log")
+    defaults.synchronize()
+
+    // В DEBUG режиме также сохраняем в файл для анализа
+    #if DEBUG
+    let fileManager = FileManager.default
+    let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+    let logURL = documentsURL.appendingPathComponent("crash_log.txt")
+
+    if let data = (logMessage + "\n").data(using: .utf8) {
+        if fileManager.fileExists(atPath: logURL.path) {
+            // Добавляем к существующему файлу
+            if let fileHandle = try? FileHandle(forWritingTo: logURL) {
+                fileHandle.seekToEndOfFile()
+                fileHandle.write(data)
+                fileHandle.closeFile()
+            }
+        } else {
+            // Создаем новый файл
+            try? data.write(to: logURL)
+        }
+    }
+    #endif
+}
+
+/// 🔥 Функция для чтения логов крашей из NSUserDefaults
+func getCrashLogs() -> [String] {
+    let defaults = UserDefaults.standard
+    return defaults.array(forKey: "crash_logs_array") as? [String] ?? []
+}
+
+/// 🔥 Функция для получения последнего лога краша
+func getLastCrashLog() -> String? {
+    let defaults = UserDefaults.standard
+    return defaults.string(forKey: "last_crash_log")
+}
 
 /// 👤 User Profile Manager
 /// Singleton класс для управления профилем пользователя
@@ -123,16 +221,20 @@ struct ALADDINApp: App {
     // private var hasCompletedOnboarding: Bool = false // больше не используется
     
     init() {
+        // 🩺 КРИТИЧЕСКОЕ: CRASH LOGGING СИСТЕМА ДЛЯ PRODUCTION
+        // В RELEASE (TestFlight) #if DEBUG не работает, поэтому используем всегда
+        ALADDINApp.setupCrashLogging()
+
         // ✅ КРИТИЧЕСКОЕ: Логи в самом начале init() - ПЕРВАЯ СТРОКА
-        print("🔴 ALADDINApp.init: ========== НАЧАЛО ИНИЦИАЛИЗАЦИИ ПРИЛОЖЕНИЯ ==========")
-        print("🔴 ALADDINApp.init: Thread.isMainThread = \(Thread.isMainThread)")
-        print("🔴 ALADDINApp.init: Время: \(Date())")
-        
+        crashLog("🔴 ALADDINApp.init: ========== НАЧАЛО ИНИЦИАЛИЗАЦИИ ПРИЛОЖЕНИЯ ==========")
+        crashLog("🔴 ALADDINApp.init: Thread.isMainThread = \(Thread.isMainThread)")
+        crashLog("🔴 ALADDINApp.init: Время: \(Date())")
+
         // ✅ КРИТИЧЕСКОЕ: Проверка stack trace для диагностики
         let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
-        print("🔴 ALADDINApp.init: Stack trace (первые 5):\n\(stackTrace)")
-        
-        print("🚀 ALADDINApp: Начало инициализации приложения")
+        crashLog("🔴 ALADDINApp.init: Stack trace (первые 5):\n\(stackTrace)")
+
+        crashLog("🚀 ALADDINApp: Начало инициализации приложения")
         // ✅ ИСПРАВЛЕНИЕ: В init() НЕ используем @StateObject, они еще не созданы!
         // Вся логика инициализации перенесена в .onAppear
         if ProcessInfo.processInfo.environment["RESET_ONBOARDING"] == "1" {
@@ -313,20 +415,10 @@ struct ALADDINApp: App {
                     case .analytics:
                         AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .settings:
-                        // ✅ КРИТИЧЕСКОЕ: Логирование перед созданием SettingsScreen
-                        let _ = {
-                            print("🔴 ALADDINApp: Создание SettingsScreen - НАЧАЛО")
-                            print("🔴 ALADDINApp: navigationManager = \(navigationManager)")
-                            print("🔴 ALADDINApp: localizationManager = \(localizationManager)")
-                            print("🔴 ALADDINApp: Thread.isMainThread = \(Thread.isMainThread)")
-                        }()
                         AnyView(SettingsScreen()
                             .id("settings")
                             .environmentObject(navigationManager)
-                            .environmentObject(localizationManager)
-                            .onAppear {
-                                print("🔴 ALADDINApp: SettingsScreen onAppear вызван")
-                            }) // ✅ Добавляем LocalizationManager
+                            .environmentObject(localizationManager))
                     case .aiAssistant:
                         AnyView(AIAssistantScreen().id("aiAssistant").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .parentalControl:
@@ -603,10 +695,16 @@ struct ALADDINApp: App {
             }
             // ✅ ИСПРАВЛЕНИЕ: Упрощенная обработка возврата из фона - без лишних проверок
             .onChange(of: scenePhase) { newPhase in
+                crashLog("🔄 SCENE PHASE: изменился на \(newPhase)")
+
                 if newPhase == .active {
                     // Приложение стало активным (вернулись из Safari/фона)
-                    print("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
+                    crashLog("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
                     // НЕ вызываем initializeNavigation - это может вызвать двойную загрузку
+                } else if newPhase == .background {
+                    crashLog("🔄 Приложение ушло в фон")
+                } else if newPhase == .inactive {
+                    crashLog("🔄 Приложение стало неактивным")
                 }
             }
             // 🌓 ПРИМЕНЯЕМ ТЕМУ

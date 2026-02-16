@@ -714,6 +714,8 @@ class SpeechManager: ObservableObject {
     private let audioEngine = AVAudioEngine()
 
     func startRecording(completion: @escaping (String?) -> Void) {
+        crashLog("🎤 SpeechManager: Начинаем процесс распознавания речи")
+
         // Проверяем разрешение
         SFSpeechRecognizer.requestAuthorization { status in
             DispatchQueue.main.async {
@@ -743,10 +745,12 @@ class SpeechManager: ObservableObject {
 
     private func startRecordingInternal(completion: @escaping (String?) -> Void) {
         do {
-            // Настраиваем аудио сессию
+            // ✅ ИСПРАВЛЕНИЕ: Меняем режим с .measurement на .default для совместимости
             let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+            try audioSession.setCategory(.record, mode: .default, options: [])
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+
+            crashLog("🎤 SpeechManager: Аудио сессия настроена успешно")
 
             // Создаем запрос распознавания
             recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
@@ -774,29 +778,47 @@ class SpeechManager: ObservableObject {
             // Настраиваем входной узел
             let inputNode = audioEngine.inputNode
             let recordingFormat = inputNode.outputFormat(forBus: 0)
-            inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
-                self.recognitionRequest?.append(buffer)
+
+            crashLog("🎤 SpeechManager: Начинаем установку audio tap")
+
+            // ✅ ДОБАВЛЯЕМ ERROR HANDLING для installTapOnBus
+            do {
+                inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
+                    self.recognitionRequest?.append(buffer)
+                }
+                crashLog("🎤 SpeechManager: Audio tap установлен успешно")
+            } catch {
+                crashLog("🚨 SpeechManager: ОШИБКА установки audio tap: \(error.localizedDescription)")
+                throw error
             }
+
+            crashLog("🎤 SpeechManager: Запускаем audio engine")
 
             // Запускаем запись
             audioEngine.prepare()
             try audioEngine.start()
 
             isRecording = true
+            crashLog("🎤 SpeechManager: Запись запущена успешно")
 
         } catch {
-            print("Ошибка запуска записи: \(error)")
+            crashLog("🚨 SpeechManager: КРИТИЧЕСКАЯ ОШИБКА запуска записи: \(error.localizedDescription)")
+            crashLog("🚨 SpeechManager: Детали ошибки: \(error)")
             completion(nil)
         }
     }
 
     func stopRecording() {
+        crashLog("🎤 SpeechManager: Останавливаем запись")
+
         audioEngine.stop()
         recognitionRequest?.endAudio()
         recognitionTask?.cancel()
         recognitionTask = nil
         recognitionRequest = nil
         isRecording = false
+
+        crashLog("🎤 SpeechManager: Запись остановлена")
 
         // Восстанавливаем аудио сессию
         do {

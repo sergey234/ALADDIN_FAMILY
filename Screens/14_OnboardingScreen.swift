@@ -1,6 +1,7 @@
 import SwiftUI
 
 // MARK: - OnboardingAladdinLogoView Component
+// ✅ ДОБАВЛЕНЫ НЕОБХОДИМЫЕ ИМПОРТЫ ДЛЯ КОМПИЛЯЦИИ
 /// 🎨 Стилизованный золотой логотип "Aladdin" в скриптном стиле для онбординга
 struct OnboardingAladdinLogoView: View {
     var size: CGFloat = 24
@@ -55,12 +56,13 @@ struct OnboardingAladdinLogoView: View {
     }
 }
 
-/// 👋 Onboarding Screen
+/// 👋 Onboarding Screen - МИНИМАЛЬНАЯ ВЕРСИЯ ДЛЯ ДИАГНОСТИКИ
 /// Экран онбординга - первое знакомство с приложением + прогрессивная регистрация
 /// Источник: стандартный паттерн iOS онбординга
 struct OnboardingScreen: View {
+    // ✅ ВОССТАНОВЛЕНО: @AppStorage для корректного сохранения статуса онбординга
     @AppStorage(AppConfig.UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
-    
+
     // ✅ КРИТИЧНО: Добавляем NavigationManager для навигации
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -92,34 +94,8 @@ struct OnboardingScreen: View {
     // НЕ ИЗМЕНЯТЬ БЕЗ ПОДТВЕРЖДЕНИЯ!
     private static let EXPECTED_PAGES_COUNT = 7
     
-    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасная локализация с fallback
-    // Проблема была в том, что computed property вызывал localizationManager.localized() 14 раз при каждом обращении
-    // Это могло вызывать зависание, если localizationManager еще не был готов
-    // Используем безопасную функцию с fallback на статические строки
     private var pages: [OnboardingPage] {
-        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале pages - ДО safeLocalized
-        let _ = {
-            print("🔴 OnboardingScreen.pages: ========== НАЧАЛО COMPUTED PROPERTY ==========")
-            print("🔴 OnboardingScreen.pages: Thread.isMainThread = \(Thread.isMainThread)")
-            print("🔴 OnboardingScreen.pages: localizationManager = \(localizationManager)")
-        }()
-
-        // ✅ Безопасная локализация с fallback на статические строки
-        // localizationManager.localized() не выбрасывает ошибки, но может вернуть пустую строку или ключ
-        func safeLocalized(_ key: String, fallback: String) -> String {
-            print("🔴 OnboardingScreen.pages: safeLocalized вызвана для key='\(key)'")
-            let localized = localizationManager.localized(key)
-            print("🔴 OnboardingScreen.pages: localized('\(key)') вернул: '\(localized)'")
-            // Если локализация вернула пустую строку или ключ, используем fallback
-            if localized.isEmpty || localized == key {
-                print("🔴 OnboardingScreen.pages: используем fallback для '\(key)': '\(fallback)'")
-                return fallback
-            }
-            print("🔴 OnboardingScreen.pages: используем localized для '\(key)': '\(localized)'")
-            return localized
-        }
-        
-        return [
+        [
         // Страница 1: Защита всей семьи
         OnboardingPage(
             icon: "🛡️",
@@ -174,28 +150,54 @@ struct OnboardingScreen: View {
     
     // MARK: - Body
     
+    // ВРЕМЕННО ЗАКОММЕНТИРОВАНА СЛОЖНАЯ ЛОГИКА - ТЕСТОВАЯ СТРАНИЦА
+    /*
     var body: some View {
-        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале body - ПЕРВАЯ СТРОКА
-        let _ = {
-            print("🔴 OnboardingScreen.body: ========== НАЧАЛО BODY ==========")
-            print("🔴 OnboardingScreen.body: Thread.isMainThread = \(Thread.isMainThread)")
-            print("🔴 OnboardingScreen.body: navigationManager = \(navigationManager)")
-            print("🔴 OnboardingScreen.body: localizationManager = \(localizationManager)")
-            print("🔴 OnboardingScreen.body: currentPage = \(currentPage)")
-        }()
-        
+        // 🩺 МИНИМАЛЬНЫЙ BODY ДЛЯ ДИАГНОСТИКИ
+        VStack(spacing: 20) {
+            Text("🩺 OnboardingScreen - Diagnostic Mode")
+                .font(.title)
+                .foregroundColor(.red)
+
+            Text("Если это видно - OnboardingScreen работает!")
+                .foregroundColor(.green)
+
+            Button("✅ Проверить EnvironmentObjects") {
+                print("🩺 DIAGNOSTIC: navigationManager = \(navigationManager)")
+                print("🩺 DIAGNOSTIC: localizationManager = \(localizationManager)")
+                print("🩺 DIAGNOSTIC: Thread.isMainThread = \(Thread.isMainThread)")
+            }
+
+            Button("✅ Перейти к настройкам") {
+                navigationManager.navigateTo(.settings)
+            }
+
+            Button("✅ Завершить онбординг") {
+                navigationManager.navigateTo(.main)
+            }
+        }
+        .padding()
+        .onAppear {
+            print("🩺 DIAGNOSTIC: OnboardingScreen onAppear - успех!")
+            crashLog("🩺 DIAGNOSTIC: OnboardingScreen onAppear - успех!")
+        }
+    }
+    */
+
+    // ✅ РАБОЧАЯ ВЕРСИЯ ONBOARDINGSCREEN
+    var body: some View {
         ZStack {
             // Фон
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Фон экрана онбординга")
-            
+
             VStack(spacing: 0) {
                 // Кнопка пропустить
                 HStack {
                     Spacer()
-                    
+
                     Button(action: {
                         // ✅ Сохраняем статус онбординга
                         hasCompletedOnboarding = true

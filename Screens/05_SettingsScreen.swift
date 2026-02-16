@@ -872,7 +872,9 @@ struct SettingsScreen: View {
                     
                     // ✅ ОПТИМИЗАЦИЯ: Используем локальные переменные для избежания множественных вычислений
                     let sliderColor = protectionColor
-                    let sliderLevel = cachedProtectionLevel > 0 ? cachedProtectionLevel : calculatedProtectionLevel
+                    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Предотвращаем бесконечную рекурсию!
+                    // Не используем cachedProtectionLevel > 0 проверку, так как она вызывает рекурсию
+                    let sliderLevel = calculatedProtectionLevel
                     HStack {
                         Text(percentText(0))
                             .font(.caption)
@@ -1723,7 +1725,7 @@ struct SettingsScreen: View {
             if Self.ENABLE_CRASH_LOGS {
                 logger.logWarning("calculatedProtectionLevel", message: "totalPossible = 0, возвращаем 0.0", section: "ProtectionLevel")
             }
-            return cachedProtectionLevel > 0 ? cachedProtectionLevel : 0.0
+            return 0.0 // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Возвращаем 0.0 напрямую, без рекурсии!
         }
         
         let result = min(100, (totalAvailable / totalPossible) * 100)

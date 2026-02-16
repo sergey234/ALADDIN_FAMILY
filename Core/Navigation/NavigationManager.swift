@@ -409,9 +409,11 @@ class NavigationManager: ObservableObject {
     }
     
     func switchToSettingsScreen() {
-        #if DEBUG
-        print("🔴 NAVIGATION: switchToSettingsScreen() вызван")
-        #endif
+        crashLog("🔴 NAVIGATION: switchToSettingsScreen() вызван - ПЕРЕХОД К НАСТРОЙКАМ")
+        crashLog("🔴 NAVIGATION: Текущий экран: \(currentScreen)")
+        crashLog("🔴 NAVIGATION: Thread.isMainThread: \(Thread.isMainThread)")
+        crashLog("🔴 NAVIGATION: Stack trace: \(Thread.callStackSymbols.prefix(3).joined(separator: " <- "))")
+
         navigateToRoot(.settings)
     }
     
