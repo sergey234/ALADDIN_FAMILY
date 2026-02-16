@@ -137,7 +137,12 @@ class SettingsDiagnosticsLogger {
             stackTrace: stackTrace
         )
         
-        // 1. os_log (системное логирование)
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала print() для немедленного отображения в Xcode
+        // Это гарантирует, что логи будут видны даже если os_log не работает
+        // Используем прямой print() - он работает на любом потоке
+        print("🔍 SETTINGS_DIAG: \(entry.formattedMessage)")
+        
+        // 1. os_log (системное логирование) - работает на любом потоке
         os_log(
             "%{public}@",
             log: osLog,
@@ -145,10 +150,7 @@ class SettingsDiagnosticsLogger {
             entry.formattedMessage
         )
         
-        // 2. print() (Xcode консоль)
-        print(entry.formattedMessage)
-        
-        // 3. Массив (для экспорта)
+        // 2. Массив (для экспорта) - асинхронно
         logQueue.async { [weak self] in
             guard let self = self else { return }
             

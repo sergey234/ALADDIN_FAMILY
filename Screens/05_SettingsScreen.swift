@@ -99,12 +99,12 @@ struct SettingsScreen: View {
     
     // ✅ ДИАГНОСТИКА: Флаги для отключения секций (помогают выявить проблемную секцию)
     // Используйте эти флаги в UserDefaults для отключения секций при диагностике краша
-    @AppStorage("settings_disable_profile_section") private var disableProfileSection: Bool = false
-    @AppStorage("settings_disable_security_section") private var disableSecuritySection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено для выявления краша
-    @AppStorage("settings_disable_notifications_section") private var disableNotificationsSection: Bool = false
-    @AppStorage("settings_disable_app_section") private var disableAppSection: Bool = false
-    @AppStorage("settings_disable_system_components_section") private var disableSystemComponentsSection: Bool = false
-    @AppStorage("settings_disable_additional_section") private var disableAdditionalSection: Bool = false
+    @AppStorage("settings_disable_profile_section") private var disableProfileSection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
+    @AppStorage("settings_disable_security_section") private var disableSecuritySection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
+    @AppStorage("settings_disable_notifications_section") private var disableNotificationsSection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
+    @AppStorage("settings_disable_app_section") private var disableAppSection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
+    @AppStorage("settings_disable_system_components_section") private var disableSystemComponentsSection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
+    @AppStorage("settings_disable_additional_section") private var disableAdditionalSection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
     
     // ✅ ДИАГНОСТИКА: Флаги для отключения подсекций секции Защита
     @AppStorage("settings_disable_security_network_toggle") private var disableSecurityNetworkToggle: Bool = false
@@ -417,6 +417,27 @@ struct SettingsScreen: View {
                                 .id("additional_section_\(safeLanguageCode)")
                         } else if Self.ENABLE_CRASH_LOGS {
                             let _ = logger.logSection("Additional", function: "additionalSection", message: "❌ ОТКЛЮЧЕНА через флаг disableAdditionalSection")
+                        }
+                        
+                        // ✅ ДИАГНОСТИКА: Если все секции отключены, показываем сообщение
+                        if disableProfileSection && disableSecuritySection && disableNotificationsSection && disableAppSection && disableSystemComponentsSection && disableAdditionalSection {
+                            VStack(spacing: 16) {
+                                Text("🔍 ДИАГНОСТИКА")
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.primary)
+                                
+                                Text("Все секции отключены для диагностики краша")
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 20)
+                                
+                                Text("Проверьте логи в Console.app")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 40)
+                            .frame(maxWidth: .infinity)
                         }
                         
                         // Отступ снизу для удобства прокрутки
