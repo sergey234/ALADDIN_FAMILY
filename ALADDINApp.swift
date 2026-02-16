@@ -123,6 +123,15 @@ struct ALADDINApp: App {
     // private var hasCompletedOnboarding: Bool = false // больше не используется
     
     init() {
+        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале init() - ПЕРВАЯ СТРОКА
+        print("🔴 ALADDINApp.init: ========== НАЧАЛО ИНИЦИАЛИЗАЦИИ ПРИЛОЖЕНИЯ ==========")
+        print("🔴 ALADDINApp.init: Thread.isMainThread = \(Thread.isMainThread)")
+        print("🔴 ALADDINApp.init: Время: \(Date())")
+        
+        // ✅ КРИТИЧЕСКОЕ: Проверка stack trace для диагностики
+        let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
+        print("🔴 ALADDINApp.init: Stack trace (первые 5):\n\(stackTrace)")
+        
         print("🚀 ALADDINApp: Начало инициализации приложения")
         // ✅ ИСПРАВЛЕНИЕ: В init() НЕ используем @StateObject, они еще не созданы!
         // Вся логика инициализации перенесена в .onAppear
@@ -256,11 +265,28 @@ struct ALADDINApp: App {
                 print("ℹ️ ALADDINApp: Автоматический логин не настроен - пользователь должен войти вручную")
             }
         }
+        
+        print("🔴 ALADDINApp.init: ========== ЗАВЕРШЕНИЕ init() ==========")
+        print("🔴 ALADDINApp.init: Время завершения: \(Date())")
 #endif
     }
     
     var body: some Scene {
-        WindowGroup {
+        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале body - ПЕРВАЯ СТРОКА
+        let _ = {
+            print("🔴 ALADDINApp.body: ========== НАЧАЛО BODY ==========")
+            print("🔴 ALADDINApp.body: Thread.isMainThread = \(Thread.isMainThread)")
+            print("🔴 ALADDINApp.body: navigationManager = \(navigationManager)")
+            print("🔴 ALADDINApp.body: localizationManager = \(localizationManager)")
+            print("🔴 ALADDINApp.body: currentScreen = \(navigationManager.currentScreen)")
+        }()
+        
+        return WindowGroup {
+            // ✅ КРИТИЧЕСКОЕ: Логи перед NavigationView
+            let _ = {
+                print("🔴 ALADDINApp.body: Создание WindowGroup и NavigationView")
+            }()
+            
             // КРИТИЧНО: NavigationView для работы навигации
             NavigationView {
                 // ✅ КРИТИЧНО: Используем AnyView для каждого case - это заставит SwiftUI пересчитать
@@ -537,9 +563,18 @@ struct ALADDINApp: App {
             .id("nav_\(navigationManager.currentScreen.rawValue)_\(localizationManager.currentLanguage.rawValue)")
             // ✅ Инициализация навигации при первом появлении
             .onAppear {
+                // ✅ КРИТИЧЕСКОЕ: Логи в самом начале onAppear
+                print("🔴 ALADDINApp.onAppear: ========== НАЧАЛО onAppear ==========")
+                print("🔴 ALADDINApp.onAppear: Thread.isMainThread = \(Thread.isMainThread)")
+                print("🔴 ALADDINApp.onAppear: navigationManager = \(navigationManager)")
+                print("🔴 ALADDINApp.onAppear: localizationManager = \(localizationManager)")
+                print("🔴 ALADDINApp.onAppear: currentScreen = \(navigationManager.currentScreen)")
+                
                 let navManager = navigationManager
                 let locManager = localizationManager
+                print("🔴 ALADDINApp.onAppear: Вызов initializeNavigation...")
                 initializeNavigation(navigationManager: navManager, localizationManager: locManager)
+                print("🔴 ALADDINApp.onAppear: initializeNavigation завершен")
             }
             // ✅ ИСПРАВЛЕНИЕ: Упрощенная обработка возврата из фона - без лишних проверок
             .onChange(of: scenePhase) { newPhase in
@@ -572,6 +607,11 @@ struct ALADDINApp: App {
     private static var hasInitialized = false
     
     private func initializeNavigation(navigationManager: NavigationManager, localizationManager: LocalizationManager) {
+        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале initializeNavigation
+        print("🔴 ALADDINApp.initializeNavigation: ========== НАЧАЛО ==========")
+        print("🔴 ALADDINApp.initializeNavigation: Thread.isMainThread = \(Thread.isMainThread)")
+        print("🔴 ALADDINApp.initializeNavigation: hasInitialized = \(ALADDINApp.hasInitialized)")
+        
         // ✅ КРИТИЧНО: ПЕРВЫЙ ЗАПУСК - СБРАСЫВАЕМ ВСЕ СОСТОЯНИЕ
         if !ALADDINApp.hasInitialized {
             print("🛠️ [ALADDINApp.initializeNavigation] Первый запуск - сбрасываем состояние")
