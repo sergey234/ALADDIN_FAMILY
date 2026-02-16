@@ -616,12 +616,13 @@ struct SettingsScreen: View {
                 logger.logFunction("onChange", message: "securityEnabled вызван, newValue = \(newValue)", section: "Notifications")
             }
             
-            // ✅ NotificationManager инициализируется синхронно, поэтому настройки всегда готовы
-            // Можно безопасно синхронизировать значения
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("onChange", message: "securityEnabled = \(newValue) - синхронизация выполнена", section: "Notifications")
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем Task для асинхронного обновления @State
+            Task { @MainActor in
+                isSecurityNotificationsEnabled = newValue
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("onChange", message: "securityEnabled = \(newValue) - синхронизация выполнена", section: "Notifications")
+                }
             }
-            isSecurityNotificationsEnabled = newValue
         }
         .onChange(of: notificationManager.notificationSettings.soundEnabled) { newValue in
             // ✅ КРИТИЧЕСКОЕ: Логирование для диагностики краша
@@ -629,12 +630,13 @@ struct SettingsScreen: View {
                 logger.logFunction("onChange", message: "soundEnabled вызван, newValue = \(newValue)", section: "Notifications")
             }
             
-            // ✅ NotificationManager инициализируется синхронно, поэтому настройки всегда готовы
-            // Можно безопасно синхронизировать значения
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("onChange", message: "soundEnabled = \(newValue) - синхронизация выполнена", section: "Notifications")
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем Task для асинхронного обновления @State
+            Task { @MainActor in
+                isSoundNotificationsEnabled = newValue
+                if Self.ENABLE_CRASH_LOGS {
+                    logger.logFunction("onChange", message: "soundEnabled = \(newValue) - синхронизация выполнена", section: "Notifications")
+                }
             }
-            isSoundNotificationsEnabled = newValue
         }
         .withToast()
     }
@@ -1867,41 +1869,43 @@ struct SettingsScreen: View {
             return
         }
         
-        isInitializing = true
-        
         if Self.ENABLE_CRASH_LOGS {
             logger.logFunction("initializeNotifications", message: "НАЧАЛО", section: "Notifications")
         }
         
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасная синхронизация начальных значений
-        // onChange срабатывает только при ИЗМЕНЕНИИ, поэтому нужно синхронизировать начальные значения
-        // NotificationManager инициализируется синхронно в init(), поэтому к моменту вызова
-        // initializeNotifications() настройки уже готовы и можно безопасно синхронизировать
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("initializeNotifications", message: "Синхронизация начальных значений из notificationSettings", section: "Notifications")
-        }
-        
-        // ✅ Безопасная синхронизация - NotificationManager уже инициализирован
-        let securityValue = notificationManager.notificationSettings.securityEnabled
-        let soundValue = notificationManager.notificationSettings.soundEnabled
-        
-        if Self.ENABLE_CRASH_LOGS {
-            print("🟢 SETTINGS: Значения из notificationSettings: securityEnabled = \(securityValue), soundEnabled = \(soundValue)")
-        }
-        
-        isSecurityNotificationsEnabled = securityValue
-        isSoundNotificationsEnabled = soundValue
-        
-        if Self.ENABLE_CRASH_LOGS {
-            print("🟢 SETTINGS: Синхронизация завершена успешно")
-            print("🟢 SETTINGS: isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled), isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
-        }
-        
-        // ✅ Инициализируем биометрию
-        isBiometricEnabled = UserDefaults.standard.bool(forKey: "biometricEnabled")
-        
-        // ✅ Запрос разрешения на уведомления (как в бэкапах - работало)
-        Task {
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем Task для асинхронного обновления @State
+        // Это предотвращает "Modifying state during view update"
+        Task { @MainActor in
+            isInitializing = true
+            
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасная синхронизация начальных значений
+            // onChange срабатывает только при ИЗМЕНЕНИИ, поэтому нужно синхронизировать начальные значения
+            // NotificationManager инициализируется синхронно в init(), поэтому к моменту вызова
+            // initializeNotifications() настройки уже готовы и можно безопасно синхронизировать
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("initializeNotifications", message: "Синхронизация начальных значений из notificationSettings", section: "Notifications")
+            }
+            
+            // ✅ Безопасная синхронизация - NotificationManager уже инициализирован
+            let securityValue = notificationManager.notificationSettings.securityEnabled
+            let soundValue = notificationManager.notificationSettings.soundEnabled
+            
+            if Self.ENABLE_CRASH_LOGS {
+                print("🟢 SETTINGS: Значения из notificationSettings: securityEnabled = \(securityValue), soundEnabled = \(soundValue)")
+            }
+            
+            isSecurityNotificationsEnabled = securityValue
+            isSoundNotificationsEnabled = soundValue
+            
+            if Self.ENABLE_CRASH_LOGS {
+                print("🟢 SETTINGS: Синхронизация завершена успешно")
+                print("🟢 SETTINGS: isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled), isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
+            }
+            
+            // ✅ Инициализируем биометрию
+            isBiometricEnabled = UserDefaults.standard.bool(forKey: "biometricEnabled")
+            
+            // ✅ Запрос разрешения на уведомления (как в бэкапах - работало)
             let granted = await notificationManager.requestAuthorization()
             if granted {
                 print("🔔 Разрешение на уведомления получено")
@@ -1910,11 +1914,9 @@ struct SettingsScreen: View {
             }
             
             // ✅ Освобождаем флаг после завершения
-            await MainActor.run {
-                isInitializing = false
-                if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("initializeNotifications", message: "ЗАВЕРШЕН", section: "Notifications")
-                }
+            isInitializing = false
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logFunction("initializeNotifications", message: "ЗАВЕРШЕН", section: "Notifications")
             }
         }
         // ✅ Синхронизация состояния будет через onChange наблюдатели
