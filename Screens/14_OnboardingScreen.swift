@@ -92,68 +92,81 @@ struct OnboardingScreen: View {
     // НЕ ИЗМЕНЯТЬ БЕЗ ПОДТВЕРЖДЕНИЯ!
     private static let EXPECTED_PAGES_COUNT = 7
     
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасная локализация с fallback
+    // Проблема была в том, что computed property вызывал localizationManager.localized() 14 раз при каждом обращении
+    // Это могло вызывать зависание, если localizationManager еще не был готов
+    // Используем безопасную функцию с fallback на статические строки
     private var pages: [OnboardingPage] {
-        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале pages computed property
+        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале pages - ДО safeLocalized
         let _ = {
-            print("🔴 OnboardingScreen.pages: ========== НАЧАЛО вычисления pages ==========")
+            print("🔴 OnboardingScreen.pages: ========== НАЧАЛО COMPUTED PROPERTY ==========")
             print("🔴 OnboardingScreen.pages: Thread.isMainThread = \(Thread.isMainThread)")
             print("🔴 OnboardingScreen.pages: localizationManager = \(localizationManager)")
         }()
+
+        // ✅ Безопасная локализация с fallback на статические строки
+        // localizationManager.localized() не выбрасывает ошибки, но может вернуть пустую строку или ключ
+        func safeLocalized(_ key: String, fallback: String) -> String {
+            print("🔴 OnboardingScreen.pages: safeLocalized вызвана для key='\(key)'")
+            let localized = localizationManager.localized(key)
+            print("🔴 OnboardingScreen.pages: localized('\(key)') вернул: '\(localized)'")
+            // Если локализация вернула пустую строку или ключ, используем fallback
+            if localized.isEmpty || localized == key {
+                print("🔴 OnboardingScreen.pages: используем fallback для '\(key)': '\(fallback)'")
+                return fallback
+            }
+            print("🔴 OnboardingScreen.pages: используем localized для '\(key)': '\(localized)'")
+            return localized
+        }
         
         return [
         // Страница 1: Защита всей семьи
         OnboardingPage(
             icon: "🛡️",
-            title: {
-                print("🔴 OnboardingScreen.pages: Вызов localized для page1_title")
-                return localizationManager.localized("onboarding_page1_title")
-            }(),
-            description: {
-                print("🔴 OnboardingScreen.pages: Вызов localized для page1_desc")
-                return localizationManager.localized("onboarding_page1_desc")
-            }(),
+            title: safeLocalized("onboarding_page1_title", fallback: "Защита всей семьи в одном кармане"),
+            description: safeLocalized("onboarding_page1_desc", fallback: "Комплексная система защиты от более чем 100 видов киберугроз"),
             color: Color.primaryBlue
         ),
         // Страница 2: Персональный агент безопасности + Многоуровневая защита
         OnboardingPage(
             icon: "🕵️",
-            title: localizationManager.localized("onboarding_page2_title"),
-            description: localizationManager.localized("onboarding_page2_desc"),
+            title: safeLocalized("onboarding_page2_title", fallback: "Ваш персональный агент безопасности"),
+            description: safeLocalized("onboarding_page2_desc", fallback: "AI охраняет семью 24/7"),
             color: Color.successGreen
         ),
         // Страница 3: Родительский контроль
         OnboardingPage(
             icon: "👨‍👩‍👧",
-            title: localizationManager.localized("onboarding_page3_title"),
-            description: localizationManager.localized("onboarding_page3_desc"),
+            title: safeLocalized("onboarding_page3_title", fallback: "Родительский контроль"),
+            description: safeLocalized("onboarding_page3_desc", fallback: "Система обучения безопасности детей\n\nВы видите весь интернет детей"),
             color: Color.orange
         ),
         // Страница 4: Аналитика
         OnboardingPage(
             icon: "📊",
-            title: localizationManager.localized("onboarding_page4_title"),
-            description: localizationManager.localized("onboarding_page4_desc"),
+            title: safeLocalized("onboarding_page4_title", fallback: "Аналитика рисков"),
+            description: safeLocalized("onboarding_page4_desc", fallback: "Точно и наглядно"),
             color: Color.red
         ),
         // Страница 5: Обучение детей безопасности
         OnboardingPage(
             icon: "🎮",
-            title: localizationManager.localized("onboarding_page5_title"),
-            description: localizationManager.localized("onboarding_page5_desc"),
+            title: safeLocalized("onboarding_page5_title", fallback: "Защита для детей!"),
+            description: safeLocalized("onboarding_page5_desc", fallback: "Дети не смогут посещать опасные сайты, онлайн казино, сайты для взрослых, оплачивать покупки в игровых и стриминговых сервисах"),
             color: Color.purple
         ),
         // Страница 6: Интерфейс для людей 23+
         OnboardingPage(
             icon: "🧑",
-            title: localizationManager.localized("onboarding_page6_title"),
-            description: localizationManager.localized("onboarding_page6_desc"),
+            title: safeLocalized("onboarding_page6_title", fallback: "Защита для людей 60+"),
+            description: safeLocalized("onboarding_page6_desc", fallback: "Один клик — помощь рядом. Определение поддельных видео, поддельного голоса, фейковых звонков и номеров!"),
             color: Color.blue
         ),
         // Страница 7: Присоединяйтесь к ALADDIN AI
         OnboardingPage(
             icon: "🦄",
-            title: localizationManager.localized("onboarding_page7_title"),
-            description: localizationManager.localized("onboarding_page7_desc"),
+            title: safeLocalized("onboarding_page7_title", fallback: "Присоединяйтесь к ALADDIN"),
+            description: safeLocalized("onboarding_page7_desc", fallback: "Спокойствие за близких — бесценно. Защита начинается сегодня!"),
             color: Color.green
         )
         ]
@@ -171,7 +184,7 @@ struct OnboardingScreen: View {
             print("🔴 OnboardingScreen.body: currentPage = \(currentPage)")
         }()
         
-        return ZStack {
+        ZStack {
             // Фон
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
