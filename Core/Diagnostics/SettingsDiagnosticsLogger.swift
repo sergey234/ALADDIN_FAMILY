@@ -77,7 +77,8 @@ class SettingsDiagnosticsLogger {
     // MARK: - Initialization
     
     private init() {
-        log(level: .info, section: nil, function: "SettingsDiagnosticsLogger", message: "Инициализирован")
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрано логирование из init() - оно может вызывать рекурсию
+        // Логирование будет происходить при первом вызове log()
     }
     
     // MARK: - Public Methods

@@ -275,10 +275,20 @@ struct ALADDINApp: App {
                     case .analytics:
                         AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .settings:
+                        // ✅ КРИТИЧЕСКОЕ: Логирование перед созданием SettingsScreen
+                        let _ = {
+                            print("🔴 ALADDINApp: Создание SettingsScreen - НАЧАЛО")
+                            print("🔴 ALADDINApp: navigationManager = \(navigationManager)")
+                            print("🔴 ALADDINApp: localizationManager = \(localizationManager)")
+                            print("🔴 ALADDINApp: Thread.isMainThread = \(Thread.isMainThread)")
+                        }()
                         AnyView(SettingsScreen()
                             .id("settings")
                             .environmentObject(navigationManager)
-                            .environmentObject(localizationManager)) // ✅ Добавляем LocalizationManager
+                            .environmentObject(localizationManager)
+                            .onAppear {
+                                print("🔴 ALADDINApp: SettingsScreen onAppear вызван")
+                            }) // ✅ Добавляем LocalizationManager
                     case .aiAssistant:
                         AnyView(AIAssistantScreen().id("aiAssistant").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .parentalControl:

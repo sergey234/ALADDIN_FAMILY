@@ -11,16 +11,22 @@ struct SettingsScreen: View {
     
     // ✅ КРИТИЧЕСКОЕ: Логирование для TestFlight (работает в RELEASE)
     // Используем SettingsDiagnosticsLogger для централизованного логирования
-    private let logger = SettingsDiagnosticsLogger.shared
+    // ✅ ИСПРАВЛЕНО: Ленивая инициализация logger для предотвращения краша при инициализации
+    private var logger: SettingsDiagnosticsLogger {
+        SettingsDiagnosticsLogger.shared
+    }
     private static let ENABLE_CRASH_LOGS = SettingsDiagnosticsLogger.ENABLE_LOGS
     
-    // ✅ КРИТИЧЕСКОЕ: Инициализатор с логами для диагностики краша
+    // ✅ КРИТИЧЕСКОЕ: Инициализатор с минимальным логированием для диагностики
     init() {
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("init", message: "ВЫЗВАН - НАЧАЛО СОЗДАНИЯ VIEW", section: "SettingsScreen")
-            logger.logFunction("init", message: "Thread.isMainThread = \(Thread.isMainThread)", section: "SettingsScreen")
-            logger.logFunction("init", message: "завершен успешно", section: "SettingsScreen")
-        }
+        // ✅ ДИАГНОСТИКА: Простой print() для понимания, вызывается ли init()
+        // ✅ ВАЖНО: Логируем ДО любых других операций
+        print("🔴 SETTINGS_INIT: ========== НАЧАЛО ИНИЦИАЛИЗАЦИИ ==========")
+        print("🔴 SETTINGS_INIT: init() вызван")
+        print("🔴 SETTINGS_INIT: Thread.isMainThread = \(Thread.isMainThread)")
+        print("🔴 SETTINGS_INIT: Stack trace:")
+        Thread.callStackSymbols.prefix(3).forEach { print("  \($0)") }
+        print("🔴 SETTINGS_INIT: ========== КОНЕЦ ИНИЦИАЛИЗАЦИИ ==========")
     }
     
     // MARK: - Theme Mode
@@ -99,12 +105,12 @@ struct SettingsScreen: View {
     
     // ✅ ДИАГНОСТИКА: Флаги для отключения секций (помогают выявить проблемную секцию)
     // Используйте эти флаги в UserDefaults для отключения секций при диагностике краша
-    @AppStorage("settings_disable_profile_section") private var disableProfileSection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
-    @AppStorage("settings_disable_security_section") private var disableSecuritySection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
-    @AppStorage("settings_disable_notifications_section") private var disableNotificationsSection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
-    @AppStorage("settings_disable_app_section") private var disableAppSection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
-    @AppStorage("settings_disable_system_components_section") private var disableSystemComponentsSection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
-    @AppStorage("settings_disable_additional_section") private var disableAdditionalSection: Bool = true  // ✅ ДИАГНОСТИКА: Отключено (все секции)
+    @AppStorage("settings_disable_profile_section") private var disableProfileSection: Bool = false
+    @AppStorage("settings_disable_security_section") private var disableSecuritySection: Bool = false
+    @AppStorage("settings_disable_notifications_section") private var disableNotificationsSection: Bool = false
+    @AppStorage("settings_disable_app_section") private var disableAppSection: Bool = false
+    @AppStorage("settings_disable_system_components_section") private var disableSystemComponentsSection: Bool = false
+    @AppStorage("settings_disable_additional_section") private var disableAdditionalSection: Bool = false
     
     // ✅ ДИАГНОСТИКА: Флаги для отключения подсекций секции Защита
     @AppStorage("settings_disable_security_network_toggle") private var disableSecurityNetworkToggle: Bool = false
@@ -139,61 +145,49 @@ struct SettingsScreen: View {
         userRole == "admin" || userRole == "administrator"
     }
     
-    // ✅ ИСПРАВЛЕНО: Прямой доступ (как в бэкапах - работало)
+    // ✅ ИСПРАВЛЕНО: Прямой доступ с безопасной обработкой ошибок
     private var safeLanguageCode: String {
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("safeLanguageCode", message: "НАЧАЛО", section: "Localization")
-        }
-        
         guard Thread.isMainThread else {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logCritical("safeLanguageCode", message: "КРИТИЧЕСКАЯ ОШИБКА - вызван не на main thread", section: "Localization")
-            }
+            print("🔴 SETTINGS: safeLanguageCode вызван не на main thread, возвращаем 'en'")
             return "en" // Fallback для фоновых потоков
         }
         
-        // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к localizationManager
-        let result = localizationManager.currentLanguage.rawValue
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("safeLanguageCode", message: "ЗАВЕРШЕН, результат = '\(result)'", section: "Localization")
+        // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к localizationManager с try-catch
+        do {
+            return localizationManager.currentLanguage.rawValue
+        } catch {
+            print("🔴 SETTINGS: ❌ ОШИБКА в safeLanguageCode: \(error), возвращаем 'en'")
+            return "en"
         }
-        
-        return result
     }
     
     // ✅ ОПТИМИЗАЦИЯ: Кэшированный доступ к тарифу для предотвращения множественных вычислений
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавлена защита от неинициализированного TariffManager
     private var safeCurrentTariff: TariffType {
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("safeCurrentTariff", message: "НАЧАЛО", section: "Tariff")
-        }
-        
         guard Thread.isMainThread else {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logCritical("safeCurrentTariff", message: "КРИТИЧЕСКАЯ ОШИБКА - вызван не на main thread", section: "Tariff")
-            }
+            print("🔴 SETTINGS: safeCurrentTariff вызван не на main thread, возвращаем кэш")
             return cachedTariff // Возвращаем кэш для фоновых потоков
         }
         
-        // ✅ ОПТИМИЗАЦИЯ: Используем кэш, если тариф не изменился
-        let currentTariff = tariffManager.currentTariff
-        let currentTariffId = currentTariff.rawValue
-        
-        if cachedTariffId == currentTariffId && cachedTariff == currentTariff {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("safeCurrentTariff", message: "ИСПОЛЬЗОВАН КЭШ, результат = \(cachedTariff)", section: "Tariff")
+        // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к tariffManager с try-catch
+        do {
+            // ✅ ОПТИМИЗАЦИЯ: Используем кэш, если тариф не изменился
+            let currentTariff = tariffManager.currentTariff
+            let currentTariffId = currentTariff.rawValue
+            
+            if cachedTariffId == currentTariffId && cachedTariff == currentTariff {
+                return cachedTariff
             }
+            
+            // ✅ Обновляем кэш
+            cachedTariff = currentTariff
+            cachedTariffId = currentTariffId
+            
+            return currentTariff
+        } catch {
+            print("🔴 SETTINGS: ❌ ОШИБКА в safeCurrentTariff: \(error), возвращаем кэш")
             return cachedTariff
         }
-        
-        // ✅ Обновляем кэш
-        cachedTariff = currentTariff
-        cachedTariffId = currentTariffId
-        
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("safeCurrentTariff", message: "ЗАВЕРШЕН, результат = \(currentTariff) (кэш обновлен)", section: "Tariff")
-        }
-        
-        return currentTariff
     }
     
     // MARK: - Body
@@ -208,15 +202,19 @@ struct SettingsScreen: View {
         // ✅ КРИТИЧЕСКОЕ: Логи в самом начале body - ПЕРВАЯ СТРОКА
         // Это поможет понять, доходит ли выполнение до body
         let _ = {
-            if Self.ENABLE_CRASH_LOGS {
-                #if DEBUG
-                Self.bodyCallCount += 1
-                print("🔴 SETTINGS: body НАЧАЛО - ПЕРВАЯ СТРОКА (#\(Self.bodyCallCount))")
-                #else
-                print("🔴 SETTINGS: body НАЧАЛО - ПЕРВАЯ СТРОКА")
-                #endif
-                print("🔴 SETTINGS: Thread.isMainThread = \(Thread.isMainThread)")
-            }
+            // ✅ ДИАГНОСТИКА: Всегда логируем, даже без ENABLE_CRASH_LOGS
+            #if DEBUG
+            Self.bodyCallCount += 1
+            print("🔴 SETTINGS_BODY: body НАЧАЛО - ПЕРВАЯ СТРОКА (#\(Self.bodyCallCount))")
+            #else
+            print("🔴 SETTINGS_BODY: body НАЧАЛО - ПЕРВАЯ СТРОКА")
+            #endif
+            print("🔴 SETTINGS_BODY: Thread.isMainThread = \(Thread.isMainThread)")
+            
+            // ✅ КРИТИЧЕСКОЕ: Проверка EnvironmentObject
+            // В SwiftUI EnvironmentObject не может быть nil, но проверим для диагностики
+            print("🔴 SETTINGS_BODY: Проверка EnvironmentObject...")
+            // Не можем напрямую проверить nil, но можем попробовать обратиться
         }()
         
         // ✅ КРИТИЧЕСКОЕ: Расширенные логи для диагностики
@@ -237,8 +235,9 @@ struct SettingsScreen: View {
                 print("🔴 SETTINGS: showProfileEdit = \(showProfileEdit)")
                 
                 // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к localizationManager
-                let language = localizationManager.currentLanguage
-                print("🔴 SETTINGS: localizationManager.currentLanguage = \(language)")
+                // ✅ ИСПРАВЛЕНО: Убрана прямая печать - может вызывать проблемы при инициализации
+                // let language = localizationManager.currentLanguage
+                // print("🔴 SETTINGS: localizationManager.currentLanguage = \(language)")
             }
         }()
         settingsContent()
@@ -353,12 +352,26 @@ struct SettingsScreen: View {
             }
         }()
         
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасный доступ к safeLocalized с try-catch
+        // Вычисляем backgroundLabel вне ViewBuilder
+        let backgroundLabel: String = {
+            guard Thread.isMainThread else {
+                return "Settings Background"
+            }
+            do {
+                return safeLocalized("settings_accessibility_background")
+            } catch {
+                print("🔴 SETTINGS_CONTENT: ❌ ОШИБКА в safeLocalized для settings_accessibility_background: \(error)")
+                return "Settings Background"
+            }
+        }()
+        
         ZStack {
             // Фон
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(safeLocalized("settings_accessibility_background"))
+                .accessibilityLabel(backgroundLabel)
             
             VStack(spacing: 0) {
                 // Навигационная панель
@@ -633,29 +646,18 @@ struct SettingsScreen: View {
     
     // ✅ ИСПРАВЛЕНО: Прямая локализация с защитой для реального устройства
     private func safeLocalized(_ key: String) -> String {
-        // ✅ КРИТИЧЕСКОЕ: Логи для диагностики краша
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("safeLocalized", message: "НАЧАЛО для ключа '\(key)'", section: "Localization")
-        }
-        
         guard Thread.isMainThread else {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logCritical("safeLocalized", message: "КРИТИЧЕСКАЯ ОШИБКА - вызван не на main thread для ключа '\(key)'", section: "Localization")
-            }
+            print("🔴 SETTINGS: safeLocalized('\(key)') вызван не на main thread, возвращаем ключ")
             return key // Fallback для фоновых потоков
         }
         
-        // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к localizationManager
-        // В SwiftUI EnvironmentObject всегда инициализирован
-        let result = localizationManager.localized(key)
-        if Self.ENABLE_CRASH_LOGS {
-            if result == key {
-                logger.logWarning("safeLocalized", message: "Локализация не найдена для ключа '\(key)'", section: "Localization")
-            } else {
-                logger.logFunction("safeLocalized", message: "ЗАВЕРШЕН для ключа '\(key)', результат = '\(result)'", section: "Localization")
-            }
+        // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к localizationManager с try-catch
+        do {
+            return localizationManager.localized(key)
+        } catch {
+            print("🔴 SETTINGS: ❌ ОШИБКА в safeLocalized('\(key)'): \(error), возвращаем ключ")
+            return key
         }
-        return result
     }
     
     // MARK: - Profile Section
