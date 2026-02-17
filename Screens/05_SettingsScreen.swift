@@ -69,7 +69,16 @@ struct SettingsScreen: View {
     // ✅ Система позиционирования
     @StateObject private var positioningService = PositioningSystemService.shared
     @State private var showPositioningSystemPicker: Bool = false
-    
+
+    // ✅ КЭШИРОВАНИЕ для calculatedProtectionLevel
+    @State private var cachedProtectionLevel: Double = 0.0
+    @State private var cachedTariffId: String = ""
+    @State private var lastProtectionLevelCalculation: Date = Date.distantPast
+
+    // ✅ @State переменные для синхронизации с notificationManager
+    @State private var isSecurityNotificationsEnabled: Bool = false
+    @State private var isSoundNotificationsEnabled: Bool = false
+
     // MARK: - Body
     
     var body: some View {
@@ -82,26 +91,26 @@ struct SettingsScreen: View {
             
             VStack(spacing: 0) {
                 // Навигационная панель
-                navigationHeader
+                navigationHeader()
                 
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
                         // Профиль пользователя
-                        profileSection
-                        
+                        profileSection()
+
                         // Защита и безопасность
-                        securitySection
-                        
+                        securitySection()
+
                         // Уведомления
-                        notificationsSection
-                        
+                        notificationsSection()
+
                         // Приложение
-                        appSection
+                        appSection()
                             .id("app_section_\(localizationManager.currentLanguage.rawValue)")
-                        
+
                         // Дополнительно
-                        additionalSection
+                        additionalSection()
                             .id("additional_section_\(localizationManager.currentLanguage.rawValue)")
                         
                         // Отступ снизу для удобства прокрутки
@@ -171,6 +180,12 @@ struct SettingsScreen: View {
                 .environmentObject(localizationManager)
         }
         .onAppear {
+            // ✅ Инициализируем тему из UserDefaults
+            if let savedThemeRaw = UserDefaults.standard.string(forKey: "selected_theme"),
+               let savedTheme = ThemeMode(rawValue: savedThemeRaw) {
+                selectedTheme = savedTheme
+            }
+
             initializeNotifications()
         }
         .withToast()
@@ -178,7 +193,8 @@ struct SettingsScreen: View {
     
     // MARK: - Navigation Header
     
-    private var navigationHeader: some View {
+    @ViewBuilder
+    private func navigationHeader() -> some View {
         ALADDINNavigationBar(
             title: localizationManager.localized("settings_title"), // ✅ Локализованный заголовок
             subtitle: localizationManager.localized("settings_subtitle"), // ✅ Локализованный подзаголовок
@@ -193,13 +209,14 @@ struct SettingsScreen: View {
     
     // MARK: - Profile Section
     
-    private var profileSection: some View {
+    @ViewBuilder
+    private func profileSection() -> some View {
         let userInitial = storedName.isEmpty ? "?" : String(storedName.prefix(1).uppercased())
         let userName = storedName.isEmpty ? localizationManager.localized("profile_name_placeholder") : storedName
         let userAlias = storedAlias.isEmpty ? localizationManager.localized("profile_email_placeholder") : storedAlias
         let userStatus = localizationManager.localized("settings_profile_status")
-        
-        return VStack(spacing: Spacing.m) {
+
+        VStack(spacing: Spacing.m) {
             HStack {
                 Text(localizationManager.localized("profile_section")) // ✅ Локализованный заголовок
                     .font(.h3)
@@ -287,7 +304,8 @@ struct SettingsScreen: View {
     
     // MARK: - Security Section
     
-    private var securitySection: some View {
+    @ViewBuilder
+    private func securitySection() -> some View {
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(localizationManager.localized("security_section")) // ✅ Локализованный заголовок
@@ -334,11 +352,11 @@ struct SettingsScreen: View {
                                 }) {
                                     Image(systemName: "info.circle")
                                         .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(protectionColor)
+                                        .foregroundColor(getProtectionColor())
                                         .padding(6)
                                         .background(
                                             Circle()
-                                                .fill(protectionColor.opacity(0.15))
+                                                .fill(getProtectionColor().opacity(0.15))
                                         )
                                 }
                                 .padding(.leading, Spacing.xs)
@@ -347,8 +365,8 @@ struct SettingsScreen: View {
                             Text(
                                 String(
                                     format: localizationManager.localized("settings_protection_level_value"),
-                                    Int(calculatedProtectionLevel),
-                                    protectionLevelText
+                                    Int(getCachedProtectionLevel()),
+                                    getProtectionLevelText()
                                 ) + " (на основе тарифа)"
                             )
                                 .font(.caption)
@@ -363,14 +381,14 @@ struct SettingsScreen: View {
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                         
-                        Slider(value: .constant(calculatedProtectionLevel), in: 0...100, step: 5) {
+                        Slider(value: .constant(getCachedProtectionLevel()), in: 0...100, step: 5) {
                             Text(localizationManager.localized("settings_protection_level"))
                         } minimumValueLabel: {
                             Text(percentText(0))
                         } maximumValueLabel: {
                             Text(percentText(100))
                         }
-                        .accentColor(protectionColor)
+                        .accentColor(getProtectionColor())
                         .disabled(true)
                         
                         Text(percentText(100))
@@ -412,7 +430,7 @@ struct SettingsScreen: View {
                         .fill(Color.backgroundMedium.opacity(0.3))
                 )
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel(String(format: localizationManager.localized("settings_protection_level_accessibility"), Int(calculatedProtectionLevel)))
+                .accessibilityLabel(String(format: localizationManager.localized("settings_protection_level_accessibility"), Int(getCachedProtectionLevel())))
                 
                 // ✅ Менеджеры (5 компонентов)
                 Divider()
@@ -466,7 +484,8 @@ struct SettingsScreen: View {
     
     // MARK: - Notifications Section
     
-    private var notificationsSection: some View {
+    @ViewBuilder
+    private func notificationsSection() -> some View {
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(localizationManager.localized("notifications_section")) // ✅ Локализованный заголовок
@@ -482,15 +501,21 @@ struct SettingsScreen: View {
                     icon: "bell.fill",
                     title: localizationManager.localized("push_notifications"), // ✅ Локализованный заголовок
                     subtitle: localizationManager.localized("push_notifications_subtitle"), // ✅ Локализованный подзаголовок
-                    isEnabled: $notificationManager.notificationSettings.securityEnabled
+                    isEnabled: $isSecurityNotificationsEnabled
                 )
-                
+                .onTapGesture {
+                    toggleSecurityNotifications()
+                }
+
                 settingRow(
                     icon: "speaker.wave.2.fill",
                     title: localizationManager.localized("sound_notifications"), // ✅ Локализованный заголовок
                     subtitle: localizationManager.localized("sound_notifications_subtitle"), // ✅ Локализованный подзаголовок
-                    isEnabled: $notificationManager.notificationSettings.soundEnabled
+                    isEnabled: $isSoundNotificationsEnabled
                 )
+                .onTapGesture {
+                    toggleSoundNotifications()
+                }
             }
         }
         .padding(Spacing.cardPadding)
@@ -500,7 +525,8 @@ struct SettingsScreen: View {
     
     // MARK: - App Section
     
-    private var appSection: some View {
+    @ViewBuilder
+    private func appSection() -> some View {
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(localizationManager.localized("app_section")) // ✅ Локализованный заголовок
@@ -572,7 +598,8 @@ struct SettingsScreen: View {
     
     // MARK: - Additional Section
     
-    private var additionalSection: some View {
+    @ViewBuilder
+    private func additionalSection() -> some View {
         VStack(spacing: Spacing.m) {
             HStack {
                 Text(localizationManager.localized("additional_section")) // ✅ Локализованный заголовок
@@ -840,25 +867,42 @@ struct SettingsScreen: View {
     
     // MARK: - Calculated Protection Level (Read-Only Indicator)
     
-    /// ✅ ИНДИКАТОР: Вычисляет уровень защиты на основе текущего тарифа
+    /// ✅ ИНДИКАТОР: Вычисляет уровень защиты на основе текущего тарифа с кэшированием
     /// Ползунок теперь только для чтения и показывает реальный уровень защиты
-    private var calculatedProtectionLevel: Double {
-        let tariff = tariffManager.currentTariff
-        let card = tariff.createCard(localizationManager: localizationManager)
-        
+    private func getCachedProtectionLevel() -> Double {
+        let currentTariff = tariffManager.currentTariff
+        let currentTariffId = currentTariff.rawValue
+
+        // Проверяем кэш - используем если тариф не изменился и прошло < 1 секунды
+        if cachedTariffId == currentTariff.rawValue && cachedProtectionLevel > 0 &&
+           Date().timeIntervalSince(lastProtectionLevelCalculation) < 1.0 {
+            return cachedProtectionLevel
+        }
+
+        // Вычисляем новый уровень защиты
+        let card = currentTariff.createCard(localizationManager: localizationManager)
+
         // Вычисляем процент на основе доступных функций тарифа
         let totalProtectionFeatures = 100 // Всего функций защиты от угроз
         let totalParentalFeatures = 32    // Всего функций родительского контроля
         let totalAdditionalFeatures = 10  // Примерно дополнительных функций
-        
+
         let totalAvailable = Double(card.protectionCount + card.parentalControlCount + card.additionalFeatures.count)
         let totalPossible = Double(totalProtectionFeatures + totalParentalFeatures + totalAdditionalFeatures)
-        
-        return min(100, (totalAvailable / totalPossible) * 100)
+
+        let newLevel = min(100, (totalAvailable / totalPossible) * 100)
+
+        // Обновляем кэш
+        cachedProtectionLevel = newLevel
+        cachedTariffId = currentTariff.rawValue
+        lastProtectionLevelCalculation = Date()
+
+        return newLevel
     }
     
-    private var protectionLevelText: String {
-        switch calculatedProtectionLevel {
+    private func getProtectionLevelText() -> String {
+        let level = getCachedProtectionLevel()
+        switch level {
         case 0...25: return localizationManager.localized("settings_protection_level_low")
         case 26...50: return localizationManager.localized("settings_protection_level_medium")
         case 51...75: return localizationManager.localized("settings_protection_level_high")
@@ -867,8 +911,9 @@ struct SettingsScreen: View {
         }
     }
     
-    private var protectionColor: Color {
-        switch calculatedProtectionLevel {
+    private func getProtectionColor() -> Color {
+        let level = getCachedProtectionLevel()
+        switch level {
         case 0...25: return .red
         case 26...50: return .orange
         case 51...75: return .yellow
@@ -896,11 +941,9 @@ struct SettingsScreen: View {
         if let currentIndex = allThemes.firstIndex(of: selectedTheme) {
             let nextIndex = (currentIndex + 1) % allThemes.count
             selectedTheme = allThemes[nextIndex]
-            
-            // Сохраняем выбор пользователя
+
+            // ✅ Сохраняем и применяем тему явно
             UserDefaults.standard.set(selectedTheme.rawValue, forKey: "selected_theme")
-            
-            // Применяем тему
             applyTheme(selectedTheme)
         }
     }
@@ -946,6 +989,32 @@ struct SettingsScreen: View {
                 print("🔕 Разрешение на уведомления отклонено")
             }
         }
+    }
+
+    // MARK: - Notification Updates
+
+    private func toggleSecurityNotifications() {
+        let newValue = !isSecurityNotificationsEnabled
+        isSecurityNotificationsEnabled = newValue
+        updateSecurityNotifications(enabled: newValue)
+    }
+
+    private func toggleSoundNotifications() {
+        let newValue = !isSoundNotificationsEnabled
+        isSoundNotificationsEnabled = newValue
+        updateSoundNotifications(enabled: newValue)
+    }
+
+    private func updateSecurityNotifications(enabled: Bool) {
+        var settings = notificationManager.notificationSettings
+        settings.securityEnabled = enabled
+        notificationManager.updateNotificationSettings(settings)
+    }
+
+    private func updateSoundNotifications(enabled: Bool) {
+        var settings = notificationManager.notificationSettings
+        settings.soundEnabled = enabled
+        notificationManager.updateNotificationSettings(settings)
     }
 }
 
