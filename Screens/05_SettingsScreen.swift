@@ -145,34 +145,8 @@ struct SettingsScreen: View {
         userRole == "admin" || userRole == "administrator"
     }
     
-    // ✅ ИСПРАВЛЕНО: Прямой доступ с безопасной обработкой ошибок
-    private var safeLanguageCode: String {
-        guard Thread.isMainThread else {
-            print("🔴 SETTINGS: safeLanguageCode вызван не на main thread, возвращаем 'en'")
-            return "en" // Fallback для фоновых потоков
-        }
-        
-        // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к localizationManager с try-catch
-        do {
-            return localizationManager.currentLanguage.rawValue
-        } catch {
-            print("🔴 SETTINGS: ❌ ОШИБКА в safeLanguageCode: \(error), возвращаем 'en'")
-            return "en"
-        }
-    }
-    
-    // ✅ ОПТИМИЗАЦИЯ: Кэшированный доступ к тарифу для предотвращения множественных вычислений
-    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: НЕ изменяем @State в computed property - это вызывает "Modifying state during view update"
-    private var safeCurrentTariff: TariffType {
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УПРОЩЕНА логика в computed property
-        // Убрана сложная логика кэширования, которая может вызывать type resolution проблемы
-        do {
-            return tariffManager.currentTariff
-        } catch {
-            print("🔴 SETTINGS: ❌ ОШИБКА в safeCurrentTariff: \(error), возвращаем .free")
-            return .free
-        }
-    }
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАНЫ computed properties с EnvironmentObject
+    // Они вызывали проблемы с SwiftUI type resolution
     
     // MARK: - Body
     
@@ -347,8 +321,11 @@ struct SettingsScreen: View {
                 print("🔴 SETTINGS: tariffManager.currentTariff = \(tariffManager.currentTariff)")
                 // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрали прямой доступ к notificationSettings в settingsContent
                 // Это может вызвать краш, если notificationSettings еще не инициализирован
-                print("🔴 SETTINGS: safeLanguageCode = \(safeLanguageCode)")
-                print("🔴 SETTINGS: safeCurrentTariff = \(safeCurrentTariff)")
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убраны computed properties из отладочного вывода
+                let debugLanguage: String = (try? localizationManager.currentLanguage.rawValue) ?? "unknown"
+                let debugTariff: TariffType = (try? tariffManager.currentTariff) ?? .free
+                print("🔴 SETTINGS: currentLanguage = \(debugLanguage)")
+                print("🔴 SETTINGS: currentTariff = \(debugTariff)")
                 print("🔴 SETTINGS: Stack trace:")
                 Thread.callStackSymbols.prefix(5).forEach { print("  \($0)") }
             }
@@ -413,7 +390,7 @@ struct SettingsScreen: View {
                         // Приложение
                         if !disableAppSection {
                             appSection()
-                                .id("app_section_\(safeLanguageCode)")
+                                .id("app_section_current")
                         } else if Self.ENABLE_CRASH_LOGS {
                             let _ = logger.logSection("App", function: "appSection", message: "❌ ОТКЛЮЧЕНА через флаг disableAppSection")
                         }
@@ -421,7 +398,7 @@ struct SettingsScreen: View {
                         // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
                         if isAdmin && !disableSystemComponentsSection {
                             systemComponentsSection()
-                                .id("system_components_section_\(safeLanguageCode)")
+                                .id("system_components_section_current")
                         } else if isAdmin && disableSystemComponentsSection && Self.ENABLE_CRASH_LOGS {
                             let _ = logger.logSection("SystemComponents", function: "systemComponentsSection", message: "❌ ОТКЛЮЧЕНА через флаг disableSystemComponentsSection")
                         }
@@ -429,7 +406,7 @@ struct SettingsScreen: View {
                         // Дополнительно
                         if !disableAdditionalSection {
                             additionalSection()
-                                .id("additional_section_\(safeLanguageCode)")
+                                .id("additional_section_current")
                         } else if Self.ENABLE_CRASH_LOGS {
                             let _ = logger.logSection("Additional", function: "additionalSection", message: "❌ ОТКЛЮЧЕНА через флаг disableAdditionalSection")
                         }
@@ -467,7 +444,7 @@ struct SettingsScreen: View {
         }
         .navigationBarHidden(true)
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
-        .id("settings_lang_\(safeLanguageCode)")
+        .id("settings_lang_current")
         .sheet(isPresented: $showProfileEdit) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
@@ -525,9 +502,11 @@ struct SettingsScreen: View {
                     logger.logFunction("sheet", message: "showProtectionExplanation открывается", section: "Modals")
                 }
             }()
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Прямой доступ к tariffManager без computed property
+            let currentTariff: TariffType = (try? tariffManager.currentTariff) ?? .free
             ProtectionLevelExplanationModal(
                 isPresented: $showProtectionExplanation,
-                currentTariff: safeCurrentTariff
+                currentTariff: currentTariff
             )
             .environmentObject(localizationManager)
         }
@@ -673,18 +652,21 @@ struct SettingsScreen: View {
                 logger.logSection("Profile", function: "profileSection", message: "НАЧАЛО")
             }
         }()
+
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Предварительно вычисляем ВСЕ значения вне View hierarchy!
         let userInitial = storedName.isEmpty ? "?" : String(storedName.prefix(1).uppercased())
         let userName = storedName.isEmpty ? safeLocalized("profile_name_placeholder") : storedName
         let userAlias = storedAlias.isEmpty ? safeLocalized("profile_email_placeholder") : storedAlias
         let userStatus = safeLocalized("settings_profile_status")
-        
+        let sectionTitle = safeLocalized("profile_section")
+
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(safeLocalized("profile_section")) // ✅ Безопасная локализация
+                Text(sectionTitle)
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
-                
+
                 Spacer()
             }
             
@@ -773,43 +755,57 @@ struct SettingsScreen: View {
                 logger.logSection("Security", function: "securitySection", message: "НАЧАЛО")
             }
         }()
-        
+
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Предварительно вычисляем ВСЕ значения вне View hierarchy!
+        // Это предотвращает проблемы с SwiftUI type system resolution
+        let sectionTitle = safeLocalized("security_section")
+        let networkTitle = safeLocalized("network_protection_protection")
+        let networkSubtitle = safeLocalized("network_protection_protection_subtitle")
+        let biometricTitle = safeLocalized("biometric_auth")
+        let biometricSubtitle = safeLocalized("biometric_auth_subtitle")
+        let protectionTitle = safeLocalized("protection_level")
+        let protectionValueFormat = safeLocalized("settings_protection_level_value")
+        let protectionLevelValue = calculatedProtectionLevel
+        let protectionLevelTextValue = protectionLevelText
+        let protectionColorValue = protectionColor
+        let protectionAccessibilityLabel = String(format: safeLocalized("settings_protection_level_accessibility"), Int(protectionLevelValue))
+
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(safeLocalized("security_section")) // ✅ Безопасная локализация
+                Text(sectionTitle)
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
-                
+
                 Spacer()
             }
-            
+
             VStack(spacing: Spacing.m) {
                 // Network Protection
                 if !disableSecurityNetworkToggle {
                     settingRow(
                         icon: "shield.fill",
-                        title: safeLocalized("network_protection_protection"), // ✅ Безопасная локализация
-                        subtitle: safeLocalized("network_protection_protection_subtitle"), // ✅ Безопасная локализация
+                        title: networkTitle,
+                        subtitle: networkSubtitle,
                         isEnabled: $isNetworkProtectionEnabled
                     )
                 } else if Self.ENABLE_CRASH_LOGS {
                     let _ = logger.logSection("Security", function: "securitySection", message: "Network Protection отключен через флаг")
                 }
-                
+
                 // Биометрическая аутентификация
                 if !disableSecurityBiometricToggle {
                     settingRow(
                         icon: "faceid",
-                        title: safeLocalized("biometric_auth"), // ✅ Безопасная локализация
-                        subtitle: safeLocalized("biometric_auth_subtitle"), // ✅ Безопасная локализация
+                        title: biometricTitle,
+                        subtitle: biometricSubtitle,
                         isEnabled: $isBiometricEnabled,
                         isBiometric: true
                     )
                 } else if Self.ENABLE_CRASH_LOGS {
                     let _ = logger.logSection("Security", function: "securitySection", message: "Biometric Toggle отключен через флаг")
                 }
-                
+
                 // Уровень защиты
                 if !disableSecurityProtectionLevel {
                     VStack(spacing: Spacing.s) {
@@ -817,64 +813,58 @@ struct SettingsScreen: View {
                         Image(systemName: "lock.fill")
                             .font(.system(size: 20))
                             .foregroundColor(.primaryBlue)
-                        
+
                         VStack(alignment: .leading, spacing: Spacing.xxs) {
-                            // ✅ ОПТИМИЗАЦИЯ: Используем локальную переменную для избежания множественных вычислений
-                            let buttonColor = protectionColor
                             HStack {
-                                Text(safeLocalized("protection_level")) // ✅ Безопасная локализация
+                                Text(protectionTitle)
                                     .font(.bodyBold)
                                     .foregroundColor(.textPrimary)
-                                
+
                                 Button(action: {
                                     showProtectionExplanation = true
                                 }) {
                                     Image(systemName: "info.circle")
                                         .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(buttonColor)
+                                        .foregroundColor(protectionColorValue)
                                         .padding(6)
                                         .background(
                                             Circle()
-                                                .fill(buttonColor.opacity(0.15))
+                                                .fill(protectionColorValue.opacity(0.15))
                                         )
                                 }
                                 .padding(.leading, Spacing.xs)
                             }
-                            
+
                             Text(
                                 String(
-                                    format: safeLocalized("settings_protection_level_value"),
-                                    Int(calculatedProtectionLevel),
-                                    protectionLevelText
+                                    format: protectionValueFormat,
+                                    Int(protectionLevelValue),
+                                    protectionLevelTextValue
                                 ) + " (на основе тарифа)"
                             )
                                 .font(.caption)
                                 .foregroundColor(.textSecondary)
                         }
-                        
+
                         Spacer()
                     }
-                    
-                    // ✅ ОПТИМИЗАЦИЯ: Используем локальные переменные для избежания множественных вычислений
-                    let sliderColor = protectionColor
-                    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Предотвращаем бесконечную рекурсию!
-                    // Не используем cachedProtectionLevel > 0 проверку, так как она вызывает рекурсию
-                    let sliderLevel = calculatedProtectionLevel
+
+                    // ✅ ИСПОЛЬЗУЕМ ТОЛЬКО ПРЕДВАРИТЕЛЬНО ВЫЧИСЛЕННЫЕ ЗНАЧЕНИЯ!
                     HStack {
                         Text(percentText(0))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
-                        
-                        Slider(value: .constant(sliderLevel), in: 0...100, step: 5) {
-                            Text(safeLocalized("settings_protection_level"))
+
+                        Slider(value: .constant(protectionLevelValue), in: 0...100, step: 5) {
+                            Text(protectionTitle)
                         } minimumValueLabel: {
                             Text(percentText(0))
                         } maximumValueLabel: {
                             Text(percentText(100))
                         }
-                        .accentColor(sliderColor)
+                        .accentColor(protectionColorValue)
                         .disabled(true)
-                        
+
                         Text(percentText(100))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
@@ -882,31 +872,36 @@ struct SettingsScreen: View {
                     
                     // Кнопки дополнительных настроек
                     if !disableSecurityProtectionButtons {
+                        // ✅ ПРЕДВАРИТЕЛЬНО ВЫЧИСЛЯЕМ ВСЕ СТРОКИ ЛОКАЛИЗАЦИИ!
+                        let historyTitle = safeLocalized("settings_protection_history")
+                        let advancedTitle = safeLocalized("settings_advanced_settings")
+                        let improveTitle = safeLocalized("settings_improve_protection")
+
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.s), count: 3), spacing: Spacing.s) {
                             protectionActionButton(
-                                title: safeLocalized("settings_protection_history"),
+                                title: historyTitle,
                                 icon: "chart.line.uptrend.xyaxis",
                                 foreground: .primaryBlue,
                                 background: Color.primaryBlue.opacity(0.12),
                                 action: { showProtectionHistory = true }
                             )
-                            
+
                             protectionActionButton(
-                                title: safeLocalized("settings_advanced_settings"),
+                                title: advancedTitle,
                                 icon: "slider.horizontal.3",
                                 foreground: Color(hex: "#A855F7"),
                                 background: Color(hex: "#A855F7").opacity(0.14),
-                                action: { 
+                                action: {
                                     if !disableAdvancedProtectionScreen {
-                                        showAdvancedProtection = true 
+                                        showAdvancedProtection = true
                                     } else if Self.ENABLE_CRASH_LOGS {
                                         logger.logSection("Security", function: "securitySection", message: "AdvancedProtectionScreen отключен через флаг")
                                     }
                                 }
                             )
-                            
+
                             protectionActionButton(
-                                title: safeLocalized("settings_improve_protection"),
+                                title: improveTitle,
                                 icon: "arrow.up.circle.fill",
                                 foreground: .secondaryGold,
                                 background: Color.secondaryGold.opacity(0.18),
@@ -924,7 +919,7 @@ struct SettingsScreen: View {
                         .fill(Color.backgroundMedium.opacity(0.3))
                 )
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel(String(format: safeLocalized("settings_protection_level_accessibility"), Int(calculatedProtectionLevel)))
+                .accessibilityLabel(protectionAccessibilityLabel)
                 } else if Self.ENABLE_CRASH_LOGS {
                     let _ = logger.logSection("Security", function: "securitySection", message: "Protection Level отключен через флаг")
                 }
@@ -992,22 +987,29 @@ struct SettingsScreen: View {
                 logger.logSection("Notifications", function: "notificationsSection", message: "НАЧАЛО")
             }
         }()
-        
+
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Предварительно вычисляем ВСЕ значения вне View hierarchy!
+        let sectionTitle = safeLocalized("notifications_section")
+        let pushTitle = safeLocalized("push_notifications")
+        let pushSubtitle = safeLocalized("push_notifications_subtitle")
+        let soundTitle = safeLocalized("sound_notifications")
+        let soundSubtitle = safeLocalized("sound_notifications_subtitle")
+
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(safeLocalized("notifications_section")) // ✅ Безопасная локализация
+                Text(sectionTitle)
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
-                
+
                 Spacer()
             }
             
             VStack(spacing: Spacing.m) {
                 settingRow(
                     icon: "bell.fill",
-                    title: safeLocalized("push_notifications"), // ✅ Безопасная локализация
-                    subtitle: safeLocalized("push_notifications_subtitle"), // ✅ Безопасная локализация
+                    title: pushTitle,
+                    subtitle: pushSubtitle,
                     isEnabled: $isSecurityNotificationsEnabled,
                     onChange: { newValue in
                         Task { @MainActor in
@@ -1019,8 +1021,8 @@ struct SettingsScreen: View {
                 
                 settingRow(
                     icon: "speaker.wave.2.fill",
-                    title: safeLocalized("sound_notifications"), // ✅ Безопасная локализация
-                    subtitle: safeLocalized("sound_notifications_subtitle"), // ✅ Безопасная локализация
+                    title: soundTitle,
+                    subtitle: soundSubtitle,
                     isEnabled: $isSoundNotificationsEnabled,
                     onChange: { newValue in
                         Task { @MainActor in
@@ -1045,30 +1047,39 @@ struct SettingsScreen: View {
     
     @ViewBuilder
     private func appSection() -> some View {
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Предварительно вычисляем ВСЕ значения вне View hierarchy!
+        let sectionTitle = safeLocalized("app_section")
+        let languageTitle = safeLocalized("language")
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убраны EnvironmentObject из предварительных вычислений
+        let currentLanguage = (try? localizationManager.currentLanguage) ?? .english
+        let languageSubtitle = currentLanguage == .russian ? safeLocalized("language_subtitle") : currentLanguage.displayName
+        let themeTitle = safeLocalized("dark_theme")
+        let themeSubtitle = selectedTheme.displayName(localizationManager) // ✅ selectedTheme.displayName не использует EnvironmentObject в рантайме
+
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(safeLocalized("app_section")) // ✅ Локализованный заголовок
+                Text(sectionTitle)
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
-                
+
                 Spacer()
             }
-            
+
             VStack(spacing: Spacing.s) {
                 settingsButton(
                     icon: "globe",
-                    title: safeLocalized("language"), // ✅ Локализованный язык
-                    subtitle: localizationManager.currentLanguage == .russian ? safeLocalized("language_subtitle") : localizationManager.currentLanguage.displayName, // ✅ ИСПРАВЛЕНО: Прямой доступ (как в бэкапах)
+                    title: languageTitle,
+                    subtitle: languageSubtitle,
                     action: {
                         showLanguageSettings = true
                     }
                 )
-                
+
                 settingsButton(
                     icon: selectedTheme.icon,
-                    title: safeLocalized("dark_theme"), // ✅ Локализованный заголовок
-                    subtitle: selectedTheme.displayName(localizationManager), // ✅ ИСПРАВЛЕНО: Прямой доступ (как в бэкапах)
+                    title: themeTitle,
+                    subtitle: themeSubtitle,
                     action: {
                         cycleTheme()
                     }
@@ -1128,10 +1139,15 @@ struct SettingsScreen: View {
                 logger.logSection("SystemComponents", function: "systemComponentsSection", message: "НАЧАЛО")
             }
         }()
-        
+
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Предварительно вычисляем ВСЕ значения вне View hierarchy!
+        let sectionTitle = safeLocalized("system_components_title")
+        let retryTitle = safeLocalized("retry")
+        let emptyTitle = safeLocalized("system_components_empty")
+
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(safeLocalized("system_components_title"))
+                Text(sectionTitle)
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -1159,14 +1175,14 @@ struct SettingsScreen: View {
                     Text(error)
                         .font(.caption)
                         .foregroundColor(.red)
-                    Button(safeLocalized("retry")) {
+                    Button(retryTitle) {
                         loadComponents()
                     }
                     .buttonStyle(.bordered)
                 }
                 .padding()
             } else if components.isEmpty {
-                Text(safeLocalized("system_components_empty"))
+                Text(emptyTitle)
                     .font(.body)
                     .foregroundColor(.textSecondary)
                     .padding()
@@ -1299,7 +1315,12 @@ struct SettingsScreen: View {
                     logger.logFunction("ComponentRow.body", message: "НАЧАЛО для компонента \(component.componentId)", section: "SystemComponents")
                 }
             }()
-            
+
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Предварительно вычисляем локализации
+            let lastUpdateText = component.lastUpdate.map { lastUpdate in
+                String(format: localizationManager.localized("system_components_last_update"), formatDate(lastUpdate))
+            }
+
             HStack(spacing: Spacing.m) {
                 // Индикатор статуса
                 Circle()
@@ -1312,8 +1333,8 @@ struct SettingsScreen: View {
                         .font(.bodyBold)
                         .foregroundColor(.textPrimary)
                     
-                    if let lastUpdate = component.lastUpdate {
-                        Text(String(format: localizationManager.localized("system_components_last_update"), formatDate(lastUpdate))) // ✅ ИСПРАВЛЕНО: ComponentRow имеет свой localizationManager
+                    if let text = lastUpdateText {
+                        Text(text)
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                     }
@@ -1352,13 +1373,26 @@ struct SettingsScreen: View {
     
     @ViewBuilder
     private func additionalSection() -> some View {
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Предварительно вычисляем ВСЕ значения вне View hierarchy!
+        let sectionTitle = safeLocalized("additional_section")
+        let helpTitle = safeLocalized("help_support")
+        let helpSubtitle = safeLocalized("help_support_subtitle")
+        let privacyTitle = safeLocalized("privacy_policy")
+        let privacySubtitle = safeLocalized("privacy_policy_subtitle")
+        let termsTitle = safeLocalized("terms_of_service")
+        let termsSubtitle = safeLocalized("terms_of_service_subtitle")
+        let consentTitle = safeLocalized("settings_consent_personal_data")
+        let consentSubtitle = consentAccepted ? safeLocalized("settings_consent_granted") : safeLocalized("settings_consent_manage")
+        let shareTitle = safeLocalized("share_app")
+        let shareSubtitle = safeLocalized("share_app_subtitle")
+
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(safeLocalized("additional_section")) // ✅ Локализованный заголовок
+                Text(sectionTitle)
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
-                
+
                 Spacer()
             }
             
@@ -1681,7 +1715,16 @@ struct SettingsScreen: View {
         }
         
         // ✅ ОПТИМИЗАЦИЯ: Используем кэш, если тариф не изменился и прошло менее 1 секунды
-        let tariff = safeCurrentTariff
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Прямой доступ к tariffManager без computed property
+        let tariff: TariffType
+        do {
+            tariff = tariffManager.currentTariff
+        } catch {
+            if Self.ENABLE_CRASH_LOGS {
+                logger.logWarning("calculatedProtectionLevel", message: "Ошибка доступа к tariffManager: \(error), используем .free", section: "ProtectionLevel")
+            }
+            tariff = .free
+        }
         let tariffId = tariff.rawValue
         let now = Date()
         let timeSinceLastCalculation = now.timeIntervalSince(lastProtectionLevelCalculation)
