@@ -28,7 +28,33 @@ struct SettingsScreen: View {
             }
         }
     }
-    
+
+    // MARK: - Safe Localization Functions
+
+    /// ✅ БЕЗОПАСНЫЙ ДОСТУП К ЛОКАЛИЗАЦИИ
+    /// Защищает от крашей при неправильных ключах и потоках
+    private func safeLocalized(_ key: String, fallback: String? = nil) -> String {
+        // ✅ Проверяем главный поток
+        guard Thread.isMainThread else {
+            print("⚠️ safeLocalized: Вызов не из главного потока для ключа '\(key)'")
+            return fallback ?? key
+        }
+
+        // ✅ Безопасно получаем локализацию
+        do {
+            let localized = localizationManager.localized(key)
+            // Проверяем, что локализация не вернула сам ключ (означает ошибку)
+            if localized == key && key.contains(" ") == false {
+                print("⚠️ safeLocalized: Ключ '\(key)' не найден в локализации")
+                return fallback ?? key
+            }
+            return localized
+        } catch {
+            print("🔴 safeLocalized: Ошибка при локализации ключа '\(key)': \(error)")
+            return fallback ?? key
+        }
+    }
+
     // MARK: - State
     
     @Environment(\.dismiss) private var dismiss
@@ -78,7 +104,7 @@ struct SettingsScreen: View {
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(localizationManager.localized("settings_accessibility_background"))
+                .accessibilityLabel(safeLocalized("settings_accessibility_background"))
             
             VStack(spacing: 0) {
                 // Навигационная панель
@@ -135,7 +161,7 @@ struct SettingsScreen: View {
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(activityItems: [
-                localizationManager.localized("settings_share_message")
+                safeLocalized("settings_share_message")
             ])
         }
         .sheet(isPresented: $showProtectionExplanation) {
@@ -180,28 +206,28 @@ struct SettingsScreen: View {
     
     private var navigationHeader: some View {
         ALADDINNavigationBar(
-            title: localizationManager.localized("settings_title"), // ✅ Локализованный заголовок
-            subtitle: localizationManager.localized("settings_subtitle"), // ✅ Локализованный подзаголовок
+            title: safeLocalized("settings_title"), // ✅ Локализованный заголовок
+            subtitle: safeLocalized("settings_subtitle"), // ✅ Локализованный подзаголовок
             showBackButton: true,
             onBack: {
                 dismiss()
             }
         )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(localizationManager.localized("settings_accessibility_navbar"))
+        .accessibilityLabel(safeLocalized("settings_accessibility_navbar"))
     }
     
     // MARK: - Profile Section
     
     private var profileSection: some View {
         let userInitial = storedName.isEmpty ? "?" : String(storedName.prefix(1).uppercased())
-        let userName = storedName.isEmpty ? localizationManager.localized("profile_name_placeholder") : storedName
-        let userAlias = storedAlias.isEmpty ? localizationManager.localized("profile_email_placeholder") : storedAlias
-        let userStatus = localizationManager.localized("settings_profile_status")
+        let userName = storedName.isEmpty ? safeLocalized("profile_name_placeholder") : storedName
+        let userAlias = storedAlias.isEmpty ? safeLocalized("profile_email_placeholder") : storedAlias
+        let userStatus = safeLocalized("settings_profile_status")
         
         return VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("profile_section")) // ✅ Локализованный заголовок
+                Text(safeLocalized("profile_section")) // ✅ Локализованный заголовок
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -290,7 +316,7 @@ struct SettingsScreen: View {
     private var securitySection: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("security_section")) // ✅ Локализованный заголовок
+                Text(safeLocalized("security_section")) // ✅ Локализованный заголовок
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -348,7 +374,7 @@ struct SettingsScreen: View {
                                 String(
                                     format: localizationManager.localized("settings_protection_level_value"),
                                     Int(calculatedProtectionLevel),
-                                    protectionLevelText
+                                    getProtectionLevelText()
                                 ) + " (на основе тарифа)"
                             )
                                 .font(.caption)
@@ -469,7 +495,7 @@ struct SettingsScreen: View {
     private var notificationsSection: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("notifications_section")) // ✅ Локализованный заголовок
+                Text(safeLocalized("notifications_section")) // ✅ Локализованный заголовок
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -503,7 +529,7 @@ struct SettingsScreen: View {
     private var appSection: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("app_section")) // ✅ Локализованный заголовок
+                Text(safeLocalized("app_section")) // ✅ Локализованный заголовок
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -575,7 +601,7 @@ struct SettingsScreen: View {
     private var additionalSection: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("additional_section")) // ✅ Локализованный заголовок
+                Text(safeLocalized("additional_section")) // ✅ Локализованный заголовок
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -857,13 +883,14 @@ struct SettingsScreen: View {
         return min(100, (totalAvailable / totalPossible) * 100)
     }
     
-    private var protectionLevelText: String {
-        switch calculatedProtectionLevel {
-        case 0...25: return localizationManager.localized("settings_protection_level_low")
-        case 26...50: return localizationManager.localized("settings_protection_level_medium")
-        case 51...75: return localizationManager.localized("settings_protection_level_high")
-        case 76...100: return localizationManager.localized("settings_protection_level_maximum")
-        default: return localizationManager.localized("settings_protection_level_medium")
+    private func getProtectionLevelText() -> String {
+        let level = calculatedProtectionLevel
+        switch level {
+        case 0...25: return safeLocalized("settings_protection_level_low")
+        case 26...50: return safeLocalized("settings_protection_level_medium")
+        case 51...75: return safeLocalized("settings_protection_level_high")
+        case 76...100: return safeLocalized("settings_protection_level_maximum")
+        default: return safeLocalized("settings_protection_level_medium")
         }
     }
     
