@@ -126,28 +126,6 @@ struct SettingsScreen: View {
         .navigationBarHidden(true)
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("settings_lang_\(localizationManager.currentLanguage.rawValue)")
-        // ✅ Сбрасываем кэш при изменении тарифа
-        .onChange(of: tariffManager.currentTariff) { newTariff in
-            cachedProtectionLevel = 0.0
-            cachedTariffId = newTariff.rawValue
-            lastProtectionLevelCalculation = Date.distantPast
-        }
-        // ✅ Синхронизируем @State переменные с notificationManager
-        .onChange(of: notificationManager.notificationSettings.securityEnabled) { newValue in
-            Task { @MainActor in
-                isSecurityNotificationsEnabled = newValue
-            }
-        }
-        .onChange(of: notificationManager.notificationSettings.soundEnabled) { newValue in
-            Task { @MainActor in
-                isSoundNotificationsEnabled = newValue
-            }
-        }
-        // ✅ Сохраняем выбранную тему автоматически
-        .onChange(of: selectedTheme) { newTheme in
-            UserDefaults.standard.set(newTheme.rawValue, forKey: "selected_theme")
-            applyTheme(newTheme)
-        }
         .sheet(isPresented: $showProfileEdit) {
             ProfileEditView()
                 .environmentObject(localizationManager)
@@ -202,10 +180,6 @@ struct SettingsScreen: View {
                 .environmentObject(localizationManager)
         }
         .onAppear {
-            // ✅ Синхронизируем начальные значения с notificationManager
-            isSecurityNotificationsEnabled = notificationManager.notificationSettings.securityEnabled
-            isSoundNotificationsEnabled = notificationManager.notificationSettings.soundEnabled
-
             // ✅ Инициализируем тему из UserDefaults
             if let savedThemeRaw = UserDefaults.standard.string(forKey: "selected_theme"),
                let savedTheme = ThemeMode(rawValue: savedThemeRaw) {
@@ -529,8 +503,8 @@ struct SettingsScreen: View {
                     subtitle: localizationManager.localized("push_notifications_subtitle"), // ✅ Локализованный подзаголовок
                     isEnabled: $isSecurityNotificationsEnabled
                 )
-                .onChange(of: isSecurityNotificationsEnabled) { newValue in
-                    updateSecurityNotifications(enabled: newValue)
+                .onTapGesture {
+                    toggleSecurityNotifications()
                 }
 
                 settingRow(
@@ -539,8 +513,8 @@ struct SettingsScreen: View {
                     subtitle: localizationManager.localized("sound_notifications_subtitle"), // ✅ Локализованный подзаголовок
                     isEnabled: $isSoundNotificationsEnabled
                 )
-                .onChange(of: isSoundNotificationsEnabled) { newValue in
-                    updateSoundNotifications(enabled: newValue)
+                .onTapGesture {
+                    toggleSoundNotifications()
                 }
             }
         }
@@ -967,7 +941,10 @@ struct SettingsScreen: View {
         if let currentIndex = allThemes.firstIndex(of: selectedTheme) {
             let nextIndex = (currentIndex + 1) % allThemes.count
             selectedTheme = allThemes[nextIndex]
-            // ✅ Сохранение и применение темы теперь происходит автоматически через onChange
+
+            // ✅ Сохраняем и применяем тему явно
+            UserDefaults.standard.set(selectedTheme.rawValue, forKey: "selected_theme")
+            applyTheme(selectedTheme)
         }
     }
     
@@ -1015,6 +992,18 @@ struct SettingsScreen: View {
     }
 
     // MARK: - Notification Updates
+
+    private func toggleSecurityNotifications() {
+        let newValue = !isSecurityNotificationsEnabled
+        isSecurityNotificationsEnabled = newValue
+        updateSecurityNotifications(enabled: newValue)
+    }
+
+    private func toggleSoundNotifications() {
+        let newValue = !isSoundNotificationsEnabled
+        isSoundNotificationsEnabled = newValue
+        updateSoundNotifications(enabled: newValue)
+    }
 
     private func updateSecurityNotifications(enabled: Bool) {
         var settings = notificationManager.notificationSettings
