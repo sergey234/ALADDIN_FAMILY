@@ -1,272 +1,305 @@
 import SwiftUI
-import os.log
-#if !targetEnvironment(simulator)
-import Darwin
-#endif
 
-/// 🩺 Settings Screen Diagnostic - МИНИМАЛЬНЫЙ ТЕСТОВЫЙ VIEW
-/// Создан для выявления реальной причины краша Settings Screen
-/// Если этот View работает - проблема в компонентах основного экрана
+/**
+ * 🔍 SettingsScreen Diagnostic Tool
+ * Диагностический инструмент для выявления причины краша SettingsScreen
+ *
+ * Проверяет по шагам:
+ * 1. EnvironmentObject инициализация
+ * 2. Менеджеры инициализация
+ * 3. Локализация
+ * 4. ViewBuilder функции
+ * 5. Полная сборка экрана
+ */
+
 struct SettingsScreenDiagnostic: View {
-
-    // MARK: - Environment Objects (Тестируем по одному)
 
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
-    // @EnvironmentObject private var localizationManager: LocalizationManager // Пока отключен
+    @EnvironmentObject private var localizationManager: LocalizationManager
 
-    // MARK: - State (Минимальный набор)
+    @State private var currentStep: Int = 0
+    @State private var diagnosticResults: [String] = []
+    @State private var crashDetected: Bool = false
 
-    @State private var testCounter: Int = 0
-
-    // MARK: - Body
+    private let diagnosticSteps = [
+        "1. EnvironmentObject проверка",
+        "2. Менеджеры проверка",
+        "3. Локализация проверка",
+        "4. ViewBuilder функции",
+        "5. Полная сборка экрана"
+    ]
 
     var body: some View {
-        ScrollView {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 20) {
+                    Text("🔍 SettingsScreen Diagnostic")
+                        .font(.title)
+                        .bold()
+
+                    Text("Текущий шаг: \(diagnosticSteps[currentStep])")
+                        .font(.headline)
+
+                    // Диагностические результаты
+                    VStack(alignment: .leading, spacing: 10) {
+                        ForEach(diagnosticResults, id: \.self) { result in
+                            Text("• \(result)")
+                                .foregroundColor(result.contains("❌") ? .red : .green)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(8)
+
+                    // Кнопки диагностики
+                    VStack(spacing: 15) {
+                        Button(action: runNextDiagnosticStep) {
+                            Text("▶️ Следующий шаг диагностики")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+
+                        Button(action: runFullDiagnostic) {
+                            Text("🚀 Полная диагностика (быстрая)")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.green)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+
+                        if crashDetected {
+                            Button(action: { /* no-op */ }) {
+                                Text("❌ КРАШ ОБНАРУЖЕН!")
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.red)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                            }
+                        }
+                    }
+
+                    Divider()
+
+                    // Минимальная версия SettingsScreen
+                    if currentStep >= 4 {
+                        Text("🧪 Тестирование минимальной версии:")
+                            .font(.headline)
+
+                        MinimalSettingsScreen()
+                    }
+                }
+                .padding()
+            }
+            .navigationBarItems(trailing: Button("Закрыть") { dismiss() })
+        }
+    }
+
+    private func runNextDiagnosticStep() {
+        guard currentStep < diagnosticSteps.count else { return }
+
+        let step = currentStep
+        currentStep += 1
+
+        switch step {
+        case 0:
+            checkEnvironmentObjects()
+        case 1:
+            checkManagers()
+        case 2:
+            checkLocalization()
+        case 3:
+            checkViewBuilders()
+        case 4:
+            checkFullScreen()
+        default:
+            break
+        }
+    }
+
+    private func runFullDiagnostic() {
+        diagnosticResults.removeAll()
+        currentStep = 0
+
+        checkEnvironmentObjects()
+        checkManagers()
+        checkLocalization()
+        checkViewBuilders()
+        checkFullScreen()
+
+        currentStep = diagnosticSteps.count
+    }
+
+    private func checkEnvironmentObjects() {
+        diagnosticResults.append("1️⃣ Проверка EnvironmentObject...")
+
+        do {
+            let navManager = navigationManager
+            diagnosticResults.append("✅ NavigationManager: \(navManager != nil ? "OK" : "NIL")")
+
+            let locManager = localizationManager
+            diagnosticResults.append("✅ LocalizationManager: \(locManager != nil ? "OK" : "NIL")")
+
+            // Проверяем основные свойства
+            if let nav = navManager {
+                diagnosticResults.append("✅ NavigationManager.currentScreen: \(nav.currentScreen)")
+            }
+
+            if let loc = locManager {
+                diagnosticResults.append("✅ LocalizationManager.currentLanguage: \(loc.currentLanguage)")
+            }
+
+        } catch {
+            diagnosticResults.append("❌ Ошибка в EnvironmentObject: \(error.localizedDescription)")
+            crashDetected = true
+        }
+    }
+
+    private func checkManagers() {
+        diagnosticResults.append("2️⃣ Проверка менеджеров...")
+
+        do {
+            let notificationManager = NotificationManager.shared
+            diagnosticResults.append("✅ NotificationManager.shared: \(notificationManager != nil ? "OK" : "NIL")")
+
+            let securityManager = SecurityManager.shared
+            diagnosticResults.append("✅ SecurityManager.shared: \(securityManager != nil ? "OK" : "NIL")")
+
+            let tariffManager = TariffManager.shared
+            diagnosticResults.append("✅ TariffManager.shared: \(tariffManager != nil ? "OK" : "NIL")")
+
+            // Проверяем основные свойства
+            diagnosticResults.append("✅ NotificationManager.isAuthorized: \(notificationManager.isAuthorized)")
+            diagnosticResults.append("✅ TariffManager.currentTariff: \(tariffManager.currentTariff)")
+
+        } catch {
+            diagnosticResults.append("❌ Ошибка в менеджерах: \(error.localizedDescription)")
+            crashDetected = true
+        }
+    }
+
+    private func checkLocalization() {
+        diagnosticResults.append("3️⃣ Проверка локализации...")
+
+        do {
+            let localized = localizationManager.localized("Settings", comment: "Test")
+            diagnosticResults.append("✅ Локализация 'Settings': '\(localized)'")
+
+            let safeLocalized = safeLocalized("Settings", comment: "Test")
+            diagnosticResults.append("✅ Safe локализация 'Settings': '\(safeLocalized)'")
+
+        } catch {
+            diagnosticResults.append("❌ Ошибка в локализации: \(error.localizedDescription)")
+            crashDetected = true
+        }
+    }
+
+    private func checkViewBuilders() {
+        diagnosticResults.append("4️⃣ Проверка ViewBuilder функций...")
+
+        do {
+            // Проверяем создание отдельных секций
+            let _ = profileSection()
+            diagnosticResults.append("✅ profileSection() создана")
+
+            let _ = securitySection()
+            diagnosticResults.append("✅ securitySection() создана")
+
+        } catch {
+            diagnosticResults.append("❌ Ошибка в ViewBuilder: \(error.localizedDescription)")
+            crashDetected = true
+        }
+    }
+
+    private func checkFullScreen() {
+        diagnosticResults.append("5️⃣ Проверка полной сборки экрана...")
+
+        do {
+            // Попытка создать полный экран
+            let _ = SettingsScreen()
+            diagnosticResults.append("✅ SettingsScreen() создана без краша")
+
+        } catch {
+            diagnosticResults.append("❌ КРАШ в SettingsScreen(): \(error.localizedDescription)")
+            crashDetected = true
+        }
+    }
+
+    // MARK: - Helper Functions
+
+    private func safeLocalized(_ key: String, comment: String = "") -> String {
+        guard Thread.isMainThread else {
+            DispatchQueue.main.sync {
+                return localizationManager.localized(key, comment: comment)
+            }
+        }
+        return localizationManager.localized(key, comment: comment)
+    }
+
+    // MARK: - Test ViewBuilder Functions
+
+    @ViewBuilder
+    private func profileSection() -> some View {
+        VStack {
+            Text("Profile Section Test")
+            Text("Name: Test")
+            Text("Alias: Test")
+        }
+    }
+
+    @ViewBuilder
+    private func securitySection() -> some View {
+        VStack {
+            Text("Security Section Test")
+            Text("Protection Level: Test")
+        }
+    }
+}
+
+/**
+ * 🧪 Minimal SettingsScreen
+ * Минимальная версия экрана с только базовыми компонентами
+ */
+struct MinimalSettingsScreen: View {
+
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
             VStack(spacing: 20) {
-                Text("🩺 Settings Screen - Diagnostic Mode")
+                Text("🧪 Minimal SettingsScreen")
                     .font(.title)
-                    .foregroundColor(.red)
+                    .bold()
 
-                Text("Если это видно - базовый SwiftUI View работает!")
-                    .foregroundColor(.green)
-
-                Divider()
-
-                // 🔥 КРИТИЧЕСКОЕ: Логируем начало каждого теста
-                Text("Текущий тест: проверка базовых компонентов...")
-                    .font(.caption)
-                    .foregroundColor(.blue)
-
-                // ТЕСТ 1: Базовые компоненты SwiftUI
-                testBasicSwiftUI()
-
-                Divider()
-
-                // ТЕСТ 2: Environment Objects
-                testEnvironmentObjects()
-
-                Divider()
-
-                // ТЕСТ 3: State и модификаторы
-                testStateAndModifiers()
-
-                Divider()
-
-                // ТЕСТ 4: Singleton менеджеры (если предыдущие работают)
-                testSingletonManagers()
-
-                Divider()
-
-                // ТЕСТ 4.5: @Published свойства - КРИТИЧЕСКОЕ!
-                testPublishedProperties()
-
-                Divider()
-
-                // ТЕСТ 5: Localization (если все работает)
-                testLocalization()
-
-                Divider()
-
-                // 🔥 ТЕСТ 6: CRASH LOGS - КРИТИЧЕСКОЕ
-                testCrashLogs()
+                Text("Если эта версия работает - проблема в сложных компонентах")
+                    .multilineTextAlignment(.center)
+                    .padding()
 
                 Spacer()
+
+                Button("Закрыть") {
+                    dismiss()
+                }
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
             }
             .padding()
         }
-        .navigationTitle("Settings Diagnostic")
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            crashLog("🩺 DIAGNOSTIC: SettingsScreenDiagnostic onAppear вызван")
-            crashLog("🩺 DIAGNOSTIC: Thread.isMainThread = \(Thread.isMainThread)")
-            crashLog("🩺 DIAGNOSTIC: Базовый тест прошел - SwiftUI работает")
-            print("🩺 DIAGNOSTIC: onAppear вызван - базовый тест прошел")
-            print("🩺 DIAGNOSTIC: Thread.isMainThread = \(Thread.isMainThread)")
-        }
     }
+}
 
-    // MARK: - Тестовые функции
-
-    @ViewBuilder
-    private func testBasicSwiftUI() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("🧪 ТЕСТ 1: Базовые компоненты SwiftUI")
-                .font(.headline)
-
-            Text("✅ Text работает")
-            Button("✅ Button работает") {
-                crashLog("🧪 ТЕСТ 1: Button нажат, counter = \(testCounter + 1)")
-                testCounter += 1
-                print("🩺 DIAGNOSTIC: Button нажат, counter = \(testCounter)")
-            }
-            Text("Counter: \(testCounter)")
-        }
-        .padding()
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(8)
-        .onAppear {
-            crashLog("🧪 ТЕСТ 1: testBasicSwiftUI появился на экране")
-        }
-    }
-
-    @ViewBuilder
-    private func testEnvironmentObjects() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("🧪 ТЕСТ 2: Environment Objects")
-                .font(.headline)
-
-            Text("✅ dismiss Environment работает")
-
-            Button("✅ navigationManager Environment") {
-                crashLog("🧪 ТЕСТ 2: Проверка navigationManager")
-                let nm = navigationManager
-                crashLog("🧪 navigationManager OK: \(nm)")
-                print("🩺 DIAGNOSTIC: navigationManager = \(navigationManager)")
-            }
-        }
-        .padding()
-        .background(Color.blue.opacity(0.1))
-        .cornerRadius(8)
-        .onAppear {
-            crashLog("🧪 ТЕСТ 2: testEnvironmentObjects появился на экране")
-        }
-    }
-
-    @ViewBuilder
-    private func testStateAndModifiers() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("🧪 ТЕСТ 3: State и модификаторы")
-                .font(.headline)
-
-            Text("✅ @State работает")
-            Text("✅ .padding() работает")
-            Text("✅ .background() работает")
-            Text("✅ .cornerRadius() работает")
-        }
-        .padding()
-        .background(Color.green.opacity(0.1))
-        .cornerRadius(8)
-    }
-
-    @ViewBuilder
-    private func testSingletonManagers() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("🧪 ТЕСТ 4: Singleton менеджеры")
-                .font(.headline)
-
-            Button("✅ NotificationManager.shared") {
-                let manager = NotificationManager.shared
-                print("🩺 DIAGNOSTIC: NotificationManager.shared = \(manager)")
-            }
-
-            Button("✅ SecurityManager.shared") {
-                let manager = SecurityManager.shared
-                print("🩺 DIAGNOSTIC: SecurityManager.shared = \(manager)")
-            }
-
-            Button("✅ TariffManager.shared") {
-                let manager = TariffManager.shared
-                print("🩺 DIAGNOSTIC: TariffManager.shared = \(manager)")
-            }
-        }
-        .padding()
-        .background(Color.orange.opacity(0.1))
-        .cornerRadius(8)
-    }
-
-    @ViewBuilder
-    private func testPublishedProperties() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("🎯 ТЕСТ 4.5: @Published свойства - КРИТИЧЕСКОЕ!")
-                .font(.headline)
-
-            Button("🔍 NotificationManager @Published") {
-                crashLog("🧪 TEST: Проверка NotificationManager @Published свойств")
-                let nm = NotificationManager.shared
-                crashLog("🧪 NotificationManager OK: \(nm)")
-
-                // 🔥 КРИТИЧЕСКОЕ: Проверяем доступ к @Published на main thread
-                let settings = nm.notificationSettings
-                crashLog("🧪 notificationSettings OK: \(settings)")
-                crashLog("🧪 securityEnabled: \(settings.securityEnabled)")
-                crashLog("🧪 soundEnabled: \(settings.soundEnabled)")
-            }
-
-            Button("🔍 TariffManager @Published") {
-                crashLog("🧪 TEST: Проверка TariffManager @Published свойств")
-                let tm = TariffManager.shared
-                crashLog("🧪 TariffManager OK: \(tm)")
-
-                let tariff = tm.currentTariff
-                crashLog("🧪 currentTariff OK: \(tariff)")
-            }
-
-            Button("🔍 Thread safety test") {
-                crashLog("🧪 TEST: Проверка Thread.isMainThread = \(Thread.isMainThread)")
-
-                // Имитируем доступ не на main thread
-                DispatchQueue.global().async {
-                    crashLog("🧪 BACKGROUND THREAD: Thread.isMainThread = \(Thread.isMainThread)")
-                    // НЕ пытаемся обращаться к @Published здесь - это может крашить
-                }
-            }
-        }
-        .padding()
-        .background(Color.yellow.opacity(0.1))
-        .cornerRadius(8)
-    }
-
-    @ViewBuilder
-    private func testLocalization() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("🧪 ТЕСТ 5: LocalizationManager")
-                .font(.headline)
-
-            Button("✅ LocalizationManager EnvironmentObject") {
-                // Этот тест будет добавлен если базовые работают
-                print("🩺 DIAGNOSTIC: Localization тест пока отключен")
-            }
-        }
-        .padding()
-        .background(Color.purple.opacity(0.1))
-        .cornerRadius(8)
-    }
-
-    @ViewBuilder
-    private func testCrashLogs() -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("🔥 ТЕСТ 6: CRASH LOGS - КРИТИЧЕСКОЕ")
-                .font(.headline)
-
-            Button("📋 Показать последние логи крашей") {
-                let logs = getCrashLogs()
-                print("🔥 CRASH LOGS: Найдено \(logs.count) логов")
-                logs.forEach { print("🔥 LOG: \($0)") }
-            }
-
-            Button("📄 Показать последний лог краша") {
-                if let lastLog = getLastCrashLog() {
-                    print("🔥 LAST CRASH LOG: \(lastLog)")
-                } else {
-                    print("🔥 NO CRASH LOGS FOUND")
-                }
-            }
-
-            Button("🔄 Очистить логи крашей") {
-                UserDefaults.standard.removeObject(forKey: "crash_logs_array")
-                UserDefaults.standard.removeObject(forKey: "last_crash_log")
-                UserDefaults.standard.synchronize()
-                print("🔥 CRASH LOGS CLEARED")
-            }
-
-            Button("🚨 Тестировать crash logging") {
-                crashLog("🧪 TEST CRASH LOG: Диагностический тест логов")
-                print("🧪 CRASH LOG TEST: Лог должен быть записан")
-            }
-        }
-        .padding()
-        .background(Color.red.opacity(0.1))
-        .cornerRadius(8)
+struct SettingsScreenDiagnostic_Previews: PreviewProvider {
+    static var previews: some View {
+        SettingsScreenDiagnostic()
+            .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager())
     }
 }

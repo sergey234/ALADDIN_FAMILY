@@ -73,9 +73,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "808"
-            endingLineNumber = "808"
-            landmarkName = "settingsButton(icon:title:subtitle:action:)"
-            landmarkType = "7">
+            endingLineNumber = "808">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -89,9 +87,7 @@
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "807"
-            endingLineNumber = "807"
-            landmarkName = "settingsButton(icon:title:subtitle:action:)"
-            landmarkType = "7">
+            endingLineNumber = "807">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
