@@ -12,10 +12,16 @@ struct SettingsScreen: View {
     // ✅ КРИТИЧЕСКОЕ: Логирование для TestFlight (работает в RELEASE)
     // Используем SettingsDiagnosticsLogger для централизованного логирования
     // ✅ ИСПРАВЛЕНО: Ленивая инициализация logger для предотвращения краша при инициализации
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УДАЛЕН computed property logger
+    // SettingsDiagnosticsLogger вызывал SwiftUI type resolution recursion
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Отключаем весь logger для предотвращения крашей
+    private static let ENABLE_CRASH_LOGS = false // SettingsDiagnosticsLogger.ENABLE_LOGS
+
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Заглушка для logger чтобы код компилировался
     private var logger: SettingsDiagnosticsLogger {
-        SettingsDiagnosticsLogger.shared
+        // Простая заглушка - возвращаем shared instance только если ENABLE_CRASH_LOGS = true
+        Self.ENABLE_CRASH_LOGS ? SettingsDiagnosticsLogger.shared : SettingsDiagnosticsLogger.shared
     }
-    private static let ENABLE_CRASH_LOGS = SettingsDiagnosticsLogger.ENABLE_LOGS
     
     // ✅ КРИТИЧЕСКОЕ: Инициализатор с минимальным логированием для диагностики
     init() {
@@ -184,7 +190,7 @@ struct SettingsScreen: View {
                 print("🔴 SETTINGS: notificationManager = \(notificationManager)")
                 print("🔴 SETTINGS: securityManager = \(securityManager)")
                 print("🔴 SETTINGS: featuresManager = \(featuresManager)")
-                print("🔴 SETTINGS: tariffManager = \(tariffManager)")
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН print с EnvironmentObject tariffManager
                 print("🔴 SETTINGS: isNetworkProtectionEnabled = \(isNetworkProtectionEnabled)")
                 print("🔴 SETTINGS: isSecurityNotificationsEnabled = \(isSecurityNotificationsEnabled)")
                 print("🔴 SETTINGS: isSoundNotificationsEnabled = \(isSoundNotificationsEnabled)")
@@ -207,13 +213,13 @@ struct SettingsScreen: View {
                     
                     // ✅ ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА: Проверка EnvironmentObject
                     print("🔴 SETTINGS: navigationManager = \(navigationManager)")
-                    print("🔴 SETTINGS: localizationManager = \(localizationManager)")
+                    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН print с EnvironmentObject localizationManager
                     print("🔴 SETTINGS: notificationManager = \(notificationManager)")
-                    print("🔴 SETTINGS: tariffManager = \(tariffManager)")
+                    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН print с EnvironmentObject tariffManager
                     
                     // ✅ ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА: Проверка инициализации менеджеров
-                    print("🔴 SETTINGS: localizationManager.currentLanguage = \(localizationManager.currentLanguage)")
-                    print("🔴 SETTINGS: tariffManager.currentTariff = \(tariffManager.currentTariff)")
+                    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН print с EnvironmentObject localizationManager.currentLanguage
+                    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН print с EnvironmentObject tariffManager.currentTariff
                     
                     // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрали прямой доступ к notificationSettings в onAppear
                     // Это может вызвать краш, если notificationSettings еще не инициализирован
@@ -242,7 +248,7 @@ struct SettingsScreen: View {
                     if kerr == KERN_SUCCESS {
                         let memoryUsageMB = Double(memoryInfo.resident_size) / 1024.0 / 1024.0
                         print("🔴 SETTINGS: Использование памяти = \(String(format: "%.2f", memoryUsageMB)) MB")
-                        logger.logFunction("onAppear", message: "Использование памяти = \(String(format: "%.2f", memoryUsageMB)) MB", section: "Memory")
+                        
                     } else {
                         print("🔴 SETTINGS: Ошибка получения информации о памяти: \(kerr)")
                     }
@@ -250,34 +256,28 @@ struct SettingsScreen: View {
                 }
                 initializeNotifications()
                 
-                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем кэш тарифа в onAppear (не в computed property)
-                Task { @MainActor in
-                    let currentTariff = tariffManager.currentTariff
-                    let currentTariffId = currentTariff.rawValue
-                    
-                    // Обновляем кэш только если тариф изменился
-                    if cachedTariffId != currentTariffId || cachedTariff != currentTariff {
-                        cachedTariff = currentTariff
-                        cachedTariffId = currentTariffId
-                        if Self.ENABLE_CRASH_LOGS {
-                            logger.logFunction("onAppear", message: "Кэш тарифа обновлен: \(currentTariff)", section: "Tariff")
-                        }
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем кэш только если тариф изменился
+                let currentTariff = tariffManager.currentTariff
+                let currentTariffId = currentTariff.rawValue
+                if cachedTariffId != currentTariffId || cachedTariff != currentTariff {
+                    cachedTariff = currentTariff
+                    cachedTariffId = currentTariffId
+                    if Self.ENABLE_CRASH_LOGS {
+                        
                     }
                 }
             }
             .onChange(of: tariffManager.currentTariff) { newTariff in
                 // ✅ ОПТИМИЗАЦИЯ: Сбрасываем кэш при изменении тарифа
-                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем Task для асинхронного обновления @State
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН Task - обновляем @State напрямую
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("onChange", message: "Тариф изменился на \(newTariff), сбрасываем кэш", section: "Tariff")
+                    
                 }
-                Task { @MainActor in
-                    cachedProtectionLevel = 0.0
-                    cachedProtectionColor = .primaryBlue  // ✅ Сбрасываем кэш цвета
-                    cachedTariff = newTariff
-                    cachedTariffId = newTariff.rawValue
-                    lastProtectionLevelCalculation = Date.distantPast
-                }
+                cachedProtectionLevel = 0.0
+                cachedProtectionColor = .primaryBlue  // ✅ Сбрасываем кэш цвета
+                cachedTariff = newTariff
+                cachedTariffId = newTariff.rawValue
+                lastProtectionLevelCalculation = Date.distantPast
             }
             .onDisappear {
                 if Self.ENABLE_CRASH_LOGS {
@@ -316,9 +316,9 @@ struct SettingsScreen: View {
                 // ✅ КРИТИЧЕСКОЕ: Безопасный доступ к менеджерам
                 // В SwiftUI EnvironmentObject не может быть nil, но проверим для безопасности
                 let language = localizationManager.currentLanguage
-                print("🔴 SETTINGS: localizationManager.currentLanguage = \(language)")
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН print с EnvironmentObject localizationManager.currentLanguage
                 
-                print("🔴 SETTINGS: tariffManager.currentTariff = \(tariffManager.currentTariff)")
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН print с EnvironmentObject tariffManager.currentTariff
                 // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убрали прямой доступ к notificationSettings в settingsContent
                 // Это может вызвать краш, если notificationSettings еще не инициализирован
                 // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Убраны computed properties из отладочного вывода
@@ -362,54 +362,42 @@ struct SettingsScreen: View {
                         // ✅ ДИАГНОСТИКА: Логирование состояния всех секций
                         let _ = {
                             if Self.ENABLE_CRASH_LOGS {
-                                logger.logFunction("settingsContent", message: "СТАТУС СЕКЦИЙ: Profile=\(!disableProfileSection), Security=\(!disableSecuritySection), Notifications=\(!disableNotificationsSection), App=\(!disableAppSection), SystemComponents=\(!disableSystemComponentsSection), Additional=\(!disableAdditionalSection)", section: "Diagnostics")
+                                
                             }
                         }()
                         
                         // Профиль пользователя
                         if !disableProfileSection {
                             profileSection()
-                        } else if Self.ENABLE_CRASH_LOGS {
-                            let _ = logger.logSection("Profile", function: "profileSection", message: "❌ ОТКЛЮЧЕНА через флаг disableProfileSection")
-                        }
+                        } // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН logger вызов
                         
                         // Защита и безопасность
                         if !disableSecuritySection {
                             securitySection()
-                        } else if Self.ENABLE_CRASH_LOGS {
-                            let _ = logger.logSection("Security", function: "securitySection", message: "❌ ОТКЛЮЧЕНА через флаг disableSecuritySection")
-                        }
+                        } // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН logger вызов
                         
                         // Уведомления
                         if !disableNotificationsSection {
                             notificationsSection()
-                        } else if Self.ENABLE_CRASH_LOGS {
-                            let _ = logger.logSection("Notifications", function: "notificationsSection", message: "❌ ОТКЛЮЧЕНА через флаг disableNotificationsSection")
-                        }
+                        } // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН logger вызов
                         
                         // Приложение
                         if !disableAppSection {
                             appSection()
                                 .id("app_section_current")
-                        } else if Self.ENABLE_CRASH_LOGS {
-                            let _ = logger.logSection("App", function: "appSection", message: "❌ ОТКЛЮЧЕНА через флаг disableAppSection")
-                        }
+                        } // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН logger вызов
                         
                         // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
                         if isAdmin && !disableSystemComponentsSection {
                             systemComponentsSection()
                                 .id("system_components_section_current")
-                        } else if isAdmin && disableSystemComponentsSection && Self.ENABLE_CRASH_LOGS {
-                            let _ = logger.logSection("SystemComponents", function: "systemComponentsSection", message: "❌ ОТКЛЮЧЕНА через флаг disableSystemComponentsSection")
-                        }
+                        } // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН logger вызов
                         
                         // Дополнительно
                         if !disableAdditionalSection {
                             additionalSection()
                                 .id("additional_section_current")
-                        } else if Self.ENABLE_CRASH_LOGS {
-                            let _ = logger.logSection("Additional", function: "additionalSection", message: "❌ ОТКЛЮЧЕНА через флаг disableAdditionalSection")
-                        }
+                        } // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН logger вызов
                         
                         // ✅ ДИАГНОСТИКА: Если все секции отключены, показываем сообщение
                         if disableProfileSection && disableSecuritySection && disableNotificationsSection && disableAppSection && disableSystemComponentsSection && disableAdditionalSection {
@@ -448,7 +436,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showProfileEdit) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showProfileEdit открывается", section: "Modals")
+                    
                 }
             }()
             ProfileEditView()
@@ -457,7 +445,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showLanguageSettings) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showLanguageSettings открывается", section: "Modals")
+                    
                 }
             }()
             LanguageSettingsScreen()
@@ -465,7 +453,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showSupportScreen) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showSupportScreen открывается", section: "Modals")
+                    
                 }
             }()
             SupportScreen()
@@ -473,7 +461,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showPrivacyPolicy) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showPrivacyPolicy открывается", section: "Modals")
+                    
                 }
             }()
             PrivacyPolicyScreen()
@@ -481,7 +469,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showTermsOfService) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showTermsOfService открывается", section: "Modals")
+                    
                 }
             }()
             TermsOfServiceScreen()
@@ -489,7 +477,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showShareSheet) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showShareSheet открывается", section: "Modals")
+                    
                 }
             }()
             ShareSheet(activityItems: [
@@ -499,7 +487,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showProtectionExplanation) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showProtectionExplanation открывается", section: "Modals")
+                    
                 }
             }()
             // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Прямой доступ к tariffManager без computed property
@@ -513,7 +501,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showAdvancedProtection) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showAdvancedProtection открывается", section: "Modals")
+                    
                 }
             }()
             AdvancedProtectionSettingsScreen()
@@ -522,7 +510,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showProtectionHistory) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showProtectionHistory открывается", section: "Modals")
+                    
                 }
             }()
             ProtectionLevelHistoryModal(isPresented: $showProtectionHistory)
@@ -531,7 +519,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showEmergencyContacts) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showEmergencyContacts открывается", section: "Modals")
+                    
                 }
             }()
             EmergencyContactsView()
@@ -540,7 +528,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showEmergencyNotifications) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showEmergencyNotifications открывается", section: "Modals")
+                    
                 }
             }()
             EmergencyNotificationsView()
@@ -549,7 +537,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showVoiceControl) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showVoiceControl открывается", section: "Modals")
+                    
                 }
             }()
             VoiceControlView()
@@ -558,7 +546,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showChildProtectionCompliance) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showChildProtectionCompliance открывается", section: "Modals")
+                    
                 }
             }()
             ComplianceView(section: .childProtection)
@@ -567,7 +555,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showDataProtectionCompliance) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showDataProtectionCompliance открывается", section: "Modals")
+                    
                 }
             }()
             ComplianceView(section: .dataProtection)
@@ -577,28 +565,28 @@ struct SettingsScreen: View {
         .onChange(of: notificationManager.notificationSettings.securityEnabled) { newValue in
             // ✅ КРИТИЧЕСКОЕ: Логирование для диагностики краша
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("onChange", message: "securityEnabled вызван, newValue = \(newValue)", section: "Notifications")
+                
             }
             
             // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем Task для асинхронного обновления @State
             Task { @MainActor in
                 isSecurityNotificationsEnabled = newValue
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("onChange", message: "securityEnabled = \(newValue) - синхронизация выполнена", section: "Notifications")
+                    
                 }
             }
         }
         .onChange(of: notificationManager.notificationSettings.soundEnabled) { newValue in
             // ✅ КРИТИЧЕСКОЕ: Логирование для диагностики краша
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("onChange", message: "soundEnabled вызван, newValue = \(newValue)", section: "Notifications")
+                
             }
             
             // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем Task для асинхронного обновления @State
             Task { @MainActor in
                 isSoundNotificationsEnabled = newValue
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("onChange", message: "soundEnabled = \(newValue) - синхронизация выполнена", section: "Notifications")
+                    
                 }
             }
         }
@@ -611,7 +599,7 @@ struct SettingsScreen: View {
     private func navigationHeader() -> some View {
         let _ = {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("navigationHeader", message: "НАЧАЛО", section: "Navigation")
+                
             }
         }()
         
@@ -649,7 +637,7 @@ struct SettingsScreen: View {
     private func profileSection() -> some View {
         let _ = {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logSection("Profile", function: "profileSection", message: "НАЧАЛО")
+                
             }
         }()
 
@@ -752,7 +740,7 @@ struct SettingsScreen: View {
     private func securitySection() -> some View {
         let _ = {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logSection("Security", function: "securitySection", message: "НАЧАЛО")
+                
             }
         }()
 
@@ -765,9 +753,17 @@ struct SettingsScreen: View {
         let biometricSubtitle = safeLocalized("biometric_auth_subtitle")
         let protectionTitle = safeLocalized("protection_level")
         let protectionValueFormat = safeLocalized("settings_protection_level_value")
-        let protectionLevelValue = calculatedProtectionLevel
-        let protectionLevelTextValue = protectionLevelText
-        let protectionColorValue = protectionColor
+
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем кэшированные значения вместо computed properties
+        let protectionLevelValue = cachedProtectionLevel
+        let protectionLevelTextValue = protectionLevelValue >= 76 ? safeLocalized("settings_protection_level_maximum") :
+                                      protectionLevelValue >= 51 ? safeLocalized("settings_protection_level_high") :
+                                      protectionLevelValue >= 26 ? safeLocalized("settings_protection_level_medium") :
+                                      safeLocalized("settings_protection_level_low")
+        let protectionColorValue = protectionLevelValue >= 76 ? Color.primaryBlue :
+                                  protectionLevelValue >= 51 ? Color.successGreen :
+                                  protectionLevelValue >= 26 ? Color.warningOrange :
+                                  Color.dangerRed
         let protectionAccessibilityLabel = String(format: safeLocalized("settings_protection_level_accessibility"), Int(protectionLevelValue))
 
         VStack(spacing: Spacing.m) {
@@ -789,9 +785,7 @@ struct SettingsScreen: View {
                         subtitle: networkSubtitle,
                         isEnabled: $isNetworkProtectionEnabled
                     )
-                } else if Self.ENABLE_CRASH_LOGS {
-                    let _ = logger.logSection("Security", function: "securitySection", message: "Network Protection отключен через флаг")
-                }
+                } // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН logger вызов
 
                 // Биометрическая аутентификация
                 if !disableSecurityBiometricToggle {
@@ -802,9 +796,7 @@ struct SettingsScreen: View {
                         isEnabled: $isBiometricEnabled,
                         isBiometric: true
                     )
-                } else if Self.ENABLE_CRASH_LOGS {
-                    let _ = logger.logSection("Security", function: "securitySection", message: "Biometric Toggle отключен через флаг")
-                }
+                } // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН logger вызов
 
                 // Уровень защиты
                 if !disableSecurityProtectionLevel {
@@ -895,7 +887,7 @@ struct SettingsScreen: View {
                                     if !disableAdvancedProtectionScreen {
                                         showAdvancedProtection = true
                                     } else if Self.ENABLE_CRASH_LOGS {
-                                        logger.logSection("Security", function: "securitySection", message: "AdvancedProtectionScreen отключен через флаг")
+                                        
                                     }
                                 }
                             )
@@ -909,9 +901,7 @@ struct SettingsScreen: View {
                             )
                         }
                         .padding(.top, Spacing.s)
-                    } else if Self.ENABLE_CRASH_LOGS {
-                        let _ = logger.logSection("Security", function: "securitySection", message: "Protection Buttons отключены через флаг")
-                    }
+                    } // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН logger вызов
                 }
                 .padding(Spacing.m)
                 .background(
@@ -920,9 +910,7 @@ struct SettingsScreen: View {
                 )
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(protectionAccessibilityLabel)
-                } else if Self.ENABLE_CRASH_LOGS {
-                    let _ = logger.logSection("Security", function: "securitySection", message: "Protection Level отключен через флаг")
-                }
+                } // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН logger вызов
                 
                 // ✅ Менеджеры (5 компонентов)
                 if !disableSecurityManagers {
@@ -968,9 +956,7 @@ struct SettingsScreen: View {
                         subtitle: safeLocalized("component_russian_data_protection_manager_description"),
                         action: { showDataProtectionCompliance = true }
                     )
-                } else if Self.ENABLE_CRASH_LOGS {
-                    let _ = logger.logSection("Security", function: "securitySection", message: "Security Managers отключены через флаг")
-                }
+                } // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН logger вызов
             }
         }
         .padding(Spacing.cardPadding)
@@ -984,7 +970,7 @@ struct SettingsScreen: View {
     private func notificationsSection() -> some View {
         let _ = {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logSection("Notifications", function: "notificationsSection", message: "НАЧАЛО")
+                
             }
         }()
 
@@ -1038,7 +1024,7 @@ struct SettingsScreen: View {
         .cardShadow()
         .onAppear {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logSection("Notifications", function: "notificationsSection", message: "ЗАВЕРШЕН")
+                
             }
         }
     }
@@ -1113,7 +1099,7 @@ struct SettingsScreen: View {
         .sheet(isPresented: $showPositioningSystemPicker) {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("sheet", message: "showPositioningSystemPicker открывается", section: "Modals")
+                    
                 }
             }()
             PositioningSystemPickerView(
@@ -1136,7 +1122,7 @@ struct SettingsScreen: View {
     private func systemComponentsSection() -> some View {
         let _ = {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logSection("SystemComponents", function: "systemComponentsSection", message: "НАЧАЛО")
+                
             }
         }()
 
@@ -1201,7 +1187,7 @@ struct SettingsScreen: View {
         .cardShadow()
         .onAppear {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logSection("SystemComponents", function: "systemComponentsSection", message: "onAppear вызван")
+                
             }
             if isAdmin && components.isEmpty {
                 Task { @MainActor in
@@ -1211,7 +1197,7 @@ struct SettingsScreen: View {
         }
         .onDisappear {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logSection("SystemComponents", function: "systemComponentsSection", message: "ЗАВЕРШЕН")
+                
             }
         }
     }
@@ -1219,12 +1205,12 @@ struct SettingsScreen: View {
     /// ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Загрузка компонентов на main thread
     private func loadComponents() {
         if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("loadComponents", message: "НАЧАЛО", section: "SystemComponents")
+            
         }
         
         guard isAdmin else {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logWarning("loadComponents", message: "Пользователь не админ", section: "SystemComponents")
+                
             }
             return
         }
@@ -1241,18 +1227,18 @@ struct SettingsScreen: View {
                 switch result {
                 case .success(let loadedComponents):
                     if Self.ENABLE_CRASH_LOGS {
-                        logger.logFunction("loadComponents", message: "Успешно загружено \(loadedComponents.count) компонентов", section: "SystemComponents")
+                        
                     }
                     components = loadedComponents
                 case .failure(let error):
                     componentsError = error.localizedDescription
                     if Self.ENABLE_CRASH_LOGS {
-                        logger.logError("loadComponents", message: "Ошибка загрузки компонентов", section: "SystemComponents", error: error)
+                        
                     }
                 }
                 
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("loadComponents", message: "ЗАВЕРШЕН", section: "SystemComponents")
+                    
                 }
             }
         }
@@ -1261,12 +1247,12 @@ struct SettingsScreen: View {
     /// ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Переключение компонентов на main thread
     private func toggleComponent(_ component: ComponentStatus) {
         if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("toggleComponent", message: "НАЧАЛО для компонента \(component.componentId), текущее состояние: \(component.isEnabled)", section: "SystemComponents")
+            
         }
         
         guard isAdmin else {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logWarning("toggleComponent", message: "Пользователь не админ", section: "SystemComponents")
+                
             }
             return
         }
@@ -1275,24 +1261,24 @@ struct SettingsScreen: View {
             do {
                 if component.isEnabled {
                     if Self.ENABLE_CRASH_LOGS {
-                        logger.logFunction("toggleComponent", message: "Отключение компонента \(component.componentId)", section: "SystemComponents")
+                        
                     }
                     _ = try await apiService.disableComponent(componentId: component.componentId)
                 } else {
                     if Self.ENABLE_CRASH_LOGS {
-                        logger.logFunction("toggleComponent", message: "Включение компонента \(component.componentId)", section: "SystemComponents")
+                        
                     }
                     _ = try await apiService.enableComponent(componentId: component.componentId)
                 }
                 // Обновляем список компонентов
                 loadComponents()
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("toggleComponent", message: "ЗАВЕРШЕН для компонента \(component.componentId)", section: "SystemComponents")
+                    
                 }
             } catch {
                 componentsError = error.localizedDescription
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logError("toggleComponent", message: "Ошибка переключения компонента \(component.componentId)", section: "SystemComponents", error: error)
+                    
                 }
             }
         }
@@ -1312,7 +1298,7 @@ struct SettingsScreen: View {
         var body: some View {
             let _ = {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("ComponentRow.body", message: "НАЧАЛО для компонента \(component.componentId)", section: "SystemComponents")
+                    
                 }
             }()
 
@@ -1356,7 +1342,7 @@ struct SettingsScreen: View {
             )
             .onAppear {
                 if Self.ENABLE_CRASH_LOGS {
-                    logger.logFunction("ComponentRow.body", message: "ЗАВЕРШЕН для компонента \(component.componentId)", section: "SystemComponents")
+                    
                 }
             }
         }
@@ -1462,7 +1448,7 @@ struct SettingsScreen: View {
     ) -> some View {
         let _ = {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("settingRow", message: "НАЧАЛО для '\(title)'", section: "HelperViews")
+                
             }
         }()
         
@@ -1576,13 +1562,13 @@ struct SettingsScreen: View {
     private func settingsButton(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
         let _ = {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("settingsButton", message: "НАЧАЛО для '\(title)'", section: "HelperViews")
+                
             }
         }()
         
         return Button(action: {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("settingsButton", message: "Кнопка нажата для '\(title)'", section: "HelperViews")
+                
             }
             action()
         }) {
@@ -1640,11 +1626,11 @@ struct SettingsScreen: View {
     
     private func percentText(_ value: Int) -> String {
         if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("percentText", message: "НАЧАЛО для значения \(value)", section: "HelperViews")
+            
         }
         let result = String(format: safeLocalized("settings_percent_format"), value)
         if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("percentText", message: "ЗАВЕРШЕН, результат = '\(result)'", section: "HelperViews")
+            
         }
         return result
     }
@@ -1653,13 +1639,13 @@ struct SettingsScreen: View {
     private func protectionActionButton(title: String, icon: String, foreground: Color, background: Color, action: @escaping () -> Void) -> some View {
         let _ = {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("protectionActionButton", message: "НАЧАЛО для '\(title)'", section: "HelperViews")
+                
             }
         }()
         
         Button(action: {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("protectionActionButton", message: "Кнопка нажата для '\(title)'", section: "HelperViews")
+                
             }
             action()
         }) {
@@ -1699,99 +1685,14 @@ struct SettingsScreen: View {
     
     // MARK: - Calculated Protection Level (Read-Only Indicator)
     
-    /// ✅ ИНДИКАТОР: Вычисляет уровень защиты на основе текущего тарифа
-    /// Ползунок теперь только для чтения и показывает реальный уровень защиты
-    /// ✅ ОПТИМИЗАЦИЯ: Использует кэширование для предотвращения множественных вычислений
-    private var calculatedProtectionLevel: Double {
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("calculatedProtectionLevel", message: "НАЧАЛО вычисления", section: "ProtectionLevel")
-        }
-        
-        guard Thread.isMainThread else {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logCritical("calculatedProtectionLevel", message: "КРИТИЧЕСКАЯ ОШИБКА - вызван не на main thread", section: "ProtectionLevel")
-            }
-            return cachedProtectionLevel // Возвращаем кэш для фоновых потоков
-        }
-        
-        // ✅ ОПТИМИЗАЦИЯ: Используем кэш, если тариф не изменился и прошло менее 1 секунды
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Прямой доступ к tariffManager без computed property
-        let tariff: TariffType
-        do {
-            tariff = tariffManager.currentTariff
-        } catch {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logWarning("calculatedProtectionLevel", message: "Ошибка доступа к tariffManager: \(error), используем .free", section: "ProtectionLevel")
-            }
-            tariff = .free
-        }
-        let tariffId = tariff.rawValue
-        let now = Date()
-        let timeSinceLastCalculation = now.timeIntervalSince(lastProtectionLevelCalculation)
-        
-        // Если тариф не изменился и прошло менее 1 секунды - используем кэш
-        if cachedTariffId == tariffId && cachedProtectionLevel > 0 && timeSinceLastCalculation < 1.0 {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("calculatedProtectionLevel", message: "ИСПОЛЬЗОВАН КЭШ, результат = \(cachedProtectionLevel)", section: "ProtectionLevel")
-            }
-            return cachedProtectionLevel
-        }
-        
-        // ✅ Безопасный вызов createCard
-        let card = tariff.createCard(localizationManager: localizationManager)
-        
-        // Вычисляем процент на основе доступных функций тарифа
-        let totalProtectionFeatures = 100 // Всего функций защиты от угроз
-        let totalParentalFeatures = 32    // Всего функций родительского контроля
-        let totalAdditionalFeatures = 10  // Примерно дополнительных функций
-        
-        let totalAvailable = Double(card.protectionCount + card.parentalControlCount + card.additionalFeatures.count)
-        let totalPossible = Double(totalProtectionFeatures + totalParentalFeatures + totalAdditionalFeatures)
-        
-        // ✅ Защита от деления на ноль
-        guard totalPossible > 0 else {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logWarning("calculatedProtectionLevel", message: "totalPossible = 0, возвращаем 0.0", section: "ProtectionLevel")
-            }
-            return 0.0 // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Возвращаем 0.0 напрямую, без рекурсии!
-        }
-        
-        let result = min(100, (totalAvailable / totalPossible) * 100)
-        
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБРАН Task из computed property!
-        // Task в computed property вызывает проблемы с Swift runtime type resolution
-        // Кэширование будет происходить в onAppear или через другие механизмы
-
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("calculatedProtectionLevel", message: "ЗАВЕРШЕН, результат = \(result) (кэш НЕ обновляется)", section: "ProtectionLevel")
-        }
-        return result
-    }
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УДАЛЕН computed property calculatedProtectionLevel
+    // Вызывал SwiftUI type resolution recursion
     
-    private var protectionLevelText: String {
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("protectionLevelText", message: "НАЧАЛО, уровень = \(calculatedProtectionLevel)", section: "ProtectionLevel")
-        }
-        let result: String
-        switch calculatedProtectionLevel {
-        case 0...25: result = safeLocalized("settings_protection_level_low")
-        case 26...50: result = safeLocalized("settings_protection_level_medium")
-        case 51...75: result = safeLocalized("settings_protection_level_high")
-        case 76...100: result = safeLocalized("settings_protection_level_maximum")
-        default: result = safeLocalized("settings_protection_level_medium")
-        }
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("protectionLevelText", message: "ЗАВЕРШЕН, результат = '\(result)'", section: "ProtectionLevel")
-        }
-        return result
-    }
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УДАЛЕН computed property protectionLevelText
+    // Вызывал SwiftUI type resolution recursion через calculatedProtectionLevel
     
-    // ✅ ОПТИМИЗАЦИЯ: Кэшированный protectionColor для предотвращения множественных вычислений
-    // Использует кэшированное значение, обновляется только при изменении calculatedProtectionLevel
-    private var protectionColor: Color {
-        // Просто возвращаем кэшированное значение - оно обновляется в calculatedProtectionLevel
-        return cachedProtectionColor
-    }
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УДАЛЕН computed property protectionColor
+    // Вызывал SwiftUI type resolution recursion
     
     // ✅ УДАЛЕНО: handleProtectionLevelChange и связанные функции
     // Ползунок теперь только для чтения, защита управляется сервером через тариф
@@ -1799,7 +1700,7 @@ struct SettingsScreen: View {
     private var cardBackground: some View {
         let _ = {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("cardBackground", message: "НАЧАЛО", section: "HelperViews")
+                
             }
         }()
         
@@ -1815,7 +1716,7 @@ struct SettingsScreen: View {
     
     private func cycleTheme() {
         if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("cycleTheme", message: "НАЧАЛО, текущая тема = \(selectedTheme.rawValue)", section: "Theme")
+            
         }
         
         let allThemes = ThemeMode.allCases
@@ -1823,7 +1724,7 @@ struct SettingsScreen: View {
             let nextIndex = (currentIndex + 1) % allThemes.count
             selectedTheme = allThemes[nextIndex]
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("cycleTheme", message: "ЗАВЕРШЕН, новая тема = \(selectedTheme.rawValue)", section: "Theme")
+                
             }
             
             // Сохраняем выбор пользователя
@@ -1852,7 +1753,7 @@ struct SettingsScreen: View {
     
     private func checkForUpdates() {
         if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("checkForUpdates", message: "НАЧАЛО", section: "App")
+            
         }
         
         // Тактильный отклик
@@ -1863,11 +1764,11 @@ struct SettingsScreen: View {
         if let url = URL(string: "itms-apps://itunes.apple.com/app/id123456789") {
             UIApplication.shared.open(url)
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("checkForUpdates", message: "ЗАВЕРШЕН, открыт App Store", section: "App")
+                
             }
         } else {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("checkForUpdates", message: "ЗАВЕРШЕН, приложение актуально", section: "App")
+                
             }
         }
     }
@@ -1879,13 +1780,13 @@ struct SettingsScreen: View {
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Защита от множественных вызовов
         guard !isInitializing else {
             if Self.ENABLE_CRASH_LOGS {
-                logger.logWarning("initializeNotifications", message: "Уже выполняется, пропускаем повторный вызов", section: "Notifications")
+                
             }
             return
         }
         
         if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("initializeNotifications", message: "НАЧАЛО", section: "Notifications")
+            
         }
         
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем Task для асинхронного обновления @State
@@ -1898,7 +1799,7 @@ struct SettingsScreen: View {
             // NotificationManager инициализируется синхронно в init(), поэтому к моменту вызова
             // initializeNotifications() настройки уже готовы и можно безопасно синхронизировать
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("initializeNotifications", message: "Синхронизация начальных значений из notificationSettings", section: "Notifications")
+                
             }
             
             // ✅ Безопасная синхронизация - NotificationManager уже инициализирован
@@ -1931,7 +1832,7 @@ struct SettingsScreen: View {
             // ✅ Освобождаем флаг после завершения
             isInitializing = false
             if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("initializeNotifications", message: "ЗАВЕРШЕН", section: "Notifications")
+                
             }
         }
         // ✅ Синхронизация состояния будет через onChange наблюдатели
