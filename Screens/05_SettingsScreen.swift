@@ -5,14 +5,7 @@ import SwiftUI
 /// Источник дизайна: /mobile/wireframes/05_settings_screen.html
 struct SettingsScreen: View {
 
-    init() {
-        print("🚨 [CRASH_DIAG] SettingsScreen.init() called")
-        print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
-        print("🚨 [CRASH_DIAG] Time: \(Date())")
-
-        // 🚨 [CRASH_DIAG] REMOTE DEBUGGING: Логируем в UserDefaults
-        logToUserDefaults("🚨 [CRASH_DIAG] SettingsScreen.init() called - Thread: \(Thread.isMainThread)")
-    }
+    // ✅ [FIX 5] Убрана старая init() - теперь только конструктор с параметрами
 
     // 🚨 [CRASH_DIAG] REMOTE DEBUGGING FUNCTION
     private func logToUserDefaults(_ message: String) {
@@ -60,10 +53,25 @@ struct SettingsScreen: View {
     // MARK: - State
     
     @Environment(\.dismiss) private var dismiss
-    // 🚨 КРИТИЧЕСКОЕ: EnvironmentObject могут вызывать бесконечную рекурсию
-    // если computed properties зависят от них
-    @EnvironmentObject private var navigationManager: NavigationManager
-    @EnvironmentObject private var localizationManager: LocalizationManager
+    // ✅ [FIX 5] Убраны @EnvironmentObject свойства - передаем через конструктор
+    // Это предотвращает проблемы с nil EnvironmentObject во время View construction
+    private let navigationManager: NavigationManager
+    private let localizationManager: LocalizationManager
+
+    // ✅ [FIX 5] Конструктор для безопасной передачи EnvironmentObject
+    init(navigationManager: NavigationManager, localizationManager: LocalizationManager) {
+        self.navigationManager = navigationManager
+        self.localizationManager = localizationManager
+
+        // 🚨 [CRASH_DIAG] Логируем создание с безопасной инъекцией
+        print("🚨 [CRASH_DIAG] SettingsScreen.init() with safe EnvironmentObject injection")
+        print("🚨 [CRASH_DIAG] navigationManager: \(navigationManager)")
+        print("🚨 [CRASH_DIAG] localizationManager: \(localizationManager)")
+        print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
+
+        // 🚨 [CRASH_DIAG] REMOTE DEBUGGING: Логируем в UserDefaults
+        logToUserDefaults("🚨 [CRASH_DIAG] SettingsScreen.init() with safe injection - Thread: \(Thread.isMainThread)")
+    }
 
     // ✅ [FIX 2] ObservedObject'ы с отложенной инициализацией для безопасности
     @ObservedObject private var notificationManager = NotificationManager.shared
@@ -1149,6 +1157,9 @@ struct SettingsScreen: View {
 
 struct SettingsScreen_Previews: PreviewProvider {
     static var previews: some View {
-        SettingsScreen()
+        SettingsScreen(
+            navigationManager: NavigationManager(),
+            localizationManager: LocalizationManager()
+        )
     }
 }

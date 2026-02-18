@@ -466,10 +466,11 @@ struct ALADDINApp: App {
                             })
 
                     case .settingsTest:
-                        // 🚨 [CRASH_DIAG] ТЕСТИРОВАНИЕ полных computed properties SettingsScreen
-                        let fullSettingsView = SettingsScreen()
-                            .environmentObject(navigationManager)
-                            .environmentObject(localizationManager)
+                        // ✅ [FIX 5] Безопасное создание SettingsScreen с явной передачей EnvironmentObject
+                        let fullSettingsView = SettingsScreen(
+                            navigationManager: navigationManager,
+                            localizationManager: localizationManager
+                        )
 
                         AnyView(fullSettingsView.id("settingsTest").onAppear {
                             print("🚨 [CRASH_DIAG] About to create FULL SettingsScreen with computed properties")
@@ -482,8 +483,11 @@ struct ALADDINApp: App {
                         AnyView(SettingsScreenFallback())
 
                     case .settingsTestSuite:
-                        // 🚨 [PHASE 8] FINAL TESTING - ПОЛНЫЙ ТЕСТ СЮИТ
-                        AnyView(SettingsTestSuiteView())
+                        // ✅ [FIX 5] Безопасное создание SettingsTestSuiteView
+                        AnyView(SettingsTestSuiteView(
+                            navigationManager: navigationManager,
+                            localizationManager: localizationManager
+                        ))
                     case .aiAssistant:
                         AnyView(AIAssistantScreen().id("aiAssistant").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .parentalControl:

@@ -6,8 +6,14 @@ import SwiftUI
  * Для выявления точной точки краша
  */
 struct SettingsTestSuiteView: View {
-    @EnvironmentObject private var navigationManager: NavigationManager
-    @EnvironmentObject private var localizationManager: LocalizationManager
+    // ✅ [FIX 5] Безопасная передача EnvironmentObject через конструктор
+    private let navigationManager: NavigationManager
+    private let localizationManager: LocalizationManager
+
+    init(navigationManager: NavigationManager, localizationManager: LocalizationManager) {
+        self.navigationManager = navigationManager
+        self.localizationManager = localizationManager
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -111,10 +117,11 @@ struct SettingsTestSuiteView: View {
 
     private func computedPropertiesTest() -> AnyView {
         AnyView(VStack(alignment: .leading) {
-            // Создаем временный SettingsScreen для тестирования
-            let tempSettings = SettingsScreen()
-                .environmentObject(navigationManager)
-                .environmentObject(localizationManager)
+            // ✅ [FIX 5] Создаем временный SettingsScreen с безопасной инъекцией
+            let tempSettings = SettingsScreen(
+                navigationManager: navigationManager,
+                localizationManager: localizationManager
+            )
 
             Text("Создание SettingsScreen: \(tempSettings as AnyObject? != nil ? "✅" : "❌")")
                 .foregroundColor(tempSettings as AnyObject? != nil ? .green : .red)
@@ -144,8 +151,10 @@ struct SettingsTestSuiteView: View {
 
             Button("Запустить полный тест SettingsScreen") {
                 print("🚨 [TEST_SUITE] Запуск полного теста SettingsScreen")
-                // Переход к полному SettingsScreen для тестирования
-                navigationManager.navigateTo(.settingsTest)
+                // ✅ [FIX 5] Thread-safe навигация
+                Task { @MainActor in
+                    navigationManager.navigateTo(.settingsTest)
+                }
             }
             .padding()
             .background(Color.red.opacity(0.2))

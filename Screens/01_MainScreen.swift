@@ -377,11 +377,11 @@ struct MainScreen: View {
                             
                             // Настройки карточка
                             NavigationLink(destination: Group {
-                                // 🔥 ВРЕМЕННО: ВКЛЮЧЕН ОБЫЧНЫЙ РЕЖИМ ДЛЯ СБОРКИ
-                                // Диагностика доступна через кнопку в SettingsScreen
-                                SettingsScreen()
-                                    .environmentObject(navigationManager)
-                                    .environmentObject(localizationManager)
+                                // ✅ [FIX 5] Безопасное создание SettingsScreen с явной передачей EnvironmentObject
+                                SettingsScreen(
+                                    navigationManager: navigationManager,
+                                    localizationManager: localizationManager
+                                )
                             }) {
                                 VStack(spacing: 8) {
                                     Text("⚙️")
