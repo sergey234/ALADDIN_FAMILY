@@ -630,6 +630,17 @@ struct SettingsScreen: View {
                         showShareSheet = true
                     }
                 )
+
+                // 🔍 ДИАГНОСТИКА: Этап 1 - поиск корневой причины крашей
+                settingsButton(
+                    icon: "wrench.and.screwdriver",
+                    title: "🔍 Диагностика SettingsScreen",
+                    subtitle: "Этап 1: Поиск причины крашей",
+                    action: {
+                        // Переход к диагностическому экрану
+                        navigationManager.navigateTo(.settingsDiagnostic)
+                    }
+                )
             }
         }
         .padding(Spacing.cardPadding)

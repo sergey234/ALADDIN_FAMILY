@@ -419,6 +419,11 @@ struct ALADDINApp: App {
                             .id("settings")
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager))
+                    case .settingsDiagnostic:
+                        AnyView(SettingsScreenDiagnostic()
+                            .id("settingsDiagnostic")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
                     case .aiAssistant:
                         AnyView(AIAssistantScreen().id("aiAssistant").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .parentalControl:

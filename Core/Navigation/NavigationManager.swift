@@ -24,6 +24,7 @@ class NavigationManager: ObservableObject {
         case networkProtection = "03_NetworkProtectionScreen"
         case analytics = "04_AnalyticsScreen"
         case settings = "05_SettingsScreen"
+        case settingsDiagnostic = "SettingsScreenDiagnostic"
         case aiAssistant = "06_AIAssistantScreen"
         case parentalControl = "07_ParentalControlScreen"
         case childInterface = "08_ChildInterfaceScreen"
