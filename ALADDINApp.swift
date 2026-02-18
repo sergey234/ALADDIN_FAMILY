@@ -10,6 +10,16 @@ import Darwin
 extension ALADDINApp {
 
     /// Настройка системы логирования крашей
+    static func getMemoryUsage() -> String {
+        #if !targetEnvironment(simulator)
+        let processInfo = ProcessInfo.processInfo
+        let memoryUsage = processInfo.physicalMemory / 1024 / 1024
+        return "\(memoryUsage) MB total, \(processInfo.systemUptime) seconds uptime"
+        #else
+        return "Simulator - no memory info"
+        #endif
+    }
+
     static func setupCrashLogging() {
         // Регистрируем обработчик неотловленных исключений
         NSSetUncaughtExceptionHandler { exception in
@@ -86,6 +96,8 @@ func crashLog(_ message: String) {
     }
     #endif
 }
+
+// Функция awaitSafeAutoFixDebugTokens удалена - Keychain операции перенесены в onAppear
 
 /// 🔥 Функция для чтения логов крашей из NSUserDefaults
 func getCrashLogs() -> [String] {
@@ -221,20 +233,20 @@ struct ALADDINApp: App {
     // private var hasCompletedOnboarding: Bool = false // больше не используется
     
     init() {
-        // 🩺 КРИТИЧЕСКОЕ: CRASH LOGGING СИСТЕМА ДЛЯ PRODUCTION
-        // В RELEASE (TestFlight) #if DEBUG не работает, поэтому используем всегда
-        ALADDINApp.setupCrashLogging()
+        // 🚨 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УБИРАЕМ CRASH LOGGING ИЗ INIT!
+        // setupCrashLogging() вызывает краш в TestFlight из-за рекурсии в обработчиках!
+        // Будем инициализировать crash logging позже, в .onAppear
 
-        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале init() - ПЕРВАЯ СТРОКА
-        crashLog("🔴 ALADDINApp.init: ========== НАЧАЛО ИНИЦИАЛИЗАЦИИ ПРИЛОЖЕНИЯ ==========")
-        crashLog("🔴 ALADDINApp.init: Thread.isMainThread = \(Thread.isMainThread)")
-        crashLog("🔴 ALADDINApp.init: Время: \(Date())")
+        // ✅ БЕЗОПАСНО: Только print() без crashLog() - не вызывает рекурсию
+        print("🔴 ALADDINApp.init: ========== НАЧАЛО ИНИЦИАЛИЗАЦИИ ПРИЛОЖЕНИЯ ==========")
+        print("🔴 ALADDINApp.init: Thread.isMainThread = \(Thread.isMainThread)")
+        print("🔴 ALADDINApp.init: Время: \(Date())")
 
-        // ✅ КРИТИЧЕСКОЕ: Проверка stack trace для диагностики
-        let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
-        crashLog("🔴 ALADDINApp.init: Stack trace (первые 5):\n\(stackTrace)")
+        // 🚨 НЕ БЕЗОПАСНО: Thread.callStackSymbols может вызвать краш
+        // let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
+        // print("🔴 ALADDINApp.init: Stack trace (первые 5):\n\(stackTrace)")
 
-        crashLog("🚀 ALADDINApp: Начало инициализации приложения")
+        print("🚀 ALADDINApp: Начало инициализации приложения")
         // ✅ ИСПРАВЛЕНИЕ: В init() НЕ используем @StateObject, они еще не созданы!
         // Вся логика инициализации перенесена в .onAppear
         if ProcessInfo.processInfo.environment["RESET_ONBOARDING"] == "1" {
@@ -245,11 +257,9 @@ struct ALADDINApp: App {
         }
         
 #if DEBUG
-        KeychainAutoRecoveryService.repairTokensIfNeeded()
-        
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала проверяем и удаляем debug токены СИНХРОННО
-        // Это нужно сделать ДО создания новых debug токенов
-        let hadDebugTokens = ALADDINApp.autoFixDebugTokensIfNeeded()
+        // 🚨 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: ВСЕ Keychain операции убраны из init()!
+        // Они вызывают deadlock в TestFlight. Перенесены в onAppear.
+        print("⚠️ DEBUG: Keychain operations moved to onAppear to prevent deadlock")
 
         // ✅ ИСПРАВЛЕНИЕ: Проверяем, нужно ли создавать debug токены
         // Если установлена переменная окружения SKIP_DEBUG_TOKENS=1, пропускаем создание debug токенов
@@ -261,26 +271,10 @@ struct ALADDINApp: App {
         let hasAutoLogin = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"] != nil &&
                           !ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"]!.isEmpty
 
-        let shouldSkipDebugTokens = skipDebugTokens || hasAutoLogin
+        _ = skipDebugTokens || hasAutoLogin // Не используется, но оставляем для совместимости
 
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда создаем debug токены после удаления старых
-        // Если мы удалили debug токены, обязательно создаем новые
-        if hadDebugTokens || !shouldSkipDebugTokens {
-            if !shouldSkipDebugTokens {
-                // Создаем debug токены независимо от того, были ли они удалены
-                DebugAuthTokenSeeder.seedIfNeeded()
-            } else if hadDebugTokens {
-                // Если токены были удалены, но skipDebugTokens = true, создаем токены в любом случае
-        DebugAuthTokenSeeder.seedIfNeeded()
-            }
-        } else {
-            if skipDebugTokens {
-                print("⚠️ DEBUG: Пропущено создание debug токенов (SKIP_DEBUG_TOKENS=1)")
-            } else if hasAutoLogin {
-                print("⚠️ DEBUG: Пропущено создание debug токенов (настроен автоматический логин)")
-            }
-            print("   Для получения валидных токенов используйте performRealLogin() в Debug Console")
-        }
+        // 🚨 Keychain операции убраны из init() - перенесены в onAppear для безопасности
+        print("⚠️ DEBUG: Keychain operations moved to onAppear to prevent deadlock")
         
         // ✅ АВТОМАТИЧЕСКИЙ ЛОГИН: Если установлены переменные окружения, выполняем логин автоматически
         // ✅ ПРОДАКШЕН: Проверяем сохраненные credentials для автоматического логина
@@ -685,18 +679,41 @@ struct ALADDINApp: App {
             .id("nav_\(navigationManager.currentScreen.rawValue)_\(localizationManager.currentLanguage.rawValue)")
             // ✅ Инициализация навигации при первом появлении
             .onAppear {
+                // ✅ КРИТИЧЕСКОЕ: Сначала безопасно инициализируем crash logging
+                // Теперь все @StateObject созданы, можно безопасно использовать crashLog()
+                ALADDINApp.setupCrashLogging()
+                crashLog("🩺 Crash logging system initialized safely in onAppear")
+
+                // 🚨 ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА ДЛЯ TESTFLIGHT
+                crashLog("📱 DEVICE INFO: iOS \(UIDevice.current.systemVersion), Model: \(UIDevice.current.model)")
+                crashLog("🧵 THREAD INFO: Main thread = \(Thread.isMainThread), Quality: \(Thread.current.qualityOfService.rawValue)")
+                crashLog("📊 MEMORY INFO: Available = \(ALADDINApp.getMemoryUsage()) MB")
+                crashLog("🔄 APP STATE: Navigation screen = \(navigationManager.currentScreen.rawValue)")
+
                 // ✅ КРИТИЧЕСКОЕ: Логи в самом начале onAppear
-                print("🔴 ALADDINApp.onAppear: ========== НАЧАЛО onAppear ==========")
-                print("🔴 ALADDINApp.onAppear: Thread.isMainThread = \(Thread.isMainThread)")
-                print("🔴 ALADDINApp.onAppear: navigationManager = \(navigationManager)")
-                print("🔴 ALADDINApp.onAppear: localizationManager = \(localizationManager)")
-                print("🔴 ALADDINApp.onAppear: currentScreen = \(navigationManager.currentScreen)")
-                
+                crashLog("🔴 ALADDINApp.onAppear: ========== НАЧАЛО onAppear ==========")
+                crashLog("🔴 ALADDINApp.onAppear: Thread.isMainThread = \(Thread.isMainThread)")
+                crashLog("🔴 ALADDINApp.onAppear: navigationManager = \(navigationManager)")
+                crashLog("🔴 ALADDINApp.onAppear: localizationManager = \(localizationManager)")
+                crashLog("🔴 ALADDINApp.onAppear: currentScreen = \(navigationManager.currentScreen)")
+
                 let navManager = navigationManager
                 let locManager = localizationManager
-                print("🔴 ALADDINApp.onAppear: Вызов initializeNavigation...")
+                // ✅ БЕЗОПАСНО: Теперь можно делать Keychain операции - приложение уже инициализировано
+                crashLog("🔴 ALADDINApp.onAppear: Безопасная инициализация Keychain операций...")
+                Task { @MainActor in
+                    do {
+                        try await Task.sleep(nanoseconds: 200_000_000) // 0.2 секунды задержки
+                        KeychainAutoRecoveryService.repairTokensIfNeeded()
+                        crashLog("✅ Keychain repair completed safely")
+                    } catch {
+                        crashLog("⚠️ Keychain repair failed safely: \(error.localizedDescription)")
+                    }
+                }
+
+                crashLog("🔴 ALADDINApp.onAppear: Вызов initializeNavigation...")
                 initializeNavigation(navigationManager: navManager, localizationManager: locManager)
-                print("🔴 ALADDINApp.onAppear: initializeNavigation завершен")
+                crashLog("🔴 ALADDINApp.onAppear: initializeNavigation завершен")
             }
             // ✅ ИСПРАВЛЕНИЕ: Упрощенная обработка возврата из фона - без лишних проверок
             .onChange(of: scenePhase) { newPhase in
