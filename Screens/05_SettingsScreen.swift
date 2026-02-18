@@ -4,9 +4,15 @@ import SwiftUI
 /// Экран настроек - управление приложением и профилем
 /// Источник дизайна: /mobile/wireframes/05_settings_screen.html
 struct SettingsScreen: View {
-    
+
+    init() {
+        print("🚨 [CRASH_DIAG] SettingsScreen.init() called")
+        print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
+        print("🚨 [CRASH_DIAG] Time: \(Date())")
+    }
+
     // MARK: - Theme Mode
-    
+
     enum ThemeMode: String, CaseIterable {
         case light = "light"
         case dark = "dark"
@@ -77,9 +83,15 @@ struct SettingsScreen: View {
     // MARK: - Body
     
     var body: some View {
-        // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверяем доступность EnvironmentObject'ов
-        // Если они nil, показываем fallback view вместо краша
+        // 🚨 [CRASH_DIAG] КРИТИЧЕСКАЯ ЗАЩИТА: Проверяем доступность EnvironmentObject'ов
+        // Логируем ВСЕГДА, даже в RELEASE, чтобы понять что происходит
         let _ = {
+            print("🚨 [CRASH_DIAG] Checking EnvironmentObjects in body()...")
+            print("🚨 [CRASH_DIAG] navigationManager: \(navigationManager as AnyObject? != nil ? "AVAILABLE" : "NIL")")
+            print("🚨 [CRASH_DIAG] localizationManager: \(localizationManager as AnyObject? != nil ? "AVAILABLE" : "NIL")")
+            print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
+            print("🚨 [CRASH_DIAG] Time: \(Date())")
+
             #if DEBUG
             if navigationManager as AnyObject? == nil {
                 print("🚨 CRITICAL: navigationManager is nil in SettingsScreen!")
@@ -188,6 +200,11 @@ struct SettingsScreen: View {
                 .environmentObject(localizationManager)
         }
         .onAppear {
+            // 🚨 [CRASH_DIAG] КРИТИЧЕСКИЙ МАРКЕР: onAppear достигнут!
+            print("🚨 [CRASH_DIAG] SettingsScreen.onAppear() STARTED!")
+            print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
+            print("🚨 [CRASH_DIAG] Time: \(Date())")
+
             // ✅ ПЕРЕНЕСЕНО: Логирование из computed properties в lifecycle методы
             if SettingsDiagnosticsLogger.ENABLE_LOGS {
                 SettingsDiagnosticsLogger.shared.logSection("SettingsScreen", function: #function)
@@ -197,6 +214,8 @@ struct SettingsScreen: View {
                 // ✅ ДОБАВЛЕНО: Логирование calculatedProtectionLevel в безопасном месте
                 SettingsDiagnosticsLogger.shared.logCritical("calculatedProtectionLevel", message: "CALCULATED_LEVEL_SUCCESS: \(calculatedProtectionLevel)% for \(tariffManager.currentTariff.rawValue)")
             }
+
+            print("🚨 [CRASH_DIAG] SettingsScreen.onAppear() COMPLETED successfully!")
 
             initializeNotifications()
 

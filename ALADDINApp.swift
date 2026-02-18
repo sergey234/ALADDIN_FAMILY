@@ -416,11 +416,21 @@ struct ALADDINApp: App {
                     case .analytics:
                         AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .settings:
+                        // 🚨 [CRASH_DIAG] ДО СОЗДАНИЯ VIEW: Проверяем состояние
+                        print("🚨 [CRASH_DIAG] About to create SettingsScreen View")
+                        print("🚨 [CRASH_DIAG] NavigationManager available: \(navigationManager != nil)")
+                        print("🚨 [CRASH_DIAG] LocalizationManager available: \(localizationManager != nil)")
+                        print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
+                        print("🚨 [CRASH_DIAG] Current screen: \(navigationManager.currentScreen)")
+
                         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Создаем View С EnvironmentObject'ами СРАЗУ
                         // Это предотвращает бесконечную рекурсию в SwiftUI type system
                         let settingsView = SettingsScreen()
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager)
+
+                        print("🚨 [CRASH_DIAG] SettingsScreen View created successfully")
+
                         AnyView(settingsView.id("settings"))
                     case .settingsDiagnostic:
                         AnyView(SettingsScreenDiagnostic()
