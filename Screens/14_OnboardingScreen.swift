@@ -169,7 +169,11 @@ struct OnboardingScreen: View {
             }
 
             Button("✅ Перейти к настройкам") {
-                navigationManager.navigateTo(.settings)
+                // ✅ КРИТИЧЕСКОЕ: Обеспечиваем выполнение на main thread
+                // navigateTo может вызываться не на main thread, что вызывает race conditions
+                DispatchQueue.main.async {
+                    self.navigationManager.navigateTo(.settings)
+                }
             }
 
             Button("✅ Завершить онбординг") {

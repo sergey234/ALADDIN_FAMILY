@@ -12,7 +12,10 @@ class NavigationManager: ObservableObject {
     @Published private(set) var isManuallyClosingPaymentQR: Bool = false
     @Published private(set) var debugLogs: [String] = []
     @Published private var lastScreenBeforePaymentQR: ALADDINScreen? = nil
-    
+
+    // ✅ КРИТИЧЕСКОЕ: Защита от множественных навигаций
+    private var isNavigating = false
+
     // ✅ ИСПРАВЛЕНИЕ: Добавляем для PaymentQRScreen через NavigationLink
     @Published var selectedTariffForPayment: Tariff? = nil
     
@@ -199,6 +202,20 @@ class NavigationManager: ObservableObject {
     
     /// Переход к экрану
     func navigateTo(_ screen: ALADDINScreen) {
+        // ✅ КРИТИЧЕСКОЕ: Защита от множественных навигаций
+        // Предотвращает race conditions и множественные одновременные навигации
+        guard !isNavigating else {
+            appendLog("⚠️ navigateTo(\(screen)) отклонён: навигация уже выполняется")
+            return
+        }
+
+        isNavigating = true
+        defer {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.isNavigating = false
+            }
+        }
+
         // ✅ ИСПРАВЛЕНИЕ: Весь NavigationManager работает под @MainActor,
         // поэтому выполняем изменения синхронно, без DispatchQueue.main.async.
         if case .paymentQR = screen {
@@ -412,10 +429,11 @@ class NavigationManager: ObservableObject {
     }
     
     func switchToSettingsScreen() {
-        crashLog("🔴 NAVIGATION: switchToSettingsScreen() вызван - ПЕРЕХОД К НАСТРОЙКАМ")
-        crashLog("🔴 NAVIGATION: Текущий экран: \(currentScreen)")
-        crashLog("🔴 NAVIGATION: Thread.isMainThread: \(Thread.isMainThread)")
-        crashLog("🔴 NAVIGATION: Stack trace: \(Thread.callStackSymbols.prefix(3).joined(separator: " <- "))")
+        // ✅ КРИТИЧЕСКОЕ: Заменены crashLog на print чтобы избежать рекурсии
+        print("🔴 NAVIGATION: switchToSettingsScreen() вызван - ПЕРЕХОД К НАСТРОЙКАМ")
+        print("🔴 NAVIGATION: Текущий экран: \(currentScreen)")
+        print("🔴 NAVIGATION: Thread.isMainThread: \(Thread.isMainThread)")
+        print("🔴 NAVIGATION: Stack trace: \(Thread.callStackSymbols.prefix(3).joined(separator: " <- "))")
 
         navigateToRoot(.settings)
     }

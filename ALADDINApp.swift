@@ -13,8 +13,15 @@ extension ALADDINApp {
     static func getMemoryUsage() -> String {
         #if !targetEnvironment(simulator)
         let processInfo = ProcessInfo.processInfo
-        let memoryUsage = processInfo.physicalMemory / 1024 / 1024
-        return "\(memoryUsage) MB total, \(processInfo.systemUptime) seconds uptime"
+        // ✅ КРИТИЧЕСКОЕ: Используем Double вместо Int для предотвращения переполнения
+        let totalMemory = Double(processInfo.physicalMemory)
+        guard totalMemory > 0 else { return "Memory: unavailable" }
+
+        let memoryUsage = totalMemory / 1024.0 / 1024.0
+        let uptime = processInfo.systemUptime
+
+        // ✅ Безопасное форматирование без переполнения
+        return String(format: "%.1f MB total, %.1f seconds uptime", memoryUsage, uptime)
         #else
         return "Simulator - no memory info"
         #endif
@@ -409,10 +416,12 @@ struct ALADDINApp: App {
                     case .analytics:
                         AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .settings:
-                        AnyView(SettingsScreen()
-                            .id("settings")
+                        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Создаем View С EnvironmentObject'ами СРАЗУ
+                        // Это предотвращает бесконечную рекурсию в SwiftUI type system
+                        let settingsView = SettingsScreen()
                             .environmentObject(navigationManager)
-                            .environmentObject(localizationManager))
+                            .environmentObject(localizationManager)
+                        AnyView(settingsView.id("settings"))
                     case .settingsDiagnostic:
                         AnyView(SettingsScreenDiagnostic()
                             .id("settingsDiagnostic")
@@ -721,16 +730,18 @@ struct ALADDINApp: App {
             }
             // ✅ ИСПРАВЛЕНИЕ: Упрощенная обработка возврата из фона - без лишних проверок
             .onChange(of: scenePhase) { newPhase in
-                crashLog("🔄 SCENE PHASE: изменился на \(newPhase)")
+                // ✅ КРИТИЧЕСКОЕ: УБРАНЫ crashLog() чтобы предотвратить рекурсию
+                // crash logging в onChange может вызвать бесконечную рекурсию
+                print("🔄 SCENE PHASE: изменился на \(newPhase)")
 
                 if newPhase == .active {
                     // Приложение стало активным (вернулись из Safari/фона)
-                    crashLog("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
+                    print("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
                     // НЕ вызываем initializeNavigation - это может вызвать двойную загрузку
                 } else if newPhase == .background {
-                    crashLog("🔄 Приложение ушло в фон")
+                    print("🔄 Приложение ушло в фон")
                 } else if newPhase == .inactive {
-                    crashLog("🔄 Приложение стало неактивным")
+                    print("🔄 Приложение стало неактивным")
                 }
             }
             // 🌓 ПРИМЕНЯЕМ ТЕМУ

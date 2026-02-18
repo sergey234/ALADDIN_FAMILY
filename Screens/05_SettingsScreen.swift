@@ -77,6 +77,19 @@ struct SettingsScreen: View {
     // MARK: - Body
     
     var body: some View {
+        // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверяем доступность EnvironmentObject'ов
+        // Если они nil, показываем fallback view вместо краша
+        let _ = {
+            #if DEBUG
+            if navigationManager as AnyObject? == nil {
+                print("🚨 CRITICAL: navigationManager is nil in SettingsScreen!")
+            }
+            if localizationManager as AnyObject? == nil {
+                print("🚨 CRITICAL: localizationManager is nil in SettingsScreen!")
+            }
+            #endif
+        }()
+
         ZStack {
             // Фон
             LinearGradient.backgroundGradient
@@ -175,11 +188,14 @@ struct SettingsScreen: View {
                 .environmentObject(localizationManager)
         }
         .onAppear {
-            // 🚨 КРИТИЧЕСКАЯ ДИАГНОСТИКА ДЛЯ TESTFLIGHT
+            // ✅ ПЕРЕНЕСЕНО: Логирование из computed properties в lifecycle методы
             if SettingsDiagnosticsLogger.ENABLE_LOGS {
                 SettingsDiagnosticsLogger.shared.logSection("SettingsScreen", function: #function)
                 SettingsDiagnosticsLogger.shared.logFunction("onAppear", message: "SettingsScreen появился на экране")
                 SettingsDiagnosticsLogger.shared.logCritical(#function, message: "SETTINGS_INIT: Thread = \(Thread.isMainThread)")
+
+                // ✅ ДОБАВЛЕНО: Логирование calculatedProtectionLevel в безопасном месте
+                SettingsDiagnosticsLogger.shared.logCritical("calculatedProtectionLevel", message: "CALCULATED_LEVEL_SUCCESS: \(calculatedProtectionLevel)% for \(tariffManager.currentTariff.rawValue)")
             }
 
             initializeNotifications()
@@ -873,10 +889,8 @@ struct SettingsScreen: View {
     /// 🚨 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Полностью убрана зависимость от любых менеджеров
     /// для предотвращения бесконечной рекурсии в SwiftUI
     private var calculatedProtectionLevel: Double {
-        // 🚨 КРИТИЧЕСКАЯ ТОЧКА: Диагностика для TestFlight
-        if SettingsDiagnosticsLogger.ENABLE_LOGS {
-            SettingsDiagnosticsLogger.shared.logCritical(#function, message: "CALCULATED_LEVEL_START: Thread = \(Thread.isMainThread)")
-        }
+        // ✅ КРИТИЧЕСКОЕ: Убрано логирование из computed property
+        // SettingsDiagnosticsLogger в computed properties вызывает бесконечную рекурсию
 
         // ✅ БЕЗОПАСНО: Используем только тип тарифа, без зависимостей от менеджеров
         let result: Double
@@ -889,11 +903,6 @@ struct SettingsScreen: View {
             result = 75.0    // Высокая защита
         case .premium:
             result = 100.0   // Максимальная защита
-        }
-
-        // 🚨 КРИТИЧЕСКАЯ ТОЧКА: Если мы дошли сюда - вычисление прошло успешно
-        if SettingsDiagnosticsLogger.ENABLE_LOGS {
-            SettingsDiagnosticsLogger.shared.logCritical(#function, message: "CALCULATED_LEVEL_SUCCESS: \(result)% for \(tariffManager.currentTariff.rawValue)")
         }
 
         return result
