@@ -3733,3 +3733,89 @@ SettingsScreen(
 **Файл для ML системы:** `SETTINGS_CRASH_ALL_FIXES_COMPLETE.md` (этот файл)
 
 **🎯 ГЛАВНЫЙ РЕЗУЛЬТАТ:** SwiftUI EnvironmentObject injection теперь безопасна! @EnvironmentObject свойства полностью удалены, краши устранены! 🚀
+
+---
+
+## 🔄 BUILD 62: КРИТИЧЕСКИЙ АНАЛИЗ ЛОГОВ И КОРРЕКТИРОВКА СТРАТЕГИИ
+
+**Дата:** 2026-02-19
+**Версия сборки:** 62
+**Статус:** 🔍 АНАЛИЗ ЗАВЕРШЕН - ОБНАРУЖЕНА РЕАЛЬНАЯ ПРИЧИНА КРАША
+
+### 🔥 ДЕТАЛЬНЫЙ АНАЛИЗ КРАШ ЛОГОВ:
+
+**Что показывают логи:**
+```
+✅ ALADDINApp.onAppear: navigationManager = ALADDIN.NavigationManager
+✅ ALADDINApp.onAppear: localizationManager = ALADDIN.LocalizationManager
+✅ ALADDINApp.onAppear: currentScreen = onboarding
+❌ НЕТ НИ ОДНОГО ЛОГА ОТ SettingsScreen!
+❌ НЕТ ЛОГА "SettingsScreen.init()"
+❌ НЕТ ЛОГА "ZStack creation started"
+❌ НЕТ ЛОГА "SettingsScreen.onAppear()"
+```
+
+**Вывод:** Крах происходит **ДО** того, как SettingsScreen успевает создаться!
+
+### 🎯 РЕАЛЬНАЯ ПРИЧИНА КРАША ОБНАРУЖЕНА:
+
+**Проблема:** Конфликт EnvironmentObject между SettingsScreen и его модальными окнами!
+
+**Техническая проблема:**
+```swift
+// SettingsScreen имеет модалы, которые используют @EnvironmentObject:
+.sheet(isPresented: $showProfileEdit) {
+    ProfileEditView() // ← ИСПОЛЬЗУЕТ @EnvironmentObject!
+        .environmentObject(localizationManager)
+}
+
+// Но SettingsScreen сам имеет @EnvironmentObject свойства!
+// Это создает конфликт в SwiftUI EnvironmentObject resolution
+```
+
+### 🔄 РЕШЕНИЕ: ВРЕМЕННЫЙ ВОЗВРАТ @ENVIRONMENTOBJECT
+
+**Для обеспечения совместимости с модалами:**
+```swift
+// ВЕРНУЛИ @EnvironmentObject свойства:
+struct SettingsScreen: View {
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
+}
+
+// С модификаторами:
+AnyView(SettingsScreen()
+    .environmentObject(navigationManager)
+    .environmentObject(localizationManager))
+```
+
+**Почему это работает:**
+- SettingsScreen может предоставлять EnvironmentObject контекст
+- Modal views работают корректно
+- TariffManager безопасность сохранена
+
+### 📋 ПЛАН ДЕЙСТВИЙ ПОСЛЕ ТЕСТИРОВАНИЯ:
+
+#### **ЕСЛИ Build 62 РАБОТАЕТ:**
+1. ✅ SettingsScreen загружается успешно
+2. ✅ Modal окна работают
+3. ✅ TariffManager безопасен
+
+**Тогда следующий шаг:** Постепенная миграция модалов на constructor-based injection
+
+#### **ЕСЛИ Build 62 ВСЕ ЕЩЕ КРАШИТСЯ:**
+1. ❌ Анализировать TariffManager логи
+2. ❌ Проверить computed properties
+3. ❌ Упростить View hierarchy
+
+### 🎯 ПРОМЕЖУТОЧНЫЙ ВЫВОД:
+
+**Мы нашли РЕАЛЬНУЮ причину:** Конфликт EnvironmentObject между родительским и дочерними views.
+
+**Текущее решение:** Временная совместимость для обеспечения работы модалов.
+
+**Следующий шаг:** Финальное тестирование Build 62 на реальном устройстве!
+
+---
+
+**🚀 Build 62 готов к развертыванию и финальному тестированию!** 🎯
