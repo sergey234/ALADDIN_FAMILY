@@ -28,6 +28,9 @@ class NavigationManager: ObservableObject {
         case analytics = "04_AnalyticsScreen"
         case settings = "05_SettingsScreen"
         case settingsDiagnostic = "SettingsScreenDiagnostic"
+        case settingsTest = "SettingsScreenTest"
+        case settingsFallback = "SettingsScreenFallback"
+        case settingsTestSuite = "SettingsTestSuite"
         case aiAssistant = "06_AIAssistantScreen"
         case parentalControl = "07_ParentalControlScreen"
         case childInterface = "08_ChildInterfaceScreen"
@@ -119,6 +122,9 @@ class NavigationManager: ObservableObject {
             case .threatProtectionSettings: return "Настройки защиты"
             case .iotSecurity: return "IoT безопасность"
             case .advancedProtection: return "Расширенная защита"
+            case .settingsTest: return "Тест настроек"
+            case .settingsFallback: return "Резервные настройки"
+            case .settingsTestSuite: return "Набор тестов настроек"
             }
         }
         
@@ -167,6 +173,9 @@ class NavigationManager: ObservableObject {
             case .threatProtectionSettings: return "gearshape.2.fill"
             case .iotSecurity: return "wifi"
             case .advancedProtection: return "lock.shield.fill"
+            case .settingsTest: return "testtube.2"
+            case .settingsFallback: return "arrow.triangle.2.circlepath"
+            case .settingsTestSuite: return "checklist"
             }
         }
     }
@@ -202,6 +211,24 @@ class NavigationManager: ObservableObject {
     
     /// Переход к экрану
     func navigateTo(_ screen: ALADDINScreen) {
+        // ✅ [PHASE 7] НАВИГАЦИОННАЯ ВАЛИДАЦИЯ
+        print("🔍 [NAV_VALIDATION] navigateTo(\(screen)) requested")
+        print("🔍 [NAV_VALIDATION] Current screen: \(currentScreen)")
+        print("🔍 [NAV_VALIDATION] Navigation stack: \(navigationStack)")
+        print("🔍 [NAV_VALIDATION] Is navigating: \(isNavigating)")
+
+        // Предотвращаем циклическую навигацию
+        if navigationStack.contains(screen) && navigationStack.last == screen {
+            print("⚠️ [NAV_VALIDATION] Prevented circular navigation to same screen: \(screen)")
+            return
+        }
+
+        // Предотвращаем быструю последовательную навигацию
+        if let lastScreen = navigationStack.last, lastScreen == screen {
+            print("⚠️ [NAV_VALIDATION] Prevented duplicate navigation to same screen: \(screen)")
+            return
+        }
+
         // ✅ КРИТИЧЕСКОЕ: Защита от множественных навигаций
         // Предотвращает race conditions и множественные одновременные навигации
         guard !isNavigating else {

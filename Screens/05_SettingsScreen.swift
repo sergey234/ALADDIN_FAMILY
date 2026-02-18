@@ -9,6 +9,28 @@ struct SettingsScreen: View {
         print("🚨 [CRASH_DIAG] SettingsScreen.init() called")
         print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
         print("🚨 [CRASH_DIAG] Time: \(Date())")
+
+        // 🚨 [CRASH_DIAG] REMOTE DEBUGGING: Логируем в UserDefaults
+        logToUserDefaults("🚨 [CRASH_DIAG] SettingsScreen.init() called - Thread: \(Thread.isMainThread)")
+    }
+
+    // 🚨 [CRASH_DIAG] REMOTE DEBUGGING FUNCTION
+    private func logToUserDefaults(_ message: String) {
+        let key = "crash_diagnostic_logs"
+        var logs = UserDefaults.standard.array(forKey: key) as? [String] ?? []
+
+        let timestampedMessage = "[\(Date().formatted(.iso8601))] \(message)"
+        logs.append(timestampedMessage)
+
+        // Ограничиваем до 50 записей для экономии памяти
+        if logs.count > 50 {
+            logs.removeFirst(logs.count - 50)
+        }
+
+        UserDefaults.standard.set(logs, forKey: key)
+        UserDefaults.standard.synchronize()
+
+        print(message) // Также выводим в консоль
     }
 
     // MARK: - Theme Mode
@@ -43,7 +65,7 @@ struct SettingsScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
 
-    // ✅ ObservedObject безопасны, если не вызывают изменения в computed properties
+    // ✅ [FIX 2] ObservedObject'ы с отложенной инициализацией для безопасности
     @ObservedObject private var notificationManager = NotificationManager.shared
     @ObservedObject private var securityManager = SecurityManager.shared
     @State private var isNetworkProtectionEnabled: Bool = true
@@ -63,7 +85,15 @@ struct SettingsScreen: View {
     @ObservedObject private var featuresManager = ProtectionFeaturesManager.shared
     @ObservedObject private var toastManager = ToastManager.shared
     @ObservedObject private var historyManager = ProtectionLevelHistoryManager.shared
-    @ObservedObject private var tariffManager = TariffManager.shared
+
+    // ✅ [FIX 2] TariffManager инициализируется только в onAppear для безопасности
+    @State private var tariffManagerWrapper: TariffManager? = nil
+    private var tariffManager: TariffManager {
+        tariffManagerWrapper ?? TariffManager.placeholder
+    }
+
+    // ✅ [FIX 3] Уровень защиты хранится в @State, обновляется только после инициализации
+    @State private var protectionLevel: Double = 25.0 // Дефолтное значение
     @State private var showProtectionHistory: Bool = false
     
     // Navigation для менеджеров
@@ -86,6 +116,7 @@ struct SettingsScreen: View {
         // 🚨 [CRASH_DIAG] КРИТИЧЕСКАЯ ЗАЩИТА: Проверяем доступность EnvironmentObject'ов
         // Логируем ВСЕГДА, даже в RELEASE, чтобы понять что происходит
         let _ = {
+            logToUserDefaults("🚨 [CRASH_DIAG] body() called - checking EnvironmentObjects")
             print("🚨 [CRASH_DIAG] Checking EnvironmentObjects in body()...")
             print("🚨 [CRASH_DIAG] navigationManager: \(navigationManager as AnyObject? != nil ? "AVAILABLE" : "NIL")")
             print("🚨 [CRASH_DIAG] localizationManager: \(localizationManager as AnyObject? != nil ? "AVAILABLE" : "NIL")")
@@ -102,8 +133,11 @@ struct SettingsScreen: View {
             #endif
         }()
 
+        let _ = logToUserDefaults("🚨 [CRASH_POINT] ZStack creation started")
+
         ZStack {
-            // Фон
+            // 🚨 [CRASH_POINT] Фон
+            let _ = logToUserDefaults("🚨 [CRASH_POINT] LinearGradient.backgroundGradient called")
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
                 .accessibilityElement(children: .ignore)
@@ -200,10 +234,46 @@ struct SettingsScreen: View {
                 .environmentObject(localizationManager)
         }
         .onAppear {
+            // ✅ [FIX 2] ИНИЦИАЛИЗАЦИЯ TariffManager после того, как View полностью создана
+            // Используем State wrapper для безопасной замены
+            DispatchQueue.main.async {
+                self.tariffManagerWrapper = TariffManager.shared
+                // ✅ [FIX 3] ОБНОВЛЕНИЕ protectionLevel только после инициализации TariffManager
+                self.protectionLevel = self.calculateProtectionLevel()
+            }
+
             // 🚨 [CRASH_DIAG] КРИТИЧЕСКИЙ МАРКЕР: onAppear достигнут!
             print("🚨 [CRASH_DIAG] SettingsScreen.onAppear() STARTED!")
+            print("🚨 [CRASH_DIAG] TariffManager initialized safely: \(tariffManager.currentTariff)")
+            print("🚨 [CRASH_DIAG] Protection level set to: \(protectionLevel)")
             print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
             print("🚨 [CRASH_DIAG] Time: \(Date())")
+
+            // 🚨 [CRASH_DIAG] ПРОВЕРКА EnvironmentObject DEPENDENCIES
+            print("🚨 [CRASH_DIAG] === ENVIRONMENT OBJECT CHECK ===")
+            print("🚨 [CRASH_DIAG] navigationManager type: \(type(of: navigationManager))")
+            print("🚨 [CRASH_DIAG] navigationManager currentScreen: \(navigationManager.currentScreen)")
+            print("🚨 [CRASH_DIAG] localizationManager type: \(type(of: localizationManager))")
+            print("🚨 [CRASH_DIAG] localizationManager currentLanguage: \(localizationManager.currentLanguage)")
+            print("🚨 [CRASH_DIAG] tariffManager type: \(type(of: tariffManager))")
+            print("🚨 [CRASH_DIAG] tariffManager currentTariff: \(tariffManager.currentTariff)")
+
+            // 🚨 [CRASH_DIAG] ТЕСТИРОВАНИЕ localizationManager
+            do {
+                let testKey = "settings_title"
+                let localizedResult = try localizationManager.localized(testKey)
+                print("🚨 [CRASH_DIAG] Localization test successful: '\(localizedResult)'")
+            } catch {
+                print("🚨 [CRASH_DIAG] Localization test FAILED: \(error)")
+            }
+
+            print("🚨 [CRASH_DIAG] === ENVIRONMENT OBJECT CHECK COMPLETED ===")
+
+            // ✅ [PHASE 6] API ERROR HANDLING: ИЗОЛИРУЕМ API ОТ UI
+            // Все API вызовы выполняем в Task для предотвращения блокировок UI
+            Task {
+                await initializeNotificationsIsolated()
+            }
 
             // ✅ ПЕРЕНЕСЕНО: Логирование из computed properties в lifecycle методы
             if SettingsDiagnosticsLogger.ENABLE_LOGS {
@@ -211,8 +281,8 @@ struct SettingsScreen: View {
                 SettingsDiagnosticsLogger.shared.logFunction("onAppear", message: "SettingsScreen появился на экране")
                 SettingsDiagnosticsLogger.shared.logCritical(#function, message: "SETTINGS_INIT: Thread = \(Thread.isMainThread)")
 
-                // ✅ ДОБАВЛЕНО: Логирование calculatedProtectionLevel в безопасном месте
-                SettingsDiagnosticsLogger.shared.logCritical("calculatedProtectionLevel", message: "CALCULATED_LEVEL_SUCCESS: \(calculatedProtectionLevel)% for \(tariffManager.currentTariff.rawValue)")
+                // ✅ ДОБАВЛЕНО: Логирование protectionLevel в безопасном месте
+                SettingsDiagnosticsLogger.shared.logCritical("protectionLevel", message: "CALCULATED_LEVEL_SUCCESS: \(protectionLevel)% for \(tariffManager.currentTariff.rawValue)")
             }
 
             print("🚨 [CRASH_DIAG] SettingsScreen.onAppear() COMPLETED successfully!")
@@ -231,7 +301,8 @@ struct SettingsScreen: View {
     // MARK: - Navigation Header
     
     private var navigationHeader: some View {
-        ALADDINNavigationBar(
+        print("🚨 [CRASH_DIAG] navigationHeader computed property called")
+        return ALADDINNavigationBar(
             title: localizationManager.localized("settings_title"), // ✅ Локализованный заголовок
             subtitle: localizationManager.localized("settings_subtitle"), // ✅ Локализованный подзаголовок
             showBackButton: true,
@@ -399,7 +470,7 @@ struct SettingsScreen: View {
                             Text(
                                 String(
                                     format: localizationManager.localized("settings_protection_level_value"),
-                                    Int(calculatedProtectionLevel),
+                                    Int(protectionLevel),
                                     protectionLevelText
                                 ) + " (на основе тарифа)"
                             )
@@ -415,7 +486,7 @@ struct SettingsScreen: View {
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                         
-                        Slider(value: .constant(calculatedProtectionLevel), in: 0...100, step: 5) {
+                        Slider(value: .constant(protectionLevel), in: 0...100, step: 5) {
                             Text(localizationManager.localized("settings_protection_level"))
                         } minimumValueLabel: {
                             Text(percentText(0))
@@ -464,7 +535,7 @@ struct SettingsScreen: View {
                         .fill(Color.backgroundMedium.opacity(0.3))
                 )
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel(String(format: localizationManager.localized("settings_protection_level_accessibility"), Int(calculatedProtectionLevel)))
+                .accessibilityLabel(String(format: localizationManager.localized("settings_protection_level_accessibility"), Int(protectionLevel)))
                 
                 // ✅ Менеджеры (5 компонентов)
                 Divider()
@@ -907,11 +978,12 @@ struct SettingsScreen: View {
     /// Ползунок теперь только для чтения и показывает реальный уровень защиты
     /// 🚨 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Полностью убрана зависимость от любых менеджеров
     /// для предотвращения бесконечной рекурсии в SwiftUI
-    private var calculatedProtectionLevel: Double {
-        // ✅ КРИТИЧЕСКОЕ: Убрано логирование из computed property
-        // SettingsDiagnosticsLogger в computed properties вызывает бесконечную рекурсию
+    // ✅ [FIXED] Убрана зависимость от tariffManager из computed property
+    // Теперь это функция, которая вызывается только когда нужна
+    private func calculateProtectionLevel() -> Double {
+        print("🚨 [CRASH_DIAG] calculateProtectionLevel() function called")
 
-        // ✅ БЕЗОПАСНО: Используем только тип тарифа, без зависимостей от менеджеров
+        // ✅ БЕЗОПАСНО: Функция вызывается только когда tariffManager точно инициализирован
         let result: Double
         switch tariffManager.currentTariff {
         case .free:
@@ -924,27 +996,60 @@ struct SettingsScreen: View {
             result = 100.0   // Максимальная защита
         }
 
+        print("🚨 [CRASH_DIAG] calculateProtectionLevel result: \(result)")
+        return result
+    }
+
+    // ✅ [FIXED] Убрана computed property - теперь используется @State protectionLevel
+    
+    private var protectionLevelText: String {
+        print("🚨 [CRASH_DIAG] protectionLevelText computed property called")
+        defer { print("🚨 [CRASH_DIAG] protectionLevelText completed") }
+
+        let level = protectionLevel
+        print("🚨 [CRASH_DIAG] protectionLevelText - level: \(level)")
+
+        let result: String
+        switch level {
+        case 0...25:
+            result = localizationManager.localized("settings_protection_level_low")
+        case 26...50:
+            result = localizationManager.localized("settings_protection_level_medium")
+        case 51...75:
+            result = localizationManager.localized("settings_protection_level_high")
+        case 76...100:
+            result = localizationManager.localized("settings_protection_level_maximum")
+        default:
+            result = localizationManager.localized("settings_protection_level_medium")
+        }
+
+        print("🚨 [CRASH_DIAG] protectionLevelText result: \(result)")
         return result
     }
     
-    private var protectionLevelText: String {
-        switch calculatedProtectionLevel {
-        case 0...25: return localizationManager.localized("settings_protection_level_low")
-        case 26...50: return localizationManager.localized("settings_protection_level_medium")
-        case 51...75: return localizationManager.localized("settings_protection_level_high")
-        case 76...100: return localizationManager.localized("settings_protection_level_maximum")
-        default: return localizationManager.localized("settings_protection_level_medium")
-        }
-    }
-    
     private var protectionColor: Color {
-        switch calculatedProtectionLevel {
-        case 0...25: return .red
-        case 26...50: return .orange
-        case 51...75: return .yellow
-        case 76...100: return .green
-        default: return .primaryBlue
+        print("🚨 [CRASH_DIAG] protectionColor computed property called")
+        defer { print("🚨 [CRASH_DIAG] protectionColor completed") }
+
+        let level = protectionLevel
+        print("🚨 [CRASH_DIAG] protectionColor - level: \(level)")
+
+        let result: Color
+        switch level {
+        case 0...25:
+            result = .red
+        case 26...50:
+            result = .orange
+        case 51...75:
+            result = .yellow
+        case 76...100:
+            result = .green
+        default:
+            result = .primaryBlue
         }
+
+        print("🚨 [CRASH_DIAG] protectionColor result: \(result)")
+        return result
     }
     
     // ✅ УДАЛЕНО: handleProtectionLevelChange и связанные функции
@@ -1006,6 +1111,27 @@ struct SettingsScreen: View {
     
     // MARK: - Notification Functions
     
+    // ✅ [PHASE 6] API ERROR HANDLING: ИЗОЛИРОВАННАЯ ФУНКЦИЯ
+    private func initializeNotificationsIsolated() async {
+        print("🚨 [CRASH_DIAG] initializeNotificationsIsolated started")
+
+        do {
+            // ✅ ИЗОЛИРУЕМ API вызовы от UI
+            let granted = try await notificationManager.requestAuthorization()
+            if granted {
+                print("🔔 Разрешение на уведомления получено")
+            } else {
+                print("🔕 Разрешение на уведомления отклонено")
+            }
+        } catch {
+            // ✅ ОБРАБАТЫВАЕМ API ОШИБКИ НЕ ПРЕРЫВАЯ UI
+            logToUserDefaults("🚨 [CRASH_DIAG] API ERROR in initializeNotificationsIsolated: \(error)")
+            print("🚨 [CRASH_DIAG] API ERROR in initializeNotificationsIsolated: \(error)")
+        }
+
+        print("🚨 [CRASH_DIAG] initializeNotificationsIsolated completed")
+    }
+
     private func initializeNotifications() {
         // Инициализация системы уведомлений
         Task {

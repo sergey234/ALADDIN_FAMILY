@@ -168,6 +168,63 @@ struct OnboardingScreen: View {
                 print("🩺 DIAGNOSTIC: Thread.isMainThread = \(Thread.isMainThread)")
             }
 
+            // 🚨 [CRASH_DIAG] КНОПКИ ДИАГНОСТИКИ SETTINGS SCREEN
+            VStack(spacing: 10) {
+                Text("🚨 SettingsScreen Diagnostic Tests")
+                    .font(.headline)
+                    .foregroundColor(.red)
+
+                HStack(spacing: 10) {
+                    Button("🧪 Minimal Test") {
+                        DispatchQueue.main.async {
+                            self.navigationManager.navigateTo(.settings)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.orange)
+                    .foregroundColor(.white)
+                    .cornerRadius(6)
+                    .font(.caption)
+
+                    Button("🔧 Fallback") {
+                        DispatchQueue.main.async {
+                            self.navigationManager.navigateTo(.settingsFallback)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.purple)
+                    .foregroundColor(.white)
+                    .cornerRadius(6)
+                    .font(.caption)
+
+                    Button("📊 Full Test") {
+                        DispatchQueue.main.async {
+                            self.navigationManager.navigateTo(.settingsTest)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.red)
+                    .foregroundColor(.white)
+                    .cornerRadius(6)
+                    .font(.caption)
+
+                    Button("🧪 Test Suite") {
+                        DispatchQueue.main.async {
+                            self.navigationManager.navigateTo(.settingsTestSuite)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.purple)
+                    .foregroundColor(.white)
+                    .cornerRadius(6)
+                    .font(.caption)
+                }
+            }
+
             Button("✅ Перейти к настройкам") {
                 // ✅ КРИТИЧЕСКОЕ: Обеспечиваем выполнение на main thread
                 // navigateTo может вызываться не на main thread, что вызывает race conditions

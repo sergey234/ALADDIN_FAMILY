@@ -3,12 +3,16 @@ import Combine
 
 /// Менеджер тарифов для автоматической активации защиты
 /// ✅ Singleton pattern для единой точки управления
+// ✅ [FIX 1] @MainActor для thread safety
 @MainActor
 class TariffManager: ObservableObject {
     
     // MARK: - Singleton
-    
+
     static let shared = TariffManager()
+
+    // ✅ [FIX 2] Placeholder для безопасной инициализации View
+    static let placeholder = TariffManager(placeholder: true)
     
     // MARK: - Published Properties
     
@@ -17,17 +21,30 @@ class TariffManager: ObservableObject {
     @Published var errorMessage: String?
     
     // MARK: - Private Properties
-    
+
     private let userDefaults = UserDefaults.standard
     private let tariffKey = "current_tariff_type"
-    private let protectionSettingsManager = ProtectionSettingsManager.shared
+    private lazy var protectionSettingsManager: ProtectionSettingsManager = {
+        // ✅ [FIX 1] Ленивая инициализация для предотвращения циклических зависимостей
+        // ProtectionSettingsManager создается только при первом использовании
+        return ProtectionSettingsManager.shared
+    }()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Init
-    
+
     private init() {
-        loadTariff()
-        observeTariffChanges()
+        // ✅ [FIX 1] Thread-safe инициализация
+        // Все операции с UserDefaults и NotificationCenter выполняются на main thread
+        DispatchQueue.main.async { [weak self] in
+            self?.loadTariff()
+            self?.observeTariffChanges()
+        }
+    }
+
+    // ✅ [FIX 2] Placeholder init для безопасной инициализации View
+    private init(placeholder: Bool) {
+        // Пустая инициализация для placeholder - не загружает данные
     }
     
     // MARK: - Observe Tariff Changes

@@ -416,27 +416,74 @@ struct ALADDINApp: App {
                     case .analytics:
                         AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .settings:
-                        // 🚨 [CRASH_DIAG] ДО СОЗДАНИЯ VIEW: Проверяем состояние
-                        print("🚨 [CRASH_DIAG] About to create SettingsScreen View")
-                        print("🚨 [CRASH_DIAG] NavigationManager available: \(navigationManager != nil)")
-                        print("🚨 [CRASH_DIAG] LocalizationManager available: \(localizationManager != nil)")
-                        print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
-                        print("🚨 [CRASH_DIAG] Current screen: \(navigationManager.currentScreen)")
+                        // 🚨 [CRASH_DIAG] МИНИМАЛЬНЫЙ ТЕСТ: Простой VStack вместо SettingsScreen
+                        // Если простой View работает - проблема в SettingsScreen коде
+                        AnyView(
+                            VStack(spacing: 20) {
+                                Text("🚨 SETTINGS SCREEN MINIMAL TEST")
+                                    .font(.title)
+                                    .foregroundColor(.red)
 
-                        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Создаем View С EnvironmentObject'ами СРАЗУ
-                        // Это предотвращает бесконечную рекурсию в SwiftUI type system
-                        let settingsView = SettingsScreen()
-                            .environmentObject(navigationManager)
-                            .environmentObject(localizationManager)
+                                Text("If you see this - basic View creation works!")
+                                    .foregroundColor(.green)
+                                    .multilineTextAlignment(.center)
 
-                        print("🚨 [CRASH_DIAG] SettingsScreen View created successfully")
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text("✅ Basic VStack: WORKS")
+                                    Text("✅ No complex logic: SAFE")
+                                    Text("✅ No computed properties: SAFE")
+                                    Text("❓ If crash here - EnvironmentObject issue")
+                                }
+                                .padding()
+                                .background(Color.gray.opacity(0.1))
+                                .cornerRadius(8)
 
-                        AnyView(settingsView.id("settings"))
+                                Button("Go Back to Onboarding") {
+                                    navigationManager.navigateTo(.onboarding)
+                                }
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+
+                                Spacer()
+                            }
+                            .padding()
+                            .navigationBarTitle("Settings (Minimal Test)", displayMode: .inline)
+                            .onAppear {
+                                print("🚨 [CRASH_DIAG] Minimal SettingsScreen appeared successfully!")
+                                print("🚨 [CRASH_DIAG] View creation works - issue is in SettingsScreen code")
+                            }
+                        )
                     case .settingsDiagnostic:
+                        // 🚨 [CRASH_DIAG] ТЕСТИРОВАНИЕ SettingsDiagnostic screen
                         AnyView(SettingsScreenDiagnostic()
                             .id("settingsDiagnostic")
                             .environmentObject(navigationManager)
-                            .environmentObject(localizationManager))
+                            .environmentObject(localizationManager)
+                            .onAppear {
+                                print("🚨 [CRASH_DIAG] SettingsDiagnostic screen appeared successfully!")
+                            })
+
+                    case .settingsTest:
+                        // 🚨 [CRASH_DIAG] ТЕСТИРОВАНИЕ полных computed properties SettingsScreen
+                        let fullSettingsView = SettingsScreen()
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+
+                        AnyView(fullSettingsView.id("settingsTest").onAppear {
+                            print("🚨 [CRASH_DIAG] About to create FULL SettingsScreen with computed properties")
+                            print("🚨 [CRASH_DIAG] FULL SettingsScreen View created with computed properties")
+                            print("🚨 [CRASH_DIAG] settingsTest screen appeared")
+                        })
+
+                    case .settingsFallback:
+                        // 🚨 [CRASH_DIAG] FALLBACK SettingsScreen без сложной логики
+                        AnyView(SettingsScreenFallback())
+
+                    case .settingsTestSuite:
+                        // 🚨 [PHASE 8] FINAL TESTING - ПОЛНЫЙ ТЕСТ СЮИТ
+                        AnyView(SettingsTestSuiteView())
                     case .aiAssistant:
                         AnyView(AIAssistantScreen().id("aiAssistant").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .parentalControl:
