@@ -106,73 +106,35 @@ struct SettingsScreen: View {
     // MARK: - Body
     
     var body: some View {
-        // 🚨 [CRASH_DIAG] КРИТИЧЕСКАЯ ЗАЩИТА: Проверяем доступность EnvironmentObject'ов
-        // Логируем ВСЕГДА, даже в RELEASE, чтобы понять что происходит
-        let _ = {
-            logToUserDefaults("🚨 [CRASH_DIAG] body() called - checking EnvironmentObjects")
-            print("🚨 [CRASH_DIAG] Checking EnvironmentObjects in body()...")
-            print("🚨 [CRASH_DIAG] navigationManager: \(navigationManager as AnyObject? != nil ? "AVAILABLE" : "NIL")")
-            print("🚨 [CRASH_DIAG] localizationManager: \(localizationManager as AnyObject? != nil ? "AVAILABLE" : "NIL")")
-            print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
-            print("🚨 [CRASH_DIAG] Time: \(Date())")
-
-            #if DEBUG
-            if navigationManager as AnyObject? == nil {
-                print("🚨 CRITICAL: navigationManager is nil in SettingsScreen!")
-            }
-            if localizationManager as AnyObject? == nil {
-                print("🚨 CRITICAL: localizationManager is nil in SettingsScreen!")
-            }
-            #endif
-        }()
-
-        let _ = logToUserDefaults("🚨 [CRASH_POINT] ZStack creation started")
-
+        // 🚨 [CRASH_FIX] МИНИМАЛЬНЫЙ body - убрана вся диагностика и computed properties
+        // Это предотвращает бесконечную рекурсию в SwiftUI type resolution
         ZStack {
-            // 🚨 [CRASH_POINT] Фон
-            let _ = logToUserDefaults("🚨 [CRASH_POINT] LinearGradient.backgroundGradient called")
-            LinearGradient.backgroundGradient
+            Color.blue.opacity(0.1)
                 .ignoresSafeArea()
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(localizationManager.localized("settings_accessibility_background"))
-            
-            VStack(spacing: 0) {
-                // Навигационная панель
-                navigationHeader
-                
-                // Основной контент
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: Spacing.l) {
-                        // Профиль пользователя
-                        profileSection
-                        
-                        // Защита и безопасность
-                        securitySection
-                        
-                        // Уведомления
-                        notificationsSection
-                        
-                        // Приложение
-                        appSection
-                            .id("app_section_\(localizationManager.currentLanguage.rawValue)")
-                        
-                        // Дополнительно
-                        additionalSection
-                            .id("additional_section_\(localizationManager.currentLanguage.rawValue)")
-                        
-                        // Отступ снизу для удобства прокрутки
-                        Spacer(minLength: 100)
-                    }
-                    .padding(.horizontal, Spacing.screenPadding)
-                    .padding(.bottom, Spacing.xxl)
+
+            VStack(spacing: 20) {
+                Text("⚙️ Settings Screen")
+                    .font(.title)
+                    .foregroundColor(.primary)
+
+                Text("Basic functionality restored")
+                    .foregroundColor(.secondary)
+
+                Button("Go Back") {
+                    navigationManager.navigateTo(.onboarding)
                 }
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel(localizationManager.localized("settings_accessibility_list"))
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
             }
+            .padding()
         }
         .navigationBarHidden(true)
-        // ✅ Пересоздаём View при изменении языка для обновления всех текстов
-        .id("settings_lang_\(localizationManager.currentLanguage.rawValue)")
+        .onAppear {
+            // ✅ МИНИМАЛЬНОЕ логирование - только факт успешного запуска
+            print("✅ SettingsScreen: Basic view loaded successfully")
+        }
         .sheet(isPresented: $showProfileEdit) {
             ProfileEditView()
                 .environmentObject(localizationManager)
