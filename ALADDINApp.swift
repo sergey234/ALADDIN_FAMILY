@@ -701,6 +701,7 @@ struct ALADDINApp: App {
                 let locManager = localizationManager
                 // ✅ БЕЗОПАСНО: Теперь можно делать Keychain операции - приложение уже инициализировано
                 crashLog("🔴 ALADDINApp.onAppear: Безопасная инициализация Keychain операций...")
+                #if DEBUG
                 Task { @MainActor in
                     do {
                         try await Task.sleep(nanoseconds: 200_000_000) // 0.2 секунды задержки
@@ -710,6 +711,9 @@ struct ALADDINApp: App {
                         crashLog("⚠️ Keychain repair failed safely: \(error.localizedDescription)")
                     }
                 }
+                #else
+                crashLog("ℹ️ RELEASE: Keychain repair skipped (only available in DEBUG)")
+                #endif
 
                 crashLog("🔴 ALADDINApp.onAppear: Вызов initializeNavigation...")
                 initializeNavigation(navigationManager: navManager, localizationManager: locManager)

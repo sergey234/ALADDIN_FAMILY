@@ -1,6 +1,0 @@
-version: "Apple Swift version 5.5.2 (swiftlang-1300.0.47.5 clang-1300.0.29.30)"
-options: "94234daa3a69b45d85b08be1ccf07653ada4826b8d8abb63cc6ffa4ef9606c04"
-build_start_time: [1764331743, 740875005]
-build_end_time: [1764331747, 585726022]
-inputs:
-  "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/ALADDIN/ALADDINPacketTunnel/PacketTunnelProvider.swift": [1764070047, 278389692]
