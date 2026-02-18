@@ -416,45 +416,20 @@ struct ALADDINApp: App {
                     case .analytics:
                         AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .settings:
-                        // 🚨 [CRASH_DIAG] МИНИМАЛЬНЫЙ ТЕСТ: Простой VStack вместо SettingsScreen
-                        // Если простой View работает - проблема в SettingsScreen коде
-                        AnyView(
-                            VStack(spacing: 20) {
-                                Text("🚨 SETTINGS SCREEN MINIMAL TEST")
-                                    .font(.title)
-                                    .foregroundColor(.red)
-
-                                Text("If you see this - basic View creation works!")
-                                    .foregroundColor(.green)
-                                    .multilineTextAlignment(.center)
-
-                                VStack(alignment: .leading, spacing: 10) {
-                                    Text("✅ Basic VStack: WORKS")
-                                    Text("✅ No complex logic: SAFE")
-                                    Text("✅ No computed properties: SAFE")
-                                    Text("❓ If crash here - EnvironmentObject issue")
-                                }
-                                .padding()
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(8)
-
-                                Button("Go Back to Onboarding") {
-                                    navigationManager.navigateTo(.onboarding)
-                                }
-                                .padding()
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-
-                                Spacer()
-                            }
-                            .padding()
-                            .navigationBarTitle("Settings (Minimal Test)", displayMode: .inline)
-                            .onAppear {
-                                print("🚨 [CRASH_DIAG] Minimal SettingsScreen appeared successfully!")
-                                print("🚨 [CRASH_DIAG] View creation works - issue is in SettingsScreen code")
-                            }
+                        // ✅ [FINAL FIX] НАСТОЯЩИЙ SettingsScreen с исправлениями EnvironmentObject
+                        // Тестируем все наши исправления Build 61-62
+                        let settingsView = SettingsScreen(
+                            navigationManager: navigationManager,
+                            localizationManager: localizationManager
                         )
+
+                        AnyView(settingsView.id("settings").onAppear {
+                            print("🚨 [FINAL_TEST] SettingsScreen created with EnvironmentObject fixes")
+                            print("🚨 [FINAL_TEST] navigationManager: \(navigationManager)")
+                            print("🚨 [FINAL_TEST] localizationManager: \(localizationManager)")
+                            print("🚨 [FINAL_TEST] Thread: \(Thread.isMainThread)")
+                            print("🚨 [FINAL_TEST] Build 62 EnvironmentObject fixes active!")
+                        })
                     case .settingsDiagnostic:
                         // 🚨 [CRASH_DIAG] ТЕСТИРОВАНИЕ SettingsDiagnostic screen
                         AnyView(SettingsScreenDiagnostic()

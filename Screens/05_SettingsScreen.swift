@@ -234,74 +234,21 @@ struct SettingsScreen: View {
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showChildProtectionCompliance) {
-            ComplianceView(section: .childProtection)
-                .environmentObject(localizationManager)
+            ComplianceView(section: .childProtection, localizationManager: localizationManager)
         }
         .sheet(isPresented: $showDataProtectionCompliance) {
-            ComplianceView(section: .dataProtection)
-                .environmentObject(localizationManager)
+            ComplianceView(section: .dataProtection, localizationManager: localizationManager)
         }
         .onAppear {
-            // ✅ [FIX 2] ИНИЦИАЛИЗАЦИЯ TariffManager после того, как View полностью создана
-            // Используем State wrapper для безопасной замены
+            // ✅ [FINAL FIX] МИНИМАЛЬНЫЙ onAppear - только TariffManager инициализация
+            // Убрана вся диагностика и сложная логика для предотвращения крашей
             DispatchQueue.main.async {
                 self.tariffManagerWrapper = TariffManager.shared
-                // ✅ [FIX 3] ОБНОВЛЕНИЕ protectionLevel только после инициализации TariffManager
                 self.protectionLevel = self.calculateProtectionLevel()
             }
 
-            // 🚨 [CRASH_DIAG] КРИТИЧЕСКИЙ МАРКЕР: onAppear достигнут!
-            print("🚨 [CRASH_DIAG] SettingsScreen.onAppear() STARTED!")
-            print("🚨 [CRASH_DIAG] TariffManager initialized safely: \(tariffManager.currentTariff)")
-            print("🚨 [CRASH_DIAG] Protection level set to: \(protectionLevel)")
-            print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
-            print("🚨 [CRASH_DIAG] Time: \(Date())")
-
-            // 🚨 [CRASH_DIAG] ПРОВЕРКА EnvironmentObject DEPENDENCIES
-            print("🚨 [CRASH_DIAG] === ENVIRONMENT OBJECT CHECK ===")
-            print("🚨 [CRASH_DIAG] navigationManager type: \(type(of: navigationManager))")
-            print("🚨 [CRASH_DIAG] navigationManager currentScreen: \(navigationManager.currentScreen)")
-            print("🚨 [CRASH_DIAG] localizationManager type: \(type(of: localizationManager))")
-            print("🚨 [CRASH_DIAG] localizationManager currentLanguage: \(localizationManager.currentLanguage)")
-            print("🚨 [CRASH_DIAG] tariffManager type: \(type(of: tariffManager))")
-            print("🚨 [CRASH_DIAG] tariffManager currentTariff: \(tariffManager.currentTariff)")
-
-            // 🚨 [CRASH_DIAG] ТЕСТИРОВАНИЕ localizationManager
-            do {
-                let testKey = "settings_title"
-                let localizedResult = try localizationManager.localized(testKey)
-                print("🚨 [CRASH_DIAG] Localization test successful: '\(localizedResult)'")
-            } catch {
-                print("🚨 [CRASH_DIAG] Localization test FAILED: \(error)")
-            }
-
-            print("🚨 [CRASH_DIAG] === ENVIRONMENT OBJECT CHECK COMPLETED ===")
-
-            // ✅ [PHASE 6] API ERROR HANDLING: ИЗОЛИРУЕМ API ОТ UI
-            // Все API вызовы выполняем в Task для предотвращения блокировок UI
-            Task {
-                await initializeNotificationsIsolated()
-            }
-
-            // ✅ ПЕРЕНЕСЕНО: Логирование из computed properties в lifecycle методы
-            if SettingsDiagnosticsLogger.ENABLE_LOGS {
-                SettingsDiagnosticsLogger.shared.logSection("SettingsScreen", function: #function)
-                SettingsDiagnosticsLogger.shared.logFunction("onAppear", message: "SettingsScreen появился на экране")
-                SettingsDiagnosticsLogger.shared.logCritical(#function, message: "SETTINGS_INIT: Thread = \(Thread.isMainThread)")
-
-                // ✅ ДОБАВЛЕНО: Логирование protectionLevel в безопасном месте
-                SettingsDiagnosticsLogger.shared.logCritical("protectionLevel", message: "CALCULATED_LEVEL_SUCCESS: \(protectionLevel)% for \(tariffManager.currentTariff.rawValue)")
-            }
-
-            print("🚨 [CRASH_DIAG] SettingsScreen.onAppear() COMPLETED successfully!")
-
-            initializeNotifications()
-
-            // 🚨 ПРОВЕРКА ПОСЛЕ ИНИЦИАЛИЗАЦИИ
-            if SettingsDiagnosticsLogger.ENABLE_LOGS {
-                SettingsDiagnosticsLogger.shared.logFunction("onAppear", message: "initializeNotifications() завершен")
-                SettingsDiagnosticsLogger.shared.logCritical(#function, message: "SETTINGS_READY: Готов к работе")
-            }
+            // ✅ МИНИМАЛЬНОЕ ЛОГИРОВАНИЕ - только факт достижения onAppear
+            print("✅ SettingsScreen.onAppear() - TariffManager initialized safely")
         }
         .withToast()
     }
