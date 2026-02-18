@@ -14,18 +14,12 @@ struct ComplianceView: View {
     }
 
     @Environment(\.dismiss) private var dismiss
-    // ✅ [FIX 6] Убраны @EnvironmentObject свойства - передача через конструктор
-    private let localizationManager: LocalizationManager
+    // ✅ [REVERT] Возвращаем @EnvironmentObject для совместимости
+    @EnvironmentObject private var localizationManager: LocalizationManager
     private let configurationService = ComponentConfigurationService.shared
     private let toastManager = ToastManager.shared
 
     let section: ComplianceSection
-
-    // ✅ [FIX 6] Конструктор для безопасной передачи
-    init(section: ComplianceSection, localizationManager: LocalizationManager) {
-        self.section = section
-        self.localizationManager = localizationManager
-    }
     
     // Child Protection
     @State private var childLegalProfile: String = "children"

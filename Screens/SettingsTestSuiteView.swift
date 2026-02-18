@@ -6,14 +6,9 @@ import SwiftUI
  * Для выявления точной точки краша
  */
 struct SettingsTestSuiteView: View {
-    // ✅ [FIX 5] Безопасная передача EnvironmentObject через конструктор
-    private let navigationManager: NavigationManager
-    private let localizationManager: LocalizationManager
-
-    init(navigationManager: NavigationManager, localizationManager: LocalizationManager) {
-        self.navigationManager = navigationManager
-        self.localizationManager = localizationManager
-    }
+    // ✅ [REVERT] Возвращаем @EnvironmentObject для совместимости
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
 
     var body: some View {
         VStack(spacing: 20) {
@@ -117,11 +112,10 @@ struct SettingsTestSuiteView: View {
 
     private func computedPropertiesTest() -> AnyView {
         AnyView(VStack(alignment: .leading) {
-            // ✅ [FIX 5] Создаем временный SettingsScreen с безопасной инъекцией
-            let tempSettings = SettingsScreen(
-                navigationManager: navigationManager,
-                localizationManager: localizationManager
-            )
+            // ✅ [REVERT] Создаем временный SettingsScreen с EnvironmentObject
+            let tempSettings = SettingsScreen()
+                .environmentObject(navigationManager)
+                .environmentObject(localizationManager)
 
             Text("Создание SettingsScreen: \(tempSettings as AnyObject? != nil ? "✅" : "❌")")
                 .foregroundColor(tempSettings as AnyObject? != nil ? .green : .red)

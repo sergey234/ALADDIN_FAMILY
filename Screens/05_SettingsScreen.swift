@@ -53,25 +53,10 @@ struct SettingsScreen: View {
     // MARK: - State
     
     @Environment(\.dismiss) private var dismiss
-    // ✅ [FIX 5] Убраны @EnvironmentObject свойства - передаем через конструктор
-    // Это предотвращает проблемы с nil EnvironmentObject во время View construction
-    private let navigationManager: NavigationManager
-    private let localizationManager: LocalizationManager
-
-    // ✅ [FIX 5] Конструктор для безопасной передачи EnvironmentObject
-    init(navigationManager: NavigationManager, localizationManager: LocalizationManager) {
-        self.navigationManager = navigationManager
-        self.localizationManager = localizationManager
-
-        // 🚨 [CRASH_DIAG] Логируем создание с безопасной инъекцией
-        print("🚨 [CRASH_DIAG] SettingsScreen.init() with safe EnvironmentObject injection")
-        print("🚨 [CRASH_DIAG] navigationManager: \(navigationManager)")
-        print("🚨 [CRASH_DIAG] localizationManager: \(localizationManager)")
-        print("🚨 [CRASH_DIAG] Thread: \(Thread.isMainThread)")
-
-        // 🚨 [CRASH_DIAG] REMOTE DEBUGGING: Логируем в UserDefaults
-        logToUserDefaults("🚨 [CRASH_DIAG] SettingsScreen.init() with safe injection - Thread: \(Thread.isMainThread)")
-    }
+    // ✅ [REVERT] Возвращаем @EnvironmentObject для совместимости с modal views
+    // Modal views все еще ожидают EnvironmentObject через .environmentObject()
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
 
     // ✅ [FIX 2] ObservedObject'ы с отложенной инициализацией для безопасности
     @ObservedObject private var notificationManager = NotificationManager.shared
@@ -234,10 +219,12 @@ struct SettingsScreen: View {
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showChildProtectionCompliance) {
-            ComplianceView(section: .childProtection, localizationManager: localizationManager)
+            ComplianceView(section: .childProtection)
+                .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showDataProtectionCompliance) {
-            ComplianceView(section: .dataProtection, localizationManager: localizationManager)
+            ComplianceView(section: .dataProtection)
+                .environmentObject(localizationManager)
         }
         .onAppear {
             // ✅ [FINAL FIX] МИНИМАЛЬНЫЙ onAppear - только TariffManager инициализация
@@ -1104,9 +1091,8 @@ struct SettingsScreen: View {
 
 struct SettingsScreen_Previews: PreviewProvider {
     static var previews: some View {
-        SettingsScreen(
-            navigationManager: NavigationManager(),
-            localizationManager: LocalizationManager()
-        )
+        SettingsScreen()
+            .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager())
     }
 }

@@ -377,11 +377,10 @@ struct MainScreen: View {
                             
                             // Настройки карточка
                             NavigationLink(destination: Group {
-                                // ✅ [FIX 5] Безопасное создание SettingsScreen с явной передачей EnvironmentObject
-                                SettingsScreen(
-                                    navigationManager: navigationManager,
-                                    localizationManager: localizationManager
-                                )
+                                // ✅ [REVERT] SettingsScreen с EnvironmentObject
+                                SettingsScreen()
+                                    .environmentObject(navigationManager)
+                                    .environmentObject(localizationManager)
                             }) {
                                 VStack(spacing: 8) {
                                     Text("⚙️")

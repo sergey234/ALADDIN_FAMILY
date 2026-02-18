@@ -416,20 +416,17 @@ struct ALADDINApp: App {
                     case .analytics:
                         AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .settings:
-                        // ✅ [FINAL FIX] НАСТОЯЩИЙ SettingsScreen с исправлениями EnvironmentObject
-                        // Тестируем все наши исправления Build 61-62
-                        let settingsView = SettingsScreen(
-                            navigationManager: navigationManager,
-                            localizationManager: localizationManager
-                        )
-
-                        AnyView(settingsView.id("settings").onAppear {
-                            print("🚨 [FINAL_TEST] SettingsScreen created with EnvironmentObject fixes")
-                            print("🚨 [FINAL_TEST] navigationManager: \(navigationManager)")
-                            print("🚨 [FINAL_TEST] localizationManager: \(localizationManager)")
-                            print("🚨 [FINAL_TEST] Thread: \(Thread.isMainThread)")
-                            print("🚨 [FINAL_TEST] Build 62 EnvironmentObject fixes active!")
-                        })
+                        // ✅ [REVERT] SettingsScreen с EnvironmentObject через модификатор
+                        // Modal views требуют EnvironmentObject через .environmentObject()
+                        AnyView(SettingsScreen()
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .id("settings")
+                            .onAppear {
+                                print("🚨 [FINAL_TEST] SettingsScreen created with EnvironmentObject fixes")
+                                print("🚨 [FINAL_TEST] Thread: \(Thread.isMainThread)")
+                                print("🚨 [FINAL_TEST] Build 62 EnvironmentObject fixes active!")
+                            })
                     case .settingsDiagnostic:
                         // 🚨 [CRASH_DIAG] ТЕСТИРОВАНИЕ SettingsDiagnostic screen
                         AnyView(SettingsScreenDiagnostic()
@@ -441,17 +438,16 @@ struct ALADDINApp: App {
                             })
 
                     case .settingsTest:
-                        // ✅ [FIX 5] Безопасное создание SettingsScreen с явной передачей EnvironmentObject
-                        let fullSettingsView = SettingsScreen(
-                            navigationManager: navigationManager,
-                            localizationManager: localizationManager
-                        )
-
-                        AnyView(fullSettingsView.id("settingsTest").onAppear {
-                            print("🚨 [CRASH_DIAG] About to create FULL SettingsScreen with computed properties")
-                            print("🚨 [CRASH_DIAG] FULL SettingsScreen View created with computed properties")
-                            print("🚨 [CRASH_DIAG] settingsTest screen appeared")
-                        })
+                        // ✅ [REVERT] SettingsScreen с EnvironmentObject
+                        AnyView(SettingsScreen()
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .id("settingsTest")
+                            .onAppear {
+                                print("🚨 [CRASH_DIAG] About to create FULL SettingsScreen with computed properties")
+                                print("🚨 [CRASH_DIAG] FULL SettingsScreen View created with computed properties")
+                                print("🚨 [CRASH_DIAG] settingsTest screen appeared")
+                            })
 
                     case .settingsFallback:
                         // 🚨 [CRASH_DIAG] FALLBACK SettingsScreen без сложной логики
@@ -459,10 +455,9 @@ struct ALADDINApp: App {
 
                     case .settingsTestSuite:
                         // ✅ [FIX 5] Безопасное создание SettingsTestSuiteView
-                        AnyView(SettingsTestSuiteView(
-                            navigationManager: navigationManager,
-                            localizationManager: localizationManager
-                        ))
+                        AnyView(SettingsTestSuiteView()
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
                     case .aiAssistant:
                         AnyView(AIAssistantScreen().id("aiAssistant").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .parentalControl:
