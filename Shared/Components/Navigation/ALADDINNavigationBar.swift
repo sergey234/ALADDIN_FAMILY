@@ -308,6 +308,7 @@ private extension NavigationManager.ALADDINScreen {
         case .networkProtection: return "nav_screen_network_protection"
         case .analytics: return "nav_screen_analytics"
         case .settings: return "nav_screen_settings"
+        case .settingsDiagnostic: return "nav_screen_settings_diagnostic"
         case .aiAssistant: return "nav_screen_ai_assistant"
         case .parentalControl: return "nav_screen_parental_control"
         case .childInterface: return "nav_screen_child_interface"

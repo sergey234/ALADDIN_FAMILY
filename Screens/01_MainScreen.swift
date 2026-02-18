@@ -377,16 +377,11 @@ struct MainScreen: View {
                             
                             // Настройки карточка
                             NavigationLink(destination: Group {
-                                // 🔥 КРИТИЧЕСКОЕ: ДИАГНОСТИЧЕСКИЙ РЕЖИМ ВКЛЮЧЕН
-                                // Этап 1: Диагностика корневой причины крашей
-                                SettingsScreenDiagnostic()
+                                // 🔥 ВРЕМЕННО: ВКЛЮЧЕН ОБЫЧНЫЙ РЕЖИМ ДЛЯ СБОРКИ
+                                // Диагностика доступна через кнопку в SettingsScreen
+                                SettingsScreen()
                                     .environmentObject(navigationManager)
                                     .environmentObject(localizationManager)
-
-                                // Обычный режим (закомментирован для диагностики)
-                                // SettingsScreen()
-                                //     .environmentObject(navigationManager)
-                                //     .environmentObject(localizationManager)
                             }) {
                                 VStack(spacing: 8) {
                                     Text("⚙️")

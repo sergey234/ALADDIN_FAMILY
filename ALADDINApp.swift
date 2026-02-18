@@ -420,7 +420,7 @@ struct ALADDINApp: App {
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager))
                     case .settingsDiagnostic:
-                        AnyView(SettingsScreenDiagnostic()
+                        AnyView(SettingsScreen()
                             .id("settingsDiagnostic")
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager))
