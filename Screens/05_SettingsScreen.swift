@@ -86,15 +86,8 @@ struct SettingsScreen: View {
     @State private var showPositioningSystemPicker: Bool = false
 
     // ✅ ЗАМЕНА computed property НА @State (чтобы избежать рекурсии)
-    @State private var cardBackgroundView: AnyView =
-        AnyView(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.gray.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                )
-        )
+    // ❌ ВРЕМЕННО ОТКЛЮЧЕНА ДЛЯ ТЕСТИРОВАНИЯ
+    // @State private var cardBackgroundView: AnyView = AnyView(Color.clear)
     
     // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
     @AppStorage("user_role") private var userRole: String = "user"
@@ -246,13 +239,13 @@ struct SettingsScreen: View {
             securityEnabled = notificationManager.notificationSettings.securityEnabled
             soundEnabled = notificationManager.notificationSettings.soundEnabled
 
-            // ✅ ОПТИМИЗАЦИЯ: Кэшируем значения защиты один раз при загрузке (ОТЛОЖЕННО)
-            print("🔍 [DIAG] SettingsScreen.onAppear: Запланирована отложенная инициализация защиты")
+            // ❌ ВРЕМЕННО ОТКЛЮЧЕНА ИНИЦИАЛИЗАЦИЯ ЗАЩИТЫ ДЛЯ ТЕСТИРОВАНИЯ
+            print("🔍 [DIAG] SettingsScreen.onAppear: Инициализация защиты временно отключена")
 
-            // 🔄 ОТЛОЖЕННАЯ ИНИЦИАЛИЗАЦИЯ через DispatchQueue
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                initializeProtectionLevel()
-            }
+            // 🔄 ОТЛОЖЕННАЯ ИНИЦИАЛИЗАЦИЯ через DispatchQueue (ОТКЛЮЧЕНА)
+            // DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            //     initializeProtectionLevel()
+            // }
 
             // 🔄 СБРОС ФЛАГА ЗАЩИТЫ
             isInitializing = false
@@ -376,7 +369,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackgroundView)
+        .background(Color.gray.opacity(0.1))
         .cardShadow()
     }
     
@@ -556,7 +549,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackgroundView)
+        .background(Color.gray.opacity(0.1))
         .cardShadow()
     }
     
@@ -591,7 +584,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackgroundView)
+        .background(Color.gray.opacity(0.1))
         .cardShadow()
     }
     
@@ -651,7 +644,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackgroundView)
+        .background(Color.gray.opacity(0.1))
         .cardShadow()
         .sheet(isPresented: $showPositioningSystemPicker) {
             PositioningSystemPickerView(
@@ -723,7 +716,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackgroundView)
+        .background(Color.gray.opacity(0.1))
         .cardShadow()
         .onAppear {
             if isAdmin && components.isEmpty {
@@ -885,7 +878,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackgroundView)
+        .background(Color.gray.opacity(0.1))
         .cardShadow()
     }
     
