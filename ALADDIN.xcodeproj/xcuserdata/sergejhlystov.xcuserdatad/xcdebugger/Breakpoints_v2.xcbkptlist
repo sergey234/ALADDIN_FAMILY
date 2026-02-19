@@ -32,8 +32,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "72"
             endingLineNumber = "72"
-            landmarkName = "OnboardingScreen"
-            landmarkType = "14">
+            landmarkName = "previews"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -48,8 +48,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "71"
             endingLineNumber = "71"
-            landmarkName = "OnboardingScreen"
-            landmarkType = "14">
+            landmarkName = "previews"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -74,8 +74,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "808"
             endingLineNumber = "808"
-            landmarkName = "settingRow(icon:title:subtitle:isEnabled:isBiometric:)"
-            landmarkType = "7">
+            landmarkName = "body"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -90,8 +90,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "807"
             endingLineNumber = "807"
-            landmarkName = "settingRow(icon:title:subtitle:isEnabled:isBiometric:)"
-            landmarkType = "7">
+            landmarkName = "body"
+            landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

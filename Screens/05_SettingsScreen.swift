@@ -77,10 +77,24 @@ struct SettingsScreen: View {
     
     // ✅ Согласие на обработку ПДн (152-ФЗ)
     @AppStorage("personal_data_consent_accepted") private var consentAccepted: Bool = false
-    
+
+    // ✅ ЗАЩИТА ОТ ПОВТОРНОЙ ИНИЦИАЛИЗАЦИИ
+    @State private var isInitializing = false
+
     // ✅ Система позиционирования
     private let positioningService = PositioningSystemService.shared
     @State private var showPositioningSystemPicker: Bool = false
+
+    // ✅ ЗАМЕНА computed property НА @State (чтобы избежать рекурсии)
+    @State private var cardBackgroundView: AnyView =
+        AnyView(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.gray.opacity(0.5))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                )
+        )
     
     // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
     @AppStorage("user_role") private var userRole: String = "user"
@@ -211,6 +225,13 @@ struct SettingsScreen: View {
                 .environmentObject(localizationManager)
         }
         .onAppear {
+            // 🔍 [DIAG] ЗАЩИТА ОТ ПОВТОРНОЙ ИНИЦИАЛИЗАЦИИ
+            guard !isInitializing else {
+                print("🔍 [DIAG] SettingsScreen.onAppear: ПОВТОРНАЯ ИНИЦИАЛИЗАЦИЯ ЗАБЛОКИРОВАНА")
+                return
+            }
+            isInitializing = true
+
             // 🔍 [DIAG] ДОБАВЛЕНЫ ДИАГНОСТИЧЕСКИЕ ЛОГИ ДЛЯ ТЕСТИРОВАНИЯ
             print("🔍 [DIAG] SettingsScreen.onAppear: НАЧАЛО")
             print("🔍 [DIAG] SettingsScreen.onAppear: Thread.isMainThread: \(Thread.isMainThread)")
@@ -225,42 +246,16 @@ struct SettingsScreen: View {
             securityEnabled = notificationManager.notificationSettings.securityEnabled
             soundEnabled = notificationManager.notificationSettings.soundEnabled
 
-            // ✅ ОПТИМИЗАЦИЯ: Кэшируем значения защиты один раз при загрузке
-            print("🔍 [DIAG] SettingsScreen.onAppear: Начинаем кэширование значений защиты")
-            let tariff = tariffManager.currentTariff
-            let card = tariff.createCard(localizationManager: localizationManager)
+            // ✅ ОПТИМИЗАЦИЯ: Кэшируем значения защиты один раз при загрузке (ОТЛОЖЕННО)
+            print("🔍 [DIAG] SettingsScreen.onAppear: Запланирована отложенная инициализация защиты")
 
-            // Вычисляем процент на основе доступных функций тарифа
-            let totalProtectionFeatures = 100 // Всего функций защиты от угроз
-            let totalParentalFeatures = 32    // Всего функций родительского контроля
-            let totalAdditionalFeatures = 10  // Примерно дополнительных функций
-
-            let totalAvailable = Double(card.protectionCount + card.parentalControlCount + card.additionalFeatures.count)
-            let totalPossible = Double(totalProtectionFeatures + totalParentalFeatures + totalAdditionalFeatures)
-
-            cachedProtectionLevel = min(100, (totalAvailable / totalPossible) * 100)
-            print("🔍 [DIAG] SettingsScreen.onAppear: cachedProtectionLevel = \(cachedProtectionLevel)")
-
-            // Кэшируем текст и цвет
-            switch cachedProtectionLevel {
-            case 0...25:
-                cachedProtectionLevelText = localizationManager.localized("settings_protection_level_low")
-                cachedProtectionColor = .red
-            case 26...50:
-                cachedProtectionLevelText = localizationManager.localized("settings_protection_level_medium")
-                cachedProtectionColor = .orange
-            case 51...75:
-                cachedProtectionLevelText = localizationManager.localized("settings_protection_level_high")
-                cachedProtectionColor = .yellow
-            case 76...100:
-                cachedProtectionLevelText = localizationManager.localized("settings_protection_level_maximum")
-                cachedProtectionColor = .green
-            default:
-                cachedProtectionLevelText = localizationManager.localized("settings_protection_level_medium")
-                cachedProtectionColor = .primaryBlue
+            // 🔄 ОТЛОЖЕННАЯ ИНИЦИАЛИЗАЦИЯ через DispatchQueue
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                initializeProtectionLevel()
             }
 
-            print("🔍 [DIAG] SettingsScreen.onAppear: cachedProtectionLevelText = \(cachedProtectionLevelText)")
+            // 🔄 СБРОС ФЛАГА ЗАЩИТЫ
+            isInitializing = false
             print("🔍 [DIAG] SettingsScreen.onAppear: ЗАВЕРШЕНИЕ")
         }
         // Синхронизация изменений настроек уведомлений с notificationManager
@@ -381,7 +376,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
+        .background(cardBackgroundView)
         .cardShadow()
     }
     
@@ -561,7 +556,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
+        .background(cardBackgroundView)
         .cardShadow()
     }
     
@@ -596,7 +591,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
+        .background(cardBackgroundView)
         .cardShadow()
     }
     
@@ -656,7 +651,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
+        .background(cardBackgroundView)
         .cardShadow()
         .sheet(isPresented: $showPositioningSystemPicker) {
             PositioningSystemPickerView(
@@ -728,7 +723,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
+        .background(cardBackgroundView)
         .cardShadow()
         .onAppear {
             if isAdmin && components.isEmpty {
@@ -890,7 +885,7 @@ struct SettingsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
+        .background(cardBackgroundView)
         .cardShadow()
     }
     
@@ -1102,14 +1097,7 @@ struct SettingsScreen: View {
     // ✅ УДАЛЕНО: handleProtectionLevelChange и связанные функции
     // Ползунок теперь только для чтения, защита управляется сервером через тариф
     
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: CornerRadius.large)
-            .fill(Color.backgroundMedium.opacity(0.5))
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
-    }
+    // ✅ УДАЛЕНА computed property cardBackground - заменена на @State cardBackgroundView
     
     // MARK: - Theme Functions
     
@@ -1168,6 +1156,48 @@ struct SettingsScreen: View {
                 print("🔕 Разрешение на уведомления отклонено")
             }
         }
+    }
+
+    // ✅ НОВАЯ ФУНКЦИЯ: ОТДЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ УРОВНЯ ЗАЩИТЫ
+    private func initializeProtectionLevel() {
+        print("🔍 [DIAG] initializeProtectionLevel: НАЧАЛО")
+
+        // Вся логика кэширования, которая была в onAppear
+        let tariff = tariffManager.currentTariff
+        let card = tariff.createCard(localizationManager: localizationManager)
+
+        // Вычисляем процент на основе доступных функций тарифа
+        let totalProtectionFeatures = 100 // Всего функций защиты от угроз
+        let totalParentalFeatures = 32    // Всего функций родительского контроля
+        let totalAdditionalFeatures = 10  // Примерно дополнительных функций
+
+        let totalAvailable = Double(card.protectionCount + card.parentalControlCount + card.additionalFeatures.count)
+        let totalPossible = Double(totalProtectionFeatures + totalParentalFeatures + totalAdditionalFeatures)
+
+        cachedProtectionLevel = min(100, (totalAvailable / totalPossible) * 100)
+        print("🔍 [DIAG] initializeProtectionLevel: cachedProtectionLevel = \(cachedProtectionLevel)")
+
+        // Кэшируем текст и цвет с localizationManager (теперь безопасно, вне onAppear)
+        switch cachedProtectionLevel {
+        case 0...25:
+            cachedProtectionLevelText = localizationManager.localized("settings_protection_level_low")
+            cachedProtectionColor = .red
+        case 26...50:
+            cachedProtectionLevelText = localizationManager.localized("settings_protection_level_medium")
+            cachedProtectionColor = .orange
+        case 51...75:
+            cachedProtectionLevelText = localizationManager.localized("settings_protection_level_high")
+            cachedProtectionColor = .yellow
+        case 76...100:
+            cachedProtectionLevelText = localizationManager.localized("settings_protection_level_maximum")
+            cachedProtectionColor = .green
+        default:
+            cachedProtectionLevelText = localizationManager.localized("settings_protection_level_medium")
+            cachedProtectionColor = .primaryBlue
+        }
+
+        print("🔍 [DIAG] initializeProtectionLevel: cachedProtectionLevelText = \(cachedProtectionLevelText)")
+        print("🔍 [DIAG] initializeProtectionLevel: ЗАВЕРШЕНИЕ")
     }
 }
 
