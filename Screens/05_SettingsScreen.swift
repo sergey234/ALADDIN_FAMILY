@@ -4,30 +4,9 @@ import SwiftUI
 /// Экран настроек - управление приложением и профилем
 /// Источник дизайна: /mobile/wireframes/05_settings_screen.html
 struct SettingsScreen: View {
-
-    // ✅ [FIX 5] Убрана старая init() - теперь только конструктор с параметрами
-
-    // 🚨 [CRASH_DIAG] REMOTE DEBUGGING FUNCTION
-    private func logToUserDefaults(_ message: String) {
-        let key = "crash_diagnostic_logs"
-        var logs = UserDefaults.standard.array(forKey: key) as? [String] ?? []
-
-        let timestampedMessage = "[\(Date().formatted(.iso8601))] \(message)"
-        logs.append(timestampedMessage)
-
-        // Ограничиваем до 50 записей для экономии памяти
-        if logs.count > 50 {
-            logs.removeFirst(logs.count - 50)
-        }
-
-        UserDefaults.standard.set(logs, forKey: key)
-        UserDefaults.standard.synchronize()
-
-        print(message) // Также выводим в консоль
-    }
-
+    
     // MARK: - Theme Mode
-
+    
     enum ThemeMode: String, CaseIterable {
         case light = "light"
         case dark = "dark"
@@ -51,21 +30,19 @@ struct SettingsScreen: View {
     }
     
     // MARK: - State
-    
-    @Environment(\.dismiss) private var dismiss
-    // ✅ [REVERT] Возвращаем @EnvironmentObject для совместимости с modal views
-    // Modal views все еще ожидают EnvironmentObject через .environmentObject()
-    @EnvironmentObject private var navigationManager: NavigationManager
-    @EnvironmentObject private var localizationManager: LocalizationManager
 
-    // ✅ [FIX 2] ObservedObject'ы с отложенной инициализацией для безопасности
-    @ObservedObject private var notificationManager = NotificationManager.shared
-    @ObservedObject private var securityManager = SecurityManager.shared
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager // ✅ Добавляем LocalizationManager
+
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @ObservedObject для singleton'ов (не @StateObject!)
+    private let notificationManager = NotificationManager.shared // Убрали @ObservedObject чтобы избежать бесконечного цикла
+    private let securityManager = SecurityManager.shared
     @State private var isNetworkProtectionEnabled: Bool = true
     @AppStorage("profile_name") private var storedName: String = ""
     @AppStorage("profile_alias") private var storedAlias: String = ""
     @AppStorage("settings_notifications_enabled") private var isNotificationsEnabled: Bool = true
-    @State private var isBiometricEnabled: Bool = UserDefaults.standard.bool(forKey: "biometricEnabled")
+    @State private var isBiometricEnabled: Bool = false // Будет инициализировано в onAppear
     @State private var showProfileEdit: Bool = false
     @State private var showLanguageSettings: Bool = false
     @State private var showSupportScreen: Bool = false
@@ -75,18 +52,11 @@ struct SettingsScreen: View {
     @State private var selectedTheme: ThemeMode = .system
     @State private var showProtectionExplanation: Bool = false
     @State private var showAdvancedProtection: Bool = false
-    @ObservedObject private var featuresManager = ProtectionFeaturesManager.shared
-    @ObservedObject private var toastManager = ToastManager.shared
-    @ObservedObject private var historyManager = ProtectionLevelHistoryManager.shared
-
-    // ✅ [FIX 2] TariffManager инициализируется только в onAppear для безопасности
-    @State private var tariffManagerWrapper: TariffManager? = nil
-    private var tariffManager: TariffManager {
-        tariffManagerWrapper ?? TariffManager.placeholder
-    }
-
-    // ✅ [FIX 3] Уровень защиты хранится в @State, обновляется только после инициализации
-    @State private var protectionLevel: Double = 25.0 // Дефолтное значение
+    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @ObservedObject для singleton'ов с binding, обычные переменные для остальных
+    private let featuresManager = ProtectionFeaturesManager.shared
+    private let toastManager = ToastManager.shared
+    private let historyManager = ProtectionLevelHistoryManager.shared
+    private let tariffManager = TariffManager.shared // Убрали @ObservedObject чтобы избежать бесконечного цикла
     @State private var showProtectionHistory: Bool = false
     
     // Navigation для менеджеров
@@ -95,65 +65,119 @@ struct SettingsScreen: View {
     @State private var showVoiceControl: Bool = false
     @State private var showChildProtectionCompliance: Bool = false
     @State private var showDataProtectionCompliance: Bool = false
+
+    // ✅ ОПТИМИЗАЦИЯ: Кэшированные значения вместо computed properties
+    @State private var cachedProtectionLevel: Double = 25.0
+    @State private var cachedProtectionLevelText: String = "Низкий"
+    @State private var cachedProtectionColor: Color = .red
+
+    // ✅ ЛОКАЛЬНЫЕ @State ДЛЯ НАСТРОЕК УВЕДОМЛЕНИЙ (чтобы избежать @ObservedObject)
+    @State private var securityEnabled: Bool = false
+    @State private var soundEnabled: Bool = false
     
     // ✅ Согласие на обработку ПДн (152-ФЗ)
     @AppStorage("personal_data_consent_accepted") private var consentAccepted: Bool = false
     
     // ✅ Система позиционирования
-    @StateObject private var positioningService = PositioningSystemService.shared
+    private let positioningService = PositioningSystemService.shared
     @State private var showPositioningSystemPicker: Bool = false
+    
+    // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
+    @AppStorage("user_role") private var userRole: String = "user"
+    @State private var components: [ComponentStatus] = []
+    @State private var isLoadingComponents: Bool = false
+    @State private var componentsError: String? = nil
+    private let apiService = APIService.shared
+    
+    var isAdmin: Bool {
+        userRole == "admin" || userRole == "administrator"
+    }
     
     // MARK: - Body
     
     var body: some View {
-        // 🔍 [CRASH_DIAG] ДИАГНОСТИЧЕСКАЯ ВЕРСИЯ - проверяем каждый шаг
-        let _ = print("🔍 [CRASH_DIAG] body() called - starting diagnostic")
+        // 🔍 [DIAG] ДОБАВЛЕН ДИАГНОСТИЧЕСКИЙ ЛОГ В НАЧАЛО BODY
+        let _ = print("🔍 [DIAG] SettingsScreen.body: НАЧАЛО РЕНДЕРИНГА")
 
-        let _ = print("🔍 [CRASH_DIAG] Creating ZStack...")
         ZStack {
-            let _ = print("🔍 [CRASH_DIAG] Creating background...")
-            Color.blue.opacity(0.1)
+            // Фон
+            LinearGradient.backgroundGradient
                 .ignoresSafeArea()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(localizationManager.localized("settings_accessibility_background"))
+            
+            VStack(spacing: 0) {
+                // Навигационная панель
+                navigationHeader
+                
+                // Основной контент
+                ScrollView(.vertical, showsIndicators: false) {
+                    let _ = print("🔍 [DIAG] SettingsScreen.body: ScrollView создан")
 
-            let _ = print("🔍 [CRASH_DIAG] Creating VStack...")
-            VStack(spacing: 20) {
-                let _ = print("🔍 [CRASH_DIAG] Creating title Text...")
-                Text("⚙️ Settings Screen")
-                    .font(.title)
-                    .foregroundColor(.primary)
+                    VStack(spacing: Spacing.l) {
+                        let _ = print("🔍 [DIAG] SettingsScreen.body: VStack создан")
 
-                let _ = print("🔍 [CRASH_DIAG] Creating subtitle Text...")
-                Text("Basic functionality restored")
-                    .foregroundColor(.secondary)
+                        // Профиль пользователя
+                        let _ = print("🔍 [DIAG] SettingsScreen.body: Начинаем profileSection")
+                        profileSection
 
-                let _ = print("🔍 [CRASH_DIAG] Creating Button...")
-                Button("Go Back") {
-                    print("🔍 [CRASH_DIAG] Button tapped - navigating to onboarding")
-                    navigationManager.navigateTo(.onboarding)
+                        // Защита и безопасность
+                        let _ = print("🔍 [DIAG] SettingsScreen.body: Начинаем securitySection")
+                        securitySection
+
+                        // Уведомления
+                        let _ = print("🔍 [DIAG] SettingsScreen.body: Начинаем notificationsSection")
+                        notificationsSection
+
+                        // Приложение
+                        let _ = print("🔍 [DIAG] SettingsScreen.body: Начинаем appSection")
+                        appSection
+                            .id("app_section_\(localizationManager.currentLanguage.rawValue)")
+                        
+                        // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
+                        if isAdmin {
+                            systemComponentsSection
+                                .id("system_components_section_\(localizationManager.currentLanguage.rawValue)")
+                        }
+                        
+                        // Дополнительно
+                        additionalSection
+                            .id("additional_section_\(localizationManager.currentLanguage.rawValue)")
+                        
+                        // Отступ снизу для удобства прокрутки
+                        Spacer(minLength: 100)
+                    }
+                    .padding(.horizontal, Spacing.screenPadding)
+                    .padding(.bottom, Spacing.xxl)
                 }
-                .padding()
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(localizationManager.localized("settings_accessibility_list"))
             }
-            .padding()
         }
         .navigationBarHidden(true)
-        .onAppear {
-            // 🔍 ПОДРОБНАЯ ДИАГНОСТИКА onAppear
-            print("🔍 [CRASH_DIAG] onAppear started")
-            print("🔍 [CRASH_DIAG] Thread.isMainThread: \(Thread.isMainThread)")
-            print("🔍 [CRASH_DIAG] Time: \(Date())")
-            print("🔍 [CRASH_DIAG] navigationManager available: \(navigationManager as AnyObject? != nil)")
-            print("🔍 [CRASH_DIAG] localizationManager available: \(localizationManager as AnyObject? != nil)")
-            print("✅ SettingsScreen: Basic view loaded successfully")
-            print("🔍 [CRASH_DIAG] onAppear completed")
+        // ✅ Пересоздаём View при изменении языка для обновления всех текстов
+        .id("settings_lang_\(localizationManager.currentLanguage.rawValue)")
+        .sheet(isPresented: $showProfileEdit) {
+            ProfileEditView()
+                .environmentObject(localizationManager)
         }
-        // 🚨 [CRASH_DIAG] ВРЕМЕННО УБРАНЫ ВСЕ MODALS ДЛЯ ДИАГНОСТИКИ
-        // .sheet(isPresented: $showProfileEdit) {
-        //     ProfileEditView()
-        //         .environmentObject(localizationManager)
-        // }
+        .sheet(isPresented: $showLanguageSettings) {
+            LanguageSettingsScreen()
+        }
+        .sheet(isPresented: $showSupportScreen) {
+            SupportScreen()
+        }
+        .sheet(isPresented: $showPrivacyPolicy) {
+            PrivacyPolicyScreen()
+        }
+        .sheet(isPresented: $showTermsOfService) {
+            TermsOfServiceScreen()
+        }
+        .sheet(isPresented: $showShareSheet) {
+            ShareSheet(activityItems: [
+                localizationManager.localized("settings_share_message")
+            ])
+        }
         .sheet(isPresented: $showProtectionExplanation) {
             ProtectionLevelExplanationModal(isPresented: $showProtectionExplanation, currentTariff: tariffManager.currentTariff)
                 .environmentObject(localizationManager)
@@ -187,15 +211,66 @@ struct SettingsScreen: View {
                 .environmentObject(localizationManager)
         }
         .onAppear {
-            // ✅ [FINAL FIX] МИНИМАЛЬНЫЙ onAppear - только TariffManager инициализация
-            // Убрана вся диагностика и сложная логика для предотвращения крашей
-            DispatchQueue.main.async {
-                self.tariffManagerWrapper = TariffManager.shared
-                self.protectionLevel = self.calculateProtectionLevel()
+            // 🔍 [DIAG] ДОБАВЛЕНЫ ДИАГНОСТИЧЕСКИЕ ЛОГИ ДЛЯ ТЕСТИРОВАНИЯ
+            print("🔍 [DIAG] SettingsScreen.onAppear: НАЧАЛО")
+            print("🔍 [DIAG] SettingsScreen.onAppear: Thread.isMainThread: \(Thread.isMainThread)")
+            print("🔍 [DIAG] SettingsScreen.onAppear: Time: \(Date())")
+
+            initializeNotifications()
+
+            // ✅ ИНИЦИАЛИЗАЦИЯ @State переменных (чтобы избежать бесконечного цикла)
+            isBiometricEnabled = UserDefaults.standard.bool(forKey: "biometricEnabled")
+
+            // Инициализация настроек уведомлений
+            securityEnabled = notificationManager.notificationSettings.securityEnabled
+            soundEnabled = notificationManager.notificationSettings.soundEnabled
+
+            // ✅ ОПТИМИЗАЦИЯ: Кэшируем значения защиты один раз при загрузке
+            print("🔍 [DIAG] SettingsScreen.onAppear: Начинаем кэширование значений защиты")
+            let tariff = tariffManager.currentTariff
+            let card = tariff.createCard(localizationManager: localizationManager)
+
+            // Вычисляем процент на основе доступных функций тарифа
+            let totalProtectionFeatures = 100 // Всего функций защиты от угроз
+            let totalParentalFeatures = 32    // Всего функций родительского контроля
+            let totalAdditionalFeatures = 10  // Примерно дополнительных функций
+
+            let totalAvailable = Double(card.protectionCount + card.parentalControlCount + card.additionalFeatures.count)
+            let totalPossible = Double(totalProtectionFeatures + totalParentalFeatures + totalAdditionalFeatures)
+
+            cachedProtectionLevel = min(100, (totalAvailable / totalPossible) * 100)
+            print("🔍 [DIAG] SettingsScreen.onAppear: cachedProtectionLevel = \(cachedProtectionLevel)")
+
+            // Кэшируем текст и цвет
+            switch cachedProtectionLevel {
+            case 0...25:
+                cachedProtectionLevelText = localizationManager.localized("settings_protection_level_low")
+                cachedProtectionColor = .red
+            case 26...50:
+                cachedProtectionLevelText = localizationManager.localized("settings_protection_level_medium")
+                cachedProtectionColor = .orange
+            case 51...75:
+                cachedProtectionLevelText = localizationManager.localized("settings_protection_level_high")
+                cachedProtectionColor = .yellow
+            case 76...100:
+                cachedProtectionLevelText = localizationManager.localized("settings_protection_level_maximum")
+                cachedProtectionColor = .green
+            default:
+                cachedProtectionLevelText = localizationManager.localized("settings_protection_level_medium")
+                cachedProtectionColor = .primaryBlue
             }
 
-            // ✅ МИНИМАЛЬНОЕ ЛОГИРОВАНИЕ - только факт достижения onAppear
-            print("✅ SettingsScreen.onAppear() - TariffManager initialized safely")
+            print("🔍 [DIAG] SettingsScreen.onAppear: cachedProtectionLevelText = \(cachedProtectionLevelText)")
+            print("🔍 [DIAG] SettingsScreen.onAppear: ЗАВЕРШЕНИЕ")
+        }
+        // Синхронизация изменений настроек уведомлений с notificationManager
+        .onChange(of: securityEnabled) { newValue in
+            notificationManager.notificationSettings.securityEnabled = newValue
+            notificationManager.saveSettings()
+        }
+        .onChange(of: soundEnabled) { newValue in
+            notificationManager.notificationSettings.soundEnabled = newValue
+            notificationManager.saveSettings()
         }
         .withToast()
     }
@@ -203,8 +278,7 @@ struct SettingsScreen: View {
     // MARK: - Navigation Header
     
     private var navigationHeader: some View {
-        print("🚨 [CRASH_DIAG] navigationHeader computed property called")
-        return ALADDINNavigationBar(
+        ALADDINNavigationBar(
             title: localizationManager.localized("settings_title"), // ✅ Локализованный заголовок
             subtitle: localizationManager.localized("settings_subtitle"), // ✅ Локализованный подзаголовок
             showBackButton: true,
@@ -219,6 +293,7 @@ struct SettingsScreen: View {
     // MARK: - Profile Section
     
     private var profileSection: some View {
+        print("🔍 [DIAG] profileSection: НАЧАЛО")
         let userInitial = storedName.isEmpty ? "?" : String(storedName.prefix(1).uppercased())
         let userName = storedName.isEmpty ? localizationManager.localized("profile_name_placeholder") : storedName
         let userAlias = storedAlias.isEmpty ? localizationManager.localized("profile_email_placeholder") : storedAlias
@@ -313,7 +388,8 @@ struct SettingsScreen: View {
     // MARK: - Security Section
     
     private var securitySection: some View {
-        VStack(spacing: Spacing.m) {
+        let _ = print("🔍 [DIAG] securitySection: НАЧАЛО")
+        return VStack(spacing: Spacing.m) {
             HStack {
                 Text(localizationManager.localized("security_section")) // ✅ Локализованный заголовок
                     .font(.h3)
@@ -359,11 +435,11 @@ struct SettingsScreen: View {
                                 }) {
                                     Image(systemName: "info.circle")
                                         .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(protectionColor)
+                                        .foregroundColor(cachedProtectionColor)
                                         .padding(6)
                                         .background(
                                             Circle()
-                                                .fill(protectionColor.opacity(0.15))
+                                                .fill(cachedProtectionColor.opacity(0.15))
                                         )
                                 }
                                 .padding(.leading, Spacing.xs)
@@ -372,8 +448,8 @@ struct SettingsScreen: View {
                             Text(
                                 String(
                                     format: localizationManager.localized("settings_protection_level_value"),
-                                    Int(protectionLevel),
-                                    protectionLevelText
+                                    Int(cachedProtectionLevel),
+                                    cachedProtectionLevelText
                                 ) + " (на основе тарифа)"
                             )
                                 .font(.caption)
@@ -388,14 +464,14 @@ struct SettingsScreen: View {
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                         
-                        Slider(value: .constant(protectionLevel), in: 0...100, step: 5) {
+                        Slider(value: .constant(cachedProtectionLevel), in: 0...100, step: 5) {
                             Text(localizationManager.localized("settings_protection_level"))
                         } minimumValueLabel: {
                             Text(percentText(0))
                         } maximumValueLabel: {
                             Text(percentText(100))
                         }
-                        .accentColor(protectionColor)
+                        .accentColor(cachedProtectionColor)
                         .disabled(true)
                         
                         Text(percentText(100))
@@ -437,7 +513,7 @@ struct SettingsScreen: View {
                         .fill(Color.backgroundMedium.opacity(0.3))
                 )
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel(String(format: localizationManager.localized("settings_protection_level_accessibility"), Int(protectionLevel)))
+                .accessibilityLabel(String(format: localizationManager.localized("settings_protection_level_accessibility"), Int(cachedProtectionLevel)))
                 
                 // ✅ Менеджеры (5 компонентов)
                 Divider()
@@ -492,7 +568,8 @@ struct SettingsScreen: View {
     // MARK: - Notifications Section
     
     private var notificationsSection: some View {
-        VStack(spacing: Spacing.m) {
+        let _ = print("🔍 [DIAG] notificationsSection: НАЧАЛО")
+        return VStack(spacing: Spacing.m) {
             HStack {
                 Text(localizationManager.localized("notifications_section")) // ✅ Локализованный заголовок
                     .font(.h3)
@@ -507,14 +584,14 @@ struct SettingsScreen: View {
                     icon: "bell.fill",
                     title: localizationManager.localized("push_notifications"), // ✅ Локализованный заголовок
                     subtitle: localizationManager.localized("push_notifications_subtitle"), // ✅ Локализованный подзаголовок
-                    isEnabled: $notificationManager.notificationSettings.securityEnabled
+                    isEnabled: $securityEnabled
                 )
                 
                 settingRow(
                     icon: "speaker.wave.2.fill",
                     title: localizationManager.localized("sound_notifications"), // ✅ Локализованный заголовок
                     subtitle: localizationManager.localized("sound_notifications_subtitle"), // ✅ Локализованный подзаголовок
-                    isEnabled: $notificationManager.notificationSettings.soundEnabled
+                    isEnabled: $soundEnabled
                 )
             }
         }
@@ -526,7 +603,8 @@ struct SettingsScreen: View {
     // MARK: - App Section
     
     private var appSection: some View {
-        VStack(spacing: Spacing.m) {
+        let _ = print("🔍 [DIAG] appSection: НАЧАЛО")
+        return VStack(spacing: Spacing.m) {
             HStack {
                 Text(localizationManager.localized("app_section")) // ✅ Локализованный заголовок
                     .font(.h3)
@@ -595,6 +673,160 @@ struct SettingsScreen: View {
         }
     }
     
+    // MARK: - System Components Section (✅ ЗАДАЧА 22)
+    
+    private var systemComponentsSection: some View {
+        VStack(spacing: Spacing.m) {
+            HStack {
+                Text(localizationManager.localized("system_components_title"))
+                    .font(.h3)
+                    .foregroundColor(.textPrimary)
+                    .accessibilityAddTraits(.isHeader)
+                
+                Spacer()
+                
+                // Кнопка обновления
+                Button(action: {
+                    loadComponents()
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 16))
+                        .foregroundColor(.primaryBlue)
+                        .rotationEffect(.degrees(isLoadingComponents ? 360 : 0))
+                        .animation(isLoadingComponents ? Animation.linear(duration: 1).repeatForever(autoreverses: false) : .default, value: isLoadingComponents)
+                }
+                .disabled(isLoadingComponents)
+            }
+            
+            if isLoadingComponents {
+                ProgressView()
+                    .padding()
+            } else if let error = componentsError {
+                VStack(spacing: Spacing.s) {
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.red)
+                    Button(localizationManager.localized("retry")) {
+                        loadComponents()
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding()
+            } else if components.isEmpty {
+                Text(localizationManager.localized("system_components_empty"))
+                    .font(.body)
+                    .foregroundColor(.textSecondary)
+                    .padding()
+            } else {
+                VStack(spacing: Spacing.s) {
+                    ForEach(components) { component in
+                        ComponentRow(component: component) {
+                            toggleComponent(component)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(Spacing.cardPadding)
+        .background(cardBackground)
+        .cardShadow()
+        .onAppear {
+            if isAdmin && components.isEmpty {
+                loadComponents()
+            }
+        }
+    }
+    
+    private func loadComponents() {
+        guard isAdmin else { return }
+        isLoadingComponents = true
+        componentsError = nil
+        
+        apiService.getComponentsList { [self] result in
+            isLoadingComponents = false
+            switch result {
+            case .success(let loadedComponents):
+                components = loadedComponents
+            case .failure(let error):
+                componentsError = error.localizedDescription
+                print("❌ Ошибка загрузки компонентов: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func toggleComponent(_ component: ComponentStatus) {
+        guard isAdmin else { return }
+        
+        Task {
+            do {
+                if component.isEnabled {
+                    _ = try await apiService.disableComponent(componentId: component.componentId)
+                } else {
+                    _ = try await apiService.enableComponent(componentId: component.componentId)
+                }
+                // Обновляем список компонентов
+                await MainActor.run {
+                    loadComponents()
+                }
+            } catch {
+                await MainActor.run {
+                    componentsError = error.localizedDescription
+                }
+            }
+        }
+    }
+    
+    // MARK: - Component Row View
+    
+    private struct ComponentRow: View {
+        let component: ComponentStatus
+        let onToggle: () -> Void
+        @EnvironmentObject private var localizationManager: LocalizationManager
+        
+        var body: some View {
+            HStack(spacing: Spacing.m) {
+                // Индикатор статуса
+                Circle()
+                    .fill(component.isEnabled ? Color.green : Color.gray)
+                    .frame(width: 12, height: 12)
+                
+                // Название компонента
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(component.componentId)
+                        .font(.bodyBold)
+                        .foregroundColor(.textPrimary)
+                    
+                    if let lastUpdate = component.lastUpdate {
+                        Text(String(format: localizationManager.localized("system_components_last_update"), formatDate(lastUpdate)))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+                
+                Spacer()
+                
+                // Toggle
+                Toggle("", isOn: Binding(
+                    get: { component.isEnabled },
+                    set: { _ in onToggle() }
+                ))
+                .labelsHidden()
+            }
+            .padding(Spacing.s)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.small)
+                    .fill(Color.backgroundMedium.opacity(0.3))
+            )
+        }
+        
+        private func formatDate(_ date: Date) -> String {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            return formatter.string(from: date)
+        }
+    }
+    
     // MARK: - Additional Section
     
     private var additionalSection: some View {
@@ -653,17 +885,6 @@ struct SettingsScreen: View {
                     subtitle: localizationManager.localized("share_app_subtitle"), // ✅ Локализованный подзаголовок
                     action: {
                         showShareSheet = true
-                    }
-                )
-
-                // 🔍 ДИАГНОСТИКА: Этап 1 - поиск корневой причины крашей
-                settingsButton(
-                    icon: "wrench.and.screwdriver",
-                    title: "🔍 Диагностика SettingsScreen",
-                    subtitle: "Этап 1: Поиск причины крашей",
-                    action: {
-                        // Переход к диагностическому экрану
-                        navigationManager.navigateTo(.settingsDiagnostic)
                     }
                 )
             }
@@ -874,85 +1095,9 @@ struct SettingsScreen: View {
         .buttonStyle(PlainButtonStyle())
     }
     
-    // MARK: - Calculated Protection Level (Read-Only Indicator)
-    
-    /// ✅ ИНДИКАТОР: Вычисляет уровень защиты на основе текущего тарифа
-    /// Ползунок теперь только для чтения и показывает реальный уровень защиты
-    /// 🚨 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Полностью убрана зависимость от любых менеджеров
-    /// для предотвращения бесконечной рекурсии в SwiftUI
-    // ✅ [FIXED] Убрана зависимость от tariffManager из computed property
-    // Теперь это функция, которая вызывается только когда нужна
-    private func calculateProtectionLevel() -> Double {
-        print("🚨 [CRASH_DIAG] calculateProtectionLevel() function called")
-
-        // ✅ БЕЗОПАСНО: Функция вызывается только когда tariffManager точно инициализирован
-        let result: Double
-        switch tariffManager.currentTariff {
-        case .free:
-            result = 25.0    // Базовая защита
-        case .personal:
-            result = 50.0    // Средняя защита
-        case .family:
-            result = 75.0    // Высокая защита
-        case .premium:
-            result = 100.0   // Максимальная защита
-        }
-
-        print("🚨 [CRASH_DIAG] calculateProtectionLevel result: \(result)")
-        return result
-    }
-
-    // ✅ [FIXED] Убрана computed property - теперь используется @State protectionLevel
-    
-    private var protectionLevelText: String {
-        print("🚨 [CRASH_DIAG] protectionLevelText computed property called")
-        defer { print("🚨 [CRASH_DIAG] protectionLevelText completed") }
-
-        let level = protectionLevel
-        print("🚨 [CRASH_DIAG] protectionLevelText - level: \(level)")
-
-        let result: String
-        switch level {
-        case 0...25:
-            result = localizationManager.localized("settings_protection_level_low")
-        case 26...50:
-            result = localizationManager.localized("settings_protection_level_medium")
-        case 51...75:
-            result = localizationManager.localized("settings_protection_level_high")
-        case 76...100:
-            result = localizationManager.localized("settings_protection_level_maximum")
-        default:
-            result = localizationManager.localized("settings_protection_level_medium")
-        }
-
-        print("🚨 [CRASH_DIAG] protectionLevelText result: \(result)")
-        return result
-    }
-    
-    private var protectionColor: Color {
-        print("🚨 [CRASH_DIAG] protectionColor computed property called")
-        defer { print("🚨 [CRASH_DIAG] protectionColor completed") }
-
-        let level = protectionLevel
-        print("🚨 [CRASH_DIAG] protectionColor - level: \(level)")
-
-        let result: Color
-        switch level {
-        case 0...25:
-            result = .red
-        case 26...50:
-            result = .orange
-        case 51...75:
-            result = .yellow
-        case 76...100:
-            result = .green
-        default:
-            result = .primaryBlue
-        }
-
-        print("🚨 [CRASH_DIAG] protectionColor result: \(result)")
-        return result
-    }
+    // ✅ УДАЛЕНЫ: computed properties calculatedProtectionLevel, protectionLevelText, protectionColor
+    // Заменены на @State свойства cachedProtectionLevel, cachedProtectionLevelText, cachedProtectionColor
+    // для устранения бесконечного цикла перерисовки
     
     // ✅ УДАЛЕНО: handleProtectionLevelChange и связанные функции
     // Ползунок теперь только для чтения, защита управляется сервером через тариф
@@ -1013,27 +1158,6 @@ struct SettingsScreen: View {
     
     // MARK: - Notification Functions
     
-    // ✅ [PHASE 6] API ERROR HANDLING: ИЗОЛИРОВАННАЯ ФУНКЦИЯ
-    private func initializeNotificationsIsolated() async {
-        print("🚨 [CRASH_DIAG] initializeNotificationsIsolated started")
-
-        do {
-            // ✅ ИЗОЛИРУЕМ API вызовы от UI
-            let granted = try await notificationManager.requestAuthorization()
-            if granted {
-                print("🔔 Разрешение на уведомления получено")
-            } else {
-                print("🔕 Разрешение на уведомления отклонено")
-            }
-        } catch {
-            // ✅ ОБРАБАТЫВАЕМ API ОШИБКИ НЕ ПРЕРЫВАЯ UI
-            logToUserDefaults("🚨 [CRASH_DIAG] API ERROR in initializeNotificationsIsolated: \(error)")
-            print("🚨 [CRASH_DIAG] API ERROR in initializeNotificationsIsolated: \(error)")
-        }
-
-        print("🚨 [CRASH_DIAG] initializeNotificationsIsolated completed")
-    }
-
     private func initializeNotifications() {
         // Инициализация системы уведомлений
         Task {
@@ -1052,7 +1176,5 @@ struct SettingsScreen: View {
 struct SettingsScreen_Previews: PreviewProvider {
     static var previews: some View {
         SettingsScreen()
-            .environmentObject(NavigationManager())
-            .environmentObject(LocalizationManager())
     }
 }
