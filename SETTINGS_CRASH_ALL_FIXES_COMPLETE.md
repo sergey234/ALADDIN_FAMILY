@@ -3855,6 +3855,359 @@ var body: some View {
 
 ---
 
+# 📋 ПОДРОБНАЯ ИНСТРУКЦИЯ ПО СОЗДАНИЮ И PUSH BUILD 64 В GITHUB
+
+## 🎯 ЦЕЛЬ: СОЗДАТЬ BUILD 64 И ОТПРАВИТЬ В GITHUB ПО АНАЛОГИИ С ПРЕДЫДУЩИМИ BUILDS
+
+### 📚 ШАГ 1: ИЗУЧЕНИЕ ДОКУМЕНТОВ (ОБЯЗАТЕЛЬНО!)
+
+#### **Документы для изучения:**
+1. **CRASH_DIAGNOSIS_MISSION_BRIEF.md** - План миссии Build 64
+2. **SETTINGS_CRASH_ANALYSIS_AND_RECOVERY_INSTRUCTIONS.md** - Анализ ошибок
+3. **SETTINGS_CRASH_ALL_FIXES_COMPLETE.md** - История исправлений
+
+#### **Ключевые выводы из документов:**
+- Build 63 сломан добавлением complex computed properties
+- Нужно создать Build 64 с минимальным диагностическим UI
+- Использовать force push как самый быстрый метод
+- Включить step-by-step logging для диагностики
+
+---
+
+### 🏗️ ШАГ 2: ОБНОВЛЕНИЕ ВЕРСИИ СБОРКИ
+
+#### **Команда:**
+```bash
+cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+agvtool new-version -all 64
+```
+
+#### **Ожидаемый результат:**
+```
+Setting version of project ALADDIN to: 64.
+Also setting CFBundleVersion key (assuming it exists)
+Updating CFBundleVersion in Info.plist(s)...
+Updated CFBundleVersion in "ALADDIN.xcodeproj/../ALADDINContentBlocker/Info.plist" to 64
+Updated CFBundleVersion in "ALADDIN.xcodeproj/../Info.plist" to 64
+```
+
+#### **Что обновляется:**
+- `CURRENT_PROJECT_VERSION = 64` в `project.pbxproj`
+- `CFBundleVersion = 64` в `Info.plist`
+- `CFBundleVersion = 64` в `ALADDINContentBlocker/Info.plist`
+
+---
+
+### 🔍 ШАГ 3: ПРОВЕРКА СОДЕРЖИМОГО BUILD 64
+
+#### **Проверить SettingsScreen:**
+```bash
+# Проверить что содержит диагностический код
+grep -A 20 "var body: some View" Screens/05_SettingsScreen.swift
+```
+
+#### **Ожидаемое содержимое Build 64:**
+```swift
+var body: some View {
+    // 🔍 [CRASH_DIAG] ДИАГНОСТИЧЕСКАЯ ВЕРСИЯ - проверяем каждый шаг
+    let _ = print("🔍 [CRASH_DIAG] body() called - starting diagnostic")
+
+    let _ = print("🔍 [CRASH_DIAG] Creating ZStack...")
+    ZStack {
+        let _ = print("🔍 [CRASH_DIAG] Creating background...")
+        Color.blue.opacity(0.1).ignoresSafeArea()
+
+        let _ = print("🔍 [CRASH_DIAG] Creating VStack...")
+        VStack(spacing: 20) {
+            let _ = print("🔍 [CRASH_DIAG] Creating title Text...")
+            Text("⚙️ Settings Screen").font(.title).foregroundColor(.primary)
+
+            let _ = print("🔍 [CRASH_DIAG] Creating subtitle Text...")
+            Text("Basic functionality restored").foregroundColor(.secondary)
+
+            let _ = print("🔍 [CRASH_DIAG] Creating Button...")
+            Button("Go Back") {
+                print("🔍 [CRASH_DIAG] Button tapped - navigating to onboarding")
+                navigationManager.navigateTo(.onboarding)
+            }
+            .padding().background(Color.blue).foregroundColor(.white).cornerRadius(8)
+        }.padding()
+    }
+    .navigationBarHidden(true)
+    .onAppear {
+        print("🔍 [CRASH_DIAG] onAppear started")
+        print("🔍 [CRASH_DIAG] Thread.isMainThread: \(Thread.isMainThread)")
+        print("🔍 [CRASH_DIAG] navigationManager available: \(navigationManager as AnyObject? != nil)")
+        print("✅ SettingsScreen: Basic view loaded successfully")
+        print("🔍 [CRASH_DIAG] onAppear completed")
+    }
+    // 🚨 [CRASH_DIAG] ВРЕМЕННО УБРАНЫ ВСЕ MODALS ДЛЯ ДИАГНОСТИКИ
+}
+```
+
+#### **Важные элементы Build 64:**
+- ✅ **Убраны все complex computed properties** (profileSection, navigationHeader, etc.)
+- ✅ **Убраны все modal sheets** для изоляции тестирования
+- ✅ **Добавлено step-by-step logging** каждого этапа View construction
+- ✅ **Сохранена EnvironmentObject совместимость**
+
+---
+
+### 📝 ШАГ 4: СОЗДАНИЕ КОММИТА
+
+#### **Добавить все изменения:**
+```bash
+git add -A
+```
+
+#### **Создать коммит с подробным сообщением:**
+```bash
+git commit -m "[BUILD 64] 🚀 DIAGNOSTIC BUILD - SwiftUI Crash Root Cause Isolation
+
+🔬 CRITICAL DIAGNOSTIC BUILD 64: Isolate SwiftUI infinite recursion crash
+
+🎯 MISSION OBJECTIVE:
+Deploy diagnostic version to identify exact crash point in SettingsScreen
+Isolate whether crash occurs in basic SwiftUI construction or complex properties
+
+✅ WHAT'S INCLUDED IN BUILD 64:
+- Minimal SettingsScreen body with step-by-step logging
+- Removed all complex computed properties (profileSection, navigationHeader, etc.)
+- Removed all modal sheets for isolation testing
+- Detailed logging at each View construction step
+- EnvironmentObject compatibility maintained
+
+🔍 DIAGNOSTIC LOGGING SEQUENCE:
+1. 'body() called - starting diagnostic' - View body entered
+2. 'Creating ZStack...' - ZStack construction
+3. 'Creating background...' - Background creation
+4. 'Creating VStack...' - VStack construction
+5. 'Creating title Text...' - Title Text creation
+6. 'Creating subtitle Text...' - Subtitle creation
+7. 'Creating Button...' - Button creation
+8. 'onAppear started' - View appeared
+9. 'onAppear completed' - View fully loaded
+
+🧪 TESTING PROTOCOL:
+1. Launch app on test device
+2. Navigate to Settings
+3. Check console logs for last successful log line
+4. Crash point = line after last successful log
+
+📊 EXPECTED OUTCOMES:
+- SUCCESS: All logs appear, Settings screen loads → Problem in complex properties
+- FAILURE: Crash at specific log point → Problem in basic SwiftUI construction
+
+🚀 READY FOR TESTFLIGHT DEPLOYMENT
+Build 64 = Diagnostic weapon for crash root cause identification"
+```
+
+---
+
+### 🔄 ШАГ 5: ОБРАБОТКА GIT REBASE КОНФЛИКТОВ
+
+#### **Проверить статус:**
+```bash
+git status
+```
+
+#### **Если rebase в процессе:**
+```
+interactive rebase in progress; onto a1641138
+Last command done (1 command done):
+   pick 06d50f98 [BUILD 64] 🔍 CRASH DIAGNOSTIC VERSION...
+No commands remaining.
+```
+
+#### **Завершить rebase:**
+```bash
+git rebase --continue
+```
+
+#### **Ожидаемый результат:**
+```
+Successfully rebased and updated refs/heads/master.
+```
+
+---
+
+### 🚀 ШАГ 6: PUSH В GITHUB
+
+#### **Отправить изменения:**
+```bash
+git push origin master
+```
+
+#### **Ожидаемый результат:**
+```
+Enumerating objects: 15, done.
+Counting objects: 100% (15/15), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (9/9), done.
+Writing objects: 100% (9/9), 8.83 KiB | 2.21 MiB/s, done.
+Total 9 (delta 6), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (6/6), completed with 6 local objects.
+To https://github.com/sergey234/ALADDIN_FAMILY.git
+   a1641138..15d26718  master -> master
+```
+
+---
+
+### ✅ ШАГ 7: ПРОВЕРКА РЕЗУЛЬТАТА
+
+#### **Проверить последние коммиты:**
+```bash
+git log --oneline -3
+```
+
+#### **Ожидаемый результат:**
+```
+15d26718 (HEAD -> master, origin/master) [BUILD 64] 🚀 DIAGNOSTIC BUILD - SwiftUI Crash Root Cause Isolation
+a1641138 [FINAL] Complete analysis and recovery instructions for ML systems - all crash causes confirmed and fixed
+1ef5b077 [BUILD 63] Final crash resolution - infinite SwiftUI recursion fixed
+```
+
+#### **Проверить версию сборки:**
+```bash
+agvtool what-version
+```
+
+#### **Ожидаемый результат:**
+```
+Current version of project ALADDIN is: 64
+```
+
+---
+
+### 🧪 ШАГ 8: ПОДГОТОВКА К TESTFLIGHT
+
+#### **Создать archive (Xcode GUI):**
+1. Открыть Xcode
+2. Product → Archive
+3. Дождаться завершения
+4. Window → Organizer
+
+#### **ИЛИ через Terminal:**
+```bash
+xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
+  -configuration Release \
+  -sdk iphoneos \
+  -archivePath build/ALADDIN.xcarchive \
+  archive
+```
+
+#### **Загрузить в TestFlight:**
+1. В Organizer выбрать Build 64 archive
+2. Нажать "Distribute App"
+3. Выбрать "TestFlight & App Store"
+4. Выбрать TestFlight → Upload
+
+#### **Проверить развертывание:**
+- Проверить TestFlight app на Build 64
+- Установить на тестовое устройство
+- Убедиться что версия показывает "64"
+
+---
+
+### 🔍 ШАГ 9: ТЕСТИРОВАНИЕ НА УСТРОЙСТВЕ
+
+#### **Протокол тестирования:**
+1. **Запустить приложение** на тестовом устройстве
+2. **Перейти к Settings** экрану
+3. **Наблюдать поведение:**
+   - ✅ **Работает:** Все логи появляются → проблема в complex properties
+   - ❌ **Крашится:** Краш на определенном логе → проблема в базовом SwiftUI
+
+#### **Анализ логов:**
+**Успешные логи (работает):**
+```
+🔍 [CRASH_DIAG] body() called - starting diagnostic
+🔍 [CRASH_DIAG] Creating ZStack...
+🔍 [CRASH_DIAG] Creating background...
+🔍 [CRASH_DIAG] Creating VStack...
+🔍 [CRASH_DIAG] Creating title Text...
+🔍 [CRASH_DIAG] Creating subtitle Text...
+🔍 [CRASH_DIAG] Creating Button...
+🔍 [CRASH_DIAG] onAppear started
+✅ SettingsScreen: Basic view loaded successfully
+🔍 [CRASH_DIAG] onAppear completed
+```
+
+**Если краш:** Точка краха = строка после последнего успешного лога
+
+---
+
+### 📊 ШАГ 10: АНАЛИЗ РЕЗУЛЬТАТОВ ТЕСТИРОВАНИЯ
+
+#### **СЦЕНАРИЙ A: BUILD 64 РАБОТАЕТ**
+**Вывод:** Проблема в complex computed properties
+**Следующие шаги:**
+1. Оставить минимальный UI как базу
+2. Добавлять computed properties по одной
+3. Тестировать каждое добавление на устройстве
+4. Заменять failing properties на @ViewBuilder функции
+
+#### **СЦЕНАРИЙ B: BUILD 64 КРАШИТСЯ**
+**Вывод:** Проблема в базовом SwiftUI construction
+**Расследование:**
+1. Убрать @EnvironmentObject properties
+2. Тестировать без EnvironmentObject
+3. Если работает: проблема = EnvironmentObject timing
+4. Если крашится: проблема = SwiftUI threading или инициализация
+
+---
+
+## 🎯 КЛЮЧЕВЫЕ ПРАВИЛА ДЛЯ ML СИСТЕМЫ
+
+### ✅ ЧТО ДЕЛАТЬ:
+1. **Всегда изучать документы** перед созданием build
+2. **Следовать step-by-step инструкциям** из документов
+3. **Создавать подробные commit сообщения** с объяснением
+4. **Проверять результат** каждого шага
+5. **Тестировать на устройстве** перед следующим build
+
+### ❌ ЧТО НЕ ДЕЛАТЬ:
+1. **Не добавлять complex computed properties** в диагностические builds
+2. **Не отправлять без проверки** версии сборки
+3. **Не игнорировать git status** (rebase, conflicts)
+4. **Не тестировать только в симуляторе** - обязательно реальное устройство
+
+### 🎯 УСПЕХ КРИТЕРИИ:
+- ✅ Git push завершается без ошибок
+- ✅ Build 64 виден на GitHub master branch
+- ✅ Archive создается успешно
+- ✅ TestFlight upload завершается
+- ✅ Build 64 доступен для установки
+- ✅ Приложение запускается на устройстве
+- ✅ Settings экран открывается без краша
+- ✅ Диагностические логи видны в Xcode console
+
+---
+
+## 🚀 ЗАКЛЮЧЕНИЕ
+
+**BUILD 64 = ДИАГНОСТИЧЕСКОЕ ОРУЖИЕ** 🔬
+
+**Процесс создания и push Build 64:**
+1. 📚 Изучить документы
+2. 🏗️ Обновить версию до 64
+3. 🔍 Проверить диагностический код
+4. 📝 Создать подробный коммит
+5. 🔄 Обработать git rebase
+6. 🚀 Push в GitHub
+7. ✅ Проверить результат
+8. 🧪 Подготовить к TestFlight
+9. 🔍 Протестировать на устройстве
+10. 📊 Проанализировать результаты
+
+**Build 64 готов к финальной диагностике причины crash!** 🎯
+
+---
+
+*Эта инструкция содержит полный процесс создания и push Build 64 в GitHub по аналогии с предыдущими builds. Следуйте шагам последовательно для успешного выполнения миссии.*
+
+---
+
 # 📋 ПОЛНЫЕ ИНСТРУКЦИИ ДЛЯ ML СИСТЕМЫ: АНАЛИЗ И ВОССТАНОВЛЕНИЕ SETTINGSSCREEN
 
 ## 🎯 ЦЕЛЬ: ПОЛНОЕ ВОССТАНОВЛЕНИЕ ФУНКЦИОНАЛЬНОСТИ SETTINGSSCREEN БЕЗ КРАШЕЙ
