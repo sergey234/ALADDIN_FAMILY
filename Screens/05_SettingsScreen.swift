@@ -106,21 +106,29 @@ struct SettingsScreen: View {
     // MARK: - Body
     
     var body: some View {
-        // 🚨 [CRASH_FIX] МИНИМАЛЬНЫЙ body - убрана вся диагностика и computed properties
-        // Это предотвращает бесконечную рекурсию в SwiftUI type resolution
+        // 🔍 [CRASH_DIAG] ДИАГНОСТИЧЕСКАЯ ВЕРСИЯ - проверяем каждый шаг
+        let _ = print("🔍 [CRASH_DIAG] body() called - starting diagnostic")
+
+        let _ = print("🔍 [CRASH_DIAG] Creating ZStack...")
         ZStack {
+            let _ = print("🔍 [CRASH_DIAG] Creating background...")
             Color.blue.opacity(0.1)
                 .ignoresSafeArea()
 
+            let _ = print("🔍 [CRASH_DIAG] Creating VStack...")
             VStack(spacing: 20) {
+                let _ = print("🔍 [CRASH_DIAG] Creating title Text...")
                 Text("⚙️ Settings Screen")
                     .font(.title)
                     .foregroundColor(.primary)
 
+                let _ = print("🔍 [CRASH_DIAG] Creating subtitle Text...")
                 Text("Basic functionality restored")
                     .foregroundColor(.secondary)
 
+                let _ = print("🔍 [CRASH_DIAG] Creating Button...")
                 Button("Go Back") {
+                    print("🔍 [CRASH_DIAG] Button tapped - navigating to onboarding")
                     navigationManager.navigateTo(.onboarding)
                 }
                 .padding()
@@ -132,30 +140,20 @@ struct SettingsScreen: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            // ✅ МИНИМАЛЬНОЕ логирование - только факт успешного запуска
+            // 🔍 ПОДРОБНАЯ ДИАГНОСТИКА onAppear
+            print("🔍 [CRASH_DIAG] onAppear started")
+            print("🔍 [CRASH_DIAG] Thread.isMainThread: \(Thread.isMainThread)")
+            print("🔍 [CRASH_DIAG] Time: \(Date())")
+            print("🔍 [CRASH_DIAG] navigationManager available: \(navigationManager as AnyObject? != nil)")
+            print("🔍 [CRASH_DIAG] localizationManager available: \(localizationManager as AnyObject? != nil)")
             print("✅ SettingsScreen: Basic view loaded successfully")
+            print("🔍 [CRASH_DIAG] onAppear completed")
         }
-        .sheet(isPresented: $showProfileEdit) {
-            ProfileEditView()
-                .environmentObject(localizationManager)
-        }
-        .sheet(isPresented: $showLanguageSettings) {
-            LanguageSettingsScreen()
-        }
-        .sheet(isPresented: $showSupportScreen) {
-            SupportScreen()
-        }
-        .sheet(isPresented: $showPrivacyPolicy) {
-            PrivacyPolicyScreen()
-        }
-        .sheet(isPresented: $showTermsOfService) {
-            TermsOfServiceScreen()
-        }
-        .sheet(isPresented: $showShareSheet) {
-            ShareSheet(activityItems: [
-                localizationManager.localized("settings_share_message")
-            ])
-        }
+        // 🚨 [CRASH_DIAG] ВРЕМЕННО УБРАНЫ ВСЕ MODALS ДЛЯ ДИАГНОСТИКИ
+        // .sheet(isPresented: $showProfileEdit) {
+        //     ProfileEditView()
+        //         .environmentObject(localizationManager)
+        // }
         .sheet(isPresented: $showProtectionExplanation) {
             ProtectionLevelExplanationModal(isPresented: $showProtectionExplanation, currentTariff: tariffManager.currentTariff)
                 .environmentObject(localizationManager)
