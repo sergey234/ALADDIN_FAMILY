@@ -139,17 +139,17 @@ struct SettingsScreen: View {
                         // Приложение
                         let _ = print("🔍 [DIAG] SettingsScreen.body: Начинаем appSection")
                         appSection
-                            .id("app_section_\(localizationManager.currentLanguage.rawValue)")
+                            .id("app_section_v2")
                         
                         // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
                         if isAdmin {
                             systemComponentsSection
-                                .id("system_components_section_\(localizationManager.currentLanguage.rawValue)")
+                                .id("system_components_section_v2")
                         }
                         
                         // Дополнительно
                         additionalSection
-                            .id("additional_section_\(localizationManager.currentLanguage.rawValue)")
+                            .id("additional_section_v2")
                         
                         // Отступ снизу для удобства прокрутки
                         Spacer(minLength: 100)
@@ -162,8 +162,8 @@ struct SettingsScreen: View {
             }
         }
         .navigationBarHidden(true)
-        // ✅ Пересоздаём View при изменении языка для обновления всех текстов
-        .id("settings_lang_\(localizationManager.currentLanguage.rawValue)")
+        // ✅ Стабильный ID - краш пофикшен!
+        .id("settings_screen_v2")
         .sheet(isPresented: $showProfileEdit) {
             ProfileEditView()
                 .environmentObject(localizationManager)
