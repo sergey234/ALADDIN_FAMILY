@@ -302,15 +302,6 @@ struct ALADDINApp: App {
                             .onAppear {
                                 print("✅ SettingsScreen: Полная версия загружена успешно")
                             })
-                    case .settingsDiagnostic:
-                        // 🚨 [CRASH_DIAG] ТЕСТИРОВАНИЕ SettingsDiagnostic screen
-                        AnyView(SettingsScreenDiagnostic()
-                            .id("settingsDiagnostic")
-                            .environmentObject(navigationManager)
-                            .environmentObject(localizationManager)
-                            .onAppear {
-                                print("🚨 [CRASH_DIAG] SettingsDiagnostic screen appeared successfully!")
-                            })
 
                     case .settingsTest:
                         // ✅ [REVERT] SettingsScreen с EnvironmentObject

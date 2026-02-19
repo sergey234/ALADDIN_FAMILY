@@ -218,7 +218,7 @@ struct OnboardingScreen: View {
         .task {
             // OnboardingScreen loaded successfully
             // Загружаем изображение профиля при загрузке экрана
-            profileImage = ProfileImageManager.shared.loadProfileImage()
+            profileImage = ProfileImageManager.shared.loadProfileImage(for: .main)
             
             // ⚠️ КРИТИЧЕСКАЯ ПРОВЕРКА: Количество страниц должно быть 7!
             if pages.count != Self.EXPECTED_PAGES_COUNT {
@@ -237,9 +237,7 @@ struct OnboardingScreen: View {
         }
         // ✅ УБРАНО: .fullScreenCover() - теперь используем NavigationManager для навигации
         .sheet(isPresented: $showJoinFamily) {
-            QRScannerModal(
-                isPresented: $showJoinFamily
-            )
+            QRScannerModal()
         }
         .sheet(isPresented: $showRecovery) {
             RecoveryOptionsModal(
