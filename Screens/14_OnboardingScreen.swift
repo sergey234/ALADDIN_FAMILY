@@ -1,7 +1,6 @@
 import SwiftUI
 
 // MARK: - OnboardingAladdinLogoView Component
-// ✅ ДОБАВЛЕНЫ НЕОБХОДИМЫЕ ИМПОРТЫ ДЛЯ КОМПИЛЯЦИИ
 /// 🎨 Стилизованный золотой логотип "Aladdin" в скриптном стиле для онбординга
 struct OnboardingAladdinLogoView: View {
     var size: CGFloat = 24
@@ -56,13 +55,12 @@ struct OnboardingAladdinLogoView: View {
     }
 }
 
-/// 👋 Onboarding Screen - МИНИМАЛЬНАЯ ВЕРСИЯ ДЛЯ ДИАГНОСТИКИ
+/// 👋 Onboarding Screen
 /// Экран онбординга - первое знакомство с приложением + прогрессивная регистрация
 /// Источник: стандартный паттерн iOS онбординга
 struct OnboardingScreen: View {
-    // ✅ ВОССТАНОВЛЕНО: @AppStorage для корректного сохранения статуса онбординга
     @AppStorage(AppConfig.UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
-
+    
     // ✅ КРИТИЧНО: Добавляем NavigationManager для навигации
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -150,102 +148,6 @@ struct OnboardingScreen: View {
     
     // MARK: - Body
     
-    // ВРЕМЕННО ЗАКОММЕНТИРОВАНА СЛОЖНАЯ ЛОГИКА - ТЕСТОВАЯ СТРАНИЦА
-    /*
-    var body: some View {
-        // 🩺 МИНИМАЛЬНЫЙ BODY ДЛЯ ДИАГНОСТИКИ
-        VStack(spacing: 20) {
-            Text("🩺 OnboardingScreen - Diagnostic Mode")
-                .font(.title)
-                .foregroundColor(.red)
-
-            Text("Если это видно - OnboardingScreen работает!")
-                .foregroundColor(.green)
-
-            Button("✅ Проверить EnvironmentObjects") {
-                print("🩺 DIAGNOSTIC: navigationManager = \(navigationManager)")
-                print("🩺 DIAGNOSTIC: localizationManager = \(localizationManager)")
-                print("🩺 DIAGNOSTIC: Thread.isMainThread = \(Thread.isMainThread)")
-            }
-
-            // 🚨 [CRASH_DIAG] КНОПКИ ДИАГНОСТИКИ SETTINGS SCREEN
-            VStack(spacing: 10) {
-                Text("🚨 SettingsScreen Diagnostic Tests")
-                    .font(.headline)
-                    .foregroundColor(.red)
-
-                HStack(spacing: 10) {
-                    Button("🧪 Minimal Test") {
-                        DispatchQueue.main.async {
-                            self.navigationManager.navigateTo(.settings)
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.orange)
-                    .foregroundColor(.white)
-                    .cornerRadius(6)
-                    .font(.caption)
-
-                    Button("🔧 Fallback") {
-                        DispatchQueue.main.async {
-                            self.navigationManager.navigateTo(.settingsFallback)
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.purple)
-                    .foregroundColor(.white)
-                    .cornerRadius(6)
-                    .font(.caption)
-
-                    Button("📊 Full Test") {
-                        DispatchQueue.main.async {
-                            self.navigationManager.navigateTo(.settingsTest)
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .cornerRadius(6)
-                    .font(.caption)
-
-                    Button("🧪 Test Suite") {
-                        DispatchQueue.main.async {
-                            self.navigationManager.navigateTo(.settingsTestSuite)
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.purple)
-                    .foregroundColor(.white)
-                    .cornerRadius(6)
-                    .font(.caption)
-                }
-            }
-
-            Button("✅ Перейти к настройкам") {
-                // ✅ КРИТИЧЕСКОЕ: Обеспечиваем выполнение на main thread
-                // navigateTo может вызываться не на main thread, что вызывает race conditions
-                DispatchQueue.main.async {
-                    self.navigationManager.navigateTo(.settings)
-                }
-            }
-
-            Button("✅ Завершить онбординг") {
-                navigationManager.navigateTo(.main)
-            }
-        }
-        .padding()
-        .onAppear {
-            print("🩺 DIAGNOSTIC: OnboardingScreen onAppear - успех!")
-            crashLog("🩺 DIAGNOSTIC: OnboardingScreen onAppear - успех!")
-        }
-    }
-    */
-
-    // ✅ РАБОЧАЯ ВЕРСИЯ ONBOARDINGSCREEN
     var body: some View {
         ZStack {
             // Фон
@@ -253,12 +155,12 @@ struct OnboardingScreen: View {
                 .ignoresSafeArea()
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Фон экрана онбординга")
-
+            
             VStack(spacing: 0) {
                 // Кнопка пропустить
                 HStack {
                     Spacer()
-
+                    
                     Button(action: {
                         // ✅ Сохраняем статус онбординга
                         hasCompletedOnboarding = true
@@ -516,7 +418,7 @@ struct OnboardingScreen: View {
             PrivacyPolicyScreen()
         }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
-        .id("onboarding_lang_\(localizationManager.currentLanguage.rawValue)")
+        .id("onboarding")
     }
     
     // MARK: - Onboarding Page
