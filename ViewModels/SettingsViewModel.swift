@@ -84,6 +84,12 @@ struct LocalizedStrings {
     let settingsImproveProtection: String = "Улучшить защиту"
     let settingsProtectionLevelAccessibility: String = "Уровень защиты"
 
+    // Protection level texts
+    let protectionLevelLow: String = "Низкий"
+    let protectionLevelMedium: String = "Средний"
+    let protectionLevelHigh: String = "Высокий"
+    let protectionLevelMaximum: String = "Максимальный"
+
     // Notifications Section
     let notificationsSection: String = "Уведомления"
     let pushNotifications: String = "Push уведомления"
@@ -123,79 +129,6 @@ struct LocalizedStrings {
     let biometricEnableFailed: String = "Не удалось включить биометрию"
     let biometricUnavailable: String = "Биометрия недоступна"
 
-    // Constructor for dependency injection
-    init(from localizationService: LocalizationService) {
-        // Initialize with real localization service
-        self.settingsTitle = localizationService.localized("settings_title")
-        self.settingsSubtitle = localizationService.localized("settings_subtitle")
-        self.settingsAccessibilityBackground = localizationService.localized("settings_accessibility_background")
-        self.settingsAccessibilityList = localizationService.localized("settings_accessibility_list")
-        self.settingsAccessibilityNavbar = localizationService.localized("settings_accessibility_navbar")
-
-        // Profile Section
-        self.profileSection = localizationService.localized("profile_section")
-        self.profileNamePlaceholder = localizationService.localized("profile_name_placeholder")
-        self.profileEmailPlaceholder = localizationService.localized("profile_email_placeholder")
-        self.profileStatus = localizationService.localized("settings_profile_status")
-        self.profileAvatarAccessibility = localizationService.localized("settings_profile_avatar_accessibility")
-        self.profileNameAccessibilityFormat = localizationService.localized("settings_profile_name_accessibility")
-        self.profileEmailAccessibilityFormat = localizationService.localized("settings_profile_email_accessibility")
-        self.profileStatusAccessibilityFormat = localizationService.localized("settings_profile_status_accessibility")
-        self.settingsProfileEditAccessibility = localizationService.localized("settings_profile_edit_accessibility")
-
-        // Security Section
-        self.securitySection = localizationService.localized("security_section")
-        self.networkProtectionProtection = localizationService.localized("network_protection_protection")
-        self.networkProtectionProtectionSubtitle = localizationService.localized("network_protection_protection_subtitle")
-        self.biometricAuth = localizationService.localized("biometric_auth")
-        self.biometricAuthSubtitle = localizationService.localized("biometric_auth_subtitle")
-        self.protectionLevel = localizationService.localized("protection_level")
-        self.settingsProtectionLevelValueFormat = localizationService.localized("settings_protection_level_value")
-        self.settingsProtectionLevel = localizationService.localized("settings_protection_level")
-        self.settingsProtectionHistory = localizationService.localized("settings_protection_history")
-        self.settingsAdvancedSettings = localizationService.localized("settings_advanced_settings")
-        self.settingsImproveProtection = localizationService.localized("settings_improve_protection")
-        self.settingsProtectionLevelAccessibility = localizationService.localized("settings_protection_level_accessibility")
-
-        // Notifications Section
-        self.notificationsSection = localizationService.localized("notifications_section")
-        self.pushNotifications = localizationService.localized("push_notifications")
-        self.pushNotificationsSubtitle = localizationService.localized("push_notifications_subtitle")
-        self.soundNotifications = localizationService.localized("sound_notifications")
-        self.soundNotificationsSubtitle = localizationService.localized("sound_notifications_subtitle")
-
-        // App Section
-        self.appSection = localizationService.localized("app_section")
-        self.language = localizationService.localized("language")
-        self.languageSubtitle = localizationService.localized("language_subtitle")
-        self.darkTheme = localizationService.localized("dark_theme")
-        self.updates = localizationService.localized("updates")
-        self.updatesSubtitle = localizationService.localized("updates_subtitle")
-
-        // System Components
-        self.systemComponentsTitle = localizationService.localized("system_components_title")
-        self.retry = localizationService.localized("retry")
-        self.systemComponentsEmpty = localizationService.localized("system_components_empty")
-        self.systemComponentsLastUpdate = localizationService.localized("system_components_last_update")
-
-        // Additional Section
-        self.additionalSection = localizationService.localized("additional_section")
-        self.helpSupport = localizationService.localized("help_support")
-        self.helpSupportSubtitle = localizationService.localized("help_support_subtitle")
-        self.privacyPolicy = localizationService.localized("privacy_policy")
-        self.privacyPolicySubtitle = localizationService.localized("privacy_policy_subtitle")
-        self.termsOfService = localizationService.localized("terms_of_service")
-        self.termsOfServiceSubtitle = localizationService.localized("terms_of_service_subtitle")
-        self.shareApp = localizationService.localized("share_app")
-        self.shareAppSubtitle = localizationService.localized("share_app_subtitle")
-        self.settingsShareMessage = localizationService.localized("settings_share_message")
-
-        // Biometric notifications
-        self.biometricEnabled = localizationService.localized("biometric_enabled")
-        self.biometricDisabled = localizationService.localized("biometric_disabled")
-        self.biometricEnableFailed = localizationService.localized("biometric_enable_failed")
-        self.biometricUnavailable = localizationService.localized("biometric_unavailable")
-    }
 }
 
 class SettingsViewModel: ObservableObject {
@@ -274,7 +207,7 @@ class SettingsViewModel: ObservableObject {
     // MARK: - Initialization
 
     init() {
-        // Default constructor with mock services for preview/testing
+        // Default constructor with default localized strings for preview/testing
         localizedStrings = LocalizedStrings()
         loadInitialState()
     }
@@ -297,8 +230,8 @@ class SettingsViewModel: ObservableObject {
         self.apiService = apiService
         self.positioningService = positioningService
 
-        // Initialize localized strings with real localization service
-        localizedStrings = LocalizedStrings(from: localizationService)
+        // Initialize localized strings with defaults (TODO: use real localization)
+        localizedStrings = LocalizedStrings()
         loadInitialState()
         setupBindings()
     }
@@ -454,13 +387,17 @@ class SettingsViewModel: ObservableObject {
                 cachedProtectionLevel = 25.0
                 cachedProtectionLevelText = localizedStrings.protectionLevelLow
                 cachedProtectionColor = .red
-            case .premium:
+            case .personal:
                 cachedProtectionLevel = 50.0
                 cachedProtectionLevelText = localizedStrings.protectionLevelMedium
                 cachedProtectionColor = .orange
+            case .family:
+                cachedProtectionLevel = 65.0
+                cachedProtectionLevelText = localizedStrings.protectionLevelHigh
+                cachedProtectionColor = .yellow
             case .premium:
                 cachedProtectionLevel = 75.0
-                cachedProtectionLevelText = "Высокий"
+                cachedProtectionLevelText = localizedStrings.protectionLevelHigh
                 cachedProtectionColor = .yellow
             case .ultimate:
                 cachedProtectionLevel = 100.0
@@ -555,3 +492,5 @@ enum ThemeMode: String, CaseIterable {
         }
     }
 }
+
+// Mock services are defined in SettingsScreen file

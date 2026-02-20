@@ -718,7 +718,7 @@ class MockNavigationService {
     func navigateTo(_ screen: ALADDINScreen) {}
 }
 
-class MockLocalizationService {
+class MockLocalizationService: LocalizationService {
     var currentLanguage: Language = "russian"
     var languageChanged: AnyPublisher<Language, Never> {
         Just("russian").eraseToAnyPublisher()
