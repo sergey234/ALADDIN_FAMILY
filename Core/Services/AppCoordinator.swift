@@ -18,6 +18,9 @@ class AppCoordinator: ObservableObject {
     private let securityManager = SecurityManager.shared
     private let tariffManager = TariffManager.shared
     private let apiService = APIService.shared
+    private let featuresManager = ProtectionFeaturesManager.shared
+    private let toastManager = ToastManager.shared
+    private let historyManager = ProtectionLevelHistoryManager.shared
 
     // MARK: - Service Adapters (Protocol Implementation)
 
@@ -49,6 +52,18 @@ class AppCoordinator: ObservableObject {
         PositioningServiceAdapter()
     }()
 
+    private lazy var featuresService: ProtectionFeaturesService = {
+        ProtectionFeaturesServiceAdapter(featuresManager: featuresManager)
+    }()
+
+    private lazy var toastService: ToastService = {
+        ToastServiceAdapter(toastManager: toastManager)
+    }()
+
+    private lazy var historyService: ProtectionHistoryService = {
+        ProtectionHistoryServiceAdapter(historyManager: historyManager)
+    }()
+
     // MARK: - ViewModel Factories
 
     func makeSettingsViewModel() -> SettingsViewModel {
@@ -59,7 +74,10 @@ class AppCoordinator: ObservableObject {
             securityService: securityService,
             tariffService: tariffService,
             apiService: apiServiceAdapter,
-            positioningService: positioningService
+            positioningService: positioningService,
+            featuresService: featuresService,
+            toastService: toastService,
+            historyService: historyService
         )
     }
 
@@ -250,6 +268,83 @@ class PositioningServiceAdapter: PositioningService {
         selectedSystem = system
         // Save to UserDefaults or other storage
         UserDefaults.standard.set(system.rawValue, forKey: "selected_positioning_system")
+    }
+}
+
+/**
+ * 🛡️ PROTECTION FEATURES SERVICE ADAPTER
+ * Адаптер для ProtectionFeaturesManager
+ */
+class ProtectionFeaturesServiceAdapter: ProtectionFeaturesService {
+    private let featuresManager: ProtectionFeaturesManager
+
+    init(featuresManager: ProtectionFeaturesManager) {
+        self.featuresManager = featuresManager
+    }
+
+    var features: [ProtectionFeature] {
+        get { featuresManager.features }
+        set { featuresManager.features = newValue }
+    }
+
+    func loadFeatures() {
+        featuresManager.loadFeatures()
+    }
+
+    func toggleFeature(_ featureId: String, enabled: Bool) {
+        featuresManager.toggleFeature(featureId, enabled: enabled)
+    }
+
+    func getFeaturesForLevel(_ level: Int) -> [ProtectionFeature] {
+        return featuresManager.getFeaturesForLevel(level)
+    }
+}
+
+/**
+ * 🔔 TOAST SERVICE ADAPTER
+ * Адаптер для ToastManager
+ */
+class ToastServiceAdapter: ToastService {
+    private let toastManager: ToastManager
+
+    init(toastManager: ToastManager) {
+        self.toastManager = toastManager
+    }
+
+    func showToast(message: String, type: ToastType, duration: TimeInterval) {
+        toastManager.showToast(message: message, type: type, duration: duration)
+    }
+
+    func hideToast() {
+        toastManager.hideToast()
+    }
+}
+
+/**
+ * 📊 PROTECTION HISTORY SERVICE ADAPTER
+ * Адаптер для ProtectionLevelHistoryManager
+ */
+class ProtectionHistoryServiceAdapter: ProtectionHistoryService {
+    private let historyManager: ProtectionLevelHistoryManager
+
+    init(historyManager: ProtectionLevelHistoryManager) {
+        self.historyManager = historyManager
+    }
+
+    var history: [ProtectionLevelRecord] {
+        return historyManager.history
+    }
+
+    func addRecord(level: Int, reason: String, timestamp: Date) {
+        historyManager.addRecord(level: level, reason: reason, timestamp: timestamp)
+    }
+
+    func getRecentRecords(limit: Int) -> [ProtectionLevelRecord] {
+        return historyManager.getRecentRecords(limit: limit)
+    }
+
+    func clearHistory() {
+        historyManager.clearHistory()
     }
 }
 

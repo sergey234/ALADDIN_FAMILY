@@ -44,6 +44,7 @@ protocol SecurityService {
 // MARK: - Tariff Service
 protocol TariffService {
     var currentTariff: Tariff { get }
+    func createCard(localizationService: LocalizationService) -> TariffCard
 }
 
 // MARK: - API Service
@@ -61,10 +62,40 @@ protocol PositioningService {
     func saveSelectedSystem(_ system: PositioningSystem)
 }
 
+// MARK: - Protection Features Service
+protocol ProtectionFeaturesService {
+    var features: [ProtectionFeature] { get set }
+    func loadFeatures()
+    func toggleFeature(_ featureId: String, enabled: Bool)
+    func getFeaturesForLevel(_ level: Int) -> [ProtectionFeature]
+}
+
+// MARK: - Toast Service
+protocol ToastService {
+    func showToast(message: String, type: ToastType, duration: TimeInterval)
+    func hideToast()
+}
+
+// MARK: - Protection History Service
+protocol ProtectionHistoryService {
+    var history: [ProtectionLevelRecord] { get }
+    func addRecord(level: Int, reason: String, timestamp: Date)
+    func getRecentRecords(limit: Int) -> [ProtectionLevelRecord]
+    func clearHistory()
+}
+
+// MARK: - Toast Type (for ToastService)
+enum ToastType {
+    case success, warning, error, info
+}
+
 // MARK: - Type Definitions (forwards from existing models)
 typealias ALADDINScreen = NavigationManager.ALADDINScreen
 typealias Language = LocalizationManager.Language
 typealias NotificationSettings = NotificationManager.NotificationSettings
 typealias Tariff = TariffManager.TariffType
+typealias TariffCard = TariffManager.TariffCard
 typealias ComponentStatus = ComponentStatus // Already defined in ComponentStatus.swift
 typealias PositioningSystem = PositioningSystemService.PositioningSystem
+typealias ProtectionFeature = ProtectionFeaturesManager.ProtectionFeature
+typealias ProtectionLevelRecord = ProtectionLevelHistoryManager.ProtectionLevelRecord

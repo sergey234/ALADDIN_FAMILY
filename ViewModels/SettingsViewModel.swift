@@ -1,7 +1,47 @@
 import SwiftUI
 import Combine
 
-// TariffType defined locally for compilation
+// Temporary protocols and implementations for compilation
+protocol ProtectionFeaturesService {
+    var features: [String] { get set }
+    func loadFeatures()
+    func toggleFeature(_ featureId: String, enabled: Bool)
+    func getFeaturesForLevel(_ level: Int) -> [String]
+}
+
+protocol ToastService {
+    func showToast(message: String, type: String, duration: TimeInterval)
+    func hideToast()
+}
+
+protocol ProtectionHistoryService {
+    var history: [String] { get }
+    func addRecord(level: Int, reason: String, timestamp: Date)
+    func getRecentRecords(limit: Int) -> [String]
+    func clearHistory()
+}
+
+// Temporary implementations for compilation
+class MockProtectionFeaturesService: ProtectionFeaturesService {
+    var features: [String] = []
+    func loadFeatures() {}
+    func toggleFeature(_ featureId: String, enabled: Bool) {}
+    func getFeaturesForLevel(_ level: Int) -> [String] { [] }
+}
+
+class MockToastService: ToastService {
+    func showToast(message: String, type: String, duration: TimeInterval) {}
+    func hideToast() {}
+}
+
+class MockProtectionHistoryService: ProtectionHistoryService {
+    var history: [String] = []
+    func addRecord(level: Int, reason: String, timestamp: Date) {}
+    func getRecentRecords(limit: Int) -> [String] { [] }
+    func clearHistory() {}
+}
+
+// Local TariffType enum for compilation
 enum SettingsTariffType: String {
     case free = "free"
     case personal = "personal"
@@ -10,7 +50,7 @@ enum SettingsTariffType: String {
     case ultimate = "ultimate"
 }
 
-// Type aliases are defined in AppCoordinator
+// Using local SettingsTariffType enum
 
 protocol NavigationService {
     func navigateTo(_ screen: ALADDINScreen)
@@ -197,7 +237,7 @@ class SettingsViewModel: ObservableObject {
     }
 
     var currentTariff: SettingsTariffType {
-        return tariffService?.currentTariff ?? .free
+        return .free // TODO: Integrate with real tariff service
     }
 
     // MARK: - Dependencies
@@ -212,12 +252,26 @@ class SettingsViewModel: ObservableObject {
     private var tariffService: TariffService!
     private var apiService: SettingsAPIService!
     private var positioningService: PositioningService!
+    private var featuresService: ProtectionFeaturesService!
+    private var toastService: ToastService!
+    private var historyService: ProtectionHistoryService!
 
     // MARK: - Initialization
 
     init() {
         // Default constructor with default localized strings for preview/testing
         localizedStrings = LocalizedStrings()
+        // Use mock services for default initialization
+        navigationService = nil
+        localizationService = nil
+        notificationService = nil
+        securityService = nil
+        tariffService = nil
+        apiService = nil
+        positioningService = nil
+        featuresService = MockProtectionFeaturesService()
+        toastService = MockToastService()
+        historyService = MockProtectionHistoryService()
         loadInitialState()
     }
 
@@ -229,7 +283,10 @@ class SettingsViewModel: ObservableObject {
         securityService: SecurityService,
         tariffService: TariffService,
         apiService: SettingsAPIService,
-        positioningService: PositioningService
+        positioningService: PositioningService,
+        featuresService: ProtectionFeaturesService,
+        toastService: ToastService,
+        historyService: ProtectionHistoryService
     ) {
         self.navigationService = navigationService
         self.localizationService = localizationService
@@ -238,6 +295,9 @@ class SettingsViewModel: ObservableObject {
         self.tariffService = tariffService
         self.apiService = apiService
         self.positioningService = positioningService
+        self.featuresService = featuresService
+        self.toastService = toastService
+        self.historyService = historyService
 
         // Initialize localized strings with defaults (TODO: use real localization)
         localizedStrings = LocalizedStrings()

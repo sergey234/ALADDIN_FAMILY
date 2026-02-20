@@ -57,33 +57,15 @@ struct SettingsScreen: View {
     // MARK: - UI Sections
 
     private var navigationHeader: some View {
-        HStack {
-            Button(action: {
+        ALADDINNavigationBar(
+            title: viewModel.localizedStrings.settingsTitle,
+            subtitle: viewModel.localizedStrings.settingsSubtitle,
+            showBackButton: true,
+            onBack: {
                 dismiss()
-            }) {
-                Image(systemName: "chevron.left")
-                    .foregroundColor(.primary)
-                    .padding(Spacing.s)
-                    .background(Color.secondary.opacity(0.1))
-                    .clipShape(Circle())
             }
-
-            Spacer()
-
-            Text(viewModel.localizedStrings.settingsTitle)
-                .font(.headline)
-                .foregroundColor(.primary)
-
-            Spacer()
-
-            // Пустая кнопка для симметрии
-            Color.clear
-                .frame(width: 44, height: 44)
-                    }
-                    .padding(.horizontal, Spacing.screenPadding)
-        .padding(.vertical, Spacing.m)
-        .background(Color.clear)
-                .accessibilityElement(children: .contain)
+        )
+        .accessibilityElement(children: .combine)
         .accessibilityLabel(viewModel.localizedStrings.settingsAccessibilityNavbar)
     }
     
@@ -92,7 +74,7 @@ struct SettingsScreen: View {
             Text(viewModel.localizedStrings.profileSection)
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
 
             // Profile Card
@@ -118,17 +100,17 @@ struct SettingsScreen: View {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(userName)
                                 .font(.headline)
-                                .foregroundColor(.primary)
+                                .foregroundColor(.textPrimary)
                                 .accessibilityLabel(String(format: viewModel.localizedStrings.profileNameAccessibilityFormat, userName))
                     
                     Text(userAlias)
                                 .font(.subheadline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.textSecondary)
                                 .accessibilityLabel(String(format: viewModel.localizedStrings.profileEmailAccessibilityFormat, userAlias))
 
                             Text(viewModel.localizedStrings.profileStatus)
                         .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.textSecondary)
                                 .accessibilityLabel(String(format: viewModel.localizedStrings.profileStatusAccessibilityFormat, viewModel.localizedStrings.profileStatus))
                 }
                 
@@ -144,9 +126,9 @@ struct SettingsScreen: View {
                                 .fontWeight(.medium)
                             Spacer()
                             Image(systemName: "chevron.right")
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.textSecondary)
                         }
-                        .foregroundColor(.primary)
+                        .foregroundColor(.textPrimary)
                         .padding(.vertical, Spacing.s)
                     }
                     .accessibilityLabel(viewModel.localizedStrings.settingsProfileEditAccessibility)
@@ -173,7 +155,7 @@ struct SettingsScreen: View {
             Text(viewModel.localizedStrings.securitySection)
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
 
             VStack(spacing: 0) {
@@ -203,11 +185,11 @@ struct SettingsScreen: View {
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text(viewModel.localizedStrings.protectionLevel)
                             .font(.headline)
-                            .foregroundColor(.primary)
+                            .foregroundColor(.textPrimary)
 
                         Text(String(format: viewModel.localizedStrings.settingsProtectionLevelValueFormat, Int(viewModel.cachedProtectionLevel)))
                             .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.textSecondary)
 
                         Text(viewModel.cachedProtectionLevelText)
                             .font(.caption)
@@ -220,7 +202,7 @@ struct SettingsScreen: View {
                         viewModel.showProtectionExplanation = true
                                 }) {
                                     Image(systemName: "info.circle")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.textSecondary)
                     }
                 }
                 .padding(Spacing.m)
@@ -252,7 +234,7 @@ struct SettingsScreen: View {
             Text(viewModel.localizedStrings.notificationsSection)
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
 
             VStack(spacing: 0) {
@@ -294,7 +276,7 @@ struct SettingsScreen: View {
             Text(viewModel.localizedStrings.appSection)
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
 
             VStack(spacing: 0) {
@@ -436,7 +418,7 @@ struct SettingsScreen: View {
             Text(viewModel.localizedStrings.additionalSection)
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
 
             VStack(spacing: 0) {
@@ -609,7 +591,7 @@ struct SettingsScreen: View {
             ShareSheet(activityItems: [viewModel.localizedStrings.settingsShareMessage])
         }
         .sheet(isPresented: $viewModel.showProtectionExplanation) {
-            ProtectionLevelExplanationModal(isPresented: $viewModel.showProtectionExplanation, currentTariff: .free) // TODO: Use real tariff
+            ProtectionLevelExplanationModal(isPresented: $viewModel.showProtectionExplanation, currentTariff: .free)
         }
         .sheet(isPresented: $viewModel.showAdvancedProtection) {
             AdvancedProtectionSettingsScreen()
