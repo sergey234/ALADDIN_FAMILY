@@ -609,31 +609,35 @@ struct SettingsScreen: View {
             ShareSheet(activityItems: [viewModel.localizedStrings.settingsShareMessage])
         }
         .sheet(isPresented: $viewModel.showProtectionExplanation) {
-            Text("Protection Explanation Screen - Coming Soon")
+            ProtectionLevelExplanationModal(isPresented: $viewModel.showProtectionExplanation, currentTariff: .free) // TODO: Use real tariff
         }
         .sheet(isPresented: $viewModel.showAdvancedProtection) {
-            Text("Advanced Protection Screen - Coming Soon")
+            AdvancedProtectionSettingsScreen()
         }
         .sheet(isPresented: $viewModel.showProtectionHistory) {
-            Text("Protection History Screen - Coming Soon")
+            ProtectionLevelHistoryModal(isPresented: $viewModel.showProtectionHistory)
         }
         .sheet(isPresented: $viewModel.showEmergencyContacts) {
-            Text("Emergency Contacts Screen - Coming Soon")
+            EmergencyContactsView()
         }
         .sheet(isPresented: $viewModel.showEmergencyNotifications) {
-            Text("Emergency Notifications Screen - Coming Soon")
+            EmergencyNotificationsView()
         }
         .sheet(isPresented: $viewModel.showVoiceControl) {
-            Text("Voice Control Screen - Coming Soon")
+            VoiceControlView()
         }
         .sheet(isPresented: $viewModel.showChildProtectionCompliance) {
-            Text("Child Protection Compliance Screen - Coming Soon")
+            ComplianceView(section: .childProtection)
         }
         .sheet(isPresented: $viewModel.showDataProtectionCompliance) {
-            Text("Data Protection Compliance Screen - Coming Soon")
+            ComplianceView(section: .dataProtection)
         }
         .sheet(isPresented: $viewModel.showPositioningSystemPicker) {
-            Text("Positioning System Picker - Coming Soon")
+            PositioningSystemPickerView(
+                selectedSystem: $viewModel.selectedPositioningSystem,
+                currentSystem: viewModel.currentPositioningSystem,
+                currentRegion: viewModel.currentRegionName
+            )
         }
     }
     }

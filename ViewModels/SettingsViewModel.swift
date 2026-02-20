@@ -181,6 +181,11 @@ class SettingsViewModel: ObservableObject {
     @Published var isLoadingComponents: Bool = false
     @Published var componentsError: String? = nil
 
+    // Positioning System
+    @Published var selectedPositioningSystem: PositioningSystem = .gps
+    var currentPositioningSystem: PositioningSystem { .gps }
+    var currentRegionName: String { "Russia" }
+
     // Initialization flag
     @Published var isInitializing: Bool = false
 
@@ -189,6 +194,10 @@ class SettingsViewModel: ObservableObject {
     var isAdmin: Bool {
         let userRole = UserDefaults.standard.string(forKey: "user_role") ?? "user"
         return userRole == "admin" || userRole == "administrator"
+    }
+
+    var currentTariff: SettingsTariffType {
+        return tariffService?.currentTariff ?? .free
     }
 
     // MARK: - Dependencies
