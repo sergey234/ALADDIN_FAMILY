@@ -106,6 +106,7 @@ struct LocalizedStrings {
     let themeSystem: String
     let settingsPercentFormat: String
     let settingsButtonAccessibility: String
+    let settingsShareMessage: String
 
     init(from localizationService: LocalizationService) {
         // Navigation & Common
@@ -124,6 +125,7 @@ struct LocalizedStrings {
         profileNameAccessibilityFormat = localizationService.localized("settings_profile_name_accessibility")
         profileEmailAccessibilityFormat = localizationService.localized("settings_profile_email_accessibility")
         profileStatusAccessibilityFormat = localizationService.localized("settings_profile_status_accessibility")
+        settingsProfileEditAccessibility = localizationService.localized("settings_profile_edit_accessibility")
 
         // Security Section
         securitySection = localizationService.localized("security_section")
@@ -137,6 +139,7 @@ struct LocalizedStrings {
         settingsProtectionHistory = localizationService.localized("settings_protection_history")
         settingsAdvancedSettings = localizationService.localized("settings_advanced_settings")
         settingsImproveProtection = localizationService.localized("settings_improve_protection")
+        settingsProtectionLevelAccessibility = localizationService.localized("settings_protection_level_accessibility")
         settingsProtectionLevelAccessibility = localizationService.localized("settings_protection_level_accessibility")
         componentEmergencyContactManagerTitle = localizationService.localized("component_emergency_contact_manager_title")
         componentEmergencyContactManagerDescription = localizationService.localized("component_emergency_contact_manager_description")
@@ -206,5 +209,6 @@ struct LocalizedStrings {
         themeSystem = localizationService.localized("theme_system")
         settingsPercentFormat = localizationService.localized("settings_percent_format")
         settingsButtonAccessibility = localizationService.localized("settings_button_accessibility")
+        settingsShareMessage = localizationService.localized("settings_share_message")
     }
 }

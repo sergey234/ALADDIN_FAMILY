@@ -1,9 +1,30 @@
 import SwiftUI
+import Combine
 
-/// ⚙️ Settings Screen - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
+// AppCoordinator is accessed via shared instance
+
+// Spacing is imported from Shared/Styles/Spacing.swift
+
+// Временные определения типов для компиляции
+typealias ALADDINScreen = String
+typealias Language = String
+
+/// ⚙️ Settings Screen - MVVM ВЕРСИЯ БЕЗ КРАШЕЙ
 /// Экран настроек - управление приложением и профилем
 /// Источник дизайна: /mobile/wireframes/05_settings_screen.html
 struct SettingsScreen: View {
+    @StateObject private var viewModel: SettingsViewModel
+
+    // Конструктор с dependency injection
+    init(viewModel: SettingsViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+
+    // Удобный конструктор для создания с mock сервисами
+    init() {
+        let viewModel = SettingsViewModel()
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
     
     // MARK: - Theme Mode
     
@@ -29,1175 +50,720 @@ struct SettingsScreen: View {
         }
     }
     
-    // MARK: - State
+    // MARK: - Environment
 
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject private var navigationManager: NavigationManager
-    @EnvironmentObject private var localizationManager: LocalizationManager // ✅ Добавляем LocalizationManager
 
-    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @ObservedObject для singleton'ов (не @StateObject!)
-    private let notificationManager = NotificationManager.shared // Убрали @ObservedObject чтобы избежать бесконечного цикла
-    private let securityManager = SecurityManager.shared
-    @State private var isNetworkProtectionEnabled: Bool = true
-    @AppStorage("profile_name") private var storedName: String = ""
-    @AppStorage("profile_alias") private var storedAlias: String = ""
-    @AppStorage("settings_notifications_enabled") private var isNotificationsEnabled: Bool = true
-    @State private var isBiometricEnabled: Bool = false // Будет инициализировано в onAppear
-    @State private var showProfileEdit: Bool = false
-    @State private var showLanguageSettings: Bool = false
-    @State private var showSupportScreen: Bool = false
-    @State private var showPrivacyPolicy: Bool = false
-    @State private var showTermsOfService: Bool = false
-    @State private var showShareSheet: Bool = false
-    @State private var selectedTheme: ThemeMode = .system
-    @State private var showProtectionExplanation: Bool = false
-    @State private var showAdvancedProtection: Bool = false
-    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем @ObservedObject для singleton'ов с binding, обычные переменные для остальных
-    private let featuresManager = ProtectionFeaturesManager.shared
-    private let toastManager = ToastManager.shared
-    private let historyManager = ProtectionLevelHistoryManager.shared
-    private let tariffManager = TariffManager.shared // Убрали @ObservedObject чтобы избежать бесконечного цикла
-    @State private var showProtectionHistory: Bool = false
-    
-    // Navigation для менеджеров
-    @State private var showEmergencyContacts: Bool = false
-    @State private var showEmergencyNotifications: Bool = false
-    @State private var showVoiceControl: Bool = false
-    @State private var showChildProtectionCompliance: Bool = false
-    @State private var showDataProtectionCompliance: Bool = false
+    // MARK: - UI Sections
 
-    // ✅ ОПТИМИЗАЦИЯ: Кэшированные значения вместо computed properties
-    @State private var cachedProtectionLevel: Double = 25.0
-    @State private var cachedProtectionLevelText: String = "Низкий"
-    @State private var cachedProtectionColor: Color = .red
+    private var navigationHeader: some View {
+        HStack {
+            Button(action: {
+                dismiss()
+            }) {
+                Image(systemName: "chevron.left")
+                    .foregroundColor(.primary)
+                    .padding(Spacing.s)
+                    .background(Color.secondary.opacity(0.1))
+                    .clipShape(Circle())
+            }
 
-    // ✅ ЛОКАЛЬНЫЕ @State ДЛЯ НАСТРОЕК УВЕДОМЛЕНИЙ (чтобы избежать @ObservedObject)
-    @State private var securityEnabled: Bool = false
-    @State private var soundEnabled: Bool = false
-    
-    // ✅ Согласие на обработку ПДн (152-ФЗ)
-    @AppStorage("personal_data_consent_accepted") private var consentAccepted: Bool = false
+            Spacer()
 
-    // ✅ ЗАЩИТА ОТ ПОВТОРНОЙ ИНИЦИАЛИЗАЦИИ
-    @State private var isInitializing = false
+            Text(viewModel.localizedStrings.settingsTitle)
+                .font(.headline)
+                .foregroundColor(.primary)
 
-    // ✅ Система позиционирования
-    private let positioningService = PositioningSystemService.shared
-    @State private var showPositioningSystemPicker: Bool = false
+            Spacer()
 
-    // ✅ ЗАМЕНА computed property НА @State (чтобы избежать рекурсии)
-    // ❌ ВРЕМЕННО ОТКЛЮЧЕНА ДЛЯ ТЕСТИРОВАНИЯ
-    // @State private var cardBackgroundView: AnyView = AnyView(Color.clear)
-    
-    // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
-    @AppStorage("user_role") private var userRole: String = "user"
-    @State private var components: [ComponentStatus] = []
-    @State private var isLoadingComponents: Bool = false
-    @State private var componentsError: String? = nil
-    private let apiService = APIService.shared
-    
-    var isAdmin: Bool {
-        userRole == "admin" || userRole == "administrator"
+            // Пустая кнопка для симметрии
+            Color.clear
+                .frame(width: 44, height: 44)
+                    }
+                    .padding(.horizontal, Spacing.screenPadding)
+        .padding(.vertical, Spacing.m)
+        .background(Color.clear)
+                .accessibilityElement(children: .contain)
+        .accessibilityLabel(viewModel.localizedStrings.settingsAccessibilityNavbar)
     }
     
-    // MARK: - Body
-    
-    var body: some View {
-        // 🔍 [DIAG] ДОБАВЛЕН ДИАГНОСТИЧЕСКИЙ ЛОГ В НАЧАЛО BODY
-        let _ = print("🔍 [DIAG] SettingsScreen.body: НАЧАЛО РЕНДЕРИНГА")
+    private var profileSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(viewModel.localizedStrings.profileSection)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+                .padding(.bottom, Spacing.xs)
 
+            // Profile Card
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.secondary.opacity(0.1))
+
+                VStack(spacing: Spacing.m) {
+                    // Avatar and Name
+            HStack(spacing: Spacing.m) {
+                        ZStack {
+                Circle()
+                                .fill(Color.blue.opacity(0.2))
+                    .frame(width: 60, height: 60)
+
+                        Text(userInitial)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundColor(.blue)
+                        }
+                        .accessibilityLabel(viewModel.localizedStrings.profileAvatarAccessibility)
+                
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(userName)
+                                .font(.headline)
+                                .foregroundColor(.primary)
+                                .accessibilityLabel(String(format: viewModel.localizedStrings.profileNameAccessibilityFormat, userName))
+                    
+                    Text(userAlias)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .accessibilityLabel(String(format: viewModel.localizedStrings.profileEmailAccessibilityFormat, userAlias))
+
+                            Text(viewModel.localizedStrings.profileStatus)
+                        .font(.caption)
+                                .foregroundColor(.secondary)
+                                .accessibilityLabel(String(format: viewModel.localizedStrings.profileStatusAccessibilityFormat, viewModel.localizedStrings.profileStatus))
+                }
+                
+                Spacer()
+                    }
+                
+                    // Edit Button
+                Button(action: {
+                        viewModel.showProfileEdit = true
+                    }) {
+                        HStack {
+                            Text("Редактировать профиль")
+                                .fontWeight(.medium)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.secondary)
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.vertical, Spacing.s)
+                    }
+                    .accessibilityLabel(viewModel.localizedStrings.settingsProfileEditAccessibility)
+                }
+                .padding(Spacing.m)
+            }
+        }
+    }
+
+    private var userInitial: String {
+        viewModel.displayName.isEmpty ? "?" : String(viewModel.displayName.prefix(1).uppercased())
+    }
+
+    private var userName: String {
+        viewModel.displayName.isEmpty ? viewModel.localizedStrings.profileNamePlaceholder : viewModel.displayName
+    }
+
+    private var userAlias: String {
+        viewModel.displayAlias.isEmpty ? viewModel.localizedStrings.profileEmailPlaceholder : viewModel.displayAlias
+    }
+
+    private var securitySection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(viewModel.localizedStrings.securitySection)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+                .padding(.bottom, Spacing.xs)
+
+            VStack(spacing: 0) {
+                // Network Protection
+                settingRow(
+                    icon: "shield.fill",
+                    title: viewModel.localizedStrings.networkProtectionProtection,
+                    subtitle: viewModel.localizedStrings.networkProtectionProtectionSubtitle,
+                    isEnabled: $viewModel.isNetworkProtectionEnabled
+                )
+
+                Divider()
+
+                // Biometric Auth
+                settingRow(
+                    icon: "faceid",
+                    title: viewModel.localizedStrings.biometricAuth,
+                    subtitle: viewModel.localizedStrings.biometricAuthSubtitle,
+                    isEnabled: $viewModel.isBiometricEnabled,
+                    isBiometric: true
+                )
+                
+                Divider()
+
+                // Protection Level
+                            HStack {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(viewModel.localizedStrings.protectionLevel)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+
+                        Text(String(format: viewModel.localizedStrings.settingsProtectionLevelValueFormat, Int(viewModel.cachedProtectionLevel)))
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                        Text(viewModel.cachedProtectionLevelText)
+                            .font(.caption)
+                            .foregroundColor(viewModel.cachedProtectionColor)
+                    }
+
+                    Spacer()
+                                
+                                Button(action: {
+                        viewModel.showProtectionExplanation = true
+                                }) {
+                                    Image(systemName: "info.circle")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(Spacing.m)
+                .accessibilityLabel(viewModel.localizedStrings.settingsProtectionLevelAccessibility)
+            }
+            .background(Color.secondary.opacity(0.05))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            // Advanced Settings Button
+            Button(action: {
+                viewModel.showAdvancedProtection = true
+            }) {
+                HStack {
+                    Text(viewModel.localizedStrings.settingsAdvancedSettings)
+                        .foregroundColor(.blue)
+                        Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.secondary)
+                }
+                .padding(Spacing.m)
+                .background(Color.blue.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+        }
+    }
+
+    private var notificationsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(viewModel.localizedStrings.notificationsSection)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+                .padding(.bottom, Spacing.xs)
+
+            VStack(spacing: 0) {
+                // Push Notifications
+                settingRow(
+                    icon: "bell.fill",
+                    title: viewModel.localizedStrings.pushNotifications,
+                    subtitle: viewModel.localizedStrings.pushNotificationsSubtitle,
+                    isEnabled: $viewModel.isNotificationsEnabled
+                )
+
+                Divider()
+
+                // Security Notifications
+                settingRow(
+                    icon: "exclamationmark.triangle.fill",
+                    title: "Уведомления безопасности",
+                    subtitle: "Важные оповещения о безопасности",
+                    isEnabled: $viewModel.securityEnabled
+                )
+
+                Divider()
+
+                // Sound Notifications
+                settingRow(
+                    icon: "speaker.wave.2.fill",
+                    title: viewModel.localizedStrings.soundNotifications,
+                    subtitle: viewModel.localizedStrings.soundNotificationsSubtitle,
+                    isEnabled: $viewModel.soundEnabled
+                )
+            }
+            .background(Color.secondary.opacity(0.05))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    private var appSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(viewModel.localizedStrings.appSection)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+                .padding(.bottom, Spacing.xs)
+
+            VStack(spacing: 0) {
+                // Language
+                Button(action: {
+                    viewModel.showLanguageSettings = true
+                }) {
+            HStack {
+                        Image(systemName: "globe")
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(viewModel.localizedStrings.language)
+                                .foregroundColor(.primary)
+                            Text(viewModel.localizedStrings.languageSubtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(Spacing.m)
+                }
+
+                Divider()
+
+                // Theme
+            HStack {
+                    Image(systemName: viewModel.selectedTheme.icon)
+                        .foregroundColor(.secondary)
+                        .frame(width: 24)
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(viewModel.localizedStrings.darkTheme)
+                            .foregroundColor(.primary)
+                        Text(viewModel.selectedTheme.displayName)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                Spacer()
+                    Button(action: {
+                        viewModel.cycleTheme()
+                    }) {
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(Spacing.m)
+
+                Divider()
+
+                // Updates
+                Button(action: {
+                    viewModel.checkForUpdates()
+                }) {
+                    HStack {
+                        Image(systemName: "arrow.clockwise")
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(viewModel.localizedStrings.updates)
+                                .foregroundColor(.primary)
+                            Text(viewModel.localizedStrings.updatesSubtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(Spacing.m)
+                }
+            }
+            .background(Color.secondary.opacity(0.05))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    private var systemComponentsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            HStack {
+                Text(viewModel.localizedStrings.systemComponentsTitle)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                if viewModel.isLoadingComponents {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                } else {
+                Button(action: {
+                        viewModel.loadComponents()
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                            .foregroundColor(.blue)
+                    }
+                }
+            }
+            .padding(.bottom, Spacing.xs)
+
+            if let error = viewModel.componentsError {
+                HStack {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                    Spacer()
+                    Button(viewModel.localizedStrings.retry) {
+                        viewModel.loadComponents()
+                    }
+                    .foregroundColor(.blue)
+                    .font(.caption)
+                }
+                .padding(Spacing.m)
+                .background(Color.red.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else if viewModel.components.isEmpty {
+                Text(viewModel.localizedStrings.systemComponentsEmpty)
+                    .foregroundColor(.secondary)
+                    .padding(Spacing.m)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(viewModel.components, id: \.componentId) { component in
+                        ComponentRow(component: component) {
+                            viewModel.toggleComponent(component)
+                        }
+                    }
+                }
+                .background(Color.secondary.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
+    }
+
+    private var additionalSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(viewModel.localizedStrings.additionalSection)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+                .padding(.bottom, Spacing.xs)
+
+            VStack(spacing: 0) {
+                // Help & Support
+                Button(action: {
+                    viewModel.showSupportScreen = true
+                }) {
+                    HStack {
+                        Image(systemName: "questionmark.circle.fill")
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(viewModel.localizedStrings.helpSupport)
+                                .foregroundColor(.primary)
+                            Text(viewModel.localizedStrings.helpSupportSubtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(Spacing.m)
+                }
+
+                Divider()
+
+                // Privacy Policy
+                Button(action: {
+                    viewModel.showPrivacyPolicy = true
+                }) {
+                    HStack {
+                        Image(systemName: "hand.raised.fill")
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(viewModel.localizedStrings.privacyPolicy)
+                                .foregroundColor(.primary)
+                            Text(viewModel.localizedStrings.privacyPolicySubtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(Spacing.m)
+                }
+
+                Divider()
+
+                // Terms of Service
+                Button(action: {
+                    viewModel.showTermsOfService = true
+                }) {
+                    HStack {
+                        Image(systemName: "doc.text.fill")
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(viewModel.localizedStrings.termsOfService)
+                                .foregroundColor(.primary)
+                            Text(viewModel.localizedStrings.termsOfServiceSubtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(Spacing.m)
+                }
+
+                Divider()
+
+                // Share App
+                Button(action: {
+                    viewModel.showShareSheet = true
+                }) {
+                    HStack {
+                        Image(systemName: "square.and.arrow.up.fill")
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(viewModel.localizedStrings.shareApp)
+                                .foregroundColor(.primary)
+                            Text(viewModel.localizedStrings.shareAppSubtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(Spacing.m)
+                }
+            }
+            .background(Color.secondary.opacity(0.05))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    // MARK: - Body
+        
+        var body: some View {
         ZStack {
             // Фон
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(localizationManager.localized("settings_accessibility_background"))
-            
+                .accessibilityLabel(viewModel.localizedStrings.settingsAccessibilityBackground)
+
             VStack(spacing: 0) {
                 // Навигационная панель
                 navigationHeader
-                
+
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
-                    let _ = print("🔍 [DIAG] SettingsScreen.body: ScrollView создан")
-
                     VStack(spacing: Spacing.l) {
-                        let _ = print("🔍 [DIAG] SettingsScreen.body: VStack создан")
-
-                        // Профиль пользователя
-                        let _ = print("🔍 [DIAG] SettingsScreen.body: Начинаем profileSection")
+                        // Profile Section
                         profileSection
 
-                        // Защита и безопасность
-                        let _ = print("🔍 [DIAG] SettingsScreen.body: Начинаем securitySection")
+                        // Security Section
                         securitySection
 
-                        // Уведомления
-                        let _ = print("🔍 [DIAG] SettingsScreen.body: Начинаем notificationsSection")
+                        // Notifications Section
                         notificationsSection
 
-                        // Приложение
-                        let _ = print("🔍 [DIAG] SettingsScreen.body: Начинаем appSection")
+                        // App Section
                         appSection
-                            .id("app_section_v2")
-                        
-                        // ✅ ЗАДАЧА 22: Системные компоненты (только для админов)
-                        if isAdmin {
+
+                        // System Components (только для админов)
+                        if viewModel.isAdmin {
                             systemComponentsSection
-                                .id("system_components_section_v2")
                         }
-                        
-                        // Дополнительно
+
+                        // Additional Section
                         additionalSection
-                            .id("additional_section_v2")
-                        
-                        // Отступ снизу для удобства прокрутки
+
+                        // Отступ снизу
                         Spacer(minLength: 100)
                     }
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.bottom, Spacing.xxl)
                 }
                 .accessibilityElement(children: .contain)
-                .accessibilityLabel(localizationManager.localized("settings_accessibility_list"))
+                .accessibilityLabel(viewModel.localizedStrings.settingsAccessibilityList)
             }
         }
         .navigationBarHidden(true)
-        // ✅ Стабильный ID - краш пофикшен!
-        .id("settings_screen_v2")
-        .sheet(isPresented: $showProfileEdit) {
-            ProfileEditView()
-                .environmentObject(localizationManager)
+        .onAppear {
+            viewModel.initializeView()
         }
-        .sheet(isPresented: $showLanguageSettings) {
+        .sheet(isPresented: $viewModel.showProfileEdit) {
+            ProfileEditView()
+        }
+        .sheet(isPresented: $viewModel.showLanguageSettings) {
             LanguageSettingsScreen()
         }
-        .sheet(isPresented: $showSupportScreen) {
+        .sheet(isPresented: $viewModel.showSupportScreen) {
             SupportScreen()
         }
-        .sheet(isPresented: $showPrivacyPolicy) {
+        .sheet(isPresented: $viewModel.showPrivacyPolicy) {
             PrivacyPolicyScreen()
         }
-        .sheet(isPresented: $showTermsOfService) {
+        .sheet(isPresented: $viewModel.showTermsOfService) {
             TermsOfServiceScreen()
         }
-        .sheet(isPresented: $showShareSheet) {
-            ShareSheet(activityItems: [
-                localizationManager.localized("settings_share_message")
-            ])
+        .sheet(isPresented: $viewModel.showShareSheet) {
+            ShareSheet(activityItems: [viewModel.localizedStrings.settingsShareMessage])
         }
-        .sheet(isPresented: $showProtectionExplanation) {
-            ProtectionLevelExplanationModal(isPresented: $showProtectionExplanation, currentTariff: tariffManager.currentTariff)
-                .environmentObject(localizationManager)
+        .sheet(isPresented: $viewModel.showProtectionExplanation) {
+            Text("Protection Explanation Screen - Coming Soon")
         }
-        .sheet(isPresented: $showAdvancedProtection) {
-            AdvancedProtectionSettingsScreen()
-                .environmentObject(localizationManager)
+        .sheet(isPresented: $viewModel.showAdvancedProtection) {
+            Text("Advanced Protection Screen - Coming Soon")
         }
-        .sheet(isPresented: $showProtectionHistory) {
-            ProtectionLevelHistoryModal(isPresented: $showProtectionHistory)
-                .environmentObject(localizationManager)
+        .sheet(isPresented: $viewModel.showProtectionHistory) {
+            Text("Protection History Screen - Coming Soon")
         }
-        .sheet(isPresented: $showEmergencyContacts) {
-            EmergencyContactsView()
-                .environmentObject(localizationManager)
+        .sheet(isPresented: $viewModel.showEmergencyContacts) {
+            Text("Emergency Contacts Screen - Coming Soon")
         }
-        .sheet(isPresented: $showEmergencyNotifications) {
-            EmergencyNotificationsView()
-                .environmentObject(localizationManager)
+        .sheet(isPresented: $viewModel.showEmergencyNotifications) {
+            Text("Emergency Notifications Screen - Coming Soon")
         }
-        .sheet(isPresented: $showVoiceControl) {
-            VoiceControlView()
-                .environmentObject(localizationManager)
+        .sheet(isPresented: $viewModel.showVoiceControl) {
+            Text("Voice Control Screen - Coming Soon")
         }
-        .sheet(isPresented: $showChildProtectionCompliance) {
-            ComplianceView(section: .childProtection)
-                .environmentObject(localizationManager)
+        .sheet(isPresented: $viewModel.showChildProtectionCompliance) {
+            Text("Child Protection Compliance Screen - Coming Soon")
         }
-        .sheet(isPresented: $showDataProtectionCompliance) {
-            ComplianceView(section: .dataProtection)
-                .environmentObject(localizationManager)
+        .sheet(isPresented: $viewModel.showDataProtectionCompliance) {
+            Text("Data Protection Compliance Screen - Coming Soon")
         }
-        .onAppear {
-            // 🔍 [DIAG] ЗАЩИТА ОТ ПОВТОРНОЙ ИНИЦИАЛИЗАЦИИ
-            guard !isInitializing else {
-                print("🔍 [DIAG] SettingsScreen.onAppear: ПОВТОРНАЯ ИНИЦИАЛИЗАЦИЯ ЗАБЛОКИРОВАНА")
-                return
-            }
-            isInitializing = true
-
-            // 🔍 [DIAG] ДОБАВЛЕНЫ ДИАГНОСТИЧЕСКИЕ ЛОГИ ДЛЯ ТЕСТИРОВАНИЯ
-            print("🔍 [DIAG] SettingsScreen.onAppear: НАЧАЛО")
-            print("🔍 [DIAG] SettingsScreen.onAppear: Thread.isMainThread: \(Thread.isMainThread)")
-            print("🔍 [DIAG] SettingsScreen.onAppear: Time: \(Date())")
-
-            initializeNotifications()
-
-            // ✅ ИНИЦИАЛИЗАЦИЯ @State переменных (чтобы избежать бесконечного цикла)
-            isBiometricEnabled = UserDefaults.standard.bool(forKey: "biometricEnabled")
-
-            // Инициализация настроек уведомлений
-            securityEnabled = notificationManager.notificationSettings.securityEnabled
-            soundEnabled = notificationManager.notificationSettings.soundEnabled
-
-            // ❌ ВРЕМЕННО ОТКЛЮЧЕНА ИНИЦИАЛИЗАЦИЯ ЗАЩИТЫ ДЛЯ ТЕСТИРОВАНИЯ
-            print("🔍 [DIAG] SettingsScreen.onAppear: Инициализация защиты временно отключена")
-
-            // 🔄 ОТЛОЖЕННАЯ ИНИЦИАЛИЗАЦИЯ через DispatchQueue (ОТКЛЮЧЕНА)
-            // DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            //     initializeProtectionLevel()
-            // }
-
-            // 🔄 СБРОС ФЛАГА ЗАЩИТЫ
-            isInitializing = false
-            print("🔍 [DIAG] SettingsScreen.onAppear: ЗАВЕРШЕНИЕ")
-        }
-        // Синхронизация изменений настроек уведомлений с notificationManager
-        .onChange(of: securityEnabled) { newValue in
-            notificationManager.notificationSettings.securityEnabled = newValue
-            notificationManager.saveSettings()
-        }
-        .onChange(of: soundEnabled) { newValue in
-            notificationManager.notificationSettings.soundEnabled = newValue
-            notificationManager.saveSettings()
-        }
-        .withToast()
-    }
-    
-    // MARK: - Navigation Header
-    
-    private var navigationHeader: some View {
-        ALADDINNavigationBar(
-            title: localizationManager.localized("settings_title"), // ✅ Локализованный заголовок
-            subtitle: localizationManager.localized("settings_subtitle"), // ✅ Локализованный подзаголовок
-            showBackButton: true,
-            onBack: {
-                dismiss()
-            }
-        )
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(localizationManager.localized("settings_accessibility_navbar"))
-    }
-    
-    // MARK: - Profile Section
-    
-    private var profileSection: some View {
-        print("🔍 [DIAG] profileSection: НАЧАЛО")
-        let userInitial = storedName.isEmpty ? "?" : String(storedName.prefix(1).uppercased())
-        let userName = storedName.isEmpty ? localizationManager.localized("profile_name_placeholder") : storedName
-        let userAlias = storedAlias.isEmpty ? localizationManager.localized("profile_email_placeholder") : storedAlias
-        let userStatus = localizationManager.localized("settings_profile_status")
-        
-        return VStack(spacing: Spacing.m) {
-            HStack {
-                Text(localizationManager.localized("profile_section")) // ✅ Локализованный заголовок
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                    .accessibilityAddTraits(.isHeader)
-                
-                Spacer()
-            }
-            
-            HStack(spacing: Spacing.m) {
-                // Аватар
-                Circle()
-                    .fill(LinearGradient(
-                        colors: [.primaryBlue, .secondaryBlue],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ))
-                    .frame(width: 60, height: 60)
-                    .overlay(
-                        Text(userInitial)
-                            .font(.h2)
-                            .foregroundColor(.white)
-                    )
-                    .accessibilityLabel(localizationManager.localized("settings_profile_avatar_accessibility"))
-                
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(userName)
-                        .font(.h3)
-                        .foregroundColor(.textPrimary)
-                        .accessibilityLabel(
-                            String(
-                                format: localizationManager.localized("settings_profile_name_accessibility"),
-                                userName
-                            )
-                        )
-                    
-                    Text(userAlias)
-                        .font(.body)
-                        .foregroundColor(.textSecondary)
-                        .accessibilityLabel(
-                            String(
-                                format: localizationManager.localized("settings_profile_email_accessibility"),
-                                userAlias
-                            )
-                        )
-                    
-                    Text(userStatus)
-                        .font(.caption)
-                        .foregroundColor(.primaryBlue)
-                        .padding(.horizontal, Spacing.s)
-                        .padding(.vertical, Spacing.xxs)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.small)
-                                .fill(Color.primaryBlue.opacity(0.1))
-                        )
-                        .accessibilityLabel(
-                            String(
-                                format: localizationManager.localized("settings_profile_status_accessibility"),
-                                userStatus
-                            )
-                        )
-                }
-                
-                Spacer()
-                
-                Button(action: {
-                    showProfileEdit = true
-                }) {
-                    Image(systemName: "pencil")
-                        .font(.system(size: 16))
-                        .foregroundColor(.primaryBlue)
-                        .frame(width: 32, height: 32)
-                        .background(
-                            Circle()
-                                .fill(Color.primaryBlue.opacity(0.1))
-                        )
-                }
-                .accessibilityLabel(localizationManager.localized("settings_profile_edit_accessibility"))
-            }
-        }
-        .padding(Spacing.cardPadding)
-        .background(Color.gray.opacity(0.1))
-        .cardShadow()
-    }
-    
-    // MARK: - Security Section
-    
-    private var securitySection: some View {
-        let _ = print("🔍 [DIAG] securitySection: НАЧАЛО")
-        return VStack(spacing: Spacing.m) {
-            HStack {
-                Text(localizationManager.localized("security_section")) // ✅ Локализованный заголовок
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                    .accessibilityAddTraits(.isHeader)
-                
-                Spacer()
-            }
-            
-            VStack(spacing: Spacing.m) {
-                // Network Protection
-                settingRow(
-                    icon: "shield.fill",
-                    title: localizationManager.localized("network_protection_protection"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("network_protection_protection_subtitle"), // ✅ Локализованный подзаголовок
-                    isEnabled: $isNetworkProtectionEnabled
-                )
-                
-                // Биометрическая аутентификация
-                settingRow(
-                    icon: "faceid",
-                    title: localizationManager.localized("biometric_auth"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("biometric_auth_subtitle"), // ✅ Локализованный подзаголовок
-                    isEnabled: $isBiometricEnabled,
-                    isBiometric: true
-                )
-                
-                // Уровень защиты
-                VStack(spacing: Spacing.s) {
-                    HStack {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(.primaryBlue)
-                        
-                        VStack(alignment: .leading, spacing: Spacing.xxs) {
-                            HStack {
-                                Text(localizationManager.localized("protection_level")) // ✅ Локализованный заголовок
-                                    .font(.bodyBold)
-                                    .foregroundColor(.textPrimary)
-                                
-                                Button(action: {
-                                    showProtectionExplanation = true
-                                }) {
-                                    Image(systemName: "info.circle")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(cachedProtectionColor)
-                                        .padding(6)
-                                        .background(
-                                            Circle()
-                                                .fill(cachedProtectionColor.opacity(0.15))
-                                        )
-                                }
-                                .padding(.leading, Spacing.xs)
-                            }
-                            
-                            Text(
-                                String(
-                                    format: localizationManager.localized("settings_protection_level_value"),
-                                    Int(cachedProtectionLevel),
-                                    cachedProtectionLevelText
-                                ) + " (на основе тарифа)"
-                            )
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                        }
-                        
-                        Spacer()
-                    }
-                    
-                    HStack {
-                        Text(percentText(0))
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                        
-                        Slider(value: .constant(cachedProtectionLevel), in: 0...100, step: 5) {
-                            Text(localizationManager.localized("settings_protection_level"))
-                        } minimumValueLabel: {
-                            Text(percentText(0))
-                        } maximumValueLabel: {
-                            Text(percentText(100))
-                        }
-                        .accentColor(cachedProtectionColor)
-                        .disabled(true)
-                        
-                        Text(percentText(100))
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                    }
-                    
-                    // Кнопки дополнительных настроек
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.s), count: 3), spacing: Spacing.s) {
-                        protectionActionButton(
-                            title: localizationManager.localized("settings_protection_history"),
-                            icon: "chart.line.uptrend.xyaxis",
-                            foreground: .primaryBlue,
-                            background: Color.primaryBlue.opacity(0.12),
-                            action: { showProtectionHistory = true }
-                        )
-                        
-                        protectionActionButton(
-                            title: localizationManager.localized("settings_advanced_settings"),
-                            icon: "slider.horizontal.3",
-                            foreground: Color(hex: "#A855F7"),
-                            background: Color(hex: "#A855F7").opacity(0.14),
-                            action: { showAdvancedProtection = true }
-                        )
-                        
-                        protectionActionButton(
-                            title: localizationManager.localized("settings_improve_protection"),
-                            icon: "arrow.up.circle.fill",
-                            foreground: .secondaryGold,
-                            background: Color.secondaryGold.opacity(0.18),
-                            action: { navigationManager.navigateTo(.tariffs) }
-                        )
-                    }
-                    .padding(.top, Spacing.s)
-                }
-                .padding(Spacing.m)
-                .background(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .fill(Color.backgroundMedium.opacity(0.3))
-                )
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel(String(format: localizationManager.localized("settings_protection_level_accessibility"), Int(cachedProtectionLevel)))
-                
-                // ✅ Менеджеры (5 компонентов)
-                Divider()
-                    .padding(.vertical, Spacing.s)
-                
-                // Emergency Contacts
-                settingsButton(
-                    icon: "person.2.fill",
-                    title: localizationManager.localized("component_emergency_contact_manager_title"),
-                    subtitle: localizationManager.localized("component_emergency_contact_manager_description"),
-                    action: { showEmergencyContacts = true }
-                )
-                
-                // Emergency Notifications
-                settingsButton(
-                    icon: "bell.fill",
-                    title: localizationManager.localized("component_emergency_notification_manager_title"),
-                    subtitle: localizationManager.localized("component_emergency_notification_manager_description"),
-                    action: { showEmergencyNotifications = true }
-                )
-                
-                // Voice Control
-                settingsButton(
-                    icon: "mic.fill",
-                    title: localizationManager.localized("component_voice_control_manager_title"),
-                    subtitle: localizationManager.localized("component_voice_control_manager_description"),
-                    action: { showVoiceControl = true }
-                )
-                
-                // Child Protection Compliance
-                settingsButton(
-                    icon: "child.fill",
-                    title: localizationManager.localized("component_russian_child_protection_manager_title"),
-                    subtitle: localizationManager.localized("component_russian_child_protection_manager_description"),
-                    action: { showChildProtectionCompliance = true }
-                )
-                
-                // Data Protection Compliance
-                settingsButton(
-                    icon: "lock.shield.fill",
-                    title: localizationManager.localized("component_russian_data_protection_manager_title"),
-                    subtitle: localizationManager.localized("component_russian_data_protection_manager_description"),
-                    action: { showDataProtectionCompliance = true }
-                )
-            }
-        }
-        .padding(Spacing.cardPadding)
-        .background(Color.gray.opacity(0.1))
-        .cardShadow()
-    }
-    
-    // MARK: - Notifications Section
-    
-    private var notificationsSection: some View {
-        let _ = print("🔍 [DIAG] notificationsSection: НАЧАЛО")
-        return VStack(spacing: Spacing.m) {
-            HStack {
-                Text(localizationManager.localized("notifications_section")) // ✅ Локализованный заголовок
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                    .accessibilityAddTraits(.isHeader)
-                
-                Spacer()
-            }
-            
-            VStack(spacing: Spacing.m) {
-                settingRow(
-                    icon: "bell.fill",
-                    title: localizationManager.localized("push_notifications"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("push_notifications_subtitle"), // ✅ Локализованный подзаголовок
-                    isEnabled: $securityEnabled
-                )
-                
-                settingRow(
-                    icon: "speaker.wave.2.fill",
-                    title: localizationManager.localized("sound_notifications"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("sound_notifications_subtitle"), // ✅ Локализованный подзаголовок
-                    isEnabled: $soundEnabled
-                )
-            }
-        }
-        .padding(Spacing.cardPadding)
-        .background(Color.gray.opacity(0.1))
-        .cardShadow()
-    }
-    
-    // MARK: - App Section
-    
-    private var appSection: some View {
-        let _ = print("🔍 [DIAG] appSection: НАЧАЛО")
-        return VStack(spacing: Spacing.m) {
-            HStack {
-                Text(localizationManager.localized("app_section")) // ✅ Локализованный заголовок
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                    .accessibilityAddTraits(.isHeader)
-                
-                Spacer()
-            }
-            
-            VStack(spacing: Spacing.s) {
-                settingsButton(
-                    icon: "globe",
-                    title: localizationManager.localized("language"), // ✅ Локализованный язык
-                    subtitle: localizationManager.currentLanguage == .russian ? localizationManager.localized("language_subtitle") : localizationManager.currentLanguage.displayName, // ✅ Динамический подзаголовок
-                    action: {
-                        showLanguageSettings = true
-                    }
-                )
-                
-                settingsButton(
-                    icon: selectedTheme.icon,
-                    title: localizationManager.localized("dark_theme"), // ✅ Локализованный заголовок
-                    subtitle: selectedTheme.displayName(localizationManager), // ✅ Локализованная тема
-                    action: {
-                        cycleTheme()
-                    }
-                )
-                
-                settingsButton(
-                    icon: "arrow.clockwise",
-                    title: localizationManager.localized("updates"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("updates_subtitle"), // ✅ Локализованный подзаголовок
-                    action: {
-                        checkForUpdates()
-                    }
-                )
-                
-                // ✅ Система позиционирования
-                settingsButton(
-                    icon: positioningService.currentSystem.icon,
-                    title: localizationManager.localized("positioning_system_title"),
-                    subtitle: positioningService.selectedSystem == .auto 
-                        ? "\(positioningService.currentSystem.displayName) (\(localizationManager.localized("positioning_system_auto")))"
-                        : positioningService.currentSystem.displayName,
-                    action: {
-                        showPositioningSystemPicker = true
-                    }
-                )
-            }
-        }
-        .padding(Spacing.cardPadding)
-        .background(Color.gray.opacity(0.1))
-        .cardShadow()
-        .sheet(isPresented: $showPositioningSystemPicker) {
-            PositioningSystemPickerView(
-                selectedSystem: Binding(
-                    get: { positioningService.selectedSystem },
-                    set: { newValue in
-                        positioningService.saveSelectedSystem(newValue)
-                    }
-                ),
-                currentSystem: positioningService.currentSystem,
-                currentRegion: positioningService.currentRegionName
-            )
-            .environmentObject(localizationManager)
+        .sheet(isPresented: $viewModel.showPositioningSystemPicker) {
+            Text("Positioning System Picker - Coming Soon")
         }
     }
-    
-    // MARK: - System Components Section (✅ ЗАДАЧА 22)
-    
-    private var systemComponentsSection: some View {
-        VStack(spacing: Spacing.m) {
-            HStack {
-                Text(localizationManager.localized("system_components_title"))
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                    .accessibilityAddTraits(.isHeader)
-                
-                Spacer()
-                
-                // Кнопка обновления
-                Button(action: {
-                    loadComponents()
-                }) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 16))
-                        .foregroundColor(.primaryBlue)
-                        .rotationEffect(.degrees(isLoadingComponents ? 360 : 0))
-                        .animation(isLoadingComponents ? Animation.linear(duration: 1).repeatForever(autoreverses: false) : .default, value: isLoadingComponents)
-                }
-                .disabled(isLoadingComponents)
-            }
-            
-            if isLoadingComponents {
-                ProgressView()
-                    .padding()
-            } else if let error = componentsError {
-                VStack(spacing: Spacing.s) {
-                    Text(error)
-                        .font(.caption)
-                        .foregroundColor(.red)
-                    Button(localizationManager.localized("retry")) {
-                        loadComponents()
-                    }
-                    .buttonStyle(.bordered)
-                }
-                .padding()
-            } else if components.isEmpty {
-                Text(localizationManager.localized("system_components_empty"))
-                    .font(.body)
-                    .foregroundColor(.textSecondary)
-                    .padding()
-            } else {
-                VStack(spacing: Spacing.s) {
-                    ForEach(components) { component in
-                        ComponentRow(component: component) {
-                            toggleComponent(component)
-                        }
-                    }
-                }
-            }
-        }
-        .padding(Spacing.cardPadding)
-        .background(Color.gray.opacity(0.1))
-        .cardShadow()
-        .onAppear {
-            if isAdmin && components.isEmpty {
-                loadComponents()
-            }
-        }
-    }
-    
-    private func loadComponents() {
-        guard isAdmin else { return }
-        isLoadingComponents = true
-        componentsError = nil
-        
-        apiService.getComponentsList { [self] result in
-            isLoadingComponents = false
-            switch result {
-            case .success(let loadedComponents):
-                components = loadedComponents
-            case .failure(let error):
-                componentsError = error.localizedDescription
-                print("❌ Ошибка загрузки компонентов: \(error.localizedDescription)")
-            }
-        }
-    }
-    
-    private func toggleComponent(_ component: ComponentStatus) {
-        guard isAdmin else { return }
-        
-        Task {
-            do {
-                if component.isEnabled {
-                    _ = try await apiService.disableComponent(componentId: component.componentId)
-                } else {
-                    _ = try await apiService.enableComponent(componentId: component.componentId)
-                }
-                // Обновляем список компонентов
-                await MainActor.run {
-                    loadComponents()
-                }
-            } catch {
-                await MainActor.run {
-                    componentsError = error.localizedDescription
-                }
-            }
-        }
-    }
-    
-    // MARK: - Component Row View
-    
-    private struct ComponentRow: View {
-        let component: ComponentStatus
-        let onToggle: () -> Void
-        @EnvironmentObject private var localizationManager: LocalizationManager
-        
-        var body: some View {
-            HStack(spacing: Spacing.m) {
-                // Индикатор статуса
-                Circle()
-                    .fill(component.isEnabled ? Color.green : Color.gray)
-                    .frame(width: 12, height: 12)
-                
-                // Название компонента
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text(component.componentId)
-                        .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
-                    
-                    if let lastUpdate = component.lastUpdate {
-                        Text(String(format: localizationManager.localized("system_components_last_update"), formatDate(lastUpdate)))
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                    }
-                }
-                
-                Spacer()
-                
-                // Toggle
-                Toggle("", isOn: Binding(
-                    get: { component.isEnabled },
-                    set: { _ in onToggle() }
-                ))
-                .labelsHidden()
-            }
-            .padding(Spacing.s)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.small)
-                    .fill(Color.backgroundMedium.opacity(0.3))
-            )
-        }
-        
-        private func formatDate(_ date: Date) -> String {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .short
-            formatter.timeStyle = .short
-            return formatter.string(from: date)
-        }
-    }
-    
-    // MARK: - Additional Section
-    
-    private var additionalSection: some View {
-        VStack(spacing: Spacing.m) {
-            HStack {
-                Text(localizationManager.localized("additional_section")) // ✅ Локализованный заголовок
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                    .accessibilityAddTraits(.isHeader)
-                
-                Spacer()
-            }
-            
-            VStack(spacing: Spacing.s) {
-                settingsButton(
-                    icon: "questionmark.circle",
-                    title: localizationManager.localized("help_support"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("help_support_subtitle"), // ✅ Локализованный подзаголовок
-                    action: {
-                        showSupportScreen = true
-                    }
-                )
-                
-                settingsButton(
-                    icon: "doc.text",
-                    title: localizationManager.localized("privacy_policy"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("privacy_policy_subtitle"), // ✅ Локализованный подзаголовок
-                    action: {
-                        showPrivacyPolicy = true
-                    }
-                )
-                
-                settingsButton(
-                    icon: "doc.plaintext",
-                    title: localizationManager.localized("terms_of_service"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("terms_of_service_subtitle"), // ✅ Локализованный подзаголовок
-                    action: {
-                        showTermsOfService = true
-                    }
-                )
-                
-                // ✅ Согласие на обработку ПДн (152-ФЗ) - 4-й пункт
-                settingsButton(
-                    icon: "checkmark.shield",
-                    title: localizationManager.localized("settings_consent_personal_data"),
-                    subtitle: consentAccepted ? localizationManager.localized("settings_consent_granted") : localizationManager.localized("settings_consent_manage"),
-                    action: {
-                        // Открываем экран политики конфиденциальности
-                        showPrivacyPolicy = true
-                    }
-                )
-                
-                settingsButton(
-                    icon: "square.and.arrow.up",
-                    title: localizationManager.localized("share_app"), // ✅ Локализованный заголовок
-                    subtitle: localizationManager.localized("share_app_subtitle"), // ✅ Локализованный подзаголовок
-                    action: {
-                        showShareSheet = true
-                    }
-                )
-            }
-        }
-        .padding(Spacing.cardPadding)
-        .background(Color.gray.opacity(0.1))
-        .cardShadow()
     }
     
     // MARK: - Helper Views
     
-    private func settingRow(
-        icon: String,
-        title: String,
-        subtitle: String,
-        isEnabled: Binding<Bool>,
-        isBiometric: Bool = false
-    ) -> some View {
-        let binding: Binding<Bool> = isBiometric
-            ? Binding(
-                get: { isEnabled.wrappedValue },
-                set: { newValue in
-                    isEnabled.wrappedValue = newValue
-                    handleBiometricToggle(newValue)
-                }
-            )
-            : isEnabled
-        
-        return HStack(spacing: Spacing.s) {
+private func settingRow(icon: String, title: String, subtitle: String? = nil, isEnabled: Binding<Bool>, isBiometric: Bool = false) -> some View {
+    HStack {
             Image(systemName: icon)
-                .font(.system(size: 16))
-                .foregroundColor(.primaryBlue)
-                .frame(width: 20)
+            .foregroundColor(.secondary)
+            .frame(width: 24)
             
-            VStack(alignment: .leading, spacing: Spacing.xxs) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(title)
-                    .font(.body)
-                    .foregroundColor(.textPrimary)
+                .foregroundColor(.primary)
+                .font(.headline)
                 
+            if let subtitle = subtitle {
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundColor(.textSecondary)
-                    .lineLimit(2)
+                    .foregroundColor(.secondary)
+            }
             }
             
             Spacer()
             
-            ALADDINToggle(isOn: binding)
-        }
-        .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(
-            String(
-                format: localizationManager.localized("settings_toggle_accessibility"),
-                title,
-                localizationManager.localized(isEnabled.wrappedValue ? "settings_toggle_on" : "settings_toggle_off")
-            )
-        )
-    }
-    
-    private func handleBiometricToggle(_ enabled: Bool) {
-        print("🔐 Биометрический переключатель изменён: \(enabled)")
-        
-        // Проверяем доступность биометрии перед включением
-        if enabled {
-            guard securityManager.biometricAuthAvailable else {
-                print("⚠️ Биометрия недоступна на этом устройстве")
-                isBiometricEnabled = false
-                UserDefaults.standard.set(false, forKey: "biometricEnabled")
-                toastManager.show(
-                    message: localizationManager.localized("settings_biometric_unavailable"),
-                    type: .warning
-                )
-                return
+        if isBiometric {
+            Button(action: {
+                isEnabled.wrappedValue.toggle()
+            }) {
+                Image(systemName: isEnabled.wrappedValue ? "faceid" : "faceid")
+                    .foregroundColor(isEnabled.wrappedValue ? .green : .secondary)
+                    .font(.title2)
             }
-            
-            // Запросить биометрию для подтверждения включения
-            Task { @MainActor in
-                print("🔐 Запрашиваем биометрическую аутентификацию...")
-                let success = await securityManager.authenticateWithBiometrics()
-                
-                if !success {
-                    print("⚠️ Биометрическая аутентификация не удалась, отключаем")
-                    isBiometricEnabled = false
-                    UserDefaults.standard.set(false, forKey: "biometricEnabled")
-                    
-                    // Показываем уведомление пользователю
-                    toastManager.show(
-                        message: localizationManager.localized("settings_biometric_enable_failed"),
-                        type: .warning
-                    )
                 } else {
-                    print("✅ Биометрическая аутентификация успешна")
-                    UserDefaults.standard.set(true, forKey: "biometricEnabled")
-                    toastManager.show(
-                        message: localizationManager.localized("settings_biometric_enabled"),
-                        type: .success
-                    )
-                }
-            }
-        } else {
-            // При выключении просто сохраняем
-            print("🔐 Биометрия выключена")
-            UserDefaults.standard.set(false, forKey: "biometricEnabled")
-            toastManager.show(
-                message: localizationManager.localized("settings_biometric_disabled"),
-                type: .info
-            )
+            Toggle("", isOn: isEnabled)
+                .labelsHidden()
         }
     }
-    
-    private func settingsButton(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: Spacing.s) {
-                // ✅ Фиксированная ширина иконки для выравнивания
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(.primaryBlue)
-                    .frame(width: 24, height: 24, alignment: .leading)
-                    .fixedSize(horizontal: true, vertical: false)
-                
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text(title)
-                        .font(.body)
-                        .foregroundColor(.textPrimary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    Text(subtitle)
+    .padding(Spacing.m)
+}
+
+private struct ComponentRow: View {
+    let component: SettingsComponentStatus
+    let onToggle: () -> Void
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(component.componentId.capitalized)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                Text("Системный компонент")
                         .font(.caption)
-                        .foregroundColor(.textSecondary)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundColor(.secondary)
+            }
                 
                 Spacer()
                 
-                // ✅ Фиксированная ширина стрелки для выравнивания
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12))
-                    .foregroundColor(.textSecondary)
-                    .frame(width: 12, height: 12)
-                    .fixedSize(horizontal: true, vertical: false)
-            }
-            .padding(Spacing.s)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(Color.backgroundMedium.opacity(0.2))
-            )
+            Toggle("", isOn: Binding(
+                get: { component.isEnabled },
+                set: { _ in onToggle() }
+            ))
+            .labelsHidden()
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(
-            String(
-                format: localizationManager.localized("settings_button_accessibility"),
-                title,
-                subtitle
-            )
-        )
-    }
-    
-    private func percentText(_ value: Int) -> String {
-        String(format: localizationManager.localized("settings_percent_format"), value)
-    }
-    
-    @ViewBuilder
-    private func protectionActionButton(title: String, icon: String, foreground: Color, background: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            // Важно: фиксируем "контентную" высоту кнопки, чтобы сетка 3-х кнопок выглядела ровно
-            // на разных размерах экранов (SE ↔ Pro Max), и чтобы 2 строки текста не "плясали".
-            VStack(spacing: Spacing.xs) {
-                Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
-                    .frame(height: 18)
-
-                let displayTitle = title.contains("\n") ? title : title.uppercased()
-                Text(displayTitle)
-                    .font(.caption.bold())
-                    .lineLimit(2)
-                    .multilineTextAlignment(.center)
-                    .minimumScaleFactor(0.85)
-                    .allowsTightening(true)
-                    // Не даём словам “ломаться” по слогам и держим предсказуемую высоту:
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(minHeight: 28, maxHeight: 28, alignment: .center)
-            }
-            .frame(height: 18 + Spacing.xs + 28, alignment: .center)
-            .foregroundColor(foreground)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Spacing.s)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(background)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .stroke(foreground.opacity(0.4), lineWidth: 1)
-                    )
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-    
-    // ✅ УДАЛЕНЫ: computed properties calculatedProtectionLevel, protectionLevelText, protectionColor
-    // Заменены на @State свойства cachedProtectionLevel, cachedProtectionLevelText, cachedProtectionColor
-    // для устранения бесконечного цикла перерисовки
-    
-    // ✅ УДАЛЕНО: handleProtectionLevelChange и связанные функции
-    // Ползунок теперь только для чтения, защита управляется сервером через тариф
-    
-    // ✅ УДАЛЕНА computed property cardBackground - заменена на @State cardBackgroundView
-    
-    // MARK: - Theme Functions
-    
-    private func cycleTheme() {
-        let allThemes = ThemeMode.allCases
-        if let currentIndex = allThemes.firstIndex(of: selectedTheme) {
-            let nextIndex = (currentIndex + 1) % allThemes.count
-            selectedTheme = allThemes[nextIndex]
-            
-            // Сохраняем выбор пользователя
-            UserDefaults.standard.set(selectedTheme.rawValue, forKey: "selected_theme")
-            
-            // Применяем тему
-            applyTheme(selectedTheme)
-        }
-    }
-    
-    private func applyTheme(_ theme: ThemeMode) {
-        switch theme {
-        case .light:
-            // Применить светлую тему
-            print("🌞 Применена светлая тема")
-        case .dark:
-            // Применить темную тему
-            print("🌙 Применена темная тема")
-        case .system:
-            // Следовать системной теме
-            print("⚙️ Следуем системной теме")
-        }
-    }
-    
-    // MARK: - Update Functions
-    
-    private func checkForUpdates() {
-        // Тактильный отклик
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
-        
-        // Проверка обновлений через App Store
-        if let url = URL(string: "itms-apps://itunes.apple.com/app/id123456789") {
-            UIApplication.shared.open(url)
-        } else {
-            print("📱 Проверка обновлений: приложение актуально")
-        }
-    }
-    
-    // MARK: - Notification Functions
-    
-    private func initializeNotifications() {
-        // Инициализация системы уведомлений
-        Task {
-            let granted = await notificationManager.requestAuthorization()
-            if granted {
-                print("🔔 Разрешение на уведомления получено")
-            } else {
-                print("🔕 Разрешение на уведомления отклонено")
-            }
-        }
-    }
-
-    // ✅ НОВАЯ ФУНКЦИЯ: ОТДЕЛЬНАЯ ИНИЦИАЛИЗАЦИЯ УРОВНЯ ЗАЩИТЫ
-    private func initializeProtectionLevel() {
-        print("🔍 [DIAG] initializeProtectionLevel: НАЧАЛО")
-
-        // Вся логика кэширования, которая была в onAppear
-        let tariff = tariffManager.currentTariff
-        let card = tariff.createCard(localizationManager: localizationManager)
-
-        // Вычисляем процент на основе доступных функций тарифа
-        let totalProtectionFeatures = 100 // Всего функций защиты от угроз
-        let totalParentalFeatures = 32    // Всего функций родительского контроля
-        let totalAdditionalFeatures = 10  // Примерно дополнительных функций
-
-        let totalAvailable = Double(card.protectionCount + card.parentalControlCount + card.additionalFeatures.count)
-        let totalPossible = Double(totalProtectionFeatures + totalParentalFeatures + totalAdditionalFeatures)
-
-        cachedProtectionLevel = min(100, (totalAvailable / totalPossible) * 100)
-        print("🔍 [DIAG] initializeProtectionLevel: cachedProtectionLevel = \(cachedProtectionLevel)")
-
-        // Кэшируем текст и цвет с localizationManager (теперь безопасно, вне onAppear)
-        switch cachedProtectionLevel {
-        case 0...25:
-            cachedProtectionLevelText = localizationManager.localized("settings_protection_level_low")
-            cachedProtectionColor = .red
-        case 26...50:
-            cachedProtectionLevelText = localizationManager.localized("settings_protection_level_medium")
-            cachedProtectionColor = .orange
-        case 51...75:
-            cachedProtectionLevelText = localizationManager.localized("settings_protection_level_high")
-            cachedProtectionColor = .yellow
-        case 76...100:
-            cachedProtectionLevelText = localizationManager.localized("settings_protection_level_maximum")
-            cachedProtectionColor = .green
-        default:
-            cachedProtectionLevelText = localizationManager.localized("settings_protection_level_medium")
-            cachedProtectionColor = .primaryBlue
-        }
-
-        print("🔍 [DIAG] initializeProtectionLevel: cachedProtectionLevelText = \(cachedProtectionLevelText)")
-        print("🔍 [DIAG] initializeProtectionLevel: ЗАВЕРШЕНИЕ")
+        .padding(Spacing.m)
     }
 }
 
 // MARK: - Preview
-
 struct SettingsScreen_Previews: PreviewProvider {
     static var previews: some View {
-        SettingsScreen()
+        // Создаем mock ViewModel для preview
+        let mockViewModel = SettingsViewModel()
+        SettingsScreen(viewModel: mockViewModel)
     }
+}
+
+// MARK: - Mock Services for Preview
+class MockNavigationService {
+    func navigateTo(_ screen: ALADDINScreen) {}
+}
+
+class MockLocalizationService {
+    var currentLanguage: Language = "russian"
+    var languageChanged: AnyPublisher<Language, Never> {
+        Just("russian").eraseToAnyPublisher()
+    }
+
+    func localized(_ key: String) -> String { key }
+    func localized(_ key: String, _ arguments: CVarArg...) -> String { key }
+}
+
+class MockNotificationService {
+    var notificationSettings = NotificationSettings()
+
+    func saveSettings() {}
+    func requestAuthorization() async -> Bool { true }
+    func sendLocalNotification(title: String, body: String, userInfo: [AnyHashable : Any]?) {}
+    func updateNotificationSettings(_ settings: NotificationSettings) {}
+}
+
+class MockSecurityService {
+    var biometricAuthAvailable: Bool = true
+    func authenticateWithBiometrics() async -> Bool { true }
+}
+
+class MockTariffService {
+    var currentTariff = "standard"
+    func createCard(localizationService: Any) -> Any {
+        return "mock card"
+    }
+}
+
+class SettingsMockAPIService {
+    func getComponentsList(completion: @escaping (Result<[Any], Error>) -> Void) {
+        completion(.success([]))
+    }
+    func enableComponent(componentId: String) async throws -> Any {
+        return "enabled"
+    }
+    func disableComponent(componentId: String) async throws -> Any {
+        return "disabled"
+    }
+}
+
+class MockPositioningService {
+    var currentSystem = PositioningSystem.gps
+    var selectedSystem = PositioningSystem.gps
+    var currentRegionName: String = "Russia"
+    func saveSelectedSystem(_ system: PositioningSystem) {}
 }
