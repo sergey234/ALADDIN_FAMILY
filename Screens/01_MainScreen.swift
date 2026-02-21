@@ -616,6 +616,8 @@ struct MainScreen: View {
             return localizationManager.localized("tariffs_family")
         case .premium:
             return localizationManager.localized("tariffs_premium")
+        case .ultimate:
+            return localizationManager.localized("tariffs_ultimate")
         }
     }
 

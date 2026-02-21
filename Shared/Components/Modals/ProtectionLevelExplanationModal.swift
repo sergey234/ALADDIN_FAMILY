@@ -210,6 +210,8 @@ struct ProtectionLevelExplanationModal: View {
             return localizationManager.localized("tariff_family_description")
         case .premium:
             return localizationManager.localized("tariff_premium_description")
+        case .ultimate:
+            return localizationManager.localized("tariff_ultimate_description")
         }
     }
 }

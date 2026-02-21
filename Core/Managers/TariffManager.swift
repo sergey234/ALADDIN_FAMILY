@@ -168,6 +168,7 @@ class TariffManager: ObservableObject {
         case .personal: return 1
         case .family: return 2
         case .premium: return 3
+        case .ultimate: return 4
         }
     }
 }

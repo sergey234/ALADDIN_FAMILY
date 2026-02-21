@@ -171,6 +171,8 @@ struct ProtectionFeaturesSection: View {
                 return (localizationManager.localized("tariffs_family"), .orange)
             case .premium:
                 return (localizationManager.localized("tariffs_premium"), .purple)
+            case .ultimate:
+                return (localizationManager.localized("tariffs_ultimate"), .red)
             }
         }()
         
@@ -353,6 +355,8 @@ struct ParentalControlSection: View {
                 return (localizationManager.localized("tariffs_family"), .orange)
             case .premium:
                 return (localizationManager.localized("tariffs_premium"), .purple)
+            case .ultimate:
+                return (localizationManager.localized("tariffs_ultimate"), .red)
             }
         }()
         

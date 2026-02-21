@@ -73,6 +73,7 @@ struct TariffCard: Identifiable {
         case .personal: return "💎"
         case .family: return "👨‍👩‍👧‍👦"
         case .premium: return "⭐"
+        case .ultimate: return "🔥"
         }
     }
     
@@ -83,6 +84,7 @@ struct TariffCard: Identifiable {
         case .personal: return 1
         case .family: return 2
         case .premium: return 3
+        case .ultimate: return 4
         }
     }
 }
@@ -98,6 +100,7 @@ extension TariffType {
             case .personal: return "4"
             case .family: return "6"
             case .premium: return "10"
+            case .ultimate: return "∞"
             }
         }()
         
@@ -112,6 +115,7 @@ extension TariffType {
                 case .personal: return "💎"
                 case .family: return "👨‍👩‍👧‍👦"
                 case .premium: return "⭐"
+                case .ultimate: return "🔥"
                 }
             }()
         )

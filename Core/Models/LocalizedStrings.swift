@@ -100,12 +100,15 @@ struct LocalizedStrings {
     let protectionLevelHigh: String
     let protectionLevelMaximum: String
 
-    // MARK: - Theme & Settings (6 keys)
+    // MARK: - Theme & Settings (9 keys)
     let themeLight: String
     let themeDark: String
     let themeSystem: String
     let settingsPercentFormat: String
     let settingsButtonAccessibility: String
+    let settingsButtonAccessibilityFormat: String
+    let settingsToggleAccessibilityFormat: String
+    let settingsToggleOn: String
     let settingsShareMessage: String
 
     init(from localizationService: LocalizationService) {
@@ -209,6 +212,9 @@ struct LocalizedStrings {
         themeSystem = localizationService.localized("theme_system")
         settingsPercentFormat = localizationService.localized("settings_percent_format")
         settingsButtonAccessibility = localizationService.localized("settings_button_accessibility")
+        settingsButtonAccessibilityFormat = "%@, %@" // Format for button: title, subtitle
+        settingsToggleAccessibilityFormat = "%@, %@" // Format for toggle: title, state
+        settingsToggleOn = localizationService.localized("settings_toggle_on") ?? "включено"
         settingsShareMessage = localizationService.localized("settings_share_message")
     }
 }

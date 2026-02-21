@@ -42,15 +42,8 @@ class MockProtectionHistoryService: ProtectionHistoryService {
 }
 
 // Local TariffType enum for compilation
-enum SettingsTariffType: String {
-    case free = "free"
-    case personal = "personal"
-    case family = "family"
-    case premium = "premium"
-    case ultimate = "ultimate"
-}
-
-// Using local SettingsTariffType enum
+// Import TariffType from TariffsScreen for compatibility
+// We'll use TariffType instead of creating duplicate enum
 
 protocol NavigationService {
     func navigateTo(_ screen: ALADDINScreen)
@@ -75,7 +68,7 @@ protocol SecurityService {
 }
 
 protocol TariffService {
-    var currentTariff: SettingsTariffType { get }
+    var currentTariff: TariffType { get }
 }
 
 protocol SettingsAPIService {
@@ -236,8 +229,8 @@ class SettingsViewModel: ObservableObject {
         return userRole == "admin" || userRole == "administrator"
     }
 
-    var currentTariff: SettingsTariffType {
-        return .free // TODO: Integrate with real tariff service
+    var currentTariff: TariffType {
+        return tariffService?.currentTariff ?? .free
     }
 
     // MARK: - Dependencies
@@ -357,6 +350,23 @@ class SettingsViewModel: ObservableObject {
                 UserDefaults.standard.set(accepted, forKey: "personal_data_consent_accepted")
             }
             .store(in: &cancellables)
+
+        // Sync biometric enabled state
+        $isBiometricEnabled
+            .dropFirst()
+            .sink { enabled in
+                UserDefaults.standard.set(enabled, forKey: "biometricEnabled")
+            }
+            .store(in: &cancellables)
+
+        // Sync theme selection and apply theme
+        $selectedTheme
+            .dropFirst()
+            .sink { [weak self] theme in
+                UserDefaults.standard.set(theme.rawValue, forKey: "selected_theme")
+                self?.applyTheme(theme)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Private Properties
@@ -384,6 +394,9 @@ class SettingsViewModel: ObservableObject {
         isInitializing = true
 
         print("✅ SettingsViewModel: MVVM initialization successful")
+
+        // Initialize notifications
+        initializeNotifications()
 
         // Load components if admin
         if isAdmin {
@@ -432,19 +445,6 @@ class SettingsViewModel: ObservableObject {
         }
     }
 
-    func cycleTheme() {
-        let allThemes = ThemeMode.allCases
-        if let currentIndex = allThemes.firstIndex(of: selectedTheme) {
-            let nextIndex = (currentIndex + 1) % allThemes.count
-            selectedTheme = allThemes[nextIndex]
-            UserDefaults.standard.set(selectedTheme.rawValue, forKey: "selected_theme")
-            applyTheme(selectedTheme)
-        }
-    }
-
-    private func applyTheme(_ theme: ThemeMode) {
-        print("🎨 Applied theme: \(theme.rawValue)")
-    }
 
     func initializeProtectionLevel() {
         if tariffService != nil {
@@ -532,6 +532,40 @@ class SettingsViewModel: ObservableObject {
         // Mock implementation - would open App Store in real app
         print("✅ Checking for updates...")
     }
+
+    func handleBiometricToggle(_ enabled: Bool) {
+        print("🔐 Биометрический переключатель изменён: \(enabled)")
+
+        // Проверяем доступность биометрии перед включением
+        guard let securityService = securityService,
+              securityService.biometricAuthAvailable || !enabled else {
+            print("⚠️ Биометрия недоступна на этом устройстве")
+            isBiometricEnabled = false // Reactive binding автоматически сохранит в UserDefaults
+
+            // Show toast if available
+            if let toastService = toastService {
+                toastService.showToast(
+                    message: localizedStrings.biometricUnavailable,
+                    type: "error",
+                    duration: 3.0
+                )
+            }
+            return
+        }
+
+        // Устанавливаем состояние (reactive binding автоматически сохранит в UserDefaults)
+        isBiometricEnabled = enabled
+
+        // Показываем подтверждение
+        if let toastService = toastService {
+            let message = enabled ? localizedStrings.biometricEnabled : localizedStrings.biometricDisabled
+            toastService.showToast(
+                message: message,
+                type: "success",
+                duration: 2.0
+            )
+        }
+    }
 }
 
 // MARK: - Supporting Types
@@ -558,6 +592,54 @@ enum ThemeMode: String, CaseIterable {
         case .light: return "sun.max.fill"
         case .dark: return "moon.fill"
         case .system: return "gear"
+        }
+    }
+}
+
+// MARK: - Theme Management
+extension SettingsViewModel {
+    func cycleTheme() {
+        let allThemes = ThemeMode.allCases
+        if let currentIndex = allThemes.firstIndex(of: selectedTheme) {
+            let nextIndex = (currentIndex + 1) % allThemes.count
+            selectedTheme = allThemes[nextIndex]
+            // applyTheme будет автоматически вызван через reactive binding
+        }
+    }
+
+    private func applyTheme(_ theme: ThemeMode) {
+        switch theme {
+        case .light:
+            // Применить светлую тему
+            print("🌞 Применена светлая тема")
+        case .dark:
+            // Применить темную тему
+            print("🌙 Применена темная тема")
+        case .system:
+            // Следовать системной теме
+            print("⚙️ Следуем системной теме")
+        }
+    }
+}
+
+// MARK: - Notification Initialization
+extension SettingsViewModel {
+    func initializeNotifications() {
+        // Инициализация системы уведомлений
+        guard let notificationService = notificationService else {
+            print("❌ NotificationService не доступен")
+            return
+        }
+
+        Task {
+            let granted = await notificationService.requestAuthorization()
+            if granted {
+                print("🔔 Разрешение на уведомления получено")
+                // Можно добавить дополнительную логику при успешном разрешении
+            } else {
+                print("🔕 Разрешение на уведомления отклонено")
+                // Можно добавить обработку отказа в разрешениях
+            }
         }
     }
 }

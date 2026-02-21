@@ -112,6 +112,8 @@ struct ThreatProtectionCategoriesView: View {
                 return (localizationManager.localized("tariffs_family"), .orange)
             case .premium:
                 return (localizationManager.localized("tariffs_premium"), .purple)
+            case .ultimate:
+                return (localizationManager.localized("tariffs_ultimate"), .red)
             }
         }()
         

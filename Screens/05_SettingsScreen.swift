@@ -76,6 +76,7 @@ struct SettingsScreen: View {
                 .fontWeight(.bold)
                 .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
+                .accessibilityAddTraits(.isHeader)
 
             // Profile Card
             ZStack {
@@ -157,6 +158,7 @@ struct SettingsScreen: View {
                 .fontWeight(.bold)
                 .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
+                .accessibilityAddTraits(.isHeader)
 
             VStack(spacing: 0) {
                 // Network Protection
@@ -236,23 +238,14 @@ struct SettingsScreen: View {
                 .fontWeight(.bold)
                 .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
+                .accessibilityAddTraits(.isHeader)
 
             VStack(spacing: 0) {
-                // Push Notifications
+                // Security Notifications (Push)
                 settingRow(
                     icon: "bell.fill",
                     title: viewModel.localizedStrings.pushNotifications,
                     subtitle: viewModel.localizedStrings.pushNotificationsSubtitle,
-                    isEnabled: $viewModel.isNotificationsEnabled
-                )
-
-                Divider()
-
-                // Security Notifications
-                settingRow(
-                    icon: "exclamationmark.triangle.fill",
-                    title: "Уведомления безопасности",
-                    subtitle: "Важные оповещения о безопасности",
                     isEnabled: $viewModel.securityEnabled
                 )
 
@@ -266,9 +259,12 @@ struct SettingsScreen: View {
                     isEnabled: $viewModel.soundEnabled
                 )
             }
-            .background(Color.secondary.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.3))
+        )
     }
 
     private var appSection: some View {
@@ -278,6 +274,7 @@ struct SettingsScreen: View {
                 .fontWeight(.bold)
                 .foregroundColor(.textPrimary)
                 .padding(.bottom, Spacing.xs)
+                .accessibilityAddTraits(.isHeader)
 
             VStack(spacing: 0) {
                 // Language
@@ -349,6 +346,30 @@ struct SettingsScreen: View {
                     }
                     .padding(Spacing.m)
                 }
+
+                Divider()
+
+                // Positioning System
+                Button(action: {
+                    viewModel.showPositioningSystemPicker = true
+                }) {
+                    HStack {
+                        Image(systemName: viewModel.selectedPositioningSystem.icon)
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("Система позиционирования")
+                                .foregroundColor(.primary)
+                            Text(viewModel.selectedPositioningSystem.displayName)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(Spacing.m)
+                }
             }
             .background(Color.secondary.opacity(0.05))
             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -362,6 +383,7 @@ struct SettingsScreen: View {
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
+                    .accessibilityAddTraits(.isHeader)
                 
                 Spacer()
                 
@@ -374,7 +396,10 @@ struct SettingsScreen: View {
                 }) {
                     Image(systemName: "arrow.clockwise")
                             .foregroundColor(.blue)
+                            .rotationEffect(.degrees(viewModel.isLoadingComponents ? 360 : 0))
+                            .animation(viewModel.isLoadingComponents ? Animation.linear(duration: 1).repeatForever(autoreverses: false) : .default, value: viewModel.isLoadingComponents)
                     }
+                    .disabled(viewModel.isLoadingComponents)
                 }
             }
             .padding(.bottom, Spacing.xs)
@@ -411,6 +436,11 @@ struct SettingsScreen: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
+        .onAppear {
+            if viewModel.isAdmin && viewModel.components.isEmpty {
+                viewModel.loadComponents()
+            }
+        }
     }
 
     private var additionalSection: some View {
@@ -419,6 +449,7 @@ struct SettingsScreen: View {
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(.textPrimary)
+                .accessibilityAddTraits(.isHeader)
                 .padding(.bottom, Spacing.xs)
 
             VStack(spacing: 0) {
@@ -482,6 +513,30 @@ struct SettingsScreen: View {
                             Text(viewModel.localizedStrings.termsOfService)
                                 .foregroundColor(.primary)
                             Text(viewModel.localizedStrings.termsOfServiceSubtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(Spacing.m)
+                }
+
+                Divider()
+
+                // Personal Data Consent
+                Button(action: {
+                    viewModel.showPrivacyPolicy = true
+                }) {
+                    HStack {
+                        Image(systemName: "checkmark.shield.fill")
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text("Согласие на обработку ПДн")
+                                .foregroundColor(.primary)
+                            Text(viewModel.consentAccepted ? "Предоставлено" : "Управление")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -591,7 +646,7 @@ struct SettingsScreen: View {
             ShareSheet(activityItems: [viewModel.localizedStrings.settingsShareMessage])
         }
         .sheet(isPresented: $viewModel.showProtectionExplanation) {
-            ProtectionLevelExplanationModal(isPresented: $viewModel.showProtectionExplanation, currentTariff: .free)
+            ProtectionLevelExplanationModal(isPresented: $viewModel.showProtectionExplanation, currentTariff: viewModel.currentTariff)
         }
         .sheet(isPresented: $viewModel.showAdvancedProtection) {
             AdvancedProtectionSettingsScreen()
@@ -622,74 +677,169 @@ struct SettingsScreen: View {
             )
         }
     }
+
+    // MARK: - Helper Functions
+
+    private func percentText(_ value: Int) -> String {
+        "\(value)%"
     }
-    
-    // MARK: - Helper Views
-    
-private func settingRow(icon: String, title: String, subtitle: String? = nil, isEnabled: Binding<Bool>, isBiometric: Bool = false) -> some View {
-    HStack {
+
+    private func settingsButton(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.s) {
+                // ✅ Фиксированная ширина иконки для выравнивания
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundColor(.primaryBlue)
+                    .frame(width: 24, height: 24, alignment: .leading)
+                    .fixedSize(horizontal: true, vertical: false)
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(title)
+                        .font(.body)
+                        .foregroundColor(.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .lineLimit(2)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.textSecondary.opacity(0.6))
+            }
+            .padding(Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(Color.backgroundMedium.opacity(0.2))
+            )
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(subtitle)")
+    }
+
+    private func settingRow(
+        icon: String,
+        title: String,
+        subtitle: String,
+        isEnabled: Binding<Bool>,
+        isBiometric: Bool = false
+    ) -> some View {
+        let binding: Binding<Bool> = isBiometric
+            ? Binding(
+                get: { isEnabled.wrappedValue },
+                set: { newValue in
+                    isEnabled.wrappedValue = newValue
+                    viewModel.handleBiometricToggle(newValue)
+                }
+            )
+            : isEnabled
+
+        return HStack(spacing: Spacing.s) {
             Image(systemName: icon)
-            .foregroundColor(.secondary)
-            .frame(width: 24)
-            
-        VStack(alignment: .leading, spacing: Spacing.xs) {
+                .font(.system(size: 16))
+                .foregroundColor(.primaryBlue)
+                .frame(width: 24, alignment: .leading)
+                .fixedSize(horizontal: true, vertical: false)
+
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(title)
-                .foregroundColor(.primary)
-                .font(.headline)
-                
-            if let subtitle = subtitle {
+                    .font(.body)
+                    .foregroundColor(.textPrimary)
+
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.textSecondary)
+                    .lineLimit(2)
             }
-            }
-            
+
             Spacer()
-            
-        if isBiometric {
-            Button(action: {
-                isEnabled.wrappedValue.toggle()
-            }) {
-                Image(systemName: isEnabled.wrappedValue ? "faceid" : "faceid")
-                    .foregroundColor(isEnabled.wrappedValue ? .green : .secondary)
-                    .font(.title2)
-            }
-                } else {
-            Toggle("", isOn: isEnabled)
+
+            Toggle("", isOn: binding)
                 .labelsHidden()
         }
-    }
-    .padding(Spacing.m)
-}
-
-private struct ComponentRow: View {
-    let component: SettingsComponentStatus
-    let onToggle: () -> Void
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text(component.componentId.capitalized)
-                    .font(.headline)
-                    .foregroundColor(.primary)
-
-                Text("Системный компонент")
-                        .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-                
-                Spacer()
-                
-            Toggle("", isOn: Binding(
-                get: { component.isEnabled },
-                set: { _ in onToggle() }
-            ))
-            .labelsHidden()
-        }
         .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(Color.backgroundMedium.opacity(0.3))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), включено")
+    }
+
+    @ViewBuilder
+    private func protectionActionButton(title: String, icon: String, foreground: Color, background: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            // Важно: фиксируем "контентную" высоту кнопки, чтобы сетка 3-х кнопок выглядела ровно
+            // на разных размерах экранов (SE ↔ Pro Max), и чтобы 2 строки текста не "плясали".
+            VStack(spacing: Spacing.xs) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .semibold))
+                    .frame(height: 18)
+
+                let displayTitle = title.contains("\n") ? title : title.uppercased()
+                Text(displayTitle)
+                    .font(.caption.bold())
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.85)
+                    .allowsTightening(true)
+                    // Не даём словам "ломаться" по слогам и держим предсказуемую высоту:
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(minHeight: 28, maxHeight: 28, alignment: .center)
+            }
+            .frame(height: 18 + Spacing.xs + 28, alignment: .center)
+            .foregroundColor(foreground)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Spacing.s)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(background)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                    )
+            )
+        }
+    }
+
+    private struct ComponentRow: View {
+        let component: SettingsComponentStatus
+        let onToggle: () -> Void
+
+        var body: some View {
+            HStack {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(component.componentId.capitalized)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+
+                    Text("Системный компонент")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                Spacer()
+
+                Toggle("", isOn: Binding(
+                    get: { component.isEnabled },
+                    set: { _ in onToggle() }
+                ))
+                .labelsHidden()
+            }
+            .padding(Spacing.m)
+        }
     }
 }
-
 // MARK: - Preview
 struct SettingsScreen_Previews: PreviewProvider {
     static var previews: some View {

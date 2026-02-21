@@ -31,6 +31,7 @@ struct TariffsScreen: View {
         case personal = "personal"
         case family = "family"
         case premium = "premium"
+        case ultimate = "ultimate"
         
         func title(localizationManager: LocalizationManager) -> String {
             switch self {
@@ -38,6 +39,7 @@ struct TariffsScreen: View {
             case .personal: return localizationManager.localized("tariffs_personal")
             case .family: return localizationManager.localized("tariffs_family")
             case .premium: return localizationManager.localized("tariffs_premium")
+            case .ultimate: return localizationManager.localized("tariffs_ultimate")
             }
         }
         
@@ -47,13 +49,14 @@ struct TariffsScreen: View {
             case .personal: return "100 ₽"
             case .family: return "290 ₽"
             case .premium: return "490 ₽"
+            case .ultimate: return "990 ₽"
             }
         }
         
         func period(localizationManager: LocalizationManager) -> String {
             switch self {
             case .free: return localizationManager.localized("tariffs_free_period")
-            case .personal, .family, .premium: return localizationManager.localized("tariffs_period_month")
+            case .personal, .family, .premium, .ultimate: return localizationManager.localized("tariffs_period_month")
             }
         }
         
@@ -96,6 +99,16 @@ struct TariffsScreen: View {
                 localizationManager.localized("tariffs_premium_features_6"),
                 localizationManager.localized("tariffs_premium_features_7")
             ]
+            case .ultimate: return [
+                localizationManager.localized("tariffs_ultimate_features_1"),
+                localizationManager.localized("tariffs_ultimate_features_2"),
+                localizationManager.localized("tariffs_ultimate_features_3"),
+                localizationManager.localized("tariffs_ultimate_features_4"),
+                localizationManager.localized("tariffs_ultimate_features_5"),
+                localizationManager.localized("tariffs_ultimate_features_6"),
+                localizationManager.localized("tariffs_ultimate_features_7"),
+                localizationManager.localized("tariffs_ultimate_features_8")
+            ]
             }
         }
         
@@ -105,6 +118,7 @@ struct TariffsScreen: View {
             case .personal: return .primaryBlue
             case .family: return .secondaryGold
             case .premium: return Color(hex: "#A855F7")
+            case .ultimate: return Color(hex: "#FF6B35")
             }
         }
         
@@ -302,6 +316,7 @@ struct TariffsScreen: View {
                     case .personal: return "personal"
                     case .family: return "family"
                     case .premium: return "premium"
+                    case .ultimate: return "ultimate"
                     }
                 }()
                 
