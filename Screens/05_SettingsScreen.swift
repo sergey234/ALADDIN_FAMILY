@@ -904,19 +904,6 @@ class MockPositioningService {
     func saveSelectedSystem(_ system: PositioningSystem) {}
 }
 
-// MARK: - SwiftUI Preview
-
-#Preview("Settings Screen - Light Mode") {
-    SettingsScreen()
-        .preferredColorScheme(.light)
-}
-
-#Preview("Settings Screen - Dark Mode") {
-    SettingsScreen()
-        .preferredColorScheme(.dark)
-}
-
-#Preview("Settings Screen - System Theme") {
-    SettingsScreen()
-        .preferredColorScheme(.none)
-}
+// MARK: - Preview Support (iOS 17+ only)
+// Note: Preview functionality available in Xcode 15+ with iOS 17+
+// For iOS 15.2 compatibility, previews are disabled
