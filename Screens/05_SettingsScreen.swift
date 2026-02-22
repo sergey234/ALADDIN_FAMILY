@@ -425,7 +425,7 @@ struct SettingsScreen: View {
                     .padding(Spacing.m)
                     .frame(maxWidth: .infinity, alignment: .center)
             } else {
-                VStack(spacing: 0) {
+                LazyVStack(spacing: 0) {
                     ForEach(viewModel.components, id: \.componentId) { component in
                         ComponentRow(component: component) {
                             viewModel.toggleComponent(component)
@@ -902,4 +902,21 @@ class MockPositioningService {
     var selectedSystem = PositioningSystem.gps
     var currentRegionName: String = "Russia"
     func saveSelectedSystem(_ system: PositioningSystem) {}
+}
+
+// MARK: - SwiftUI Preview
+
+#Preview("Settings Screen - Light Mode") {
+    SettingsScreen()
+        .preferredColorScheme(.light)
+}
+
+#Preview("Settings Screen - Dark Mode") {
+    SettingsScreen()
+        .preferredColorScheme(.dark)
+}
+
+#Preview("Settings Screen - System Theme") {
+    SettingsScreen()
+        .preferredColorScheme(.none)
 }
