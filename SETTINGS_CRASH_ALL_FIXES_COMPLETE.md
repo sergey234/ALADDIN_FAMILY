@@ -366,14 +366,34 @@ class LocalizationServiceAdapter: LocalizationService {
 - [ ] Создать унифицированную архитектуру для всего приложения
 
 #### 2. **📱 ДОПОЛНИТЕЛЬНЫЕ УЛУЧШЕНИЯ**
-- [ ] Добавить Unit Tests для ViewModel'ей
-- [ ] Внедрить SwiftUI Preview для всех экранов
-- [ ] Оптимизировать производительность больших списков
+- [x] **Unit Tests для ViewModel'ей** ✅ *ЧАСТИЧНО*
+  - ✅ NetworkProtectionViewModelTests.swift
+  - ✅ FamilyRegistrationViewModelTests.swift
+  - ❌ **SettingsViewModelTests** - отсутствует для нового SettingsViewModel
+  - ✅ 14 Unit Tests файлов в Tests/UnitTests/
+- [x] **SwiftUI Previews для экранов** ✅ *ЧАСТИЧНО*
+  - ✅ 30+ экранов имеют #Preview блоки
+  - ❌ **SettingsScreen Preview** - отсутствует для нового MVVM SettingsScreen
+  - ✅ Preview Content/ папка существует
+- [x] **Performance optimization больших списков** ✅ *ЧАСТИЧНО*
+  - ✅ PerformanceBenchmarkTests.swift существует
+  - ✅ LazyVGrid в некоторых местах (но не в SettingsScreen)
+  - ❌ **SettingsScreen большие списки** - нет Lazy* компонентов в SettingsScreen
 
 #### 3. **🚀 ПРОДАКШЕН ФИЧИ**
-- [ ] Реализовать push-уведомления
-- [ ] Добавить аналитику использования
-- [ ] Интегрировать crash reporting (Firebase Crashlytics)
+- [x] **Push-уведомления полная реализация** ✅
+  - ✅ PushNotificationService.swift
+  - ✅ NotificationManager.swift с полным функционалом
+  - ✅ SettingsViewModel.initializeNotifications()
+  - ✅ UI переключатели в настройках
+- [x] **Аналитика использования (Firebase Analytics)** ✅
+  - ✅ docs/FIREBASE_SETUP_INSTRUCTIONS.md
+  - ✅ Firebase Analytics настроен
+  - ✅ Отслеживание экранов и событий
+- [x] **Crash reporting (Firebase Crashlytics)** ✅
+  - ✅ Firebase Crashlytics настроен
+  - ✅ Логирование сбоев и ошибок API
+  - ✅ Пользовательские ключи для контекста
 
 ---
 
