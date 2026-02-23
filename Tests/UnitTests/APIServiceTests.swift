@@ -128,7 +128,7 @@ final class MockNetworkManager: NetworkManager {
         postStubs[endpoint] = response
     }
     
-    override func get<T: Decodable>(endpoint: String, completion: @escaping (Result<T, Error>) -> Void) {
+    override func get<T: Decodable>(endpoint: String, requiresAuth: Bool = true, completion: @escaping (Result<T, Error>) -> Void) {
         lastGETEndpoint = endpoint
         if shouldReturnError {
             completion(.failure(errorToReturn))
@@ -141,7 +141,7 @@ final class MockNetworkManager: NetworkManager {
         completion(.success(response))
     }
     
-    override func post<T: Decodable, B: Encodable>(endpoint: String, body: B, completion: @escaping (Result<T, Error>) -> Void) {
+    override func post<T: Decodable, B: Encodable>(endpoint: String, body: B, requiresAuth: Bool = true, completion: @escaping (Result<T, Error>) -> Void) {
         lastPOSTEndpoint = endpoint
         if shouldReturnError {
             completion(.failure(errorToReturn))

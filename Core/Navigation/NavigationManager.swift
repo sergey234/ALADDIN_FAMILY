@@ -4,7 +4,7 @@ import SwiftUI
 @MainActor
 class NavigationManager: ObservableObject {
     // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Начинаем с онбординга для первого запуска
-    @Published var currentScreen: ALADDINScreen = .onboarding
+    @Published var currentScreen: ALADDINScreen = .loading
     @Published var navigationStack: [ALADDINScreen] = []
     @Published var isPresentingModal: Bool = false
     @Published var currentModal: ALADDINModal? = nil
@@ -12,24 +12,24 @@ class NavigationManager: ObservableObject {
     @Published private(set) var isManuallyClosingPaymentQR: Bool = false
     @Published private(set) var debugLogs: [String] = []
     @Published private var lastScreenBeforePaymentQR: ALADDINScreen? = nil
-
-    // ✅ КРИТИЧЕСКОЕ: Защита от множественных навигаций
-    private var isNavigating = false
-
+    
     // ✅ ИСПРАВЛЕНИЕ: Добавляем для PaymentQRScreen через NavigationLink
     @Published var selectedTariffForPayment: Tariff? = nil
     
     // MARK: - Основные экраны (25)
     enum ALADDINScreen: String, CaseIterable {
+        // Специальные экраны
+        case loading = "LoadingScreen"
+
         // Основные экраны
         case main = "01_MainScreen"
         case family = "02_FamilyScreen"
         case networkProtection = "03_NetworkProtectionScreen"
         case analytics = "04_AnalyticsScreen"
         case settings = "05_SettingsScreen"
-        case settingsTest = "SettingsScreenTest"
-        case settingsFallback = "SettingsScreenFallback"
+        case settingsTest = "SettingsTest"
         case settingsTestSuite = "SettingsTestSuite"
+        case settingsFallback = "SettingsFallback"
         case aiAssistant = "06_AIAssistantScreen"
         case parentalControl = "07_ParentalControlScreen"
         case childInterface = "08_ChildInterfaceScreen"
@@ -78,11 +78,15 @@ class NavigationManager: ObservableObject {
         
         var displayName: String {
             switch self {
+            case .loading: return "Загрузка"
             case .main: return "Главная"
             case .family: return "Семья"
             case .networkProtection: return "Защита сети"
             case .analytics: return "Аналитика"
             case .settings: return "Настройки"
+            case .settingsTest: return "Тест настроек"
+            case .settingsTestSuite: return "Набор тестов"
+            case .settingsFallback: return "Запасные настройки"
             case .aiAssistant: return "AI Помощник"
             case .parentalControl: return "Родительский контроль"
             case .childInterface: return "Детский интерфейс"
@@ -120,19 +124,20 @@ class NavigationManager: ObservableObject {
             case .threatProtectionSettings: return "Настройки защиты"
             case .iotSecurity: return "IoT безопасность"
             case .advancedProtection: return "Расширенная защита"
-            case .settingsTest: return "Тест настроек"
-            case .settingsFallback: return "Резервные настройки"
-            case .settingsTestSuite: return "Набор тестов настроек"
             }
         }
         
         var icon: String {
             switch self {
+            case .loading: return "hourglass"
             case .main: return "house.fill"
             case .family: return "person.3.fill"
             case .networkProtection: return "shield.fill"
             case .analytics: return "chart.bar.fill"
             case .settings: return "gearshape.fill"
+            case .settingsTest: return "testtube.2"
+            case .settingsTestSuite: return "checklist"
+            case .settingsFallback: return "arrow.triangle.2.circlepath"
             case .aiAssistant: return "brain.head.profile"
             case .parentalControl: return "person.crop.circle.badge.checkmark"
             case .childInterface: return "figure.child"
@@ -170,9 +175,6 @@ class NavigationManager: ObservableObject {
             case .threatProtectionSettings: return "gearshape.2.fill"
             case .iotSecurity: return "wifi"
             case .advancedProtection: return "lock.shield.fill"
-            case .settingsTest: return "testtube.2"
-            case .settingsFallback: return "arrow.triangle.2.circlepath"
-            case .settingsTestSuite: return "checklist"
             }
         }
     }
@@ -208,38 +210,6 @@ class NavigationManager: ObservableObject {
     
     /// Переход к экрану
     func navigateTo(_ screen: ALADDINScreen) {
-        // ✅ [PHASE 7] НАВИГАЦИОННАЯ ВАЛИДАЦИЯ
-        print("🔍 [NAV_VALIDATION] navigateTo(\(screen)) requested")
-        print("🔍 [NAV_VALIDATION] Current screen: \(currentScreen)")
-        print("🔍 [NAV_VALIDATION] Navigation stack: \(navigationStack)")
-        print("🔍 [NAV_VALIDATION] Is navigating: \(isNavigating)")
-
-        // Предотвращаем циклическую навигацию
-        if navigationStack.contains(screen) && navigationStack.last == screen {
-            print("⚠️ [NAV_VALIDATION] Prevented circular navigation to same screen: \(screen)")
-            return
-        }
-
-        // Предотвращаем быструю последовательную навигацию
-        if let lastScreen = navigationStack.last, lastScreen == screen {
-            print("⚠️ [NAV_VALIDATION] Prevented duplicate navigation to same screen: \(screen)")
-            return
-        }
-
-        // ✅ КРИТИЧЕСКОЕ: Защита от множественных навигаций
-        // Предотвращает race conditions и множественные одновременные навигации
-        guard !isNavigating else {
-            appendLog("⚠️ navigateTo(\(screen)) отклонён: навигация уже выполняется")
-            return
-        }
-
-        isNavigating = true
-        defer {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                self.isNavigating = false
-            }
-        }
-
         // ✅ ИСПРАВЛЕНИЕ: Весь NavigationManager работает под @MainActor,
         // поэтому выполняем изменения синхронно, без DispatchQueue.main.async.
         if case .paymentQR = screen {
@@ -405,19 +375,9 @@ class NavigationManager: ObservableObject {
     
     /// Переход к экрану с очисткой стека
     func navigateToRoot(_ screen: ALADDINScreen) {
-        #if DEBUG
-        if screen == .settings {
-            print("🔴 NAVIGATION: navigateToRoot(.settings) вызван")
-        }
-        #endif
         appendLog("⬆️ navigateToRoot(\(screen)) | до очистки стека = \(navigationStack)")
         navigationStack.removeAll()
         currentScreen = screen
-        #if DEBUG
-        if screen == .settings {
-            print("🔴 NAVIGATION: currentScreen установлен в .settings")
-        }
-        #endif
         appendLog("⬆️ navigateToRoot завершён | current = \(currentScreen)")
         objectWillChange.send()
     }
@@ -453,12 +413,6 @@ class NavigationManager: ObservableObject {
     }
     
     func switchToSettingsScreen() {
-        // ✅ КРИТИЧЕСКОЕ: Заменены crashLog на print чтобы избежать рекурсии
-        print("🔴 NAVIGATION: switchToSettingsScreen() вызван - ПЕРЕХОД К НАСТРОЙКАМ")
-        print("🔴 NAVIGATION: Текущий экран: \(currentScreen)")
-        print("🔴 NAVIGATION: Thread.isMainThread: \(Thread.isMainThread)")
-        print("🔴 NAVIGATION: Stack trace: \(Thread.callStackSymbols.prefix(3).joined(separator: " <- "))")
-
         navigateToRoot(.settings)
     }
     

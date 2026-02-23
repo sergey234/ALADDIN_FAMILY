@@ -348,6 +348,7 @@ private extension NavigationManager.ALADDINScreen {
         case .threatProtectionSettings: return "nav_screen_threat_settings"
         case .iotSecurity: return "nav_screen_iot_security"
         case .advancedProtection: return "nav_screen_advanced_protection"
+        default: return "nav_screen_unknown"
         }
     }
     

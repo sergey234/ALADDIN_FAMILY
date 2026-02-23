@@ -11,9 +11,12 @@ import SwiftUI
 class LocalizationManager: ObservableObject {
     
     // MARK: - Published Properties
-    
+
     @Published var currentLanguage: Language = .russian
-    
+
+    /// ✅ НОВОЕ: Состояние готовности для предотвращения race conditions
+    @Published var isReady: Bool = false
+
     /// Принудительный язык (для режима съёмки скриншотов)
     static var forcedLanguage: Language?
     
@@ -66,10 +69,17 @@ class LocalizationManager: ObservableObject {
             // По умолчанию русский
             currentLanguage = .russian
         }
-        
+
 #if DEBUG
         LocalizationDiagnostics.runInitialChecks(with: self)
 #endif
+
+        // ✅ НОВОЕ: Отмечаем готовность после полной инициализации
+        // Небольшая задержка чтобы дать время на установку currentLanguage
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.isReady = true
+            print("✅ LocalizationManager: Ready for use")
+        }
     }
     
     // MARK: - Language Detection

@@ -72,6 +72,13 @@ class ProfileImageManager {
         print("✅ ProfileImageManager: Profile image loaded successfully for category: \(category)")
         return image
     }
+
+    // ✅ НОВОЕ: Async версия для неблокирующей загрузки
+    func loadProfileImageAsync(for category: UserCategory) async -> UIImage? {
+        return await Task.detached {
+            self.loadProfileImage(for: category)
+        }.value
+    }
     
     /**
      * Удалить изображение профиля для указанной категории пользователя

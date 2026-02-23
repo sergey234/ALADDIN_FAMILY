@@ -1,122 +1,5 @@
 import SwiftUI
 import Foundation
-import os.log
-#if !targetEnvironment(simulator)
-import Darwin
-#endif
-
-/// 🩺 CRASH LOGGING СИСТЕМА ДЛЯ PRODUCTION
-/// Работает в RELEASE (TestFlight) в отличие от #if DEBUG
-extension ALADDINApp {
-
-    /// Настройка системы логирования крашей
-    static func getMemoryUsage() -> String {
-        #if !targetEnvironment(simulator)
-        let processInfo = ProcessInfo.processInfo
-        // ✅ КРИТИЧЕСКОЕ: Используем Double вместо Int для предотвращения переполнения
-        let totalMemory = Double(processInfo.physicalMemory)
-        guard totalMemory > 0 else { return "Memory: unavailable" }
-
-        let memoryUsage = totalMemory / 1024.0 / 1024.0
-        let uptime = processInfo.systemUptime
-
-        // ✅ Безопасное форматирование без переполнения
-        return String(format: "%.1f MB total, %.1f seconds uptime", memoryUsage, uptime)
-        #else
-        return "Simulator - no memory info"
-        #endif
-    }
-
-    static func setupCrashLogging() {
-        // Регистрируем обработчик неотловленных исключений
-        NSSetUncaughtExceptionHandler { exception in
-            let crashInfo = """
-            🚨 CRASH DETECTED: \(exception.name.rawValue)
-            Reason: \(exception.reason ?? "Unknown")
-            Stack trace:
-            \(exception.callStackSymbols.joined(separator: "\n"))
-            Thread: \(Thread.current)
-            Date: \(Date())
-            """
-            crashLog(crashInfo)
-        }
-
-        // Регистрируем обработчик сигналов
-        signal(SIGABRT) { _ in crashLog("🚨 SIGNAL: SIGABRT received") }
-        signal(SIGILL) { _ in crashLog("🚨 SIGNAL: SIGILL received") }
-        signal(SIGSEGV) { _ in crashLog("🚨 SIGNAL: SIGSEGV received") }
-        signal(SIGBUS) { _ in crashLog("🚨 SIGNAL: SIGBUS received") }
-        signal(SIGTRAP) { _ in crashLog("🚨 SIGNAL: SIGTRAP received") }
-
-        crashLog("🩺 Crash logging system initialized")
-    }
-}
-
-/// Глобальная функция для логирования крашей (работает в RELEASE)
-func crashLog(_ message: String) {
-    let timestamp = Date().formatted(.iso8601)
-    let logMessage = "[\(timestamp)] \(message)"
-
-    // 🔥 КРИТИЧЕСКОЕ: Всегда логируем в консоль (видно в Xcode и device logs)
-    print("🔥 CRASH_LOG: \(logMessage)")
-
-    // 🔥 КРИТИЧЕСКОЕ: Логируем через os_log с высоким приоритетом
-    os_log(.fault, log: .default, "🔥 CRASH_LOG: %{public}@", logMessage)
-
-    // 🔥 КРИТИЧЕСКОЕ: Сохраняем в NSUserDefaults для чтения на устройстве
-    // Это работает на реальном устройстве и сохраняется при краше
-    let defaults = UserDefaults.standard
-    let key = "crash_logs_array"
-    var logs = defaults.array(forKey: key) as? [String] ?? []
-
-    // Ограничиваем до 50 последних логов
-    if logs.count >= 50 {
-        logs.removeFirst()
-    }
-    logs.append(logMessage)
-
-    defaults.set(logs, forKey: key)
-    defaults.synchronize() // Принудительно сохраняем
-
-    // Также сохраняем последний лог отдельно
-    defaults.set(logMessage, forKey: "last_crash_log")
-    defaults.synchronize()
-
-    // В DEBUG режиме также сохраняем в файл для анализа
-    #if DEBUG
-    let fileManager = FileManager.default
-    let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-    let logURL = documentsURL.appendingPathComponent("crash_log.txt")
-
-    if let data = (logMessage + "\n").data(using: .utf8) {
-        if fileManager.fileExists(atPath: logURL.path) {
-            // Добавляем к существующему файлу
-            if let fileHandle = try? FileHandle(forWritingTo: logURL) {
-                fileHandle.seekToEndOfFile()
-                fileHandle.write(data)
-                fileHandle.closeFile()
-            }
-        } else {
-            // Создаем новый файл
-            try? data.write(to: logURL)
-        }
-    }
-    #endif
-}
-
-// Функция awaitSafeAutoFixDebugTokens удалена - Keychain операции перенесены в onAppear
-
-/// 🔥 Функция для чтения логов крашей из NSUserDefaults
-func getCrashLogs() -> [String] {
-    let defaults = UserDefaults.standard
-    return defaults.array(forKey: "crash_logs_array") as? [String] ?? []
-}
-
-/// 🔥 Функция для получения последнего лога краша
-func getLastCrashLog() -> String? {
-    let defaults = UserDefaults.standard
-    return defaults.string(forKey: "last_crash_log")
-}
 
 /// 👤 User Profile Manager
 /// Singleton класс для управления профилем пользователя
@@ -238,53 +121,178 @@ struct ALADDINApp: App {
     @Environment(\.scenePhase) private var scenePhase
     // Убрали @AppStorage для онбординга
     // private var hasCompletedOnboarding: Bool = false // больше не используется
+
+    // ✅ Состояние навигации
+    @State private var navigationInitialized: Bool = false
+
+    // MARK: - Theme Helper
+    private var preferredColorScheme: ColorScheme? {
+        switch selectedTheme {
+        case "light": return .light
+        case "dark": return .dark
+        case "system": return nil // nil = системная тема
+        default: return nil
+        }
+    }
     
     init() {
-        // ✅ МИНИМАЛЬНАЯ ИНИЦИАЛИЗАЦИЯ - как в бэкапе
-        // Убираем всю сложную логику, которая может вызывать deadlock
         print("🚀 ALADDINApp: Начало инициализации приложения")
-
+        // ✅ ИСПРАВЛЕНИЕ: В init() НЕ используем @StateObject, они еще не созданы!
+        // Вся логика инициализации перенесена в .onAppear
         if ProcessInfo.processInfo.environment["RESET_ONBOARDING"] == "1" {
             UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
             #if DEBUG
             print("🌍 RESET_ONBOARDING активирован — ключ сброшен")
             #endif
         }
+        
+#if DEBUG
+        KeychainAutoRecoveryService.repairTokensIfNeeded()
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала проверяем и удаляем debug токены СИНХРОННО
+        // Это нужно сделать ДО создания новых debug токенов
+        let hadDebugTokens = Self.autoFixDebugTokensIfNeeded()
+
+        // ✅ ИСПРАВЛЕНИЕ: Проверяем, нужно ли создавать debug токены
+        // Если установлена переменная окружения SKIP_DEBUG_TOKENS=1, пропускаем создание debug токенов
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Тримируем значение, чтобы убрать возможные пробелы
+        let skipDebugTokensRaw = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""
+        let skipDebugTokens = skipDebugTokensRaw.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
+
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если есть AUTO_LOGIN_EMAIL, автоматически считаем, что нужно пропустить debug токены
+        let hasAutoLogin = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"] != nil &&
+                          !ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"]!.isEmpty
+
+        let shouldSkipDebugTokens = skipDebugTokens || hasAutoLogin
+
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда создаем debug токены после удаления старых
+        // Если мы удалили debug токены, обязательно создаем новые
+        if hadDebugTokens || !shouldSkipDebugTokens {
+            if !shouldSkipDebugTokens {
+                // Создаем debug токены независимо от того, были ли они удалены
+                DebugAuthTokenSeeder.seedIfNeeded()
+            } else if hadDebugTokens {
+                // Если токены были удалены, но skipDebugTokens = true, создаем токены в любом случае
+        DebugAuthTokenSeeder.seedIfNeeded()
+            }
+        } else {
+            if skipDebugTokens {
+                print("⚠️ DEBUG: Пропущено создание debug токенов (SKIP_DEBUG_TOKENS=1)")
+            } else if hasAutoLogin {
+                print("⚠️ DEBUG: Пропущено создание debug токенов (настроен автоматический логин)")
+            }
+            print("   Для получения валидных токенов используйте performRealLogin() в Debug Console")
+        }
+        
+        // ✅ АВТОМАТИЧЕСКИЙ ЛОГИН: Если установлены переменные окружения, выполняем логин автоматически
+        // ✅ ПРОДАКШЕН: Проверяем сохраненные credentials для автоматического логина
+        DispatchQueue.global(qos: .utility).async {
+            // ✅ ДИАГНОСТИКА: Проверяем переменные окружения
+            let email = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"]
+            let password = ProcessInfo.processInfo.environment["AUTO_LOGIN_PASSWORD"]
+
+            // ✅ ПРОДАКШЕН: Проверяем сохраненные credentials
+            let savedEmail = UserDefaults.standard.string(forKey: "saved_login_email")
+            let savedPassword = UserDefaults.standard.string(forKey: "saved_login_password")
+            let autoLoginEnabled = UserDefaults.standard.bool(forKey: "auto_login_enabled")
+            
+            print("🔍 ALADDINApp: Проверка переменных окружения...")
+            let skipDebugTokensValue = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""
+            let skipDebugTokensTrimmed = skipDebugTokensValue.trimmingCharacters(in: .whitespacesAndNewlines)
+            let skipDebugTokensIsSet = skipDebugTokensTrimmed == "1"
+            print("   - AUTO_LOGIN_EMAIL: \(email != nil ? "✅ установлен (\(email?.prefix(3) ?? "")...)" : "❌ не установлен")")
+            print("   - AUTO_LOGIN_PASSWORD: \(password != nil ? "✅ установлен (\(password?.count ?? 0) символов)" : "❌ не установлен")")
+            print("   - SKIP_DEBUG_TOKENS: \(skipDebugTokensValue.isEmpty ? "❌ НЕ УСТАНОВЛЕН" : "✅ установлен = '\(skipDebugTokensTrimmed)' (\(skipDebugTokensIsSet ? "активен" : "не активен"))")")
+            
+            // ✅ ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА: Выводим все переменные окружения, начинающиеся с AUTO_ или SKIP_
+            let allEnvVars = ProcessInfo.processInfo.environment
+            let relevantVars = allEnvVars.keys.filter { $0.hasPrefix("AUTO_") || $0.hasPrefix("SKIP_") }
+            if !relevantVars.isEmpty {
+                print("   - Все найденные переменные: \(relevantVars.joined(separator: ", "))")
+                for varName in relevantVars {
+                    let value = allEnvVars[varName] ?? ""
+                    if varName.contains("PASSWORD") {
+                        print("     • \(varName) = '\(value.count) символов'")
+                    } else {
+                        print("     • \(varName) = '\(value)'")
+                    }
+                }
+            } else {
+                print("   - ⚠️ ВНИМАНИЕ: Не найдено ни одной переменной окружения с префиксом AUTO_ или SKIP_!")
+                print("   - Проверьте, что переменные установлены в правильной схеме (Run)")
+            }
+            
+            // ✅ ПРОДАКШЕН: Проверяем условия для автоматического логина
+            let shouldAutoLogin = (email != nil && password != nil && !email!.isEmpty && !password!.isEmpty) ||
+                                 (autoLoginEnabled && savedEmail != nil && savedPassword != nil)
+
+            if shouldAutoLogin {
+                let loginEmail = email ?? savedEmail!
+                let loginPassword = password ?? savedPassword!
+
+                print("🔐 ALADDINApp: Автоматический логин...")
+                print("   - Email: \(loginEmail)")
+                print("   - Тип: \(email != nil ? "переменные окружения" : "сохраненные credentials")")
+
+                // Небольшая задержка, чтобы приложение успело запуститься
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    performRealLogin(email: loginEmail, password: loginPassword) { success in
+                        if success {
+                            print("✅ ALADDINApp: Автоматический логин успешен!")
+
+                            // ✅ ПРОВЕРКА: Убеждаемся, что токены действительно сохранены
+                            let keychain = KeychainManager.shared
+                            // ✅ ИСПРАВЛЕНО: Используем loadString вместо load(String.self, ...)
+                            if let token = keychain.loadString(forKey: .authToken) {
+                                print("✅ ALADDINApp: Токен подтвержден в Keychain (длина: \(token.count))")
+                            } else {
+                                print("⚠️ ALADDINApp: ВНИМАНИЕ! Токен не найден в Keychain после успешного логина!")
+                            }
+                        } else {
+                            print("❌ ALADDINApp: Ошибка автоматического логина")
+                            print("   - Проверьте правильность email и password")
+                            print("   - Проверьте доступность сервера")
+                            // В продакшене не показываем детали для безопасности
+                            #if DEBUG
+                            print("   - Проверьте endpoint /auth/login на сервере")
+                            #endif
+                        }
+                    }
+                }
+            } else {
+                #if DEBUG
+                if email == nil || password == nil || email!.isEmpty || password!.isEmpty {
+                    print("⚠️ ALADDINApp: Переменные окружения для автоматического логина не установлены")
+                    print("   - Установите AUTO_LOGIN_EMAIL и AUTO_LOGIN_PASSWORD в Scheme → Run → Arguments → Environment Variables")
+                }
+                #endif
+                print("ℹ️ ALADDINApp: Автоматический логин не настроен - пользователь должен войти вручную")
+            }
+        }
+#endif
     }
     
     var body: some Scene {
-        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале body - ПЕРВАЯ СТРОКА
-        let _ = {
-            print("🔴 ALADDINApp.body: ========== НАЧАЛО BODY ==========")
-            print("🔴 ALADDINApp.body: Thread.isMainThread = \(Thread.isMainThread)")
-            print("🔴 ALADDINApp.body: navigationManager = \(navigationManager)")
-            print("🔴 ALADDINApp.body: localizationManager = \(localizationManager)")
-            print("🔴 ALADDINApp.body: currentScreen = \(navigationManager.currentScreen)")
-        }()
-        
-        return WindowGroup {
-            // ✅ КРИТИЧЕСКОЕ: Логи перед NavigationView
-            let _ = {
-                print("🔴 ALADDINApp.body: Создание WindowGroup и NavigationView")
-            }()
-            
-            // КРИТИЧНО: NavigationView для работы навигации
-            let _ = {
-                print("🔴 ALADDINApp.body: Создание NavigationView...")
-            }()
-            
-            NavigationView {
+        WindowGroup {
+            // ✅ Основное приложение
+            mainAppContent()
+            .onAppear {
+                // Запускаем инициализацию при появлении
+                Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager)
+                print("✅ ALADDINApp: Инициализация завершена")
+            }
+        }
+    }
+
+    // ✅ НОВОЕ: Основное содержимое приложения
+    private func mainAppContent() -> some View {
+        // КРИТИЧНО: NavigationView для работы навигации
+        NavigationView {
                 // ✅ КРИТИЧНО: Используем AnyView для каждого case - это заставит SwiftUI пересчитать
-                let _ = {
-                    print("🔴 ALADDINApp.body: Внутри NavigationView, currentScreen = \(navigationManager.currentScreen)")
-                }()
-                
                 Group {
-                    let _ = {
-                        print("🔴 ALADDINApp.body: Внутри Group, начинаем switch по currentScreen = \(navigationManager.currentScreen)")
-                    }()
-                    
                     switch navigationManager.currentScreen {
+                    case .loading:
+                        AnyView(AppLoadingView().id("loading"))
                     case .main:
                         AnyView(MainScreen().id("main").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .family:
@@ -294,36 +302,10 @@ struct ALADDINApp: App {
                     case .analytics:
                         AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .settings:
-                        // ✅ ВОССТАНОВЛЕН настоящий SettingsScreen после исправления бесконечного цикла
                         AnyView(SettingsScreen()
-                            .environmentObject(navigationManager)
-                            .environmentObject(localizationManager)
                             .id("settings")
-                            .onAppear {
-                                print("✅ SettingsScreen: Полная версия загружена успешно")
-                            })
-
-                    case .settingsTest:
-                        // ✅ [REVERT] SettingsScreen с EnvironmentObject
-                        AnyView(SettingsScreen()
                             .environmentObject(navigationManager)
-                            .environmentObject(localizationManager)
-                            .id("settingsTest")
-                            .onAppear {
-                                print("🚨 [CRASH_DIAG] About to create FULL SettingsScreen with computed properties")
-                                print("🚨 [CRASH_DIAG] FULL SettingsScreen View created with computed properties")
-                                print("🚨 [CRASH_DIAG] settingsTest screen appeared")
-                            })
-
-                    case .settingsFallback:
-                        // 🚨 [CRASH_DIAG] FALLBACK SettingsScreen без сложной логики
-                        AnyView(SettingsScreenFallback())
-
-                    case .settingsTestSuite:
-                        // ✅ [FIX 5] Безопасное создание SettingsTestSuiteView
-                        AnyView(SettingsTestSuiteView()
-                            .environmentObject(navigationManager)
-                            .environmentObject(localizationManager))
+                            .environmentObject(localizationManager)) // ✅ Добавляем LocalizationManager
                     case .aiAssistant:
                         AnyView(AIAssistantScreen().id("aiAssistant").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .parentalControl:
@@ -471,10 +453,7 @@ struct ALADDINApp: App {
                     case .termsOfService:
                         AnyView(TermsOfServiceScreen().id("termsOfService").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .onboarding:
-                        AnyView(OnboardingScreen()
-                            .id("onboarding")
-                            .environmentObject(navigationManager)
-                            .environmentObject(localizationManager))
+                        AnyView(OnboardingScreen().id("onboarding").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .devices:
                         AnyView(DevicesScreen().id("devices").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .referral:
@@ -559,6 +538,24 @@ struct ALADDINApp: App {
                         AnyView(ThreatProtectionScreen().id("iotSecurity").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .advancedProtection:
                         AnyView(AdvancedProtectionSettingsScreen().id("advancedProtection").environmentObject(navigationManager).environmentObject(localizationManager))
+                    default:
+                        AnyView(
+                            VStack(spacing: 20) {
+                                Text("🚧")
+                                    .font(.system(size: 60))
+                                Text("Экран в разработке")
+                                    .font(.title)
+                                    .fontWeight(.bold)
+                                Text(navigationManager.currentScreen.rawValue)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(LinearGradient.backgroundGradient)
+                            .id("default_screen")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                        )
                     }
                 }
                 .id("screen_\(navigationManager.currentScreen.rawValue)")
@@ -572,59 +569,39 @@ struct ALADDINApp: App {
             // ✅ Применяем локализацию через environment
             .environment(\.locale, localizationManager.locale)
             // ✅ КРИТИЧНО: Пересоздаём NavigationView при изменении currentScreen
-            .id("nav_\(navigationManager.currentScreen.rawValue)")
+            .id("nav_\(navigationManager.currentScreen.rawValue)_\(localizationManager.currentLanguage.rawValue)")
             // ✅ Инициализация навигации при первом появлении
             .onAppear {
-                // ✅ Упрощенная инициализация - как в бэкапе
-                print("🚀 ALADDINApp: Инициализация навигации")
-                initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager)
+                let navManager = navigationManager
+                let locManager = localizationManager
+                Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager)
             }
             // ✅ ИСПРАВЛЕНИЕ: Упрощенная обработка возврата из фона - без лишних проверок
             .onChange(of: scenePhase) { newPhase in
-                // ✅ КРИТИЧЕСКОЕ: УБРАНЫ crashLog() чтобы предотвратить рекурсию
-                // crash logging в onChange может вызвать бесконечную рекурсию
-                print("🔄 SCENE PHASE: изменился на \(newPhase)")
-
                 if newPhase == .active {
                     // Приложение стало активным (вернулись из Safari/фона)
                     print("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
                     // НЕ вызываем initializeNavigation - это может вызвать двойную загрузку
-                } else if newPhase == .background {
-                    print("🔄 Приложение ушло в фон")
-                } else if newPhase == .inactive {
-                    print("🔄 Приложение стало неактивным")
                 }
             }
             // 🌓 ПРИМЕНЯЕМ ТЕМУ
-            .preferredColorScheme(getPreferredColorScheme())
-        }
-    }  // ✅ Закрывает body: some Scene
-    
-    // MARK: - Theme Helper
-    
-    private func getPreferredColorScheme() -> ColorScheme? {
-        switch selectedTheme {
-        case "light": return .light
-        case "dark": return .dark
-        case "system": return nil // nil = системная тема
-        default: return nil
+            .preferredColorScheme(preferredColorScheme)
         }
     }
-    
-    // MARK: - Инициализация навигации
-    
-    /// ✅ Инициализация навигации при первом запуске приложения
-    /// Вызывается в .onAppear, когда все @StateObject уже созданы
-    private static var hasInitialized = false
-    
-    private func initializeNavigation(navigationManager: NavigationManager, localizationManager: LocalizationManager) {
-        // ✅ КРИТИЧЕСКОЕ: Логи в самом начале initializeNavigation
-        print("🔴 ALADDINApp.initializeNavigation: ========== НАЧАЛО ==========")
-        print("🔴 ALADDINApp.initializeNavigation: Thread.isMainThread = \(Thread.isMainThread)")
-        print("🔴 ALADDINApp.initializeNavigation: hasInitialized = \(ALADDINApp.hasInitialized)")
-        
+
+
+
+    // MARK: - Static Helper Functions
+// MARK: - Static Helper Functions
+
+extension ALADDINApp {
+    // MARK: - Static Properties
+    private static var hasInitializedNavigation = false
+
+    // MARK: - Navigation Initialization
+    private static func initializeNavigation(navigationManager: NavigationManager, localizationManager: LocalizationManager) {
         // ✅ КРИТИЧНО: ПЕРВЫЙ ЗАПУСК - СБРАСЫВАЕМ ВСЕ СОСТОЯНИЕ
-        if !ALADDINApp.hasInitialized {
+        if !ALADDINApp.hasInitializedNavigation {
             print("🛠️ [ALADDINApp.initializeNavigation] Первый запуск - сбрасываем состояние")
             // Принудительный сброс онбординга для первого запуска
             UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
@@ -632,14 +609,14 @@ struct ALADDINApp: App {
         }
 
         // ✅ Используем статический флаг для предотвращения повторной инициализации
-        if ALADDINApp.hasInitialized {
+        if ALADDINApp.hasInitializedNavigation {
             print("🛠️ [ALADDINApp.initializeNavigation] Уже инициализировано, пропускаем")
             return
         }
-        
-        ALADDINApp.hasInitialized = true
+
+        ALADDINApp.hasInitializedNavigation = true
         print("🛠️ [ALADDINApp.initializeNavigation] Начинаем инициализацию...")
-        
+
         // ✅ Активируем бесплатный тариф при первом запуске
         let storeManager = StoreManager()
         if !storeManager.hasFreeTariff && !storeManager.hasActiveSubscription() {
@@ -652,37 +629,27 @@ struct ALADDINApp: App {
         // и загружает профиль в фоне
         _ = UserProfileManager.shared
         print("✅ UserProfileManager initialized and profile loading started")
-        
+
         let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
         print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")
-        
+
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда начинаем с онбординга при первом запуске
         if !onboardingDone {
             // Первый запуск - всегда показываем онбординг
             print("🔴 ONBOARDING: Первый запуск - показываем онбординг")
-                navigationManager.currentScreen = .onboarding
+            navigationManager.currentScreen = .onboarding
         } else {
             // Онбординг пройден - переходим на main
             print("🟢 ONBOARDING: Пройден - переходим на главный экран")
-                navigationManager.currentScreen = .main
+            navigationManager.currentScreen = .main
         }
     }
-    
-    // MARK: - Проверка роли при запуске
-    
-    // ✅ ОТКЛЮЧЕНО: Автоматическое перенаправление по ролям
-    // Пользователь сам выбирает экран через главное меню
-    private func checkAndNavigateToUserInterface(navigationManager: NavigationManager) {
-        // Остаёмся на главной странице
-        print("✅ Остаёмся на главной странице")
-        navigationManager.currentScreen = .main
-    }
-    
+
     /// Автоматически проверяет и удаляет debug токены при запуске
     /// Возвращает true, если были обнаружены и удалены debug токены
-    private static func autoFixDebugTokensIfNeeded() -> Bool {
+    static func autoFixDebugTokensIfNeeded() -> Bool {
         let keychain = KeychainManager.shared
-        
+
         // Проверяем access token
         var isDebugToken = false
         // ✅ ИСПРАВЛЕНО: Используем loadString вместо load(String.self, ...)
@@ -696,7 +663,7 @@ struct ALADDINApp: App {
                 print("⚠️ ALADDINApp: Обнаружен debug access token (длина 140)")
             }
         }
-        
+
         // Проверяем refresh token
         // ✅ ИСПРАВЛЕНО: Используем loadString вместо load(String.self, ...)
         if let refreshToken = keychain.loadString(forKey: .refreshToken) {
@@ -705,7 +672,7 @@ struct ALADDINApp: App {
                 print("⚠️ ALADDINApp: Обнаружен debug refresh token")
             }
         }
-        
+
         // Если обнаружены debug токены - удаляем их
         if isDebugToken {
             print("🔧 ALADDINApp: Автоматически удаляем debug токены...")
@@ -722,6 +689,8 @@ struct ALADDINApp: App {
             return false
         }
     }
+
+    
 }
 
 #if DEBUG
@@ -920,3 +889,52 @@ func syncDemoSettingsToServer() {
     }
 }
 #endif
+
+// MARK: - Loading View
+
+/// ✅ НОВОЕ: View для отображения загрузки приложения
+struct AppLoadingView: View {
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color.primaryBlue.opacity(0.8), Color.secondaryBlue.opacity(0.6)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            VStack(spacing: Spacing.xl) {
+                Spacer()
+
+                // Логотип или иконка приложения
+                ZStack {
+                    Circle()
+                        .fill(Color.secondaryGold.opacity(0.2))
+                        .frame(width: 120, height: 120)
+
+                    Text("🦄")
+                        .font(.system(size: 60))
+                }
+
+                // Текст загрузки
+                Text("ALADDIN")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(.secondaryGold)
+                    .shadow(color: Color.secondaryGold.opacity(0.5), radius: 10)
+
+                Text("Подготовка приложения...")
+                    .font(.body)
+                    .foregroundColor(.white.opacity(0.8))
+
+                // Анимация загрузки
+                ProgressView()
+                    .scaleEffect(1.2)
+                    .tint(.secondaryGold)
+                    .padding(.top, Spacing.m)
+
+                Spacer()
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+        }
+    }
+}
