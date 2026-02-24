@@ -3,6 +3,9 @@ import Combine
 import Security
 import os.log  // ✅ ДОБАВЛЕНО: Для Production логирования
 
+// Master Logger for network logging
+private let logger = MasterLogger.shared
+
 /**
  * 🌐 Network Manager
  * API клиент для подключения к Python backend
@@ -644,8 +647,14 @@ class NetworkManager: NSObject, ObservableObject {
         #endif
         
         let requestStartTime = Date()
-        
+
+        // 🔍 NETWORK: Логируем исходящий запрос
+        logger.logRequest(request)
+
         session.dataTask(with: request) { [weak self] data, response, error in
+            // 🔍 NETWORK: Логируем входящий ответ
+            logger.logResponse(response, data: data)
+
             DispatchQueue.main.async {
                 let duration = Date().timeIntervalSince(requestStartTime)
                 self?.handleRequestDuration(duration)

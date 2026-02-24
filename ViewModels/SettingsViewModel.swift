@@ -1,6 +1,9 @@
 import SwiftUI
 import Combine
 
+// Master Logger for UI logging
+private let logger = MasterLogger.shared
+
 // Temporary protocols and implementations for compilation
 protocol ProtectionFeaturesService {
     var features: [String] { get set }
@@ -408,11 +411,13 @@ class SettingsViewModel: ObservableObject {
     }
 
     func toggleBiometric() {
+        logger.buttonTap("Biometric Toggle", screen: "Settings")
         Task {
             if securityService != nil {
                 let success = await securityService.authenticateWithBiometrics()
                 if success {
                     isBiometricEnabled.toggle()
+                    logger.toggleChanged("Biometric", newValue: isBiometricEnabled, screen: "Settings")
                     UserDefaults.standard.set(isBiometricEnabled, forKey: "biometricEnabled")
 
                     if isBiometricEnabled {
@@ -515,9 +520,16 @@ class SettingsViewModel: ObservableObject {
     }
 
     func toggleComponent(_ component: SettingsComponentStatus) {
-        guard isAdmin else { return }
+        logger.buttonTap("Component Toggle: \(component.componentId)", screen: "Settings")
+        guard isAdmin else {
+            logger.warn("Component toggle attempted without admin rights", function: #function)
+            return
+        }
         if let index = components.firstIndex(where: { $0.componentId == component.componentId }) {
             components[index].isEnabled.toggle()
+            logger.toggleChanged("Component \(component.componentId)", newValue: components[index].isEnabled, screen: "Settings")
+        } else {
+            logger.error("Component \(component.componentId) not found for toggling")
         }
     }
 

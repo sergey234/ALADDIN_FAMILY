@@ -2,6 +2,9 @@ import Foundation
 import Combine
 import CoreLocation
 
+// Master Logger for API logging
+private let logger = MasterLogger.shared
+
 // MARK: - Health Response Model
 
 struct HealthResponse: Codable {
@@ -628,6 +631,7 @@ class APIService: ObservableObject {
     // MARK: - User API (старые методы - оставляем для обратной совместимости)
     
     func getUserProfile(completion: @escaping (Result<UserProfile, Error>) -> Void) {
+        logger.business("👤 Fetching user profile")
         networkManager.get(endpoint: AppConfig.Endpoint.profile, completion: completion)
     }
     
@@ -1024,6 +1028,7 @@ class APIService: ObservableObject {
     // MARK: - Auth API
     
     func login(email: String, password: String, completion: @escaping (Result<LoginResponse, Error>) -> Void) {
+        logger.business("🔐 Starting login for email: \(email)")
         let request = LoginRequest(email: email, password: password)
         networkManager.post(endpoint: AppConfig.Endpoint.login, body: request, completion: completion)
     }

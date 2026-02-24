@@ -586,6 +586,23 @@ struct ALADDINApp: App {
             }
             // 🌓 ПРИМЕНЯЕМ ТЕМУ
             .preferredColorScheme(preferredColorScheme)
+
+            // 🔍 VISUAL LOGGING: Добавляем визуальное логирование в DEBUG режиме
+            #if DEBUG
+            .overlay(
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        MasterLogger.shared.visualLogView
+                            .frame(width: 300, height: 150)
+                            .padding(.trailing, 16)
+                            .padding(.bottom, 16)
+                    }
+                }
+                .ignoresSafeArea()
+            )
+            #endif
         }
     }
 

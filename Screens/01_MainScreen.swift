@@ -1,6 +1,9 @@
 import SwiftUI
 import UIKit
 
+// Master Logger for screen logging
+private let logger = MasterLogger.shared
+
 struct MainScreen: View {
     @State private var aiQuestion: String = ""
     @StateObject private var mainViewModel = MainViewModel()
@@ -222,28 +225,27 @@ struct MainScreen: View {
             }
             hasAppeared = true
 
-            print("🚨 MainScreen загружен! Точная копия HTML!")
+            logger.screenLoad("MainScreen")
 
             // ✅ КРИТИЧНО: Проверяем, завершен ли онбординг
             let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
             if !onboardingDone {
-                print("🚨 MainScreen: Онбординг не завершен - перенаправляем обратно")
+                logger.warn("Onboarding not completed, redirecting back")
                 navigationManager.currentScreen = .onboarding
                 return
             }
 
             // ✅ ОТЛАДКА: Проверяем наличие ID при загрузке экрана
             let memberId = UserDefaults.standard.string(forKey: "your_member_id")
-            print("🔍 MainScreen.onAppear: your_member_id = \(memberId ?? "nil")")
+            logger.business("Member ID check: \(memberId ?? "nil")")
             if let id = memberId, !id.isEmpty {
-                print("✅ MainScreen.onAppear: ID найден: \(id)")
+                logger.business("Member ID found: \(id)")
             } else {
-                print("⚠️ MainScreen.onAppear: ID не найден в UserDefaults!")
-                print("   Проверьте, что регистрация прошла успешно и ID был сохранен.")
+                logger.warn("Member ID not found in UserDefaults")
                 // ✅ ВРЕМЕННО: Для тестирования можно установить тестовый ID
                 #if DEBUG
                 if memberId == nil {
-                    print("   💡 Установлен тестовый ID для проверки отображения")
+                    logger.business("Setting test member ID for debugging")
                     UserDefaults.standard.set("TEST_MEMBER_123", forKey: "your_member_id")
                 }
                 #endif
@@ -429,7 +431,7 @@ struct MainScreen: View {
                                             UIPasteboard.general.string = memberId
                                             let generator = UINotificationFeedbackGenerator()
                                             generator.notificationOccurred(.success)
-                                            print("✅ ID скопирован: \(memberId)")
+                                            logger.business("Member ID copied: \(memberId)")
                                         }) {
                                             HStack(spacing: 4) {
                                                 Text("\(localizationManager.localized("main_family_user_id")) \(memberId)")

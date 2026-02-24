@@ -1,5 +1,8 @@
 import SwiftUI
 
+// Master Logger for navigation logging
+private let logger = MasterLogger.shared
+
 // MARK: - Navigation Manager для всех экранов ALADDIN - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
 @MainActor
 class NavigationManager: ObservableObject {
@@ -210,6 +213,7 @@ class NavigationManager: ObservableObject {
     
     /// Переход к экрану
     func navigateTo(_ screen: ALADDINScreen) {
+        logger.navigation(from: currentScreen.displayName, to: screen.displayName)
         // ✅ ИСПРАВЛЕНИЕ: Весь NavigationManager работает под @MainActor,
         // поэтому выполняем изменения синхронно, без DispatchQueue.main.async.
         if case .paymentQR = screen {
