@@ -2,6 +2,9 @@ import Foundation
 import StoreKit
 import UIKit
 
+// Master Logger for store logging
+private let logger = MasterLogger.shared
+
 /**
  * 💰 Store Manager
  * Управление покупками в App Store (StoreKit 2)
@@ -85,9 +88,9 @@ class StoreManager: ObservableObject {
     // MARK: - Init
     
     init() {
+        logger.business("Initializing StoreManager for App Store purchases")
         // ✅ БЕЗОПАСНАЯ ИНИЦИАЛИЗАЦИЯ: Отложенная загрузка продуктов
         // Не создаем Task сразу в init - это может вызвать проблемы с инициализацией
-        print("🔍 StoreManager.init: Инициализация начата")
     }
     
     /**
@@ -115,6 +118,7 @@ class StoreManager: ObservableObject {
      * Загрузить продукты из App Store
      */
     func loadProducts() async {
+        logger.business("Loading App Store products")
         isLoading = true
         errorMessage = nil
         
@@ -228,6 +232,7 @@ class StoreManager: ObservableObject {
      * Купить продукт
      */
     func purchase(_ product: Product) async throws -> Transaction? {
+        logger.business("Processing App Store purchase for product: \(product.displayName) (\(product.displayPrice))")
         // ✅ ЛОГИРОВАНИЕ ДЛЯ IPAD: Информация об устройстве
         print("🔍 [StoreManager] Starting purchase for: \(product.id)")
         print("🔍 [StoreManager] Device: \(UIDevice.current.model)")
@@ -405,6 +410,7 @@ class StoreManager: ObservableObject {
      * Восстановить покупки
      */
     func restorePurchases() async {
+        logger.business("User initiated purchase restoration")
         isLoading = true
         
         do {

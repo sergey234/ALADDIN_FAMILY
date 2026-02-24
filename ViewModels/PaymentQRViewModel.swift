@@ -2,6 +2,9 @@ import Foundation
 import Combine
 import SwiftUI
 
+// Master Logger for payment logging
+private let logger = MasterLogger.shared
+
 // MARK: - Types
 struct MerchantInfo: Codable {
     let id: String
@@ -189,7 +192,7 @@ class PaymentQRViewModel: ObservableObject {
     // MARK: - Init
     
     init(tariff: Tariff) {
-        print("🚨 ========== PaymentQRViewModel.init НАЧАЛО ==========")
+        logger.business("Initializing PaymentQRViewModel with tariff: \(tariff.id)")
         print("🔍 Thread: \(Thread.isMainThread ? "Main" : "Background")")
         print("🔍 Stack trace start:")
         Thread.callStackSymbols.prefix(5).forEach { print("   \($0)") }
@@ -279,6 +282,7 @@ class PaymentQRViewModel: ObservableObject {
      * Создание платежа и получение QR-кодов
      */
     func createPayment() {
+        logger.business("Creating payment for tariff: \(selectedTariff?.id ?? "unknown")")
         print("🚨 ========== PaymentQRViewModel.createPayment НАЧАЛО ==========")
         print("🔍 Thread: \(Thread.isMainThread ? "Main" : "Background")")
         print("🔍 Timestamp: \(Date())")
@@ -499,6 +503,7 @@ class PaymentQRViewModel: ObservableObject {
      * Проверка статуса оплаты
      */
     func checkPaymentStatus() {
+        logger.business("Checking payment status for ID: \(paymentId ?? "none")")
         if isManualCloseInProgress {
             print("ℹ️ checkPaymentStatus: пропущено (manual close)")
             return
@@ -660,6 +665,7 @@ class PaymentQRViewModel: ObservableObject {
      * Запуск автоматической проверки каждые 30 секунд
      */
     func startAutoCheck() {
+        logger.business("Starting automatic payment status checking")
         guard !creationError else {
             print("ℹ️ startAutoCheck: пропущено (creationError активен)")
             return
@@ -686,6 +692,7 @@ class PaymentQRViewModel: ObservableObject {
      * Остановка автоматической проверки
      */
     func stopAutoCheck() {
+        logger.business("Stopping automatic payment status checking")
         autoCheckTimer?.invalidate()
         autoCheckTimer = nil
         if isAutoCheckRunning {
@@ -697,6 +704,7 @@ class PaymentQRViewModel: ObservableObject {
     
     /// Повторная попытка создания платежа после ошибки
     func retryCreatePayment() {
+        logger.business("Retrying payment creation after failure")
         print("🔁 PaymentQRViewModel.retryCreatePayment: повторное создание платежа")
         stopAutoCheck()
         creationError = false

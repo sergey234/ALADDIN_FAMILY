@@ -2,6 +2,9 @@ import SwiftUI
 import Foundation
 import UserNotifications
 
+// Master Logger for notifications logging
+private let logger = MasterLogger.shared
+
 /// 🔔 Notifications View Model
 /// Логика для экрана уведомлений с интеграцией сервера
 class NotificationsViewModel: ObservableObject {
@@ -104,10 +107,12 @@ class NotificationsViewModel: ObservableObject {
     }
 
     init(service: NotificationsService = NotificationsViewModel.makeDefaultService()) {
+        logger.business("Initializing NotificationsViewModel")
         self.service = service
     }
 
     static func makeDefaultService() -> NotificationsService {
+        logger.business("Creating default notifications service")
         let baseURL = URL(string: AppConfig.baseURL) ?? URL(string: "https://api.aladdin.family/api")!
         return RemoteNotificationsService(
             baseURL: baseURL,
@@ -128,6 +133,7 @@ class NotificationsViewModel: ObservableObject {
     }
 
     func loadNotifications(includeRead: Bool = true) async {
+        logger.business("Loading notifications (includeRead: \(includeRead))")
         await MainActor.run {
             isLoading = true
             errorMessage = nil
@@ -153,6 +159,7 @@ class NotificationsViewModel: ObservableObject {
     // Теперь используются только реальные API вызовы через RemoteNotificationsService
 
     func addNotificationFromPush(_ notification: UNNotification) async {
+        logger.business("Adding notification from push: \(notification.request.content.title)")
         let userInfo = notification.request.content.userInfo
         let title = notification.request.content.title
         let body = notification.request.content.body
@@ -189,6 +196,7 @@ class NotificationsViewModel: ObservableObject {
 
     @MainActor
     func markAsRead(_ notification: AppNotification) {
+        logger.business("Marking notification as read: \(notification.title)")
         guard let index = notifications.firstIndex(where: { $0.id == notification.id }) else { return }
         if notifications[index].isRead { return }
 
@@ -216,6 +224,8 @@ class NotificationsViewModel: ObservableObject {
 
     @MainActor
     func markAllAsRead() {
+        let unreadCount = notifications.filter { !$0.isRead }.count
+        logger.business("Marking all notifications as read (\(unreadCount) unread)")
         let unreadIds = notifications.filter { !$0.isRead }.map { $0.id }
         guard !unreadIds.isEmpty else { return }
 
@@ -244,6 +254,7 @@ class NotificationsViewModel: ObservableObject {
 
     @MainActor
     func clearAll() {
+        logger.business("Clearing all notifications (\(notifications.count) total)")
         notifications.removeAll()
         updateUnreadCount()
     }

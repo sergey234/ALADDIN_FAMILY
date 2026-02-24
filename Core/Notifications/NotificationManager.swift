@@ -2,6 +2,9 @@ import Foundation
 import UserNotifications
 import UIKit
 
+// Master Logger for notification logging
+private let logger = MasterLogger.shared
+
 /**
  * 🔔 Notification Manager
  * Управление push и локальными уведомлениями
@@ -39,16 +42,12 @@ class NotificationManager: NSObject, ObservableObject {
     
     private override init() {
         super.init()
-        #if DEBUG
-        print("🔴 NOTIFICATION_MANAGER: init() начат")
-        #endif
+        logger.business("Initializing NotificationManager")
         notificationCenter.delegate = self
         // ✅ ИСПРАВЛЕНО: Синхронная инициализация (как в бэкапах - работало)
         checkAuthorizationStatus()
         loadSettings()
-        #if DEBUG
-        print("🔴 NOTIFICATION_MANAGER: init() завершен, notificationSettings = \(notificationSettings)")
-        #endif
+        logger.business("NotificationManager initialized successfully")
     }
     
     // MARK: - Authorization
@@ -57,6 +56,7 @@ class NotificationManager: NSObject, ObservableObject {
      * Запросить разрешение на уведомления
      */
     func requestAuthorization() async -> Bool {
+        logger.business("Requesting notification authorization from user")
         do {
             let granted = try await notificationCenter.requestAuthorization(
                 options: [.alert, .badge, .sound, .provisional]
@@ -126,6 +126,7 @@ class NotificationManager: NSObject, ObservableObject {
      * Отправить токен устройства на сервер
      */
     private func sendDeviceTokenToServer(token: String) async {
+        logger.business("Sending device token to server: \(token.prefix(8))...")
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             apiService.registerDeviceToken(token) { result in
                 #if DEBUG

@@ -12,7 +12,7 @@
 
 ## 🎯 ТЕКУЩИЙ ПРОГРЕСС
 
-### ✅ ВЫПОЛНЕННЫЕ ЗАДАЧИ (6/32):
+### ✅ ВЫПОЛНЕННЫЕ ЗАДАЧИ (11/32):
 
 #### 🔴 CRITICAL - ОСНОВА СИСТЕМЫ
 - [x] **1. add_masterlogger_to_xcode** - MasterLogger добавить в Xcode проект (10 минут)
@@ -43,6 +43,27 @@
 - [x] **6. profile_screen_logging** - ProfileScreen.swift - добавить логирование профиля
   - ✅ Логирование кнопок: Back, Edit Profile
   - ✅ Логирование операций: save profile image
+
+#### 🟢 MEDIUM PRIORITY - VIEWMODELS (5/15 ЗАВЕРШЕНО!)
+- [x] **7. main_viewmodel_logging** - MainViewModel.swift - добавить логирование бизнес-логики
+  - ✅ Логирование инициализации, загрузки dashboard, network protection toggle
+  - ✅ Логирование сетевых подключений/отключений
+
+- [x] **8. family_viewmodel_logging** - FamilyViewModel.swift - добавить логирование семейной логики
+  - ✅ Логирование загрузки участников семьи и статистики
+  - ✅ Логирование добавления новых членов семьи
+
+- [x] **9. parental_control_viewmodel_logging** - ParentalControlViewModel.swift - добавить логирование родительского контроля
+  - ✅ Логирование загрузки статусов компонентов
+  - ✅ Логирование переключения защиты от самоповреждений
+  - ✅ Логирование загрузки данных детей
+
+- [x] **10. child_interface_viewmodel_logging** - ChildInterfaceViewModel.swift - добавить логирование детского интерфейса
+  - ✅ Логирование открытия разделов: игры, образование, творчество, видео
+
+- [x] **11. elderly_interface_viewmodel_logging** - ElderlyInterfaceViewModel.swift - добавить логирование интерфейса пожилых
+  - ✅ Логирование звонков семье, проверки безопасности
+  - ✅ **КРИТИЧНОЕ**: Логирование активации SOS (FATAL уровень)
 
 ---
 

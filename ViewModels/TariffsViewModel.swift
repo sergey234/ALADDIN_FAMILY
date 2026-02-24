@@ -4,6 +4,9 @@ import StoreKit
 import UserNotifications
 import SwiftUI
 
+// Master Logger for tariffs logging
+private let logger = MasterLogger.shared
+
 // Импортируем необходимые типы
 // StoreManager находится в Core/Store/StoreManager.swift
 // AppConfig находится в Core/Config/AppConfig.swift
@@ -35,9 +38,8 @@ class TariffsViewModel: ObservableObject {
     // MARK: - Init
     
     init(storeManager: StoreManager? = nil) {
+        logger.business("Initializing TariffsViewModel")
         self.storeManager = storeManager ?? StoreManager()
-        
-        print("🔍 TariffsViewModel.init: Начало инициализации")
         
         // Подписка на изменения продуктов
         self.storeManager.$products
@@ -86,6 +88,7 @@ class TariffsViewModel: ObservableObject {
      * Загрузить продукты из App Store
      */
     func loadProducts() async {
+        logger.business("Loading tariff products from App Store")
         isLoading = true
         await storeManager.loadProducts()
         isLoading = false
@@ -180,6 +183,7 @@ class TariffsViewModel: ObservableObject {
      * За границей → использует IAP (App Store)
      */
     func purchaseSelectedTariff() async {
+        logger.business("Initiating purchase of selected tariff")
         guard let selectedTariff = selectedTariff else {
             let localizationManager = LocalizationManager()
             errorMessage = localizationManager.localized("tariffs_error_select_tariff")
@@ -199,6 +203,7 @@ class TariffsViewModel: ObservableObject {
      * Основная функция покупки тарифа
      */
     private func purchaseTariff(_ tariff: Tariff) async {
+        logger.business("Processing purchase for tariff: \(tariff.id) - \(tariff.title)")
         // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверяем валидность тарифа
         guard !tariff.id.isEmpty, !tariff.title.isEmpty else {
             print("❌ КРИТИЧЕСКАЯ ОШИБКА: НЕВАЛИДНЫЙ ТАРИФ!")
@@ -579,6 +584,7 @@ class TariffsViewModel: ObservableObject {
      * Восстановить покупки
      */
     func restorePurchases() async {
+        logger.business("User initiated purchase restoration")
         isLoading = true
         errorMessage = nil
         

@@ -1,6 +1,9 @@
 import Foundation
 import UIKit
 
+// Master Logger for profile manager logging
+private let logger = MasterLogger.shared
+
 /// 👤 User Profile Manager
 /// Singleton класс для управления профилем пользователя
 /// Предоставляет быстрый доступ к данным пользователя из кеша
@@ -65,6 +68,7 @@ class UserProfileManager {
     /// Загрузить профиль из API и сохранить в кеш
     /// ✅ ИСПРАВЛЕНО: Использует гибридный подход - сначала getUserProfile, потом syncUserProfile
     func loadProfile(completion: ((Bool) -> Void)? = nil) {
+        logger.business("Loading user profile data")
         // ✅ ПРОВЕРКА ТОКЕНА: Если нет токена, не загружаем профиль
         guard keychainManager.isDataAvailable(forKey: .authToken) else {
             print("⚠️ UserProfileManager: Нет токена - пропускаем загрузку профиля")
@@ -136,6 +140,7 @@ class UserProfileManager {
 
     /// Очистить кеш профиля
     func clearProfileCache() {
+        logger.business("Clearing user profile cache")
         userDefaults.removeObject(forKey: displayNameKey)
         userDefaults.removeObject(forKey: profileNameKey)
         userDefaults.removeObject(forKey: emailKey)
@@ -147,6 +152,7 @@ class UserProfileManager {
     // MARK: - Private Methods
 
     private func loadProfileInBackground() {
+        logger.business("Loading user profile in background")
         // Загружаем профиль в фоне при инициализации
         // Если профиль старше 24 часов, обновляем
         if shouldRefreshProfile() {
@@ -166,6 +172,7 @@ class UserProfileManager {
     }
 
     private func saveProfileToCache(_ profile: UserProfile) {
+        logger.business("Saving user profile to cache: \(profile.name)")
         userDefaults.set(profile.name, forKey: displayNameKey)
         userDefaults.set(profile.name, forKey: profileNameKey) // Для совместимости
         userDefaults.set(profile.email, forKey: emailKey)
@@ -175,6 +182,7 @@ class UserProfileManager {
     
     // ✅ ОБРАБОТЧИК: Перезагружаем профиль после успешной авторизации
     @objc private func handleUserDidLogin() {
+        logger.business("User login detected - refreshing profile data")
         print("🔄 UserProfileManager: Получено уведомление о авторизации - перезагружаем профиль")
         DispatchQueue.global(qos: .background).async { [weak self] in
             self?.loadProfile { success in

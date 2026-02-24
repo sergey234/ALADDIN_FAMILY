@@ -1,6 +1,9 @@
 import Foundation
 // import Firebase // Uncomment when Firebase SDK added
 
+// Master Logger for analytics logging
+private let logger = MasterLogger.shared
+
 /**
  * 📊 Analytics Manager
  * Управление аналитикой пользователей
@@ -14,6 +17,7 @@ class AnalyticsManager {
     static let shared = AnalyticsManager()
     
     private init() {
+        logger.business("Initializing AnalyticsManager")
         // Firebase будет инициализирован в AppDelegate
     }
     
@@ -23,6 +27,7 @@ class AnalyticsManager {
      * Отслеживать просмотр экрана
      */
     func trackScreen(_ screenName: String, screenClass: String? = nil) {
+        logger.business("Analytics: Screen view - \(screenName)")
         #if DEBUG
         print("📊 Screen: \(screenName)")
         #endif
@@ -40,6 +45,7 @@ class AnalyticsManager {
      * Отслеживать событие
      */
     func trackEvent(_ eventName: String, parameters: [String: Any]? = nil) {
+        logger.business("Analytics: Event - \(eventName) with params: \(parameters?.description ?? "none")")
         #if DEBUG
         print("📊 Event: \(eventName), params: \(parameters ?? [:])")
         #endif

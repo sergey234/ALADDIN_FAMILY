@@ -1,6 +1,9 @@
 import SwiftUI
 import Foundation
 
+// Master Logger for profile logging
+private let logger = MasterLogger.shared
+
 /// 👤 Profile View Model
 /// Логика для экрана профиля
 class ProfileViewModel: ObservableObject {
@@ -22,12 +25,14 @@ class ProfileViewModel: ObservableObject {
     private let networkManager: NetworkManager
     
     init(apiService: APIService? = nil) {
+        logger.business("Initializing ProfileViewModel")
         self.networkManager = NetworkManager() // Для обратной совместимости, но не используется
         self.apiService = apiService ?? APIService.shared
     }
     
     // Загрузка профиля из API
     func loadProfile() {
+        logger.business("Loading user profile")
         isLoading = true
         errorMessage = nil
         
@@ -60,22 +65,27 @@ class ProfileViewModel: ObservableObject {
     }
     
     func editProfile() {
+        logger.business("User initiated profile edit")
         print("Show edit profile sheet")
     }
     
     func changePassword() {
+        logger.business("User initiated password change")
         print("Show change password")
     }
     
     func manageTwoFactor() {
+        logger.business("User accessed two-factor authentication settings")
         print("Manage 2FA")
     }
     
     func showActiveSessions() {
+        logger.business("User accessed active sessions view")
         print("Show active sessions")
     }
     
     func deleteAccount() {
+        logger.fatal("CRITICAL: User initiated account deletion process!")
         print("Show delete account confirmation")
     }
     
@@ -123,6 +133,7 @@ class ProfileViewModel: ObservableObject {
 
     /// Сохраняет имя пользователя в кеш для быстрого доступа из детского интерфейса
     private func saveUserNameToCache(_ name: String) {
+        logger.business("Saving user name to cache: \(name)")
         UserDefaults.standard.set(name, forKey: "user_display_name")
         UserDefaults.standard.set(name, forKey: "user_profile_name") // Дублируем для совместимости
         UserDefaults.standard.synchronize()

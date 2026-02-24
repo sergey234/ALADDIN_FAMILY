@@ -1,5 +1,8 @@
 import SwiftUI
 
+// Master Logger for analytics logging
+private let logger = MasterLogger.shared
+
 /// 📊 Analytics View Model
 /// Упрощённый state для экрана аналитики
 class AnalyticsViewModel: ObservableObject {
@@ -36,11 +39,13 @@ class AnalyticsViewModel: ObservableObject {
     }
     
     init(service: AnalyticsService) {
+        logger.business("Initializing AnalyticsViewModel")
         self.service = service
     }
     
     @MainActor
     func load() async {
+        logger.business("Loading analytics data")
         isLoading = true
         errorMessage = nil
         isOfflineMode = false // ✅ ЗАДАЧА 64: Сбрасываем индикатор офлайн режима
@@ -181,6 +186,7 @@ class AnalyticsViewModel: ObservableObject {
     
     // MARK: - Private helpers
     private func apply(summary: AnalyticsSummary) {
+        logger.business("Applying analytics summary: \(summary.threatsDetected) threats detected")
         threatsDetected = summary.threatsDetected
         threatsBlocked = summary.threatsBlocked
         itemsScanned = summary.itemsScanned
@@ -188,6 +194,7 @@ class AnalyticsViewModel: ObservableObject {
     }
     
     private func apply(securityAnalytics: SecurityAnalytics) {
+        logger.business("Applying security analytics data")
         threatCategories = securityAnalytics.blockedThreats
     }
     
