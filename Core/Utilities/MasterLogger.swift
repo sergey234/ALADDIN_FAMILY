@@ -189,16 +189,27 @@ class MasterLogger {
     /// Логирование HTTP запросов
     func logRequest(_ request: URLRequest, function: String = #function, file: String = #file, line: Int = #line) {
         var headers = request.allHTTPHeaderFields ?? [:]
-        if headers["Authorization"] != nil { headers["Authorization"] = "<redacted>" }
+        headers = LogSanitizer.sanitizeHeaders(headers)  // ✅ ПОЛНАЯ ЗАЩИТА ЗАГОЛОВКОВ
 
-        let message = "➡️ \(request.httpMethod ?? "GET") \(request.url?.absoluteString ?? "-") headers=\(headers)"
+        let url = LogSanitizer.sanitizeURL(request.url?.absoluteString ?? "-")  // ✅ ЗАЩИТА URL
+        let message = "➡️ \(request.httpMethod ?? "GET") \(url) headers=\(headers)"
         network(message, function: function, file: file, line: line)
     }
 
     /// Логирование HTTP ответов
     func logResponse(_ response: URLResponse?, data: Data?, function: String = #function, file: String = #file, line: Int = #line) {
         if let http = response as? HTTPURLResponse {
-            let message = "⬅️ status=\(http.statusCode) url=\(http.url?.absoluteString ?? "-")"
+            let url = LogSanitizer.sanitizeURL(http.url?.absoluteString ?? "-")
+            var message = "⬅️ status=\(http.statusCode) url=\(url)"
+
+            // Санитизация тела ответа
+            if let data = data, let jsonString = String(data: data, encoding: .utf8) {
+                let sanitizedJSON = LogSanitizer.sanitizeJSON(jsonString)
+                // Ограничиваем размер лога (первые 500 символов)
+                let truncatedJSON = sanitizedJSON.count > 500 ? sanitizedJSON.prefix(500) + "..." : sanitizedJSON
+                message += " body=\(truncatedJSON)"
+            }
+
             network(message, function: function, file: file, line: line)
         }
     }

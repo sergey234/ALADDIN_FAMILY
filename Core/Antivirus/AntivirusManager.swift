@@ -411,7 +411,7 @@ class AntivirusManager: ObservableObject {
     // MARK: - Logging
     
     private func log(_ message: String) {
-        print("[AntivirusManager] \(message)")
+        logger.business("[Antivirus] \(message)")
     }
 }
 

@@ -257,10 +257,10 @@ class FamilyRegistrationViewModel: ObservableObject {
         
         // ✅ СОХРАНЯЕМ РОЛЬ ПОЛЬЗОВАТЕЛЯ
         saveUserRole(role)
-        print("✅ [FamilyRegistrationViewModel] Роль сохранена: \(role.rawValue)")
+        logger.business("Family role saved: \(role.rawValue)")
         // ✅ ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ: Убеждаемся, что UserDefaults синхронизирован
         UserDefaults.standard.synchronize()
-        print("✅ [FamilyRegistrationViewModel] UserDefaults синхронизирован")
+        logger.business("UserDefaults synchronized")
         
         currentStep = .creatingFamily
         isLoading = true
@@ -274,11 +274,11 @@ class FamilyRegistrationViewModel: ObservableObject {
             device_type: getDeviceType()
         )
 
-        print("🏠 [FamilyRegistrationViewModel.createFamily] ========== СОЗДАНИЕ СЕМЬИ ==========")
-        print("🏠 [FamilyRegistrationViewModel.createFamily] Роль: \(role.rawValue)")
-        print("🏠 [FamilyRegistrationViewModel.createFamily] Возрастная группа (клиент): \(ageGroup.rawValue)")
-        print("🏠 [FamilyRegistrationViewModel.createFamily] Возрастная группа (сервер): \(ageGroup.serverValue)")
-        print("🏠 [FamilyRegistrationViewModel.createFamily] Буква: \(letter)")
+        logger.business("========== CREATING FAMILY ==========")
+        logger.business("Role: \(role.rawValue)")
+        logger.business("Age group (client): \(ageGroup.rawValue)")
+        logger.business("Age group (server): \(ageGroup.serverValue)")
+        logger.business("Personal letter length: \(letter.count) characters")
 
         // ✅ УДАЛЕНО: Моковые данные - теперь используем реальный API
 
@@ -294,7 +294,7 @@ class FamilyRegistrationViewModel: ObservableObject {
 
                     // ✅ НОВОЕ: Сохраняем your_member_id
                     UserDefaults.standard.set(response.your_member_id, forKey: "your_member_id")
-                    print("✅ your_member_id сохранен: \(response.your_member_id)")
+                    logger.business("Member ID saved: \(response.your_member_id)")
 
                     // ✅ ПОПЫТКА 1: Проверяем, есть ли токены в response
                     if self?.isValidJWTToken(response.access_token) == true,
@@ -303,14 +303,14 @@ class FamilyRegistrationViewModel: ObservableObject {
                        let refreshToken = response.refresh_token {
                         // ✅ Токены есть - сохраняем (Попытка 1 успешна)
                         if self?.saveTokens(accessToken: accessToken, refreshToken: refreshToken) == true {
-                            print("✅ Попытка 1 успешна: токены сохранены из response")
+                            logger.business("Attempt 1 successful: tokens saved from response")
                         } else {
                             // Ошибка сохранения - используем fallback
                             self?.loginByRecoveryCode(familyID: response.family_id, recoveryCode: response.recovery_code)
                         }
                     } else {
                         // ✅ Токенов нет - используем fallback (Попытка 2)
-                        print("ℹ️ Попытка 1: токенов нет в response, используем fallback")
+                        logger.business("Attempt 1: no tokens in response, using fallback")
                         self?.loginByRecoveryCode(familyID: response.family_id, recoveryCode: response.recovery_code)
                     }
 
@@ -325,7 +325,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                             familyID: familyID
                         )
                         if saved {
-                            print("✅ Recovery Code автоматически сохранен в Keychain")
+                            logger.business("Recovery Code automatically saved to Keychain")
                         }
                     }
 
@@ -335,26 +335,9 @@ class FamilyRegistrationViewModel: ObservableObject {
                     self?.showFamilyCreatedModal = true
 
                 case .failure(let error):
-                    print("❌ [FamilyRegistrationViewModel.createFamily] Ошибка создания семьи: \(error)")
-                    print("   Тип ошибки: \(type(of: error))")
+                    logger.error("Family creation failed", error: error)
                     if let decodingError = error as? DecodingError {
-                        print("   Детали декодирования:")
-                        switch decodingError {
-                        case .keyNotFound(let key, let context):
-                            print("     - Отсутствует ключ: \(key.stringValue)")
-                            print("     - Путь: \(context.codingPath)")
-                        case .typeMismatch(let type, let context):
-                            print("     - Несоответствие типа: \(type)")
-                            print("     - Путь: \(context.codingPath)")
-                        case .valueNotFound(let type, let context):
-                            print("     - Значение не найдено: \(type)")
-                            print("     - Путь: \(context.codingPath)")
-                        case .dataCorrupted(let context):
-                            print("     - Данные повреждены")
-                            print("     - Путь: \(context.codingPath)")
-                        @unknown default:
-                            print("     - Неизвестная ошибка декодирования")
-                        }
+                        logger.error("Decoding error details: \(decodingError.localizedDescription)")
                     }
                     self?.errorMessage = error.localizedDescription
                     self?.isLoading = false
@@ -440,7 +423,7 @@ class FamilyRegistrationViewModel: ObservableObject {
 
     /// ✅ ДОБАВЛЕНО: Сохранение токенов с проверкой и повторной попыткой
     private func saveTokens(accessToken: String, refreshToken: String?) -> Bool {
-        print("🔐 Сохранение токенов в Keychain...")
+        logger.business("Saving tokens to Keychain (access: \(accessToken.prefix(10))..., refresh: \(refreshToken?.prefix(10) ?? "none")...)")
 
         // Попытка 1: Сохраняем токены
         KeychainManager.shared.save(accessToken, forKey: .authToken)
@@ -454,7 +437,7 @@ class FamilyRegistrationViewModel: ObservableObject {
 
         if loadedAccessToken == accessToken &&
            (refreshToken == nil || loadedRefreshToken == refreshToken) {
-            print("✅ Токены успешно сохранены и проверены")
+            logger.business("Tokens successfully saved and verified")
             // ✅ УВЕДОМЛЕНИЕ: Отправляем уведомление о успешной авторизации
             NotificationCenter.default.post(name: NSNotification.Name("UserDidLogin"), object: nil)
             return true

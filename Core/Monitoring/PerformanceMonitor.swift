@@ -50,7 +50,7 @@ class PerformanceMonitor {
         startMemoryMonitoring()
 
         #if DEBUG
-        print("📈 PerformanceMonitor: Инициализирован, мониторинг запущен")
+        logger.performance("PerformanceMonitor initialized, monitoring started")
         #endif
 
         os_log("📈 PerformanceMonitor: Initialized and monitoring started",
@@ -73,7 +73,7 @@ class PerformanceMonitor {
         screenLoadStartTimes[screenName] = Date()
 
         #if DEBUG
-        print("📈 PerformanceMonitor: Начата загрузка экрана '\(screenName)'")
+        logger.performance("Screen load started: '\(screenName)'")
         #endif
     }
 
@@ -97,7 +97,7 @@ class PerformanceMonitor {
         metricsService.trackUserAction(action: "screen_load_complete", parameters: parameters)
 
         #if DEBUG
-        print("📈 PerformanceMonitor: Экран '\(screenName)' загружен за \(String(format: "%.3f", loadTime)) сек")
+        logger.performance("Screen '\(screenName)' loaded in \(String(format: "%.3f", loadTime)) sec")
         #endif
 
         os_log("📈 Screen Load: %{public}@ loaded in %.3fs",
@@ -116,7 +116,7 @@ class PerformanceMonitor {
         networkRequestStartTimes[requestId] = Date()
 
         #if DEBUG
-        print("📈 PerformanceMonitor: Начался сетевой запрос '\(requestId)'")
+        logger.performance("Network request started: '\(requestId)'")
         #endif
     }
 
@@ -143,7 +143,7 @@ class PerformanceMonitor {
         metricsService.trackUserAction(action: "network_request_complete", parameters: parameters)
 
         #if DEBUG
-        print("📈 PerformanceMonitor: Сетевой запрос '\(requestId)' завершен за \(String(format: "%.3f", requestTime)) сек, \(bytesTransferred) байт")
+        logger.performance("Network request '\(requestId)' completed in \(String(format: "%.3f", requestTime)) sec, \(bytesTransferred) bytes")
         #endif
 
         os_log("📈 Network Request: %{public}@ completed in %.3fs (%lld bytes)",
@@ -177,7 +177,7 @@ class PerformanceMonitor {
         metricsService.trackUserAction(action: "action_performance", parameters: parameters)
 
         #if DEBUG
-        print("📈 PerformanceMonitor: Действие '\(action)' выполнено за \(String(format: "%.3f", duration)) сек (FPS: \(Int(currentFPS)), память: \(String(format: "%.1f", getMemoryUsageMB())) MB)")
+        logger.performance("Action '\(action)' completed in \(String(format: "%.3f", duration)) sec (FPS: \(Int(currentFPS)), memory: \(String(format: "%.1f", getMemoryUsageMB())) MB)")
         #endif
 
         os_log("📈 Action Performance: %{public}@ completed in %.3fs (FPS: %d, Memory: %.1f MB)",
@@ -272,7 +272,7 @@ class PerformanceMonitor {
         metricsService.trackUserAction(action: "memory_usage_check", parameters: parameters)
 
         #if DEBUG
-        print("📈 PerformanceMonitor: Использование памяти: \(String(format: "%.1f", memoryUsageMB)) MB, FPS: \(Int(currentFPS))")
+        logger.performance("Memory usage: \(String(format: "%.1f", memoryUsageMB)) MB, FPS: \(Int(currentFPS))")
         #endif
 
         os_log("📈 Memory Usage: %.1f MB, FPS: %d",
