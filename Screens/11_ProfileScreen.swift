@@ -1,6 +1,9 @@
 import SwiftUI
 import Foundation
 
+// Master Logger for UI logging
+private let logger = MasterLogger.shared
+
 /// 👤 Profile Screen
 /// Экран профиля пользователя
 /// Источник дизайна: /mobile/wireframes/11_profile_screen.html
@@ -63,6 +66,7 @@ struct ProfileScreen: View {
                     subtitle: localizationManager.localized("profile_subtitle"),
                     showBackButton: true,
                     onBack: {
+                        logger.buttonTap("Back", screen: "Profile")
                         // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
                         // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
                         dismiss()
@@ -79,7 +83,10 @@ struct ProfileScreen: View {
                 // Кнопка редактирования профиля (вместо кнопки в header)
                 HStack {
                     Spacer()
-                    Button(action: { showEditProfile = true }) {
+                    Button(action: {
+                        logger.buttonTap("Edit Profile", screen: "Profile")
+                        showEditProfile = true
+                    }) {
                         Image(systemName: "pencil")
                             .foregroundColor(.white)
                             .font(.system(size: 18))
@@ -645,6 +652,7 @@ struct ProfileScreen: View {
     }
     
     private func saveProfileImage(_ image: UIImage) {
+        logger.business("Saving profile image")
         _ = ProfileImageManager.shared.saveProfileImage(image, for: .main)
     }
 }

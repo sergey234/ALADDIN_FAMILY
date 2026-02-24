@@ -1,6 +1,9 @@
 import SwiftUI
 import Combine
 
+// Master Logger for UI logging
+private let logger = MasterLogger.shared
+
 // AppCoordinator is accessed via shared instance
 
 // Spacing is imported from Shared/Styles/Spacing.swift
@@ -120,6 +123,7 @@ struct SettingsScreen: View {
                 
                     // Edit Button
                 Button(action: {
+                        logger.buttonTap("Edit Profile", screen: "Settings")
                         viewModel.showProfileEdit = true
                     }) {
                         HStack {
@@ -215,6 +219,7 @@ struct SettingsScreen: View {
 
             // Advanced Settings Button
             Button(action: {
+                logger.buttonTap("Advanced Protection", screen: "Settings")
                 viewModel.showAdvancedProtection = true
             }) {
                 HStack {
@@ -279,6 +284,7 @@ struct SettingsScreen: View {
             VStack(spacing: 0) {
                 // Language
                 Button(action: {
+                    logger.buttonTap("Language Settings", screen: "Settings")
                     viewModel.showLanguageSettings = true
                 }) {
             HStack {
@@ -315,6 +321,7 @@ struct SettingsScreen: View {
                     }
                 Spacer()
                     Button(action: {
+                        logger.buttonTap("Cycle Theme", screen: "Settings")
                         viewModel.cycleTheme()
                     }) {
                         Image(systemName: "chevron.right")
@@ -327,6 +334,7 @@ struct SettingsScreen: View {
 
                 // Updates
                 Button(action: {
+                    logger.buttonTap("Check Updates", screen: "Settings")
                     viewModel.checkForUpdates()
                 }) {
                     HStack {
@@ -738,6 +746,7 @@ struct SettingsScreen: View {
             ? Binding(
                 get: { isEnabled.wrappedValue },
                 set: { newValue in
+                    logger.toggleChanged("Biometric", newValue: newValue, screen: "Settings")
                     isEnabled.wrappedValue = newValue
                     viewModel.handleBiometricToggle(newValue)
                 }
@@ -832,7 +841,10 @@ struct SettingsScreen: View {
 
                 Toggle("", isOn: Binding(
                     get: { component.isEnabled },
-                    set: { _ in onToggle() }
+                    set: { newValue in
+                        logger.toggleChanged("Component: \(component.componentId)", newValue: newValue, screen: "Settings")
+                        onToggle()
+                    }
                 ))
                 .labelsHidden()
             }

@@ -3,6 +3,9 @@ import Combine
 import CoreMotion
 import CoreLocation
 
+// Master Logger for UI logging
+private let logger = MasterLogger.shared
+
 // ✅ Settings Modal - scope issue в Xcode
 // Modal существует и работает, но имеет проблему с module resolution
 // Временно отключен до настройки Xcode target/modules
@@ -69,6 +72,7 @@ struct NetworkProtectionScreen: View {
                     subtitle: localizationManager.localized("secure_connection_subtitle"),
                     showBackButton: true,
                     onBack: {
+                        logger.buttonTap("Back", screen: "NetworkProtection")
                         // ✅ ИСПРАВЛЕНО: Правильный возврат на главный экран
                         if navigationManager.canGoBack {
                             navigationManager.goBack(reason: "NetworkProtection.onBack")
@@ -201,12 +205,16 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.crash_detection_agent.desc"),
                     isEnabled: $viewModel.crashDetectionEnabled,
                     hasSettings: false, // ⚠️ Temporarily disabled due to scope issue
-                    onToggle: { newValue in Task { await viewModel.toggleCrashDetection(newValue) } }
+                    onToggle: { newValue in
+                        logger.toggleChanged("Crash Detection", newValue: newValue, screen: "NetworkProtection")
+                        Task { await viewModel.toggleCrashDetection(newValue) }
+                    }
                     // onSettingsTap: { showCrashDetectionSettings = true } // ⚠️ Temporarily disabled
                 )
 
                 // 🚨 Тестовая кнопка для демонстрации Crash Detection
                 Button(action: {
+                    logger.buttonTap("Test Crash Detection", screen: "NetworkProtection")
                     // Используем новый метод симуляции краха
                     Task {
                         await CrashDetectionManager.shared.simulateCrashForTesting(gForce: 5.0)
@@ -244,7 +252,10 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.roadside_assistance_agent.desc"),
                     isEnabled: $viewModel.roadsideAssistanceEnabled,
                     hasSettings: false,
-                    onToggle: { newValue in Task { await viewModel.toggleRoadsideAssistance(newValue) } }
+                    onToggle: { newValue in
+                        logger.toggleChanged("Roadside Assistance", newValue: newValue, screen: "NetworkProtection")
+                        Task { await viewModel.toggleRoadsideAssistance(newValue) }
+                    }
                 )
                 
                 SecurityFeatureRow(

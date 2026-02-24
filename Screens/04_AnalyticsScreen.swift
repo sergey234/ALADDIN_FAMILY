@@ -1,12 +1,19 @@
 import SwiftUI
 import Foundation
 
+// Master Logger for UI logging
+private let logger = MasterLogger.shared
+
 /// 📊 Analytics Screen - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
 /// Экран аналитики - статистика защиты и угроз
 /// Источник дизайна: /mobile/wireframes/04_analytics_screen.html
 struct AnalyticsScreen: View {
-    
+
     // MARK: - State
+
+    init() {
+        logger.screenLoad("AnalyticsScreen")
+    }
     
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -133,10 +140,14 @@ struct AnalyticsScreen: View {
                 NavigationActionButton(
                     icon: "slider.horizontal.3",
                     accessibilityLabel: localizationManager.localized("analytics_settings_button"),
-                    action: { showAnalyticsSettings = true }
+                    action: {
+                        logger.buttonTap("Analytics Settings", screen: "Analytics")
+                        showAnalyticsSettings = true
+                    }
                 )
             ],
             onBack: {
+                logger.buttonTap("Back", screen: "Analytics")
                 navigationManager.goBack()
             }
         )

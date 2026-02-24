@@ -1,6 +1,9 @@
 import SwiftUI
 import CoreLocation
 
+// Master Logger for UI logging
+private let logger = MasterLogger.shared
+
 struct FamilyScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -118,6 +121,7 @@ struct FamilyScreen: View {
     
     // Загрузка участников семьи из UserDefaults при открытии экрана
     private func loadFamilyMembers() {
+        logger.business("Loading family members from storage")
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Синхронизируем UserDefaults перед чтением
         UserDefaults.standard.synchronize()
         
@@ -212,6 +216,7 @@ struct FamilyScreen: View {
     
     // ✅ НОВАЯ ФУНКЦИЯ: Удаление участника семьи
     func removeFamilyMember(_ member: FamilyMemberData) {
+        logger.business("Removing family member: \(member.name)")
         // Проверяем, что пользователь является администратором или родителем
         guard isUserParent || isFamilyCreator else {
             print("⚠️ Only parents or administrators can remove family members")
@@ -269,6 +274,7 @@ struct FamilyScreen: View {
     
     // Сохранение участников семьи в UserDefaults
     private func saveFamilyMembers() {
+        logger.business("Saving \(familyMembers.count) family members to storage")
         guard let encoded = try? JSONEncoder().encode(familyMembers) else {
             print("❌ Failed to encode family members")
             return
@@ -365,6 +371,7 @@ struct FamilyScreen: View {
                 // Header
                 HStack {
                     Button(action: {
+                        logger.buttonTap("Back", screen: "Family")
                         // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
                         // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
                         dismiss()
@@ -399,6 +406,7 @@ struct FamilyScreen: View {
                     HStack(spacing: 10) {
                         // Кнопка настроек уведомлений
                         Button(action: {
+                            logger.buttonTap("Family Notification Settings", screen: "Family")
                             showFamilyNotificationSettings = true
                         }) {
                             Image(systemName: "bell.fill")
@@ -411,7 +419,8 @@ struct FamilyScreen: View {
                         .accessibilityLabel(localizationManager.localized("family_notification_settings"))
                         
                         // Кнопка добавления участника
-                        Button(action: { 
+                        Button(action: {
+                            logger.buttonTap("Add Member", screen: "Family")
                             // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager вместо sheet модала
                             navigationManager.navigateTo(.addMemberOptions)
                         }) {
@@ -674,6 +683,7 @@ struct FamilyScreen: View {
             }
         }
         .onAppear {
+            logger.screenLoad("FamilyScreen")
             // ✅ ИСПРАВЛЕНИЕ: Загружаем участников только если список пуст
             // Это предотвращает перезапись удаленных участников
             if familyMembers.isEmpty {
