@@ -5,6 +5,9 @@ import Security
 // Import for shared types
 import Foundation
 
+// Master Logger for family registration logging
+private let logger = MasterLogger.shared
+
 // MARK: - Missing Types (Added by Assistant)
 enum FamilyRole: String, Codable, CaseIterable, Identifiable {
     case parent = "parent"
@@ -245,6 +248,7 @@ class FamilyRegistrationViewModel: ObservableObject {
     // MARK: - Create Family
     
     func createFamily() {
+        logger.business("Creating family with role: \(selectedRole?.rawValue ?? "none")")
         guard let role = selectedRole,
               let ageGroup = selectedAgeGroup,
               let letter = selectedLetter else {

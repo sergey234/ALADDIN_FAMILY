@@ -1,5 +1,8 @@
 import SwiftUI
 
+// Master Logger for support logging
+private let logger = MasterLogger.shared
+
 /// 💬 Support View Model
 /// Логика для экрана поддержки
 class SupportViewModel: ObservableObject {
@@ -29,20 +32,24 @@ class SupportViewModel: ObservableObject {
     }
     
     func toggleFAQ(_ item: FAQItem) {
+        logger.business("User toggled FAQ: \(item.question)")
         if let index = faqItems.firstIndex(where: { $0.id == item.id }) {
             faqItems[index].isExpanded.toggle()
         }
     }
     
     func openChat() {
+        logger.business("User opened support chat")
         print("Open support chat")
     }
     
     func sendEmail() {
+        logger.business("User initiated support email")
         print("Open email client")
     }
     
     func call() {
+        logger.business("User initiated support call")
         print("Initiate phone call")
     }
 }

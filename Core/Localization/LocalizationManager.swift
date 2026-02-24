@@ -2,6 +2,9 @@ import Foundation
 import Security
 import SwiftUI
 
+// Master Logger for localization logging
+private let logger = MasterLogger.shared
+
 /**
  * 🌍 Localization Manager
  * Управление локализацией приложения
@@ -57,6 +60,7 @@ class LocalizationManager: ObservableObject {
     // MARK: - Init
     
     init() {
+        logger.business("Initializing LocalizationManager")
         // ✅ СНАЧАЛА проверяем сохранённый язык
         if let savedLanguage = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage),
            let language = Language(rawValue: savedLanguage) {
@@ -116,6 +120,7 @@ class LocalizationManager: ObservableObject {
      * Сменить язык приложения
      */
     func changeLanguage(to language: Language) {
+        logger.business("Changing application language to: \(language.rawValue)")
         // ✅ Обновляем текущий язык (это обновит UI через @Published)
         currentLanguage = language
         

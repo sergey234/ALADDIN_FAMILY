@@ -2,6 +2,9 @@ import Foundation
 // import NetworkExtension  // ✅ ЗАКОММЕНТИРОВАНО: Apple не разрешает VPN от индивидуальных разработчиков
 import SwiftUI
 
+// Master Logger for network protection logging
+private let logger = MasterLogger.shared
+
 /// Менеджер защиты сети для ALADDIN
 class NetworkProtectionManager: ObservableObject {
     static let shared = NetworkProtectionManager()
@@ -48,6 +51,7 @@ class NetworkProtectionManager: ObservableObject {
     // ✅ УДАЛЕНО: Внутренняя структура VPNServer - используем NetworkProtectionServer из APIModels
     
     private init() {
+        logger.business("Initializing NetworkProtectionManager")
         // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension больше не используется
         // refreshTunnelManager()
         startBatteryMonitoring()
@@ -199,6 +203,7 @@ class NetworkProtectionManager: ObservableObject {
     // MARK: - Connection Management
     // ✅ ЗАКОММЕНТИРОВАНО: NetworkExtension методы заменены на заглушки
     func connect(to server: NetworkProtectionServer? = nil) {
+        logger.business("Connecting to network protection server: \(server?.name ?? "auto")")
         guard !isConnecting else { return }
         
         // ✅ ЗАГЛУШКА: NetworkExtension больше не используется
@@ -230,6 +235,7 @@ class NetworkProtectionManager: ObservableObject {
     }
     
     func disconnect() {
+        logger.business("Disconnecting from network protection")
         guard isConnected else { return }
         
         connectionStatus = .disconnecting

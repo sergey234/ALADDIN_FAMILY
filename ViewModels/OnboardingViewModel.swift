@@ -1,6 +1,9 @@
 import SwiftUI
 import Security
 
+// Master Logger for onboarding logging
+private let logger = MasterLogger.shared
+
 /// 👋 Onboarding View Model
 /// Логика для экрана онбординга
 /// ⚠️ ВНИМАНИЕ: Этот ViewModel НЕ используется в 14_OnboardingScreen.swift
@@ -17,6 +20,7 @@ class OnboardingViewModel: ObservableObject {
     let totalPages: Int = 4
     
     func nextPage() {
+        logger.business("Onboarding: moving to next page from \(currentPage)")
         if currentPage < totalPages - 1 {
             currentPage += 1
         } else {
@@ -25,10 +29,12 @@ class OnboardingViewModel: ObservableObject {
     }
     
     func skipOnboarding() {
+        logger.business("User skipped onboarding at page \(currentPage)")
         completeOnboarding()
     }
     
     private func completeOnboarding() {
+        logger.business("Onboarding completed successfully at page \(currentPage)")
         isCompleted = true
         // Сохраняем статус онбординга
         // TODO: В будущем заменить на Keychain для безопасности

@@ -2,6 +2,9 @@ import Foundation
 import UIKit
 import os.log
 
+// Master Logger for performance monitoring logging
+private let logger = MasterLogger.shared
+
 /**
  * 📈 Performance Monitor
  * Отслеживание производительности приложения
@@ -42,6 +45,7 @@ class PerformanceMonitor {
     // MARK: - Init
 
     private init() {
+        logger.business("Initializing PerformanceMonitor with FPS and memory monitoring")
         startFPSMonitoring()
         startMemoryMonitoring()
 
@@ -65,6 +69,7 @@ class PerformanceMonitor {
      * - Parameter screenName: Название экрана
      */
     func startScreenLoad(_ screenName: String) {
+        logger.business("Started monitoring screen load time for: \(screenName)")
         screenLoadStartTimes[screenName] = Date()
 
         #if DEBUG
@@ -107,6 +112,7 @@ class PerformanceMonitor {
      * - Parameter requestId: Уникальный ID запроса
      */
     func startNetworkRequest(_ requestId: String) {
+        logger.business("Started monitoring network request: \(requestId)")
         networkRequestStartTimes[requestId] = Date()
 
         #if DEBUG

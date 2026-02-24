@@ -2,6 +2,9 @@ import Foundation
 import UniformTypeIdentifiers
 import SwiftUI
 
+// Master Logger for antivirus logging
+private let logger = MasterLogger.shared
+
 /// Antivirus Manager для ALADDIN
 /// Быстрая проверка метаданных на клиенте, полное сканирование на сервере
 class AntivirusManager: ObservableObject {
@@ -55,6 +58,7 @@ class AntivirusManager: ObservableObject {
     private let cacheManager = CacheManager.shared
     
     private init() {
+        logger.business("Initializing AntivirusManager")
         log("AntivirusManager инициализирован")
     }
     
@@ -124,6 +128,7 @@ class AntivirusManager: ObservableObject {
     
     /// Офлайн сканирование файла (использует локальную базу сигнатур)
     func scanOffline(fileURL: URL) async -> ScanResult {
+        logger.business("Starting offline antivirus scan for file: \(fileURL.lastPathComponent)")
         log("🛡️ Офлайн сканирование: \(fileURL.lastPathComponent)")
         
         // Используем локальную базу сигнатур
@@ -311,6 +316,7 @@ class AntivirusManager: ObservableObject {
     
     /// Загрузка файла на сервер для глубокого сканирования
     private func uploadForDeepScan(fileData: Data, metadata: FileMetadata) async -> ServerScanResult? {
+        logger.business("Uploading file for deep server scan: \(metadata.filename) (\(fileData.count) bytes)")
         log("📤 Отправка файла на сервер для сканирования")
         
         // TODO: Интеграция с APIService

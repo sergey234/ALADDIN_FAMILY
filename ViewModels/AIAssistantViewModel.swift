@@ -1,6 +1,9 @@
 import SwiftUI
 import Combine
 
+// Master Logger for AI assistant logging
+private let logger = MasterLogger.shared
+
 /// 🤖 AI Assistant View Model
 /// Логика для AI чата
 class AIAssistantViewModel: ObservableObject {
@@ -25,6 +28,7 @@ class AIAssistantViewModel: ObservableObject {
     }
     
     init() {
+        logger.business("Initializing AI Assistant ViewModel")
         loadInitialMessages()
     }
     
@@ -37,6 +41,7 @@ class AIAssistantViewModel: ObservableObject {
     }
     
     func sendMessage() {
+        logger.business("User sent message to AI assistant: \(currentMessage.count) characters")
         guard !currentMessage.isEmpty else { return }
 
         // ✅ ЗАДАЧА 67: Санитизация пользовательского ввода перед отправкой
