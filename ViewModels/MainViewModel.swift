@@ -1,6 +1,9 @@
 import SwiftUI
 import Combine
 
+// Master Logger for business logic logging
+private let logger = MasterLogger.shared
+
 // MARK: - Family Protection Status
 
 enum FamilyProtectionStatus: String, Codable {
@@ -81,6 +84,7 @@ class MainViewModel: ObservableObject {
     // MARK: - Init
     
     init(apiService: APIService = .shared, keychainManager: KeychainManager = .shared) {
+        logger.business("Initializing MainViewModel")
         self.apiService = apiService
         self.keychainManager = keychainManager
         // НЕ загружаем данные автоматически при инициализации - только по требованию
@@ -91,6 +95,7 @@ class MainViewModel: ObservableObject {
     
     /// ✅ ИНТЕГРАЦИЯ С API: Загрузка данных дашборда из реального API
     func loadDashboardData() {
+        logger.business("Loading dashboard data")
         // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ: Если уже загружается, пропускаем
         guard !isLoadingDashboard else {
             print("⚠️ MainViewModel: Загрузка дашборда уже выполняется, пропускаем")
@@ -254,6 +259,7 @@ class MainViewModel: ObservableObject {
     
     /// Переключение защиты сети
     func toggleNetworkProtection() {
+        logger.business("Toggling network protection")
         isNetworkProtectionEnabled.toggle()
         
         // Haptic feedback
@@ -408,13 +414,15 @@ class MainViewModel: ObservableObject {
     // MARK: - Private Methods
     
     private func connectNetworkProtection() {
+        logger.business("Connecting to network protection service")
         // В реальности: API вызов к сервису защиты сети
         #if DEBUG
         print("Connecting to Network Protection...")
         #endif
     }
-    
+
     private func disconnectNetworkProtection() {
+        logger.business("Disconnecting from network protection service")
         // В реальности: API вызов к сервису защиты сети
         #if DEBUG
         print("Disconnecting Network Protection...")

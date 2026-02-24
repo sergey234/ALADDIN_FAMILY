@@ -1,6 +1,9 @@
 import SwiftUI
 import Combine
 
+// Master Logger for family logic logging
+private let logger = MasterLogger.shared
+
 /// 👨‍👩‍👧‍👦 Family View Model
 /// Логика для экрана семьи
 /// Управляет списком членов семьи, их статусом, устройствами
@@ -34,6 +37,7 @@ class FamilyViewModel: ObservableObject {
     // MARK: - Init
     
     init() {
+        logger.business("Initializing FamilyViewModel")
         loadFamilyMembers()
     }
     
@@ -41,6 +45,7 @@ class FamilyViewModel: ObservableObject {
     
     /// ✅ ИСПРАВЛЕНО: Загрузка списка членов семьи с реального API
     func loadFamilyMembers() {
+        logger.business("Loading family members")
         isLoading = true
         errorMessage = nil
 
@@ -86,6 +91,7 @@ class FamilyViewModel: ObservableObject {
     
     /// ✅ ДОБАВЛЕНО: Загрузка статистики семьи
     private func loadFamilyStats() {
+        logger.business("Loading family statistics")
         apiService.getFamilyStats { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
@@ -102,6 +108,7 @@ class FamilyViewModel: ObservableObject {
     
     /// Добавить члена семьи
     func addFamilyMember() {
+        logger.business("Initiating add family member flow")
         print("Show add family member sheet")
     }
     

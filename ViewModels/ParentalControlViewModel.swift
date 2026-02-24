@@ -2,6 +2,9 @@ import Foundation
 import SwiftUI
 import Combine
 
+// Master Logger for parental control logging
+private let logger = MasterLogger.shared
+
 /**
  * 👶 Parental Control ViewModel
  * ViewModel для управления родительским контролем и 5 компонентами защиты детей
@@ -45,6 +48,7 @@ class ParentalControlViewModel: ObservableObject {
         statusService: ComponentStatusService = .shared,
         retryManager: RetryManager = .balanced()
     ) {
+        logger.business("Initializing ParentalControlViewModel")
         self.statusService = statusService
         self.retryManager = retryManager
         
@@ -60,6 +64,7 @@ class ParentalControlViewModel: ObservableObject {
     
     /// Загрузить статусы всех компонентов
     func loadComponentStatuses() async {
+        logger.business("Loading parental control component statuses")
 
         // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
         // Критичные компоненты загружаются первыми
@@ -101,6 +106,7 @@ class ParentalControlViewModel: ObservableObject {
     // MARK: - Toggle Methods
     
     func toggleSelfHarmDetection(_ newValue: Bool) {
+        logger.business("Toggling self-harm detection: \(newValue)")
         Task {
             await toggleComponent(
                 componentId: "self_harm_detection_agent",
@@ -206,6 +212,7 @@ class ParentalControlViewModel: ObservableObject {
     // MARK: - Child Management
     
     func loadChildren() {
+        logger.business("Loading children data for parental control")
         children = [
             Child(name: "Маша", age: 10, avatar: "👧", screenTimeToday: "2:45", threatsBlocked: 23),
             Child(name: "Петя", age: 7, avatar: "👦", screenTimeToday: "1:30", threatsBlocked: 8)
