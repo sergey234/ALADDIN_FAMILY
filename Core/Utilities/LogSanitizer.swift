@@ -70,7 +70,18 @@ class LogSanitizer {
 
         var result = input
         for pattern in patterns {
-            result = result.replacingOccurrences(of: pattern, with: maskCreditCard, options: .regularExpression)
+            // Находим все совпадения и маскируем каждое
+            let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive])
+            if let regex = regex {
+                let matches = regex.matches(in: result, options: [], range: NSRange(location: 0, length: result.count))
+                for match in matches.reversed() {
+                    if let range = Range(match.range, in: result) {
+                        let matchedText = String(result[range])
+                        let masked = maskCreditCard(matchedText)
+                        result = result.replacingOccurrences(of: matchedText, with: masked)
+                    }
+                }
+            }
         }
 
         return result
@@ -132,10 +143,10 @@ class LogSanitizer {
 
         // API ключи в заголовках и параметрах
         let apiKeyPatterns = [
-            #"x-api-key\s*:\s*\w+"#i,
-            #"authorization\s*:\s*bearer\s+\w+"#i,
-            #"api[_-]?key\s*[:=]\s*\w+"#i,
-            #"client[_-]?secret\s*[:=]\s*\w+"#i
+            #"x-api-key\s*:\s*\w+"#,
+            #"authorization\s*:\s*bearer\s+\w+"#,
+            #"api[_-]?key\s*[:=]\s*\w+"#,
+            #"client[_-]?secret\s*[:=]\s*\w+"#
         ]
 
         for pattern in apiKeyPatterns {

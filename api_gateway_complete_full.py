@@ -3,8 +3,13 @@
 ALADDIN API Gateway - ПОЛНАЯ ВЕРСИЯ со ВСЕМИ 101 ENDPOINT
 """
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from datetime import datetime, timedelta
+from typing import Optional
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 import sys
 import os
 
@@ -32,6 +37,244 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# =============================================================================
+# JWT АУТЕНТИФИКАЦИЯ
+# =============================================================================
+
+# JWT Configuration
+SECRET_KEY = "aladdin-jwt-secret-key-2026-production-ready"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+# OAuth2 scheme
+oauth2_scheme = HTTPBearer()
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    """Создание JWT токена"""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire, "iat": datetime.utcnow()})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_device(credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme)):
+    """Получение текущего устройства из JWT токена"""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+        device_id: str = payload.get("sub")
+        if device_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    return device_id
+
+def verify_password(plain_password, hashed_password):
+    """Проверка пароля"""
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password):
+    """Хэширование пароля"""
+    return pwd_context.hash(password)
+
+# JWT Authentication Middleware
+@app.middleware("http")
+async def jwt_authentication_middleware(request, call_next):
+    """Middleware для проверки JWT токенов"""
+    # Пропускаем auth эндпоинты
+    if request.url.path.startswith("/api/auth/"):
+        return await call_next(request)
+
+    # Пропускаем публичные эндпоинты
+    public_paths = ["/api/health", "/api/metrics/system", "/docs", "/redoc", "/openapi.json"]
+    if request.url.path in public_paths:
+        return await call_next(request)
+
+    # Проверяем Authorization header
+    authorization = request.headers.get("Authorization")
+    if not authorization or not authorization.startswith("Bearer "):
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Authorization header missing or invalid"}
+        )
+
+    try:
+        token = authorization.split(" ")[1]
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        # Добавляем пользователя в request state
+        request.state.user_id = payload.get("sub")
+        request.state.user_email = payload.get("email")
+    except JWTError:
+        from fastapi.responses import JSONResponse
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Invalid token"}
+        )
+
+    response = await call_next(request)
+    return response
+
+# =============================================================================
+# РОУТЕРЫ ИЗ МОДУЛЬНОЙ АРХИТЕКТУРЫ
+# =============================================================================
+
+# Импорт роутеров
+try:
+    from app.routers.referral_fixed import router as referral_router
+    REFERRAL_ROUTER_AVAILABLE = True
+    print("✅ Referral Router loaded")
+except ImportError as e:
+    print(f"❌ Referral Router not available: {e}")
+    REFERRAL_ROUTER_AVAILABLE = False
+
+try:
+    from security.api.routers.crash_detection_router import router as crash_detection_router
+    CRASH_DETECTION_ROUTER_AVAILABLE = True
+    print("✅ Crash Detection Router loaded")
+except ImportError as e:
+    print(f"❌ Crash Detection Router not available: {e}")
+    CRASH_DETECTION_ROUTER_AVAILABLE = False
+
+try:
+    from security.api.routers.ai_categories_router import router as ai_categories_router
+    AI_CATEGORIES_ROUTER_AVAILABLE = True
+    print("✅ AI Categories Router loaded")
+except ImportError as e:
+    print(f"❌ AI Categories Router not available: {e}")
+    AI_CATEGORIES_ROUTER_AVAILABLE = False
+
+try:
+    from security.api.routers.parental_control_router import router as parental_control_router
+    PARENTAL_CONTROL_ROUTER_AVAILABLE = True
+    print("✅ Parental Control Router loaded")
+except ImportError as e:
+    print(f"❌ Parental Control Router not available: {e}")
+    PARENTAL_CONTROL_ROUTER_AVAILABLE = False
+
+try:
+    from security.api.routers.dark_web_monitoring_router import router as dark_web_monitoring_router
+    DARK_WEB_ROUTER_AVAILABLE = True
+    print("✅ Dark Web Monitoring Router loaded")
+except ImportError as e:
+    print(f"❌ Dark Web Monitoring Router not available: {e}")
+    DARK_WEB_ROUTER_AVAILABLE = False
+
+try:
+    from security.api.routers.identity_theft_protection_router import router as identity_theft_router
+    IDENTITY_THEFT_ROUTER_AVAILABLE = True
+    print("✅ Identity Theft Protection Router loaded")
+except ImportError as e:
+    print(f"❌ Identity Theft Protection Router not available: {e}")
+    IDENTITY_THEFT_ROUTER_AVAILABLE = False
+
+try:
+    from security.api.routers.data_cleanup_router import router as data_cleanup_router
+    DATA_CLEANUP_ROUTER_AVAILABLE = True
+    print("✅ Data Cleanup Router loaded")
+except ImportError as e:
+    print(f"❌ Data Cleanup Router not available: {e}")
+    DATA_CLEANUP_ROUTER_AVAILABLE = False
+
+try:
+    from security.api.routers.driving_reports_router import router as driving_reports_router
+    DRIVING_REPORTS_ROUTER_AVAILABLE = True
+    print("✅ Driving Reports Router loaded")
+except ImportError as e:
+    print(f"❌ Driving Reports Router not available: {e}")
+    DRIVING_REPORTS_ROUTER_AVAILABLE = False
+
+try:
+    from security.api.routers.location_bubble_router import router as location_bubble_router
+    LOCATION_BUBBLE_ROUTER_AVAILABLE = True
+    print("✅ Location Bubble Router loaded")
+except ImportError as e:
+    print(f"❌ Location Bubble Router not available: {e}")
+    LOCATION_BUBBLE_ROUTER_AVAILABLE = False
+
+try:
+    from security.api.routers.notifications_router import router as notifications_router
+    NOTIFICATIONS_ROUTER_AVAILABLE = True
+    print("✅ Notifications Router loaded")
+except ImportError as e:
+    print(f"❌ Notifications Router not available: {e}")
+    NOTIFICATIONS_ROUTER_AVAILABLE = False
+
+try:
+    from security.api.routers.roadside_assistance_router import router as roadside_assistance_router
+    ROADSIDE_ASSISTANCE_ROUTER_AVAILABLE = True
+    print("✅ Roadside Assistance Router loaded")
+except ImportError as e:
+    print(f"❌ Roadside Assistance Router not available: {e}")
+    ROADSIDE_ASSISTANCE_ROUTER_AVAILABLE = False
+
+try:
+    from security.api.routers.anti_tracker_router import router as anti_tracker_router
+    ANTI_TRACKER_ROUTER_AVAILABLE = True
+    print("✅ Anti Tracker Router loaded")
+except ImportError as e:
+    print(f"❌ Anti Tracker Router not available: {e}")
+    ANTI_TRACKER_ROUTER_AVAILABLE = False
+
+# Подключение роутеров к приложению
+if REFERRAL_ROUTER_AVAILABLE:
+    app.include_router(referral_router)
+    print("✅ Referral Router connected")
+
+if CRASH_DETECTION_ROUTER_AVAILABLE:
+    app.include_router(crash_detection_router)
+    print("✅ Crash Detection Router connected")
+
+if AI_CATEGORIES_ROUTER_AVAILABLE:
+    app.include_router(ai_categories_router)
+    print("✅ AI Categories Router connected")
+
+if PARENTAL_CONTROL_ROUTER_AVAILABLE:
+    app.include_router(parental_control_router)
+    print("✅ Parental Control Router connected")
+
+if DARK_WEB_ROUTER_AVAILABLE:
+    app.include_router(dark_web_monitoring_router)
+    print("✅ Dark Web Monitoring Router connected")
+
+if IDENTITY_THEFT_ROUTER_AVAILABLE:
+    app.include_router(identity_theft_router)
+    print("✅ Identity Theft Protection Router connected")
+
+if DATA_CLEANUP_ROUTER_AVAILABLE:
+    app.include_router(data_cleanup_router)
+    print("✅ Data Cleanup Router connected")
+
+if DRIVING_REPORTS_ROUTER_AVAILABLE:
+    app.include_router(driving_reports_router)
+    print("✅ Driving Reports Router connected")
+
+if LOCATION_BUBBLE_ROUTER_AVAILABLE:
+    app.include_router(location_bubble_router)
+    print("✅ Location Bubble Router connected")
+
+if NOTIFICATIONS_ROUTER_AVAILABLE:
+    app.include_router(notifications_router)
+    print("✅ Notifications Router connected")
+
+if ROADSIDE_ASSISTANCE_ROUTER_AVAILABLE:
+    app.include_router(roadside_assistance_router)
+    print("✅ Roadside Assistance Router connected")
+
+if ANTI_TRACKER_ROUTER_AVAILABLE:
+    app.include_router(anti_tracker_router)
+    print("✅ Anti Tracker Router connected")
+
 @app.get("/")
 async def root():
     return {"service": "ALADDIN API Gateway", "version": "1.0.0", "status": "running"}
@@ -51,7 +294,7 @@ async def health():
 # =============================================================================
 
 @app.get("/api/components/status/{component_id}")
-async def get_component_status(component_id: str):
+async def get_component_status(component_id: str, current_user: str = Depends(get_current_device)):
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
         success, result, message = sfm_adapter.execute_function("get_component_status", {"component_id": component_id})
         return result if success else {"error": message, "component_id": component_id}
@@ -264,7 +507,7 @@ async def update_network_vpn_config(config: dict):
 
 # AI Categories (4 endpoints)
 @app.get("/api/ai/categories/stats")
-async def get_ai_categories_stats(child_id: str = None):
+async def get_ai_categories_stats(child_id: str = None, current_user: str = Depends(get_current_device)):
     params = {"child_id": child_id} if child_id else {}
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
         success, result, message = sfm_adapter.execute_function("get_ai_categories_stats", params)
@@ -407,6 +650,23 @@ async def start_darkweb_scan():
     else:
         return {"action": "scan_started", "scan_id": "mock_scan_123", "source": "mock"}
 
+
+@app.get("/api/darkweb/results")
+async def get_darkweb_results(limit: int = 50):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_darkweb_results", {"limit": limit})
+        return result if success else {"error": message}
+    else:
+        return {"results": [], "total": 0, "limit": limit, "source": "mock"}
+
+@app.get("/api/darkweb/history")
+async def get_darkweb_history(limit: int = 100):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_darkweb_history", {"limit": limit})
+        return result if success else {"error": message}
+    else:
+        return {"history": [], "source": "mock"}
+
 # Identity Theft (4 endpoints)
 @app.get("/api/identity/attempts")
 async def get_identity_attempts(action: str = None, severity: str = None):
@@ -450,6 +710,32 @@ async def add_to_identity_whitelist(data: dict):
         return result if success else {"error": message}
     else:
         return {"action": "whitelist", "status": "mock_success", "source": "mock"}
+
+
+@app.get("/api/identity/results")
+async def get_identity_results(limit: int = 50):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_identity_results", {"limit": limit})
+        return result if success else {"error": message}
+    else:
+        return {"results": [], "total": 0, "limit": limit, "source": "mock"}
+
+@app.get("/api/identity/alerts")
+async def get_identity_alerts(severity: str = None, limit: int = 20):
+    params = {"limit": limit}
+    if severity: params["severity"] = severity
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_identity_alerts", params)
+        return result if success else {"error": message}
+        return {"alerts": [], "total": 0, "severity": severity, "source": "mock"}
+
+@app.put("/api/identity/settings")
+async def update_identity_settings(settings: dict):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("update_identity_settings", settings)
+        return result if success else {"error": message}
+    else:
+        return {"action": "settings_updated", "source": "mock"}
 
 # =============================================================================
 # ГРУППА 4: ЗАЩИТА (25 endpoints)
@@ -596,6 +882,74 @@ async def get_antitracker_reports(limit: int = 20):
         return result if success else {"error": message, "source": "mock"}
     else:
         return {"reports": [], "limit": limit, "source": "mock"}
+
+
+# Protection (8 endpoints)
+@app.get("/api/protection/status")
+async def get_protection_status(current_user: str = Depends(get_current_device)):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_protection_status", {})
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"status": "active", "threats_blocked": 0, "last_scan": None, "source": "mock"}
+
+@app.put("/api/protection/settings")
+async def update_protection_settings(settings: dict, current_user: str = Depends(get_current_device)):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("update_protection_settings", settings)
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"action": "settings_updated", "source": "mock"}
+
+@app.post("/api/protection/scan")
+async def start_protection_scan(current_user: str = Depends(get_current_device)):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("start_protection_scan", {})
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"action": "scan_started", "scan_id": "mock_scan_123", "source": "mock"}
+
+@app.get("/api/protection/threats")
+async def get_protection_threats(limit: int = 50):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_protection_threats", {"limit": limit})
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"threats": [], "limit": limit, "source": "mock"}
+
+@app.post("/api/protection/quarantine")
+async def quarantine_protection_threat(data: dict):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("quarantine_protection_threat", data)
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"action": "quarantined", "source": "mock"}
+
+@app.get("/api/protection/reports")
+async def get_protection_reports(limit: int = 20):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_protection_reports", {"limit": limit})
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"reports": [], "limit": limit, "source": "mock"}
+
+@app.put("/api/protection/rules")
+async def update_protection_rules(rules: dict):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("update_protection_rules", rules)
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"action": "rules_updated", "source": "mock"}
+
+@app.get("/api/protection/logs")
+async def get_protection_logs(limit: int = 100):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_protection_logs", {"limit": limit})
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"logs": [], "limit": limit, "source": "mock"}
+
+
 
 # Parental Control (5 endpoints)
 @app.get("/api/parental/stats")
@@ -784,7 +1138,7 @@ async def update_analytics_settings(settings: dict):
 
 # Subscription (6 endpoints)
 @app.get("/api/subscription/status")
-async def get_subscription_status():
+async def get_subscription_status(current_user: str = Depends(get_current_device)):
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
         success, result, message = sfm_adapter.execute_function("get_subscription_status", {})
         return result if success else {"error": message, "source": "mock"}
@@ -833,20 +1187,98 @@ async def update_subscription_payment_method(data: dict):
 
 # Register/Login (6 endpoints)
 @app.post("/api/auth/register")
-async def register_user(data: dict):
+async def register_device(data: dict):
+    """Регистрация устройства и возврат JWT токена"""
+    device_id = data.get("device_id")
+    device_type = data.get("device_type", "mobile")
+    app_version = data.get("app_version", "1.0.0")
+
+    if not device_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Device ID is required"
+        )
+
+    # В реальном приложении здесь сохранение device_id в БД
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-        success, result, message = sfm_adapter.execute_function("register_user", data)
-        return result if success else {"error": message, "source": "mock"}
+        success, result, message = sfm_adapter.execute_function("register_device", {
+            "device_id": device_id,
+            "device_type": device_type,
+            "app_version": app_version,
+            "registered_at": datetime.utcnow().isoformat()
+        })
+        if success:
+            user_id = result.get("device_id", device_id)
+            access_token = create_access_token(data={"sub": user_id, "device_type": device_type})
+            return {
+                "access_token": access_token,
+                "token_type": "bearer",
+                "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+                "device_id": user_id,
+                "message": "Device registered successfully"
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=message
+            )
     else:
-        return {"action": "register", "user_id": "mock_user_123", "source": "mock"}
+        # Mock регистрация для тестирования
+        user_id = device_id
+        access_token = create_access_token(data={"sub": user_id, "device_type": device_type})
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            "device_id": user_id,
+            "message": "Device registered successfully (mock)"
+        }
 
 @app.post("/api/auth/login")
-async def login_user(data: dict):
+async def authenticate_device(data: dict):
+    """Аутентификация устройства и возврат JWT токена"""
+    device_id = data.get("device_id")
+    device_token = data.get("device_token")
+
+    if not device_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Device ID is required"
+        )
+
+    # В реальном приложении здесь проверка device_id в БД
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-        success, result, message = sfm_adapter.execute_function("login_user", data)
-        return result if success else {"error": message, "source": "mock"}
+        success, result, message = sfm_adapter.execute_function("authenticate_device", {
+            "device_id": device_id,
+            "device_token": device_token
+        })
+        if success:
+            user_id = result.get("device_id", device_id)
+            device_type = result.get("device_type", "mobile")
+            access_token = create_access_token(data={"sub": user_id, "device_type": device_type})
+            return {
+                "access_token": access_token,
+                "token_type": "bearer",
+                "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+                "device_id": user_id
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid device credentials"
+            )
     else:
-        return {"action": "login", "token": "mock_token_123", "source": "mock"}
+        # Mock аутентификация для тестирования
+        # Любое device_id принимается
+        user_id = device_id
+        device_type = "mobile"
+        access_token = create_access_token(data={"sub": user_id, "device_type": device_type})
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            "device_id": user_id
+        }
 
 @app.post("/api/auth/logout")
 async def logout_user():
@@ -921,6 +1353,42 @@ async def run_system_maintenance():
     else:
         return {"action": "maintenance_started", "task_id": "mock_task_123", "source": "mock"}
 
+
+
+# Metrics (4 endpoints)
+@app.get("/api/metrics/system")
+async def get_system_metrics():
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_system_metrics", {})
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"cpu_usage": 0.0, "memory_usage": 0.0, "disk_usage": 0.0, "network_traffic": 0.0, "source": "mock"}
+
+@app.get("/api/metrics/performance")
+async def get_performance_metrics():
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_performance_metrics", {})
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"response_time": 0.0, "throughput": 0.0, "error_rate": 0.0, "uptime": 100.0, "source": "mock"}
+
+@app.post("/api/metrics/log")
+async def log_system_metrics(data: dict):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("log_system_metrics", data)
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"action": "logged", "timestamp": "2026-02-25T13:53:45", "source": "mock"}
+
+@app.get("/api/metrics/dashboard")
+async def get_metrics_dashboard():
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_metrics_dashboard", {})
+        return result if success else {"error": message, "source": "mock"}
+    else:
+        return {"dashboard_data": {}, "charts": [], "alerts": [], "source": "mock"}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="127.0.0.1", port=8002)
@@ -950,7 +1418,7 @@ def add_group3_endpoints():
 
 # AI Categories (4 endpoints)
 @app.get("/api/ai/categories/stats")
-async def get_ai_categories_stats(child_id: str = None):
+async def get_ai_categories_stats(child_id: str = None, current_user: str = Depends(get_current_device)):
     params = {"child_id": child_id} if child_id else {}
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
         success, result, message = sfm_adapter.execute_function("get_ai_categories_stats", params)
@@ -1738,7 +2206,7 @@ async def update_analytics_settings(settings: dict):
 
 # Subscription (6 endpoints)
 @app.get("/api/subscription/status")
-async def get_subscription_status():
+async def get_subscription_status(current_user: str = Depends(get_current_device)):
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
         success, result, message = sfm_adapter.execute_function("get_subscription_status", {})
         return result if success else {"error": message, "source": "mock"}
@@ -1787,20 +2255,98 @@ async def update_subscription_payment_method(data: dict):
 
 # Register/Login (6 endpoints)
 @app.post("/api/auth/register")
-async def register_user(data: dict):
+async def register_device(data: dict):
+    """Регистрация устройства и возврат JWT токена"""
+    device_id = data.get("device_id")
+    device_type = data.get("device_type", "mobile")
+    app_version = data.get("app_version", "1.0.0")
+
+    if not device_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Device ID is required"
+        )
+
+    # В реальном приложении здесь сохранение device_id в БД
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-        success, result, message = sfm_adapter.execute_function("register_user", data)
-        return result if success else {"error": message, "source": "mock"}
+        success, result, message = sfm_adapter.execute_function("register_device", {
+            "device_id": device_id,
+            "device_type": device_type,
+            "app_version": app_version,
+            "registered_at": datetime.utcnow().isoformat()
+        })
+        if success:
+            user_id = result.get("device_id", device_id)
+            access_token = create_access_token(data={"sub": user_id, "device_type": device_type})
+            return {
+                "access_token": access_token,
+                "token_type": "bearer",
+                "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+                "device_id": user_id,
+                "message": "Device registered successfully"
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=message
+            )
     else:
-        return {"action": "register", "user_id": "mock_user_123", "source": "mock"}
+        # Mock регистрация для тестирования
+        user_id = device_id
+        access_token = create_access_token(data={"sub": user_id, "device_type": device_type})
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            "device_id": user_id,
+            "message": "Device registered successfully (mock)"
+        }
 
 @app.post("/api/auth/login")
-async def login_user(data: dict):
+async def authenticate_device(data: dict):
+    """Аутентификация устройства и возврат JWT токена"""
+    device_id = data.get("device_id")
+    device_token = data.get("device_token")
+
+    if not device_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Device ID is required"
+        )
+
+    # В реальном приложении здесь проверка device_id в БД
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-        success, result, message = sfm_adapter.execute_function("login_user", data)
-        return result if success else {"error": message, "source": "mock"}
+        success, result, message = sfm_adapter.execute_function("authenticate_device", {
+            "device_id": device_id,
+            "device_token": device_token
+        })
+        if success:
+            user_id = result.get("device_id", device_id)
+            device_type = result.get("device_type", "mobile")
+            access_token = create_access_token(data={"sub": user_id, "device_type": device_type})
+            return {
+                "access_token": access_token,
+                "token_type": "bearer",
+                "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+                "device_id": user_id
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid device credentials"
+            )
     else:
-        return {"action": "login", "token": "mock_token_123", "source": "mock"}
+        # Mock аутентификация для тестирования
+        # Любое device_id принимается
+        user_id = device_id
+        device_type = "mobile"
+        access_token = create_access_token(data={"sub": user_id, "device_type": device_type})
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            "device_id": user_id
+        }
 
 @app.post("/api/auth/logout")
 async def logout_user():
@@ -1833,6 +2379,24 @@ async def update_user_profile(data: dict):
         return result if success else {"error": message, "source": "mock"}
     else:
         return {"action": "update_profile", "source": "mock"}
+
+
+# Privacy Reports (6 endpoints)
+@app.get("/api/privacy/audit")
+async def get_privacy_audit():
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("get_privacy_audit", {})
+        return result if success else {"error": message}
+    else:
+        return {"audit_status": "passed", "last_audit": None, "findings": [], "source": "mock"}
+
+@app.put("/api/privacy/settings")
+async def update_privacy_settings(settings: dict):
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("update_privacy_settings", settings)
+        return result if success else {"error": message}
+    else:
+        return {"action": "settings_updated", "source": "mock"}
 
 # System (5 endpoints)
 @app.get("/api/system/info")

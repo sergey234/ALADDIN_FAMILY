@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import UIKit
 
 /**
  * 🔍 Visual Logger - для отображения логов на экране
@@ -11,6 +12,18 @@ class VisualLogger: ObservableObject {
     @Published var logs: [LogEntry] = []
     @Published var isVisible: Bool = true
     @Published var showErrorOnly: Bool = false
+    @Published var showCopySuccess: Bool = false
+
+    /// Публичный доступ к логам для отладки (можно просмотреть в Xcode debugger)
+    public var allLogsText: String {
+        logs.map { "[\($0.formattedTime)] [\($0.level.rawValue)] \($0.message)" }
+            .joined(separator: "\n")
+    }
+
+    /// Получить все логи для анализа
+    func getLogs() -> String {
+        return allLogsText
+    }
     
     private let maxLogs = 50
     private var logQueue = DispatchQueue(label: "com.aladdin.visualLogger", qos: .utility)
@@ -78,6 +91,24 @@ class VisualLogger: ObservableObject {
             self.logs.removeAll()
         }
     }
+
+    func copyLogsToClipboard() {
+        let logText = logs.map { entry in
+            "[\(entry.formattedTime)] [\(entry.level.rawValue)] \(entry.message)"
+        }.joined(separator: "\n")
+
+        DispatchQueue.main.async {
+            UIPasteboard.general.string = logText
+            self.showCopySuccess = true
+            // Добавим временный лог о копировании
+            self.log("📋 Logs copied to clipboard (\(self.logs.count) entries)", level: .success)
+
+            // Скрываем подтверждение через 2 секунды
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                self.showCopySuccess = false
+            }
+        }
+    }
 }
 
 // MARK: - Visual Logger View
@@ -93,14 +124,34 @@ struct VisualLogView: View {
                     .font(.headline)
                     .foregroundColor(.white)
                 Spacer()
-                Button(action: { logger.clear() }) {
-                    Text("Очистить")
-                        .font(.caption)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.red)
-                        .cornerRadius(4)
+                HStack(spacing: 4) {
+                    if logger.showCopySuccess {
+                        Text("✅ Скопировано!")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.white.opacity(0.2))
+                            .cornerRadius(4)
+                    }
+                    Button(action: { logger.copyLogsToClipboard() }) {
+                        Text("Копировать")
+                            .font(.caption)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.blue)
+                            .cornerRadius(4)
+                    }
+                    Button(action: { logger.clear() }) {
+                        Text("Очистить")
+                            .font(.caption)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.red)
+                            .cornerRadius(4)
+                    }
                 }
                 Button(action: { logger.isVisible.toggle() }) {
                     Image(systemName: logger.isVisible ? "eye.slash" : "eye")

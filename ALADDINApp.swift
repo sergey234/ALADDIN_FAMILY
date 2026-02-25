@@ -112,6 +112,14 @@ class UserProfileManager {
 
 @main
 struct ALADDINApp: App {
+
+    // 🔍 ТЕСТОВОЕ ЛОГИРОВАНИЕ - проверяем работу при старте приложения
+    private let appStartLogger: Void = {
+        print("🚀 ALADDIN_APP: Application starting...")
+        print("🚀 ALADDIN_APP: Testing logger initialization...")
+        return ()
+    }()
+
     // КРИТИЧНО: Инициализация NavigationManager
     @StateObject private var navigationManager = NavigationManager()
     // ✅ Добавляем LocalizationManager
@@ -277,6 +285,10 @@ struct ALADDINApp: App {
             // ✅ Основное приложение
             mainAppContent()
             .onAppear {
+                // 🔍 ТЕСТОВОЕ ЛОГИРОВАНИЕ - проверяем onAppear
+                print("🎯 ALADDIN_APP: onAppear triggered - testing logger")
+                MasterLogger.shared.business("ALADDINApp onAppear - testing logging system")
+
                 // Запускаем инициализацию при появлении
                 Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager)
                 print("✅ ALADDINApp: Инициализация завершена")
@@ -617,6 +629,9 @@ extension ALADDINApp {
 
     // MARK: - Navigation Initialization
     private static func initializeNavigation(navigationManager: NavigationManager, localizationManager: LocalizationManager) {
+        // 📊 МЕТРИКИ ПРОИЗВОДИТЕЛЬНОСТИ: Замер времени инициализации
+        let startTime = Date()
+
         // ✅ КРИТИЧНО: ПЕРВЫЙ ЗАПУСК - СБРАСЫВАЕМ ВСЕ СОСТОЯНИЕ
         if !ALADDINApp.hasInitializedNavigation {
             print("🛠️ [ALADDINApp.initializeNavigation] Первый запуск - сбрасываем состояние")
@@ -647,6 +662,21 @@ extension ALADDINApp {
         _ = UserProfileManager.shared
         print("✅ UserProfileManager initialized and profile loading started")
 
+        // 🔔 ИНИЦИАЛИЗИРУЕМ PUSH УВЕДОМЛЕНИЯ
+        // NotificationManager инициализируется для обработки push уведомлений
+        _ = NotificationManager.shared
+        MasterLogger.shared.business("NotificationManager initialized for push notifications")
+
+        // Запрашиваем разрешение на push уведомления (асинхронно, не блокирует UI)
+        Task {
+            let granted = await NotificationManager.shared.requestAuthorization()
+            if granted {
+                MasterLogger.shared.business("Push notifications authorized by user")
+            } else {
+                MasterLogger.shared.business("Push notifications denied by user")
+            }
+        }
+
         let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
         print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")
 
@@ -660,6 +690,10 @@ extension ALADDINApp {
             print("🟢 ONBOARDING: Пройден - переходим на главный экран")
             navigationManager.currentScreen = .main
         }
+
+        // 📊 МЕТРИКИ ПРОИЗВОДИТЕЛЬНОСТИ: Логируем время инициализации
+        let initTime = Date().timeIntervalSince(startTime)
+        MasterLogger.shared.performance("App initialization completed in \(String(format: "%.2f", initTime)) seconds")
     }
 
     /// Автоматически проверяет и удаляет debug токены при запуске

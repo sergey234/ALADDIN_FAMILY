@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import os.log
+import UIKit
 
 /**
  * 🎯 Master Logger - Единая система логирования для всего приложения
@@ -126,12 +127,16 @@ class MasterLogger {
         let fullMessage = "[\(category.rawValue)] \(message)"
 
         // 1. SettingsDiagnosticsLogger (основное логирование)
-        settingsLogger.log(
-            level: level.settingsDiagnosticsLevel,
-            section: category.rawValue,
-            function: function,
-            message: fullMessage
-        )
+        switch level {
+        case .trace, .debug, .info:
+            settingsLogger.logFunction(function, message: fullMessage, section: category.rawValue)
+        case .warn:
+            settingsLogger.logFunction(function, message: "WARNING: \(fullMessage)", section: category.rawValue)
+        case .error:
+            settingsLogger.logError(function, message: fullMessage, section: category.rawValue)
+        case .fatal:
+            settingsLogger.logCritical(function, message: fullMessage, section: category.rawValue)
+        }
 
         // 2. Visual Logger (если включено)
         if enableVisualLogging {
@@ -168,9 +173,14 @@ class MasterLogger {
         log(.info, category: .business, message: message, function: function, file: file, line: line)
     }
 
+    /// Логирование производительности
+    func performance(_ message: String, function: String = #function, file: String = #file, line: Int = #line) {
+        log(.info, category: .performance, message: message, function: function, file: file, line: line)
+    }
+
     /// Логирование предупреждений
-    func warn(_ message: String, function: String = #function, file: String = #file, line: line) {
-        log(.warn, category: .error, message: message, function: function, file: file, line: line)
+    func warn(_ message: String, function: String = #function, file: String = #file, line: Int = #line) {
+        log(.warn, category: .performance, message: message, function: function, file: file, line: line)
     }
 
     /// Логирование ошибок
@@ -221,6 +231,21 @@ class MasterLogger {
         return settingsLogger.exportLogs()
     }
 
+    /// Получить все логи для анализа (включая визуальные)
+    func getAllLogs() -> String {
+        var allLogs = settingsLogger.exportLogs()
+
+        // Добавляем визуальные логи если они включены
+        if enableVisualLogging {
+            let visualLogs = visualLogger.getLogs()
+            if !visualLogs.isEmpty {
+                allLogs += "\n\n=== VISUAL LOGS ===\n" + visualLogs
+            }
+        }
+
+        return allLogs
+    }
+
     /// Экспорт логов в файл
     func exportLogsToFile() -> URL? {
         return settingsLogger.exportLogsToFile()
@@ -241,6 +266,13 @@ class MasterLogger {
     /// Получить VisualLogView для отображения
     var visualLogView: some View {
         VisualLogView()
+    }
+
+    /// Получить все логи из Visual Logger в текстовом формате
+    func getVisualLogsText() -> String {
+        return visualLogger.logs.map { entry in
+            "[\(entry.formattedTime)] [\(entry.level.rawValue)] \(entry.message)"
+        }.joined(separator: "\n")
     }
 }
 

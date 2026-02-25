@@ -1,0 +1,15 @@
+/* Begin PBXBuildFile section */
+		123456789012345678901234567890123456789012 /* IntegrationTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123456789012345678901234567890123456789013 /* IntegrationTestView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		123456789012345678901234567890123456789013 /* IntegrationTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntegrationTestView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+				123456789012345678901234567890123456789013 /* IntegrationTestView.swift */,
+/* End PBXGroup section */
+
+/* Begin PBXSourcesBuildPhase section */
+				123456789012345678901234567890123456789012 /* IntegrationTestView.swift in Sources */,
+/* End PBXSourcesBuildPhase section */

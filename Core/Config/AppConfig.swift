@@ -416,6 +416,22 @@ struct AppConfig {
         static let crashDetectionStop = "/api/crash-detection/stop"
         static let crashDetectionData = "/api/crash-detection/data"
         static let crashDetectionStatus = "/api/crash-detection/status"
+        static let crashDetectionSettingsUpdate = "/api/crash-detection/settings/update"
+        static let crashDetectionHistory = "/api/crash-detection/history"
+
+        // System Management
+        static let systemHealth = "/api/system/health"
+        static let systemInfo = "/api/system/info"
+        static let systemMetrics = "/api/system/metrics"
+        static let systemStatus = "/api/system/status"
+        static let systemBackup = "/api/system/backup"
+        static let systemBackupStatus = "/api/system/backup/status"
+
+        // Notifications
+        static let notificationsCategories = "/api/notifications/categories"
+        static let notificationsBulkMarkRead = "/api/notifications/bulk-mark-read"
+        static let notificationsArchive = "/api/notifications/archive"
+        static let notificationsStats = "/api/notifications/stats"
 
         // Location & Privacy
         static let locationBubble = "/reports/privacy/location/bubble"

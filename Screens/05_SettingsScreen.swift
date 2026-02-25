@@ -18,6 +18,14 @@ typealias Language = String
 struct SettingsScreen: View {
     @StateObject private var viewModel: SettingsViewModel
 
+    // ТЕСТОВЫЙ ЛОГ - проверяем инициализацию
+    private let testLogger: Void = {
+        print("🧪 SETTINGS_SCREEN: Struct initialized - testing logger")
+        logger.screenLoad("SettingsScreen")
+        print("🧪 SETTINGS_SCREEN: Logger called - should see this in Xcode")
+        return ()
+    }()
+
     // Конструктор с dependency injection
     init(viewModel: SettingsViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -123,7 +131,9 @@ struct SettingsScreen: View {
                 
                     // Edit Button
                 Button(action: {
+                        print("🧪 DIRECT PRINT: Edit Profile button tapped")
                         logger.buttonTap("Edit Profile", screen: "Settings")
+                        print("🧪 DIRECT PRINT: Logger called for Edit Profile")
                         viewModel.showProfileEdit = true
                     }) {
                         HStack {
@@ -485,99 +495,18 @@ struct SettingsScreen: View {
 
                 Divider()
 
-                // Privacy Policy
-                Button(action: {
-                    viewModel.showPrivacyPolicy = true
-                }) {
-                    HStack {
-                        Image(systemName: "hand.raised.fill")
-                            .foregroundColor(.secondary)
-                            .frame(width: 24)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(viewModel.localizedStrings.privacyPolicy)
-                                .foregroundColor(.primary)
-                            Text(viewModel.localizedStrings.privacyPolicySubtitle)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                    }
+                // API Testing - упрощенная версия
+                Text("🧪 API Тестирование")
+                    .font(.headline)
+                    .foregroundColor(.primaryBlue)
                     .padding(Spacing.m)
-                }
-
-                Divider()
-
-                // Terms of Service
-                Button(action: {
-                    viewModel.showTermsOfService = true
-                }) {
-                    HStack {
-                        Image(systemName: "doc.text.fill")
-                            .foregroundColor(.secondary)
-                            .frame(width: 24)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(viewModel.localizedStrings.termsOfService)
-                                .foregroundColor(.primary)
-                            Text(viewModel.localizedStrings.termsOfServiceSubtitle)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
+                    .background(Color.primaryBlue.opacity(0.1))
+                    .cornerRadius(12)
+                    .onTapGesture {
+                        print("🧪 API TESTING BUTTON TAPPED!")
+                        viewModel.showIntegrationTest = true
                     }
-                    .padding(Spacing.m)
-                }
 
-                Divider()
-
-                // Personal Data Consent
-                Button(action: {
-                    viewModel.showPrivacyPolicy = true
-                }) {
-                    HStack {
-                        Image(systemName: "checkmark.shield.fill")
-                            .foregroundColor(.secondary)
-                            .frame(width: 24)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text("Согласие на обработку ПДн")
-                                .foregroundColor(.primary)
-                            Text(viewModel.consentAccepted ? "Предоставлено" : "Управление")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(Spacing.m)
-                }
-
-                Divider()
-
-                // Share App
-                Button(action: {
-                    viewModel.showShareSheet = true
-                }) {
-                    HStack {
-                        Image(systemName: "square.and.arrow.up.fill")
-                            .foregroundColor(.secondary)
-                            .frame(width: 24)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(viewModel.localizedStrings.shareApp)
-                                .foregroundColor(.primary)
-                            Text(viewModel.localizedStrings.shareAppSubtitle)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(Spacing.m)
-                }
             }
             .background(Color.secondary.opacity(0.05))
             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -671,6 +600,9 @@ struct SettingsScreen: View {
         .sheet(isPresented: $viewModel.showVoiceControl) {
             VoiceControlView()
         }
+        .sheet(isPresented: $viewModel.showIntegrationTest) {
+            IntegrationTestModal()
+        }
         .sheet(isPresented: $viewModel.showChildProtectionCompliance) {
             ComplianceView(section: .childProtection)
         }
@@ -692,7 +624,7 @@ struct SettingsScreen: View {
         "\(value)%"
     }
 
-    private func settingsButton(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
+    private func settingsButton(_ icon: String, _ title: String, _ subtitle: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack(spacing: Spacing.s) {
                 // ✅ Фиксированная ширина иконки для выравнивания
@@ -733,6 +665,7 @@ struct SettingsScreen: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title), \(subtitle)")
+        .accessibilityAddTraits(.isButton)
     }
 
     private func settingRow(
@@ -915,6 +848,172 @@ class MockPositioningService {
     var currentRegionName: String = "Russia"
     func saveSelectedSystem(_ system: PositioningSystem) {}
 }
+
+// MARK: - Integration Test Modal
+
+struct IntegrationTestModal: View {
+    @StateObject private var testViewModel = SimpleAPITestViewModel()
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 20) {
+                    Text("🧪 ИНТЕГРАЦИЯ API")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .padding()
+
+                    Text("Тестирование 236 эндпоинтов")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    // Прогресс
+                    ProgressView(value: testViewModel.progress, total: 10)
+                        .padding(.horizontal)
+
+                    Text("\(Int(testViewModel.progress))/10 функций")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    // Результаты
+                    VStack(spacing: 10) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            HStack {
+                                Text("📊 РЕЗУЛЬТАТЫ ТЕСТИРОВАНИЯ")
+                                    .font(.headline)
+                                    .foregroundColor(.primaryBlue)
+
+                                Spacer()
+                            }
+
+                            Text("Файлы сохраняются в Documents: api_test_results_*.txt и api_test_export_*.json")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.leading)
+                        }
+
+                        HStack {
+
+                            Button(action: {
+                                // Вывод в консоль Xcode
+                                print("🧪 === РЕЗУЛЬТАТЫ API ТЕСТИРОВАНИЯ ===")
+                                print(testViewModel.testResults)
+                                print("🧪 === КОНЕЦ РЕЗУЛЬТАТОВ ===")
+                            }) {
+                                Label("Вывести в консоль", systemImage: "terminal")
+                                    .font(.caption)
+                                    .foregroundColor(.blue)
+                            }
+
+                            Button(action: {
+                                // Копирование в буфер обмена
+                                UIPasteboard.general.string = testViewModel.testResults
+                                print("🧪 Результаты скопированы в буфер обмена!")
+                            }) {
+                                Label("Копировать", systemImage: "doc.on.doc")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                            }
+
+                            Button(action: {
+                                // Сохранение в файл
+                                let fileName = "api_test_results_\(Date().timeIntervalSince1970).txt"
+                                let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(fileName)
+
+                                do {
+                                    try testViewModel.testResults.write(to: fileURL, atomically: true, encoding: .utf8)
+                                    print("🧪 Результаты сохранены в файл: \(fileName)")
+                                    print("🧪 Путь: \(fileURL.path)")
+                                } catch {
+                                    print("🧪 Ошибка сохранения файла: \(error.localizedDescription)")
+                                }
+                            }) {
+                                Label("Сохранить в файл", systemImage: "square.and.arrow.down")
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                            }
+
+                            Button(action: {
+                                // Экспорт в JSON
+                                let timestamp = Date().timeIntervalSince1970
+                                let jsonData: [String: Any] = [
+                                    "export_timestamp": timestamp,
+                                    "test_date": DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .medium),
+                                    "server": "149.154.65.180:8002",
+                                    "results": testViewModel.testResults,
+                                    "success_count": testViewModel.successCount,
+                                    "error_count": testViewModel.errorCount,
+                                    "progress": testViewModel.progress
+                                ]
+
+                                do {
+                                    let jsonData = try JSONSerialization.data(withJSONObject: jsonData, options: .prettyPrinted)
+                                    let fileName = "api_test_export_\(Int(timestamp)).json"
+                                    let fileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(fileName)
+
+                                    try jsonData.write(to: fileURL)
+                                    print("🧪 Результаты экспортированы в JSON: \(fileName)")
+                                    print("🧪 Путь: \(fileURL.path)")
+                                } catch {
+                                    print("🧪 Ошибка экспорта JSON: \(error.localizedDescription)")
+                                }
+                            }) {
+                                Label("Экспорт JSON", systemImage: "arrow.up.doc")
+                                    .font(.caption)
+                                    .foregroundColor(.purple)
+                            }
+                        }
+
+                        ScrollView {
+                            Text(testViewModel.testResults)
+                                .font(.system(.body, design: .monospaced))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding()
+                                .background(Color.gray.opacity(0.1))
+                                .cornerRadius(8)
+                        }
+                        .frame(height: 250)
+                    }
+
+                    // Кнопки
+                    VStack(spacing: 15) {
+                        Button("🎯 Начать тестирование") {
+                            Task { await testViewModel.runFullAPITest() }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .padding()
+
+                        HStack(spacing: 10) {
+                            Button("🔄 Очистить") {
+                                testViewModel.clearResults()
+                            }
+                            .buttonStyle(.bordered)
+
+                            Button("📂 Показать файлы") {
+                                let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                                print("🧪 Директория с файлами: \(documentsURL.path)")
+                                print("🧪 Можно открыть в Files.app или подключить устройство к Mac")
+                            }
+                            .buttonStyle(.bordered)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .padding()
+            }
+            .navigationTitle("API Тестирование")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Закрыть") {
+                        // This will be handled by the sheet dismissal
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 // MARK: - Preview Support (iOS 17+ only)
 // Note: Preview functionality available in Xcode 15+ with iOS 17+

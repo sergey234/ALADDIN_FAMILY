@@ -60,6 +60,12 @@
 		5E13D35A2F4652130010F7CE /* SettingsTestSuiteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3592F4652130010F7CE /* SettingsTestSuiteView.swift */; };
 		5E13D35C2F46523A0010F7CE /* SettingsScreenFallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D35B2F46523A0010F7CE /* SettingsScreenFallback.swift */; };
 		5E13D3602F4D90A10010F7CE /* MasterLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D35F2F4D90A00010F7CE /* MasterLogger.swift */; };
+		5E13D3622F4DB3C40010F7CE /* LogSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3612F4DB3C40010F7CE /* LogSanitizer.swift */; };
+		5E13D3642F4DB6830010F7CE /* VisualLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3632F4DB6830010F7CE /* VisualLogger.swift */; };
+		5E13D3662F4E52560010F7CE /* APITestAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3652F4E52550010F7CE /* APITestAnalyzer.swift */; };
+		5E13D3682F4E52AC0010F7CE /* SimpleAPITester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3672F4E52AB0010F7CE /* SimpleAPITester.swift */; };
+		5E13D36A2F4E53470010F7CE /* IntegrationTestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3692F4E53470010F7CE /* IntegrationTestViewModel.swift */; };
+		5E13D36C2F4E53780010F7CE /* IntegrationTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D36B2F4E53780010F7CE /* IntegrationTestView.swift */; };
 		5E3200012EAD2692000574C4 /* AgeGroupSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */; };
 		5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200022EAD26CE000574C4 /* ConsentModal.swift */; };
 		5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */; };
@@ -362,6 +368,12 @@
 		5E13D3592F4652130010F7CE /* SettingsTestSuiteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SettingsTestSuiteView.swift; path = Screens/SettingsTestSuiteView.swift; sourceTree = "<group>"; };
 		5E13D35B2F46523A0010F7CE /* SettingsScreenFallback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SettingsScreenFallback.swift; path = Screens/SettingsScreenFallback.swift; sourceTree = "<group>"; };
 		5E13D35F2F4D90A00010F7CE /* MasterLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MasterLogger.swift; path = Core/Utilities/MasterLogger.swift; sourceTree = "<group>"; };
+		5E13D3612F4DB3C40010F7CE /* LogSanitizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LogSanitizer.swift; path = Core/Utilities/LogSanitizer.swift; sourceTree = "<group>"; };
+		5E13D3632F4DB6830010F7CE /* VisualLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VisualLogger.swift; path = Core/Utilities/VisualLogger.swift; sourceTree = "<group>"; };
+		5E13D3652F4E52550010F7CE /* APITestAnalyzer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APITestAnalyzer.swift; path = Core/Utilities/APITestAnalyzer.swift; sourceTree = "<group>"; };
+		5E13D3672F4E52AB0010F7CE /* SimpleAPITester.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SimpleAPITester.swift; sourceTree = "<group>"; };
+		5E13D3692F4E53470010F7CE /* IntegrationTestViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTestViewModel.swift; sourceTree = "<group>"; };
+		5E13D36B2F4E53780010F7CE /* IntegrationTestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTestView.swift; sourceTree = "<group>"; };
 		5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AgeGroupSelectionModal.swift; path = Components/Modals/AgeGroupSelectionModal.swift; sourceTree = "<group>"; };
 		5E3200022EAD26CE000574C4 /* ConsentModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConsentModal.swift; path = Components/Modals/ConsentModal.swift; sourceTree = "<group>"; };
 		5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyCreatedModal.swift; path = Components/Modals/FamilyCreatedModal.swift; sourceTree = "<group>"; };
@@ -715,6 +727,12 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5E13D36B2F4E53780010F7CE /* IntegrationTestView.swift */,
+				5E13D3692F4E53470010F7CE /* IntegrationTestViewModel.swift */,
+				5E13D3672F4E52AB0010F7CE /* SimpleAPITester.swift */,
+				5E13D3652F4E52550010F7CE /* APITestAnalyzer.swift */,
+				5E13D3632F4DB6830010F7CE /* VisualLogger.swift */,
+				5E13D3612F4DB3C40010F7CE /* LogSanitizer.swift */,
 				5E13D35F2F4D90A00010F7CE /* MasterLogger.swift */,
 				5E13D35B2F46523A0010F7CE /* SettingsScreenFallback.swift */,
 				5E13D3592F4652130010F7CE /* SettingsTestSuiteView.swift */,
@@ -1139,6 +1157,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5E07982B2F17D9A700D20CF6 /* DrivingReportsViewModel.swift in Sources */,
+				5E13D3622F4DB3C40010F7CE /* LogSanitizer.swift in Sources */,
 				5EC309102EA6B61700C7D34B /* 08_ChildInterfaceScreen.swift in Sources */,
 				A1000003 /* ContentView.swift in Sources */,
 				B6000001 /* AppDelegate.swift in Sources */,
@@ -1164,6 +1183,7 @@
 				5E6F39302F15AF7800CEC103 /* SecurityFeatureRow.swift in Sources */,
 				5EC309252EA6B66900C7D34B /* NotificationSettingsScreen.swift in Sources */,
 				5E0058172EC4A6E300024F7E /* TariffManager.swift in Sources */,
+				5E13D36C2F4E53780010F7CE /* IntegrationTestView.swift in Sources */,
 				5E0C30BA2EAFC81D00FD6647 /* ChildContentScreen.swift in Sources */,
 				5E00582B2EC6062100024F7E /* AdditionalFeature.swift in Sources */,
 				5E07983D2F18566300D20CF6 /* DarkWebDataInputView.swift in Sources */,
@@ -1174,6 +1194,7 @@
 				A3000005 /* Core/Models/APIModels.swift in Sources */,
 				A3000007 /* Core/NetworkProtection/NetworkProtectionManager.swift in Sources */,
 				5EC309292EA6B67800C7D34B /* UnicornPetView.swift in Sources */,
+				5E13D3642F4DB6830010F7CE /* VisualLogger.swift in Sources */,
 				A3000009 /* Core/Network/APIService.swift in Sources */,
 				5E6F39132F15AC3300CEC103 /* NetworkProtectionViewModel.swift in Sources */,
 				5EC309172EA6B62E00C7D34B /* 18_PrivacyPolicyScreen.swift in Sources */,
@@ -1183,6 +1204,7 @@
 				5EC309112EA6B61B00C7D34B /* 09_ElderlyInterfaceScreen.swift in Sources */,
 				5EC309132EA6B62100C7D34B /* 11_ProfileScreen.swift in Sources */,
 				A3000011 /* Core/Network/NetworkManager.swift in Sources */,
+				5E13D3682F4E52AC0010F7CE /* SimpleAPITester.swift in Sources */,
 				5EC309182EA6B63100C7D34B /* 19_TermsOfServiceScreen.swift in Sources */,
 				A3000013 /* Core/Config/AppConfig.swift in Sources */,
 				5E0798372F1819CD00D20CF6 /* ParallelLoader.swift in Sources */,
@@ -1232,6 +1254,7 @@
 				5E6F394C2F15B07E00CEC103 /* ComponentAnalytics.swift in Sources */,
 				5E0798392F18561C00D20CF6 /* DarkWebScanExplanationView.swift in Sources */,
 				A3000031 /* ViewModels/NotificationsViewModel.swift in Sources */,
+				5E13D3662F4E52560010F7CE /* APITestAnalyzer.swift in Sources */,
 				5EC3090D2EA6B60F00C7D34B /* 06_AIAssistantScreen.swift in Sources */,
 				5E0798172F17D23E00D20CF6 /* AICategoriesModal.swift in Sources */,
 				5E6F39572F16C54C00CEC103 /* MalwareDetectionSettingsModal.swift in Sources */,
@@ -1319,6 +1342,7 @@
 				5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */,
 				5E0058132EC4A66600024F7E /* ProtectionSettings.swift in Sources */,
 				A4BBB101 /* RemoteNotificationsService.swift in Sources */,
+				5E13D36A2F4E53470010F7CE /* IntegrationTestViewModel.swift in Sources */,
 				5E6C6AFE2F34C97800F6FFEA /* GeofenceModels.swift in Sources */,
 				5E6F39462F15B03800CEC103 /* ComponentConfiguration.swift in Sources */,
 				5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */,

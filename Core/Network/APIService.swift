@@ -1974,6 +1974,42 @@ class APIService: ObservableObject {
         )
     }
 
+    // ✅ НОВОЕ: Обновить настройки Crash Detection
+    func updateCrashDetectionSettings(
+        userId: String,
+        sensitivity: Double,
+        geofenceRadius: Double,
+        completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void
+    ) {
+        struct UpdateCrashSettingsRequest: Codable {
+            let userId: String
+            let sensitivity: Double
+            let geofenceRadius: Double
+        }
+
+        let request = UpdateCrashSettingsRequest(
+            userId: userId,
+            sensitivity: sensitivity,
+            geofenceRadius: geofenceRadius
+        )
+
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.crashDetectionSettingsUpdate,
+            body: request,
+            completion: completion
+        )
+    }
+
+    // ✅ НОВОЕ: Получить историю Crash Detection
+    func getCrashDetectionHistory(
+        userId: String,
+        limit: Int = 50,
+        completion: @escaping (Result<APIResponse<CrashHistoryResponse>, Error>) -> Void
+    ) {
+        let endpoint = AppConfig.Endpoint.crashDetectionHistory + "?userId=\(userId)&limit=\(limit)"
+        networkManager.get(endpoint: endpoint, completion: completion)
+    }
+
     // MARK: - Crash Detection Async Methods
 
     // ✅ ASYNC: Настроить Crash Detection
@@ -2035,7 +2071,251 @@ class APIService: ObservableObject {
             }
         }
     }
-    
+
+    // ✅ ASYNC: Обновить настройки Crash Detection
+    func updateCrashDetectionSettings(userId: String, sensitivity: Double, geofenceRadius: Double) async throws -> APIResponse<Bool> {
+        struct UpdateCrashSettingsRequest: Codable {
+            let userId: String
+            let sensitivity: Double
+            let geofenceRadius: Double
+        }
+
+        return try await withCheckedThrowingContinuation { continuation in
+            updateCrashDetectionSettings(userId: userId, sensitivity: sensitivity, geofenceRadius: geofenceRadius) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    // ✅ ASYNC: Получить историю Crash Detection
+    func getCrashDetectionHistory(userId: String, limit: Int = 50) async throws -> CrashHistoryResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            getCrashDetectionHistory(userId: userId, limit: limit) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data!)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // MARK: - ✅ SYSTEM MANAGEMENT BASIC
+
+    // ✅ НОВОЕ: Получить здоровье системы
+    func getSystemHealth(completion: @escaping (Result<APIResponse<SystemHealthResponse>, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.systemHealth, completion: completion)
+    }
+
+    // ✅ НОВОЕ: Получить информацию о системе
+    func getSystemInfo(completion: @escaping (Result<APIResponse<SystemInfoResponse>, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.systemInfo, completion: completion)
+    }
+
+    // ✅ НОВОЕ: Получить метрики системы
+    func getSystemMetrics(
+        timeRange: String = "1h",
+        completion: @escaping (Result<APIResponse<SystemMetricsResponse>, Error>) -> Void
+    ) {
+        networkManager.get(endpoint: AppConfig.Endpoint.systemMetrics + "?range=\(timeRange)", completion: completion)
+    }
+
+    // ✅ НОВОЕ: Получить статус системы
+    func getSystemStatus(completion: @escaping (Result<APIResponse<SystemStatusResponse>, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.systemStatus, completion: completion)
+    }
+
+    // ✅ НОВОЕ: Создать бэкап системы
+    func createSystemBackup(completion: @escaping (Result<APIResponse<BackupResponse>, Error>) -> Void) {
+        networkManager.post(endpoint: AppConfig.Endpoint.systemBackup, body: EmptyRequest(), completion: completion)
+    }
+
+    // ✅ НОВОЕ: Получить статус бэкапа
+    func getBackupStatus(
+        backupId: String,
+        completion: @escaping (Result<APIResponse<BackupStatusResponse>, Error>) -> Void
+    ) {
+        networkManager.get(endpoint: AppConfig.Endpoint.systemBackupStatus + "/\(backupId)", completion: completion)
+    }
+
+    // MARK: - ✅ SYSTEM MANAGEMENT ASYNC
+
+    // ✅ ASYNC: Получить здоровье системы
+    func getSystemHealth() async throws -> SystemHealthResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            getSystemHealth { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data!)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // ✅ ASYNC: Получить информацию о системе
+    func getSystemInfo() async throws -> SystemInfoResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            getSystemInfo { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data!)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // ✅ ASYNC: Получить метрики системы
+    func getSystemMetrics(timeRange: String = "1h") async throws -> SystemMetricsResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            getSystemMetrics(timeRange: timeRange) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data!)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // ✅ ASYNC: Получить статус системы
+    func getSystemStatus() async throws -> SystemStatusResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            getSystemStatus { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data!)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // ✅ ASYNC: Создать бэкап системы
+    func createSystemBackup() async throws -> BackupResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            createSystemBackup { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data!)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // ✅ ASYNC: Получить статус бэкапа
+    func getBackupStatus(backupId: String) async throws -> BackupStatusResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            getBackupStatus(backupId: backupId) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data!)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // MARK: - ✅ NOTIFICATIONS EXTENDED
+
+    // ✅ НОВОЕ: Получить категории уведомлений
+    func getNotificationCategories(completion: @escaping (Result<APIResponse<NotificationCategoriesResponse>, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.notificationsCategories, completion: completion)
+    }
+
+    // ✅ НОВОЕ: Массово отметить уведомления прочитанными
+    func bulkMarkNotificationsRead(
+        notificationIds: [String],
+        completion: @escaping (Result<APIResponse<Int>, Error>) -> Void
+    ) {
+        struct BulkMarkReadRequest: Codable {
+            let notificationIds: [String]
+        }
+
+        let request = BulkMarkReadRequest(notificationIds: notificationIds)
+        networkManager.post(endpoint: AppConfig.Endpoint.notificationsBulkMarkRead, body: request, completion: completion)
+    }
+
+    // ✅ НОВОЕ: Заархивировать уведомление
+    func archiveNotification(
+        notificationId: String,
+        completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void
+    ) {
+        networkManager.post(endpoint: AppConfig.Endpoint.notificationsArchive + "/\(notificationId)", body: EmptyRequest(), completion: completion)
+    }
+
+    // ✅ НОВОЕ: Получить статистику уведомлений
+    func getNotificationStats(completion: @escaping (Result<APIResponse<NotificationStatsResponse>, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.notificationsStats, completion: completion)
+    }
+
+    // MARK: - ✅ NOTIFICATIONS ASYNC
+
+    // ✅ ASYNC: Получить категории уведомлений
+    func getNotificationCategories() async throws -> NotificationCategoriesResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            getNotificationCategories { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data!)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // ✅ ASYNC: Массово отметить уведомления прочитанными
+    func bulkMarkNotificationsRead(notificationIds: [String]) async throws -> Int {
+        return try await withCheckedThrowingContinuation { continuation in
+            bulkMarkNotificationsRead(notificationIds: notificationIds) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data!)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // ✅ ASYNC: Заархивировать уведомление
+    func archiveNotification(notificationId: String) async throws -> Bool {
+        return try await withCheckedThrowingContinuation { continuation in
+            archiveNotification(notificationId: notificationId) { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data!)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // ✅ ASYNC: Получить статистику уведомлений
+    func getNotificationStats() async throws -> NotificationStatsResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            getNotificationStats { result in
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.data!)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
     // MARK: - Data Cleanup API
     
     func startDataCleanup(categories: [String], completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {

@@ -2448,4 +2448,135 @@ struct ResetProgressRequest: Codable {
     let parentId: String
 }
 
+// MARK: - ✅ NEW: Crash Detection Extended Models
+
+struct UpdateCrashSettingsRequest: Codable {
+    let userId: String
+    let sensitivity: Double
+    let geofenceRadius: Double
+}
+
+struct CrashHistoryResponse: Codable {
+    let crashes: [CrashEvent]
+    let total: Int
+    let hasMore: Bool
+}
+
+struct CrashEvent: Codable {
+    let id: String
+    let timestamp: String
+    let location: LocationData?
+    let severity: String
+    let description: String
+}
+
+struct LocationData: Codable {
+    let latitude: Double
+    let longitude: Double
+    let address: String?
+}
+
+// MARK: - ✅ NEW: System Management Models
+
+struct SystemHealthResponse: Codable {
+    let status: String  // "healthy", "warning", "critical"
+    let components: [ComponentHealth]
+    let overall: HealthMetrics
+    let timestamp: String
+}
+
+struct ComponentHealth: Codable {
+    let name: String
+    let status: String
+    let responseTime: Double?
+    let errorRate: Double?
+    let lastCheck: String?
+}
+
+struct HealthMetrics: Codable {
+    let uptime: Double  // секунды
+    let cpuUsage: Double  // 0-100%
+    let memoryUsage: Double  // 0-100%
+    let diskUsage: Double  // 0-100%
+    let activeConnections: Int
+}
+
+struct SystemInfoResponse: Codable {
+    let version: String
+    let build: String
+    let environment: String
+    let activeUsers: Int
+    let totalUsers: Int
+    let uptime: Double
+    let serverTime: String
+}
+
+struct SystemMetricsResponse: Codable {
+    let timestamp: String
+    let requestsPerSecond: Double
+    let averageResponseTime: Double
+    let errorRate: Double
+    let activeConnections: Int
+    let queueLength: Int
+    let memoryUsage: Double
+    let cpuUsage: Double
+}
+
+struct SystemStatusResponse: Codable {
+    let status: String  // "operational", "degraded", "maintenance"
+    let message: String
+    let lastUpdated: String
+    let estimatedRecoveryTime: String?
+}
+
+struct BackupResponse: Codable {
+    let backupId: String
+    let status: String  // "scheduled", "running", "completed", "failed"
+    let estimatedTime: Double?
+    let size: Int64?
+    let startedAt: String
+}
+
+struct BackupStatusResponse: Codable {
+    let backupId: String
+    let status: String
+    let progress: Double  // 0.0 to 1.0
+    let size: Int64?
+    let startedAt: String
+    let completedAt: String?
+    let error: String?
+    let downloadUrl: String?
+}
+
+// MARK: - ✅ NEW: Notifications Extended Models
+
+struct NotificationCategoriesResponse: Codable {
+    let categories: [APINotificationCategory]
+}
+
+struct APINotificationCategory: Codable {
+    let id: String
+    let name: String
+    let description: String
+    let icon: String
+    let enabled: Bool
+    let priority: String  // "low", "medium", "high"
+    let defaultEnabled: Bool
+}
+
+struct BulkMarkReadRequest: Codable {
+    let notificationIds: [String]
+}
+
+struct NotificationStatsResponse: Codable {
+    let total: Int
+    let unread: Int
+    let archived: Int
+    let byCategory: [String: Int]
+    let byPriority: [String: Int]
+    let lastWeek: Int
+    let lastMonth: Int
+    let averagePerDay: Double
+}
+
 

@@ -112,7 +112,7 @@ def analyze_server_endpoints():
 
     print()
     print('📊 СРАВНЕНИЕ С НАШЕЙ СПЕЦИФИКАЦИЕЙ:')
-    print('Спецификация: 221 endpoint'ов)
+    print('Спецификация: 221 endpoint\'ов')
     print(f'Сервер:        {len(paths)} endpoint\'ов')
     print(f'Разница:       {len(paths) - 221} endpoint\'ов')
 

@@ -197,6 +197,7 @@ class SettingsViewModel: ObservableObject {
     @Published var showEmergencyContacts: Bool = false
     @Published var showEmergencyNotifications: Bool = false
     @Published var showVoiceControl: Bool = false
+    @Published var showIntegrationTest: Bool = false
     @Published var showChildProtectionCompliance: Bool = false
     @Published var showDataProtectionCompliance: Bool = false
     @Published var showPositioningSystemPicker: Bool = false

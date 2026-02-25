@@ -282,7 +282,7 @@ class PaymentQRViewModel: ObservableObject {
      * Создание платежа и получение QR-кодов
      */
     func createPayment() {
-        logger.business("Creating payment for tariff: \(selectedTariff?.id ?? "unknown")")
+        logger.business("Creating payment for tariff: \(tariff.id)")
         print("🚨 ========== PaymentQRViewModel.createPayment НАЧАЛО ==========")
         print("🔍 Thread: \(Thread.isMainThread ? "Main" : "Background")")
         print("🔍 Timestamp: \(Date())")

@@ -316,7 +316,7 @@ class AntivirusManager: ObservableObject {
     
     /// Загрузка файла на сервер для глубокого сканирования
     private func uploadForDeepScan(fileData: Data, metadata: FileMetadata) async -> ServerScanResult? {
-        logger.business("Uploading file for deep server scan: \(metadata.filename) (\(fileData.count) bytes)")
+        logger.business("Uploading file for deep server scan: \(metadata.name) (\(fileData.count) bytes)")
         log("📤 Отправка файла на сервер для сканирования")
         
         // TODO: Интеграция с APIService

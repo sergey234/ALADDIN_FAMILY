@@ -19,9 +19,68 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>72</string>
+	<string>73</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+		<string>telegram</string>
+		<string>vk</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>ALADDIN Family needs music access for family entertainment and safety features.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>ALADDIN Family uses Bluetooth for device security and family member proximity detection.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>ALADDIN Family uses Bluetooth for device security and family member proximity detection.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>ALADDIN Family needs calendar access for family safety and security scheduling.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>ALADDIN Family needs camera access for security features and face recognition.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>ALADDIN Family needs contacts access to help manage family member information securely.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>ALADDIN Family uses Face ID for secure authentication and family member identification.</string>
+	<key>NSHomeKitUsageDescription</key>
+	<string>ALADDIN Family needs HomeKit access for smart home security and family safety.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>ALADDIN Family needs local network access for family device communication and security.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>ALADDIN Family needs location access for family safety and emergency features.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>ALADDIN Family needs location access for family safety and emergency features.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>ALADDIN Family needs microphone access for voice analysis and security features.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>ALADDIN Family uses motion data for security analysis and family safety monitoring.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>ALADDIN Family needs photo library access to save family security photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>ALADDIN Family needs photo library access for secure family photo management and analysis.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>ALADDIN Family needs reminders access for family safety and security alerts.</string>
+	<key>NSSiriUsageDescription</key>
+	<string>ALADDIN Family uses Siri for voice-activated family safety and security features.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>ALADDIN Family needs speech recognition access for AI assistant voice input and voice commands.</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>family.aladdin.ios.activity.security</string>
+		<string>family.aladdin.ios.activity.family</string>
+		<string>family.aladdin.ios.activity.emergency</string>
+	</array>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>ALADDIN Family needs notification access for family safety and security alerts.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -39,6 +98,14 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>UIApplicationSupportsMultipleScenes</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
@@ -50,93 +117,23 @@
 	<array>
 		<string>armv7</string>
 	</array>
+	<key>UIRequiresFullScreen</key>
+	<true/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleDefault</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
-	<key>NSCameraUsageDescription</key>
-	<string>ALADDIN Family needs camera access for security features and face recognition.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>ALADDIN Family needs microphone access for voice analysis and security features.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>ALADDIN Family needs location access for family safety and emergency features.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>ALADDIN Family needs location access for family safety and emergency features.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>ALADDIN Family uses Face ID for secure authentication and family member identification.</string>
-	<key>NSContactsUsageDescription</key>
-	<string>ALADDIN Family needs contacts access to help manage family member information securely.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>ALADDIN Family needs photo library access for secure family photo management and analysis.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>ALADDIN Family needs photo library access to save family security photos.</string>
-	<key>NSMotionUsageDescription</key>
-	<string>ALADDIN Family uses motion data for security analysis and family safety monitoring.</string>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>ALADDIN Family uses Bluetooth for device security and family member proximity detection.</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>ALADDIN Family uses Bluetooth for device security and family member proximity detection.</string>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>ALADDIN Family needs local network access for family device communication and security.</string>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>ALADDIN Family needs music access for family entertainment and safety features.</string>
-	<key>NSRemindersUsageDescription</key>
-	<string>ALADDIN Family needs reminders access for family safety and security alerts.</string>
-	<key>NSCalendarsUsageDescription</key>
-	<string>ALADDIN Family needs calendar access for family safety and security scheduling.</string>
-	<key>NSHomeKitUsageDescription</key>
-	<string>ALADDIN Family needs HomeKit access for smart home security and family safety.</string>
-	<key>NSSiriUsageDescription</key>
-	<string>ALADDIN Family uses Siri for voice-activated family safety and security features.</string>
-	<!-- ✅ ЗАДАЧА 4: Speech Recognition для AI Assistant -->
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>ALADDIN Family needs speech recognition access for AI assistant voice input and voice commands.</string>
-	<key>NSUserNotificationsUsageDescription</key>
-	<string>ALADDIN Family needs notification access for family safety and security alerts.</string>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>whatsapp</string>
-		<string>telegram</string>
-		<string>vk</string>
-	</array>
-	<key>NSUserActivityTypes</key>
-	<array>
-		<string>family.aladdin.ios.activity.security</string>
-		<string>family.aladdin.ios.activity.family</string>
-		<string>family.aladdin.ios.activity.emergency</string>
-	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
 	<key>UISupportsDocumentBrowser</key>
-	<true/>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
-	<key>UIFileSharingEnabled</key>
-	<true/>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>UIStatusBarStyle</key>
-	<string>UIStatusBarStyleDefault</string>
-	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<true/>
-	<key>UIRequiresFullScreen</key>
-	<true/>
-	<key>UIUserInterfaceStyle</key>
-	<string>Automatic</string>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UISupportsMultipleWindows</key>
 	<true/>
-	<key>UIApplicationSupportsMultipleScenes</key>
+	<key>UIUserInterfaceStyle</key>
+	<string>Automatic</string>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 </dict>
 </plist>

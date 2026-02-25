@@ -74,8 +74,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "808"
             endingLineNumber = "808"
-            landmarkName = "protectionActionButton(title:icon:foreground:background:action:)"
-            landmarkType = "7">
+            landmarkName = "MockLocalizationService"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -90,8 +90,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "807"
             endingLineNumber = "807"
-            landmarkName = "protectionActionButton(title:icon:foreground:background:action:)"
-            landmarkType = "7">
+            landmarkName = "MockLocalizationService"
+            landmarkType = "3">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
