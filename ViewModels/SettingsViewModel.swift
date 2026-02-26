@@ -159,6 +159,11 @@ struct LocalizedStrings {
     let shareAppSubtitle: String = "Рекомендовать друзьям"
     let settingsShareMessage: String = "Попробуйте ALADDIN - лучшее приложение для защиты!"
 
+    // Personal Data Consent
+    let settingsConsentPersonalData: String = "Согласие на обработку персональных данных"
+    let settingsConsentGranted: String = "Согласие предоставлено"
+    let settingsConsentManage: String = "Управление согласием"
+
     // Biometric notifications
     let biometricEnabled: String = "Биометрия включена"
     let biometricDisabled: String = "Биометрия отключена"
@@ -197,7 +202,6 @@ class SettingsViewModel: ObservableObject {
     @Published var showEmergencyContacts: Bool = false
     @Published var showEmergencyNotifications: Bool = false
     @Published var showVoiceControl: Bool = false
-    @Published var showIntegrationTest: Bool = false
     @Published var showChildProtectionCompliance: Bool = false
     @Published var showDataProtectionCompliance: Bool = false
     @Published var showPositioningSystemPicker: Bool = false
