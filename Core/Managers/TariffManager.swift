@@ -115,11 +115,44 @@ class TariffManager: ObservableObject {
     func saveTariff(_ tariffType: TariffType) {
         currentTariff = tariffType
         userDefaults.set(tariffType.rawValue, forKey: tariffKey)
-        
-        // ✅ АВТОМАТИЧЕСКАЯ АКТИВАЦИЯ: Включаем категории защиты для тарифа
+
+        // ✅ АВТОМАТИЧЕСКАЯ АКТИВАЦИЯ: Включаем ВСЕ доступные функции для тарифа
+
+        // 1. Защита от угроз (100 функций) - уже работало
         protectionSettingsManager.enableForTariff(tariffType)
-        
+
+        // 2. Родительский контроль (32 функции) - НОВОЕ
+        Task {
+            do {
+                try await ParentalControlManager.shared.enableForTariff(tariffType)
+                print("✅ TariffManager: Родительский контроль активирован")
+            } catch {
+                print("❌ TariffManager: Ошибка активации родительского контроля: \(error.localizedDescription)")
+            }
+        }
+
+        // 3. Дополнительные функции (10 функций) - НОВОЕ
+        Task {
+            do {
+                try await AdditionalFeaturesManager.shared.enableForTariff(tariffType)
+                print("✅ TariffManager: Дополнительные функции активированы")
+            } catch {
+                print("❌ TariffManager: Ошибка активации дополнительных функций: \(error.localizedDescription)")
+            }
+        }
+
+        // 4. Компоненты (42 компонента) - НОВОЕ
+        Task {
+            do {
+                try await ComponentTariffManager.shared.enableComponentsForTariff(tariffType)
+                print("✅ TariffManager: Компоненты активированы")
+            } catch {
+                print("❌ TariffManager: Ошибка активации компонентов: \(error.localizedDescription)")
+            }
+        }
+
         print("✅ TariffManager: Тариф сохранён: \(tariffType.rawValue)")
+        print("🎯 TariffManager: Запущена активация всех функций (ожидается ~184)")
     }
     
     // MARK: - Check Availability

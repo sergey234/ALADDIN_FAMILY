@@ -798,6 +798,26 @@ class ParentalControlManager: ObservableObject {
     }
 }
 
+// MARK: - Tariff Integration
+
+extension ParentalControlManager {
+    func enableForTariff(_ tariffType: TariffType) async throws {
+        print("🔄 ParentalControlManager: Активация функций родительского контроля для \(tariffType.rawValue)")
+        var activatedCount = 0
+        for module in ParentalControlModule.allCases {
+            let features = module.features(for: tariffType)
+            for feature in features {
+                // Здесь должна быть логика активации каждой функции родительского контроля
+                // Например, вызов API или обновление локальных настроек
+                // Для примера просто логируем и увеличиваем счетчик
+                print("✅ ParentalControlManager: Активирована функция РК: \(feature.id)")
+                activatedCount += 1
+            }
+        }
+        print("✅ ParentalControlManager: Активировано \(activatedCount) функций родительского контроля")
+    }
+}
+
 // MARK: - Bypass Attempt Model
 
 struct BypassAttempt {

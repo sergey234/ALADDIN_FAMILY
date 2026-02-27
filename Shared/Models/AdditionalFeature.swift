@@ -3,7 +3,7 @@ import Foundation
 // MARK: - Дополнительная функция тарифа
 
 /// Модель дополнительной функции тарифа (Защита сети, устройства, реклама, AI и т.д.)
-struct AdditionalFeature: Identifiable {
+struct AdditionalFeature: Identifiable, Hashable {
     let id: String
     let titleKey: String
     let descriptionKey: String?
@@ -37,6 +37,15 @@ struct AdditionalFeature: Identifiable {
         case .premium: return 3
         case .ultimate: return 4
         }
+    }
+
+    // MARK: - Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    static func == (lhs: AdditionalFeature, rhs: AdditionalFeature) -> Bool {
+        return lhs.id == rhs.id
     }
 }
 
@@ -139,26 +148,40 @@ extension TariffType {
             // Personal: только свои функции (без Free, чтобы не дублировать защиту сети)
             features = Self.additionalFeatures[.personal] ?? []
         case .family:
-            // Family: только свои функции (без предыдущих, чтобы не дублировать защиту сети)
-            features = Self.additionalFeatures[.family] ?? []
-        case .premium:
-            // Premium: ВСЕ функции из всех тарифов (но защита сети только Premium версия)
-            // Собираем все уникальные функции, исключая дубликаты защиты сети
+            // Family: ПРАКТИЧЕСКИ ПОЛНАЯ функциональность - функции из FREE + PERSONAL + FAMILY
             var allFeatures: [AdditionalFeature] = []
-            
-            // Добавляем функции из всех тарифов
+
+            // Добавляем функции из FREE (кроме рекламы, которая не нужна в премиум тарифах)
             if let freeFeatures = Self.additionalFeatures[.free] {
-                // Исключаем защиту сети и рекламу из Free (защита сети будет Premium версия, реклама не нужна)
-                allFeatures.append(contentsOf: freeFeatures.filter { $0.id != "network_protection_free" && $0.id != "ads_free" })
+                allFeatures.append(contentsOf: freeFeatures.filter { $0.id != "ads_free" })
             }
+            // Добавляем функции из PERSONAL
             if let personalFeatures = Self.additionalFeatures[.personal] {
-                // Исключаем защиту сети из Personal (будет Premium версия)
-                allFeatures.append(contentsOf: personalFeatures.filter { $0.id != "network_protection_personal" })
+                allFeatures.append(contentsOf: personalFeatures)
             }
+            // Добавляем функции из FAMILY
             if let familyFeatures = Self.additionalFeatures[.family] {
-                // Исключаем защиту сети из Family (будет Premium версия)
-                allFeatures.append(contentsOf: familyFeatures.filter { $0.id != "network_protection_family" })
+                allFeatures.append(contentsOf: familyFeatures)
             }
+
+            features = allFeatures
+        case .premium:
+            // Premium: ПОЛНАЯ функциональность - ВСЕ функции из всех тарифов
+            var allFeatures: [AdditionalFeature] = []
+
+            // Добавляем функции из FREE (кроме рекламы)
+            if let freeFeatures = Self.additionalFeatures[.free] {
+                allFeatures.append(contentsOf: freeFeatures.filter { $0.id != "ads_free" })
+            }
+            // Добавляем функции из PERSONAL
+            if let personalFeatures = Self.additionalFeatures[.personal] {
+                allFeatures.append(contentsOf: personalFeatures)
+            }
+            // Добавляем функции из FAMILY
+            if let familyFeatures = Self.additionalFeatures[.family] {
+                allFeatures.append(contentsOf: familyFeatures)
+            }
+            // Добавляем функции из PREMIUM
             if let premiumFeatures = Self.additionalFeatures[.premium] {
                 allFeatures.append(contentsOf: premiumFeatures)
             }

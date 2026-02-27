@@ -55,7 +55,7 @@ struct ProtectionLevelExplanationModal: View {
     private func tariffCard(tariff: TariffType) -> some View {
         let card = tariff.createCard(localizationManager: localizationManager)
         let isCurrentTariff = tariff == currentTariff
-        let totalPercentage = Int((Double(card.totalFeatures) / 138.0) * 100)
+        let totalPercentage = Int((Double(card.totalFeatures) / 142.0) * 100)
         
         return VStack(alignment: .leading, spacing: Spacing.m) {
             // Заголовок карточки

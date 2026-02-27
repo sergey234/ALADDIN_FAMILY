@@ -63,9 +63,7 @@
 		5E13D3622F4DB3C40010F7CE /* LogSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3612F4DB3C40010F7CE /* LogSanitizer.swift */; };
 		5E13D3642F4DB6830010F7CE /* VisualLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3632F4DB6830010F7CE /* VisualLogger.swift */; };
 		5E13D3662F4E52560010F7CE /* APITestAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3652F4E52550010F7CE /* APITestAnalyzer.swift */; };
-		5E13D3682F4E52AC0010F7CE /* SimpleAPITester.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3672F4E52AB0010F7CE /* SimpleAPITester.swift */; };
 		5E13D36A2F4E53470010F7CE /* IntegrationTestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3692F4E53470010F7CE /* IntegrationTestViewModel.swift */; };
-		5E13D36C2F4E53780010F7CE /* IntegrationTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D36B2F4E53780010F7CE /* IntegrationTestView.swift */; };
 		5E3200012EAD2692000574C4 /* AgeGroupSelectionModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */; };
 		5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200022EAD26CE000574C4 /* ConsentModal.swift */; };
 		5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */; };
@@ -140,6 +138,8 @@
 		5E6F39572F16C54C00CEC103 /* MalwareDetectionSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39562F16C54B00CEC103 /* MalwareDetectionSettingsModal.swift */; };
 		5E6F39592F16C56100CEC103 /* MobileSecuritySettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39582F16C56100CEC103 /* MobileSecuritySettingsModal.swift */; };
 		5E6F395B2F16C57500CEC103 /* NetworkSecuritySettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F395A2F16C57400CEC103 /* NetworkSecuritySettingsModal.swift */; };
+		5E70569F2F51BE680065BDC4 /* AdditionalFeaturesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E70569E2F51BE680065BDC4 /* AdditionalFeaturesManager.swift */; };
+		5E7056A12F51BE710065BDC4 /* ComponentTariffManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056A02F51BE710065BDC4 /* ComponentTariffManager.swift */; };
 		5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */; };
 		5EA2F63E2EFB4B8D000686C0 /* ContentBlockerRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */; };
 		5EA2F6402EFB4BD3000686C0 /* FamilyContentBlockModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */; };
@@ -371,9 +371,7 @@
 		5E13D3612F4DB3C40010F7CE /* LogSanitizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LogSanitizer.swift; path = Core/Utilities/LogSanitizer.swift; sourceTree = "<group>"; };
 		5E13D3632F4DB6830010F7CE /* VisualLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VisualLogger.swift; path = Core/Utilities/VisualLogger.swift; sourceTree = "<group>"; };
 		5E13D3652F4E52550010F7CE /* APITestAnalyzer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APITestAnalyzer.swift; path = Core/Utilities/APITestAnalyzer.swift; sourceTree = "<group>"; };
-		5E13D3672F4E52AB0010F7CE /* SimpleAPITester.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SimpleAPITester.swift; sourceTree = "<group>"; };
 		5E13D3692F4E53470010F7CE /* IntegrationTestViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTestViewModel.swift; sourceTree = "<group>"; };
-		5E13D36B2F4E53780010F7CE /* IntegrationTestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTestView.swift; sourceTree = "<group>"; };
 		5E3200002EAD2692000574C4 /* AgeGroupSelectionModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AgeGroupSelectionModal.swift; path = Components/Modals/AgeGroupSelectionModal.swift; sourceTree = "<group>"; };
 		5E3200022EAD26CE000574C4 /* ConsentModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConsentModal.swift; path = Components/Modals/ConsentModal.swift; sourceTree = "<group>"; };
 		5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyCreatedModal.swift; path = Components/Modals/FamilyCreatedModal.swift; sourceTree = "<group>"; };
@@ -449,6 +447,8 @@
 		5E6F39562F16C54B00CEC103 /* MalwareDetectionSettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MalwareDetectionSettingsModal.swift; path = Shared/Components/Modals/MalwareDetectionSettingsModal.swift; sourceTree = "<group>"; };
 		5E6F39582F16C56100CEC103 /* MobileSecuritySettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MobileSecuritySettingsModal.swift; path = Shared/Components/Modals/MobileSecuritySettingsModal.swift; sourceTree = "<group>"; };
 		5E6F395A2F16C57400CEC103 /* NetworkSecuritySettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkSecuritySettingsModal.swift; path = Shared/Components/Modals/NetworkSecuritySettingsModal.swift; sourceTree = "<group>"; };
+		5E70569E2F51BE680065BDC4 /* AdditionalFeaturesManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AdditionalFeaturesManager.swift; path = Core/Managers/AdditionalFeaturesManager.swift; sourceTree = "<group>"; };
+		5E7056A02F51BE710065BDC4 /* ComponentTariffManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentTariffManager.swift; path = Core/Managers/ComponentTariffManager.swift; sourceTree = "<group>"; };
 		5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerManager.swift; path = Core/ContentBlocker/ContentBlockerManager.swift; sourceTree = "<group>"; };
 		5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerRule.swift; path = Core/ContentBlocker/ContentBlockerRule.swift; sourceTree = "<group>"; };
 		5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyContentBlockModal.swift; path = Components/Modals/FamilyContentBlockModal.swift; sourceTree = "<group>"; };
@@ -727,9 +727,9 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
-				5E13D36B2F4E53780010F7CE /* IntegrationTestView.swift */,
+				5E7056A02F51BE710065BDC4 /* ComponentTariffManager.swift */,
+				5E70569E2F51BE680065BDC4 /* AdditionalFeaturesManager.swift */,
 				5E13D3692F4E53470010F7CE /* IntegrationTestViewModel.swift */,
-				5E13D3672F4E52AB0010F7CE /* SimpleAPITester.swift */,
 				5E13D3652F4E52550010F7CE /* APITestAnalyzer.swift */,
 				5E13D3632F4DB6830010F7CE /* VisualLogger.swift */,
 				5E13D3612F4DB3C40010F7CE /* LogSanitizer.swift */,
@@ -1183,7 +1183,6 @@
 				5E6F39302F15AF7800CEC103 /* SecurityFeatureRow.swift in Sources */,
 				5EC309252EA6B66900C7D34B /* NotificationSettingsScreen.swift in Sources */,
 				5E0058172EC4A6E300024F7E /* TariffManager.swift in Sources */,
-				5E13D36C2F4E53780010F7CE /* IntegrationTestView.swift in Sources */,
 				5E0C30BA2EAFC81D00FD6647 /* ChildContentScreen.swift in Sources */,
 				5E00582B2EC6062100024F7E /* AdditionalFeature.swift in Sources */,
 				5E07983D2F18566300D20CF6 /* DarkWebDataInputView.swift in Sources */,
@@ -1204,7 +1203,6 @@
 				5EC309112EA6B61B00C7D34B /* 09_ElderlyInterfaceScreen.swift in Sources */,
 				5EC309132EA6B62100C7D34B /* 11_ProfileScreen.swift in Sources */,
 				A3000011 /* Core/Network/NetworkManager.swift in Sources */,
-				5E13D3682F4E52AC0010F7CE /* SimpleAPITester.swift in Sources */,
 				5EC309182EA6B63100C7D34B /* 19_TermsOfServiceScreen.swift in Sources */,
 				A3000013 /* Core/Config/AppConfig.swift in Sources */,
 				5E0798372F1819CD00D20CF6 /* ParallelLoader.swift in Sources */,
@@ -1230,6 +1228,7 @@
 				A3000021 /* ViewModels/SettingsViewModel.swift in Sources */,
 				5E0798152F17D23400D20CF6 /* DrivingReportsModal.swift in Sources */,
 				5E6F39032F151E6A00CEC103 /* VoiceRecordingView.swift in Sources */,
+				5E70569F2F51BE680065BDC4 /* AdditionalFeaturesManager.swift in Sources */,
 				5E32FFF92EAD24D2000574C4 /* InfoRow.swift in Sources */,
 				5EC3091E2EA6B64500C7D34B /* 25_PaymentQRScreen.swift in Sources */,
 				5E0C30B22EAE71D100FD6647 /* RoleSelectionModal.swift in Sources */,
@@ -1382,6 +1381,7 @@
 				5E6C6B0C2F3D406F00F6FFEA /* RoadsideAssistanceView.swift in Sources */,
 				5E0058052EC3C50500024F7E /* ALADDINToggle.swift in Sources */,
 				5E6F39382F15AFCF00CEC103 /* EmergencyContactsView.swift in Sources */,
+				5E7056A12F51BE710065BDC4 /* ComponentTariffManager.swift in Sources */,
 				A4AAA212 /* EmptyStateView.swift in Sources */,
 				5E6C6B042F3D34A400F6FFEA /* RateLimiter.swift in Sources */,
 				5E6F38FF2F151E5000CEC103 /* TypingIndicatorView.swift in Sources */,

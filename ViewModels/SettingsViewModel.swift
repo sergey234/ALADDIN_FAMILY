@@ -460,24 +460,24 @@ class SettingsViewModel: ObservableObject {
         if tariffService != nil {
             // Use real tariff service
             let tariff = tariffService.currentTariff
-            // Calculate protection level based on tariff
+            // Calculate protection level based on tariff (real function counts)
             switch tariff {
             case .free:
-                cachedProtectionLevel = 25.0
+                cachedProtectionLevel = 18.0  // 26/142 ≈ 18%
                 cachedProtectionLevelText = localizedStrings.protectionLevelLow
                 cachedProtectionColor = .red
             case .personal:
-                cachedProtectionLevel = 50.0
+                cachedProtectionLevel = 49.0  // 69/142 ≈ 49%
                 cachedProtectionLevelText = localizedStrings.protectionLevelMedium
                 cachedProtectionColor = .orange
             case .family:
-                cachedProtectionLevel = 65.0
-                cachedProtectionLevelText = localizedStrings.protectionLevelHigh
-                cachedProtectionColor = .yellow
+                cachedProtectionLevel = 90.0  // 128/142 ≈ 90%
+                cachedProtectionLevelText = localizedStrings.protectionLevelMaximum
+                cachedProtectionColor = .green
             case .premium:
-                cachedProtectionLevel = 75.0
-                cachedProtectionLevelText = localizedStrings.protectionLevelHigh
-                cachedProtectionColor = .yellow
+                cachedProtectionLevel = 100.0  // 142/142 = 100%
+                cachedProtectionLevelText = localizedStrings.protectionLevelMaximum
+                cachedProtectionColor = .green
             case .ultimate:
                 cachedProtectionLevel = 100.0
                 cachedProtectionLevelText = localizedStrings.protectionLevelMaximum
