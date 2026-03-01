@@ -505,7 +505,54 @@ class NotificationManager: NSObject, ObservableObject {
         
         print("✅ Уведомления о подписке запланированы: за 3 дня и за 1 день")
     }
-    
+
+    /**
+     * 📅 Schedule trial expiry notifications
+     * Планирует уведомления об окончании trial периода
+     */
+    func scheduleTrialNotifications(trialEndDate: Date) {
+        // Отменяем предыдущие уведомления trial (если есть)
+        cancelTrialNotifications()
+
+        // За 7 дней
+        let sevenDaysBefore = trialEndDate.addingTimeInterval(-7 * 24 * 60 * 60)
+        if sevenDaysBefore > Date() {
+            scheduleTrialNotification(
+                date: sevenDaysBefore,
+                title: "Trial заканчивается через 7 дней",
+                body: "Оформите подписку Premium, чтобы сохранить доступ ко всем функциям",
+                daysUntilExpiry: 7,
+                trialEndDate: trialEndDate
+            )
+        }
+
+        // За 3 дня
+        let threeDaysBefore = trialEndDate.addingTimeInterval(-3 * 24 * 60 * 60)
+        if threeDaysBefore > Date() {
+            scheduleTrialNotification(
+                date: threeDaysBefore,
+                title: "Trial заканчивается через 3 дня",
+                body: "Осталось всего 3 дня trial периода. Оформите подписку сейчас!",
+                daysUntilExpiry: 3,
+                trialEndDate: trialEndDate
+            )
+        }
+
+        // За 1 день
+        let oneDayBefore = trialEndDate.addingTimeInterval(-24 * 60 * 60)
+        if oneDayBefore > Date() {
+            scheduleTrialNotification(
+                date: oneDayBefore,
+                title: "Trial заканчивается завтра",
+                body: "Последний день trial периода. Оформите Premium подписку!",
+                daysUntilExpiry: 1,
+                trialEndDate: trialEndDate
+            )
+        }
+
+        print("✅ Уведомления trial запланированы: за 7, 3 и 1 день")
+    }
+
     /**
      * Отмена запланированных уведомлений о подписке
      */
@@ -524,7 +571,26 @@ class NotificationManager: NSObject, ObservableObject {
             }
         }
     }
-    
+
+    /**
+     * ❌ Отмена запланированных trial уведомлений
+     */
+    func cancelTrialNotifications() {
+        notificationCenter.getPendingNotificationRequests { requests in
+            let trialIdentifiers = requests
+                .filter { request in
+                    let userInfo = request.content.userInfo
+                    return userInfo["type"] as? String == "trial"
+                }
+                .map { $0.identifier }
+
+            if !trialIdentifiers.isEmpty {
+                self.notificationCenter.removePendingNotificationRequests(withIdentifiers: trialIdentifiers)
+                print("✅ Отменены предыдущие trial уведомления: \(trialIdentifiers.count)")
+            }
+        }
+    }
+
     /**
      * Планирование уведомления о подписке на конкретную дату
      */
@@ -561,6 +627,46 @@ class NotificationManager: NSObject, ObservableObject {
                 print("❌ Ошибка планирования уведомления о подписке: \(error)")
             } else {
                 print("✅ Уведомление о подписке запланировано: \(title) на \(date)")
+            }
+        }
+    }
+
+    /**
+     * 📅 Schedule single trial notification
+     */
+    private func scheduleTrialNotification(
+        date: Date,
+        title: String,
+        body: String,
+        daysUntilExpiry: Int,
+        trialEndDate: Date
+    ) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        content.categoryIdentifier = NotificationCategory.trial.rawValue
+        content.userInfo = [
+            "type": "trial",
+            "days": daysUntilExpiry,
+            "trial_end_date": ISO8601DateFormatter().string(from: trialEndDate)
+        ]
+
+        let dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
+
+        let identifier = "trial_\(Int(date.timeIntervalSince1970))"
+        let request = UNNotificationRequest(
+            identifier: identifier,
+            content: content,
+            trigger: trigger
+        )
+
+        notificationCenter.add(request) { error in
+            if let error = error {
+                print("❌ Ошибка планирования trial уведомления: \(error)")
+            } else {
+                print("✅ Trial уведомление запланировано: \(title) на \(date)")
             }
         }
     }
@@ -727,6 +833,7 @@ enum NotificationCategory: String, CaseIterable {
     case networkProtection = "network_protection"
     case ai = "ai"
     case subscription = "subscription"
+    case trial = "trial"
 }
 
 struct NotificationSettings: Codable, Equatable {

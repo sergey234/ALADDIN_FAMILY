@@ -140,6 +140,18 @@
 		5E6F395B2F16C57500CEC103 /* NetworkSecuritySettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F395A2F16C57400CEC103 /* NetworkSecuritySettingsModal.swift */; };
 		5E70569F2F51BE680065BDC4 /* AdditionalFeaturesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E70569E2F51BE680065BDC4 /* AdditionalFeaturesManager.swift */; };
 		5E7056A12F51BE710065BDC4 /* ComponentTariffManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056A02F51BE710065BDC4 /* ComponentTariffManager.swift */; };
+		5E7056B52F5478170065BDC4 /* PaymentRecoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056B42F5478160065BDC4 /* PaymentRecoveryView.swift */; };
+		5E7056B72F5478430065BDC4 /* TrialFlowTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056B62F5478430065BDC4 /* TrialFlowTestView.swift */; };
+		5E7056B92F5478CE0065BDC4 /* PaymentHelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056B82F5478CE0065BDC4 /* PaymentHelpView.swift */; };
+		5E7056BA2F5479540065BDC4 /* TrialIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056B02F54771D0065BDC4 /* TrialIntegrationTests.swift */; };
+		5E7056BC2F547AA00065BDC4 /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056BB2F547AA00065BDC4 /* SubscriptionManager.swift */; };
+		5E7056BE2F547AD40065BDC4 /* SubscriptionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056BD2F547AD30065BDC4 /* SubscriptionModels.swift */; };
+		5E7056C02F547B420065BDC4 /* SubscriptionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056BF2F547B420065BDC4 /* SubscriptionMonitor.swift */; };
+		5E7056C22F547B9E0065BDC4 /* FeatureGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056C12F547B9E0065BDC4 /* FeatureGateView.swift */; };
+		5E7056C42F547C0B0065BDC4 /* FamilyChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056C32F547C0B0065BDC4 /* FamilyChatView.swift */; };
+		5E7056C62F547C1F0065BDC4 /* FamilyAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056C52F547C1F0065BDC4 /* FamilyAnalyticsView.swift */; };
+		5E7056C82F547C450065BDC4 /* FamilyTournamentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056C72F547C450065BDC4 /* FamilyTournamentView.swift */; };
+		5E7056C92F547D7B0065BDC4 /* TrialFlowTestRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056B22F54772A0065BDC4 /* TrialFlowTestRunner.swift */; };
 		5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */; };
 		5EA2F63E2EFB4B8D000686C0 /* ContentBlockerRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */; };
 		5EA2F6402EFB4BD3000686C0 /* FamilyContentBlockModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */; };
@@ -173,7 +185,6 @@
 		5EC3091D2EA6B64200C7D34B /* 24_NetworkProtectionEnergyStatsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308FA2EA6AB8C00C7D34B /* 24_NetworkProtectionEnergyStatsScreen.swift */; };
 		5EC3091E2EA6B64500C7D34B /* 25_PaymentQRScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308ED2EA6AB8C00C7D34B /* 25_PaymentQRScreen.swift */; };
 		5EC3091F2EA6B64800C7D34B /* ChildRewardsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308EC2EA6AB8C00C7D34B /* ChildRewardsScreen.swift */; };
-		5EC309212EA6B65A00C7D34B /* FamilyTournamentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F32EA6AB8C00C7D34B /* FamilyTournamentView.swift */; };
 		5EC309222EA6B65D00C7D34B /* GamesParentalControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308FF2EA6AB8C00C7D34B /* GamesParentalControlView.swift */; };
 		5EC309232EA6B66100C7D34B /* LanguageSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */; };
 		5EC309242EA6B66600C7D34B /* MainScreenWithRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308E62EA6AB8B00C7D34B /* MainScreenWithRegistration.swift */; };
@@ -449,6 +460,18 @@
 		5E6F395A2F16C57400CEC103 /* NetworkSecuritySettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkSecuritySettingsModal.swift; path = Shared/Components/Modals/NetworkSecuritySettingsModal.swift; sourceTree = "<group>"; };
 		5E70569E2F51BE680065BDC4 /* AdditionalFeaturesManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AdditionalFeaturesManager.swift; path = Core/Managers/AdditionalFeaturesManager.swift; sourceTree = "<group>"; };
 		5E7056A02F51BE710065BDC4 /* ComponentTariffManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentTariffManager.swift; path = Core/Managers/ComponentTariffManager.swift; sourceTree = "<group>"; };
+		5E7056B02F54771D0065BDC4 /* TrialIntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TrialIntegrationTests.swift; path = Tests/Integration/TrialIntegrationTests.swift; sourceTree = "<group>"; };
+		5E7056B22F54772A0065BDC4 /* TrialFlowTestRunner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TrialFlowTestRunner.swift; path = Tests/Integration/TrialFlowTestRunner.swift; sourceTree = "<group>"; };
+		5E7056B42F5478160065BDC4 /* PaymentRecoveryView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaymentRecoveryView.swift; path = Screens/Views/PaymentRecoveryView.swift; sourceTree = "<group>"; };
+		5E7056B62F5478430065BDC4 /* TrialFlowTestView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TrialFlowTestView.swift; path = Screens/Views/TrialFlowTestView.swift; sourceTree = "<group>"; };
+		5E7056B82F5478CE0065BDC4 /* PaymentHelpView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaymentHelpView.swift; path = Screens/Views/PaymentHelpView.swift; sourceTree = "<group>"; };
+		5E7056BB2F547AA00065BDC4 /* SubscriptionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SubscriptionManager.swift; path = Core/Managers/SubscriptionManager.swift; sourceTree = "<group>"; };
+		5E7056BD2F547AD30065BDC4 /* SubscriptionModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SubscriptionModels.swift; path = Core/Models/SubscriptionModels.swift; sourceTree = "<group>"; };
+		5E7056BF2F547B420065BDC4 /* SubscriptionMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SubscriptionMonitor.swift; path = Core/Services/SubscriptionMonitor.swift; sourceTree = "<group>"; };
+		5E7056C12F547B9E0065BDC4 /* FeatureGateView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FeatureGateView.swift; path = Screens/Views/FeatureGateView.swift; sourceTree = "<group>"; };
+		5E7056C32F547C0B0065BDC4 /* FamilyChatView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChatView.swift; path = Screens/Views/FamilyChatView.swift; sourceTree = "<group>"; };
+		5E7056C52F547C1F0065BDC4 /* FamilyAnalyticsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyAnalyticsView.swift; path = Screens/Views/FamilyAnalyticsView.swift; sourceTree = "<group>"; };
+		5E7056C72F547C450065BDC4 /* FamilyTournamentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyTournamentView.swift; path = Screens/Views/FamilyTournamentView.swift; sourceTree = "<group>"; };
 		5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerManager.swift; path = Core/ContentBlocker/ContentBlockerManager.swift; sourceTree = "<group>"; };
 		5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerRule.swift; path = Core/ContentBlocker/ContentBlockerRule.swift; sourceTree = "<group>"; };
 		5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyContentBlockModal.swift; path = Components/Modals/FamilyContentBlockModal.swift; sourceTree = "<group>"; };
@@ -475,7 +498,6 @@
 		5EC308F02EA6AB8C00C7D34B /* RewardsModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsModalView.swift; sourceTree = "<group>"; };
 		5EC308F12EA6AB8C00C7D34B /* 10_TariffsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 10_TariffsScreen.swift; sourceTree = "<group>"; };
 		5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 01_MainScreen.swift; sourceTree = "<group>"; };
-		5EC308F32EA6AB8C00C7D34B /* FamilyTournamentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyTournamentView.swift; sourceTree = "<group>"; };
 		5EC308F42EA6AB8C00C7D34B /* UnicornUniverseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnicornUniverseView.swift; sourceTree = "<group>"; };
 		5EC308F52EA6AB8C00C7D34B /* 03_NetworkProtectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 03_NetworkProtectionScreen.swift; sourceTree = "<group>"; };
 		5EC308F62EA6AB8C00C7D34B /* 13_SupportScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 13_SupportScreen.swift; sourceTree = "<group>"; };
@@ -679,7 +701,6 @@
 				5EB01F452ECB09D300168BE9 /* 26_ActivationCodeScreen.swift */,
 				5EC308EC2EA6AB8C00C7D34B /* ChildRewardsScreen.swift */,
 				5E0058222EC4B2EB00024F7E /* ThreatProtectionSettingsScreen.swift */,
-				5EC308F32EA6AB8C00C7D34B /* FamilyTournamentView.swift */,
 				5EC308FF2EA6AB8C00C7D34B /* GamesParentalControlView.swift */,
 				5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */,
 				5EC308E62EA6AB8B00C7D34B /* MainScreenWithRegistration.swift */,
@@ -727,6 +748,18 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5E7056C72F547C450065BDC4 /* FamilyTournamentView.swift */,
+				5E7056C52F547C1F0065BDC4 /* FamilyAnalyticsView.swift */,
+				5E7056C32F547C0B0065BDC4 /* FamilyChatView.swift */,
+				5E7056C12F547B9E0065BDC4 /* FeatureGateView.swift */,
+				5E7056BB2F547AA00065BDC4 /* SubscriptionManager.swift */,
+				5E7056BD2F547AD30065BDC4 /* SubscriptionModels.swift */,
+				5E7056BF2F547B420065BDC4 /* SubscriptionMonitor.swift */,
+				5E7056B62F5478430065BDC4 /* TrialFlowTestView.swift */,
+				5E7056B82F5478CE0065BDC4 /* PaymentHelpView.swift */,
+				5E7056B42F5478160065BDC4 /* PaymentRecoveryView.swift */,
+				5E7056B02F54771D0065BDC4 /* TrialIntegrationTests.swift */,
+				5E7056B22F54772A0065BDC4 /* TrialFlowTestRunner.swift */,
 				5E7056A02F51BE710065BDC4 /* ComponentTariffManager.swift */,
 				5E70569E2F51BE680065BDC4 /* AdditionalFeaturesManager.swift */,
 				5E13D3692F4E53470010F7CE /* IntegrationTestViewModel.swift */,
@@ -1165,6 +1198,7 @@
 				5E6F393C2F15AFE200CEC103 /* VoiceControlView.swift in Sources */,
 				5E3200012EAD2692000574C4 /* AgeGroupSelectionModal.swift in Sources */,
 				5EB01F442ECB097500168BE9 /* ActivationCodeViewModel.swift in Sources */,
+				5E7056C02F547B420065BDC4 /* SubscriptionMonitor.swift in Sources */,
 				5E6F39592F16C56100CEC103 /* MobileSecuritySettingsModal.swift in Sources */,
 				5E07981B2F17D28200D20CF6 /* IdentityTheftModal.swift in Sources */,
 				5E0798312F17DA1E00D20CF6 /* PrivacyReportsViewModel.swift in Sources */,
@@ -1186,6 +1220,7 @@
 				5E0C30BA2EAFC81D00FD6647 /* ChildContentScreen.swift in Sources */,
 				5E00582B2EC6062100024F7E /* AdditionalFeature.swift in Sources */,
 				5E07983D2F18566300D20CF6 /* DarkWebDataInputView.swift in Sources */,
+				5E7056B92F5478CE0065BDC4 /* PaymentHelpView.swift in Sources */,
 				5E32FFE92EAD1836000574C4 /* StatItem.swift in Sources */,
 				5E32FFED2EAD1876000574C4 /* FamilyMemberCard.swift in Sources */,
 				B2000130B2000130B2000130 /* AddMoreMemberCard.swift in Sources */,
@@ -1201,13 +1236,16 @@
 				5EC309122EA6B61E00C7D34B /* 10_TariffsScreen.swift in Sources */,
 				5E07982F2F17D9EB00D20CF6 /* IdentityTheftViewModel.swift in Sources */,
 				5EC309112EA6B61B00C7D34B /* 09_ElderlyInterfaceScreen.swift in Sources */,
+				5E7056B72F5478430065BDC4 /* TrialFlowTestView.swift in Sources */,
 				5EC309132EA6B62100C7D34B /* 11_ProfileScreen.swift in Sources */,
 				A3000011 /* Core/Network/NetworkManager.swift in Sources */,
 				5EC309182EA6B63100C7D34B /* 19_TermsOfServiceScreen.swift in Sources */,
+				5E7056BC2F547AA00065BDC4 /* SubscriptionManager.swift in Sources */,
 				A3000013 /* Core/Config/AppConfig.swift in Sources */,
 				5E0798372F1819CD00D20CF6 /* ParallelLoader.swift in Sources */,
 				A3000017 /* ViewModels/FamilyViewModel.swift in Sources */,
 				A3000019 /* ViewModels/AIAssistantViewModel.swift in Sources */,
+				5E7056C22F547B9E0065BDC4 /* FeatureGateView.swift in Sources */,
 				5EC3091B2EA6B63C00C7D34B /* 22_DeviceDetailScreen.swift in Sources */,
 				5EC3092C2EA6B68000C7D34B /* WidgetConfigurationScreen.swift in Sources */,
 				5E6F39052F151F2500CEC103 /* FamilyChatWebSocket.swift in Sources */,
@@ -1245,6 +1283,7 @@
 				A3000027 /* ViewModels/ElderlyInterfaceViewModel.swift in Sources */,
 				A3000029 /* ViewModels/AnalyticsViewModel.swift in Sources */,
 				5E32FFFF2EAD25F5000574C4 /* CacheManager.swift in Sources */,
+				5E7056C82F547C450065BDC4 /* FamilyTournamentView.swift in Sources */,
 				B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */,
 				B2000100B2000100B2000100 /* ProtectionFeature.swift in Sources */,
 				B2000110B2000110B2000110 /* ProtectionLevelHistory.swift in Sources */,
@@ -1325,7 +1364,6 @@
 				5EC309472EA793D900C7D34B /* CornerRadius.swift in Sources */,
 				5EC309092EA6B5F600C7D34B /* 01_MainScreen.swift in Sources */,
 				5EC3090B2EA6B60500C7D34B /* 03_NetworkProtectionScreen.swift in Sources */,
-				5EC309212EA6B65A00C7D34B /* FamilyTournamentView.swift in Sources */,
 				A4BBB003 /* FamilyProtectorView.swift in Sources */,
 				5EC309362EA6CCBD00C7D34B /* Fonts.swift in Sources */,
 				5EC309222EA6B65D00C7D34B /* GamesParentalControlView.swift in Sources */,
@@ -1335,6 +1373,7 @@
 				5EA2F63E2EFB4B8D000686C0 /* ContentBlockerRule.swift in Sources */,
 				5EC3091D2EA6B64200C7D34B /* 24_NetworkProtectionEnergyStatsScreen.swift in Sources */,
 				5E6F393A2F15AFD800CEC103 /* EmergencyNotificationsView.swift in Sources */,
+				5E7056B52F5478170065BDC4 /* PaymentRecoveryView.swift in Sources */,
 				5E32FFEF2EAD18B2000574C4 /* ProfileEditView.swift in Sources */,
 				5E6F39342F15AF9100CEC103 /* ComponentToggleCard.swift in Sources */,
 				A3000053 /* ViewModels/TariffsViewModel.swift in Sources */,
@@ -1349,6 +1388,7 @@
 				A4AAA002 /* ThreatProtectionScreen.swift in Sources */,
 				A4AAA004 /* ThreatProtectionCard.swift in Sources */,
 				5E6C6B0A2F3D405000F6FFEA /* APIResponseValidator.swift in Sources */,
+				5E7056BE2F547AD40065BDC4 /* SubscriptionModels.swift in Sources */,
 				A4AAA006 /* ThreatProtectionCategoriesView.swift in Sources */,
 				5E6F39282F15AF3700CEC103 /* AnalyticsSettingsModal.swift in Sources */,
 				5E6F39402F15B00100CEC103 /* ComponentConfigurationService.swift in Sources */,
@@ -1356,8 +1396,10 @@
 				5E0798332F17DA4000D20CF6 /* AICategoriesViewModel.swift in Sources */,
 				5E07983B2F18563500D20CF6 /* DarkWebScanMethodSelector.swift in Sources */,
 				A4AAA102 /* GamesSettingsManager.swift in Sources */,
+				5E7056C42F547C0B0065BDC4 /* FamilyChatView.swift in Sources */,
 				B1000031 /* ParentalControlManager.swift in Sources */,
 				A4AAA104 /* AnalyticsService.swift in Sources */,
+				5E7056C62F547C1F0065BDC4 /* FamilyAnalyticsView.swift in Sources */,
 				5E6F38FD2F151E4400CEC103 /* ReplyBubbleView.swift in Sources */,
 				5E6F393E2F15AFF700CEC103 /* ComponentCacheService.swift in Sources */,
 				5E6F390D2F1520D600CEC103 /* PushNotificationService.swift in Sources */,
@@ -1397,6 +1439,7 @@
 			files = (
 				B5001200 /* ALADDINUnitTests.swift in Sources */,
 				B5001201 /* APIServiceTests.swift in Sources */,
+				5E7056C92F547D7B0065BDC4 /* TrialFlowTestRunner.swift in Sources */,
 				B5001202 /* AppConfigTests.swift in Sources */,
 				B5001203 /* AppDelegateTests.swift in Sources */,
 				B5001204 /* FamilyRegistrationViewModelTests.swift in Sources */,
@@ -1410,6 +1453,7 @@
 				5E6F39532F16645D00CEC103 /* ComponentAPITests.swift in Sources */,
 				B5001208 /* NotificationManagerTests.swift in Sources */,
 				B5001209 /* SharedDataManagerTests.swift in Sources */,
+				5E7056BA2F5479540065BDC4 /* TrialIntegrationTests.swift in Sources */,
 				B5001210 /* MockAPIServiceTests.swift in Sources */,
 				5E6F39512F16644D00CEC103 /* ComponentAPIIntegrationTests.swift in Sources */,
 				5E00580F2EC473DA00024F7E /* PaymentQRViewModelProtectionTests.swift in Sources */,
@@ -1459,7 +1503,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1491,7 +1535,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1647,7 +1691,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1679,7 +1723,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1710,7 +1754,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1735,7 +1779,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1758,7 +1802,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1782,7 +1826,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 72;
+				CURRENT_PROJECT_VERSION = 75;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

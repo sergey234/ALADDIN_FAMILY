@@ -781,16 +781,11 @@ class SpeechManager: ObservableObject {
 
             print("🎤 SpeechManager: Начинаем установку audio tap")
 
-            // ✅ ДОБАВЛЯЕМ ERROR HANDLING для installTapOnBus
-            do {
-                inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
-                    self.recognitionRequest?.append(buffer)
-                }
-                print("🎤 SpeechManager: Audio tap установлен успешно")
-            } catch {
-                print("🚨 SpeechManager: ОШИБКА установки audio tap: \(error.localizedDescription)")
-                throw error
+            // ✅ Устанавливаем audio tap
+            inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
+                self.recognitionRequest?.append(buffer)
             }
+            print("🎤 SpeechManager: Audio tap установлен успешно")
 
             print("🎤 SpeechManager: Запускаем audio engine")
 

@@ -519,13 +519,6 @@ struct TariffResponse: Codable, Identifiable {
     let isRecommended: Bool
 }
 
-struct SubscriptionStatus: Codable {
-    let isActive: Bool
-    let tariffId: String
-    let startDate: Date
-    let endDate: Date
-    let autoRenew: Bool
-}
 
 struct ActivationCodeRequest: Codable {
     let code: String
@@ -1946,13 +1939,6 @@ struct PurchaseHistoryResponse: Codable {
     let total: Int
 }
 
-struct SubscriptionStatusResponse: Codable {
-    let userId: String
-    let isActive: Bool
-    let daysRemaining: Int?
-    let canRenew: Bool
-    let lastModified: String // ISO дата
-}
 
 struct UpdateSubscriptionStatusRequest: Codable {
     let userId: String
@@ -2578,5 +2564,21 @@ struct NotificationStatsResponse: Codable {
     let lastMonth: Int
     let averagePerDay: Double
 }
+
+// MARK: - Device Registration Models
+
+/// 📱 Device Registration Request
+struct DeviceRegisterRequest: Codable {
+    let deviceId: String
+    let deviceType: String
+}
+
+/// 📱 Trial Device Registration Request
+struct TrialDeviceRegisterRequest: Codable {
+    let deviceId: String
+    let deviceType: String
+    let trialInfo: TrialInfo
+}
+
 
 

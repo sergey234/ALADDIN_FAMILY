@@ -547,6 +547,7 @@ enum StoreError: LocalizedError {
     case storeNotReady
     case purchaseInProgress
     case productsNotLoaded
+    case paymentCancelled
     
     var errorDescription: String? {
         let localizationManager = LocalizationManager()
@@ -563,6 +564,8 @@ enum StoreError: LocalizedError {
             return localizationManager.localized("store.error.purchase.in.progress")
         case .productsNotLoaded:
             return localizationManager.localized("store.error.products.not.loaded")
+        case .paymentCancelled:
+            return localizationManager.localized("store.error.payment.cancelled")
         }
     }
 }

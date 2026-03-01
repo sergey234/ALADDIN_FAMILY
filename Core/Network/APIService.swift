@@ -2634,6 +2634,11 @@ class APIService: ObservableObject {
     ) {
         networkManager.get(endpoint: AppConfig.Endpoint.roadsideHistory, completion: completion)
     }
+
+    // Device registration methods
+    func registerDeviceAnonymously(request: DeviceRegisterRequest, completion: @escaping (Result<JWTDeviceRegisterResponse, Error>) -> Void) {
+        networkManager.post(endpoint: AppConfig.Endpoint.deviceRegister, body: request, completion: completion)
+    }
 }
 
 

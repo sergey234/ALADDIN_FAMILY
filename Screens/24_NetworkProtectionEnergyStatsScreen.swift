@@ -81,13 +81,13 @@ struct NetworkProtectionEnergyStatsScreen: View {
                 
                 // Period Selector
                 HStack(spacing: Spacing.s) {
-                    PeriodButton(title: localizationManager.localized("network_protection_energy_period_today"), isSelected: selectedPeriod == "today") {
+                    NetworkProtectionPeriodButton(title: localizationManager.localized("network_protection_energy_period_today"), isSelected: selectedPeriod == "today") {
                         selectedPeriod = "today"
                     }
-                    PeriodButton(title: localizationManager.localized("network_protection_energy_period_week"), isSelected: selectedPeriod == "week") {
+                    NetworkProtectionPeriodButton(title: localizationManager.localized("network_protection_energy_period_week"), isSelected: selectedPeriod == "week") {
                         selectedPeriod = "week"
                     }
-                    PeriodButton(title: localizationManager.localized("network_protection_energy_period_month"), isSelected: selectedPeriod == "month") {
+                    NetworkProtectionPeriodButton(title: localizationManager.localized("network_protection_energy_period_month"), isSelected: selectedPeriod == "month") {
                         selectedPeriod = "month"
                     }
                 }
@@ -289,7 +289,7 @@ extension NetworkProtectionEnergyStatsScreen {
 
 // MARK: - Period Button
 
-struct PeriodButton: View {
+struct NetworkProtectionPeriodButton: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void

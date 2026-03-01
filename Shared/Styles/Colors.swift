@@ -41,14 +41,20 @@ extension Color {
     /// Основной фон приложения (тёмный)
     /// Источник: HTML body background
     static let backgroundDark = Color(hex: "#0F172A")
-    
+
+    /// Основной фон (алиас для backgroundDark)
+    static let backgroundPrimary = Color(hex: "#0F172A")
+
     /// Средний фон (для inputs, toggles)
     /// Источник: HTML .input background
     static let backgroundMedium = Color(hex: "#1E293B")
-    
+
     /// Фон карточек и модальных окон
     /// Источник: HTML .card background
     static let surfaceDark = Color(hex: "#1E293B")
+
+    /// Фон карточек (алиас для surfaceDark)
+    static let cardBackground = Color(hex: "#1E293B")
     
     /// Градиент фона (используется для больших экранов)
     static let gradientStart = Color(hex: "#0a1128")

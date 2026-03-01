@@ -173,6 +173,11 @@ class MasterLogger {
         log(.info, category: .business, message: message, function: function, file: file, line: line)
     }
 
+    /// Логирование безопасности
+    func security(_ message: String, function: String = #function, file: String = #file, line: Int = #line) {
+        log(.info, category: .business, message: "🔒 \(message)", function: function, file: file, line: line)
+    }
+
     /// Логирование производительности
     func performance(_ message: String, function: String = #function, file: String = #file, line: Int = #line) {
         log(.info, category: .performance, message: message, function: function, file: file, line: line)
