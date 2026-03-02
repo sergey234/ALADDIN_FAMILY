@@ -361,26 +361,7 @@ struct ALADDINApp: App {
                                 #endif
                             })
                     case .tariffs:
-                        // 🚧 ВРЕМЕННО СКРЫТО: Экран тарифов временно недоступен
-                        // TODO: ВОССТАНОВИТЬ ПОСЛЕ ТЕСТИРОВАНИЯ
-                        // AnyView(TariffsScreen().id("tariffs").environmentObject(navigationManager).environmentObject(localizationManager))
-                        AnyView(
-                            VStack(spacing: 20) {
-                                Text("💎")
-                                    .font(.system(size: 60))
-                                Text("Тарифы")
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                                Text("Скоро будет доступно")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(LinearGradient.backgroundGradient)
-                            .id("tariffs_placeholder")
-                            .environmentObject(navigationManager)
-                            .environmentObject(localizationManager)
-                        )
+                        AnyView(TariffsScreen().id("tariffs").environmentObject(navigationManager).environmentObject(localizationManager))
 #if !APP_STORE_BUILD
                     case .paymentQR:
                         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем AnyView для отложенного создания View
