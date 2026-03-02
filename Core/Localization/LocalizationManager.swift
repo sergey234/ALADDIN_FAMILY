@@ -2550,6 +2550,7 @@ class LocalizationManager: ObservableObject {
             "store.error.store.not.ready": "Магазин не готов",
             "store.error.purchase.in.progress": "Покупка уже выполняется",
             "store.error.products.not.loaded": "Продукты не загружены",
+            "store.error.receipt.validation.failed": "Не удалось подтвердить покупку на сервере",
             // TariffsViewModel ошибки
             "tariffs_error_select_tariff": "Выберите тариф",
             "tariffs_error_invalid_tariff": "Ошибка: невалидный тариф",
@@ -6818,6 +6819,7 @@ Settings
             "store.error.store.not.ready": "Store is not ready",
             "store.error.purchase.in.progress": "Purchase already in progress",
             "store.error.products.not.loaded": "Products not loaded",
+            "store.error.receipt.validation.failed": "Failed to validate purchase with server",
             // TariffsViewModel errors
             "tariffs_error_select_tariff": "Select a tariff",
             "tariffs_error_invalid_tariff": "Error: invalid tariff",

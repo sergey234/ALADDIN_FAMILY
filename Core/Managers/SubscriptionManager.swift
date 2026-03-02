@@ -266,6 +266,11 @@ final class SubscriptionManager: ObservableObject {
         return currentSubscription?.level ?? .free
     }
 
+    /// 🔑 Get current JWT token for API requests
+    func getCurrentToken() async -> String? {
+        return currentToken?.token
+    }
+
     /// 🎁 Activate trial period (14 days)
     func activateTrialIfNeeded() async {
         // Check if trial already used

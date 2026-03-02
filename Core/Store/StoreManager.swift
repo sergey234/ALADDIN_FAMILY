@@ -319,13 +319,23 @@ class StoreManager: ObservableObject {
             case .success(let verification):
                 // Проверка транзакции
                 let transaction = try checkVerified(verification)
-                
+
+                // ✅ ДОБАВИТЬ: Валидация receipt на сервере
+                do {
+                    try await validatePurchaseWithServer(transaction: transaction)
+                    print("✅ Server receipt validation successful")
+                } catch {
+                    print("❌ Server receipt validation failed: \(error.localizedDescription)")
+                    // Не блокировать покупку, но логировать ошибку
+                    // В production можно откатить транзакцию
+                }
+
                 // Обновить purchased products
                 await updatePurchasedProducts()
-                
+
                 // Завершить транзакцию
                 await transaction.finish()
-                
+
                 isLoading = false
                 print("✅ Purchase successful: \(product.id)")
                 return transaction
@@ -469,8 +479,99 @@ class StoreManager: ObservableObject {
         }
     }
     
+    // MARK: - Receipt Validation
+
+    /**
+     * Отправить receipt на сервер для валидации после покупки
+     */
+    func validatePurchaseWithServer(transaction: Transaction) async throws {
+        logger.business("Validating purchase with server: \(transaction.productID)")
+
+        do {
+            // Получить App Store receipt
+            guard let appStoreReceiptURL = Bundle.main.appStoreReceiptURL,
+                  let receiptData = try? Data(contentsOf: appStoreReceiptURL) else {
+                logger.error("❌ Failed to get App Store receipt")
+                throw StoreError.receiptValidationFailed
+            }
+
+            let receiptString = receiptData.base64EncodedString()
+
+            // Отправить receipt на сервер
+            let result = await sendReceiptToServer(receiptString, productId: transaction.productID)
+
+            if result {
+                logger.business("✅ Server receipt validation successful")
+            } else {
+                logger.error("❌ Server receipt validation failed")
+                throw StoreError.receiptValidationFailed
+            }
+
+        } catch {
+            logger.error("❌ Receipt validation error: \(error.localizedDescription)")
+            throw StoreError.receiptValidationFailed
+        }
+    }
+
+    /**
+     * Отправить receipt data на сервер
+     */
+    private func sendReceiptToServer(_ receiptData: String, productId: String) async -> Bool {
+        // Получить текущий JWT токен для аутентификации
+        guard let token = await getCurrentToken() else {
+            logger.error("❌ No JWT token available for receipt validation")
+            return false
+        }
+
+        // Определить уровень подписки по product ID
+        let subscriptionLevel = mapProductIdToLevel(productId)
+
+        let request = ReceiptValidationRequest(
+            receiptData: receiptData,
+            productId: productId,
+            subscriptionLevel: subscriptionLevel.rawValue
+        )
+
+        // Отправить запрос на сервер
+        return await withCheckedContinuation { continuation in
+            APIService.shared.validateReceipt(request: request, token: token) { result in
+                switch result {
+                case .success:
+                    continuation.resume(returning: true)
+                case .failure(let error):
+                    logger.error("❌ Receipt validation server error: \(error.localizedDescription)")
+                    continuation.resume(returning: false)
+                }
+            }
+        }
+    }
+
+    /**
+     * Получить текущий JWT токен
+     */
+    private func getCurrentToken() async -> String? {
+        // Получить токен из SubscriptionManager
+        return await SubscriptionManager.shared.getCurrentToken()
+    }
+
+    /**
+     * Map product ID to subscription level
+     */
+    private func mapProductIdToLevel(_ productId: String) -> SubscriptionLevel {
+        switch productId {
+        case ProductID.individual.rawValue:
+            return .personal
+        case ProductID.family.rawValue:
+            return .family
+        case ProductID.premium.rawValue:
+            return .premium
+        default:
+            return .free
+        }
+    }
+
     // MARK: - Check Verified
-    
+
     /**
      * Проверить подлинность транзакции
      */
@@ -548,6 +649,7 @@ enum StoreError: LocalizedError {
     case purchaseInProgress
     case productsNotLoaded
     case paymentCancelled
+    case receiptValidationFailed
     
     var errorDescription: String? {
         let localizationManager = LocalizationManager()
@@ -566,6 +668,8 @@ enum StoreError: LocalizedError {
             return localizationManager.localized("store.error.products.not.loaded")
         case .paymentCancelled:
             return localizationManager.localized("store.error.payment.cancelled")
+        case .receiptValidationFailed:
+            return localizationManager.localized("store.error.receipt.validation.failed")
         }
     }
 }

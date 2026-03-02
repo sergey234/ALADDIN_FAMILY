@@ -77,7 +77,7 @@ class SubscriptionService:
         return True
 
     @classmethod
-    def upgrade_subscription(cls, device_id: str, new_level: SubscriptionLevel) -> Optional[SubscriptionPayload]:
+    def upgrade_subscription(cls, device_id: str, new_level: 'SubscriptionLevel') -> Optional[SubscriptionPayload]:
         """Upgrade subscription to new level"""
         subscription = cls.get_subscription(device_id)
         if not subscription:

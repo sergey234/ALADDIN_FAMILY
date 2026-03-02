@@ -136,6 +136,98 @@ async def upgrade_subscription(
         raise HTTPException(status_code=500, detail=f"Upgrade failed: {str(e)}")
 
 
+@router.post("/subscription/validate-receipt")
+async def validate_receipt(request: dict, token: str = Depends(get_token_from_header)):
+    """Validate App Store receipt and upgrade subscription"""
+    try:
+        # Validate token
+        if not JWTService.validate_token(token):
+            raise HTTPException(status_code=401, detail="Invalid token")
+
+        # Get current subscription
+        current_subscription = JWTService.get_subscription_from_token(token)
+        if not current_subscription:
+            raise HTTPException(status_code=404, detail="Subscription not found")
+
+        receipt_data = request.get("receipt_data")
+        product_id = request.get("product_id")
+        subscription_level = request.get("subscription_level")
+
+        if not receipt_data or not product_id:
+            raise HTTPException(status_code=400, detail="Missing receipt_data or product_id")
+
+        # Validate receipt with Apple
+        from app.services.receipt_validation_service import ReceiptValidationService
+
+        is_valid, receipt_info = await ReceiptValidationService.validate_receipt(
+            receipt_data, is_sandbox=False  # TODO: Detect sandbox vs production
+        )
+
+        if not is_valid:
+            error_info = receipt_info.get("error", "unknown_error")
+            error_message = receipt_info.get("message", "Receipt validation failed")
+            raise HTTPException(
+                status_code=400,
+                detail=f"Receipt validation failed: {error_message}"
+            )
+
+        # Validate product ID
+        valid_product_ids = [
+            "family.aladdin.ios.subscription.individual.v2",
+            "family.aladdin.ios.subscription.family",
+            "family.aladdin.ios.subscription.premium"
+        ]
+
+        if not ReceiptValidationService.validate_product_id(receipt_info, valid_product_ids):
+            raise HTTPException(status_code=400, detail="Invalid product ID in receipt")
+
+        # Check subscription status
+        subscription_status = ReceiptValidationService.check_subscription_status(receipt_info)
+        if subscription_status not in ["active", "trial"]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Subscription is {subscription_status}, cannot upgrade"
+            )
+
+        # Map product ID to subscription level
+        level_mapping = {
+            "family.aladdin.ios.subscription.individual.v2": "personal",
+            "family.aladdin.ios.subscription.family": "family",
+            "family.aladdin.ios.subscription.premium": "premium"
+        }
+
+        new_level = level_mapping.get(product_id)
+        if not new_level:
+            raise HTTPException(status_code=400, detail="Unknown product ID")
+
+        # Upgrade subscription
+        from app.models.subscription import SubscriptionLevel
+        upgraded_subscription = SubscriptionService.upgrade_subscription(
+            current_subscription.device_id,
+            SubscriptionLevel(new_level)
+        )
+
+        if not upgraded_subscription:
+            raise HTTPException(status_code=500, detail="Upgrade failed")
+
+        # Create new JWT token
+        new_token = JWTService.create_subscription_token(upgraded_subscription)
+
+        return {
+            "is_valid": True,
+            "subscription_level": new_level,
+            "transaction_id": receipt_info.get("transaction_id"),
+            "new_token": new_token,
+            "subscription": upgraded_subscription,
+            "message": f"Successfully validated receipt and upgraded to {new_level}"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Receipt validation failed: {str(e)}")
+
+
 @router.post("/subscription/cancel")
 async def cancel_subscription(token: str = Depends(get_token_from_header)):
     """Cancel subscription (downgrade to free)"""

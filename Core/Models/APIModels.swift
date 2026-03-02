@@ -508,6 +508,36 @@ enum NotificationPriority: String, Codable {
     }
 }
 
+// MARK: - Receipt Validation Models
+
+/// Запрос валидации receipt
+struct ReceiptValidationRequest: Codable {
+    let receiptData: String
+    let productId: String
+    let subscriptionLevel: String
+
+    enum CodingKeys: String, CodingKey {
+        case receiptData = "receipt_data"
+        case productId = "product_id"
+        case subscriptionLevel = "subscription_level"
+    }
+}
+
+/// Ответ валидации receipt
+struct ReceiptValidationResponse: Codable {
+    let isValid: Bool
+    let subscriptionLevel: String?
+    let transactionId: String?
+    let errorMessage: String?
+
+    enum CodingKeys: String, CodingKey {
+        case isValid = "is_valid"
+        case subscriptionLevel = "subscription_level"
+        case transactionId = "transaction_id"
+        case errorMessage = "error_message"
+    }
+}
+
 // MARK: - Subscription Models
 
 struct TariffResponse: Codable, Identifiable {

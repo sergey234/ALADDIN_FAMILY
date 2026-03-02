@@ -2635,6 +2635,56 @@ class APIService: ObservableObject {
         networkManager.get(endpoint: AppConfig.Endpoint.roadsideHistory, completion: completion)
     }
 
+    // MARK: - Receipt Validation
+
+    /**
+     * Валидировать App Store receipt на сервере
+     */
+    func validateReceipt(request: ReceiptValidationRequest, token: String, completion: @escaping (Result<ReceiptValidationResponse, Error>) -> Void) {
+        // Создаем кастомный NetworkManager для запроса с заголовками авторизации
+        struct AuthorizedNetworkManager {
+            let baseManager: NetworkManager
+            let token: String
+
+            func post(endpoint: String, body: ReceiptValidationRequest, completion: @escaping (Result<ReceiptValidationResponse, Error>) -> Void) {
+                let url = URL(string: AppConfig.baseURL + endpoint)!
+                var urlRequest = URLRequest(url: url)
+                urlRequest.httpMethod = "POST"
+                urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+                do {
+                    urlRequest.httpBody = try JSONEncoder().encode(body)
+                } catch {
+                    completion(.failure(error))
+                    return
+                }
+
+                URLSession.shared.dataTask(with: urlRequest) { data, response, error in
+                    if let error = error {
+                        completion(.failure(error))
+                        return
+                    }
+
+                    guard let data = data else {
+                        completion(.failure(NSError(domain: "NoData", code: -1, userInfo: nil)))
+                        return
+                    }
+
+                    do {
+                        let response = try JSONDecoder().decode(ReceiptValidationResponse.self, from: data)
+                        completion(.success(response))
+                    } catch {
+                        completion(.failure(error))
+                    }
+                }.resume()
+            }
+        }
+
+        let authorizedManager = AuthorizedNetworkManager(baseManager: networkManager, token: token)
+        authorizedManager.post(endpoint: "/api/subscription/validate-receipt", body: request, completion: completion)
+    }
+
     // Device registration methods
     func registerDeviceAnonymously(request: DeviceRegisterRequest, completion: @escaping (Result<JWTDeviceRegisterResponse, Error>) -> Void) {
         networkManager.post(endpoint: AppConfig.Endpoint.deviceRegister, body: request, completion: completion)
