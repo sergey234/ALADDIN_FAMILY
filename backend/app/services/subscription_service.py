@@ -1,256 +1,133 @@
 """
 Subscription Service for ALADDIN Backend
-Manages subscription lifecycle, feature access, and usage tracking
+Manages subscription lifecycle with PostgreSQL persistence
 """
 
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
+from sqlalchemy.orm import Session
 from app.models.subscription import (
     SubscriptionPayload, SubscriptionLevel, TrialInfo,
     SubscriptionLimits, UsageCounters, DeviceRegisterRequest,
     TrialDeviceRegisterRequest
 )
-from app.services.jwt_service import JWTService
+from app.repositories import SubscriptionRepository, SubscriptionDB
 
 
 class SubscriptionService:
-    """Main subscription management service"""
+    """Main subscription management service with DB persistence"""
 
-    # In-memory storage for demo (replace with database)
-    _subscriptions: Dict[str, SubscriptionPayload] = {}
+    @staticmethod
+    def register_device(db: Session, request: DeviceRegisterRequest) -> SubscriptionPayload:
+        """Register new device with free subscription in DB"""
+        repo = SubscriptionRepository(db)
+        
+        # Check if already exists
+        existing = repo.get_subscription_by_device(request.device_id)
+        if existing:
+            return SubscriptionService._map_to_payload(existing)
 
-    @classmethod
-    def register_device(cls, request: DeviceRegisterRequest) -> SubscriptionPayload:
-        """Register new device with free subscription"""
-        device_id = request.device_id
+        # Create free subscription data
+        sub_data = {
+            "user_id": "anonymous",
+            "device_id": request.device_id,
+            "level": SubscriptionLevel.FREE.value,
+            "status": "active",
+            "start_date": datetime.utcnow(),
+            "limits": SubscriptionLimits.free_limits().dict(),
+            "features": []
+        }
 
-        # Create free subscription
-        subscription = SubscriptionPayload(
-            level=SubscriptionLevel.FREE,
-            start_date=datetime.utcnow(),
-            end_date=None,  # Free tier doesn't expire
-            is_active=True,
-            trial_info=None,
-            limits=SubscriptionLimits.free_limits(),
-            permissions={},
-            device_id=device_id,
-            user_id=None
-        )
+        db_sub = repo.create_subscription(sub_data)
+        return SubscriptionService._map_to_payload(db_sub)
 
-        # Store subscription
-        cls._subscriptions[device_id] = subscription
+    @staticmethod
+    def register_device_with_trial(db: Session, request: TrialDeviceRegisterRequest) -> SubscriptionPayload:
+        """Register device with trial period in DB"""
+        repo = SubscriptionRepository(db)
+        
+        existing = repo.get_subscription_by_device(request.device_id)
+        
+        sub_data = {
+            "user_id": "anonymous",
+            "device_id": request.device_id,
+            "level": SubscriptionLevel.TRIAL.value,
+            "status": "trial",
+            "start_date": datetime.utcnow(),
+            "trial_end_date": request.trial_info.end_date,
+            "end_date": request.trial_info.end_date,
+            "limits": SubscriptionLimits.trial_limits().dict(),
+            "features": ["basic_protection", "ai_assistant_basic"]
+        }
 
-        return subscription
+        if existing:
+            db_sub = repo.update_subscription(existing, sub_data)
+        else:
+            db_sub = repo.create_subscription(sub_data)
+            
+        return SubscriptionService._map_to_payload(db_sub)
 
-    @classmethod
-    def register_device_with_trial(cls, request: TrialDeviceRegisterRequest) -> SubscriptionPayload:
-        """Register device with trial period"""
-        device_id = request.device_id
-
-        # Create trial subscription
-        subscription = SubscriptionPayload(
-            level=SubscriptionLevel.TRIAL,
-            start_date=datetime.utcnow(),
-            end_date=request.trial_info.end_date,
-            is_active=True,
-            trial_info=request.trial_info,
-            limits=SubscriptionLimits.trial_limits(),
-            permissions={},
-            device_id=device_id,
-            user_id=None
-        )
-
-        # Store subscription
-        cls._subscriptions[device_id] = subscription
-
-        return subscription
-
-    @classmethod
-    def get_subscription(cls, device_id: str) -> Optional[SubscriptionPayload]:
-        """Get subscription by device ID"""
-        return cls._subscriptions.get(device_id)
-
-    @classmethod
-    def update_subscription(cls, device_id: str, subscription: SubscriptionPayload) -> bool:
-        """Update subscription for device"""
-        cls._subscriptions[device_id] = subscription
-        return True
-
-    @classmethod
-    def upgrade_subscription(cls, device_id: str, new_level: 'SubscriptionLevel') -> Optional[SubscriptionPayload]:
-        """Upgrade subscription to new level"""
-        subscription = cls.get_subscription(device_id)
-        if not subscription:
+    @staticmethod
+    def upgrade_subscription(db: Session, device_id: str, new_level: SubscriptionLevel) -> Optional[SubscriptionPayload]:
+        """Upgrade subscription to new level in DB"""
+        repo = SubscriptionRepository(db)
+        db_sub = repo.get_subscription_by_device(device_id)
+        if not db_sub:
             return None
 
-        # Update subscription level
-        subscription.level = new_level
-
-        # Set new limits based on level
+        # Calculate new limits
+        limits = SubscriptionLimits.free_limits()
+        features = []
+        
         if new_level == SubscriptionLevel.PERSONAL:
-            subscription.limits = SubscriptionLimits(
-                max_devices=3,
-                max_ai_messages=100,
-                max_scans=50,
-                max_reports=10
-            )
+            limits = SubscriptionLimits(max_devices=3, max_ai_messages=100, max_scans=50, max_reports=10)
+            features = ["advanced_scanning", "ai_assistant"]
         elif new_level == SubscriptionLevel.FAMILY:
-            subscription.limits = SubscriptionLimits(
-                max_devices=5,
-                max_ai_messages=200,
-                max_scans=100,
-                max_reports=20
-            )
+            limits = SubscriptionLimits(max_devices=5, max_ai_messages=200, max_scans=100, max_reports=20)
+            features = ["advanced_scanning", "ai_assistant", "family_controls", "parental_monitoring"]
         elif new_level == SubscriptionLevel.PREMIUM:
-            subscription.limits = SubscriptionLimits(
-                max_devices=10,
-                max_ai_messages=-1,  # Unlimited
-                max_scans=-1,       # Unlimited
-                max_reports=-1      # Unlimited
+            limits = SubscriptionLimits(max_devices=10, max_ai_messages=1000, max_scans=1000, max_reports=100)
+            features = ["advanced_scanning", "ai_assistant", "family_controls", "parental_monitoring", "deepfake_detection", "iot_security"]
+
+        updates = {
+            "level": new_level.value,
+            "status": "active",
+            "limits": limits.dict(),
+            "features": features,
+            "updated_at": datetime.utcnow()
+        }
+
+        updated_db_sub = repo.update_subscription(db_sub, updates)
+        return SubscriptionService._map_to_payload(updated_db_sub)
+
+    @staticmethod
+    def get_subscription(db: Session, device_id: str) -> Optional[SubscriptionPayload]:
+        """Get subscription from DB"""
+        repo = SubscriptionRepository(db)
+        db_sub = repo.get_subscription_by_device(device_id)
+        if not db_sub:
+            return None
+        return SubscriptionService._map_to_payload(db_sub)
+
+    @staticmethod
+    def _map_to_payload(db_sub: SubscriptionDB) -> SubscriptionPayload:
+        """Map DB model to Pydantic payload"""
+        trial_info = None
+        if db_sub.trial_end_date:
+            trial_info = TrialInfo(
+                start_date=db_sub.start_date,
+                end_date=db_sub.trial_end_date,
+                duration_days=14
             )
 
-        # Update permissions based on level
-        subscription.permissions = cls._get_permissions_for_level(new_level)
-
-        cls._subscriptions[device_id] = subscription
-        return subscription
-
-    @classmethod
-    def cancel_subscription(cls, device_id: str) -> bool:
-        """Cancel subscription (downgrade to free)"""
-        subscription = cls.get_subscription(device_id)
-        if not subscription:
-            return False
-
-        # Downgrade to free
-        subscription.level = SubscriptionLevel.FREE
-        subscription.limits = SubscriptionLimits.free_limits()
-        subscription.permissions = {}
-
-        cls._subscriptions[device_id] = subscription
-        return True
-
-    @classmethod
-    def check_feature_access(cls, device_id: str, feature_id: str) -> Dict[str, Any]:
-        """Check if device can access specific feature"""
-        subscription = cls.get_subscription(device_id)
-
-        if not subscription:
-            return {
-                "accessible": False,
-                "reason": "no_subscription",
-                "subscription_level": SubscriptionLevel.FREE.value
-            }
-
-        # Check if feature is available for current level
-        accessible = cls._is_feature_available_for_level(feature_id, subscription.level)
-
-        return {
-            "accessible": accessible,
-            "reason": None if accessible else "insufficient_level",
-            "subscription_level": subscription.level.value,
-            "limits": subscription.limits.dict() if not accessible else None
-        }
-
-    @classmethod
-    def track_usage(cls, device_id: str, resource_type: str, amount: int = 1) -> bool:
-        """Track resource usage"""
-        subscription = cls.get_subscription(device_id)
-        if not subscription:
-            return False
-
-        # Increment usage counter
-        subscription.limits.current_usage.increment(resource_type, amount)
-
-        # Check if limit exceeded
-        if subscription.limits.is_limit_exceeded(resource_type):
-            return False
-
-        cls._subscriptions[device_id] = subscription
-        return True
-
-    @classmethod
-    def reset_monthly_usage(cls, device_id: str) -> bool:
-        """Reset monthly usage counters"""
-        subscription = cls.get_subscription(device_id)
-        if not subscription:
-            return False
-
-        subscription.limits.current_usage = UsageCounters()
-        cls._subscriptions[device_id] = subscription
-        return True
-
-    @classmethod
-    def get_trial_status(cls, device_id: str) -> Optional[Dict[str, Any]]:
-        """Get trial status for device"""
-        subscription = cls.get_subscription(device_id)
-        if not subscription or not subscription.trial_info:
-            return None
-
-        trial = subscription.trial_info
-        return {
-            "is_active": trial.is_active,
-            "days_remaining": trial.days_remaining,
-            "start_date": trial.start_date.isoformat(),
-            "end_date": trial.end_date.isoformat()
-        }
-
-    @staticmethod
-    def _is_feature_available_for_level(feature_id: str, level: SubscriptionLevel) -> bool:
-        """Check if feature is available for subscription level"""
-        # Basic feature mapping (simplified)
-        feature_requirements = {
-            # Trial features (80% of basic)
-            "basic_scan": [SubscriptionLevel.TRIAL, SubscriptionLevel.FREE, SubscriptionLevel.PERSONAL, SubscriptionLevel.FAMILY, SubscriptionLevel.PREMIUM],
-            "ai_assistant_basic": [SubscriptionLevel.TRIAL, SubscriptionLevel.PERSONAL, SubscriptionLevel.FAMILY, SubscriptionLevel.PREMIUM],
-
-            # Personal+ features
-            "advanced_scanning": [SubscriptionLevel.PERSONAL, SubscriptionLevel.FAMILY, SubscriptionLevel.PREMIUM],
-            "family_controls": [SubscriptionLevel.FAMILY, SubscriptionLevel.PREMIUM],
-            "parental_monitoring": [SubscriptionLevel.FAMILY, SubscriptionLevel.PREMIUM],
-
-            # Premium features
-            "deepfake_detection": [SubscriptionLevel.PREMIUM],
-            "iot_security": [SubscriptionLevel.PREMIUM],
-            "advanced_analytics": [SubscriptionLevel.PREMIUM],
-            "unlimited_scans": [SubscriptionLevel.PREMIUM]
-        }
-
-        required_levels = feature_requirements.get(feature_id, [SubscriptionLevel.FREE])
-        return level in required_levels
-
-    @staticmethod
-    def _get_permissions_for_level(level: SubscriptionLevel) -> Dict[str, Any]:
-        """Get permissions dictionary for subscription level"""
-        base_permissions = {
-            "basic_scanning": True,
-            "basic_protection": True
-        }
-
-        if level in [SubscriptionLevel.PERSONAL, SubscriptionLevel.FAMILY, SubscriptionLevel.PREMIUM]:
-            base_permissions.update({
-                "advanced_scanning": True,
-                "ai_assistant": True
-            })
-
-        if level in [SubscriptionLevel.FAMILY, SubscriptionLevel.PREMIUM]:
-            base_permissions.update({
-                "family_controls": True,
-                "parental_monitoring": True,
-                "multi_device": True
-            })
-
-        if level == SubscriptionLevel.PREMIUM:
-            base_permissions.update({
-                "deepfake_detection": True,
-                "iot_security": True,
-                "advanced_analytics": True,
-                "unlimited_usage": True
-            })
-
-        return base_permissions
-
-    @classmethod
-    def get_all_subscriptions(cls) -> List[SubscriptionPayload]:
-        """Get all subscriptions (for admin/debug)"""
-        return list(cls._subscriptions.values())
+        return SubscriptionPayload(
+            level=SubscriptionLevel(db_sub.level),
+            start_date=db_sub.start_date,
+            end_date=db_sub.end_date,
+            is_active=db_sub.status in ["active", "trial"],
+            trial_info=trial_info,
+            limits=SubscriptionLimits(**db_sub.limits) if db_sub.limits else SubscriptionLimits.free_limits(),
+            permissions={f: True for f in db_sub.features} if db_sub.features else {},
+            device_id=db_sub.device_id,
+            user_id=db_sub.user_id
+        )
