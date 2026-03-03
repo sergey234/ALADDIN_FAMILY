@@ -1,3 +1,4 @@
+#if DEBUG
 import SwiftUI
 
 /**
@@ -227,6 +228,9 @@ struct TrialFlowTestView: View {
         .opacity(isRunningTest ? 0.5 : 1.0)
     }
 }
+
+
+#endif
 
 // MARK: - Preview
 

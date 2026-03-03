@@ -351,6 +351,18 @@ struct TariffsScreen: View {
                 let useAltPayments = AppConfig.useAlternativePayments
                 print("🔍 DEBUG Payment: regionCode = '\(regionCode)', useAlternativePayments = \(useAltPayments)")
                 
+                // 🔥 КРИТИЧЕСКАЯ ПРОВЕРКА ПРОДАКШНА: Trial upgrade
+                if let currentSubscription = SubscriptionManager.shared.currentSubscription,
+                   currentSubscription.level == .trial {
+                    // 🎯 TRIAL UPGRADE: Пользователь в trial хочет купить подписку
+                    print("🔥 TRIAL UPGRADE: User in trial wants to upgrade to \(tariffObj.id)")
+
+                    Task { @MainActor in
+                        await viewModel.upgradeFromTrialToPaid(tariff: tariffObj)
+                    }
+                    return
+                }
+
                 if AppConfig.useAlternativePayments {
                     // Россия → QR оплата на сайте
                     print("🇷🇺 Российский регион: открываем сайт для QR оплаты")

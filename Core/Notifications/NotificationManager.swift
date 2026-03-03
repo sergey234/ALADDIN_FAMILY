@@ -262,6 +262,21 @@ class NotificationManager: NSObject, ObservableObject {
             ]
         )
     }
+
+    /**
+     * 🔥 Уведомление об успешном upgrade из trial в платную подписку
+     */
+    func showUpgradeSuccessNotification() {
+        sendLocalNotification(
+            title: "🎉 Поздравляем!",
+            body: "Ваша подписка успешно активирована! Теперь доступны все функции защиты.",
+            category: .general,
+            userInfo: [
+                "type": "upgrade_success",
+                "action": "subscription_activated"
+            ]
+        )
+    }
     
     // MARK: - Notification Categories
     

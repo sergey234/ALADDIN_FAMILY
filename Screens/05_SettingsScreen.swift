@@ -853,24 +853,7 @@ class MockTariffService {
     }
 }
 
-class SettingsMockAPIService {
-    func getComponentsList(completion: @escaping (Result<[Any], Error>) -> Void) {
-        completion(.success([]))
-    }
-    func enableComponent(componentId: String) async throws -> Any {
-        return "enabled"
-    }
-    func disableComponent(componentId: String) async throws -> Any {
-        return "disabled"
-    }
-}
-
-class MockPositioningService {
-    var currentSystem = PositioningSystem.gps
-    var selectedSystem = PositioningSystem.gps
-    var currentRegionName: String = "Russia"
-    func saveSelectedSystem(_ system: PositioningSystem) {}
-}
+// ✅ ПРОДАКШН: Mock сервисы удалены - используются только реальные сервисы
 
 
 

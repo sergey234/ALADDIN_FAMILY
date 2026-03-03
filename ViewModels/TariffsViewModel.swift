@@ -620,6 +620,53 @@ class TariffsViewModel: ObservableObject {
     private func calculateSubscriptionEndDate() -> Date? {
         return Calendar.current.date(byAdding: .day, value: 30, to: Date())
     }
+
+    // MARK: - Trial Upgrade
+
+    /**
+     * 🔥 КРИТИЧЕСКАЯ ФУНКЦИЯ ПРОДАКШНА
+     * Upgrade из trial в платную подписку
+     * Заменяет trial JWT на платный, продлевает подписку
+     */
+    func upgradeFromTrialToPaid(tariff: Tariff) async {
+        logger.business("🔥 UPGRADE: Starting trial-to-paid upgrade for \(tariff.id)")
+
+        // 1. Проверяем что пользователь в trial
+        guard let currentSubscription = SubscriptionManager.shared.currentSubscription,
+              currentSubscription.level == .trial else {
+            logger.business("❌ UPGRADE: No active trial found")
+            errorMessage = "Trial период не активен"
+            return
+        }
+
+        logger.business("✅ UPGRADE: Trial confirmed, proceeding with payment")
+
+        // 2. Начинаем процесс оплаты
+        isLoading = true
+        errorMessage = nil
+
+        // 3. Выполняем оплату (через App Store или QR)
+        await purchaseTariff(tariff)
+
+        // 4. Если оплата успешна - сервер должен:
+        //    - Продлить подписку вместо окончания trial
+        //    - Выдать новый JWT с платными правами
+        //    - Обновить статус в БД
+
+        // 5. Обновляем локальный статус
+        if isPurchaseSuccessful {
+            logger.business("✅ UPGRADE: Trial-to-paid upgrade completed successfully")
+
+            // TariffManager обновится автоматически через purchaseTariff
+            // JWT обновится через APIService callback
+
+            NotificationManager.shared.showUpgradeSuccessNotification()
+        } else {
+            logger.business("❌ UPGRADE: Trial-to-paid upgrade failed")
+        }
+
+        isLoading = false
+    }
 }
 
 // MARK: - Tariff Model

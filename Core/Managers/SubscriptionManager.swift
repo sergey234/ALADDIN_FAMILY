@@ -509,70 +509,41 @@ final class SubscriptionManager: ObservableObject {
 
         let request = DeviceRegisterRequest(deviceId: deviceId, deviceType: deviceType)
 
-        // 🚨 EMERGENCY: Try GET instead of POST to see if server accepts it
-        print("🚨🚨🚨 EMERGENCY MODE: Using GET instead of POST for register-device")
+        // ✅ ПРОДАКШН: Реальный API вызов через APIService
+        logger.business("📡 Calling real API: /auth/register-device with POST")
 
-        let url = URL(string: "https://aladdin-ai.ru/auth/register-device")!
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "GET" // EMERGENCY CHANGE!
-
-        let (data, response) = try await URLSession.shared.data(for: urlRequest)
-        let httpResponse = response as? HTTPURLResponse
-
-        print("🚨🚨🚨 EMERGENCY RESPONSE:")
-        print("   - Status Code: \(httpResponse?.statusCode ?? 0)")
-        if let responseString = String(data: data, encoding: .utf8) {
-            print("   - Response Body: \(responseString.prefix(1000))")
+        let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JWTDeviceRegisterResponse, Error>) in
+            APIService.shared.registerDeviceAnonymously(request: request) { [self] result in
+                switch result {
+                case .success(let jwtResponse):
+                    self.logger.business("✅ Device registered successfully with real API")
+                    self.logger.business("   - Token: \(jwtResponse.token.prefix(20))...")
+                    self.logger.business("   - Subscription: \(jwtResponse.subscription.level)")
+                    continuation.resume(returning: jwtResponse)
+                case .failure(let error):
+                    self.logger.error("❌ Device registration failed", error: error)
+                    continuation.resume(throwing: error)
+                }
+            }
         }
 
-        // If server accepts GET, it might return some response
-        // For now, just return a mock response to continue
-        let mockResponse = JWTDeviceRegisterResponse(
-            token: "emergency-mock-token-\(UUID().uuidString)",
-            deviceId: deviceId,
-            expiresAt: Date().addingTimeInterval(24 * 60 * 60), // 1 day
-            registeredAt: Date(),
-            subscription: SubscriptionStatus(
-                level: .trial,
-                isActive: true,
-                expiresAt: Date().addingTimeInterval(14 * 24 * 60 * 60), // 14 days
-                trialInfo: TrialInfo(
-                    startDate: Date(),
-                    endDate: Date().addingTimeInterval(14 * 24 * 60 * 60), // 14 days
-                    durationDays: 14
-                ),
-                limits: SubscriptionLimits(
-                    maxDevices: 3,
-                    maxAIMessages: 50,
-                    maxScans: 100,
-                    maxReports: 10,
-                    currentUsage: UsageCounters(
-                        aiMessages: 0,
-                        scans: 0,
-                        reports: 0,
-                        devices: 0
-                    )
-                ),
-                components: [],
-                lastUpdated: Date()
-            )
-        )
-
-        print("✅ EMERGENCY: Created mock response, continuing...")
+        // ✅ Сохраняем реальный JWT токен от сервера
         await storeToken(JWTToken(
-            token: mockResponse.token,
-            deviceId: mockResponse.deviceId,
-            subscriptionLevel: mockResponse.subscription.level,
-            trialInfo: mockResponse.subscription.trialInfo,
-            expiresAt: Date().addingTimeInterval(24 * 60 * 60), // 1 day
-            issuedAt: Date(),
-            issuer: "emergency-test",
-            limits: mockResponse.subscription.limits,
-            components: []
+            token: response.token,
+            deviceId: response.deviceId,
+            subscriptionLevel: response.subscription.level,
+            trialInfo: response.subscription.trialInfo,
+            expiresAt: response.expiresAt,
+            issuedAt: response.registeredAt,
+            issuer: "aladdin-server",
+            limits: response.subscription.limits,
+            components: response.subscription.components
         ))
-        await updateSubscriptionStatus(mockResponse.subscription)
 
-        logger.business("✅ Device registered: \(deviceId)")
+        // ✅ Обновляем статус подписки реальными данными
+        await updateSubscriptionStatus(response.subscription)
+
+        logger.business("✅ Device registered successfully: \(deviceId) with real JWT")
     }
 
     // MARK: - Private Methods

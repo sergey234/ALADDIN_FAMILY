@@ -25,24 +25,7 @@ protocol ProtectionHistoryService {
 }
 
 // Temporary implementations for compilation
-class MockProtectionFeaturesService: ProtectionFeaturesService {
-    var features: [String] = []
-    func loadFeatures() {}
-    func toggleFeature(_ featureId: String, enabled: Bool) {}
-    func getFeaturesForLevel(_ level: Int) -> [String] { [] }
-}
-
-class MockToastService: ToastService {
-    func showToast(message: String, type: String, duration: TimeInterval) {}
-    func hideToast() {}
-}
-
-class MockProtectionHistoryService: ProtectionHistoryService {
-    var history: [String] = []
-    func addRecord(level: Int, reason: String, timestamp: Date) {}
-    func getRecentRecords(limit: Int) -> [String] { [] }
-    func clearHistory() {}
-}
+// ✅ ПРОДАКШН: Mock сервисы удалены - используются только реальные сервисы
 
 // Local TariffType enum for compilation
 // Import TariffType from TariffsScreen for compatibility
@@ -262,7 +245,7 @@ class SettingsViewModel: ObservableObject {
     init() {
         // Default constructor with default localized strings for preview/testing
         localizedStrings = LocalizedStrings()
-        // Use mock services for default initialization
+        // ✅ ПРОДАКШН: Все сервисы должны быть переданы через DI
         navigationService = nil
         localizationService = nil
         notificationService = nil
@@ -270,9 +253,9 @@ class SettingsViewModel: ObservableObject {
         tariffService = nil
         apiService = nil
         positioningService = nil
-        featuresService = MockProtectionFeaturesService()
-        toastService = MockToastService()
-        historyService = MockProtectionHistoryService()
+        featuresService = nil  // ✅ Реальный сервис будет передан через DI
+        toastService = nil      // ✅ Реальный сервис будет передан через DI
+        historyService = nil    // ✅ Реальный сервис будет передан через DI
         loadInitialState()
     }
 
