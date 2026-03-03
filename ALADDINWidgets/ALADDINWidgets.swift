@@ -468,15 +468,5 @@ struct AnalyticsWidgetEntryView: View {
 }
 
 // MARK: - Preview
-
-#Preview(as: .systemSmall) {
-    ALADDINWidgets()
-} timeline: {
-    FamilyProtectionEntry(
-        date: .now,
-        isProtectionEnabled: true,
-        childrenOnline: 2,
-        threatsBlocked: 15,
-        lastUpdate: "2 мин назад"
-    )
-}
+// #Preview не поддерживается в текущей версии Xcode/SwiftUI
+// Для тестирования виджетов используйте Xcode preview или симулятор

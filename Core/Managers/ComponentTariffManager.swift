@@ -101,48 +101,15 @@ class ComponentTariffManager: ObservableObject {
     /// Получить все доступные компоненты для тарифа
     func getAvailableComponents(for tariffType: TariffType) -> [String] {
         switch tariffType {
-        case .free, .personal:
-            // FREE и PERSONAL не получают компонентов
+        case .trial, .free, .personal:
+            // TRIAL, FREE и PERSONAL не получают компонентов
             return []
 
         case .family:
             // FAMILY получает 21 компонент
-            return [
-                // Сетевая защита (4)
-                "phishing_protection_agent",
-                "malware_detection_agent",
-                "mobile_security_agent",
-                "network_security_agent",
+            return getFamilyComponents()
 
-                // Родительский контроль (5)
-                "self_harm_detection_agent",
-                "grooming_detection_agent",
-                "online_predators_agent",
-                "psychological_support_agent",
-                "parental_control_bot",
-
-                // Мессенджеры (6)
-                "telegram_security_bot",
-                "whatsapp_security_bot",
-                "instagram_security_bot",
-                "max_messenger_security_bot",
-                "gaming_security_bot",
-                "browser_security_bot",
-
-                // Приватность (1)
-                "location_bubble_agent",
-
-                // Регуляторные (2)
-                "russian_child_protection_manager",
-                "russian_data_protection_manager",
-
-                // Интерфейсы (3)
-                "family_notification_manager",
-                "child_interface_manager",
-                "elderly_interface_manager"
-            ]
-
-        case .premium, .ultimate:
+        case .premium:
             // PREMIUM получает ВСЕ компоненты (42)
             return getFamilyComponents() + getPremiumOnlyComponents()
         }

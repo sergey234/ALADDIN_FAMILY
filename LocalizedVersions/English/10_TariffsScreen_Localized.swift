@@ -41,6 +41,7 @@ struct TariffsScreen: View {
     }
     
     enum TariffType: String {
+        case trial = "trial"
         case free = "free"
         case personal = "personal"
         case family = "family"
@@ -48,6 +49,7 @@ struct TariffsScreen: View {
         
         func title(localizationManager: LocalizationManager) -> String {
             switch self {
+            case .trial: return localizationManager.localized("tariffs_trial")
             case .free: return localizationManager.localized("tariffs_free")
             case .personal: return localizationManager.localized("tariffs_personal")
             case .family: return localizationManager.localized("tariffs_family")
@@ -57,6 +59,7 @@ struct TariffsScreen: View {
         
         var price: String {
             switch self {
+            case .trial: return "0 ₽"
             case .free: return "0 ₽"
             case .personal: return "290 ₽"
             case .family: return "490 ₽"
@@ -66,6 +69,7 @@ struct TariffsScreen: View {
         
         func period(localizationManager: LocalizationManager) -> String {
             switch self {
+            case .trial: return localizationManager.localized("tariffs_trial_period")
             case .free: return localizationManager.localized("tariffs_free_period")
             case .personal, .family, .premium: return localizationManager.localized("tariffs_period_month")
             }
@@ -73,6 +77,13 @@ struct TariffsScreen: View {
         
         func features(localizationManager: LocalizationManager) -> [String] {
             switch self {
+            case .trial: return [
+                localizationManager.localized("tariffs_trial_features_1"),
+                localizationManager.localized("tariffs_trial_features_2"),
+                localizationManager.localized("tariffs_trial_features_3"),
+                localizationManager.localized("tariffs_trial_features_4"),
+                localizationManager.localized("tariffs_trial_features_5")
+            ]
             case .free: return [
                 localizationManager.localized("tariffs_free_features_1"),
                 localizationManager.localized("tariffs_free_features_2"),
@@ -103,6 +114,7 @@ struct TariffsScreen: View {
         
         var color: Color {
             switch self {
+            case .trial: return Color(hex: "#10B981")  // Зеленый для trial
             case .free: return .textSecondary
             case .personal: return .primaryBlue
             case .family: return .secondaryGold
@@ -147,6 +159,7 @@ struct TariffsScreen: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
                         // Карточки тарифов
+                        tariffCard(.trial)
                         tariffCard(.free)
                         tariffCard(.personal)
                         tariffCard(.family)
@@ -205,8 +218,8 @@ struct TariffsScreen: View {
     // MARK: - Helpers
     
     private func getButtonText(for tariff: TariffType) -> String {
-        if tariff == .free {
-            return localizationManager.localized("tariffs_free_button")
+        if tariff == .trial || tariff == .free {
+            return localizationManager.localized("tariffs_trial_button")
         } else if selectedTariff == tariff {
             return localizationManager.localized("tariffs_selected")
         } else {

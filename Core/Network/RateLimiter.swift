@@ -216,7 +216,7 @@ class RateLimiter {
         return queue.sync {
             var stats: [String: Int] = [:]
             
-            for (endpoint, requests) in requestCounts {
+            for (endpoint, _) in requestCounts {
                 cleanOldRequests(for: endpoint)
                 stats[endpoint] = requestCounts[endpoint]?.count ?? 0
             }

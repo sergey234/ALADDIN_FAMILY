@@ -20,11 +20,11 @@ struct AppConfig {
         var baseURL: String {
             switch self {
             case .development:
-                return "https://aladdin-ai.ru/api"  // Используем payment_service
+                return "https://aladdin-ai.ru"  // Используем payment_service
             case .staging:
-                return "https://aladdin-ai.ru/api"  // Используем payment_service
+                return "https://aladdin-ai.ru"  // Используем payment_service
             case .production:
-                return "https://aladdin-ai.ru/api"  // Используем payment_service
+                return "https://aladdin-ai.ru"  // Используем payment_service
             }
         }
     }
@@ -198,7 +198,7 @@ struct AppConfig {
         // AI Assistant
         static let aiChat = "/ai/chat"
         static let aiSendMessage = "/ai/message"
-        
+
         // AI Assistant (новые endpoints для полной интеграции)
         static let aiAssistantChat = "/api/ai/assistant/chat"
         static let aiAssistantHistory = "/api/ai/assistant/history"
@@ -211,46 +211,46 @@ struct AppConfig {
         
         // ✅ ГЕЙМИФИКАЦИЯ: Gamification endpoints (30 endpoints)
         // Баланс единорогов (4 endpoints)
-        static let gamificationBalance = "/gamification/balance"
-        static let gamificationBalanceAdd = "/gamification/balance/add"
-        static let gamificationBalanceSubtract = "/gamification/balance/subtract"
-        static let gamificationBalanceHistory = "/gamification/balance/history"
+        static let gamificationBalance = "/api/gamification/balance"
+        static let gamificationBalanceAdd = "/api/gamification/balance/add"
+        static let gamificationBalanceSubtract = "/api/gamification/balance/subtract"
+        static let gamificationBalanceHistory = "/api/gamification/balance/history"
         
         // Награды (6 endpoints)
-        static let gamificationRewards = "/gamification/rewards"
-        static let gamificationRewardsClaim = "/gamification/rewards/claim"
-        static let gamificationRewardsHistory = "/gamification/rewards/history"
-        static let gamificationRewardsGive = "/gamification/rewards/give"
-        static let gamificationRewardsShop = "/gamification/rewards/shop"
-        static let gamificationRewardsPurchase = "/gamification/rewards/purchase"
-        
+        static let gamificationRewards = "/api/gamification/rewards"
+        static let gamificationRewardsClaim = "/api/gamification/rewards/claim"
+        static let gamificationRewardsHistory = "/api/gamification/rewards/history"
+        static let gamificationRewardsGive = "/api/gamification/rewards/give"
+        static let gamificationRewardsShop = "/api/gamification/rewards/shop"
+        static let gamificationRewardsPurchase = "/api/gamification/rewards/purchase"
+
         // Достижения (5 endpoints)
-        static let gamificationAchievements = "/gamification/achievements"
-        static let gamificationAchievementsUnlock = "/gamification/achievements/unlock"
-        static let gamificationAchievementsProgress = "/gamification/achievements/progress"
-        static let gamificationAchievement = "/gamification/achievements" // /{achievementId}
-        static let gamificationAchievementsClaim = "/gamification/achievements/claim"
-        
+        static let gamificationAchievements = "/api/gamification/achievements"
+        static let gamificationAchievementsUnlock = "/api/gamification/achievements/unlock"
+        static let gamificationAchievementsProgress = "/api/gamification/achievements/progress"
+        static let gamificationAchievement = "/api/gamification/achievements" // /{achievementId}
+        static let gamificationAchievementsClaim = "/api/gamification/achievements/claim"
+
         // Турниры (6 endpoints)
-        static let gamificationTournaments = "/gamification/tournaments"
-        static let gamificationTournamentsJoin = "/gamification/tournaments/join"
-        static let gamificationTournament = "/gamification/tournaments" // /{tournamentId}
-        static let gamificationTournamentsLeaderboard = "/gamification/tournaments/leaderboard"
-        static let gamificationTournamentsLeave = "/gamification/tournaments/leave"
-        static let gamificationTournamentsHistory = "/gamification/tournaments/history"
-        
+        static let gamificationTournaments = "/api/gamification/tournaments"
+        static let gamificationTournamentsJoin = "/api/gamification/tournaments/join"
+        static let gamificationTournament = "/api/gamification/tournaments" // /{tournamentId}
+        static let gamificationTournamentsLeaderboard = "/api/gamification/tournaments/leaderboard"
+        static let gamificationTournamentsLeave = "/api/gamification/tournaments/leave"
+        static let gamificationTournamentsHistory = "/api/gamification/tournaments/history"
+
         // Настройки игр (4 endpoints)
-        static let gamificationSettings = "/gamification/settings"
-        static let gamificationSettingsUpdate = "/gamification/settings/update"
-        static let gamificationSettingsNotifications = "/gamification/settings/notifications"
-        static let gamificationSettingsNotificationsUpdate = "/gamification/settings/notifications/update"
-        
+        static let gamificationSettings = "/api/gamification/settings"
+        static let gamificationSettingsUpdate = "/api/gamification/settings/update"
+        static let gamificationSettingsNotifications = "/api/gamification/settings/notifications"
+        static let gamificationSettingsNotificationsUpdate = "/api/gamification/settings/notifications/update"
+
         // Прогресс игр (5 endpoints)
-        static let gamificationProgress = "/gamification/progress"
-        static let gamificationProgressUpdate = "/gamification/progress/update"
-        static let gamificationProgressStats = "/gamification/progress/stats"
-        static let gamificationProgressLevel = "/gamification/progress/level"
-        static let gamificationProgressReset = "/gamification/progress/reset"
+        static let gamificationProgress = "/api/gamification/progress"
+        static let gamificationProgressUpdate = "/api/gamification/progress/update"
+        static let gamificationProgressStats = "/api/gamification/progress/stats"
+        static let gamificationProgressLevel = "/api/gamification/progress/level"
+        static let gamificationProgressReset = "/api/gamification/progress/reset"
         
         // ✅ РОДИТЕЛЬСКИЙ КОНТРОЛЬ: Parental Control Sync endpoints (20 endpoints)
         // Настройки (5 endpoints)
@@ -370,7 +370,7 @@ struct AppConfig {
         
         // Devices
         static let devices = "/devices"
-        static let deviceRegister = "/devices/register-ios"
+        static let deviceRegister = "/auth/register-device"
         static let deviceDetail = "/devices" // /devices/{deviceId}
         static let deviceSettings = "/devices" // /devices/{deviceId}/settings
         
@@ -379,6 +379,8 @@ struct AppConfig {
         static let logout = "/auth/logout"
         static let register = "/auth/register"
         static let authRefresh = "/auth/refresh"
+        static let registerDevice = "/auth/register-device"
+        static let registerDeviceTrial = "/auth/register-device-trial"
         
         // ✅ ЗАДАЧА 25: Roadside Assistance
         static let roadsideCall = "/api/roadside-assistance/call"

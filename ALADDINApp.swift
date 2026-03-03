@@ -124,7 +124,10 @@ struct ALADDINApp: App {
     @StateObject private var navigationManager = NavigationManager()
     // ✅ Добавляем LocalizationManager
     @StateObject private var localizationManager = LocalizationManager()
+    // ✅ Добавляем SubscriptionManager для JWT токенов
+    private var subscriptionManager = SubscriptionManager.shared
     @AppStorage("selected_theme") private var selectedTheme: String = "system"
+
     // ✅ ИСПРАВЛЕНИЕ: Отслеживаем состояние приложения для предотвращения сброса навигации
     @Environment(\.scenePhase) private var scenePhase
     // Убрали @AppStorage для онбординга
@@ -144,6 +147,22 @@ struct ALADDINApp: App {
     }
     
     init() {
+        // 🔴 ДОБАВИТЬ ГЛОБАЛЬНЫЙ EXCEPTION HANDLER - поймать точную причину crash
+        NSSetUncaughtExceptionHandler { exception in
+            print("💥💥💥 GLOBAL CRASH DETECTED! 💥💥💥")
+            print("💥 Exception Name: \(exception.name)")
+            print("💥 Exception Reason: \(exception.reason ?? "No reason provided")")
+            print("💥 Stack Trace:")
+            for (index, symbol) in exception.callStackSymbols.enumerated() {
+                print("💥   [\(index)] \(symbol)")
+            }
+            print("💥💥💥 END OF CRASH REPORT 💥💥💥")
+        }
+
+        print("🚀🚀🚀 ALADDINApp.init() called - APP STARTING")
+        print("🚀🚀🚀 SubscriptionManager.shared created: \(SubscriptionManager.shared)")
+        VisualLogger.shared.log("🚀🚀🚀 ALADDINApp.init() called", level: .info)
+        print("📱📱📱 VISUAL_LOGGER_TEST: If you see this in Xcode Console, VisualLogger overlay may not be visible")
         print("🚀 ALADDINApp: Начало инициализации приложения")
         // ✅ ИСПРАВЛЕНИЕ: В init() НЕ используем @StateObject, они еще не созданы!
         // Вся логика инициализации перенесена в .onAppear
@@ -181,7 +200,7 @@ struct ALADDINApp: App {
                 DebugAuthTokenSeeder.seedIfNeeded()
             } else if hadDebugTokens {
                 // Если токены были удалены, но skipDebugTokens = true, создаем токены в любом случае
-        DebugAuthTokenSeeder.seedIfNeeded()
+                DebugAuthTokenSeeder.seedIfNeeded()
             }
         } else {
             if skipDebugTokens {
@@ -192,6 +211,13 @@ struct ALADDINApp: App {
             print("   Для получения валидных токенов используйте performRealLogin() в Debug Console")
         }
         
+        // 🧪 ТЕСТИРОВАНИЕ CRASH: Добавляем изолированный тест сети
+        print("🧪🧪🧪 CRASH TESTING: Starting EMERGENCY network test (GET instead of POST)")
+        Task {
+            let networkTestResult = await SubscriptionManager.shared.emergencyTestGET()
+            print("🧪🧪🧪 CRASH TESTING: Emergency test result = \(networkTestResult)")
+        }
+
         // ✅ АВТОМАТИЧЕСКИЙ ЛОГИН: Если установлены переменные окружения, выполняем логин автоматически
         // ✅ ПРОДАКШЕН: Проверяем сохраненные credentials для автоматического логина
         DispatchQueue.global(qos: .utility).async {
@@ -291,6 +317,15 @@ struct ALADDINApp: App {
 
                 // Запускаем инициализацию при появлении
                 Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager)
+
+                // ✅ Инициализируем SubscriptionManager для JWT токенов
+                print("🚀 ALADDINApp: Starting SubscriptionManager initialization Task")
+                Task {
+                    print("🚀 ALADDINApp: Task started, calling initializeOnAppStart()")
+                    await subscriptionManager.initializeOnAppStart()
+                    print("🚀 ALADDINApp: Task completed, initializeOnAppStart() finished")
+                }
+
                 print("✅ ALADDINApp: Инициализация завершена")
             }
         }
@@ -567,7 +602,7 @@ struct ALADDINApp: App {
             .onAppear {
                 let navManager = navigationManager
                 let locManager = localizationManager
-                Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager)
+                Self.initializeNavigation(navigationManager: navManager, localizationManager: locManager)
             }
             // ✅ ИСПРАВЛЕНИЕ: Упрощенная обработка возврата из фона - без лишних проверок
             .onChange(of: scenePhase) { newPhase in
@@ -588,12 +623,12 @@ struct ALADDINApp: App {
                     HStack {
                         Spacer()
                         MasterLogger.shared.visualLogView
-                            .frame(width: 300, height: 150)
+                            .frame(maxWidth: 280) // Ограничиваем только ширину
                             .padding(.trailing, 16)
-                            .padding(.bottom, 16)
+                            .padding(.bottom, 120) // Подняли чуть выше, чтобы не мешало кнопке отправки
                     }
                 }
-                .ignoresSafeArea()
+                // .ignoresSafeArea() // Убрали, чтобы окно логов поднималось вместе с клавиатурой
             )
             #endif
         }

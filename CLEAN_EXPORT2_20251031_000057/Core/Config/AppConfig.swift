@@ -20,9 +20,9 @@ struct AppConfig {
         // ✅ ИСПРАВЛЕНИЕ: Используем реальный сервер для DEBUG тоже
         // localhost НЕ РАБОТАЕТ на реальном iPhone/iPad и в симуляторе если backend не локальный
         // Для локального тестирования измените на IP вашего Mac: "http://192.168.X.X:8080/api"
-        return "https://api.aladdin.family/api"
+        return "https://aladdin-ai.ru"
         #else
-        return "https://api.aladdin.family/api"
+        return "https://aladdin-ai.ru"
         #endif
     }()
     
@@ -97,7 +97,7 @@ struct AppConfig {
         // Notifications
         static let notifications = "/notifications"
         static let markRead = "/notifications/read"
-        static let deviceRegister = "/devices/register-ios"
+        static let deviceRegister = "/auth/register-device"
         
         // Auth
         static let login = "/auth/login"

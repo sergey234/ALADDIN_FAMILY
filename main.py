@@ -239,6 +239,16 @@ except ImportError as e:
     subscription_sync_router_available = False
     subscription_sync_router = None
 
+# ✅ ЭТАП 2: Импортируем основной Subscription Router
+try:
+    from app.routers.subscription import router as subscription_router
+    print(f"✅ subscription_router импортирован: {subscription_router}")
+    subscription_router_available = True
+except ImportError as e:
+    print(f"⚠️ subscription_router недоступен: {e}")
+    subscription_router_available = False
+    subscription_router = None
+
 # ✅ ЭТАП 2: Импортируем App Settings Sync Router
 try:
     from security.api.routers.app_settings_sync_router import router as app_settings_sync_router
@@ -472,6 +482,17 @@ if subscription_sync_router_available:
         print("✅ Роутер Subscription Sync подключен")
     except Exception as e:
         print(f"❌ Ошибка подключения Subscription Sync: {e}")
+
+# ✅ ЭТАП 2: Подключение основного Subscription Router
+if subscription_router_available:
+    try:
+        app.include_router(subscription_router)
+        print("✅ Основной роутер Subscription подключен")
+        print(f"✅ Subscription router routes: {[route.path for route in subscription_router.routes]}")
+    except Exception as e:
+        print(f"❌ Ошибка подключения основного Subscription: {e}")
+else:
+    print("⚠️ Основной subscription_router недоступен, пропускаем подключение")
 
 # ✅ ЭТАП 2: Подключение App Settings Sync Router
 if app_settings_sync_router_available:

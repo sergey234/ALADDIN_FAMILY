@@ -69,22 +69,22 @@ struct TariffCard: Identifiable {
     /// Эмодзи тарифа
     var emoji: String {
         switch tariffType {
+        case .trial: return "🎁"
         case .free: return "🆓"
         case .personal: return "💎"
         case .family: return "👨‍👩‍👧‍👦"
         case .premium: return "⭐"
-        case .ultimate: return "🔥"
         }
     }
     
     /// Уровень тарифа (для сравнения)
     private func getTariffLevel(_ tariff: TariffType) -> Int {
         switch tariff {
-        case .free: return 0
-        case .personal: return 1
-        case .family: return 2
-        case .premium: return 3
-        case .ultimate: return 4
+        case .trial: return 0    // Trial уровень
+        case .free: return 1     // Free уровень
+        case .personal: return 2 // Personal уровень
+        case .family: return 3   // Family уровень
+        case .premium: return 4  // Premium уровень
         }
     }
 }
@@ -96,14 +96,14 @@ extension TariffType {
     func createCard(localizationManager: LocalizationManager) -> TariffCard {
         let devices: String = {
             switch self {
+            case .trial: return "10"
             case .free: return "1"
-            case .personal: return "4"
+            case .personal: return "2"
             case .family: return "6"
             case .premium: return "10"
-            case .ultimate: return "∞"
             }
         }()
-        
+
         return TariffCard(
             id: rawValue,
             tariffType: self,
@@ -111,11 +111,11 @@ extension TariffType {
             devices: devices,
             icon: {
                 switch self {
+                case .trial: return "🎁"
                 case .free: return "🆓"
                 case .personal: return "💎"
                 case .family: return "👨‍👩‍👧‍👦"
                 case .premium: return "⭐"
-                case .ultimate: return "🔥"
                 }
             }()
         )

@@ -20,11 +20,11 @@ struct AppConfig {
         var baseURL: String {
             switch self {
             case .development:
-                return "https://aladdin-ai.ru/api"  // Используем payment_service
+                return "https://aladdin-ai.ru"  // Используем payment_service
             case .staging:
-                return "https://aladdin-ai.ru/api"  // Используем payment_service
+                return "https://aladdin-ai.ru"  // Используем payment_service
             case .production:
-                return "https://aladdin-ai.ru/api"  // Используем payment_service
+                return "https://aladdin-ai.ru"  // Используем payment_service
             }
         }
     }
@@ -45,7 +45,14 @@ struct AppConfig {
     static let apiBaseURL: String = currentEnvironment.baseURL
     
     /// Использовать Mock API вместо реального (только для DEBUG)
-    static let useMockAPI: Bool = true
+    /// ✅ ИСПРАВЛЕНО: Продакшен использует реальный API
+    static let useMockAPI: Bool = {
+        #if DEBUG && USE_MOCK_FOR_DEVELOPMENT
+        return true  // Только для разработки с флагом USE_MOCK_FOR_DEVELOPMENT
+        #else
+        return false // Продакшен использует реальный API
+        #endif
+    }()
     
     /// Режим съёмки скриншотов (принудительно включает русский язык)
     static let screenshotMode: Bool = false
@@ -73,7 +80,7 @@ struct AppConfig {
     static var authToken: String? {
         get {
             // Сначала пробуем Keychain (основное хранилище)
-            if let keychainToken = KeychainManager.shared.load(String.self, forKey: .authToken) {
+            if let keychainToken = KeychainManager.shared.loadString(forKey: .authToken) {
                 return keychainToken
             }
             // Fallback на UserDefaults для обратной совместимости
@@ -207,7 +214,7 @@ struct AppConfig {
         
         // Devices
         static let devices = "/devices"
-        static let deviceRegister = "/devices/register-ios"
+        static let deviceRegister = "/auth/register-device"
         static let deviceDetail = "/devices" // /devices/{deviceId}
         static let deviceSettings = "/devices" // /devices/{deviceId}/settings
         

@@ -29,9 +29,12 @@ struct SettingsScreenMinimal: View {
     }
 }
 
-// MARK: - Preview
-#Preview {
-    SettingsScreenMinimal()
-        .environmentObject(NavigationManager.shared)
-        .environmentObject(LocalizationManager.shared)
+#if DEBUG
+struct SettingsScreenMinimal_Previews: PreviewProvider {
+    static var previews: some View {
+        SettingsScreenMinimal()
+            .environmentObject(NavigationManager.shared)
+            .environmentObject(LocalizationManager.shared)
+    }
 }
+#endif

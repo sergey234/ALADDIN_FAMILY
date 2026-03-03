@@ -298,7 +298,8 @@ class APIService: ObservableObject {
             userId: AppConfig.authToken ?? "guest",
             timestamp: Date()
         )
-        networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantChat, body: request, completion: completion)
+        // ✅ AI Assistant - публичный эндпоинт (демонстрация возможностей)
+        networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantChat, body: request, requiresAuth: false, completion: completion)
     }
 
     // История чата

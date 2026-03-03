@@ -4,11 +4,13 @@ import Combine
 /// 💾 Backup Recovery Modal
 /// Модальное окно для восстановления доступа из локального сохранения
 struct BackupRecoveryModal: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
     @Binding var isPresented: Bool
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var showSuccess = false
-    
+
     // Callback для успешного восстановления
     var onRecoverySuccess: (() -> Void)?
     
@@ -26,11 +28,11 @@ struct BackupRecoveryModal: View {
                 
                 // Заголовок
                 VStack(spacing: 8) {
-                    Text("Восстановление из сохранения")
+                    Text(localizationManager.localized("recovery_backup_title"))
                         .font(.title2)
                         .fontWeight(.bold)
-                    
-                    Text("Восстановить доступ используя сохраненный код")
+
+                    Text(localizationManager.localized("recovery_backup_description"))
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -64,7 +66,7 @@ struct BackupRecoveryModal: View {
                             .font(.system(size: 40))
                             .foregroundColor(.green)
                         
-                        Text("Доступ восстановлен!")
+                        Text(localizationManager.localized("recovery_backup_success"))
                             .font(.body)
                             .fontWeight(.semibold)
                     }
@@ -91,7 +93,7 @@ struct BackupRecoveryModal: View {
                     Button(action: {
                         performRecovery()
                     }) {
-                        Text("Восстановить")
+                        Text(localizationManager.localized("recovery_backup_button"))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
@@ -120,11 +122,11 @@ struct BackupRecoveryModal: View {
                 }
             }
             .padding(20)
-            .navigationTitle("Восстановление")
+            .navigationTitle(localizationManager.localized("recovery_nav_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Отмена") {
+                    Button(localizationManager.localized("common.cancel")) {
                         isPresented = false
                     }
                 }
@@ -153,14 +155,14 @@ struct BackupRecoveryModal: View {
         // Проверяем наличие кода
         guard RecoveryCodeStorageManager.shared.hasRecoveryCode() else {
             isLoading = false
-            errorMessage = "Сохранение не найдено. Убедитесь, что вы ранее создали семью на этом устройстве."
+            errorMessage = localizationManager.localized("recovery_backup_no_code")
             return
         }
         
         // Получаем код
         guard let recoveryCode = RecoveryCodeStorageManager.shared.getRecoveryCode() else {
             isLoading = false
-            errorMessage = "Ошибка чтения сохранения"
+            errorMessage = "Ошибка чтения сохранения" // TODO: Добавить ключ локализации
             return
         }
         

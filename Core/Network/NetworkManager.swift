@@ -41,7 +41,7 @@ class NetworkManager: NSObject, ObservableObject {
     // MARK: - SSL Pinning Properties
     
     /// Включен ли SSL Pinning (по умолчанию включен для безопасности)
-    let isSSLPinningEnabled: Bool
+    var isSSLPinningEnabled: Bool
     
     /// Домены для которых включен SSL Pinning
     let pinnedDomains: Set<String>
@@ -52,6 +52,17 @@ class NetworkManager: NSObject, ObservableObject {
     // MARK: - Init
     
     init(baseURL: String = AppConfig.apiBaseURL, enableSSLPinning: Bool = true) {
+        // 🟡 ОТКЛЮЧИТЬ SSL PINNING - проверить, связано ли с сертификатами
+        // TEMPORARILY DISABLE SSL PINNING FOR TESTING CRASH CAUSE
+        let shouldDisableSSLPinning = ProcessInfo.processInfo.environment["DISABLE_SSL_PINNING"] == "1"
+        let actualEnableSSLPinning = enableSSLPinning && !shouldDisableSSLPinning
+
+        print("🔐 SSL PINNING: enableSSLPinning parameter = \(enableSSLPinning)")
+        print("🔐 SSL PINNING: DISABLE_SSL_PINNING env = \(ProcessInfo.processInfo.environment["DISABLE_SSL_PINNING"] ?? "not set")")
+        print("🔐 SSL PINNING: Final decision = \(actualEnableSSLPinning ? "ENABLED" : "DISABLED")")
+
+        // Override the property with our decision
+        self.isSSLPinningEnabled = actualEnableSSLPinning
         print("🚨 NetworkManager.init: Начало")
         print("   - baseURL: '\(baseURL)'")
         print("   - baseURL.isEmpty: \(baseURL.isEmpty)")
@@ -239,15 +250,15 @@ class NetworkManager: NSObject, ObservableObject {
         completion: @escaping (Result<T, Error>) -> Void
     ) {
         let fullURL = baseURL + endpoint
-        print("🔵 NetworkManager.post: Начало")
-        print("   - URL: \(fullURL)")
+        logger.network("🔵 NetworkManager.post: Starting request")
+        logger.network("   - URL: \(fullURL)")
         
         // Проверяем и обновляем токен если нужно
         Task {
             _ = await JWTTokenManager.shared.refreshTokenIfNeeded()
             
             guard let url = URL(string: fullURL) else {
-                print("❌ NetworkManager.post: Неверный URL: \(fullURL)")
+                logger.error("❌ NetworkManager.post: Invalid URL: \(fullURL)")
                 completion(.failure(NetworkError.invalidURL))
                 return
             }
@@ -259,7 +270,7 @@ class NetworkManager: NSObject, ObservableObject {
             // Добавляем X-API-Key для payment_service endpoints
             if endpoint.contains("activation") || endpoint.contains("subscription") {
                 request.setValue("PUBLIC_CLIENT_KEY", forHTTPHeaderField: "X-API-Key")
-                print("   - Добавлен X-API-Key заголовок")
+                logger.network("   - Added X-API-Key header")
             }
             
             // ✅ ПРОВЕРКА АВТОРИЗАЦИИ: Если требуется авторизация, проверяем токен
@@ -285,6 +296,8 @@ class NetworkManager: NSObject, ObservableObject {
             do {
                 let bodyData = try JSONEncoder().encode(body)
                 request.httpBody = bodyData
+                print("📦 REQUEST BODY: \(String(data: bodyData, encoding: .utf8) ?? "NIL")")
+                print("📦 REQUEST BODY SIZE: \(bodyData.count) bytes")
                 if let bodyString = String(data: bodyData, encoding: .utf8) {
                     print("   - Body: \(bodyString)")
                 }
@@ -605,8 +618,11 @@ class NetworkManager: NSObject, ObservableObject {
         request: URLRequest,
         completion: @escaping (Result<T, Error>) -> Void
     ) {
+        print("🚀🚀🚀 PERFORM_REQUEST STARTED for \(request.url?.absoluteString ?? "unknown")")
+
         // ✅ ЗАДАЧА 62: Проверка rate limit перед запросом
         let endpoint = request.url?.path ?? "unknown"
+        print("📊 ENDPOINT: \(endpoint)")
 
         guard rateLimiter.canMakeRequest(to: endpoint) else {
             // Лимит превышен - возвращаем ошибку
@@ -651,7 +667,10 @@ class NetworkManager: NSObject, ObservableObject {
         // 🔍 NETWORK: Логируем исходящий запрос
         logger.logRequest(request)
 
+        print("🔥🔥🔥 ABOUT TO CALL session.dataTask for \(request.url?.absoluteString ?? "unknown")")
+
         session.dataTask(with: request) { [weak self] data, response, error in
+            print("🔥🔥🔥 SESSION DATATASK CALLBACK STARTED for \(request.url?.absoluteString ?? "unknown")")
             // 🔍 NETWORK: Логируем входящий ответ
             logger.logResponse(response, data: data)
 
@@ -736,7 +755,7 @@ class NetworkManager: NSObject, ObservableObject {
                 
                 // Логируем тело ответа для отладки
                 if let data = data, let responseString = String(data: data, encoding: .utf8) {
-                    print("   - Response body: \(responseString.prefix(200))")
+                    logger.network("   - Response body: \(responseString.prefix(200))")
                 }
                 
                 // Обработка 429 ошибки (Too Many Requests) - rate limit
@@ -987,6 +1006,46 @@ class NetworkManager: NSObject, ObservableObject {
             }
         }.resume()
     }
+
+    // MARK: - Диагностические методы для отладки crash
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        print("🌐🌐🌐 URLSessionDelegate: Task completed")
+        print("   - Task: \(task.taskIdentifier)")
+        print("   - URL: \(task.currentRequest?.url?.absoluteString ?? "NIL")")
+        print("   - Error: \(error?.localizedDescription ?? "NIL")")
+        print("   - Thread: \(Thread.current)")
+        print("   - Is main: \(Thread.isMainThread)")
+
+        if let error = error {
+            print("   - Error Domain: \((error as NSError).domain)")
+            print("   - Error Code: \((error as NSError).code)")
+            print("   - Error UserInfo: \((error as NSError).userInfo)")
+        }
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
+        print("🌐🌐🌐 URLSessionDelegate: Received response")
+        print("   - Task: \(dataTask.taskIdentifier)")
+        print("   - URL: \(response.url?.absoluteString ?? "NIL")")
+
+        if let httpResponse = response as? HTTPURLResponse {
+            print("   - Status Code: \(httpResponse.statusCode)")
+            print("   - Headers: \(httpResponse.allHeaderFields)")
+        }
+
+        completionHandler(.allow)
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        print("🌐🌐🌐 URLSessionDelegate: Received data")
+        print("   - Task: \(dataTask.taskIdentifier)")
+        print("   - Data length: \(data.count) bytes")
+
+        if let stringData = String(data: data, encoding: .utf8), data.count < 1000 {
+            print("   - Data content: \(stringData)")
+        }
+    }
 }
 
 // MARK: - URLSessionDelegate
@@ -1126,6 +1185,7 @@ extension NetworkManager: URLSessionDelegate {
         #endif
     }
 }
+
 
 // MARK: - Network Error
 // NetworkError теперь определен в отдельном файле NetworkError.swift

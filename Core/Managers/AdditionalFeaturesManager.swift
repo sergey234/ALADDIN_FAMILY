@@ -72,7 +72,7 @@ class AdditionalFeaturesManager: ObservableObject {
     private func getAllAvailableFeatures() -> [AdditionalFeature] {
         var allFeatures: [AdditionalFeature] = []
         // Собираем из всех тарифов (вручную, так как TariffType не CaseIterable)
-        let allTariffs: [TariffType] = [.free, .personal, .family, .premium, .ultimate]
+        let allTariffs: [TariffType] = [.free, .personal, .family, .premium]
         for tariff in allTariffs {
             allFeatures.append(contentsOf: tariff.allAdditionalFeatures())
         }

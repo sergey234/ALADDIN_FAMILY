@@ -16,8 +16,10 @@ FastAPI endpoints для интеграции AI Assistant с мобильным
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends, Request
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
+import jwt
 import logging
 import sys
 import os
@@ -27,19 +29,89 @@ backend_path = "/opt/aladdin-backend"
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
 
+# Add current directory to path for local development
+current_dir = os.path.dirname(os.path.abspath(__file__))
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+
 try:
     from sfm_adapter import sfm_adapter
     SFM_ADAPTER_AVAILABLE = True
+    print("✅ SFM Adapter loaded successfully")
 except ImportError as e:
     SFM_ADAPTER_AVAILABLE = False
     sfm_adapter = None
-    print(f"SFM Adapter not available: {e}")
+    print("❌ SFM Adapter not available: {}".format(e))
+    print("   Current sys.path: {}".format(sys.path))
+
+# JWT Configuration
+JWT_SECRET = os.getenv("JWT_SECRET", "aladdin-jwt-secret-key-2026-production-ready")
+JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+security = HTTPBearer()
 
 logger = logging.getLogger(__name__)
 
 # Создаем FastAPI Router
 router = APIRouter(prefix="/api/ai/assistant", tags=["AI Assistant"])
 
+
+# =============================================================================
+# JWT Authentication & Rate Limiting
+# =============================================================================
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    """Проверяет JWT токен и возвращает данные пользователя с уровнем подписки"""
+    try:
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+
+        # Извлекаем subscription данные из payload
+        subscription = payload.get("subscription", {})
+        level = subscription.get("level", "free")
+        limits = subscription.get("limits", {})
+
+        return {
+            "user_id": payload.get("sub"),
+            "email": payload.get("email"),
+            "subscription_level": level,
+            "limits": limits,
+            "payload": payload
+        }
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# Rate limiting storage (in production use Redis)
+rate_limit_storage = {}
+
+def check_rate_limit(user_id: str, subscription_level: str) -> bool:
+    """Проверяет rate limit для пользователя"""
+    now = datetime.now()
+    today = now.date()
+
+    if user_id not in rate_limit_storage:
+        rate_limit_storage[user_id] = {"date": today, "count": 0}
+
+    user_data = rate_limit_storage[user_id]
+
+    # Сбрасываем счетчик каждый день
+    if user_data["date"] != today:
+        user_data["date"] = today
+        user_data["count"] = 0
+
+    # Проверяем лимиты по уровню подписки
+    if subscription_level == "free":
+        limit = 10  # 10 сообщений в день
+    elif subscription_level == "trial":
+        limit = 50  # 50 сообщений в день для trial
+    else:  # premium
+        limit = float('inf')  # unlimited
+
+    if user_data["count"] >= limit:
+        return False
+
+    user_data["count"] += 1
+    return True
 
 # =============================================================================
 # Pydantic модели для запросов и ответов
@@ -164,7 +236,7 @@ def _get_fallback_response(context: str = "general") -> Dict[str, Any]:
 
 # 1. POST /api/ai/assistant/chat - Отправка сообщения AI помощнику
 @router.post("/chat", response_model=ChatMessageResponse)
-async def ai_assistant_chat(request: ChatMessageRequest) -> ChatMessageResponse:
+async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(get_current_user)) -> ChatMessageResponse:
     """
     AI помощник - обработка сообщений пользователя
     
@@ -174,6 +246,16 @@ async def ai_assistant_chat(request: ChatMessageRequest) -> ChatMessageResponse:
     Returns:
         Ответ AI помощника с рекомендациями
     """
+    # Проверяем rate limit
+    user_id = user["user_id"] or "anonymous"
+    subscription_level = user["subscription_level"]
+
+    if not check_rate_limit(user_id, subscription_level):
+        raise HTTPException(
+            status_code=429,
+            detail=f"Rate limit exceeded for {subscription_level} subscription. Please upgrade or try again tomorrow."
+        )
+
     try:
         if SFM_ADAPTER_AVAILABLE and sfm_adapter:
             data = {

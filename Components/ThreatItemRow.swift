@@ -48,6 +48,8 @@ struct ThreatTariffRow: View {
     /// Цвет полоски (цвет тарифа)
     private var tariffColor: Color {
         switch tariff {
+        case .trial:
+            return Color(hex: "#10B981").opacity(0.6)  // Зеленый для trial
         case .free:
             return Color.textSecondary.opacity(0.6)
         case .personal:
@@ -56,14 +58,14 @@ struct ThreatTariffRow: View {
             return Color.secondaryGold.opacity(0.8)
         case .premium:
             return Color(hex: "#A855F7").opacity(0.8)
-        case .ultimate:
-            return Color(hex: "#FF6B35").opacity(0.8)
         }
     }
     
     /// Цвет бейджа тарифа
     private var tariffBadgeColor: Color {
         switch tariff {
+        case .trial:
+            return Color(hex: "#10B981").opacity(0.9)  // Зеленый для trial
         case .free:
             return Color.textSecondary.opacity(0.8)
         case .personal:
@@ -72,8 +74,6 @@ struct ThreatTariffRow: View {
             return Color.secondaryGold.opacity(0.9)
         case .premium:
             return Color(hex: "#A855F7").opacity(0.9)
-        case .ultimate:
-            return Color(hex: "#FF6B35").opacity(0.9)
         }
     }
 }

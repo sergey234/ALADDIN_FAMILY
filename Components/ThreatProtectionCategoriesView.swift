@@ -104,6 +104,8 @@ struct ThreatProtectionCategoriesView: View {
     private func tariffBadge(for tariff: TariffType) -> some View {
         let (badgeText, badgeColor): (String, Color) = {
             switch tariff {
+            case .trial:
+                return (localizationManager.localized("tariffs_trial"), .green)
             case .free:
                 return (localizationManager.localized("tariffs_free"), .gray)
             case .personal:
@@ -112,8 +114,6 @@ struct ThreatProtectionCategoriesView: View {
                 return (localizationManager.localized("tariffs_family"), .orange)
             case .premium:
                 return (localizationManager.localized("tariffs_premium"), .purple)
-            case .ultimate:
-                return (localizationManager.localized("tariffs_ultimate"), .red)
             }
         }()
         

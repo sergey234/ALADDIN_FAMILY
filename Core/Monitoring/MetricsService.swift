@@ -281,7 +281,7 @@ protocol Metric: Codable {
 /// API метрика
 struct APIMetric: Metric {
     let timestamp: Date
-    let type: String = "api_request"
+    var type: String = "api_request"
     let endpoint: String
     let method: String
     let responseTime: Double
@@ -359,7 +359,7 @@ struct AlertMetric: Metric {
 /// Метрика здоровья системы
 struct HealthMetric: Metric {
     let timestamp: Date
-    let type: String = "health"
+    var type: String = "health"
     let status: String
     let uptime: Double
     let activeComponents: Int

@@ -182,11 +182,11 @@ class ProtectionSettingsManager: ObservableObject {
     /// Получить уровень тарифа (для сравнения)
     private func tariffLevel(_ tariffType: TariffType) -> Int {
         switch tariffType {
-        case .free: return 0
-        case .personal: return 1
-        case .family: return 2
-        case .premium: return 3
-        case .ultimate: return 4
+        case .trial: return 0    // Trial уровень
+        case .free: return 1     // Free уровень
+        case .personal: return 2 // Personal уровень
+        case .family: return 3   // Family уровень
+        case .premium: return 4  // Premium уровень (максимум)
         }
     }
     

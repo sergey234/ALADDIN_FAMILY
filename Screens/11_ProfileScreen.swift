@@ -38,6 +38,8 @@ struct ProfileScreen: View {
     /// Название текущего тарифа для отображения
     private var currentTariffDisplayName: String {
         switch tariffManager.currentTariff {
+        case .trial:
+            return localizationManager.localized("tariffs_trial")
         case .free:
             return localizationManager.localized("tariffs_free")
         case .personal:
@@ -46,8 +48,6 @@ struct ProfileScreen: View {
             return localizationManager.localized("tariffs_family")
         case .premium:
             return localizationManager.localized("tariffs_premium")
-        case .ultimate:
-            return localizationManager.localized("tariffs_ultimate")
         }
     }
     

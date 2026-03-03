@@ -84,6 +84,15 @@ class AIAssistantViewModel: ObservableObject {
         // ✅ ИСПРАВЛЕНО: Используем реальный API вместо симуляции
         isAITyping = true
 
+        // 🔍 ЛОГИРОВАНИЕ: Проверяем состояние токена перед отправкой
+        print("🤖 AIAssistantViewModel: About to call sendMessageToAI")
+        print("🤖 AIAssistantViewModel: AppConfig.authToken is nil = \(AppConfig.authToken == nil)")
+        if let token = AppConfig.authToken {
+            print("🤖 AIAssistantViewModel: Token exists, length = \(token.count)")
+        } else {
+            print("🤖 AIAssistantViewModel: No token available - this will cause 401 error")
+        }
+
         apiService.sendMessageToAI(message: sanitizedMessage, context: "general") { [weak self] result in
             DispatchQueue.main.async {
                 self?.isAITyping = false
@@ -94,7 +103,7 @@ class AIAssistantViewModel: ObservableObject {
                     let aiMessage = ChatMessage(
                         text: response.response,
                         isUser: false,
-                        timestamp: response.timestamp ?? Date()
+                        timestamp: response.timestampDate ?? Date()  // ✅ ИСПРАВЛЕНО: Используем timestampDate вместо timestamp
                     )
                     self?.messages.append(aiMessage)
                 case .failure(let error):

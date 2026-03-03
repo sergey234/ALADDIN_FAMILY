@@ -376,7 +376,7 @@ extension NetworkManager {
         completion: @escaping (Result<T, Error>) -> Void
     ) {
         let requestId = UUID().uuidString
-        let endpoint = request.url?.path ?? "unknown"
+        _ = request.url?.path ?? "unknown"
 
         PerformanceMonitor.shared.startNetworkRequest(requestId)
 

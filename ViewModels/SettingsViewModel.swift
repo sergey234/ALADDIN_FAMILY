@@ -462,6 +462,10 @@ class SettingsViewModel: ObservableObject {
             let tariff = tariffService.currentTariff
             // Calculate protection level based on tariff (real function counts)
             switch tariff {
+            case .trial:
+                cachedProtectionLevel = 14.0  // 20/142 ≈ 14% (trial имеет меньше функций)
+                cachedProtectionLevelText = localizedStrings.protectionLevelLow
+                cachedProtectionColor = .gray
             case .free:
                 cachedProtectionLevel = 18.0  // 26/142 ≈ 18%
                 cachedProtectionLevelText = localizedStrings.protectionLevelLow
@@ -476,10 +480,6 @@ class SettingsViewModel: ObservableObject {
                 cachedProtectionColor = .green
             case .premium:
                 cachedProtectionLevel = 100.0  // 142/142 = 100%
-                cachedProtectionLevelText = localizedStrings.protectionLevelMaximum
-                cachedProtectionColor = .green
-            case .ultimate:
-                cachedProtectionLevel = 100.0
                 cachedProtectionLevelText = localizedStrings.protectionLevelMaximum
                 cachedProtectionColor = .green
             }

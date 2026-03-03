@@ -202,6 +202,8 @@ struct ProtectionLevelExplanationModal: View {
     
     private func tariffDescription(_ tariff: TariffType) -> String {
         switch tariff {
+        case .trial:
+            return localizationManager.localized("tariff_trial_description")
         case .free:
             return localizationManager.localized("tariff_free_description")
         case .personal:
@@ -210,8 +212,6 @@ struct ProtectionLevelExplanationModal: View {
             return localizationManager.localized("tariff_family_description")
         case .premium:
             return localizationManager.localized("tariff_premium_description")
-        case .ultimate:
-            return localizationManager.localized("tariff_ultimate_description")
         }
     }
 }

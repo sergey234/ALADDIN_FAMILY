@@ -163,6 +163,8 @@ struct ProtectionFeaturesSection: View {
     private func tariffBadge(for tariff: TariffType) -> some View {
         let (badgeText, badgeColor): (String, Color) = {
             switch tariff {
+            case .trial:
+                return (localizationManager.localized("tariffs_trial"), .green)
             case .free:
                 return (localizationManager.localized("tariffs_free"), .gray)
             case .personal:
@@ -171,8 +173,6 @@ struct ProtectionFeaturesSection: View {
                 return (localizationManager.localized("tariffs_family"), .orange)
             case .premium:
                 return (localizationManager.localized("tariffs_premium"), .purple)
-            case .ultimate:
-                return (localizationManager.localized("tariffs_ultimate"), .red)
             }
         }()
         
@@ -347,6 +347,8 @@ struct ParentalControlSection: View {
     private func tariffBadge(for tariff: TariffType) -> some View {
         let (badgeText, badgeColor): (String, Color) = {
             switch tariff {
+            case .trial:
+                return (localizationManager.localized("tariffs_trial"), .green)
             case .free:
                 return (localizationManager.localized("tariffs_free"), .gray)
             case .personal:
@@ -355,8 +357,6 @@ struct ParentalControlSection: View {
                 return (localizationManager.localized("tariffs_family"), .orange)
             case .premium:
                 return (localizationManager.localized("tariffs_premium"), .purple)
-            case .ultimate:
-                return (localizationManager.localized("tariffs_ultimate"), .red)
             }
         }()
         

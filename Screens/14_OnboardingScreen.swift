@@ -521,23 +521,23 @@ struct OnboardingScreen: View {
                             }
                             .accessibilityElement(label: "Восстановить доступ", hint: "Нажмите для восстановления доступа к аккаунту")
                             .confirmationDialog(
-                                "Выберите способ восстановления",
+                                localizationManager.localized("recovery_options_title"),
                                 isPresented: $showRecoveryOptions,
                                 titleVisibility: .visible
                             ) {
-                                Button("Ввести код вручную") {
+                                Button(localizationManager.localized("recovery_option_manual")) {
                                     showInvitationCodeInput = true
                                 }
 
-                                Button("Сканировать QR-код") {
+                                Button(localizationManager.localized("recovery_option_qr")) {
                                     showQRScanner = true
                                 }
 
-                                Button("Восстановить из сохранения") {
+                                Button(localizationManager.localized("recovery_option_backup")) {
                                     showBackupRecovery = true
                                 }
 
-                                Button("Отмена", role: .cancel) {}
+                                Button(localizationManager.localized("common.cancel"), role: .cancel) {}
                             }
                         }
                         .transition(.move(edge: .bottom).combined(with: .opacity))

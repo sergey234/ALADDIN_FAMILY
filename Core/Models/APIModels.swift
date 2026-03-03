@@ -246,12 +246,20 @@ struct ChatMessageResponse: Codable {
     let confidence: Double?
     let suggestions: [String]?
     let followUpQuestions: [String]?
-    let timestamp: Date?
+    let timestamp: String?  // ✅ ИСПРАВЛЕНО: Изменено с Date? на String? для совместимости с сервером
 
     enum CodingKeys: String, CodingKey {
         case response, confidence, suggestions
         case followUpQuestions = "follow_up_questions"
         case timestamp
+    }
+
+    // ✅ ДОБАВЛЕНО: Вычисляемое свойство для конвертации timestamp в Date (для UI)
+    var timestampDate: Date? {
+        guard let timestamp = timestamp else { return nil }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime] // Поддержка формата 2026-03-03T00:37:41.912231
+        return formatter.date(from: timestamp)
     }
 }
 
