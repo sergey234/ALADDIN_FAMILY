@@ -5,9 +5,9 @@ from datetime import datetime
 import sys
 
 # Конфигурация
-BASE_URL = "http://127.0.0.1:8002"
-OPENAPI_URL = f"{BASE_URL}/openapi.json"
-DEVICE_ID = "tester_device_v2_local"
+BASE_URL = "https://aladdin-ai.ru"
+OPENAPI_URL = f"{BASE_URL}/api/openapi.json" # Добавил /api/ т.к. обычно там доки
+DEVICE_ID = "tester_device_production_final"
 
 # Список эндпоинтов из AppConfig.swift (245 штук) для полной проверки
 APP_ENDPOINTS = [

@@ -1,0 +1,146 @@
+{
+  "default_strategy": "sliding_window",
+  "default_action": "block",
+  "redis_enabled": true,
+  "redis_url": "redis://localhost:6379/0",
+  "redis_ttl": 3600,
+  "cleanup_interval": 300,
+  "max_local_entries": 100000,
+  "burst_handling": true,
+  "graceful_degradation": true,
+  "monitoring_enabled": true,
+  "custom_rules": [
+    {
+      "name": "vpn_connect",
+      "pattern": "/vpn/connect.*",
+      "max_requests": 10,
+      "time_window": 60,
+      "strategy": "token_bucket",
+      "action": "delay",
+      "message": "Too many VPN connection attempts",
+      "burst_size": 20,
+      "refill_rate": 0.17,
+      "delay_seconds": 1.0
+    },
+    {
+      "name": "vpn_config",
+      "pattern": "/vpn/config.*",
+      "max_requests": 5,
+      "time_window": 300,
+      "strategy": "leaky_bucket",
+      "action": "captcha",
+      "message": "Too many configuration requests"
+    },
+    {
+      "name": "vpn_stats",
+      "pattern": "/vpn/stats.*",
+      "max_requests": 30,
+      "time_window": 60,
+      "strategy": "sliding_window",
+      "action": "block",
+      "message": "Too many statistics requests"
+    },
+    {
+      "name": "vpn_servers",
+      "pattern": "/vpn/servers.*",
+      "max_requests": 50,
+      "time_window": 60,
+      "strategy": "fixed_window",
+      "action": "block",
+      "message": "Too many server list requests"
+    },
+    {
+      "name": "vpn_status",
+      "pattern": "/vpn/status.*",
+      "max_requests": 100,
+      "time_window": 60,
+      "strategy": "sliding_window",
+      "action": "block",
+      "message": "Too many status requests"
+    },
+    {
+      "name": "api_general",
+      "pattern": "/api/.*",
+      "max_requests": 500,
+      "time_window": 3600,
+      "strategy": "sliding_window",
+      "action": "block",
+      "message": "API rate limit exceeded"
+    },
+    {
+      "name": "admin_panel",
+      "pattern": "/admin/.*",
+      "max_requests": 20,
+      "time_window": 60,
+      "strategy": "sliding_window",
+      "action": "captcha",
+      "message": "Admin access rate limit"
+    },
+    {
+      "name": "login_attempts",
+      "pattern": "/(login|auth|signin).*",
+      "max_requests": 5,
+      "time_window": 300,
+      "strategy": "fixed_window",
+      "action": "block",
+      "message": "Too many login attempts"
+    },
+    {
+      "name": "registration",
+      "pattern": "/(register|signup).*",
+      "max_requests": 3,
+      "time_window": 3600,
+      "strategy": "fixed_window",
+      "action": "block",
+      "message": "Too many registration attempts"
+    },
+    {
+      "name": "password_reset",
+      "pattern": "/(reset|forgot).*",
+      "max_requests": 3,
+      "time_window": 3600,
+      "strategy": "fixed_window",
+      "action": "block",
+      "message": "Too many password reset attempts"
+    }
+  ],
+  "burst_handling": {
+    "enabled": true,
+    "max_burst_multiplier": 2.0,
+    "burst_cooldown_seconds": 300,
+    "adaptive_threshold": true
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics_interval": 60,
+    "alert_thresholds": {
+      "block_rate": 0.1,
+      "captcha_rate": 0.05,
+      "error_rate": 0.01
+    },
+    "log_file": "logs/rate_limiting.log",
+    "retention_days": 30
+  },
+  "headers": {
+    "rate_limit_limit": "X-RateLimit-Limit",
+    "rate_limit_remaining": "X-RateLimit-Remaining",
+    "rate_limit_reset": "X-RateLimit-Reset",
+    "rate_limit_retry_after": "Retry-After"
+  },
+  "graceful_degradation": {
+    "enabled": true,
+    "fallback_action": "allow",
+    "error_threshold": 0.05,
+    "recovery_time": 300
+  },
+  "redis_config": {
+    "host": "localhost",
+    "port": 6379,
+    "db": 0,
+    "password": null,
+    "socket_timeout": 5,
+    "socket_connect_timeout": 5,
+    "retry_on_timeout": true,
+    "max_connections": 20
+  }
+}

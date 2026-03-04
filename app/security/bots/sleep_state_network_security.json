@@ -1,0 +1,18 @@
+{
+  "bot_name": "network_security",
+  "bot_class": "NetworkSecurityBot",
+  "function": "function_99",
+  "phase": "10.1",
+  "description": "бот сетевой безопасности",
+  "timestamp": "2025-09-06T21:32:25.284635",
+  "config": {
+    "test": true,
+    "bot_type": "network_security",
+    "phase": "10.1"
+  },
+  "stats": {
+    "test_count": 0
+  },
+  "running": false,
+  "sleep_reason": "Comprehensive sleep integration"
+}

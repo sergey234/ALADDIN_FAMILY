@@ -1,0 +1,44 @@
+{
+  "max_users": 10000,
+  "max_connections_per_user": 5,
+  "session_timeout": 3600,
+  "data_retention_days": 90,
+  "encryption": {
+    "algorithm": "AES-256-GCM",
+    "key_size": 256
+  },
+  "subscription_plans": {
+    "personal": {
+      "price": 5,
+      "max_devices": 1,
+      "features": [
+        "basic_protection"
+      ]
+    },
+    "family": {
+      "price": 15,
+      "max_devices": 5,
+      "features": [
+        "basic_protection",
+        "parental_control"
+      ]
+    },
+    "business": {
+      "price": 50,
+      "max_devices": 20,
+      "features": [
+        "basic_protection",
+        "priority_support"
+      ]
+    },
+    "enterprise": {
+      "price": 200,
+      "max_devices": -1,
+      "features": [
+        "all_features",
+        "sla",
+        "custom_server"
+      ]
+    }
+  }
+}

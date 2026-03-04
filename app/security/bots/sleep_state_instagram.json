@@ -1,0 +1,11 @@
+{
+  "bot_name": "instagram",
+  "timestamp": "2025-09-06T20:44:37.822237",
+  "config": {
+    "test": true
+  },
+  "stats": {
+    "test_count": 0
+  },
+  "running": false
+}

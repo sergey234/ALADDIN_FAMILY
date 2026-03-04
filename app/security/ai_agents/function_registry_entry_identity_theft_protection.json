@@ -1,0 +1,240 @@
+{
+  "name": "russian_identity_theft_protection_agent",
+  "type": "ai_agent",
+  "path": "/opt/aladdin-backend/security/ai_agents/russian_identity_theft_protection_agent.py",
+  "class": "RussianIdentityTheftProtectionAgent",
+  "version": "1.0.0",
+  "description": "Агент для защиты от кражи личности в России. Мониторинг СНИЛС, кредитных отчетов (НБКИ, ОКБ), проверка в базе мошенников (147,000+ записей). Полное соответствие 152-ФЗ (SHA-256 хеширование, согласие пользователя, автоматическое удаление данных).",
+  "author": "ALADDIN Security Team",
+  "created_at": "2025-12-09",
+  "last_updated": "2025-12-10",
+  "status": "active",
+  "functions": [
+    {
+      "name": "monitor_snils",
+      "description": "Мониторинг СНИЛС на подозрительную активность. Проверяет в базе мошенников и анализирует риск кражи личности. Требует согласие пользователя (152-ФЗ).",
+      "parameters": [
+        "snils: str - СНИЛС для мониторинга (11 цифр)",
+        "user_id: str - ID пользователя"
+      ],
+      "returns": "Dict[str, Any] - Результат мониторинга с оценкой риска и найденными совпадениями",
+      "async": false,
+      "requires_auth": true,
+      "requires_consent": ["snils"]
+    },
+    {
+      "name": "monitor_credit_report",
+      "description": "Мониторинг кредитного отчета через НБКИ и ОКБ. Анализирует изменения в кредитной истории на предмет подозрительной активности. Требует согласие на доступ к кредитной истории.",
+      "parameters": [
+        "user_id: str - ID пользователя"
+      ],
+      "returns": "Dict[str, Any] - Результат мониторинга с кредитными отчетами и подозрительными изменениями",
+      "async": false,
+      "requires_auth": true,
+      "requires_consent": ["credit"]
+    },
+    {
+      "name": "check_fraud_database",
+      "description": "Проверка данных в базе мошенников (147,000+ записей). Поиск по хешам СНИЛС или паспортных данных. Использует индексированный поиск O(1).",
+      "parameters": [
+        "snils: Optional[str] - СНИЛС для проверки",
+        "passport_series: Optional[str] - Серия паспорта",
+        "passport_number: Optional[str] - Номер паспорта"
+      ],
+      "returns": "List[FraudRecord] - Список найденных записей мошенников",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "detect_identity_theft",
+      "description": "Комплексное обнаружение кражи личности. Анализирует все доступные данные (СНИЛС, кредитные отчеты, базу мошенников) и рассчитывает общий риск.",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "snils: Optional[str] - СНИЛС (опционально)"
+      ],
+      "returns": "Dict[str, Any] - Результат обнаружения с оценкой риска, индикаторами и рекомендациями",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_monitoring_status",
+      "description": "Получение статуса мониторинга для пользователя или всех активных мониторингов. Включает информацию о согласиях и их сроках действия.",
+      "parameters": [
+        "user_id: Optional[str] - ID пользователя (None = все активные мониторинги)"
+      ],
+      "returns": "Dict[str, Any] - Статус мониторинга с детальной информацией о согласиях",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "stop_monitoring",
+      "description": "Остановка мониторинга для пользователя. Удаляет данные из активного мониторинга (но не персональные данные, для удаления которых требуется отзыв согласия).",
+      "parameters": [
+        "user_id: str - ID пользователя"
+      ],
+      "returns": "Dict[str, Any] - Результат остановки",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "give_consent",
+      "description": "Предоставление согласия на обработку персональных данных согласно 152-ФЗ. Поддерживает разные типы согласий (snils, passport, credit) с указанием срока действия (до 10 лет).",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "consent_types: Dict[str, bool] - Типы согласий {\"snils\": True, \"passport\": True, \"credit\": True}",
+        "expires_days: int = 365 - Срок действия согласия в днях (максимум 3650 = 10 лет)"
+      ],
+      "returns": "Dict[str, Any] - Результат сохранения согласия с детальной информацией",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "revoke_consent",
+      "description": "Отзыв согласия на обработку персональных данных (152-ФЗ). Автоматически удаляет все персональные данные пользователя: согласия, активный мониторинг, кредитные отчеты, кэшированные результаты.",
+      "parameters": [
+        "user_id: str - ID пользователя"
+      ],
+      "returns": "Dict[str, Any] - Результат отзыва с детальным списком удаленных данных",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "check_expired_consents",
+      "description": "Проверка истекших согласий и автоматическое удаление данных. Обнаруживает истекшие согласия и генерирует уведомления. Предупреждает за 7 дней до истечения.",
+      "parameters": [],
+      "returns": "List[Dict[str, Any]] - Список пользователей с истекшими согласиями",
+      "async": false,
+      "requires_auth": false
+    },
+    {
+      "name": "get_alerts",
+      "description": "Получение алертов о краже личности для пользователя или всех активных алертов.",
+      "parameters": [
+        "user_id: Optional[str] - ID пользователя (None = все алерты)"
+      ],
+      "returns": "List[Dict[str, Any]] - Список алертов с детальной информацией",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_credit_freeze_instructions",
+      "description": "Получение инструкций по заморозке кредитной истории (кредитный замок). Возвращает пошаговые инструкции для НБКИ и ОКБ.",
+      "parameters": [
+        "user_id: str - ID пользователя"
+      ],
+      "returns": "Dict[str, Any] - Инструкции по кредитному замку для НБКИ и ОКБ",
+      "async": false,
+      "requires_auth": true
+    }
+  ],
+  "dependencies": [
+    "threat_monitoring_interface",
+    "security.base"
+  ],
+  "config": {
+    "nbki_api_key": "optional",
+    "okb_api_key": "optional",
+    "fraud_database_path": "required",
+    "encryption_key": "optional",
+    "cache_ttl": 86400,
+    "enable_caching": true
+  },
+  "events": {
+    "subscribe": ["identity_theft", "*"],
+    "publish": ["identity_theft", "consent_management"]
+  },
+  "api_endpoints": [
+    {
+      "path": "/api/identity-theft/monitor-snils",
+      "method": "POST",
+      "function": "monitor_snils",
+      "description": "Мониторинг СНИЛС на подозрительную активность"
+    },
+    {
+      "path": "/api/identity-theft/monitor-credit",
+      "method": "POST",
+      "function": "monitor_credit_report",
+      "description": "Мониторинг кредитного отчета"
+    },
+    {
+      "path": "/api/identity-theft/check",
+      "method": "POST",
+      "function": "check_fraud_database",
+      "description": "Проверка в базе мошенников"
+    },
+    {
+      "path": "/api/identity-theft/detect",
+      "method": "POST",
+      "function": "detect_identity_theft",
+      "description": "Обнаружение кражи личности"
+    },
+    {
+      "path": "/api/identity-theft/alerts",
+      "method": "GET",
+      "function": "get_alerts",
+      "description": "Получение алертов о краже личности"
+    },
+    {
+      "path": "/api/identity-theft/status",
+      "method": "GET",
+      "function": "get_monitoring_status",
+      "description": "Получение статуса мониторинга"
+    },
+    {
+      "path": "/api/identity-theft/stop-monitoring",
+      "method": "POST",
+      "function": "stop_monitoring",
+      "description": "Остановка мониторинга"
+    },
+    {
+      "path": "/api/identity-theft/consent",
+      "method": "POST",
+      "function": "give_consent",
+      "description": "Предоставление согласия на обработку данных (152-ФЗ)"
+    },
+    {
+      "path": "/api/identity-theft/revoke-consent",
+      "method": "POST",
+      "function": "revoke_consent",
+      "description": "Отзыв согласия на обработку данных (152-ФЗ)"
+    },
+    {
+      "path": "/api/identity-theft/credit-freeze-instructions",
+      "method": "GET",
+      "function": "get_credit_freeze_instructions",
+      "description": "Получение инструкций по кредитному замку"
+    },
+    {
+      "path": "/api/identity-theft/health",
+      "method": "GET",
+      "function": null,
+      "description": "Проверка здоровья сервиса"
+    }
+  ],
+  "monitoring": {
+    "enabled": true,
+    "interval_minutes": 1440,
+    "auto_start": false,
+    "alert_on_theft": true,
+    "alert_severity_threshold": "medium",
+    "check_expired_consents_daily": true
+  },
+  "security": {
+    "requires_encryption": true,
+    "hashing_algorithm": "SHA-256",
+    "data_minimization": true,
+    "consent_required": true,
+    "data_retention_days": 3650,
+    "log_level": "INFO",
+    "compliance": ["152-ФЗ"],
+    "personal_data_logging": true,
+    "automatic_deletion_on_revoke": true
+  },
+  "metadata": {
+    "total_functions": 11,
+    "total_api_endpoints": 11,
+    "tests_count": 37,
+    "flake8_status": "passed",
+    "code_coverage": "high"
+  }
+}

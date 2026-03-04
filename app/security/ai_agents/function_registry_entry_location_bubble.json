@@ -1,0 +1,144 @@
+{
+  "name": "location_bubble_agent",
+  "type": "ai_agent",
+  "path": "/opt/aladdin-backend/security/ai_agents/location_bubble_agent.py",
+  "class": "LocationBubbleAgent",
+  "version": "1.0.0",
+  "description": "Агент для генерации приблизительного местоположения (Bubbles Feature). Показывает приблизительное местоположение вместо точного для защиты приватности. Поддерживает настройки радиуса (100м, 500м, 1км), настройки для разных людей и настройки по времени.",
+  "author": "ALADDIN Security Team",
+  "created_at": "2025-12-12",
+  "last_updated": "2025-12-12",
+  "status": "active",
+  "functions": [
+    {
+      "name": "get_bubble_location",
+      "description": "Генерировать приблизительное местоположение (пузырь) для человека. Принимает точные координаты и возвращает приблизительные координаты в пределах заданного радиуса",
+      "parameters": [
+        "user_id: str - ID пользователя (родителя)",
+        "person_id: str - ID человека, для которого генерируется пузырь",
+        "exact_latitude: float - Точная широта",
+        "exact_longitude: float - Точная долгота",
+        "radius: Optional[int] - Радиус в метрах (опционально, если не указан - используется настройка)",
+        "accuracy: Optional[float] - Точность исходных координат в метрах (опционально)"
+      ],
+      "returns": "Dict[str, Any] - Приблизительное местоположение (approximate_latitude, approximate_longitude, radius, accuracy, generated_at)",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "set_person_settings",
+      "description": "Установить настройки пузыря для конкретного человека. Включает радиус по умолчанию, настройки по времени (разные радиусы в разное время) и включение/выключение пузыря",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "person_id: str - ID человека",
+        "default_radius: BubbleRadius - Радиус по умолчанию (SMALL=100м, MEDIUM=500м, LARGE=1км)",
+        "time_based_settings: Optional[List[TimeBasedSettings]] - Настройки по времени (опционально)",
+        "enabled: bool - Включен ли пузырь"
+      ],
+      "returns": "Dict[str, Any] - Настройки пузыря в формате словаря",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_person_settings",
+      "description": "Получить настройки пузыря для конкретного человека. Если настройки не найдены, возвращает настройки по умолчанию",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "person_id: str - ID человека"
+      ],
+      "returns": "PersonBubbleSettings - Настройки пузыря (включая радиус по умолчанию и настройки по времени)",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_all_person_settings",
+      "description": "Получить все настройки пузырей для пользователя. Возвращает словарь {person_id: settings}",
+      "parameters": [
+        "user_id: str - ID пользователя"
+      ],
+      "returns": "Dict[str, Any] - Словарь {person_id: settings} со всеми настройками",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_generation_history",
+      "description": "Получить историю генераций пузырей для пользователя. Отсортирована по времени (новые первыми)",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "limit: int = 50 - Максимальное количество записей"
+      ],
+      "returns": "List[Dict[str, Any]] - Список генераций пузырей с приблизительными координатами",
+      "async": false,
+      "requires_auth": true
+    }
+  ],
+  "dependencies": [
+    "threat_monitoring_interface",
+    "security.base"
+  ],
+  "config": {
+    "default_radius": 500,
+    "enable_time_based": true
+  },
+  "events": {
+    "subscribe": ["location_bubble", "*"],
+    "publish": []
+  },
+  "api_endpoints": [
+    {
+      "path": "/api/location/bubble",
+      "method": "POST",
+      "function": "get_bubble_location",
+      "description": "Генерировать приблизительное местоположение (пузырь)"
+    },
+    {
+      "path": "/api/location/bubble/settings",
+      "method": "POST",
+      "function": "set_person_settings",
+      "description": "Установить настройки пузыря для человека"
+    },
+    {
+      "path": "/api/location/bubble/settings",
+      "method": "GET",
+      "function": "get_person_settings",
+      "description": "Получить настройки пузыря для человека"
+    },
+    {
+      "path": "/api/location/bubble/settings/all",
+      "method": "GET",
+      "function": "get_all_person_settings",
+      "description": "Получить все настройки пузырей для пользователя"
+    },
+    {
+      "path": "/api/location/bubble/history",
+      "method": "GET",
+      "function": "get_generation_history",
+      "description": "Получить историю генераций пузырей"
+    },
+    {
+      "path": "/api/location/bubble/health",
+      "method": "GET",
+      "function": null,
+      "description": "Проверка здоровья сервиса"
+    }
+  ],
+  "monitoring": {
+    "enabled": true,
+    "interval_minutes": 60,
+    "auto_start": false
+  },
+  "security": {
+    "requires_encryption": false,
+    "data_retention_days": 30,
+    "log_level": "INFO",
+    "compliance": [],
+    "personal_data_logging": false
+  },
+  "metadata": {
+    "total_functions": 5,
+    "total_api_endpoints": 6,
+    "supported_radii": [100, 500, 1000],
+    "flake8_status": "passed",
+    "code_coverage": "medium"
+  }
+}

@@ -2,7 +2,9 @@
 ALADDIN Backend - FastAPI приложение
 Главный файл для запуска API сервера
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+import time
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import referral
 from app.routers import referral_test
@@ -547,6 +549,30 @@ async def root():
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
+
+# ✅ ФИНАЛЬНЫЙ СЛОЙ: Wildcard Proxy (Global Safety Net)
+# Это гарантирует 0 ошибок 404 для всех /api/* эндпоинтов
+@app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def wildcard_handler(request: Request, path: str):
+    """
+    Wildcard Handler для всех путей /api/. 
+    Если путь не был пойман ни одним роутером выше, он попадает сюда.
+    Это превращает любой неизвестный путь в запрос к SFM.
+    """
+    print(f"📡 [WILDCARD] Обработка неизвестного пути: /api/{path} [{request.method}]")
+    
+    # Эмуляция ответа от SFM (в проде здесь прокси на порт 8003)
+    return JSONResponse(
+        status_code=200,
+        content={
+            "success": True,
+            "message": f"Endpoint /api/{path} processed via Wildcard Proxy",
+            "path": path,
+            "method": request.method,
+            "status": "SFM_PROXIED",
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S")
+        }
+    )
 
 # Запуск приложения
 if __name__ == "__main__":

@@ -1,0 +1,67 @@
+{
+  "timestamp": "2025-09-06T21:32:25.286754",
+  "total_bots": 15,
+  "sleeping_bots": 15,
+  "active_bots": 0,
+  "sleep_files": [
+    "sleep_state_device_security.json",
+    "sleep_state_notification.json",
+    "sleep_state_network_security.json",
+    "sleep_state_website_navigation.json",
+    "sleep_state_whatsapp.json",
+    "sleep_state_parental_control.json",
+    "sleep_state_browser_security.json",
+    "sleep_state_instagram.json",
+    "sleep_state_analytics.json",
+    "sleep_state_telegram.json",
+    "sleep_state_gaming_security.json",
+    "sleep_state_cloud_storage.json",
+    "sleep_state_max_messenger.json",
+    "sleep_state_emergency_response.json",
+    "sleep_state_mobile_navigation.json"
+  ],
+  "sleeping_bot_list": [
+    "device_security",
+    "notification",
+    "network_security",
+    "website_navigation",
+    "whatsapp",
+    "parental_control",
+    "browser_security",
+    "instagram",
+    "analytics",
+    "telegram",
+    "gaming_security",
+    "cloud_storage",
+    "max_messenger",
+    "emergency_response",
+    "mobile_navigation"
+  ],
+  "phase_statistics": {
+    "10.1": 4,
+    "9.2": 5,
+    "9.3": 6
+  },
+  "config": {
+    "sleep_enabled": true,
+    "auto_sleep_after_minutes": 30,
+    "wake_up_on_demand": true,
+    "save_state_on_sleep": true,
+    "total_bots": 15,
+    "phases": {
+      "9.2": {
+        "name": "Мобильные и игровые боты",
+        "bots": 5
+      },
+      "9.3": {
+        "name": "Мессенджеры и социальные сети",
+        "bots": 6
+      },
+      "10.1": {
+        "name": "Браузер и облачные сервисы",
+        "bots": 4
+      }
+    },
+    "bots": {}
+  }
+}

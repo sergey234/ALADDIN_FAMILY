@@ -1,0 +1,185 @@
+{
+  "name": "crash_detection_agent",
+  "type": "ai_agent",
+  "path": "security/ai_agents/crash_detection_agent.py",
+  "class": "CrashDetectionAgent",
+  "version": "1.0.0",
+  "description": "Агент для обнаружения автомобильных аварий на основе данных акселерометра и гироскопа. Автоматический вызов экстренных служб (112).",
+  "author": "ALADDIN Security Team",
+  "created_at": "2025-12-12",
+  "status": "active",
+  "functions": [
+    {
+      "name": "start_monitoring",
+      "description": "Запустить мониторинг аварий для пользователя",
+      "parameters": {
+        "user_id": "string"
+      },
+      "returns": "bool"
+    },
+    {
+      "name": "stop_monitoring",
+      "description": "Остановить мониторинг аварий для пользователя",
+      "parameters": {
+        "user_id": "string"
+      },
+      "returns": "bool"
+    },
+    {
+      "name": "process_sensor_data",
+      "description": "Обработать данные сенсоров и обнаружить аварию",
+      "parameters": {
+        "user_id": "string",
+        "accelerometer_data": "dict",
+        "gyroscope_data": "dict (optional)",
+        "speed": "float (optional)",
+        "location": "dict (optional)",
+        "geofence_center": "dict (optional)"
+      },
+      "returns": "dict"
+    },
+    {
+      "name": "detect_crash",
+      "description": "Обнаружить аварию на основе данных сенсоров",
+      "parameters": {
+        "user_id": "string",
+        "accelerometer_data": "AccelerometerData",
+        "gyroscope_data": "GyroscopeData (optional)",
+        "speed": "float (optional)",
+        "location": "dict (optional)"
+      },
+      "returns": "CrashEvent or None"
+    },
+    {
+      "name": "get_status",
+      "description": "Получить статус мониторинга для пользователя",
+      "parameters": {
+        "user_id": "string"
+      },
+      "returns": "dict"
+    },
+    {
+      "name": "get_crash_history",
+      "description": "Получить историю аварий для пользователя",
+      "parameters": {
+        "user_id": "string",
+        "limit": "int"
+      },
+      "returns": "list"
+    },
+    {
+      "name": "cancel_emergency_call",
+      "description": "Отменить вызов экстренной службы",
+      "parameters": {
+        "user_id": "string",
+        "call_id": "string"
+      },
+      "returns": "bool"
+    },
+    {
+      "name": "_call_emergency_service",
+      "description": "Вызвать экстренную службу (112)",
+      "parameters": {
+        "crash_event": "CrashEvent"
+      },
+      "returns": "bool"
+    }
+  ],
+  "dependencies": [
+    "security.base.SecurityBase",
+    "security.ai_agents.threat_monitoring_interface.ThreatMonitoringInterface"
+  ],
+  "config": {
+    "g_force_threshold": 3.0,
+    "speed_change_threshold": 30.0,
+    "emergency_service_number": "112",
+    "auto_call_enabled": true,
+    "false_positive_filter": true,
+    "use_geofence": true,
+    "geofence_radius": 500,
+    "prefer_gps": true
+  },
+  "events": [
+    {
+      "type": "crash_detected",
+      "severity": ["high", "critical"],
+      "description": "Обнаружена авария"
+    }
+  ],
+  "api_endpoints": [
+    {
+      "method": "POST",
+      "path": "/api/crash-detection/start",
+      "description": "Запуск мониторинга аварий",
+      "request_body": "StartMonitoringRequest",
+      "response": "dict"
+    },
+    {
+      "method": "POST",
+      "path": "/api/crash-detection/stop",
+      "description": "Остановка мониторинга аварий",
+      "request_body": "StopMonitoringRequest",
+      "response": "dict"
+    },
+    {
+      "method": "POST",
+      "path": "/api/crash-detection/data",
+      "description": "Отправка данных сенсоров",
+      "request_body": "SensorDataRequest",
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/crash-detection/status",
+      "description": "Статус мониторинга",
+      "query_params": ["user_id"],
+      "response": "dict"
+    },
+    {
+      "method": "POST",
+      "path": "/api/crash-detection/emergency-call",
+      "description": "Ручной вызов экстренной службы",
+      "request_body": "EmergencyCallRequest",
+      "response": "dict"
+    },
+    {
+      "method": "POST",
+      "path": "/api/crash-detection/cancel-emergency-call",
+      "description": "Отмена вызова экстренной службы",
+      "request_body": "CancelEmergencyCallRequest",
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/crash-detection/history",
+      "description": "История аварий",
+      "query_params": ["user_id", "limit"],
+      "response": "dict"
+    },
+    {
+      "method": "GET",
+      "path": "/api/crash-detection/health",
+      "description": "Health check",
+      "response": "dict"
+    }
+  ],
+  "monitoring": {
+    "enabled": true,
+    "metrics": [
+      "crashes_detected_total",
+      "emergency_calls_made_total",
+      "false_positives_filtered_total"
+    ]
+  },
+  "security": {
+    "requires_auth": true,
+    "rate_limit": 100,
+    "data_encryption": true
+  },
+  "metadata": {
+    "platforms": ["ios"],
+    "sensors_required": ["accelerometer", "gyroscope (optional)", "gps/glonass (optional)"],
+    "emergency_service": "112 (РФ)",
+    "location_type": "gps/glonass (preferred) or geofence (fallback)"
+  }
+}

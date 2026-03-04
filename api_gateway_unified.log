@@ -460,3 +460,5 @@ network
 2026-03-04 13:31:13,466 - INFO - 🛰 Smart Proxy: PUT /{path} -> trying function: {path}
 2026-03-04 13:31:13,474 - INFO - 🛰 Smart Proxy: POST /{path} -> trying function: {path}
 2026-03-04 13:31:13,482 - INFO - 🛰 Smart Proxy: DELETE /{path} -> trying function: {path}
+2026-03-04 17:52:35,046 - INFO - 🛰 Smart Proxy: GET /health -> trying function: health
+2026-03-04 17:52:35,391 - INFO - 🛰 Smart Proxy: GET /test_wildcard -> trying function: test_wildcard

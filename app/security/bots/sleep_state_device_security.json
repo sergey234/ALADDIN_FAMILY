@@ -1,0 +1,18 @@
+{
+  "bot_name": "device_security",
+  "bot_class": "DeviceSecurityBot",
+  "function": "function_100",
+  "phase": "10.1",
+  "description": "бот безопасности устройств",
+  "timestamp": "2025-09-06T21:32:25.285128",
+  "config": {
+    "test": true,
+    "bot_type": "device_security",
+    "phase": "10.1"
+  },
+  "stats": {
+    "test_count": 0
+  },
+  "running": false,
+  "sleep_reason": "Comprehensive sleep integration"
+}

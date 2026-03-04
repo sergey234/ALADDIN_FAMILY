@@ -1,0 +1,41 @@
+{
+  "signatures": [
+    {
+      "signature_id": "SIG_001",
+      "name": "Ransomware Extension Pattern",
+      "malware_type": "ransomware",
+      "pattern": "\\.(encrypted|locked|ransom|enc)$",
+      "description": "Расширения файлов, характерные для ransomware",
+      "severity": 10,
+      "version": "1.0.0",
+      "updated_at": "2025-11-01T17:26:05.985765",
+      "source": "internal",
+      "active": true
+    },
+    {
+      "signature_id": "SIG_002",
+      "name": "Suspicious PowerShell Pattern",
+      "malware_type": "trojan",
+      "pattern": "powershell.*-enc|powershell.*-e\\s+[A-Za-z0-9+/=]+",
+      "description": "Подозрительные команды PowerShell",
+      "severity": 9,
+      "version": "1.0.0",
+      "updated_at": "2025-11-01T17:26:05.985780",
+      "source": "internal",
+      "active": true
+    },
+    {
+      "signature_id": "SIG_003",
+      "name": "Base64 Encoded Payload",
+      "malware_type": "trojan",
+      "pattern": "eval\\s*\\(\\s*base64_decode",
+      "description": "Base64 закодированный вредоносный код",
+      "severity": 8,
+      "version": "1.0.0",
+      "updated_at": "2025-11-01T17:26:05.985784",
+      "source": "internal",
+      "active": true
+    }
+  ],
+  "last_updated": "2025-11-01T17:26:05.986376"
+}

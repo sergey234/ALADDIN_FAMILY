@@ -369,3 +369,7 @@ INFO:     127.0.0.1:55565 - "DELETE /api/%7Bpath%7D HTTP/1.1" 200 OK
 INFO:     127.0.0.1:55567 - "GET /health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:55568 - "POST /reports/privacy/location/bubble HTTP/1.1" 422 Unprocessable Entity
 INFO:     127.0.0.1:55569 - "POST /reports/privacy/location/send HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 17:52:35,046 - INFO - 🛰 Smart Proxy: GET /health -> trying function: health
+INFO:     127.0.0.1:63922 - "GET /api/health HTTP/1.1" 200 OK
+2026-03-04 17:52:35,391 - INFO - 🛰 Smart Proxy: GET /test_wildcard -> trying function: test_wildcard
+INFO:     127.0.0.1:63924 - "GET /api/test_wildcard HTTP/1.1" 200 OK

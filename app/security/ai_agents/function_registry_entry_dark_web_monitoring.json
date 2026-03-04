@@ -1,0 +1,201 @@
+{
+  "name": "dark_web_monitoring_agent",
+  "type": "ai_agent",
+  "path": "/opt/aladdin-backend/security/ai_agents/dark_web_monitoring_agent.py",
+  "class": "DarkWebMonitoringAgent",
+  "version": "1.0.0",
+  "description": "Агент для мониторинга утечек данных в Dark Web. Проверяет email и телефоны через Have I Been Pwned, BreachDirectory и российские базы утечек.",
+  "author": "ALADDIN Security Team",
+  "created_at": "2025-12-09",
+  "status": "active",
+  "functions": [
+    {
+      "name": "check_email_breach",
+      "description": "Комплексная проверка email на утечки через все доступные источники (Have I Been Pwned, BreachDirectory, российские базы)",
+      "parameters": [
+        "email: str - Email адрес для проверки",
+        "include_hibp: bool = True - Включить проверку через Have I Been Pwned",
+        "include_breachdirectory: bool = True - Включить проверку через BreachDirectory",
+        "include_russian: bool = True - Включить проверку через российские базы"
+      ],
+      "returns": "Dict[str, Any] - Результат проверки с количеством найденных утечек и списком breaches",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "check_email_breach_hibp",
+      "description": "Проверка email на утечки через Have I Been Pwned API с k-анонимностью",
+      "parameters": [
+        "email: str - Email адрес для проверки"
+      ],
+      "returns": "List[BreachInfo] - Список найденных утечек",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "check_email_breach_breachdirectory",
+      "description": "Проверка email на утечки через BreachDirectory API",
+      "parameters": [
+        "email: str - Email адрес для проверки"
+      ],
+      "returns": "List[BreachInfo] - Список найденных утечек",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "check_email_breach_russian",
+      "description": "Проверка email на утечки через российские базы утечек",
+      "parameters": [
+        "email: str - Email адрес для проверки"
+      ],
+      "returns": "List[BreachInfo] - Список найденных утечек",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "check_phone_breach",
+      "description": "Проверка номера телефона на утечки",
+      "parameters": [
+        "phone: str - Номер телефона для проверки"
+      ],
+      "returns": "Dict[str, Any] - Результат проверки",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "monitor_user_data",
+      "description": "Мониторинг данных пользователя (email и/или телефон)",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "email: Optional[str] = None - Email для мониторинга",
+        "phone: Optional[str] = None - Телефон для мониторинга"
+      ],
+      "returns": "Dict[str, Any] - Результат проверки",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "start_monitoring",
+      "description": "Запуск автоматического мониторинга данных пользователя",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "email: Optional[str] = None - Email для мониторинга",
+        "phone: Optional[str] = None - Телефон для мониторинга",
+        "interval_hours: int = 24 - Интервал проверки в часах"
+      ],
+      "returns": "Dict[str, Any] - Результат запуска мониторинга",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "stop_monitoring",
+      "description": "Остановка автоматического мониторинга",
+      "parameters": [
+        "user_id: str - ID пользователя"
+      ],
+      "returns": "Dict[str, Any] - Результат остановки",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_monitoring_status",
+      "description": "Получение статуса мониторинга для пользователя или всех активных мониторингов",
+      "parameters": [
+        "user_id: Optional[str] = None - ID пользователя (None = все мониторинги)"
+      ],
+      "returns": "Dict[str, Any] - Статус мониторинга",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "collect_threats",
+      "description": "Сбор угроз (утечек данных) из всех активных мониторингов (ThreatMonitoringInterface)",
+      "parameters": [],
+      "returns": "List[Dict[str, Any]] - Список угроз",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "analyze_threats",
+      "description": "Анализ собранных угроз с рекомендациями (ThreatMonitoringInterface)",
+      "parameters": [
+        "threats: List[Dict[str, Any]] - Список угроз для анализа"
+      ],
+      "returns": "List[Dict[str, Any]] - Список проанализированных угроз",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "send_alert",
+      "description": "Отправка уведомления об утечке данных (ThreatMonitoringInterface)",
+      "parameters": [
+        "alert: Dict[str, Any] - Словарь с информацией об уведомлении"
+      ],
+      "returns": "bool - True если уведомление отправлено успешно",
+      "async": false,
+      "requires_auth": true
+    }
+  ],
+  "dependencies": [
+    "threat_intelligence_agent",
+    "threat_monitoring_interface"
+  ],
+  "config": {
+    "hibp_api_key": "required",
+    "breachdirectory_api_key": "optional",
+    "dlbi_api_key": "optional",
+    "cache_ttl": 86400,
+    "monitoring_interval": 24,
+    "enable_caching": true,
+    "enable_auto_monitoring": true
+  },
+  "events": {
+    "subscribe": ["breach", "*"],
+    "publish": ["breach"]
+  },
+  "api_endpoints": [
+    {
+      "path": "/api/darkweb/check",
+      "method": "POST",
+      "function": "check_email_breach",
+      "description": "Проверка email на утечки"
+    },
+    {
+      "path": "/api/darkweb/start-monitoring",
+      "method": "POST",
+      "function": "start_monitoring",
+      "description": "Запуск автоматического мониторинга"
+    },
+    {
+      "path": "/api/darkweb/stop-monitoring",
+      "method": "POST",
+      "function": "stop_monitoring",
+      "description": "Остановка мониторинга"
+    },
+    {
+      "path": "/api/darkweb/status",
+      "method": "GET",
+      "function": "get_monitoring_status",
+      "description": "Получение статуса мониторинга"
+    },
+    {
+      "path": "/api/darkweb/breaches",
+      "method": "GET",
+      "function": "collect_threats",
+      "description": "Получение списка найденных утечек"
+    }
+  ],
+  "monitoring": {
+    "enabled": true,
+    "interval_minutes": 1440,
+    "auto_start": false,
+    "alert_on_breach": true,
+    "alert_severity_threshold": "medium"
+  },
+  "security": {
+    "requires_encryption": true,
+    "data_retention_days": 90,
+    "log_level": "INFO",
+    "compliance": ["152-ФЗ"]
+  }
+}

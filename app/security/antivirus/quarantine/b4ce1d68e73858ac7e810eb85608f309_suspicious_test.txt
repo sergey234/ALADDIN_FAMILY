@@ -1,0 +1,1 @@
+This is a test file with suspicious PowerShell command: powershell -enc UwB0AGEAcgB0AC0AUwBsAGUAZQBwACAAMQAwAA==

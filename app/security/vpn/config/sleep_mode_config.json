@@ -1,0 +1,47 @@
+{
+  "enabled": true,
+  "check_interval_seconds": 60,
+  "max_total_memory_mb": 500,
+  "auto_sleep_enabled": true,
+  "memory_threshold_percent": 80,
+  "cpu_threshold_percent": 70,
+  "idle_timeout_minutes": 30,
+  "graceful_shutdown_timeout": 30,
+  "log_file": "logs/sleep_mode.log",
+  "servers": [
+    {
+      "name": "VPN Web Interface",
+      "port": 5000,
+      "process_name": "vpn_web_interface",
+      "max_memory_mb": 150,
+      "idle_timeout_minutes": 30,
+      "enabled": true
+    },
+    {
+      "name": "VPN Premium Interface",
+      "port": 5002,
+      "process_name": "vpn_web_interface_premium",
+      "max_memory_mb": 200,
+      "idle_timeout_minutes": 30,
+      "enabled": true
+    },
+    {
+      "name": "VPN API Server",
+      "port": 5001,
+      "process_name": "vpn_api_server",
+      "max_memory_mb": 100,
+      "idle_timeout_minutes": 45,
+      "enabled": true
+    }
+  ],
+  "notifications": {
+    "enabled": true,
+    "email": "admin@aladdin-vpn.com",
+    "webhook": "https://hooks.slack.com/services/..."
+  },
+  "emergency_settings": {
+    "max_memory_emergency_mb": 1000,
+    "force_sleep_on_emergency": true,
+    "emergency_notification": true
+  }
+}

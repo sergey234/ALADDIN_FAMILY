@@ -1,0 +1,164 @@
+{
+  "enabled": true,
+  "rules": {
+    "scanning_detection": true,
+    "brute_force_detection": true,
+    "injection_detection": true,
+    "behavioral_analysis": true,
+    "honeypot_enabled": true
+  },
+  "thresholds": {
+    "max_requests_per_minute": 100,
+    "max_failed_logins": 5,
+    "max_scan_attempts": 10,
+    "suspicious_pattern_threshold": 3,
+    "unique_endpoints_threshold": 20,
+    "user_agents_threshold": 5
+  },
+  "actions": {
+    "auto_block": true,
+    "alert_on_high_severity": true,
+    "quarantine_suspicious": true,
+    "log_all_events": true,
+    "block_duration_hours": 24,
+    "quarantine_duration_hours": 72
+  },
+  "honeypot": {
+    "enabled": true,
+    "endpoints": [
+      "/admin/backup",
+      "/admin/export",
+      "/.env",
+      "/config/database",
+      "/logs/access.log",
+      "/api/v1/users",
+      "/api/v1/passwords",
+      "/phpmyadmin",
+      "/wp-admin",
+      "/administrator",
+      "/manager",
+      "/login",
+      "/admin.php",
+      "/wp-login.php",
+      "/admin/login.php",
+      "/cpanel",
+      "/webmail",
+      "/mail",
+      "/ftp",
+      "/ssh",
+      "/telnet",
+      "/rdp",
+      "/vnc",
+      "/snmp",
+      "/ldap",
+      "/mysql",
+      "/postgresql",
+      "/mongodb",
+      "/redis",
+      "/elasticsearch"
+    ],
+    "response_delay": 0.5,
+    "fake_data": {
+      "users": ["admin", "root", "administrator", "user", "test", "demo"],
+      "passwords": ["admin", "password", "123456", "root", "test", "demo"],
+      "files": ["backup.sql", "config.ini", "users.db", "database.sql", "backup.tar.gz"],
+      "directories": ["/admin", "/backup", "/config", "/logs", "/data", "/uploads"],
+      "emails": ["admin@example.com", "root@example.com", "test@example.com"]
+    },
+    "fake_responses": {
+      "login_page": "<html><body><h1>Admin Login</h1><form>...</form></body></html>",
+      "error_page": "<html><body><h1>Error 500</h1><p>Internal Server Error</p></body></html>",
+      "file_listing": "<html><body><h1>Index of /</h1><ul><li>backup.sql</li><li>config.ini</li></ul></body></html>"
+    }
+  },
+  "custom_rules": [
+    {
+      "rule_id": "vpn_specific_1",
+      "name": "VPN Config Access",
+      "pattern": "/vpn/config/.*\\.(ovpn|conf|wg)",
+      "threat_type": "scanning",
+      "severity": "medium",
+      "action": "alert",
+      "enabled": true,
+      "threshold": 5,
+      "time_window": 300,
+      "description": "Multiple VPN config file access attempts"
+    },
+    {
+      "rule_id": "vpn_specific_2",
+      "name": "VPN Server Scanning",
+      "pattern": "/vpn/servers/.*",
+      "threat_type": "scanning",
+      "severity": "medium",
+      "action": "alert",
+      "enabled": true,
+      "threshold": 10,
+      "time_window": 600,
+      "description": "VPN server scanning detected"
+    },
+    {
+      "rule_id": "api_abuse_1",
+      "name": "API Rate Limit Bypass",
+      "pattern": "/api/.*",
+      "threat_type": "suspicious_behavior",
+      "severity": "high",
+      "action": "block",
+      "enabled": true,
+      "threshold": 100,
+      "time_window": 60,
+      "description": "API rate limit bypass attempts"
+    }
+  ],
+  "monitoring": {
+    "enabled": true,
+    "alert_email": "security@aladdin-vpn.com",
+    "alert_webhook": "https://hooks.slack.com/services/...",
+    "retention_days": 30,
+    "log_level": "INFO",
+    "real_time_alerts": true,
+    "daily_reports": true,
+    "weekly_reports": true
+  },
+  "behavioral_analysis": {
+    "enabled": true,
+    "track_user_agents": true,
+    "track_endpoints": true,
+    "track_request_patterns": true,
+    "anomaly_detection": true,
+    "machine_learning": false,
+    "baseline_period_days": 7,
+    "sensitivity": "medium"
+  },
+  "geo_blocking": {
+    "enabled": false,
+    "blocked_countries": ["CN", "RU", "KP", "IR"],
+    "allowed_countries": ["US", "CA", "GB", "DE", "FR", "NL", "SG", "JP", "AU"],
+    "strict_mode": false
+  },
+  "whitelist": {
+    "enabled": true,
+    "ips": [
+      "127.0.0.1",
+      "::1",
+      "192.168.0.0/16",
+      "10.0.0.0/8",
+      "172.16.0.0/12"
+    ],
+    "user_agents": [
+      "ALADDIN-VPN-Client",
+      "ALADDIN-Monitor"
+    ],
+    "endpoints": [
+      "/health",
+      "/status",
+      "/metrics"
+    ]
+  },
+  "performance": {
+    "max_events_in_memory": 10000,
+    "cleanup_interval_minutes": 60,
+    "batch_processing": true,
+    "async_processing": true,
+    "cache_size": 1000
+  }
+}

@@ -1,0 +1,46 @@
+[Unit]
+Description=ALADDIN VPN Monitoring Service
+Documentation=https://aladdin-vpn.com/docs/monitoring
+After=network.target aladdin-vpn.service
+Wants=aladdin-vpn.service
+Requires=network.target
+
+[Service]
+Type=simple
+User=aladdin
+Group=aladdin
+WorkingDirectory=/opt/aladdin-vpn
+ExecStart=/opt/aladdin-vpn/venv/bin/python /opt/aladdin-vpn/monitoring/vpn_monitoring.py
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=aladdin-vpn-monitoring
+
+# Ограничения ресурсов
+LimitNOFILE=16384
+LimitNPROC=1024
+MemoryMax=512M
+CPUQuota=50%
+
+# Безопасность
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/aladdin-vpn/logs /opt/aladdin-vpn/data
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+# Переменные окружения
+Environment=PYTHONPATH=/opt/aladdin-vpn
+Environment=ALADDIN_ENV=production
+Environment=ALADDIN_LOG_LEVEL=INFO
+Environment=MONITORING_INTERVAL=30
+Environment=MONITORING_RETENTION_DAYS=30
+
+[Install]
+WantedBy=multi-user.target

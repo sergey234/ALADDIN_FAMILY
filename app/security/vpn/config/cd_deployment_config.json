@@ -1,0 +1,59 @@
+{
+  "deployment": {
+    "default_strategy": "rolling",
+    "health_check_timeout": 300,
+    "rollback_enabled": true,
+    "max_parallel_deployments": 3,
+    "deployment_retention_days": 90
+  },
+  "environments": {
+    "development": {
+      "auto_deploy": true,
+      "require_approval": false,
+      "health_checks_enabled": true
+    },
+    "staging": {
+      "auto_deploy": false,
+      "require_approval": true,
+      "health_checks_enabled": true
+    },
+    "production": {
+      "auto_deploy": false,
+      "require_approval": true,
+      "health_checks_enabled": true,
+      "rollback_enabled": true
+    }
+  },
+  "services": {
+    "vpn_core": {
+      "version": "1.0.0",
+      "deployment_order": 1
+    },
+    "vpn_manager": {
+      "version": "1.0.0",
+      "deployment_order": 2
+    },
+    "vpn_configuration": {
+      "version": "1.0.0",
+      "deployment_order": 2
+    },
+    "vpn_monitoring": {
+      "version": "1.0.0",
+      "deployment_order": 3
+    },
+    "vpn_analytics": {
+      "version": "1.0.0",
+      "deployment_order": 4
+    },
+    "vpn_integration": {
+      "version": "1.0.0",
+      "deployment_order": 4
+    }
+  },
+  "notifications": {
+    "slack_webhook": "",
+    "email_recipients": [],
+    "notify_on_success": true,
+    "notify_on_failure": true
+  }
+}

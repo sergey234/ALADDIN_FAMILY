@@ -1,0 +1,134 @@
+{
+  "log_directory": "logs",
+  "max_buffer_size": 1000,
+  "rotation": {
+    "max_bytes": 10485760,
+    "backup_count": 5,
+    "when": "midnight",
+    "interval": 1,
+    "encoding": "utf-8"
+  },
+  "siem": {
+    "enabled": false,
+    "endpoint": "https://siem.example.com/api/events",
+    "api_key": "",
+    "batch_size": 100,
+    "flush_interval": 60,
+    "retry_attempts": 3,
+    "timeout": 30
+  },
+  "alerts": {
+    "enabled": true,
+    "email": {
+      "enabled": false,
+      "smtp_server": "smtp.gmail.com",
+      "smtp_port": 587,
+      "username": "",
+      "password": "",
+      "from_email": "alerts@aladdin-vpn.com",
+      "to_emails": ["security@aladdin-vpn.com"]
+    },
+    "webhook": {
+      "enabled": false,
+      "url": "https://hooks.slack.com/services/...",
+      "timeout": 10,
+      "retry_attempts": 3
+    },
+    "thresholds": {
+      "error_rate": 0.1,
+      "failed_logins": 5,
+      "suspicious_activity": 3,
+      "ddos_attacks": 1,
+      "unauthorized_access": 3,
+      "configuration_changes": 10
+    }
+  },
+  "retention": {
+    "days": 30,
+    "compress_after_days": 7,
+    "delete_after_days": 90,
+    "archive_format": "gzip"
+  },
+  "correlation": {
+    "enabled": true,
+    "time_window_minutes": 5,
+    "max_events_per_correlation": 100,
+    "correlation_rules": [
+      {
+        "name": "multiple_failed_logins",
+        "pattern": "authentication.*failed",
+        "threshold": 5,
+        "time_window_minutes": 10,
+        "action": "alert"
+      },
+      {
+        "name": "suspicious_ip_activity",
+        "pattern": "security.*suspicious",
+        "threshold": 3,
+        "time_window_minutes": 5,
+        "action": "block_ip"
+      },
+      {
+        "name": "admin_configuration_changes",
+        "pattern": "admin_action.*configuration",
+        "threshold": 10,
+        "time_window_minutes": 60,
+        "action": "alert"
+      }
+    ]
+  },
+  "compliance": {
+    "enabled": true,
+    "standards": ["GDPR", "SOX", "PCI-DSS", "HIPAA"],
+    "reporting": {
+      "daily": true,
+      "weekly": true,
+      "monthly": true,
+      "format": "pdf"
+    },
+    "data_classification": {
+      "pii": "high",
+      "financial": "high",
+      "system": "medium",
+      "general": "low"
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics_interval": 60,
+    "health_check_interval": 300,
+    "performance_thresholds": {
+      "max_log_size_mb": 100,
+      "max_events_per_second": 1000,
+      "max_memory_usage_mb": 512
+    }
+  },
+  "filters": {
+    "exclude_patterns": [
+      "health_check",
+      "ping",
+      "favicon.ico",
+      "robots.txt"
+    ],
+    "include_only": [],
+    "sensitive_data_masking": {
+      "enabled": true,
+      "patterns": [
+        "password",
+        "token",
+        "secret",
+        "key",
+        "ssn",
+        "credit_card"
+      ],
+      "mask_char": "*",
+      "mask_length": 8
+    }
+  },
+  "export": {
+    "formats": ["json", "csv", "xml", "pdf"],
+    "compression": true,
+    "encryption": false,
+    "retention_days": 7
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "enabled": false,
+  "sleep_mode": true,
+  "ml_enabled": false,
+  "adaptive_learning": false,
+  "cleanup_interval": 3600,
+  "metrics_enabled": false,
+  "logging_level": "WARNING",
+  "auto_wake_up": true,
+  "wake_up_threshold": 0.8,
+  "max_sleep_time": 86400,
+  "status": "SLEEPING",
+  "last_activity": null,
+  "sleep_start_time": 1757184016.8708742
+}

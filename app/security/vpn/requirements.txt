@@ -1,0 +1,38 @@
+# ALADDIN VPN Server Requirements
+# Установка: pip install -r requirements.txt
+
+# Web Framework
+Flask==2.3.3
+Flask-CORS==4.0.0
+
+# HTTP Client
+requests==2.31.0
+aiohttp==3.8.5
+
+# Data Processing
+pandas==2.0.3
+numpy==1.24.3
+
+# Security
+cryptography==41.0.4
+pycryptodome==3.18.0
+
+# Database
+SQLAlchemy==2.0.21
+sqlite3
+
+# Logging
+loguru==0.7.0
+
+# Configuration
+python-dotenv==1.0.0
+pydantic==2.3.0
+
+# Testing
+pytest==7.4.2
+pytest-asyncio==0.21.1
+
+# Development
+black==23.7.0
+flake8==6.0.0
+isort==5.12.0

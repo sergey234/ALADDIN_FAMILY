@@ -1,0 +1,126 @@
+{
+  "name": "roadside_assistance_agent",
+  "type": "ai_agent",
+  "path": "/opt/aladdin-backend/security/ai_agents/roadside_assistance_agent.py",
+  "class": "RoadsideAssistanceAgent",
+  "version": "1.0.0",
+  "description": "Агент для предоставления помощи на дороге 24/7. Поддерживает вызов помощи (буксировка, запуск двигателя, замена колеса, открытие замка, доставка топлива и др.), интеграцию с партнерскими службами помощи, отслеживание статуса помощи в реальном времени и историю запросов.",
+  "author": "ALADDIN Security Team",
+  "created_at": "2025-12-14",
+  "last_updated": "2025-12-14",
+  "status": "active",
+  "functions": [
+    {
+      "name": "call_assistance",
+      "description": "Вызов помощи на дороге. Создает запрос на помощь, отправляет его партнерской службе (если настроено) и возвращает информацию о созданном запросе.",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "problem_type: ProblemType - Тип проблемы (towing, jump_start, tire_change, lockout, fuel_delivery и др.)",
+        "location: Location - Местоположение (широта, долгота, адрес)",
+        "description: Optional[str] - Описание проблемы",
+        "vehicle_info: Optional[VehicleInfo] - Информация о транспортном средстве",
+        "partner: Optional[str] - Партнер (rosgosstrah, alfastrahovanie и т.д., опционально)"
+      ],
+      "returns": "AssistanceRequest - Созданный запрос на помощь с ID, статусом и информацией о службе помощи",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_status",
+      "description": "Получить статус запроса на помощь. Возвращает актуальную информацию о запросе, включая статус, информацию о службе помощи, ожидаемое время прибытия.",
+      "parameters": [
+        "request_id: str - ID запроса на помощь"
+      ],
+      "returns": "Optional[AssistanceRequest] - Запрос на помощь или None, если запрос не найден",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "cancel_request",
+      "description": "Отменить запрос на помощь. Отправляет запрос на отмену партнеру (если запрос был отправлен партнеру) и обновляет статус запроса на cancelled.",
+      "parameters": [
+        "request_id: str - ID запроса на помощь"
+      ],
+      "returns": "bool - True, если запрос успешно отменен, False иначе",
+      "async": false,
+      "requires_auth": true
+    },
+    {
+      "name": "get_history",
+      "description": "Получить историю запросов на помощь пользователя. Возвращает список последних запросов, отсортированных по дате создания (новые первыми).",
+      "parameters": [
+        "user_id: str - ID пользователя",
+        "limit: int - Максимальное количество запросов (по умолчанию 10)"
+      ],
+      "returns": "List[AssistanceRequest] - Список запросов на помощь",
+      "async": false,
+      "requires_auth": true
+    }
+  ],
+  "dependencies": [
+    "threat_monitoring_interface",
+    "security.base"
+  ],
+  "config": {
+    "default_partner": "manual",
+    "status_check_interval_seconds": 30,
+    "max_wait_time_minutes": 120,
+    "enable_auto_status_check": true
+  },
+  "events": {
+    "subscribe": ["roadside_assistance", "*"],
+    "publish": ["roadside_assistance_requested", "roadside_assistance_status_changed", "roadside_assistance_completed"]
+  },
+  "api_endpoints": [
+    {
+      "path": "/api/roadside-assistance/call",
+      "method": "POST",
+      "function": "call_assistance",
+      "description": "Вызов помощи на дороге"
+    },
+    {
+      "path": "/api/roadside-assistance/status/{request_id}",
+      "method": "GET",
+      "function": "get_status",
+      "description": "Получить статус запроса на помощь"
+    },
+    {
+      "path": "/api/roadside-assistance/cancel/{request_id}",
+      "method": "POST",
+      "function": "cancel_request",
+      "description": "Отменить запрос на помощь"
+    },
+    {
+      "path": "/api/roadside-assistance/history",
+      "method": "GET",
+      "function": "get_history",
+      "description": "Получить историю запросов на помощь пользователя"
+    },
+    {
+      "path": "/api/roadside-assistance/health",
+      "method": "GET",
+      "function": null,
+      "description": "Проверка здоровья сервиса"
+    }
+  ],
+  "monitoring": {
+    "enabled": true,
+    "interval_minutes": 5,
+    "auto_start": false
+  },
+  "security": {
+    "requires_encryption": true,
+    "data_retention_days": 90,
+    "log_level": "INFO",
+    "compliance": ["GDPR", "152-ФЗ"],
+    "personal_data_logging": false
+  },
+  "metadata": {
+    "total_functions": 4,
+    "total_api_endpoints": 5,
+    "supported_problem_types": ["towing", "jump_start", "tire_change", "lockout", "fuel_delivery", "battery_replacement", "windshield_repair", "other"],
+    "supported_partners": ["rosgosstrah", "alfastrahovanie", "ingosstrah", "reso", "manual"],
+    "flake8_status": "passed",
+    "code_coverage": "medium"
+  }
+}

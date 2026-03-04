@@ -1,3 +1,4 @@
+#if DEBUG
 import Foundation
 
 /**
@@ -631,4 +632,5 @@ extension NetworkManager {
         }
     }
 }
+#endif
 

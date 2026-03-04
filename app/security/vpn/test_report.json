@@ -1,0 +1,138 @@
+{
+  "overall_status": "passed",
+  "total_tests": 10,
+  "passed_tests": 10,
+  "failed_tests": 0,
+  "success_rate": 100.0,
+  "duration_seconds": 10.035864,
+  "start_time": "2025-10-02T11:14:18.115317",
+  "end_time": "2025-10-02T11:14:28.151181",
+  "test_results": {
+    "vpn_metrics": {
+      "status": "passed",
+      "server_metrics_count": 4,
+      "connection_metrics_count": 5,
+      "performance_summary": {
+        "total_servers": 4,
+        "avg_server_performance": 100.0,
+        "active_connections": 5,
+        "total_connections": 5,
+        "avg_connection_duration": 2.0044618,
+        "total_data_transferred": 0,
+        "timestamp": "2025-10-02T11:14:20.124260"
+      },
+      "timestamp": "2025-10-02T11:14:20.124284"
+    },
+    "business_analytics": {
+      "status": "passed",
+      "mrr": 11938.050000000001,
+      "arr": 66583.35,
+      "arpu": 9.99,
+      "ltv": 499.5,
+      "cac": 25.0,
+      "cohorts_count": 6,
+      "forecast_months": 6,
+      "roi_channels": 5,
+      "timestamp": "2025-10-02T11:14:20.132408"
+    },
+    "ml_detector": {
+      "status": "passed",
+      "active_anomalies": 0,
+      "total_anomalies": 0,
+      "ml_models": 3,
+      "anomalies_by_type": {
+        "performance_drop": 0,
+        "unusual_traffic": 0,
+        "connection_spike": 0,
+        "security_threat": 0,
+        "server_failure": 0,
+        "user_behavior": 0,
+        "billing_anomaly": 0
+      },
+      "timestamp": "2025-10-02T11:14:25.132788"
+    },
+    "graphql_api": {
+      "status": "passed",
+      "servers_count": 4,
+      "metrics_available": true,
+      "connect_success": true,
+      "timestamp": "2025-10-02T11:14:25.134291"
+    },
+    "websocket_api": {
+      "status": "passed",
+      "client_count": 0,
+      "subscription_stats": {
+        "servers": 0,
+        "connections": 0,
+        "metrics": 0,
+        "alerts": 0,
+        "notifications": 0,
+        "all": 0
+      },
+      "timestamp": "2025-10-02T11:14:25.135236"
+    },
+    "external_services": {
+      "status": "passed",
+      "total_services": 5,
+      "active_services": 5,
+      "payment_services": 1,
+      "notification_services": 2,
+      "services_by_type": {
+        "payment": 1,
+        "notification": 2,
+        "analytics": 1,
+        "monitoring": 0,
+        "security": 1,
+        "cdn": 0,
+        "database": 0
+      },
+      "timestamp": "2025-10-02T11:14:25.135499"
+    },
+    "backup_manager": {
+      "status": "passed",
+      "backup_id": "configuration_20251002_111425",
+      "backup_status": "completed",
+      "total_backups": 2,
+      "completed_backups": 2,
+      "total_size_mb": 0.02609729766845703,
+      "timestamp": "2025-10-02T11:14:28.136630"
+    },
+    "service_orchestrator": {
+      "status": "passed",
+      "total_services": 10,
+      "start_result": false,
+      "service_status": "unknown",
+      "stop_result": true,
+      "timestamp": "2025-10-02T11:14:28.137390"
+    },
+    "component_integration": {
+      "status": "passed",
+      "metrics_data_available": true,
+      "business_metrics_calculated": true,
+      "ml_detection_active": true,
+      "integration_working": true,
+      "timestamp": "2025-10-02T11:14:28.138962"
+    },
+    "performance": {
+      "status": "passed",
+      "metrics_response_time": 8.511543273925781e-05,
+      "analytics_response_time": 0.0007889270782470703,
+      "memory_usage_mb": 29.22265625,
+      "memory_increase_mb": 0.00390625,
+      "cpu_usage_percent": 100.0,
+      "timestamp": "2025-10-02T11:14:28.151124"
+    }
+  },
+  "summary": {
+    "vpn_metrics": "✅ Работает",
+    "business_analytics": "✅ Работает",
+    "ml_detector": "✅ Работает",
+    "graphql_api": "✅ Работает",
+    "websocket_api": "✅ Работает",
+    "external_services": "✅ Работает",
+    "backup_manager": "✅ Работает",
+    "service_orchestrator": "✅ Работает",
+    "component_integration": "✅ Работает",
+    "performance": "✅ Работает"
+  }
+}

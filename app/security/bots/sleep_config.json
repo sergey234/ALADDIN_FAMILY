@@ -1,0 +1,32 @@
+{
+  "sleep_enabled": true,
+  "auto_sleep_after_minutes": 30,
+  "wake_up_on_demand": true,
+  "save_state_on_sleep": true,
+  "bots": {
+    "whatsapp": {
+      "enabled": true,
+      "priority": 1
+    },
+    "telegram": {
+      "enabled": true,
+      "priority": 2
+    },
+    "instagram": {
+      "enabled": true,
+      "priority": 3
+    },
+    "max_messenger": {
+      "enabled": true,
+      "priority": 4
+    },
+    "analytics": {
+      "enabled": true,
+      "priority": 5
+    },
+    "website_navigation": {
+      "enabled": true,
+      "priority": 6
+    }
+  }
+}

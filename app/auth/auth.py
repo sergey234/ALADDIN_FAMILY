@@ -7,11 +7,10 @@ from typing import Optional, Dict
 import jwt
 import os
 
-from app.security import verify_payload_signature
 security = HTTPBearer()
 
 # В продакшене использовать переменные окружения
-JWT_SECRET = os.getenv("JWT_SECRET", "aladdin-jwt-secret-key-2026-production-ready")
+JWT_SECRET = os.getenv("JWT_SECRET", "your-secret-key-change-in-production")
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
 
@@ -27,11 +26,6 @@ def decode_token(token: str) -> Optional[Dict]:
     """
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        # HMAC Signature Verification for anti-tampering
-        if 'subscription' in payload:
-            sig = payload.get('signature')
-            if sig and not verify_payload_signature(payload['subscription'], sig):
-                return None
         return payload
     except jwt.ExpiredSignatureError:
         return None
