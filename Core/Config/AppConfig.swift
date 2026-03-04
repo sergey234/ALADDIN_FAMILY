@@ -113,36 +113,36 @@ struct AppConfig {
     
     enum Endpoint {
         // Network Protection
-        static let networkProtectionStatus = "/network-protection/status"
-        static let networkProtectionConnect = "/network-protection/connect"
-        static let networkProtectionDisconnect = "/network-protection/disconnect"
-        static let networkProtectionServers = "/network-protection/servers"
-        static let networkProtectionSettings = "/network-protection/settings"
-        static let networkProtectionConfig = "/network-protection/config"
-        static let networkProtectionStats = "/network-protection/stats"
+        static let networkProtectionStatus = "/api/network-protection/status"
+        static let networkProtectionConnect = "/api/network-protection/connect"
+        static let networkProtectionDisconnect = "/api/network-protection/disconnect"
+        static let networkProtectionServers = "/api/network-protection/servers"
+        static let networkProtectionSettings = "/api/network-protection/settings"
+        static let networkProtectionConfig = "/api/network-protection/config"
+        static let networkProtectionStats = "/api/network-protection/stats"
         
         // Family
-        static let createFamily = "/family/create"
-        static let joinFamily = "/family/join"
-        static let recoverFamily = "/family/recover"
-        static let loginByRecoveryCode = "/auth/login-by-recovery-code"
-        static let familyMembers = "/family/members"
-        static let addFamilyMember = "/family/add"
-        static let removeFamilyMember = "/family/remove"
-        static let memberProfile = "/family/member"
-        static let familyStats = "/family/stats"
-        
+        static let createFamily = "/api/family/create"
+        static let joinFamily = "/api/family/join"
+        static let recoverFamily = "/api/family/recover"
+        static let loginByRecoveryCode = "/api/auth/login-by-recovery-code"
+        static let familyMembers = "/api/family/members"
+        static let addFamilyMember = "/api/family/add"
+        static let removeFamilyMember = "/api/family/remove"
+        static let memberProfile = "/api/family/member"
+        static let familyStats = "/api/family/stats"
+
         // Family Chat
-        static let familyChatMessages = "/family/chat/messages"
-        static let familyChatSend = "/family/chat/send"
+        static let familyChatMessages = "/api/family/chat/messages"
+        static let familyChatSend = "/api/family/chat/send"
         
         // Components (42 components API)
-        static let componentStatus = "/components/status"
-        static let componentStatusBatch = "/components/status/batch"  // 🚀 Batch endpoint для оптимизации
-        static let componentEnable = "/components/enable"
-        static let componentDisable = "/components/disable"
-        static let componentConfiguration = "/components/config"
-        static let componentBulkUpdate = "/components/bulk-update"  // Массовое обновление компонентов
+        static let componentStatus = "/api/components/status"
+        static let componentStatusBatch = "/api/components/status/batch"  // 🚀 Batch endpoint для оптимизации
+        static let componentEnable = "/api/components/enable"
+        static let componentDisable = "/api/components/disable"
+        static let componentConfiguration = "/api/components/config"
+        static let componentBulkUpdate = "/api/components/bulk-update"  // Массовое обновление компонентов
         static let componentsList = "/api/components/list"  // ✅ ЗАДАЧА 22: Список всех компонентов
         static let componentsHealth = "/api/components/health"  // ✅ ЗАДАЧА 22: Общее здоровье компонентов
         
