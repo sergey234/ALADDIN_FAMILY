@@ -2688,7 +2688,8 @@ class APIService: ObservableObject {
 
     // Device registration methods
     func registerDeviceAnonymously(request: DeviceRegisterRequest, completion: @escaping (Result<JWTDeviceRegisterResponse, Error>) -> Void) {
-        networkManager.post(endpoint: AppConfig.Endpoint.deviceRegister, body: request, completion: completion)
+        // ✅ КРИТИЧНО: Для анонимной регистрации авторизация НЕ требуется!
+        networkManager.post(endpoint: AppConfig.Endpoint.deviceRegister, body: request, requiresAuth: false, completion: completion)
     }
 }
 
