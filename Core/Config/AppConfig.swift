@@ -147,9 +147,9 @@ struct AppConfig {
         static let componentsHealth = "/api/components/health"  // ✅ ЗАДАЧА 22: Общее здоровье компонентов
         
         // Analytics
-        static let analytics = "/analytics"
-        static let threats = "/analytics/threats"
-        static let topThreats = "/analytics/top-threats"
+        static let analytics = "/api/analytics"
+        static let threats = "/api/analytics/threats"
+        static let topThreats = "/api/analytics/top-threats"
 
         // ✅ ЗАДАЧА 65: Metrics upload endpoint
         static let metricsUpload = "/api/metrics/upload"
