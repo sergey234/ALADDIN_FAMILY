@@ -196,8 +196,8 @@ struct AppConfig {
         static let aiCategoriesBlock = "/api/reports/ai-categories/block"
         
         // AI Assistant
-        static let aiChat = "/ai/chat"
-        static let aiSendMessage = "/ai/message"
+        static let aiChat = "/api/ai/chat"
+        static let aiSendMessage = "/api/ai/message"
 
         // AI Assistant (новые endpoints для полной интеграции)
         static let aiAssistantChat = "/api/ai/assistant/chat"
@@ -285,22 +285,22 @@ struct AppConfig {
         
         // Parental Control (старые endpoints - оставляем для обратной совместимости)
         // ✅ ИСПРАВЛЕНО: Убрали /api/ из начала, т.к. baseURL уже содержит /api
-        static let parentalControl = "/parental/control"
-        static let applyBlocking = "/v1/parental-control/blocking"
-        static let applyRules = "/v1/parental-control/rules"
-        static let getAccessRequests = "/v1/parental-control/access-requests"
-        static let handleAccessRequest = "/v1/parental-control/access-requests"
-        static let getStats = "/v1/parental-control/stats"
-        static let updateLimits = "/parental/limits"
-        static let blockDevice = "/parental/block"
+        static let parentalControl = "/api/parental/control"
+        static let applyBlocking = "/api/v1/parental-control/blocking"
+        static let applyRules = "/api/v1/parental-control/rules"
+        static let getAccessRequests = "/api/v1/parental-control/access-requests"
+        static let handleAccessRequest = "/api/v1/parental-control/access-requests"
+        static let getStats = "/api/v1/parental-control/stats"
+        static let updateLimits = "/api/parental/limits"
+        static let blockDevice = "/api/parental/block"
         
         // User (старые endpoints - оставляем для обратной совместимости)
-        static let profile = "/user/profile"
-        static let updateProfile = "/user/update"
-        static let changePassword = "/user/password"
-        static let deleteAccount = "/user/delete"
-        static let twoFactorStatus = "/user/2fa/status"
-        static let twoFactorUpdate = "/user/2fa/update"
+        static let profile = "/api/user/profile"
+        static let updateProfile = "/api/user/update"
+        static let changePassword = "/api/user/password"
+        static let deleteAccount = "/api/user/delete"
+        static let twoFactorStatus = "/api/user/2fa/status"
+        static let twoFactorUpdate = "/api/user/2fa/update"
         
         // ✅ ЭТАП 2: Профиль пользователя (5 endpoints)
         static let userProfileSync = "/api/user/profile/sync"
@@ -365,20 +365,20 @@ struct AppConfig {
         static let elderlyAppointmentsUpdate = "/api/elderly/appointments/update"
         
         // Notifications
-        static let notifications = "/notifications"
-        static let markRead = "/notifications/read"
+        static let notifications = "/api/notifications"
+        static let markRead = "/api/notifications/read"
         
         // Devices
-        static let devices = "/devices"
+        static let devices = "/api/devices"
         static let deviceRegister = "/api/auth/register-device"
-        static let deviceDetail = "/devices" // /devices/{deviceId}
-        static let deviceSettings = "/devices" // /devices/{deviceId}/settings
+        static let deviceDetail = "/api/devices" // /devices/{deviceId}
+        static let deviceSettings = "/api/devices" // /devices/{deviceId}/settings
         
         // Auth
-        static let login = "/auth/login"
-        static let logout = "/auth/logout"
-        static let register = "/auth/register"
-        static let authRefresh = "/auth/refresh"
+        static let login = "/api/auth/login"
+        static let logout = "/api/auth/logout"
+        static let register = "/api/auth/register"
+        static let authRefresh = "/api/auth/refresh"
         static let registerDevice = "/api/auth/register-device"
         static let registerDeviceTrial = "/auth/register-device-trial"
         
@@ -389,27 +389,27 @@ struct AppConfig {
         static let roadsideHistory = "/api/roadside-assistance/history"
         
         // Subscription
-        static let tariffs = "/subscription/tariffs"
-        static let subscribe = "/subscription/subscribe"
-        static let cancelSubscription = "/subscription/cancel"
-        static let activateSubscription = "/subscription/activate"
-        static let activationVerify = "/subscription/activation/verify"
-        static let activationActivate = "/subscription/activation/activate"
+        static let tariffs = "/api/subscription/tariffs"
+        static let subscribe = "/api/subscription/subscribe"
+        static let cancelSubscription = "/api/subscription/cancel"
+        static let activateSubscription = "/api/subscription/activate"
+        static let activationVerify = "/api/subscription/activation/verify"
+        static let activationActivate = "/api/subscription/activation/activate"
         
         // Protection
-        static let protectionSettings = "/protection/settings"
-        static let protectionStatus = "/protection/status"
-        static let threatScenarios = "/protection/threat-scenarios"
-        static let protectionEnable = "/protection/enable"
-        static let protectionDisable = "/protection/disable"
-        static let protectionStats = "/protection/stats"
-        static let protectionSync = "/protection/sync"
+        static let protectionSettings = "/api/protection/settings"
+        static let protectionStatus = "/api/protection/status"
+        static let threatScenarios = "/api/protection/threat-scenarios"
+        static let protectionEnable = "/api/protection/enable"
+        static let protectionDisable = "/api/protection/disable"
+        static let protectionStats = "/api/protection/stats"
+        static let protectionSync = "/api/protection/sync"
         
         // Referral
-        static let referralCode = "/referral/code"
-        static let referralStats = "/referral/stats"
-        static let referralHistory = "/referral/history"
-        static let referralRewards = "/referral/rewards"
+        static let referralCode = "/api/referral/code"
+        static let referralStats = "/api/referral/stats"
+        static let referralHistory = "/api/referral/history"
+        static let referralRewards = "/api/referral/rewards"
 
         // Crash Detection
         static let crashDetectionSetup = "/api/crash-detection/setup"
@@ -446,16 +446,16 @@ struct AppConfig {
         static let drivingEnd = "/api/reports/driving/end"
         
         // IoT Security (6 endpoints)
-        static let iotStatus = "/iot/status/{homeId}"
-        static let iotDevices = "/iot/devices/{homeId}"
-        static let iotThreats = "/iot/threats/{homeId}"
-        static let iotDeviceBlock = "/iot/device/{deviceId}/block"
-        static let iotScan = "/iot/scan/{homeId}"
-        static let iotFix = "/iot/fix/{threatId}"
+        static let iotStatus = "/api/iot/status/{homeId}"
+        static let iotDevices = "/api/iot/devices/{homeId}"
+        static let iotThreats = "/api/iot/threats/{homeId}"
+        static let iotDeviceBlock = "/api/iot/device/{deviceId}/block"
+        static let iotScan = "/api/iot/scan/{homeId}"
+        static let iotFix = "/api/iot/fix/{threatId}"
         
         // Payments (2 endpoints)
-        static let paymentsQRCreate = "/payments/qr/create"
-        static let paymentsQRStatus = "/payments/qr/status/{paymentId}"
+        static let paymentsQRCreate = "/api/payments/qr/create"
+        static let paymentsQRStatus = "/api/payments/qr/status/{paymentId}"
     }
     
     // MARK: - Feature Flags
