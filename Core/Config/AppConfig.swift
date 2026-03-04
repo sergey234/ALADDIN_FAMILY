@@ -152,8 +152,8 @@ struct AppConfig {
         static let topThreats = "/analytics/top-threats"
 
         // ✅ ЗАДАЧА 65: Metrics upload endpoint
-        static let metricsUpload = "/metrics/upload"
-        
+        static let metricsUpload = "/api/metrics/upload"
+
         // Component Reports
         // Driving Reports
         static let drivingReports = "/reports/driving"
