@@ -152,24 +152,36 @@ final class SubscriptionManager: ObservableObject {
         logger.business("🚀 SubscriptionManager.initializeOnAppStart() called")
         VisualLogger.shared.log("🚀 SubscriptionManager.initializeOnAppStart() called", level: .info)
 
+        // Логируем состояние приложения при запуске
+        logger.business("📊 ИНИЦИАЛИЗАЦИЯ ПОДПИСКИ - ПРОВЕРКА ТЕКУЩЕГО СОСТОЯНИЯ")
+        logger.business("📱 Устройство: \(UIDevice.current.model) (\(UIDevice.current.systemVersion))")
+        logger.business("🌐 Режим сети: \(isOfflineMode ? "ОФФЛАЙН" : "ОНЛАЙН")")
+        logger.business("⏰ Время запуска: \(Date())")
+
         // Check current token state
         let hasToken = currentToken != nil
-        logger.business("📋 Token check: currentToken is nil = \(!hasToken)")
+        logger.business("📋 АНАЛИЗ ТОКЕНА:")
+        logger.business("   - Токен существует: \(hasToken)")
 
         if let token = currentToken {
-            logger.business("📋 Token details: deviceId=\(token.deviceId), level=\(token.subscriptionLevel), expires=\(token.expiresAt)")
+            logger.business("   - DeviceID: \(token.deviceId)")
+            logger.business("   - Уровень подписки: \(token.subscriptionLevel)")
+            logger.business("   - Истекает: \(token.expiresAt)")
+            logger.business("   - Время до истечения: \(Int(token.expiresAt.timeIntervalSinceNow / 3600)) часов")
+        } else {
+            logger.business("   - Токен отсутствует - требуется первичная регистрация")
         }
 
         // Check if token is expired
-        let tokenExpired = isTokenExpired()
-        logger.business("📋 Token expired check: \(tokenExpired)")
+        let tokenExpired = await isTokenExpired()
+        logger.business("   - Токен истек: \(tokenExpired)")
 
         // Check if we need to register device
         if currentToken == nil || tokenExpired {
-            logger.business("📱 CONDITION MET: No valid token found, registering device anonymously")
+            logger.business("📱 РЕШЕНИЕ: Нет валидного токена - запускаем анонимную регистрацию устройства")
 
             // Check network connectivity before attempting
-            logger.business("🌐 Checking network connectivity...")
+            logger.business("🌐 Проверка сетевого подключения перед регистрацией...")
             // For now assume network is available
 
             do {
@@ -451,7 +463,7 @@ final class SubscriptionManager: ObservableObject {
         print("🧪🧪🧪 ISOLATED TESTING: Testing network connectivity only")
 
         do {
-            let url = URL(string: "https://aladdin-ai.ru/auth/register-device")!
+            let url = URL(string: "https://aladdin-ai.ru/api/auth/register-device")!
             print("   - Testing URL: \(url.absoluteString)")
 
             let (_, response) = try await URLSession.shared.data(from: url)
@@ -477,7 +489,7 @@ final class SubscriptionManager: ObservableObject {
         print("🚨🚨🚨 EMERGENCY TEST: Trying GET instead of POST")
 
         do {
-            let url = URL(string: "https://aladdin-ai.ru/auth/register-device")!
+            let url = URL(string: "https://aladdin-ai.ru/api/auth/register-device")!
             print("   - Emergency GET URL: \(url.absoluteString)")
 
             var request = URLRequest(url: url)
@@ -502,33 +514,74 @@ final class SubscriptionManager: ObservableObject {
 
     /// 🔑 Register device anonymously with trial
     func registerDeviceAnonymously() async throws {
-        logger.business("📱 Registering device anonymously")
+        logger.business("📱 НАЧАЛО РЕГИСТРАЦИИ УСТРОЙСТВА АНОНИМНО")
 
         let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
         let deviceType = "ios"
 
+        logger.business("📋 Параметры регистрации:")
+        logger.business("   - DeviceID: \(deviceId)")
+        logger.business("   - DeviceType: \(deviceType)")
+        logger.business("   - Timestamp: \(Date())")
+
         let request = DeviceRegisterRequest(deviceId: deviceId, deviceType: deviceType)
 
         // ✅ ПРОДАКШН: Реальный API вызов через APIService
-        logger.business("📡 Calling real API: /auth/register-device with POST")
+        logger.business("📡 ВЫЗОВ API: POST /api/auth/register-device")
+        logger.business("🔗 URL: https://aladdin-ai.ru/api/auth/register-device")
+        logger.business("📤 Запрос: \(String(describing: request))")
 
         let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JWTDeviceRegisterResponse, Error>) in
             APIService.shared.registerDeviceAnonymously(request: request) { [self] result in
                 switch result {
                 case .success(let jwtResponse):
-                    self.logger.business("✅ Device registered successfully with real API")
-                    self.logger.business("   - Token: \(jwtResponse.token.prefix(20))...")
-                    self.logger.business("   - Subscription: \(jwtResponse.subscription.level)")
+                    self.logger.business("✅ РЕГИСТРАЦИЯ УСТРОЙСТВА ПРОШЛА УСПЕШНО")
+                    self.logger.business("📋 Получен ответ от сервера:")
+                    self.logger.business("   - Token: \(jwtResponse.token.prefix(20))... (длина: \(jwtResponse.token.count))")
+                    self.logger.business("   - Subscription Level: \(jwtResponse.subscription.level)")
+                    self.logger.business("   - Subscription Status: \(jwtResponse.subscription.isActive ? "АКТИВНА" : "НЕАКТИВНА")")
+                    self.logger.business("   - Expires At: \(jwtResponse.subscription.expiresAt)")
+                    self.logger.business("   - Trial Info: \(String(describing: jwtResponse.subscription.trialInfo))")
+
+                    // 🔍 Комплексная валидация JWT токена
+                    let validationResult = self.validateJWTToken(jwtResponse.token)
+
+                    switch validationResult {
+                    case .valid:
+                        self.logger.business("✅ JWT токен прошел полную валидацию")
+                    case .invalid(let reason):
+                        self.logger.error("❌ JWT токен не прошел валидацию: \(reason)")
+                        let error = SubscriptionError.invalidToken
+                        continuation.resume(throwing: error)
+                        return
+                    }
+
                     continuation.resume(returning: jwtResponse)
                 case .failure(let error):
                     self.logger.error("❌ Device registration failed", error: error)
+
+                    // Специальная обработка ошибки 401
+                    if let networkError = error as? NetworkError,
+                       case .httpError(401) = networkError {
+                        logger.business("🚨 Обнаружена ошибка 401 при регистрации устройства")
+                        Task {
+                            await self.handle401Error()
+                        }
+                    } else {
+                        // Показываем понятное сообщение пользователю для других ошибок
+                        let userMessage = self.getUserFriendlyErrorMessage(for: error)
+                        self.showUserError(message: userMessage)
+                    }
+
                     continuation.resume(throwing: error)
                 }
             }
         }
 
         // ✅ Сохраняем реальный JWT токен от сервера
-        await storeToken(JWTToken(
+        logger.business("💾 СОХРАНЕНИЕ ТОКЕНА В ЗАЩИЩЕННОЕ ХРАНИЛИЩЕ")
+
+        let jwtToken = JWTToken(
             token: response.token,
             deviceId: response.deviceId,
             subscriptionLevel: response.subscription.level,
@@ -538,12 +591,25 @@ final class SubscriptionManager: ObservableObject {
             issuer: "aladdin-server",
             limits: response.subscription.limits,
             components: response.subscription.components
-        ))
+        )
+
+        await storeToken(jwtToken)
+
+        logger.business("✅ Токен успешно сохранен в Keychain:")
+        logger.business("   - DeviceID: \(jwtToken.deviceId)")
+        logger.business("   - Уровень подписки: \(jwtToken.subscriptionLevel)")
+        logger.business("   - Trial: \(jwtToken.trialInfo?.daysRemaining ?? 0) дней осталось")
+        logger.business("   - Выдан: \(jwtToken.issuedAt)")
+        logger.business("   - Истекает: \(jwtToken.expiresAt)")
+        logger.business("   - Время жизни: \(Int(jwtToken.expiresAt.timeIntervalSince(jwtToken.issuedAt) / 3600)) часов")
 
         // ✅ Обновляем статус подписки реальными данными
+        logger.business("🔄 Обновление статуса подписки...")
         await updateSubscriptionStatus(response.subscription)
 
-        logger.business("✅ Device registered successfully: \(deviceId) with real JWT")
+        logger.business("🎉 РЕГИСТРАЦИЯ УСТРОЙСТВА ЗАВЕРШЕНА ПОЛНОСТЬЮ")
+        logger.business("🚀 Устройство \(deviceId) готово к работе с реальным JWT")
+        logger.business("🔐 Все защищенные API теперь доступны")
     }
 
     // MARK: - Private Methods
@@ -1101,5 +1167,283 @@ extension SubscriptionManager {
 
         // Re-queue events for now
         pendingEvents.insert(contentsOf: eventsToSend, at: 0)
+    }
+
+    // MARK: - Error Handling
+
+    /// 🔍 Получить понятное сообщение об ошибке для пользователя
+    private func getUserFriendlyErrorMessage(for error: Error) -> String {
+        switch error {
+        case let networkError as NetworkError:
+            switch networkError {
+            case .httpError(401):
+                return "Требуется авторизация. Проверьте подключение к интернету и попробуйте снова."
+            case .httpError(403):
+                return "Доступ запрещен. Возможно, истек срок действия подписки."
+            case .httpError(404):
+                return "Сервис временно недоступен. Попробуйте позже."
+            case .httpError(500):
+                return "Внутренняя ошибка сервера. Попробуйте через несколько минут."
+            case .noConnection:
+                return "Нет подключения к интернету. Проверьте соединение и попробуйте снова."
+            case .timeout:
+                return "Превышено время ожидания. Проверьте интернет-соединение."
+            case .serverUnavailable:
+                return "Сервер временно недоступен. Попробуйте позже."
+            default:
+                return "Произошла сетевая ошибка. Попробуйте позже."
+            }
+
+        case let subscriptionError as SubscriptionError:
+            switch subscriptionError {
+            case .tokenExpired:
+                return "Срок действия токена истек. Обновляем авторизацию..."
+            case .invalidToken:
+                return "Неверный токен авторизации. Повторная регистрация устройства..."
+            case .networkError:
+                return "Ошибка сети. Проверьте подключение к интернету."
+            case .serverError(let message):
+                return "Ошибка сервера: \(message). Попробуйте позже."
+            case .limitExceeded(let resource):
+                return "Превышен лимит использования для \(resource.rawValue). Обновите подписку."
+            case .trialExpired:
+                return "Пробный период истек. Перейдите на платную подписку."
+            case .subscriptionExpired:
+                return "Подписка истекла. Продлите подписку для продолжения использования."
+            case .unauthorized:
+                return "Нет авторизации. Пожалуйста, войдите в систему."
+            }
+
+        default:
+            return "Произошла неожиданная ошибка. Попробуйте позже."
+        }
+    }
+
+    /// 🚨 Показать ошибку пользователю
+    private func showUserError(message: String) {
+        // Логируем ошибку для пользователя
+        logger.business("🚨 Ошибка авторизации: \(message)")
+
+        // Также обновляем lastError для UI компонентов
+        lastError = .serverError(message)
+
+        // TODO: В будущем заменить на ErrorMessageManager для показа UI
+        print("🚨 ПОЛЬЗОВАТЕЛЬСКАЯ ОШИБКА: \(message)")
+    }
+
+    /// 🔄 Специальная обработка ошибки 401 Unauthorized с retry-механизмом
+    private func handle401Error() async {
+        logger.business("🔄 Обработка ошибки 401 - запуск retry-механизма")
+
+        // Очищаем текущий токен
+        await clearToken()
+
+        // Показываем сообщение пользователю
+        showUserError(message: "Авторизация истекла. Восстановление доступа...")
+
+        // Запускаем retry-механизм
+        let success = await retryDeviceRegistration(maxAttempts: 3)
+
+        if success {
+            logger.business("✅ Авторизация успешно восстановлена после 401")
+
+            // Показываем успех
+            logger.business("✅ Авторизация успешно восстановлена - все функции доступны")
+            print("✅ УСПЕХ: Авторизация обновлена, устройство зарегистрировано")
+
+        } else {
+            logger.error("❌ Все попытки восстановления авторизации провалились")
+
+            // Показываем критическую ошибку
+            showUserError(message: "Не удалось восстановить авторизацию. Проверьте интернет-соединение или перезапустите приложение.")
+
+            // Переходим в оффлайн режим
+            isOfflineMode = true
+            trackEvent(.offlineMode, metadata: ["reason": "auth_retry_failed"])
+        }
+    }
+
+    /// 🔁 Retry-механизм для регистрации устройства
+    /// - Parameter maxAttempts: Максимальное количество попыток
+    /// - Returns: true если регистрация удалась
+    private func retryDeviceRegistration(maxAttempts: Int) async -> Bool {
+        for attempt in 1...maxAttempts {
+            logger.business("🔄 Попытка \(attempt)/\(maxAttempts) регистрации устройства")
+
+            do {
+                try await registerDeviceAnonymously()
+                logger.business("✅ Регистрация удалась на попытке \(attempt)")
+                return true
+
+            } catch {
+                logger.error("❌ Попытка \(attempt) провалилась: \(error.localizedDescription)")
+
+                // Если это не последняя попытка, ждем перед следующей
+                if attempt < maxAttempts {
+                    let delaySeconds = Double(attempt) * 2.0 // 2, 4, 6 секунд
+                    logger.business("⏳ Ждем \(delaySeconds) секунд перед следующей попыткой")
+
+                    // Показываем прогресс пользователю
+                    logger.business("⏳ Восстановление доступа: попытка \(attempt)/\(maxAttempts), ожидание \(Int(delaySeconds)) сек")
+                    print("⏳ ПРОГРЕСС: Попытка \(attempt)/\(maxAttempts) регистрации")
+
+                    try? await Task.sleep(nanoseconds: UInt64(delaySeconds * 1_000_000_000))
+
+                    // Проверяем, не отменена ли задача
+                    if Task.isCancelled {
+                        logger.business("🚫 Retry-механизм отменен")
+                        return false
+                    }
+                }
+            }
+        }
+
+        logger.error("❌ Все \(maxAttempts) попыток регистрации провалились")
+        return false
+    }
+
+    /// 🧹 Очистка текущего токена
+    private func clearToken() async {
+        logger.business("🧹 Clearing current token")
+
+        // Очищаем токен из памяти
+        currentToken = nil
+        currentSubscription = nil
+        trialStatus = nil
+
+        // Очищаем из Keychain
+        let tokenKey = "subscription_token"
+        let subscriptionKey = "subscription_status"
+        let trialKey = "trial_status"
+
+        saveToKeychain(data: Data(), key: tokenKey)
+        saveToKeychain(data: Data(), key: subscriptionKey)
+        saveToKeychain(data: Data(), key: trialKey)
+
+        logger.business("✅ Token cleared from memory and Keychain")
+    }
+
+    /// 🔍 Комплексная валидация JWT токена
+    private func validateJWTToken(_ token: String) -> JWTValidationResult {
+        logger.business("🔍 Начинаем валидацию JWT токена")
+
+        // 1. Базовая проверка формата
+        if token.isEmpty {
+            logger.error("❌ Токен пустой")
+            return .invalid("Пустой токен")
+        }
+
+        if !token.contains(".") {
+            logger.error("❌ Токен не содержит разделителей '.'")
+            return .invalid("Неверный формат JWT")
+        }
+
+        let parts = token.split(separator: ".")
+        if parts.count != 3 {
+            logger.error("❌ Токен должен содержать 3 части, получено: \(parts.count)")
+            return .invalid("Неверное количество частей в JWT")
+        }
+
+        // 2. Проверка base64 формата каждой части
+        for (index, part) in parts.enumerated() {
+            if let decodedData = Data(base64URLEncoded: String(part)) {
+                logger.business("✅ Часть \(index + 1): валидный base64, длина: \(decodedData.count) байт")
+            } else {
+                logger.error("❌ Часть \(index + 1): невалидный base64")
+                return .invalid("Невалидный base64 в части \(index + 1)")
+            }
+        }
+
+        // 3. Попытка декодировать header
+        if let headerData = Data(base64URLEncoded: String(parts[0])),
+           let headerString = String(data: headerData, encoding: .utf8) {
+            logger.business("📋 JWT Header: \(headerString)")
+
+            // Проверка типа токена
+            if !headerString.contains("\"alg\"") {
+                logger.error("❌ JWT header не содержит алгоритм")
+                return .invalid("Отсутствует алгоритм в header")
+            }
+
+            if !headerString.contains("\"typ\":\"JWT\"") {
+                logger.error("❌ Токен не является JWT")
+                return .invalid("Неверный тип токена")
+            }
+        }
+
+        // 4. Попытка декодировать payload (без верификации подписи)
+        if let payloadData = Data(base64URLEncoded: String(parts[1])),
+           let payloadString = String(data: payloadData, encoding: .utf8) {
+            logger.business("📋 JWT Payload (первые 200 символов): \(payloadString.prefix(200))")
+
+            // Проверка обязательных полей
+            let requiredFields = ["deviceId", "level", "exp", "iat"]
+            for field in requiredFields {
+                if !payloadString.contains("\"\(field)\"") {
+                    logger.error("❌ JWT payload не содержит обязательное поле: \(field)")
+                    return .invalid("Отсутствует обязательное поле: \(field)")
+                }
+            }
+
+            // Проверка срока действия
+            if let expTimestamp = extractTimestamp(from: payloadString, field: "exp") {
+                let expirationDate = Date(timeIntervalSince1970: TimeInterval(expTimestamp))
+                let now = Date()
+
+                if expirationDate <= now {
+                    logger.error("❌ Токен уже истек: \(expirationDate)")
+                    return .invalid("Токен истек")
+                }
+
+                let hoursUntilExpiration = Int(expirationDate.timeIntervalSince(now) / 3600)
+                logger.business("⏰ Токен истекает через \(hoursUntilExpiration) часов")
+            }
+        }
+
+        // 5. Проверка подписи (базовая)
+        let signature = String(parts[2])
+        if signature.isEmpty {
+            logger.error("❌ Пустая подпись токена")
+            return .invalid("Пустая подпись")
+        }
+
+        logger.business("✅ JWT токен прошел все проверки валидации")
+        return .valid
+    }
+
+    /// 🛠️ Извлечение timestamp из JWT payload
+    private func extractTimestamp(from payload: String, field: String) -> Int? {
+        // Простой парсер JSON для извлечения timestamp
+        let pattern = "\"\(field)\":\\s*(\\d+)"
+        if let regex = try? NSRegularExpression(pattern: pattern, options: []),
+           let match = regex.firstMatch(in: payload, options: [], range: NSRange(payload.startIndex..., in: payload)),
+           let range = Range(match.range(at: 1), in: payload) {
+            return Int(payload[range])
+        }
+        return nil
+    }
+}
+
+/// 📋 Результат валидации JWT токена
+private enum JWTValidationResult {
+    case valid
+    case invalid(String)
+}
+
+// MARK: - Data Extensions
+
+extension Data {
+    /// Инициализация Data из base64url-encoded строки (без padding)
+    init?(base64URLEncoded base64String: String) {
+        // Заменяем URL-safe символы на стандартные
+        var base64 = base64String
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+
+        // Добавляем padding если необходимо
+        let paddingLength = (4 - (base64.count % 4)) % 4
+        base64 += String(repeating: "=", count: paddingLength)
+
+        self.init(base64Encoded: base64)
     }
 }

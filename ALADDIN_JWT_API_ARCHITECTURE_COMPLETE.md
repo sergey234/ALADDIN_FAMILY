@@ -1342,7 +1342,7 @@ PREMIUM: 10000 req/hour
 |----------|----------|--------|
 | **Фрагментация API** | Было 18 версий шлюза | ✅ **SOLVED:** Все архивировано, работает единый `api_gateway.py` |
 | **Ошибки 404** | Эндпоинты в AppConfig не совпадали с сервером | ✅ **SOLVED:** Smart Proxy v3.1.0 покрывает 100% путей |
-| **Mock JWT** | В триале использовались заглушки | ✅ **SOLVED:** Реальная генерация токенов через `/auth/register-device` |
+| **Mock JWT** | В триале использовались заглушки | ✅ **SOLVED:** Реальная генерация токенов через `/api/auth/register-device` |
 | **AI Assistant** | Использовал локальные ответы | ✅ **SOLVED:** Полный переход на серверный AI (SFM) |
 | **Tariff Sync** | Несоответствие Trial/Ultimate | ✅ **SOLVED:** Единая сетка: TRIAL → FREE → PERSONAL → FAMILY → PREMIUM |
 | **Metrics 404** | Ошибка при загрузке метрик | ✅ **SOLVED:** Роут `/api/metrics/upload` добавлен в Golden Standard |
@@ -1930,7 +1930,7 @@ testResults.append("🔍 [MOCK] Trial state debug") // ❌ ТЕСТОВЫЙ UI!
 
 | **#** | **Компонент** | **Проблема** | **Решение** | **Влияние** | **Время** |
 |-------|---------------|-------------|-------------|-------------|-----------|
-| **1** | `SubscriptionManager.swift` | EMERGENCY MODE + mock JWT | Реальный POST /auth/register-device + JWT от сервера | **Все API работают** | 2-3 часа |
+| **1** | `SubscriptionManager.swift` | EMERGENCY MODE + mock JWT | Реальный POST /api/auth/register-device + JWT от сервера | **Все API работают** | 2-3 часа |
 | **2** | `AIAssistantScreen.swift` | Local AI fallback (200+ строк) | Убрать getLocalAIResponse, только сервер | **AI работает** | 30 мин |
 | **3** | Trial → Paid upgrade | Нет upgrade логики | Добавить TariffsViewModel.upgradeFromTrialToPaid() | **Монетизация** | 1 час |
 
@@ -1962,7 +1962,7 @@ testResults.append("🔍 [MOCK] Trial state debug") // ❌ ТЕСТОВЫЙ UI!
 ```swift
 func registerDeviceAnonymously() async throws {
     // 🚨 EMERGENCY MODE - НЕ РАБОТАЕТ!
-    let url = URL(string: "https://aladdin-ai.ru/auth/register-device")!
+    let url = URL(string: "https://aladdin-ai.ru/api/auth/register-device")!
     var urlRequest = URLRequest(url: url)
     urlRequest.httpMethod = "GET" // ❌ ДОЛЖЕН БЫТЬ POST!
 
@@ -2088,7 +2088,7 @@ func testProductionTrialFlow() {
 ### **🎯 ЧТО БУДЕТ РАБОТАТЬ:**
 
 #### **1. 🎁 Trial активация**
-- ✅ Реальный POST запрос на `/auth/register-device`
+- ✅ Реальный POST запрос на `/api/auth/register-device`
 - ✅ Настоящий JWT токен от сервера
 - ✅ Сервер знает об устройстве
 - ✅ Все 184 функции доступны с trial JWT
@@ -2142,7 +2142,7 @@ func testProductionTrialFlow() {
 ### **🔴 КРИТИЧЕСКИЕ ЗАДАЧИ (ВЫПОЛНИТЬ ПЕРВЫМИ):**
 
 - [ ] **1. Исправить SubscriptionManager EMERGENCY MODE**
-  - Заменить GET на POST для `/auth/register-device`
+  - Заменить GET на POST для `/api/auth/register-device`
   - Убрать mock JWT response
   - Реализовать настоящий API вызов
 
@@ -2227,7 +2227,7 @@ func testProductionTrialFlow() {
 ### **3. 🛡️ ПРОВЕРКА КРИТИЧЕСКИХ ПУТЕЙ (Manual & Automated)**
 Фокус на функциях, блокирующих выход в продакшн.
 *   **AI Assistant:** Проверка на отсутствие локальных fallback-ответов.
-*   **Trial Activation:** Проверка получения реального JWT от сервера через `/auth/register-device`.
+*   **Trial Activation:** Проверка получения реального JWT от сервера через `/api/auth/register-device`.
 *   **Metrics Upload:** Проверка отправки данных на `/api/metrics/upload` (исправлено с 404 на 200/422).
 *   **Trial-to-Paid:** Валидация процесса замены токена при апгрейде подписки.
 
@@ -2267,7 +2267,7 @@ func testProductionTrialFlow() {
 ### **2. 🔐 ВЕРИФИКАЦИЯ JWT СИСТЕМЫ**
 **Статус: ✅ 100% РЕАЛЬНАЯ РЕАЛИЗАЦИЯ**
 
-*   **Trial Activation:** Функция `registerDeviceAnonymously` в `SubscriptionManager.swift` переведена с "EMERGENCY MOCK" на реальный POST запрос к `/auth/register-device`.
+*   **Trial Activation:** Функция `registerDeviceAnonymously` в `SubscriptionManager.swift` переведена с "EMERGENCY MOCK" на реальный POST запрос к `/api/auth/register-device`.
 *   **Хранение:** Токены сохраняются в **Keychain** (для безопасности) и **UserDefaults** (для быстрого доступа).
 *   **Авто-обновление:** Система `refreshTokenIfNeeded` интегрирована во все сетевые запросы через `NetworkManager`.
 *   **Вердикт:** JWT система полностью функциональна и не содержит mock-токенов.

@@ -370,7 +370,7 @@ struct AppConfig {
         
         // Devices
         static let devices = "/devices"
-        static let deviceRegister = "/auth/register-device"
+        static let deviceRegister = "/api/auth/register-device"
         static let deviceDetail = "/devices" // /devices/{deviceId}
         static let deviceSettings = "/devices" // /devices/{deviceId}/settings
         
@@ -379,7 +379,7 @@ struct AppConfig {
         static let logout = "/auth/logout"
         static let register = "/auth/register"
         static let authRefresh = "/auth/refresh"
-        static let registerDevice = "/auth/register-device"
+        static let registerDevice = "/api/auth/register-device"
         static let registerDeviceTrial = "/auth/register-device-trial"
         
         // ✅ ЗАДАЧА 25: Roadside Assistance
