@@ -156,44 +156,44 @@ struct AppConfig {
 
         // Component Reports
         // Driving Reports
-        static let drivingReports = "/reports/driving"
-        static let drivingStats = "/reports/driving/stats"
-        static let drivingExport = "/reports/driving/export"
+        static let drivingReports = "/api/reports/driving"
+        static let drivingStats = "/api/reports/driving/stats"
+        static let drivingExport = "/api/reports/driving/export"
         
         // Dark Web Monitoring
-        static let darkWebLeaks = "/reports/dark-web/leaks"
-        static let darkWebStats = "/reports/dark-web/stats"
-        static let darkWebScans = "/reports/dark-web/scans"
-        static let darkWebResolve = "/reports/dark-web/resolve"
-        static let darkWebScanStart = "/reports/dark-web/scan/start"
-        static let darkWebScanSecure = "/reports/dark-web/scan/secure"
-        static let darkWebScanFast = "/reports/dark-web/scan/fast"
+        static let darkWebLeaks = "/api/reports/dark-web/leaks"
+        static let darkWebStats = "/api/reports/dark-web/stats"
+        static let darkWebScans = "/api/reports/dark-web/scans"
+        static let darkWebResolve = "/api/reports/dark-web/resolve"
+        static let darkWebScanStart = "/api/reports/dark-web/scan/start"
+        static let darkWebScanSecure = "/api/reports/dark-web/scan/secure"
+        static let darkWebScanFast = "/api/reports/dark-web/scan/fast"
         
         // Identity Theft
-        static let identityTheftAttempts = "/reports/identity-theft/attempts"
-        static let identityTheftStats = "/reports/identity-theft/stats"
-        static let identityTheftAllow = "/reports/identity-theft/allow"
-        static let identityTheftBlock = "/reports/identity-theft/block"
-        static let identityTheftWhitelist = "/reports/identity-theft/whitelist"
+        static let identityTheftAttempts = "/api/reports/identity-theft/attempts"
+        static let identityTheftStats = "/api/reports/identity-theft/stats"
+        static let identityTheftAllow = "/api/reports/identity-theft/allow"
+        static let identityTheftBlock = "/api/reports/identity-theft/block"
+        static let identityTheftWhitelist = "/api/reports/identity-theft/whitelist"
         
         // Privacy Reports
-        static let locationStats = "/reports/privacy/location/stats"
-        static let locationRequests = "/reports/privacy/location/requests"
-        static let locationAllow = "/reports/privacy/location/allow"
-        static let locationBlock = "/reports/privacy/location/block"
-        static let locationUpdateAccuracy = "/reports/privacy/location/update-accuracy"
-        static let dataCleanupStats = "/reports/privacy/cleanup/stats"
-        static let dataCleanupRecords = "/reports/privacy/cleanup/records"
-        static let dataCleanupStart = "/reports/privacy/cleanup/start"
-        static let antiTrackerStats = "/reports/privacy/tracker/stats"
-        static let topTrackers = "/reports/privacy/tracker/top"
-        static let trackerWhitelist = "/reports/privacy/tracker/whitelist"
-        
+        static let locationStats = "/api/reports/privacy/location/stats"
+        static let locationRequests = "/api/reports/privacy/location/requests"
+        static let locationAllow = "/api/reports/privacy/location/allow"
+        static let locationBlock = "/api/reports/privacy/location/block"
+        static let locationUpdateAccuracy = "/api/reports/privacy/location/update-accuracy"
+        static let dataCleanupStats = "/api/reports/privacy/cleanup/stats"
+        static let dataCleanupRecords = "/api/reports/privacy/cleanup/records"
+        static let dataCleanupStart = "/api/reports/privacy/cleanup/start"
+        static let antiTrackerStats = "/api/reports/privacy/tracker/stats"
+        static let topTrackers = "/api/reports/privacy/tracker/top"
+        static let trackerWhitelist = "/api/reports/privacy/tracker/whitelist"
+
         // AI Categories
-        static let aiCategoriesStats = "/reports/ai-categories/stats"
-        static let aiCategoryReports = "/reports/ai-categories/reports"
-        static let aiCategoriesAllow = "/reports/ai-categories/allow"
-        static let aiCategoriesBlock = "/reports/ai-categories/block"
+        static let aiCategoriesStats = "/api/reports/ai-categories/stats"
+        static let aiCategoryReports = "/api/reports/ai-categories/reports"
+        static let aiCategoriesAllow = "/api/reports/ai-categories/allow"
+        static let aiCategoriesBlock = "/api/reports/ai-categories/block"
         
         // AI Assistant
         static let aiChat = "/ai/chat"
@@ -436,14 +436,14 @@ struct AppConfig {
         static let notificationsStats = "/api/notifications/stats"
 
         // Location & Privacy
-        static let locationBubble = "/reports/privacy/location/bubble"
-        static let locationSend = "/reports/privacy/location/send"
+        static let locationBubble = "/api/reports/privacy/location/bubble"
+        static let locationSend = "/api/reports/privacy/location/send"
         static let geofences = "/api/v1/parental-control/location/geofences"
         static let geofenceTrack = "/api/v1/parental-control/location/track"
 
         // Driving Reports
-        static let drivingStart = "/reports/driving/start"
-        static let drivingEnd = "/reports/driving/end"
+        static let drivingStart = "/api/reports/driving/start"
+        static let drivingEnd = "/api/reports/driving/end"
         
         // IoT Security (6 endpoints)
         static let iotStatus = "/iot/status/{homeId}"
