@@ -1,0 +1,40 @@
+
+============================================================
+🚀 ФИНАЛЬНАЯ ВАЛИДАЦИЯ ВСЕХ 231+ ФУНКЦИЙ
+============================================================
+🔑 Авторизация на сервере...
+📡 Проверка: /api/auth/register-device
+✅ Устройство зарегистрировано через /api/auth/register-device
+📥 Загрузка эндпоинтов из OpenAPI...
+✅ Найдено 237 путей на сервере.
+📊 Итого эндпоинтов для проверки: 260
+[1/260] ✅ 200 GET /
+[21/260] ✅ 200 GET /api/anti-tracker/health
+[41/260] 🔥 500 POST /api/components/disable/{component_id}
+[42/260] 🔥 500 POST /api/components/enable/{component_id}
+[47/260] 🔥 500 POST /api/components/restart/{component_id}
+[51/260] 🔥 500 POST /api/components/update/{component_id}
+[61/260] ❌ 404 POST /api/crash-detection/settings/update
+[81/260] ⚠️ 422 GET /api/data-cleanup/status
+[101/260] ⚠️ 422 GET /api/gamification/achievements/progress
+[121/260] ⚠️ 422 GET /api/gamification/settings/notifications
+[141/260] ⚠️ 422 POST /api/identity-theft/stop-monitoring
+[161/260] ⚠️ 422 POST /api/location/status/update
+[181/260] ✅ 200 GET /api/parental-control/geofences/{childId}
+[201/260] ⚠️ 422 POST /api/payments/recover
+[221/260] ⚠️ 422 GET /api/roadside-assistance/history
+[241/260] ⚠️ 422 POST /api/subscription/validate-receipt
+[242/260] 🔥 500 POST /api/system/backup
+[261/260] ✅ 200 GET /api/v1/parental-control/stats
+
+============================================================
+🚀 РЕЗУЛЬТАТЫ ВАЛИДАЦИИ
+============================================================
+✅ Успешно: 74
+⚠️ Валидация/Права (Живые): 151
+❌ Не найдены (404): 30
+🔥 Ошибки сервера: 5
+
+🏆 ОБЩИЙ ПРОЦЕНТ ГОТОВНОСТИ API: 86.5%
+
+⚠️ ВЫВОД: ТРЕБУЕТСЯ ПРОВЕРКА ОТСУТСТВУЮЩИХ ЭНДПОИНТОВ.

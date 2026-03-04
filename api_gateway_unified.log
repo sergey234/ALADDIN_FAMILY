@@ -1,0 +1,462 @@
+2026-03-04 13:19:25,521 - INFO - ✅ SFM Adapter loaded successfully
+2026-03-04 13:19:25,560 - INFO - ✅ Connected: gamification_router
+2026-03-04 13:19:25,593 - INFO - ✅ Connected: subscription_sync_router
+2026-03-04 13:19:25,690 - INFO - ✅ Connected: parental_control_sync_router
+2026-03-04 13:19:25,703 - INFO - ✅ Connected: crash_detection_router
+2026-03-04 13:19:25,767 - INFO - ✅ Connected: ai_assistant_router
+2026-03-04 13:19:25,777 - INFO - ✅ Connected: metrics_router
+2026-03-04 13:19:25,810 - INFO - ✅ Connected: user_profile_sync_router
+2026-03-04 13:19:25,858 - INFO - ✅ Connected: app_settings_sync_router
+2026-03-04 13:19:25,906 - INFO - ✅ Connected: components_router
+2026-03-04 13:19:25,943 - INFO - ✅ Connected: system_router
+2026-03-04 13:19:25,968 - INFO - ✅ Connected: offline_storage_sync_router
+2026-03-04 13:19:26,024 - INFO - ✅ Connected: other_functions_sync_router
+2026-03-04 13:20:03,542 - INFO - 📱 Registering device: tester_device_v2_local
+2026-03-04 13:20:04,097 - INFO - 📱 Registering device: tester_device_v2_local
+2026-03-04 13:20:04,141 - ERROR - Ошибка при получении конфигурации компонента: 2 validation errors for ComponentConfigResponse
+component_id
+  field required (type=value_error.missing)
+config
+  field required (type=value_error.missing)
+2026-03-04 13:20:04,150 - ERROR - Ошибка при получении зависимостей компонента: 3 validation errors for ComponentDependenciesResponse
+component_id
+  field required (type=value_error.missing)
+dependencies
+  field required (type=value_error.missing)
+dependents
+  field required (type=value_error.missing)
+2026-03-04 13:20:04,190 - ERROR - Ошибка при получении здоровья компонентов: 7 validation errors for ComponentsHealthResponse
+overall_health
+  field required (type=value_error.missing)
+total_components
+  field required (type=value_error.missing)
+enabled_components
+  field required (type=value_error.missing)
+disabled_components
+  field required (type=value_error.missing)
+healthy_components
+  field required (type=value_error.missing)
+degraded_components
+  field required (type=value_error.missing)
+critical_components
+  field required (type=value_error.missing)
+2026-03-04 13:20:04,225 - ERROR - Ошибка при получении логов компонента: 3 validation errors for ComponentLogsResponse
+component_id
+  field required (type=value_error.missing)
+logs
+  field required (type=value_error.missing)
+total
+  field required (type=value_error.missing)
+2026-03-04 13:20:04,234 - ERROR - Ошибка при получении метрик компонента: 2 validation errors for ComponentMetricsResponse
+component_id
+  field required (type=value_error.missing)
+metrics
+  field required (type=value_error.missing)
+2026-03-04 13:20:04,259 - ERROR - Ошибка при получении статуса компонента: 2 validation errors for ComponentStatusResponse
+component_id
+  field required (type=value_error.missing)
+is_enabled
+  field required (type=value_error.missing)
+2026-03-04 13:20:04,273 - ERROR - Ошибка при получении статуса компонента: 2 validation errors for ComponentStatusResponse
+component_id
+  field required (type=value_error.missing)
+is_enabled
+  field required (type=value_error.missing)
+2026-03-04 13:20:04,284 - ERROR - Ошибка при тестировании компонента: 3 validation errors for ComponentTestResponse
+component_id
+  field required (type=value_error.missing)
+test_passed
+  field required (type=value_error.missing)
+test_results
+  field required (type=value_error.missing)
+2026-03-04 13:20:04,351 - INFO - ▶️ Started Crash Detection monitoring for 0 active sessions
+2026-03-04 13:20:04,361 - INFO - ⏹️ Stopped Crash Detection monitoring for 0 sessions
+2026-03-04 13:20:04,608 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'delete_location_geofence', using fallback
+2026-03-04 13:20:04,701 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_app_blocks', using fallback
+2026-03-04 13:20:04,722 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_geofences', using fallback
+2026-03-04 13:20:04,727 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'delete_geofence', using fallback
+2026-03-04 13:20:04,744 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_schedules', using fallback
+2026-03-04 13:20:04,754 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_schedules', using fallback
+2026-03-04 13:20:04,767 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_parental_control_settings', using fallback
+2026-03-04 13:20:04,772 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_parental_control_settings', using fallback
+2026-03-04 13:20:04,792 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_parental_control_settings', using fallback
+2026-03-04 13:20:04,807 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_time_limits', using fallback
+2026-03-04 13:20:04,825 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_time_limits', using fallback
+2026-03-04 13:20:04,959 - ERROR - Ошибка при создании резервной копии: 1 validation error for BackupResponse
+backup_id
+  field required (type=value_error.missing)
+2026-03-04 13:20:05,012 - ERROR - Ошибка при получении статуса резервного копирования: 2 validation errors for BackupStatusResponse
+backup_count
+  field required (type=value_error.missing)
+total_size
+  field required (type=value_error.missing)
+2026-03-04 13:20:05,021 - ERROR - Ошибка при получении здоровья системы: 2 validation errors for SystemHealthResponse
+uptime
+  field required (type=value_error.missing)
+version
+  field required (type=value_error.missing)
+2026-03-04 13:20:05,028 - ERROR - Ошибка при получении информации о системе: 4 validation errors for SystemInfoResponse
+version
+  field required (type=value_error.missing)
+uptime
+  field required (type=value_error.missing)
+environment
+  field required (type=value_error.missing)
+components_count
+  field required (type=value_error.missing)
+2026-03-04 13:20:05,039 - ERROR - Ошибка при получении системных логов: 2 validation errors for SystemLogsResponse
+logs
+  field required (type=value_error.missing)
+total
+  field required (type=value_error.missing)
+2026-03-04 13:20:05,061 - ERROR - Ошибка при получении метрик системы: 5 validation errors for SystemMetricsResponse
+cpu_usage
+  field required (type=value_error.missing)
+memory_usage
+  field required (type=value_error.missing)
+disk_usage
+  field required (type=value_error.missing)
+active_connections
+  field required (type=value_error.missing)
+requests_per_second
+  field required (type=value_error.missing)
+2026-03-04 13:20:05,072 - ERROR - Ошибка при получении ресурсов системы: 4 validation errors for SystemResourcesResponse
+cpu
+  field required (type=value_error.missing)
+memory
+  field required (type=value_error.missing)
+disk
+  field required (type=value_error.missing)
+network
+  field required (type=value_error.missing)
+2026-03-04 13:21:54,437 - INFO - ✅ SFM Adapter loaded successfully
+2026-03-04 13:22:33,625 - INFO - 🛰 Proxying POST /ai/assistant/analyze_threat -> function: ai_assistant_analyze_threat
+2026-03-04 13:22:33,640 - INFO - 🛰 Proxying POST /ai/assistant/capabilities -> function: ai_assistant_capabilities
+2026-03-04 13:22:33,648 - INFO - 🛰 Proxying POST /ai/assistant/chat -> function: ai_assistant_chat
+2026-03-04 13:22:33,659 - INFO - 🛰 Proxying POST /ai/assistant/feedback -> function: ai_assistant_feedback
+2026-03-04 13:22:33,669 - INFO - 🛰 Proxying POST /ai/assistant/history -> function: ai_assistant_history
+2026-03-04 13:22:33,677 - INFO - 🛰 Proxying POST /ai/assistant/recommendations -> function: ai_assistant_recommendations
+2026-03-04 13:22:33,687 - INFO - 🛰 Proxying POST /ai/assistant/report_incident -> function: ai_assistant_report_incident
+2026-03-04 13:22:33,695 - INFO - 🛰 Proxying POST /ai/assistant/security_tips -> function: ai_assistant_security_tips
+2026-03-04 13:22:33,712 - INFO - 🛰 Proxying POST /auth/login-by-recovery-code -> function: auth_login-by-recovery-code
+2026-03-04 13:22:33,719 - INFO - 🛰 Proxying POST /auth/logout -> function: auth_logout
+2026-03-04 13:22:33,728 - INFO - 🛰 Proxying POST /auth/refresh -> function: auth_refresh
+2026-03-04 13:22:33,738 - INFO - 🛰 Proxying POST /auth/register -> function: auth_register
+2026-03-04 13:22:33,757 - INFO - 🛰 Proxying POST /auth/register-device-trial -> function: auth_register-device-trial
+2026-03-04 13:22:33,775 - INFO - 🛰 Proxying POST /chat/offline-messages/resolve-conflicts -> function: chat_offline-messages_resolve-conflicts
+2026-03-04 13:22:33,782 - INFO - 🛰 Proxying POST /chat/offline-messages/send -> function: chat_offline-messages_send
+2026-03-04 13:22:33,797 - INFO - 🛰 Proxying POST /chat/offline-messages/sync -> function: chat_offline-messages_sync
+2026-03-04 13:22:33,808 - INFO - 🛰 Proxying POST /components/health -> function: components_health
+2026-03-04 13:22:33,815 - INFO - 🛰 Proxying POST /components/list -> function: components_list
+2026-03-04 13:22:33,832 - INFO - 🛰 Proxying POST /crash-detection/alert -> function: crash-detection_alert
+2026-03-04 13:22:33,852 - INFO - 🛰 Proxying POST /crash-detection/data -> function: crash-detection_data
+2026-03-04 13:22:33,864 - INFO - 🛰 Proxying POST /crash-detection/history -> function: crash-detection_history
+2026-03-04 13:22:33,872 - INFO - 🛰 Proxying POST /crash-detection/notifications -> function: crash-detection_notifications
+2026-03-04 13:22:33,885 - INFO - 🛰 Proxying POST /crash-detection/notifications/send -> function: crash-detection_notifications_send
+2026-03-04 13:22:33,893 - INFO - 🛰 Proxying POST /crash-detection/report -> function: crash-detection_report
+2026-03-04 13:22:33,903 - INFO - 🛰 Proxying POST /crash-detection/settings/update -> function: crash-detection_settings_update
+2026-03-04 13:22:33,911 - INFO - 🛰 Proxying POST /crash-detection/setup -> function: crash-detection_setup
+2026-03-04 13:22:33,923 - INFO - 🛰 Proxying POST /crash-detection/start -> function: crash-detection_start
+2026-03-04 13:22:33,933 - INFO - 🛰 Proxying POST /crash-detection/status -> function: crash-detection_status
+2026-03-04 13:22:33,941 - INFO - 🛰 Proxying POST /crash-detection/stop -> function: crash-detection_stop
+2026-03-04 13:22:33,949 - INFO - 🛰 Proxying POST /crash-detection/sync -> function: crash-detection_sync
+2026-03-04 13:22:33,957 - INFO - 🛰 Proxying POST /elderly/appointments/sync -> function: elderly_appointments_sync
+2026-03-04 13:22:33,965 - INFO - 🛰 Proxying POST /elderly/appointments/update -> function: elderly_appointments_update
+2026-03-04 13:22:33,974 - INFO - 🛰 Proxying POST /elderly/medications/sync -> function: elderly_medications_sync
+2026-03-04 13:22:33,985 - INFO - 🛰 Proxying POST /elderly/medications/update -> function: elderly_medications_update
+2026-03-04 13:22:33,992 - INFO - 🛰 Proxying POST /gamification/achievements -> function: gamification_achievements
+2026-03-04 13:22:33,999 - INFO - 🛰 Proxying POST /gamification/achievements/claim -> function: gamification_achievements_claim
+2026-03-04 13:22:34,007 - INFO - 🛰 Proxying POST /gamification/achievements/progress -> function: gamification_achievements_progress
+2026-03-04 13:22:34,015 - INFO - 🛰 Proxying POST /gamification/achievements/unlock -> function: gamification_achievements_unlock
+2026-03-04 13:22:34,024 - INFO - 🛰 Proxying POST /gamification/balance -> function: gamification_balance
+2026-03-04 13:22:34,033 - INFO - 🛰 Proxying POST /gamification/balance/add -> function: gamification_balance_add
+2026-03-04 13:22:34,049 - INFO - 🛰 Proxying POST /gamification/balance/history -> function: gamification_balance_history
+2026-03-04 13:22:34,068 - INFO - 🛰 Proxying POST /gamification/balance/subtract -> function: gamification_balance_subtract
+2026-03-04 13:22:34,089 - INFO - 🛰 Proxying POST /gamification/progress -> function: gamification_progress
+2026-03-04 13:22:34,100 - INFO - 🛰 Proxying POST /gamification/progress/level -> function: gamification_progress_level
+2026-03-04 13:22:34,114 - INFO - 🛰 Proxying POST /gamification/progress/reset -> function: gamification_progress_reset
+2026-03-04 13:22:34,122 - INFO - 🛰 Proxying POST /gamification/progress/stats -> function: gamification_progress_stats
+2026-03-04 13:22:34,128 - INFO - 🛰 Proxying POST /gamification/progress/update -> function: gamification_progress_update
+2026-03-04 13:22:34,136 - INFO - 🛰 Proxying POST /gamification/rewards -> function: gamification_rewards
+2026-03-04 13:22:34,148 - INFO - 🛰 Proxying POST /gamification/rewards/claim -> function: gamification_rewards_claim
+2026-03-04 13:22:34,156 - INFO - 🛰 Proxying POST /gamification/rewards/give -> function: gamification_rewards_give
+2026-03-04 13:22:34,165 - INFO - 🛰 Proxying POST /gamification/rewards/history -> function: gamification_rewards_history
+2026-03-04 13:22:34,180 - INFO - 🛰 Proxying POST /gamification/rewards/purchase -> function: gamification_rewards_purchase
+2026-03-04 13:22:34,187 - INFO - 🛰 Proxying POST /gamification/rewards/shop -> function: gamification_rewards_shop
+2026-03-04 13:22:34,194 - INFO - 🛰 Proxying POST /gamification/settings -> function: gamification_settings
+2026-03-04 13:22:34,202 - INFO - 🛰 Proxying POST /gamification/settings/notifications -> function: gamification_settings_notifications
+2026-03-04 13:22:34,210 - INFO - 🛰 Proxying POST /gamification/settings/notifications/update -> function: gamification_settings_notifications_update
+2026-03-04 13:22:34,217 - INFO - 🛰 Proxying POST /gamification/settings/update -> function: gamification_settings_update
+2026-03-04 13:22:34,231 - INFO - 🛰 Proxying POST /gamification/tournaments -> function: gamification_tournaments
+2026-03-04 13:22:34,242 - INFO - 🛰 Proxying POST /gamification/tournaments/history -> function: gamification_tournaments_history
+2026-03-04 13:22:34,254 - INFO - 🛰 Proxying POST /gamification/tournaments/join -> function: gamification_tournaments_join
+2026-03-04 13:22:34,261 - INFO - 🛰 Proxying POST /gamification/tournaments/leaderboard -> function: gamification_tournaments_leaderboard
+2026-03-04 13:22:34,269 - INFO - 🛰 Proxying POST /gamification/tournaments/leave -> function: gamification_tournaments_leave
+2026-03-04 13:22:34,276 - INFO - 🛰 Proxying POST /location/geofences -> function: location_geofences
+2026-03-04 13:22:34,286 - INFO - 🛰 Proxying POST /location/geofences/sync -> function: location_geofences_sync
+2026-03-04 13:22:34,293 - INFO - 🛰 Proxying POST /location/geofences/update -> function: location_geofences_update
+2026-03-04 13:22:34,306 - INFO - 🛰 Proxying POST /location/movement-history -> function: location_movement-history
+2026-03-04 13:22:34,319 - INFO - 🛰 Proxying POST /location/movement-history/update -> function: location_movement-history_update
+2026-03-04 13:22:34,332 - INFO - 🛰 Proxying POST /location/status -> function: location_status
+2026-03-04 13:22:34,341 - INFO - 🛰 Proxying POST /location/status/update -> function: location_status_update
+2026-03-04 13:22:34,349 - INFO - 🛰 Proxying POST /metrics/upload -> function: metrics_upload
+2026-03-04 13:22:34,358 - INFO - 🛰 Proxying POST /notifications/archive -> function: notifications_archive
+2026-03-04 13:22:34,370 - INFO - 🛰 Proxying POST /notifications/bulk-mark-read -> function: notifications_bulk-mark-read
+2026-03-04 13:22:34,377 - INFO - 🛰 Proxying POST /notifications/categories -> function: notifications_categories
+2026-03-04 13:22:34,388 - INFO - 🛰 Proxying POST /notifications/stats -> function: notifications_stats
+2026-03-04 13:22:34,406 - INFO - 🛰 Proxying POST /offline-storage/data -> function: offline-storage_data
+2026-03-04 13:22:34,414 - INFO - 🛰 Proxying POST /offline-storage/data/update -> function: offline-storage_data_update
+2026-03-04 13:22:34,426 - INFO - 🛰 Proxying POST /offline-storage/resolve-conflicts -> function: offline-storage_resolve-conflicts
+2026-03-04 13:22:34,435 - INFO - 🛰 Proxying POST /offline-storage/sync -> function: offline-storage_sync
+2026-03-04 13:22:34,442 - INFO - 🛰 Proxying POST /parental-control/app-blocks -> function: parental-control_app-blocks
+2026-03-04 13:22:34,451 - INFO - 🛰 Proxying POST /parental-control/app-blocks/sync -> function: parental-control_app-blocks_sync
+2026-03-04 13:22:34,458 - INFO - 🛰 Proxying POST /parental-control/app-blocks/update -> function: parental-control_app-blocks_update
+2026-03-04 13:22:34,466 - INFO - 🛰 Proxying POST /parental-control/geofences -> function: parental-control_geofences
+2026-03-04 13:22:34,473 - INFO - 🛰 Proxying POST /parental-control/geofences/add -> function: parental-control_geofences_add
+2026-03-04 13:22:34,481 - INFO - 🛰 Proxying POST /parental-control/geofences/update -> function: parental-control_geofences_update
+2026-03-04 13:22:34,489 - INFO - 🛰 Proxying POST /parental-control/schedules -> function: parental-control_schedules
+2026-03-04 13:22:34,497 - INFO - 🛰 Proxying POST /parental-control/schedules/delete -> function: parental-control_schedules_delete
+2026-03-04 13:22:34,505 - INFO - 🛰 Proxying POST /parental-control/schedules/history -> function: parental-control_schedules_history
+2026-03-04 13:22:34,515 - INFO - 🛰 Proxying POST /parental-control/schedules/update -> function: parental-control_schedules_update
+2026-03-04 13:22:34,523 - INFO - 🛰 Proxying POST /parental-control/settings -> function: parental-control_settings
+2026-03-04 13:22:34,530 - INFO - 🛰 Proxying POST /parental-control/settings/conflicts -> function: parental-control_settings_conflicts
+2026-03-04 13:22:34,537 - INFO - 🛰 Proxying POST /parental-control/settings/history -> function: parental-control_settings_history
+2026-03-04 13:22:34,543 - INFO - 🛰 Proxying POST /parental-control/settings/sync -> function: parental-control_settings_sync
+2026-03-04 13:22:34,551 - INFO - 🛰 Proxying POST /parental-control/settings/update -> function: parental-control_settings_update
+2026-03-04 13:22:34,558 - INFO - 🛰 Proxying POST /parental-control/time-limits -> function: parental-control_time-limits
+2026-03-04 13:22:34,567 - INFO - 🛰 Proxying POST /parental-control/time-limits/history -> function: parental-control_time-limits_history
+2026-03-04 13:22:34,574 - INFO - 🛰 Proxying POST /parental-control/time-limits/reset -> function: parental-control_time-limits_reset
+2026-03-04 13:22:34,581 - INFO - 🛰 Proxying POST /parental-control/time-limits/update -> function: parental-control_time-limits_update
+2026-03-04 13:22:34,589 - INFO - 🛰 Proxying POST /roadside-assistance/call -> function: roadside-assistance_call
+2026-03-04 13:22:34,599 - INFO - 🛰 Proxying POST /roadside-assistance/cancel/test-req-123 -> function: roadside-assistance_cancel_test-req-123
+2026-03-04 13:22:34,609 - INFO - 🛰 Proxying POST /roadside-assistance/history -> function: roadside-assistance_history
+2026-03-04 13:22:34,620 - INFO - 🛰 Proxying POST /roadside-assistance/status/test-req-123 -> function: roadside-assistance_status_test-req-123
+2026-03-04 13:22:34,628 - INFO - 🛰 Proxying POST /settings/biometry -> function: settings_biometry
+2026-03-04 13:22:34,636 - INFO - 🛰 Proxying POST /settings/biometry/update -> function: settings_biometry_update
+2026-03-04 13:22:34,642 - INFO - 🛰 Proxying POST /settings/language -> function: settings_language
+2026-03-04 13:22:34,651 - INFO - 🛰 Proxying POST /settings/language/update -> function: settings_language_update
+2026-03-04 13:22:34,658 - INFO - 🛰 Proxying POST /settings/notifications -> function: settings_notifications
+2026-03-04 13:22:34,667 - INFO - 🛰 Proxying POST /settings/notifications/update -> function: settings_notifications_update
+2026-03-04 13:22:34,675 - INFO - 🛰 Proxying POST /settings/sync -> function: settings_sync
+2026-03-04 13:22:34,684 - INFO - 🛰 Proxying POST /settings/theme -> function: settings_theme
+2026-03-04 13:22:34,694 - INFO - 🛰 Proxying POST /settings/theme/update -> function: settings_theme_update
+2026-03-04 13:22:34,701 - INFO - 🛰 Proxying POST /settings/update -> function: settings_update
+2026-03-04 13:22:34,713 - INFO - 🛰 Proxying POST /subscription/auto-renewal -> function: subscription_auto-renewal
+2026-03-04 13:22:34,723 - INFO - 🛰 Proxying POST /subscription/auto-renewal/update -> function: subscription_auto-renewal_update
+2026-03-04 13:22:34,732 - INFO - 🛰 Proxying POST /subscription/cancel -> function: subscription_cancel
+2026-03-04 13:22:34,740 - INFO - 🛰 Proxying POST /subscription/purchase-history -> function: subscription_purchase-history
+2026-03-04 13:22:34,747 - INFO - 🛰 Proxying POST /subscription/status -> function: subscription_status
+2026-03-04 13:22:34,757 - INFO - 🛰 Proxying POST /subscription/status/update -> function: subscription_status_update
+2026-03-04 13:22:34,766 - INFO - 🛰 Proxying POST /subscription/sync -> function: subscription_sync
+2026-03-04 13:22:34,777 - INFO - 🛰 Proxying POST /subscription/update -> function: subscription_update
+2026-03-04 13:22:34,793 - INFO - 🛰 Proxying POST /system/backup -> function: system_backup
+2026-03-04 13:22:34,815 - INFO - 🛰 Proxying POST /system/backup/status -> function: system_backup_status
+2026-03-04 13:22:34,829 - INFO - 🛰 Proxying POST /system/health -> function: system_health
+2026-03-04 13:22:34,845 - INFO - 🛰 Proxying POST /system/info -> function: system_info
+2026-03-04 13:22:34,856 - INFO - 🛰 Proxying POST /system/metrics -> function: system_metrics
+2026-03-04 13:22:34,867 - INFO - 🛰 Proxying POST /system/status -> function: system_status
+2026-03-04 13:22:34,881 - INFO - 🛰 Proxying POST /user/profile/history -> function: user_profile_history
+2026-03-04 13:22:34,893 - INFO - 🛰 Proxying POST /user/profile/privacy -> function: user_profile_privacy
+2026-03-04 13:22:34,903 - INFO - 🛰 Proxying POST /user/profile/privacy/update -> function: user_profile_privacy_update
+2026-03-04 13:22:34,910 - INFO - 🛰 Proxying POST /user/profile/sync -> function: user_profile_sync
+2026-03-04 13:22:34,917 - INFO - 🛰 Proxying POST /user/profile/update -> function: user_profile_update
+2026-03-04 13:22:34,924 - INFO - 🛰 Proxying POST /v1/parental-control/location/geofences -> function: v1_parental-control_location_geofences
+2026-03-04 13:22:34,932 - INFO - 🛰 Proxying POST /v1/parental-control/location/track -> function: v1_parental-control_location_track
+2026-03-04 13:22:34,940 - INFO - 🛰 Proxying GET /{path} -> function: {path}
+2026-03-04 13:22:34,949 - INFO - 🛰 Proxying PUT /{path} -> function: {path}
+2026-03-04 13:22:34,957 - INFO - 🛰 Proxying POST /{path} -> function: {path}
+2026-03-04 13:22:34,966 - INFO - 🛰 Proxying DELETE /{path} -> function: {path}
+2026-03-04 13:30:57,482 - INFO - ✅ SFM Adapter loaded successfully
+2026-03-04 13:30:57,498 - INFO - ✅ Precision Router connected: gamification_router
+2026-03-04 13:30:57,556 - INFO - ✅ Precision Router connected: subscription_sync_router
+2026-03-04 13:30:57,667 - INFO - ✅ Precision Router connected: parental_control_sync_router
+2026-03-04 13:30:57,676 - INFO - ✅ Precision Router connected: crash_detection_router
+2026-03-04 13:30:57,725 - INFO - ✅ Precision Router connected: ai_assistant_router
+2026-03-04 13:30:57,733 - INFO - ✅ Precision Router connected: metrics_router
+2026-03-04 13:30:57,762 - INFO - ✅ Precision Router connected: user_profile_sync_router
+2026-03-04 13:30:57,805 - INFO - ✅ Precision Router connected: app_settings_sync_router
+2026-03-04 13:30:57,846 - INFO - ✅ Precision Router connected: components_router
+2026-03-04 13:30:57,880 - INFO - ✅ Precision Router connected: system_router
+2026-03-04 13:30:57,900 - INFO - ✅ Precision Router connected: offline_storage_sync_router
+2026-03-04 13:30:57,953 - INFO - ✅ Precision Router connected: other_functions_sync_router
+2026-03-04 13:31:12,074 - INFO - 📱 Device registered: tester_device_v2_local
+2026-03-04 13:31:12,537 - INFO - 🛰 Smart Proxy: POST /auth/login-by-recovery-code -> trying function: auth_login-by-recovery-code
+2026-03-04 13:31:12,548 - INFO - 🛰 Smart Proxy: POST /auth/logout -> trying function: auth_logout
+2026-03-04 13:31:12,558 - INFO - 🛰 Smart Proxy: POST /auth/refresh -> trying function: auth_refresh
+2026-03-04 13:31:12,567 - INFO - 🛰 Smart Proxy: POST /auth/register -> trying function: auth_register
+2026-03-04 13:31:12,575 - INFO - 📱 Device registered: tester_device_v2_local
+2026-03-04 13:31:12,579 - INFO - 🛰 Smart Proxy: POST /auth/register-device-trial -> trying function: auth_register-device-trial
+2026-03-04 13:31:12,606 - ERROR - Ошибка при получении конфигурации компонента: 2 validation errors for ComponentConfigResponse
+component_id
+  field required (type=value_error.missing)
+config
+  field required (type=value_error.missing)
+2026-03-04 13:31:12,613 - ERROR - Ошибка при получении зависимостей компонента: 3 validation errors for ComponentDependenciesResponse
+component_id
+  field required (type=value_error.missing)
+dependencies
+  field required (type=value_error.missing)
+dependents
+  field required (type=value_error.missing)
+2026-03-04 13:31:12,635 - ERROR - Ошибка при получении здоровья компонентов: 7 validation errors for ComponentsHealthResponse
+overall_health
+  field required (type=value_error.missing)
+total_components
+  field required (type=value_error.missing)
+enabled_components
+  field required (type=value_error.missing)
+disabled_components
+  field required (type=value_error.missing)
+healthy_components
+  field required (type=value_error.missing)
+degraded_components
+  field required (type=value_error.missing)
+critical_components
+  field required (type=value_error.missing)
+2026-03-04 13:31:12,649 - ERROR - Ошибка при получении логов компонента: 3 validation errors for ComponentLogsResponse
+component_id
+  field required (type=value_error.missing)
+logs
+  field required (type=value_error.missing)
+total
+  field required (type=value_error.missing)
+2026-03-04 13:31:12,656 - ERROR - Ошибка при получении метрик компонента: 2 validation errors for ComponentMetricsResponse
+component_id
+  field required (type=value_error.missing)
+metrics
+  field required (type=value_error.missing)
+2026-03-04 13:31:12,671 - ERROR - Ошибка при получении статуса компонента: 2 validation errors for ComponentStatusResponse
+component_id
+  field required (type=value_error.missing)
+is_enabled
+  field required (type=value_error.missing)
+2026-03-04 13:31:12,679 - ERROR - Ошибка при получении статуса компонента: 2 validation errors for ComponentStatusResponse
+component_id
+  field required (type=value_error.missing)
+is_enabled
+  field required (type=value_error.missing)
+2026-03-04 13:31:12,686 - ERROR - Ошибка при тестировании компонента: 3 validation errors for ComponentTestResponse
+component_id
+  field required (type=value_error.missing)
+test_passed
+  field required (type=value_error.missing)
+test_results
+  field required (type=value_error.missing)
+2026-03-04 13:31:12,704 - INFO - 🛰 Smart Proxy: POST /crash-detection/history -> trying function: crash-detection_history
+2026-03-04 13:31:12,712 - INFO - 🛰 Smart Proxy: POST /crash-detection/notifications -> trying function: crash-detection_notifications
+2026-03-04 13:31:12,721 - INFO - 🛰 Smart Proxy: POST /crash-detection/notifications/send -> trying function: crash-detection_notifications_send
+2026-03-04 13:31:12,728 - INFO - 🛰 Smart Proxy: POST /crash-detection/report -> trying function: crash-detection_report
+2026-03-04 13:31:12,735 - INFO - 🛰 Smart Proxy: POST /crash-detection/settings/update -> trying function: crash-detection_settings_update
+2026-03-04 13:31:12,745 - INFO - ▶️ Started Crash Detection monitoring for 0 active sessions
+2026-03-04 13:31:12,751 - INFO - ⏹️ Stopped Crash Detection monitoring for 0 sessions
+2026-03-04 13:31:12,755 - INFO - 🛰 Smart Proxy: POST /crash-detection/sync -> trying function: crash-detection_sync
+2026-03-04 13:31:12,763 - INFO - 🛰 Smart Proxy: POST /elderly/appointments/sync -> trying function: elderly_appointments_sync
+2026-03-04 13:31:12,770 - INFO - 🛰 Smart Proxy: POST /elderly/appointments/update -> trying function: elderly_appointments_update
+2026-03-04 13:31:12,777 - INFO - 🛰 Smart Proxy: POST /elderly/medications/sync -> trying function: elderly_medications_sync
+2026-03-04 13:31:12,784 - INFO - 🛰 Smart Proxy: POST /elderly/medications/update -> trying function: elderly_medications_update
+2026-03-04 13:31:12,790 - INFO - 🛰 Smart Proxy: POST /gamification/achievements -> trying function: gamification_achievements
+2026-03-04 13:31:12,799 - INFO - 🛰 Smart Proxy: POST /gamification/achievements/claim -> trying function: gamification_achievements_claim
+2026-03-04 13:31:12,807 - INFO - 🛰 Smart Proxy: POST /gamification/achievements/progress -> trying function: gamification_achievements_progress
+2026-03-04 13:31:12,814 - INFO - 🛰 Smart Proxy: POST /gamification/achievements/unlock -> trying function: gamification_achievements_unlock
+2026-03-04 13:31:12,827 - INFO - 🛰 Smart Proxy: POST /gamification/balance/add -> trying function: gamification_balance_add
+2026-03-04 13:31:12,836 - INFO - 🛰 Smart Proxy: POST /gamification/balance/history -> trying function: gamification_balance_history
+2026-03-04 13:31:12,843 - INFO - 🛰 Smart Proxy: POST /gamification/balance/subtract -> trying function: gamification_balance_subtract
+2026-03-04 13:31:12,857 - INFO - 🛰 Smart Proxy: POST /gamification/progress -> trying function: gamification_progress
+2026-03-04 13:31:12,867 - INFO - 🛰 Smart Proxy: POST /gamification/progress/level -> trying function: gamification_progress_level
+2026-03-04 13:31:12,877 - INFO - 🛰 Smart Proxy: POST /gamification/progress/reset -> trying function: gamification_progress_reset
+2026-03-04 13:31:12,885 - INFO - 🛰 Smart Proxy: POST /gamification/progress/stats -> trying function: gamification_progress_stats
+2026-03-04 13:31:12,894 - INFO - 🛰 Smart Proxy: POST /gamification/progress/update -> trying function: gamification_progress_update
+2026-03-04 13:31:12,901 - INFO - 🛰 Smart Proxy: POST /gamification/rewards -> trying function: gamification_rewards
+2026-03-04 13:31:12,910 - INFO - 🛰 Smart Proxy: POST /gamification/rewards/claim -> trying function: gamification_rewards_claim
+2026-03-04 13:31:12,918 - INFO - 🛰 Smart Proxy: POST /gamification/rewards/give -> trying function: gamification_rewards_give
+2026-03-04 13:31:12,928 - INFO - 🛰 Smart Proxy: POST /gamification/rewards/history -> trying function: gamification_rewards_history
+2026-03-04 13:31:12,935 - INFO - 🛰 Smart Proxy: POST /gamification/rewards/purchase -> trying function: gamification_rewards_purchase
+2026-03-04 13:31:12,943 - INFO - 🛰 Smart Proxy: POST /gamification/rewards/shop -> trying function: gamification_rewards_shop
+2026-03-04 13:31:12,950 - INFO - 🛰 Smart Proxy: POST /gamification/settings -> trying function: gamification_settings
+2026-03-04 13:31:12,957 - INFO - 🛰 Smart Proxy: POST /gamification/settings/notifications -> trying function: gamification_settings_notifications
+2026-03-04 13:31:12,964 - INFO - 🛰 Smart Proxy: POST /gamification/settings/notifications/update -> trying function: gamification_settings_notifications_update
+2026-03-04 13:31:12,973 - INFO - 🛰 Smart Proxy: POST /gamification/settings/update -> trying function: gamification_settings_update
+2026-03-04 13:31:12,980 - INFO - 🛰 Smart Proxy: POST /gamification/tournaments -> trying function: gamification_tournaments
+2026-03-04 13:31:12,988 - INFO - 🛰 Smart Proxy: POST /gamification/tournaments/history -> trying function: gamification_tournaments_history
+2026-03-04 13:31:12,996 - INFO - 🛰 Smart Proxy: POST /gamification/tournaments/join -> trying function: gamification_tournaments_join
+2026-03-04 13:31:13,004 - INFO - 🛰 Smart Proxy: POST /gamification/tournaments/leaderboard -> trying function: gamification_tournaments_leaderboard
+2026-03-04 13:31:13,013 - INFO - 🛰 Smart Proxy: POST /gamification/tournaments/leave -> trying function: gamification_tournaments_leave
+2026-03-04 13:31:13,022 - INFO - 🛰 Smart Proxy: POST /location/geofences -> trying function: location_geofences
+2026-03-04 13:31:13,040 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'delete_location_geofence', using fallback
+2026-03-04 13:31:13,060 - INFO - 🛰 Smart Proxy: POST /notifications/archive -> trying function: notifications_archive
+2026-03-04 13:31:13,069 - INFO - 🛰 Smart Proxy: POST /notifications/bulk-mark-read -> trying function: notifications_bulk-mark-read
+2026-03-04 13:31:13,077 - INFO - 🛰 Smart Proxy: POST /notifications/categories -> trying function: notifications_categories
+2026-03-04 13:31:13,083 - INFO - 🛰 Smart Proxy: POST /notifications/stats -> trying function: notifications_stats
+2026-03-04 13:31:13,107 - INFO - 🛰 Smart Proxy: POST /parental-control/app-blocks -> trying function: parental-control_app-blocks
+2026-03-04 13:31:13,122 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_app_blocks', using fallback
+2026-03-04 13:31:13,125 - INFO - 🛰 Smart Proxy: POST /parental-control/geofences -> trying function: parental-control_geofences
+2026-03-04 13:31:13,139 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_geofences', using fallback
+2026-03-04 13:31:13,143 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'delete_geofence', using fallback
+2026-03-04 13:31:13,152 - INFO - 🛰 Smart Proxy: POST /parental-control/schedules -> trying function: parental-control_schedules
+2026-03-04 13:31:13,164 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_schedules', using fallback
+2026-03-04 13:31:13,170 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_schedules', using fallback
+2026-03-04 13:31:13,174 - INFO - 🛰 Smart Proxy: POST /parental-control/settings -> trying function: parental-control_settings
+2026-03-04 13:31:13,188 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_parental_control_settings', using fallback
+2026-03-04 13:31:13,191 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_parental_control_settings', using fallback
+2026-03-04 13:31:13,203 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_parental_control_settings', using fallback
+2026-03-04 13:31:13,208 - INFO - 🛰 Smart Proxy: POST /parental-control/time-limits -> trying function: parental-control_time-limits
+2026-03-04 13:31:13,220 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_time_limits', using fallback
+2026-03-04 13:31:13,232 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_time_limits', using fallback
+2026-03-04 13:31:13,237 - INFO - 🛰 Smart Proxy: POST /roadside-assistance/call -> trying function: roadside-assistance_call
+2026-03-04 13:31:13,246 - INFO - 🛰 Smart Proxy: POST /roadside-assistance/cancel/test-req-123 -> trying function: roadside-assistance_cancel_test-req-123
+2026-03-04 13:31:13,253 - INFO - 🛰 Smart Proxy: POST /roadside-assistance/history -> trying function: roadside-assistance_history
+2026-03-04 13:31:13,261 - INFO - 🛰 Smart Proxy: POST /roadside-assistance/status/test-req-123 -> trying function: roadside-assistance_status_test-req-123
+2026-03-04 13:31:13,339 - ERROR - Ошибка при создании резервной копии: 1 validation error for BackupResponse
+backup_id
+  field required (type=value_error.missing)
+2026-03-04 13:31:13,346 - ERROR - Ошибка при получении статуса резервного копирования: 2 validation errors for BackupStatusResponse
+backup_count
+  field required (type=value_error.missing)
+total_size
+  field required (type=value_error.missing)
+2026-03-04 13:31:13,354 - ERROR - Ошибка при получении здоровья системы: 2 validation errors for SystemHealthResponse
+uptime
+  field required (type=value_error.missing)
+version
+  field required (type=value_error.missing)
+2026-03-04 13:31:13,362 - ERROR - Ошибка при получении информации о системе: 4 validation errors for SystemInfoResponse
+version
+  field required (type=value_error.missing)
+uptime
+  field required (type=value_error.missing)
+environment
+  field required (type=value_error.missing)
+components_count
+  field required (type=value_error.missing)
+2026-03-04 13:31:13,372 - ERROR - Ошибка при получении системных логов: 2 validation errors for SystemLogsResponse
+logs
+  field required (type=value_error.missing)
+total
+  field required (type=value_error.missing)
+2026-03-04 13:31:13,384 - ERROR - Ошибка при получении метрик системы: 5 validation errors for SystemMetricsResponse
+cpu_usage
+  field required (type=value_error.missing)
+memory_usage
+  field required (type=value_error.missing)
+disk_usage
+  field required (type=value_error.missing)
+active_connections
+  field required (type=value_error.missing)
+requests_per_second
+  field required (type=value_error.missing)
+2026-03-04 13:31:13,392 - ERROR - Ошибка при получении ресурсов системы: 4 validation errors for SystemResourcesResponse
+cpu
+  field required (type=value_error.missing)
+memory
+  field required (type=value_error.missing)
+disk
+  field required (type=value_error.missing)
+network
+  field required (type=value_error.missing)
+2026-03-04 13:31:13,404 - INFO - 🛰 Smart Proxy: POST /system/status -> trying function: system_status
+2026-03-04 13:31:13,444 - INFO - 🛰 Smart Proxy: POST /v1/parental-control/location/geofences -> trying function: v1_parental-control_location_geofences
+2026-03-04 13:31:13,451 - INFO - 🛰 Smart Proxy: POST /v1/parental-control/location/track -> trying function: v1_parental-control_location_track
+2026-03-04 13:31:13,458 - INFO - 🛰 Smart Proxy: GET /{path} -> trying function: {path}
+2026-03-04 13:31:13,466 - INFO - 🛰 Smart Proxy: PUT /{path} -> trying function: {path}
+2026-03-04 13:31:13,474 - INFO - 🛰 Smart Proxy: POST /{path} -> trying function: {path}
+2026-03-04 13:31:13,482 - INFO - 🛰 Smart Proxy: DELETE /{path} -> trying function: {path}

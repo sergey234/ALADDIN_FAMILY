@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "start_sfm_core_http.py", line 121, in <module>
+    web.run_app(app, host='127.0.0.1', port=8003)
+  File "/Users/sergejhlystov/Library/Python/3.8/lib/python/site-packages/aiohttp/web.py", line 526, in run_app
+    loop.run_until_complete(main_task)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8/asyncio/base_events.py", line 616, in run_until_complete
+    return future.result()
+  File "/Users/sergejhlystov/Library/Python/3.8/lib/python/site-packages/aiohttp/web.py", line 519, in run_app
+    loop.run_until_complete(main_task)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8/asyncio/base_events.py", line 616, in run_until_complete
+    return future.result()
+  File "/Users/sergejhlystov/Library/Python/3.8/lib/python/site-packages/aiohttp/web.py", line 423, in _run_app
+    await site.start()
+  File "/Users/sergejhlystov/Library/Python/3.8/lib/python/site-packages/aiohttp/web_runner.py", line 119, in start
+    self._server = await loop.create_server(
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.8/lib/python3.8/asyncio/base_events.py", line 1463, in create_server
+    raise OSError(err.errno, 'error while attempting '
+OSError: [Errno 48] error while attempting to bind on address ('127.0.0.1', 8003): address already in use

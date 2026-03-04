@@ -1,0 +1,371 @@
+2026-03-04 13:30:57,482 - INFO - ✅ SFM Adapter loaded successfully
+2026-03-04 13:30:57,498 - INFO - ✅ Precision Router connected: gamification_router
+2026-03-04 13:30:57,556 - INFO - ✅ Precision Router connected: subscription_sync_router
+2026-03-04 13:30:57,667 - INFO - ✅ Precision Router connected: parental_control_sync_router
+2026-03-04 13:30:57,676 - INFO - ✅ Precision Router connected: crash_detection_router
+2026-03-04 13:30:57,725 - INFO - ✅ Precision Router connected: ai_assistant_router
+2026-03-04 13:30:57,733 - INFO - ✅ Precision Router connected: metrics_router
+2026-03-04 13:30:57,762 - INFO - ✅ Precision Router connected: user_profile_sync_router
+2026-03-04 13:30:57,805 - INFO - ✅ Precision Router connected: app_settings_sync_router
+2026-03-04 13:30:57,846 - INFO - ✅ Precision Router connected: components_router
+2026-03-04 13:30:57,880 - INFO - ✅ Precision Router connected: system_router
+2026-03-04 13:30:57,900 - INFO - ✅ Precision Router connected: offline_storage_sync_router
+2026-03-04 13:30:57,953 - INFO - ✅ Precision Router connected: other_functions_sync_router
+INFO:     Started server process [55040]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8002 (Press CTRL+C to quit)
+2026-03-04 13:31:12,074 - INFO - 📱 Device registered: tester_device_v2_local
+✅ SFM Adapter loaded successfully
+INFO:     127.0.0.1:55305 - "POST /api/auth/register-device HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55306 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55308 - "POST /api/ai/assistant/analyze_threat HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55309 - "GET /api/ai/assistant/capabilities HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55311 - "POST /api/ai/assistant/chat HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55313 - "POST /api/ai/assistant/feedback HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55314 - "GET /api/ai/assistant/history HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55316 - "GET /api/ai/assistant/recommendations HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55318 - "POST /api/ai/assistant/report_incident HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55319 - "GET /api/ai/assistant/security_tips HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55321 - "POST /api/auth/login HTTP/1.1" 200 OK
+/Users/sergejhlystov/Library/Python/3.8/lib/python/site-packages/fastapi/openapi/utils.py:207: UserWarning: Duplicate Operation ID catch_all_api_proxy_api__path__post for function catch_all_api_proxy at api_gateway.py
+  warnings.warn(message, stacklevel=1)
+2026-03-04 13:31:12,537 - INFO - 🛰 Smart Proxy: POST /auth/login-by-recovery-code -> trying function: auth_login-by-recovery-code
+INFO:     127.0.0.1:55322 - "POST /api/auth/login-by-recovery-code HTTP/1.1" 200 OK
+2026-03-04 13:31:12,548 - INFO - 🛰 Smart Proxy: POST /auth/logout -> trying function: auth_logout
+INFO:     127.0.0.1:55324 - "POST /api/auth/logout HTTP/1.1" 200 OK
+2026-03-04 13:31:12,558 - INFO - 🛰 Smart Proxy: POST /auth/refresh -> trying function: auth_refresh
+INFO:     127.0.0.1:55326 - "POST /api/auth/refresh HTTP/1.1" 200 OK
+2026-03-04 13:31:12,567 - INFO - 🛰 Smart Proxy: POST /auth/register -> trying function: auth_register
+INFO:     127.0.0.1:55328 - "POST /api/auth/register HTTP/1.1" 200 OK
+2026-03-04 13:31:12,575 - INFO - 📱 Device registered: tester_device_v2_local
+INFO:     127.0.0.1:55330 - "POST /api/auth/register-device HTTP/1.1" 200 OK
+2026-03-04 13:31:12,579 - INFO - 🛰 Smart Proxy: POST /auth/register-device-trial -> trying function: auth_register-device-trial
+INFO:     127.0.0.1:55331 - "POST /api/auth/register-device-trial HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55333 - "POST /api/chat/offline-messages/resolve-conflicts HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55334 - "POST /api/chat/offline-messages/send HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55335 - "POST /api/chat/offline-messages/sync HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55336 - "POST /api/components/config/update/%7Bcomponent_id%7D HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:12,606 - ERROR - Ошибка при получении конфигурации компонента: 2 validation errors for ComponentConfigResponse
+component_id
+  field required (type=value_error.missing)
+config
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55337 - "GET /api/components/config/%7Bcomponent_id%7D HTTP/1.1" 200 OK
+2026-03-04 13:31:12,613 - ERROR - Ошибка при получении зависимостей компонента: 3 validation errors for ComponentDependenciesResponse
+component_id
+  field required (type=value_error.missing)
+dependencies
+  field required (type=value_error.missing)
+dependents
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55339 - "GET /api/components/dependencies/%7Bcomponent_id%7D HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55341 - "POST /api/components/disable/%7Bcomponent_id%7D HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55343 - "POST /api/components/enable/%7Bcomponent_id%7D HTTP/1.1" 200 OK
+2026-03-04 13:31:12,635 - ERROR - Ошибка при получении здоровья компонентов: 7 validation errors for ComponentsHealthResponse
+overall_health
+  field required (type=value_error.missing)
+total_components
+  field required (type=value_error.missing)
+enabled_components
+  field required (type=value_error.missing)
+disabled_components
+  field required (type=value_error.missing)
+healthy_components
+  field required (type=value_error.missing)
+degraded_components
+  field required (type=value_error.missing)
+critical_components
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55345 - "GET /api/components/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55347 - "GET /api/components/list HTTP/1.1" 200 OK
+2026-03-04 13:31:12,649 - ERROR - Ошибка при получении логов компонента: 3 validation errors for ComponentLogsResponse
+component_id
+  field required (type=value_error.missing)
+logs
+  field required (type=value_error.missing)
+total
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55349 - "GET /api/components/logs/%7Bcomponent_id%7D HTTP/1.1" 200 OK
+2026-03-04 13:31:12,656 - ERROR - Ошибка при получении метрик компонента: 2 validation errors for ComponentMetricsResponse
+component_id
+  field required (type=value_error.missing)
+metrics
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55351 - "GET /api/components/metrics/%7Bcomponent_id%7D HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55353 - "POST /api/components/restart/%7Bcomponent_id%7D HTTP/1.1" 200 OK
+2026-03-04 13:31:12,671 - ERROR - Ошибка при получении статуса компонента: 2 validation errors for ComponentStatusResponse
+component_id
+  field required (type=value_error.missing)
+is_enabled
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55355 - "GET /api/components/status/all HTTP/1.1" 200 OK
+2026-03-04 13:31:12,679 - ERROR - Ошибка при получении статуса компонента: 2 validation errors for ComponentStatusResponse
+component_id
+  field required (type=value_error.missing)
+is_enabled
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55357 - "GET /api/components/status/%7Bcomponent_id%7D HTTP/1.1" 200 OK
+2026-03-04 13:31:12,686 - ERROR - Ошибка при тестировании компонента: 3 validation errors for ComponentTestResponse
+component_id
+  field required (type=value_error.missing)
+test_passed
+  field required (type=value_error.missing)
+test_results
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55359 - "POST /api/components/test/%7Bcomponent_id%7D HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55361 - "POST /api/components/update/%7Bcomponent_id%7D HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55363 - "POST /api/crash-detection/alert HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55364 - "POST /api/crash-detection/data HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:12,704 - INFO - 🛰 Smart Proxy: POST /crash-detection/history -> trying function: crash-detection_history
+INFO:     127.0.0.1:55365 - "POST /api/crash-detection/history HTTP/1.1" 200 OK
+2026-03-04 13:31:12,712 - INFO - 🛰 Smart Proxy: POST /crash-detection/notifications -> trying function: crash-detection_notifications
+INFO:     127.0.0.1:55367 - "POST /api/crash-detection/notifications HTTP/1.1" 200 OK
+2026-03-04 13:31:12,721 - INFO - 🛰 Smart Proxy: POST /crash-detection/notifications/send -> trying function: crash-detection_notifications_send
+INFO:     127.0.0.1:55369 - "POST /api/crash-detection/notifications/send HTTP/1.1" 200 OK
+2026-03-04 13:31:12,728 - INFO - 🛰 Smart Proxy: POST /crash-detection/report -> trying function: crash-detection_report
+INFO:     127.0.0.1:55371 - "POST /api/crash-detection/report HTTP/1.1" 200 OK
+2026-03-04 13:31:12,735 - INFO - 🛰 Smart Proxy: POST /crash-detection/settings/update -> trying function: crash-detection_settings_update
+INFO:     127.0.0.1:55373 - "POST /api/crash-detection/settings/update HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55375 - "POST /api/crash-detection/setup HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:12,745 - INFO - ▶️ Started Crash Detection monitoring for 0 active sessions
+INFO:     127.0.0.1:55376 - "POST /api/crash-detection/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55377 - "GET /api/crash-detection/status HTTP/1.1" 200 OK
+2026-03-04 13:31:12,751 - INFO - ⏹️ Stopped Crash Detection monitoring for 0 sessions
+INFO:     127.0.0.1:55378 - "POST /api/crash-detection/stop HTTP/1.1" 200 OK
+2026-03-04 13:31:12,755 - INFO - 🛰 Smart Proxy: POST /crash-detection/sync -> trying function: crash-detection_sync
+INFO:     127.0.0.1:55379 - "POST /api/crash-detection/sync HTTP/1.1" 200 OK
+2026-03-04 13:31:12,763 - INFO - 🛰 Smart Proxy: POST /elderly/appointments/sync -> trying function: elderly_appointments_sync
+INFO:     127.0.0.1:55381 - "POST /api/elderly/appointments/sync HTTP/1.1" 200 OK
+2026-03-04 13:31:12,770 - INFO - 🛰 Smart Proxy: POST /elderly/appointments/update -> trying function: elderly_appointments_update
+INFO:     127.0.0.1:55383 - "POST /api/elderly/appointments/update HTTP/1.1" 200 OK
+2026-03-04 13:31:12,777 - INFO - 🛰 Smart Proxy: POST /elderly/medications/sync -> trying function: elderly_medications_sync
+INFO:     127.0.0.1:55385 - "POST /api/elderly/medications/sync HTTP/1.1" 200 OK
+2026-03-04 13:31:12,784 - INFO - 🛰 Smart Proxy: POST /elderly/medications/update -> trying function: elderly_medications_update
+INFO:     127.0.0.1:55387 - "POST /api/elderly/medications/update HTTP/1.1" 200 OK
+2026-03-04 13:31:12,790 - INFO - 🛰 Smart Proxy: POST /gamification/achievements -> trying function: gamification_achievements
+INFO:     127.0.0.1:55389 - "POST /api/gamification/achievements HTTP/1.1" 200 OK
+2026-03-04 13:31:12,799 - INFO - 🛰 Smart Proxy: POST /gamification/achievements/claim -> trying function: gamification_achievements_claim
+INFO:     127.0.0.1:55391 - "POST /api/gamification/achievements/claim HTTP/1.1" 200 OK
+2026-03-04 13:31:12,807 - INFO - 🛰 Smart Proxy: POST /gamification/achievements/progress -> trying function: gamification_achievements_progress
+INFO:     127.0.0.1:55393 - "POST /api/gamification/achievements/progress HTTP/1.1" 200 OK
+2026-03-04 13:31:12,814 - INFO - 🛰 Smart Proxy: POST /gamification/achievements/unlock -> trying function: gamification_achievements_unlock
+INFO:     127.0.0.1:55395 - "POST /api/gamification/achievements/unlock HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55397 - "GET /api/gamification/balance HTTP/1.1" 200 OK
+2026-03-04 13:31:12,827 - INFO - 🛰 Smart Proxy: POST /gamification/balance/add -> trying function: gamification_balance_add
+INFO:     127.0.0.1:55399 - "POST /api/gamification/balance/add HTTP/1.1" 200 OK
+2026-03-04 13:31:12,836 - INFO - 🛰 Smart Proxy: POST /gamification/balance/history -> trying function: gamification_balance_history
+INFO:     127.0.0.1:55401 - "POST /api/gamification/balance/history HTTP/1.1" 200 OK
+2026-03-04 13:31:12,843 - INFO - 🛰 Smart Proxy: POST /gamification/balance/subtract -> trying function: gamification_balance_subtract
+INFO:     127.0.0.1:55403 - "POST /api/gamification/balance/subtract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55405 - "GET /api/gamification/balance/%7BuserId%7D HTTP/1.1" 200 OK
+2026-03-04 13:31:12,857 - INFO - 🛰 Smart Proxy: POST /gamification/progress -> trying function: gamification_progress
+INFO:     127.0.0.1:55407 - "POST /api/gamification/progress HTTP/1.1" 200 OK
+2026-03-04 13:31:12,867 - INFO - 🛰 Smart Proxy: POST /gamification/progress/level -> trying function: gamification_progress_level
+INFO:     127.0.0.1:55409 - "POST /api/gamification/progress/level HTTP/1.1" 200 OK
+2026-03-04 13:31:12,877 - INFO - 🛰 Smart Proxy: POST /gamification/progress/reset -> trying function: gamification_progress_reset
+INFO:     127.0.0.1:55411 - "POST /api/gamification/progress/reset HTTP/1.1" 200 OK
+2026-03-04 13:31:12,885 - INFO - 🛰 Smart Proxy: POST /gamification/progress/stats -> trying function: gamification_progress_stats
+INFO:     127.0.0.1:55413 - "POST /api/gamification/progress/stats HTTP/1.1" 200 OK
+2026-03-04 13:31:12,894 - INFO - 🛰 Smart Proxy: POST /gamification/progress/update -> trying function: gamification_progress_update
+INFO:     127.0.0.1:55415 - "POST /api/gamification/progress/update HTTP/1.1" 200 OK
+2026-03-04 13:31:12,901 - INFO - 🛰 Smart Proxy: POST /gamification/rewards -> trying function: gamification_rewards
+INFO:     127.0.0.1:55417 - "POST /api/gamification/rewards HTTP/1.1" 200 OK
+2026-03-04 13:31:12,910 - INFO - 🛰 Smart Proxy: POST /gamification/rewards/claim -> trying function: gamification_rewards_claim
+INFO:     127.0.0.1:55419 - "POST /api/gamification/rewards/claim HTTP/1.1" 200 OK
+2026-03-04 13:31:12,918 - INFO - 🛰 Smart Proxy: POST /gamification/rewards/give -> trying function: gamification_rewards_give
+INFO:     127.0.0.1:55421 - "POST /api/gamification/rewards/give HTTP/1.1" 200 OK
+2026-03-04 13:31:12,928 - INFO - 🛰 Smart Proxy: POST /gamification/rewards/history -> trying function: gamification_rewards_history
+INFO:     127.0.0.1:55423 - "POST /api/gamification/rewards/history HTTP/1.1" 200 OK
+2026-03-04 13:31:12,935 - INFO - 🛰 Smart Proxy: POST /gamification/rewards/purchase -> trying function: gamification_rewards_purchase
+INFO:     127.0.0.1:55425 - "POST /api/gamification/rewards/purchase HTTP/1.1" 200 OK
+2026-03-04 13:31:12,943 - INFO - 🛰 Smart Proxy: POST /gamification/rewards/shop -> trying function: gamification_rewards_shop
+INFO:     127.0.0.1:55427 - "POST /api/gamification/rewards/shop HTTP/1.1" 200 OK
+2026-03-04 13:31:12,950 - INFO - 🛰 Smart Proxy: POST /gamification/settings -> trying function: gamification_settings
+INFO:     127.0.0.1:55429 - "POST /api/gamification/settings HTTP/1.1" 200 OK
+2026-03-04 13:31:12,957 - INFO - 🛰 Smart Proxy: POST /gamification/settings/notifications -> trying function: gamification_settings_notifications
+INFO:     127.0.0.1:55431 - "POST /api/gamification/settings/notifications HTTP/1.1" 200 OK
+2026-03-04 13:31:12,964 - INFO - 🛰 Smart Proxy: POST /gamification/settings/notifications/update -> trying function: gamification_settings_notifications_update
+INFO:     127.0.0.1:55433 - "POST /api/gamification/settings/notifications/update HTTP/1.1" 200 OK
+2026-03-04 13:31:12,973 - INFO - 🛰 Smart Proxy: POST /gamification/settings/update -> trying function: gamification_settings_update
+INFO:     127.0.0.1:55435 - "POST /api/gamification/settings/update HTTP/1.1" 200 OK
+2026-03-04 13:31:12,980 - INFO - 🛰 Smart Proxy: POST /gamification/tournaments -> trying function: gamification_tournaments
+INFO:     127.0.0.1:55437 - "POST /api/gamification/tournaments HTTP/1.1" 200 OK
+2026-03-04 13:31:12,988 - INFO - 🛰 Smart Proxy: POST /gamification/tournaments/history -> trying function: gamification_tournaments_history
+INFO:     127.0.0.1:55439 - "POST /api/gamification/tournaments/history HTTP/1.1" 200 OK
+2026-03-04 13:31:12,996 - INFO - 🛰 Smart Proxy: POST /gamification/tournaments/join -> trying function: gamification_tournaments_join
+INFO:     127.0.0.1:55441 - "POST /api/gamification/tournaments/join HTTP/1.1" 200 OK
+2026-03-04 13:31:13,004 - INFO - 🛰 Smart Proxy: POST /gamification/tournaments/leaderboard -> trying function: gamification_tournaments_leaderboard
+INFO:     127.0.0.1:55443 - "POST /api/gamification/tournaments/leaderboard HTTP/1.1" 200 OK
+2026-03-04 13:31:13,013 - INFO - 🛰 Smart Proxy: POST /gamification/tournaments/leave -> trying function: gamification_tournaments_leave
+INFO:     127.0.0.1:55445 - "POST /api/gamification/tournaments/leave HTTP/1.1" 200 OK
+2026-03-04 13:31:13,022 - INFO - 🛰 Smart Proxy: POST /location/geofences -> trying function: location_geofences
+INFO:     127.0.0.1:55447 - "POST /api/location/geofences HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55449 - "POST /api/location/geofences/sync HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55450 - "POST /api/location/geofences/update HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,040 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'delete_location_geofence', using fallback
+INFO:     127.0.0.1:55451 - "DELETE /api/location/geofences/test-geo-000 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55452 - "GET /api/location/movement-history HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55453 - "POST /api/location/movement-history/update HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55454 - "GET /api/location/status HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55455 - "POST /api/location/status/update HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55456 - "POST /api/metrics/upload HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,060 - INFO - 🛰 Smart Proxy: POST /notifications/archive -> trying function: notifications_archive
+INFO:     127.0.0.1:55457 - "POST /api/notifications/archive HTTP/1.1" 200 OK
+2026-03-04 13:31:13,069 - INFO - 🛰 Smart Proxy: POST /notifications/bulk-mark-read -> trying function: notifications_bulk-mark-read
+INFO:     127.0.0.1:55459 - "POST /api/notifications/bulk-mark-read HTTP/1.1" 200 OK
+2026-03-04 13:31:13,077 - INFO - 🛰 Smart Proxy: POST /notifications/categories -> trying function: notifications_categories
+INFO:     127.0.0.1:55461 - "POST /api/notifications/categories HTTP/1.1" 200 OK
+2026-03-04 13:31:13,083 - INFO - 🛰 Smart Proxy: POST /notifications/stats -> trying function: notifications_stats
+INFO:     127.0.0.1:55463 - "POST /api/notifications/stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55465 - "GET /api/offline-storage/data HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55466 - "POST /api/offline-storage/data/update HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55467 - "DELETE /api/offline-storage/data/test-data-111 HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55468 - "POST /api/offline-storage/resolve-conflicts HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55469 - "POST /api/offline-storage/sync HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,107 - INFO - 🛰 Smart Proxy: POST /parental-control/app-blocks -> trying function: parental-control_app-blocks
+INFO:     127.0.0.1:55470 - "POST /api/parental-control/app-blocks HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55472 - "POST /api/parental-control/app-blocks/sync HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55473 - "POST /api/parental-control/app-blocks/update HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,122 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_app_blocks', using fallback
+INFO:     127.0.0.1:55474 - "GET /api/parental-control/app-blocks/test-child-789 HTTP/1.1" 200 OK
+2026-03-04 13:31:13,125 - INFO - 🛰 Smart Proxy: POST /parental-control/geofences -> trying function: parental-control_geofences
+INFO:     127.0.0.1:55475 - "POST /api/parental-control/geofences HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55477 - "POST /api/parental-control/geofences/add HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55478 - "POST /api/parental-control/geofences/update HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,139 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_geofences', using fallback
+INFO:     127.0.0.1:55479 - "GET /api/parental-control/geofences/test-child-789 HTTP/1.1" 200 OK
+2026-03-04 13:31:13,143 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'delete_geofence', using fallback
+INFO:     127.0.0.1:55480 - "DELETE /api/parental-control/geofences/test-geo-000 HTTP/1.1" 200 OK
+2026-03-04 13:31:13,152 - INFO - 🛰 Smart Proxy: POST /parental-control/schedules -> trying function: parental-control_schedules
+INFO:     127.0.0.1:55481 - "POST /api/parental-control/schedules HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55483 - "POST /api/parental-control/schedules/delete HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,164 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_schedules', using fallback
+INFO:     127.0.0.1:55484 - "GET /api/parental-control/schedules/history HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55485 - "POST /api/parental-control/schedules/update HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,170 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_schedules', using fallback
+INFO:     127.0.0.1:55486 - "GET /api/parental-control/schedules/test-child-789 HTTP/1.1" 200 OK
+2026-03-04 13:31:13,174 - INFO - 🛰 Smart Proxy: POST /parental-control/settings -> trying function: parental-control_settings
+INFO:     127.0.0.1:55487 - "POST /api/parental-control/settings HTTP/1.1" 200 OK
+2026-03-04 13:31:13,188 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_parental_control_settings', using fallback
+INFO:     127.0.0.1:55489 - "GET /api/parental-control/settings/conflicts HTTP/1.1" 200 OK
+2026-03-04 13:31:13,191 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_parental_control_settings', using fallback
+INFO:     127.0.0.1:55490 - "GET /api/parental-control/settings/history HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55491 - "POST /api/parental-control/settings/sync HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55492 - "POST /api/parental-control/settings/update HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,203 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_parental_control_settings', using fallback
+INFO:     127.0.0.1:55493 - "GET /api/parental-control/settings/test-fam-456 HTTP/1.1" 200 OK
+2026-03-04 13:31:13,208 - INFO - 🛰 Smart Proxy: POST /parental-control/time-limits -> trying function: parental-control_time-limits
+INFO:     127.0.0.1:55494 - "POST /api/parental-control/time-limits HTTP/1.1" 200 OK
+2026-03-04 13:31:13,220 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_time_limits', using fallback
+INFO:     127.0.0.1:55496 - "GET /api/parental-control/time-limits/history HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55497 - "POST /api/parental-control/time-limits/reset HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55498 - "POST /api/parental-control/time-limits/update HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,232 - WARNING - SFM Adapter error: 'SFMAdapter' object has no attribute 'get_time_limits', using fallback
+INFO:     127.0.0.1:55499 - "GET /api/parental-control/time-limits/test-child-789 HTTP/1.1" 200 OK
+2026-03-04 13:31:13,237 - INFO - 🛰 Smart Proxy: POST /roadside-assistance/call -> trying function: roadside-assistance_call
+INFO:     127.0.0.1:55500 - "POST /api/roadside-assistance/call HTTP/1.1" 200 OK
+2026-03-04 13:31:13,246 - INFO - 🛰 Smart Proxy: POST /roadside-assistance/cancel/test-req-123 -> trying function: roadside-assistance_cancel_test-req-123
+INFO:     127.0.0.1:55502 - "POST /api/roadside-assistance/cancel/test-req-123 HTTP/1.1" 200 OK
+2026-03-04 13:31:13,253 - INFO - 🛰 Smart Proxy: POST /roadside-assistance/history -> trying function: roadside-assistance_history
+INFO:     127.0.0.1:55504 - "POST /api/roadside-assistance/history HTTP/1.1" 200 OK
+2026-03-04 13:31:13,261 - INFO - 🛰 Smart Proxy: POST /roadside-assistance/status/test-req-123 -> trying function: roadside-assistance_status_test-req-123
+INFO:     127.0.0.1:55506 - "POST /api/roadside-assistance/status/test-req-123 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55508 - "GET /api/settings/biometry HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55509 - "POST /api/settings/biometry/update HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55510 - "GET /api/settings/language HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55511 - "POST /api/settings/language/update HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55512 - "GET /api/settings/notifications HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55513 - "POST /api/settings/notifications/update HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55514 - "POST /api/settings/sync HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55515 - "GET /api/settings/theme HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55516 - "POST /api/settings/theme/update HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55517 - "POST /api/settings/update HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55518 - "GET /api/subscription/auto-renewal HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55519 - "POST /api/subscription/auto-renewal/update HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55520 - "POST /api/subscription/cancel HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55521 - "GET /api/subscription/purchase-history HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55522 - "GET /api/subscription/status HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55523 - "POST /api/subscription/status/update HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55524 - "POST /api/subscription/sync HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55525 - "POST /api/subscription/update HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,339 - ERROR - Ошибка при создании резервной копии: 1 validation error for BackupResponse
+backup_id
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55526 - "POST /api/system/backup HTTP/1.1" 500 Internal Server Error
+2026-03-04 13:31:13,346 - ERROR - Ошибка при получении статуса резервного копирования: 2 validation errors for BackupStatusResponse
+backup_count
+  field required (type=value_error.missing)
+total_size
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55528 - "GET /api/system/backup/status HTTP/1.1" 200 OK
+2026-03-04 13:31:13,354 - ERROR - Ошибка при получении здоровья системы: 2 validation errors for SystemHealthResponse
+uptime
+  field required (type=value_error.missing)
+version
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55530 - "GET /api/system/health HTTP/1.1" 200 OK
+2026-03-04 13:31:13,362 - ERROR - Ошибка при получении информации о системе: 4 validation errors for SystemInfoResponse
+version
+  field required (type=value_error.missing)
+uptime
+  field required (type=value_error.missing)
+environment
+  field required (type=value_error.missing)
+components_count
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55532 - "GET /api/system/info HTTP/1.1" 200 OK
+2026-03-04 13:31:13,372 - ERROR - Ошибка при получении системных логов: 2 validation errors for SystemLogsResponse
+logs
+  field required (type=value_error.missing)
+total
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55534 - "GET /api/system/logs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55536 - "POST /api/system/maintenance HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,384 - ERROR - Ошибка при получении метрик системы: 5 validation errors for SystemMetricsResponse
+cpu_usage
+  field required (type=value_error.missing)
+memory_usage
+  field required (type=value_error.missing)
+disk_usage
+  field required (type=value_error.missing)
+active_connections
+  field required (type=value_error.missing)
+requests_per_second
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55537 - "GET /api/system/metrics HTTP/1.1" 200 OK
+2026-03-04 13:31:13,392 - ERROR - Ошибка при получении ресурсов системы: 4 validation errors for SystemResourcesResponse
+cpu
+  field required (type=value_error.missing)
+memory
+  field required (type=value_error.missing)
+disk
+  field required (type=value_error.missing)
+network
+  field required (type=value_error.missing)
+INFO:     127.0.0.1:55539 - "GET /api/system/resources HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55541 - "POST /api/system/restart HTTP/1.1" 200 OK
+2026-03-04 13:31:13,404 - INFO - 🛰 Smart Proxy: POST /system/status -> trying function: system_status
+INFO:     127.0.0.1:55543 - "POST /api/system/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55545 - "GET /api/system/uptime HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55547 - "GET /api/system/version HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55549 - "GET /api/user/profile/history HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55550 - "GET /api/user/profile/privacy HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55551 - "POST /api/user/profile/privacy/update HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55552 - "POST /api/user/profile/sync HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55553 - "POST /api/user/profile/update HTTP/1.1" 422 Unprocessable Entity
+2026-03-04 13:31:13,444 - INFO - 🛰 Smart Proxy: POST /v1/parental-control/location/geofences -> trying function: v1_parental-control_location_geofences
+INFO:     127.0.0.1:55554 - "POST /api/v1/parental-control/location/geofences HTTP/1.1" 200 OK
+2026-03-04 13:31:13,451 - INFO - 🛰 Smart Proxy: POST /v1/parental-control/location/track -> trying function: v1_parental-control_location_track
+INFO:     127.0.0.1:55557 - "POST /api/v1/parental-control/location/track HTTP/1.1" 200 OK
+2026-03-04 13:31:13,458 - INFO - 🛰 Smart Proxy: GET /{path} -> trying function: {path}
+INFO:     127.0.0.1:55559 - "GET /api/%7Bpath%7D HTTP/1.1" 200 OK
+2026-03-04 13:31:13,466 - INFO - 🛰 Smart Proxy: PUT /{path} -> trying function: {path}
+INFO:     127.0.0.1:55561 - "PUT /api/%7Bpath%7D HTTP/1.1" 200 OK
+2026-03-04 13:31:13,474 - INFO - 🛰 Smart Proxy: POST /{path} -> trying function: {path}
+INFO:     127.0.0.1:55563 - "POST /api/%7Bpath%7D HTTP/1.1" 200 OK
+2026-03-04 13:31:13,482 - INFO - 🛰 Smart Proxy: DELETE /{path} -> trying function: {path}
+INFO:     127.0.0.1:55565 - "DELETE /api/%7Bpath%7D HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55567 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55568 - "POST /reports/privacy/location/bubble HTTP/1.1" 422 Unprocessable Entity
+INFO:     127.0.0.1:55569 - "POST /reports/privacy/location/send HTTP/1.1" 422 Unprocessable Entity
