@@ -235,7 +235,7 @@ class NetworkManager: NSObject, ObservableObject {
                 }
             }
             
-            performRequest(request: request, completion: completion)
+            performRequest(request: request, requiresAuth: false, completion: completion)
         }
     }
     
@@ -256,7 +256,17 @@ class NetworkManager: NSObject, ObservableObject {
         // Проверяем и обновляем токен если нужно
         Task {
             _ = await JWTTokenManager.shared.refreshTokenIfNeeded()
-            
+
+            // 🛡️ DEFENSIVE JWT: Circuit Breaker check for JWT-protected endpoints
+            if requiresAuth {
+                guard JWTCircuitBreaker.shared.shouldAllowRequest() else {
+                    logger.error("🚫 DEFENSIVE JWT: Circuit Breaker active - blocking JWT-protected request to \(endpoint)")
+                    let error = NetworkError.circuitBreakerActive("Сервер временно недоступен. Повторите попытку позже.")
+                    completion(.failure(error))
+                    return
+                }
+            }
+
             guard let url = URL(string: fullURL) else {
                 logger.error("❌ NetworkManager.post: Invalid URL: \(fullURL)")
                 completion(.failure(NetworkError.invalidURL))
@@ -308,7 +318,7 @@ class NetworkManager: NSObject, ObservableObject {
             }
             
             print("🔵 NetworkManager.post: Отправка запроса...")
-            performRequest(request: request, completion: completion)
+            performRequest(request: request, requiresAuth: false, completion: completion)
         }
     }
     
@@ -336,7 +346,7 @@ class NetworkManager: NSObject, ObservableObject {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
             
-            performRequest(request: request, completion: completion)
+            performRequest(request: request, requiresAuth: false, completion: completion)
         }
     }
     
@@ -380,7 +390,7 @@ class NetworkManager: NSObject, ObservableObject {
                 return
             }
             
-            performRequest(request: request, completion: completion)
+            performRequest(request: request, requiresAuth: false, completion: completion)
         }
     }
     
@@ -424,7 +434,7 @@ class NetworkManager: NSObject, ObservableObject {
                 return
             }
             
-            performRequest(request: request, completion: completion)
+            performRequest(request: request, requiresAuth: false, completion: completion)
         }
     }
     
@@ -461,7 +471,7 @@ class NetworkManager: NSObject, ObservableObject {
                 return
             }
             
-            performRequest(request: request, completion: completion)
+            performRequest(request: request, requiresAuth: false, completion: completion)
         }
     }
     
@@ -616,6 +626,7 @@ class NetworkManager: NSObject, ObservableObject {
     
     private func performRequest<T: Decodable>(
         request: URLRequest,
+        requiresAuth: Bool = false,
         completion: @escaping (Result<T, Error>) -> Void
     ) {
         print("🚀🚀🚀 PERFORM_REQUEST STARTED for \(request.url?.absoluteString ?? "unknown")")
@@ -719,6 +730,20 @@ class NetworkManager: NSObject, ObservableObject {
                     }
                     #endif
                     
+                    // 🛡️ DEFENSIVE JWT: Record failure for JWT-protected endpoints
+                    if requiresAuth {
+                        JWTCircuitBreaker.shared.recordFailure()
+                        logger.network("❌ DEFENSIVE JWT: Circuit breaker failure recorded")
+
+                        // Execute error recovery strategy
+                        Task {
+                            await JWTErrorRecovery.executeStrategy(
+                                JWTErrorRecovery.selectStrategy(for: error),
+                                for: error
+                            )
+                        }
+                    }
+
                     self?.lastError = error.localizedDescription
                     completion(.failure(error))
                     return
@@ -851,7 +876,7 @@ class NetworkManager: NSObject, ObservableObject {
                             }
                             
                             // Повторяем запрос с новым токеном
-                            strongSelf.performRequest(request: retryRequest, completion: completion)
+                            strongSelf.performRequest(request: retryRequest, requiresAuth: true, completion: completion)
                         } else {
                             // ✅ Production логирование ошибки обновления токена
                             os_log("❌ Token refresh failed: %{public}@", 
@@ -863,6 +888,10 @@ class NetworkManager: NSObject, ObservableObject {
                             print("❌ NetworkManager: Не удалось обновить токен")
                             #endif
                             
+                            // 🛡️ DEFENSIVE JWT: Record failure for JWT-protected endpoints
+                            JWTCircuitBreaker.shared.recordFailure()
+                            logger.network("❌ DEFENSIVE JWT: Circuit breaker failure recorded for 401 token expired")
+
                             completion(.failure(NetworkError.tokenExpired))
                         }
                     }
@@ -913,6 +942,20 @@ class NetworkManager: NSObject, ObservableObject {
                         networkError = .httpError(httpResponse.statusCode)
                     }
                     
+                    // 🛡️ DEFENSIVE JWT: Record failure for JWT-protected endpoints
+                    if requiresAuth {
+                        JWTCircuitBreaker.shared.recordFailure()
+                        logger.network("❌ DEFENSIVE JWT: Circuit breaker failure recorded for HTTP \(httpResponse.statusCode)")
+
+                        // Execute error recovery strategy
+                        Task {
+                            await JWTErrorRecovery.executeStrategy(
+                                JWTErrorRecovery.selectStrategy(for: networkError),
+                                for: networkError
+                            )
+                        }
+                    }
+
                     completion(.failure(networkError))
                     return
                 }
@@ -952,6 +995,12 @@ class NetworkManager: NSObject, ObservableObject {
                         #if DEBUG
                         print("✅ NetworkManager.performRequest: Валидация успешна")
                         #endif
+
+                        // 🛡️ DEFENSIVE JWT: Record success for JWT-protected endpoints
+                        if requiresAuth {
+                            JWTCircuitBreaker.shared.recordSuccess()
+                            logger.network("✅ DEFENSIVE JWT: Circuit breaker success recorded")
+                        }
 
                         completion(.success(decoded))
                     } catch let validationError as ValidationError {

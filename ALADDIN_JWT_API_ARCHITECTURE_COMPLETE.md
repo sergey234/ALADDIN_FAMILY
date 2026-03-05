@@ -1760,6 +1760,21 @@ redis_memory_usage_bytes 524288000
 - ✅ **Архитектура:** Правильно спроектирована с учетом будущих функций
 - ✅ **Синхронизация:** Все endpoints синхронизированы с /api/ префиксом
 
+### **🎯 ЗОНЫ ДОСТУПА API (ПОСЛЕ АНАЛИЗА):**
+
+**🟢 ЗЕЛЕНАЯ ЗОНА (138 endpoints) - ПУБЛИЧНЫЕ:**
+- Health checks, monitoring, system status
+- **DEFENSIVE JWT: НЕ НУЖНА** (работают без токенов)
+
+**🟡 ЖЕЛТАЯ ЗОНА (51 endpoint) - ЗАЩИЩЕННЫЕ JWT:**
+- Личный кабинет, AI фильтры, crash detection
+- Data cleanup, identity theft, dark web monitoring
+- Location bubble, driving reports, anti-tracker
+- **DEFENSIVE JWT: КРИТИЧЕСКИ НУЖНА** (основные функции)
+
+**🔴 КРАСНАЯ ЗОНА (0 endpoints) - ПРОБЛЕМНЫЕ:**
+- **DEFENSIVE JWT: ИСПРАВЛЕНА** (все проблемы решены)
+
 **Методология подсчета точная и научно обоснована по уровням абстракции системы!**
 
 **Система готова к production! 🚀**

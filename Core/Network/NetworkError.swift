@@ -116,6 +116,9 @@ enum NetworkError: Error, LocalizedError {
     /// Ошибка файловой системы
     case fileSystemError(Error)
     
+    /// Circuit breaker protection active
+    case circuitBreakerActive(String?)
+
     /// Неизвестная ошибка
     case unknown(Error?)
     
@@ -201,6 +204,9 @@ enum NetworkError: Error, LocalizedError {
             return "Недостаточно памяти"
         case .fileSystemError(let error):
             return "Ошибка файловой системы: \(error.localizedDescription)"
+        case .circuitBreakerActive(let message):
+            return message ?? "Сервер временно недоступен. Повторите попытку позже."
+
         case .unknown(let error):
             return "Неизвестная ошибка: \(error?.localizedDescription ?? "Попробуйте позже")"
         }

@@ -152,6 +152,12 @@
 		5E7056C62F547C1F0065BDC4 /* FamilyAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056C52F547C1F0065BDC4 /* FamilyAnalyticsView.swift */; };
 		5E7056C82F547C450065BDC4 /* FamilyTournamentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056C72F547C450065BDC4 /* FamilyTournamentView.swift */; };
 		5E7056C92F547D7B0065BDC4 /* TrialFlowTestRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056B22F54772A0065BDC4 /* TrialFlowTestRunner.swift */; };
+		5E7056CB2F597C2A0065BDC4 /* JWTEventLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056CA2F597C2A0065BDC4 /* JWTEventLogger.swift */; };
+		5E7056CD2F597C640065BDC4 /* TokenValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056CC2F597C640065BDC4 /* TokenValidator.swift */; };
+		5E7056CF2F597C960065BDC4 /* TokenHealthMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056CE2F597C960065BDC4 /* TokenHealthMonitor.swift */; };
+		5E7056D12F597D0C0065BDC4 /* DEFENSIVEJWTTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056D02F597D0B0065BDC4 /* DEFENSIVEJWTTests.swift */; };
+		5E7056D32F597D3F0065BDC4 /* JWTErrorRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056D22F597D3F0065BDC4 /* JWTErrorRecovery.swift */; };
+		5E7056D52F597D610065BDC4 /* JWTCircuitBreaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056D42F597D610065BDC4 /* JWTCircuitBreaker.swift */; };
 		5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */; };
 		5EA2F63E2EFB4B8D000686C0 /* ContentBlockerRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */; };
 		5EA2F6402EFB4BD3000686C0 /* FamilyContentBlockModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */; };
@@ -472,6 +478,12 @@
 		5E7056C32F547C0B0065BDC4 /* FamilyChatView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChatView.swift; path = Screens/Views/FamilyChatView.swift; sourceTree = "<group>"; };
 		5E7056C52F547C1F0065BDC4 /* FamilyAnalyticsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyAnalyticsView.swift; path = Screens/Views/FamilyAnalyticsView.swift; sourceTree = "<group>"; };
 		5E7056C72F547C450065BDC4 /* FamilyTournamentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyTournamentView.swift; path = Screens/Views/FamilyTournamentView.swift; sourceTree = "<group>"; };
+		5E7056CA2F597C2A0065BDC4 /* JWTEventLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JWTEventLogger.swift; path = Core/Logging/JWTEventLogger.swift; sourceTree = "<group>"; };
+		5E7056CC2F597C640065BDC4 /* TokenValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TokenValidator.swift; path = Core/Managers/TokenValidator.swift; sourceTree = "<group>"; };
+		5E7056CE2F597C960065BDC4 /* TokenHealthMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TokenHealthMonitor.swift; path = Core/Managers/TokenHealthMonitor.swift; sourceTree = "<group>"; };
+		5E7056D02F597D0B0065BDC4 /* DEFENSIVEJWTTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DEFENSIVEJWTTests.swift; path = Tests/UnitTests/DEFENSIVEJWTTests.swift; sourceTree = "<group>"; };
+		5E7056D22F597D3F0065BDC4 /* JWTErrorRecovery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JWTErrorRecovery.swift; path = Core/Managers/JWTErrorRecovery.swift; sourceTree = "<group>"; };
+		5E7056D42F597D610065BDC4 /* JWTCircuitBreaker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JWTCircuitBreaker.swift; path = Core/Managers/JWTCircuitBreaker.swift; sourceTree = "<group>"; };
 		5EA2F63B2EFB4B75000686C0 /* ContentBlockerManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerManager.swift; path = Core/ContentBlocker/ContentBlockerManager.swift; sourceTree = "<group>"; };
 		5EA2F63D2EFB4B8D000686C0 /* ContentBlockerRule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentBlockerRule.swift; path = Core/ContentBlocker/ContentBlockerRule.swift; sourceTree = "<group>"; };
 		5EA2F63F2EFB4BD3000686C0 /* FamilyContentBlockModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyContentBlockModal.swift; path = Components/Modals/FamilyContentBlockModal.swift; sourceTree = "<group>"; };
@@ -748,6 +760,12 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5E7056D42F597D610065BDC4 /* JWTCircuitBreaker.swift */,
+				5E7056D22F597D3F0065BDC4 /* JWTErrorRecovery.swift */,
+				5E7056D02F597D0B0065BDC4 /* DEFENSIVEJWTTests.swift */,
+				5E7056CE2F597C960065BDC4 /* TokenHealthMonitor.swift */,
+				5E7056CC2F597C640065BDC4 /* TokenValidator.swift */,
+				5E7056CA2F597C2A0065BDC4 /* JWTEventLogger.swift */,
 				5E7056C72F547C450065BDC4 /* FamilyTournamentView.swift */,
 				5E7056C52F547C1F0065BDC4 /* FamilyAnalyticsView.swift */,
 				5E7056C32F547C0B0065BDC4 /* FamilyChatView.swift */,
@@ -1291,8 +1309,11 @@
 				5E6F39092F151F7C00CEC103 /* VoiceMessagePlayer.swift in Sources */,
 				5E6F394C2F15B07E00CEC103 /* ComponentAnalytics.swift in Sources */,
 				5E0798392F18561C00D20CF6 /* DarkWebScanExplanationView.swift in Sources */,
+				5E7056D32F597D3F0065BDC4 /* JWTErrorRecovery.swift in Sources */,
+				5E7056CB2F597C2A0065BDC4 /* JWTEventLogger.swift in Sources */,
 				A3000031 /* ViewModels/NotificationsViewModel.swift in Sources */,
 				5E13D3662F4E52560010F7CE /* APITestAnalyzer.swift in Sources */,
+				5E7056D52F597D610065BDC4 /* JWTCircuitBreaker.swift in Sources */,
 				5EC3090D2EA6B60F00C7D34B /* 06_AIAssistantScreen.swift in Sources */,
 				5E0798172F17D23E00D20CF6 /* AICategoriesModal.swift in Sources */,
 				5E6F39572F16C54C00CEC103 /* MalwareDetectionSettingsModal.swift in Sources */,
@@ -1302,6 +1323,7 @@
 				B2000170B2000170B2000170 /* AdvancedProtectionSettingsScreen.swift in Sources */,
 				5E6F390B2F151FBF00CEC103 /* FamilyChatOfflineManager.swift in Sources */,
 				A3000033 /* ViewModels/ProfileViewModel.swift in Sources */,
+				5E7056CF2F597C960065BDC4 /* TokenHealthMonitor.swift in Sources */,
 				5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */,
 				5E6F392A2F15AF4000CEC103 /* IncidentResponseSettingsModal.swift in Sources */,
 				A3000035 /* ViewModels/ParentalControlViewModel.swift in Sources */,
@@ -1384,6 +1406,7 @@
 				5E6C6AFE2F34C97800F6FFEA /* GeofenceModels.swift in Sources */,
 				5E6F39462F15B03800CEC103 /* ComponentConfiguration.swift in Sources */,
 				5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */,
+				5E7056CD2F597C640065BDC4 /* TokenValidator.swift in Sources */,
 				5E07981F2F17D2AB00D20CF6 /* FamilyNotificationSettingsModal.swift in Sources */,
 				A4AAA002 /* ThreatProtectionScreen.swift in Sources */,
 				A4AAA004 /* ThreatProtectionCard.swift in Sources */,
@@ -1467,6 +1490,7 @@
 				B5002200 /* ALADDINUITests.swift in Sources */,
 				B5002201 /* FamilyRegistrationUITests.swift in Sources */,
 				B5002202 /* LanguageSettingsUITests.swift in Sources */,
+				5E7056D12F597D0C0065BDC4 /* DEFENSIVEJWTTests.swift in Sources */,
 				5E6F391D2F15AE1500CEC103 /* NetworkProtectionScreenUITests.swift in Sources */,
 				5E6F391E2F15AE3600CEC103 /* ParentalControlScreenUITests.swift in Sources */,
 				B5002203 /* NotificationSettingsUITests.swift in Sources */,

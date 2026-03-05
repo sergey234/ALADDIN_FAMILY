@@ -144,6 +144,9 @@ final class SubscriptionManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private let logger = MasterLogger.shared
 
+    // 🏥 DEFENSIVE JWT: Proactive Token Health Monitor
+    // 🏥 DEFENSIVE JWT: Token Health Monitor работает через singleton
+
     // MARK: - Initialization
 
     /// Initialize on app start (async operations)
@@ -158,56 +161,41 @@ final class SubscriptionManager: ObservableObject {
         logger.business("🌐 Режим сети: \(isOfflineMode ? "ОФФЛАЙН" : "ОНЛАЙН")")
         logger.business("⏰ Время запуска: \(Date())")
 
-        // Check current token state
-        let hasToken = currentToken != nil
-        logger.business("📋 АНАЛИЗ ТОКЕНА:")
-        logger.business("   - Токен существует: \(hasToken)")
+        // 🚀🚀🚀 DEFENSIVE JWT: ИНТЕЛЛЕКТУАЛЬНАЯ ПРОВЕРКА ТОКЕНОВ 🚀🚀🚀
+        logger.business("🚀 DEFENSIVE JWT: Начинаем интеллектуальную проверку токена")
 
-        if let token = currentToken {
-            logger.business("   - DeviceID: \(token.deviceId)")
-            logger.business("   - Уровень подписки: \(token.subscriptionLevel)")
-            logger.business("   - Истекает: \(token.expiresAt)")
-            logger.business("   - Время до истечения: \(Int(token.expiresAt.timeIntervalSinceNow / 3600)) часов")
-        } else {
-            logger.business("   - Токен отсутствует - требуется первичная регистрация")
+        // ШАГ 1: Используем TokenValidator для комплексного анализа
+        let tokenStatus = TokenValidator.validateCurrentToken()
+        logger.business("🔍 DEFENSIVE JWT: Статус токена: \(tokenStatus.description)")
+
+        // ШАГ 2: Выполняем действия в зависимости от статуса токена
+        switch tokenStatus {
+        case .none:
+            logger.business("📱 DEFENSIVE JWT: Токена нет - запускаем первичную регистрацию")
+            await performDeviceRegistration()
+
+        case .valid:
+            logger.business("✅ DEFENSIVE JWT: Токен валиден - используем существующий")
+            // Ничего не делаем, токен рабочий
+
+        case .expired, .invalid:
+            logger.business("⏰ DEFENSIVE JWT: Токен истек/невалиден - очищаем и регистрируем заново")
+            await clearToken()  // Очищаем проблемный токен
+            await performDeviceRegistration()  // Регистрируем заново
+
+        case .needsRefresh:
+            logger.business("🔄 DEFENSIVE JWT: Токен скоро истечет - запускаем silent refresh")
+            await refreshTokenSilently()
         }
 
-        // Check if token is expired
-        let tokenExpired = await isTokenExpired()
-        logger.business("   - Токен истек: \(tokenExpired)")
+        logger.business("🎉 DEFENSIVE JWT: Инициализация завершена успешно")
 
-        // Check if we need to register device
-        if currentToken == nil || tokenExpired {
-            logger.business("📱 РЕШЕНИЕ: Нет валидного токена - запускаем анонимную регистрацию устройства")
-
-            // Check network connectivity before attempting
-            logger.business("🌐 Проверка сетевого подключения перед регистрацией...")
-            // For now assume network is available
-
-            do {
-                logger.business("📱 Starting device registration...")
-                try await registerDeviceAnonymously()
-                logger.business("✅ Device registered successfully with trial subscription")
-
-                // Verify token was set
-                if currentToken != nil {
-                    logger.business("✅ Token successfully set after registration")
-                } else {
-                    logger.error("❌ Token not set after registration")
-                }
-
-            } catch {
-                logger.error("❌ Failed to register device: \(error.localizedDescription)")
-                logger.error("❌ Error type: \(type(of: error))")
-                logger.error("❌ Error details: \(error)")
-
-                // Fallback: just log the error, app continues without token
-                logger.business("🔄 FALLBACK: API registration failed, continuing without token")
-                logger.business("ℹ️ INFO: User will need to manually register or API will be unavailable")
-            }
-        } else {
-            logger.business("✅ CONDITION NOT MET: Valid token found, using existing subscription")
-        }
+        // Log initialization completion
+        JWTEventLogger.logEvent(.healthCheckPerformed(
+            tokenExists: currentToken != nil,
+            timeToExpiry: currentToken?.expiresAt.timeIntervalSinceNow,
+            nextCheckIn: 60
+        ))
 
         logger.security("🚀 SubscriptionManager: App start initialization completed")
     }
@@ -218,6 +206,96 @@ final class SubscriptionManager: ObservableObject {
         return JWTTokenManager.shared.isTokenExpired(token.token)
     }
 
+    // MARK: - DEFENSIVE JWT Methods
+
+    /// 🛡️ DEFENSIVE JWT: Perform Device Registration
+    ///
+    /// Safely registers device with comprehensive error handling.
+    /// Part of DEFENSIVE JWT Architecture for graceful token management.
+    ///
+    private func performDeviceRegistration() async {
+        let logger = MasterLogger.shared
+        logger.business("📱 DEFENSIVE JWT: Выполняем регистрацию устройства")
+
+        do {
+            logger.business("📱 DEFENSIVE JWT: Запуск registerDeviceAnonymously()...")
+            try await registerDeviceAnonymously()
+            logger.business("✅ DEFENSIVE JWT: Регистрация устройства прошла успешно")
+
+            // Проверяем, что токен был установлен
+            if let token = currentToken {
+                logger.business("✅ DEFENSIVE JWT: Токен успешно установлен после регистрации")
+                JWTEventLogger.logDeviceRegistration(success: true, error: nil, deviceId: token.deviceId)
+            } else {
+                logger.error("❌ DEFENSIVE JWT: Токен не был установлен после регистрации")
+                JWTEventLogger.logDeviceRegistration(success: false, error: "Token not set after registration", deviceId: "unknown")
+            }
+
+        } catch {
+            logger.error("❌ DEFENSIVE JWT: Регистрация устройства провалилась: \(error.localizedDescription)")
+            logger.error("❌ DEFENSIVE JWT: Тип ошибки: \(type(of: error))")
+            logger.error("❌ DEFENSIVE JWT: Детали ошибки: \(error)")
+
+            // Log failed registration
+            JWTEventLogger.logDeviceRegistration(success: false, error: error.localizedDescription, deviceId: "unknown")
+
+            // DEFENSIVE: Переходим в offline режим при неудаче
+            logger.business("🔄 DEFENSIVE JWT: FALLBACK - переходим в offline режим")
+            isOfflineMode = true
+            JWTEventLogger.logOfflineMode(reason: "Device registration failed", willRetry: true)
+        }
+    }
+
+    /// 🔄 DEFENSIVE JWT: Silent Token Refresh
+    ///
+    /// Performs proactive token refresh before expiration.
+    /// Part of DEFENSIVE JWT Architecture for preventing token expiry issues.
+    ///
+    private func refreshTokenSilently() async {
+        let logger = MasterLogger.shared
+        logger.business("🔄 DEFENSIVE JWT: Выполняем тихое обновление токена")
+
+        // Пока что просто перерегистрируем устройство
+        // В будущем здесь будет логика refresh token endpoint
+        logger.business("🔄 DEFENSIVE JWT: Используем перерегистрацию как временное решение")
+        await performDeviceRegistration()
+    }
+
+    /// 🧹 DEFENSIVE JWT: Clear Token from All Storage
+    ///
+    /// Completely removes token from all storage locations.
+    /// Critical for DEFENSIVE JWT Architecture to prevent stale token usage.
+    ///
+    /// Clears from:
+    /// - Keychain (secure storage)
+    /// - Memory (currentToken property)
+    /// - UserDefaults (fallback storage)
+    ///
+    func clearToken() async {
+        let logger = MasterLogger.shared
+        logger.business("🧹 DEFENSIVE JWT: Очищаем токен из всех хранилищ")
+
+        // Останавливаем monitoring для старого токена
+        TokenHealthMonitor.shared.stopMonitoring()
+        logger.business("⏹️ DEFENSIVE JWT: Остановлен monitoring старого токена")
+
+        // Очищаем Keychain
+        KeychainManager.shared.delete(forKey: .authToken)
+        KeychainManager.shared.delete(forKey: .refreshToken)
+        logger.business("🗝️ DEFENSIVE JWT: Очищен Keychain")
+
+        // Очищаем память
+        currentToken = nil
+        currentSubscription = nil
+        logger.business("🧠 DEFENSIVE JWT: Очищена память")
+
+        // Очищаем UserDefaults (fallback)
+        UserDefaults.standard.removeObject(forKey: AppConfig.UserDefaultsKeys.authToken)
+        // Note: refreshToken not stored in UserDefaults, only in Keychain
+        logger.business("💾 DEFENSIVE JWT: Очищены UserDefaults")
+
+        logger.business("✅ DEFENSIVE JWT: Токен полностью очищен")
+    }
 
     private init() {
         print("🔐🔐🔐 SUBSCRIPTION_MANAGER_INIT: Starting initialization")
@@ -248,6 +326,10 @@ final class SubscriptionManager: ObservableObject {
 
         // Setup trial monitoring
         setupTrialMonitoring()
+
+        // 🏥 DEFENSIVE JWT: Initialize proactive token health monitoring
+        // 🏥 DEFENSIVE JWT: Setup proactive token monitoring
+        setupTokenHealthMonitoring()
 
         // Setup usage tracking reset
         setupMonthlyReset()
@@ -751,6 +833,10 @@ final class SubscriptionManager: ObservableObject {
             print("❌❌❌ STORE_TOKEN: Failed to encode token for Keychain")
         }
 
+        // 🏥 DEFENSIVE JWT: Запускаем monitoring для нового токена
+        TokenHealthMonitor.shared.startMonitoring()
+        logger.business("🏥 DEFENSIVE JWT: Monitoring запущен для нового токена")
+
         print("💾💾💾 STORE_TOKEN: Completed")
     }
 
@@ -830,6 +916,20 @@ final class SubscriptionManager: ObservableObject {
                 }
             }
             .store(in: &cancellables)
+    }
+
+    /// 🏥 DEFENSIVE JWT: Setup Token Health Monitoring
+    ///
+    /// Initializes proactive token health monitoring system.
+    /// Part of DEFENSIVE JWT Architecture for automatic token management.
+    ///
+    private func setupTokenHealthMonitoring() {
+        logger.business("🏥 DEFENSIVE JWT: Setting up proactive token health monitoring")
+
+        // Start monitoring via singleton - it will automatically begin health checks
+        TokenHealthMonitor.shared.startMonitoring()
+
+        logger.business("✅ DEFENSIVE JWT: Proactive token health monitoring is now ACTIVE")
     }
 
     /// 📅 Setup monthly usage reset
@@ -1302,26 +1402,6 @@ extension SubscriptionManager {
         return false
     }
 
-    /// 🧹 Очистка текущего токена
-    private func clearToken() async {
-        logger.business("🧹 Clearing current token")
-
-        // Очищаем токен из памяти
-        currentToken = nil
-        currentSubscription = nil
-        trialStatus = nil
-
-        // Очищаем из Keychain
-        let tokenKey = "subscription_token"
-        let subscriptionKey = "subscription_status"
-        let trialKey = "trial_status"
-
-        saveToKeychain(data: Data(), key: tokenKey)
-        saveToKeychain(data: Data(), key: subscriptionKey)
-        saveToKeychain(data: Data(), key: trialKey)
-
-        logger.business("✅ Token cleared from memory and Keychain")
-    }
 
     /// 🔍 Комплексная валидация JWT токена
     private func validateJWTToken(_ token: String) -> JWTValidationResult {
