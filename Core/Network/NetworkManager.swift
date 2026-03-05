@@ -1,4 +1,7 @@
 import Foundation
+
+// Import for Circuit Breaker categories
+import Core.Managers
 import Combine
 import Security
 import os.log  // ✅ ДОБАВЛЕНО: Для Production логирования
@@ -259,8 +262,9 @@ class NetworkManager: NSObject, ObservableObject {
 
             // 🛡️ DEFENSIVE JWT: Circuit Breaker check for JWT-protected endpoints
             if requiresAuth {
-                guard JWTCircuitBreaker.shared.shouldAllowRequest() else {
-                    logger.error("🚫 DEFENSIVE JWT: Circuit Breaker active - blocking JWT-protected request to \(endpoint)")
+                let category = determineCategory(for: endpoint)
+                guard JWTCircuitBreaker.shared.shouldAllowRequest(for: category) else {
+                    logger.error("🚫 DEFENSIVE JWT: Circuit Breaker active - blocking JWT-protected request to \(endpoint) (category: \(category))")
                     let error = NetworkError.circuitBreakerActive("Сервер временно недоступен. Повторите попытку позже.")
                     completion(.failure(error))
                     return
@@ -732,7 +736,7 @@ class NetworkManager: NSObject, ObservableObject {
                     
                     // 🛡️ DEFENSIVE JWT: Record failure for JWT-protected endpoints
                     if requiresAuth {
-                        JWTCircuitBreaker.shared.recordFailure()
+                        JWTCircuitBreaker.shared.recordFailure(for: determineCategory(for: endpoint))
                         logger.network("❌ DEFENSIVE JWT: Circuit breaker failure recorded")
 
                         // Execute error recovery strategy
@@ -889,7 +893,7 @@ class NetworkManager: NSObject, ObservableObject {
                             #endif
                             
                             // 🛡️ DEFENSIVE JWT: Record failure for JWT-protected endpoints
-                            JWTCircuitBreaker.shared.recordFailure()
+                            JWTCircuitBreaker.shared.recordFailure(for: determineCategory(for: endpoint))
                             logger.network("❌ DEFENSIVE JWT: Circuit breaker failure recorded for 401 token expired")
 
                             completion(.failure(NetworkError.tokenExpired))
@@ -944,7 +948,7 @@ class NetworkManager: NSObject, ObservableObject {
                     
                     // 🛡️ DEFENSIVE JWT: Record failure for JWT-protected endpoints
                     if requiresAuth {
-                        JWTCircuitBreaker.shared.recordFailure()
+                        JWTCircuitBreaker.shared.recordFailure(for: determineCategory(for: endpoint))
                         logger.network("❌ DEFENSIVE JWT: Circuit breaker failure recorded for HTTP \(httpResponse.statusCode)")
 
                         // Execute error recovery strategy
@@ -998,7 +1002,7 @@ class NetworkManager: NSObject, ObservableObject {
 
                         // 🛡️ DEFENSIVE JWT: Record success for JWT-protected endpoints
                         if requiresAuth {
-                            JWTCircuitBreaker.shared.recordSuccess()
+                            JWTCircuitBreaker.shared.recordSuccess(for: determineCategory(for: endpoint))
                             logger.network("✅ DEFENSIVE JWT: Circuit breaker success recorded")
                         }
 
@@ -1232,6 +1236,19 @@ extension NetworkManager: URLSessionDelegate {
         #if DEBUG
         print("⚠️ NetworkManager: таймауты увеличены до \(newRequestTimeout)s / \(newResourceTimeout)s из-за медленных ответов")
         #endif
+    }
+}
+
+/// Determine Circuit Breaker category for endpoint
+private func determineCategory(for endpoint: String) -> JWTCircuitBreaker.EndpointCategory {
+    if endpoint.contains("/components/config/") {
+        return .componentConfig  // User settings - higher threshold
+    } else if endpoint.contains("/metrics/") || endpoint.contains("/analytics/") {
+        return .analytics        // Metrics - standard threshold
+    } else if endpoint.contains("/family/") || endpoint.contains("/auth/") || endpoint.contains("/subscription/") {
+        return .criticalBusiness // Core business logic
+    } else {
+        return .criticalBusiness // Default for other protected endpoints
     }
 }
 

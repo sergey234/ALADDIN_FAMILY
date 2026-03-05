@@ -23,7 +23,41 @@ import Foundation
 /// - Open: Failure threshold exceeded, requests blocked
 /// - Half-Open: Testing recovery, limited requests allowed
 ///
+/// Endpoint Categories:
+/// - componentConfig: User settings (higher threshold)
+/// - analytics: Metrics/analytics (standard threshold)
+/// - criticalBusiness: Core features (lower threshold)
+/// - publicApi: Public endpoints (no CB)
+///
 class JWTCircuitBreaker {
+
+    // MARK: - Endpoint Categories
+
+    /// 📊 Endpoint Categories with different CB behavior
+    enum EndpointCategory {
+        case componentConfig    // User settings saves (threshold: 10)
+        case analytics         // Metrics/analytics (threshold: 3)
+        case criticalBusiness  // Core business logic (threshold: 5)
+        case publicApi        // Public endpoints (no CB)
+
+        var failureThreshold: Int {
+            switch self {
+            case .componentConfig: return 10  // More tolerant for user settings
+            case .analytics: return 3         // Standard for metrics
+            case .criticalBusiness: return 5  // Moderate for business logic
+            case .publicApi: return Int.max   // Never trigger CB
+            }
+        }
+
+        var recoveryTimeout: TimeInterval {
+            switch self {
+            case .componentConfig: return 180  // 3 min recovery
+            case .analytics: return 60         // 1 min recovery
+            case .criticalBusiness: return 120 // 2 min recovery
+            case .publicApi: return 0          // No recovery needed
+            }
+        }
+    }
 
     // MARK: - Circuit States
 
@@ -44,6 +78,25 @@ class JWTCircuitBreaker {
             case .halfOpen: return "HALF-OPEN (testing recovery)"
             }
         }
+    }
+
+    // MARK: - Category Support
+
+    /// 🔀 Separate CB instances for different endpoint categories
+    private var categoryBreakers: [EndpointCategory: JWTCircuitBreaker] = [:]
+
+    /// Get or create CB for specific category
+    private func breaker(for category: EndpointCategory) -> JWTCircuitBreaker {
+        if let breaker = categoryBreakers[category] {
+            return breaker
+        }
+
+        // Create new CB with category-specific settings
+        let breaker = JWTCircuitBreaker()
+        breaker.failureThreshold = category.failureThreshold
+        breaker.timeout = category.recoveryTimeout
+        categoryBreakers[category] = breaker
+        return breaker
     }
 
     // MARK: - Properties
@@ -89,9 +142,17 @@ class JWTCircuitBreaker {
     /// Determines if API request should be allowed based on circuit state.
     /// Implements the circuit breaker pattern to prevent cascade failures.
     ///
+    /// - Parameter category: Endpoint category for granular CB behavior
     /// - Returns: true if request should proceed, false if blocked
     ///
-    func shouldAllowRequest() -> Bool {
+    func shouldAllowRequest(for category: EndpointCategory = .criticalBusiness) -> Bool {
+        // Skip CB for public APIs
+        if category == .publicApi {
+            return true
+        }
+
+        let breaker = self.breaker(for: category)
+        return breaker.shouldAllowRequest()
         switch state {
         case .closed:
             // Normal operation - allow all requests
@@ -131,7 +192,16 @@ class JWTCircuitBreaker {
     /// Records successful API request and updates circuit breaker state.
     /// Transitions from half-open to closed when success threshold is reached.
     ///
-    func recordSuccess() {
+    /// - Parameter category: Endpoint category for granular CB behavior
+    ///
+    func recordSuccess(for category: EndpointCategory = .criticalBusiness) {
+        // Skip CB for public APIs
+        if category == .publicApi {
+            return
+        }
+
+        let breaker = self.breaker(for: category)
+        breaker.recordSuccess()
         failureCount = 0  // Reset failure count
 
         switch state {
@@ -167,7 +237,16 @@ class JWTCircuitBreaker {
     /// Records failed API request and updates circuit breaker state.
     /// Transitions to open state when failure threshold is exceeded.
     ///
-    func recordFailure() {
+    /// - Parameter category: Endpoint category for granular CB behavior
+    ///
+    func recordFailure(for category: EndpointCategory = .criticalBusiness) {
+        // Skip CB for public APIs
+        if category == .publicApi {
+            return
+        }
+
+        let breaker = self.breaker(for: category)
+        breaker.recordFailure()
         failureCount += 1
         lastFailureTime = Date()
 
