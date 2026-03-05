@@ -251,4 +251,15 @@ class JWTCircuitBreaker {
         halfOpenSuccessCount = 0
         lastFailureTime = newState == .open ? Date() : nil
     }
+
+    /// 🚨 Emergency Reset to Closed State
+    ///
+    /// Resets circuit breaker to CLOSED state in case of emergency.
+    /// Should be called when CB gets stuck in OPEN state.
+    ///
+    func emergencyReset() {
+        logger.business("🚨 DEFENSIVE JWT: Emergency reset to CLOSED state")
+        forceState(.closed)
+        JWTEventLogger.logEvent(.circuitBreakerStateChanged(state: "CLOSED", reason: "Emergency reset"))
+    }
 }

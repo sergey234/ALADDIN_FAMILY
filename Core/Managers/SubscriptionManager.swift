@@ -190,6 +190,9 @@ final class SubscriptionManager: ObservableObject {
 
         logger.business("🎉 DEFENSIVE JWT: Инициализация завершена успешно")
 
+        // 🚨 DEFENSIVE JWT: Emergency reset Circuit Breaker if stuck
+        JWTCircuitBreaker.shared.emergencyReset()
+
         // Log initialization completion
         JWTEventLogger.logEvent(.healthCheckPerformed(
             tokenExists: currentToken != nil,
