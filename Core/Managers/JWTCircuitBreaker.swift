@@ -111,10 +111,10 @@ class JWTCircuitBreaker {
     private var lastFailureTime: Date?
 
     /// Number of failures before opening circuit
-    private let failureThreshold = 3
+    private var failureThreshold = 3
 
     /// Time to wait before attempting recovery (5 minutes)
-    private let timeout: TimeInterval = 300
+    private var timeout: TimeInterval = 300
 
     /// Number of successes needed to close circuit from half-open
     private let successThreshold = 2

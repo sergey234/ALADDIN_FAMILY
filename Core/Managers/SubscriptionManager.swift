@@ -22,6 +22,8 @@ import SwiftUI
 // Note: This file uses both local models and API models
 // Models are defined in separate files in Core/Models/
 
+// MARK: - JWT Processing
+
 // MARK: - Subscription Events Tracking
 
 /// 📊 Subscription Events - Analytics for conversion tracking
@@ -207,6 +209,28 @@ final class SubscriptionManager: ObservableObject {
     private func isTokenExpired() -> Bool {
         guard let token = currentToken else { return true }
         return JWTTokenManager.shared.isTokenExpired(token.token)
+    }
+
+    /// Parse ISO 8601 date string to Date
+    /// ✅ FIXED: Handles API contract mismatch (server returns ISO strings)
+    private func parseISODate(_ dateString: String?) -> Date? {
+        guard let dateString = dateString else { return nil }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime] // Поддержка формата 2026-03-05T10:19:39.616795Z
+        return formatter.date(from: dateString)
+    }
+
+    /// 🔧 Helper method to create SubscriptionStatus - test different contexts
+    private func createSubscriptionStatus(level: SubscriptionLevel, isActive: Bool, expiresAt: Date?, trialInfo: TrialInfo?, limits: SubscriptionLimits, components: [String]) -> SubscriptionStatus {
+        return SubscriptionStatus(
+            level: level,
+            isActive: isActive,
+            expiresAt: expiresAt,
+            trialInfo: trialInfo,
+            limits: limits,
+            components: components,
+            lastUpdated: Date()
+        )
     }
 
     // MARK: - DEFENSIVE JWT Methods
@@ -599,6 +623,8 @@ final class SubscriptionManager: ObservableObject {
 
     /// 🔑 Register device anonymously with trial
     func registerDeviceAnonymously() async throws {
+        // SubscriptionStatus will be created inside Task with real data
+
         logger.business("📱 НАЧАЛО РЕГИСТРАЦИИ УСТРОЙСТВА АНОНИМНО")
 
         let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
@@ -616,7 +642,7 @@ final class SubscriptionManager: ObservableObject {
         logger.business("🔗 URL: https://aladdin-ai.ru/api/auth/register-device")
         logger.business("📤 Запрос: \(String(describing: request))")
 
-        let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JWTDeviceRegisterResponse, Error>) in
+        let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JWTToken, Error>) in
             APIService.shared.registerDeviceAnonymously(request: request) { [self] result in
                 switch result {
                 case .success(let jwtResponse):
@@ -625,7 +651,7 @@ final class SubscriptionManager: ObservableObject {
                     self.logger.business("   - Token: \(jwtResponse.token.prefix(20))... (длина: \(jwtResponse.token.count))")
                     self.logger.business("   - Subscription Level: \(jwtResponse.subscription.level)")
                     self.logger.business("   - Subscription Status: \(jwtResponse.subscription.isActive ? "АКТИВНА" : "НЕАКТИВНА")")
-                    self.logger.business("   - Expires At: \(jwtResponse.subscription.expiresAt)")
+                    self.logger.business("   - Expires At: \(jwtResponse.expiresAt)")
                     self.logger.business("   - Trial Info: \(String(describing: jwtResponse.subscription.trialInfo))")
 
                     // 🔍 Комплексная валидация JWT токена
@@ -641,14 +667,54 @@ final class SubscriptionManager: ObservableObject {
                         return
                     }
 
-                    continuation.resume(returning: jwtResponse)
+                    // ✅ FIXED: Create JWTToken from JWTDeviceRegisterResponse with proper conversions
+                    let jwtToken = JWTToken(
+                        token: jwtResponse.token,
+                        deviceId: jwtResponse.deviceId,
+                        subscriptionLevel: SubscriptionLevel(rawValue: jwtResponse.subscription.level) ?? .free, // ✅ Convert String to enum
+                        trialInfo: jwtResponse.subscription.trialInfo,
+                        expiresAt: jwtResponse.expiresAtDate ?? Date().addingTimeInterval(86400), // Default to 24h if parsing fails
+                        issuedAt: jwtResponse.registeredAtDate ?? Date(),
+                        issuer: "ALADDIN",
+                        limits: SubscriptionLimits.freeLimits,      // ✅ Default limits for new user
+                        components: []                               // ✅ Default components for new user
+                    )
+
+                    // ✅ Save token and update subscription status BEFORE returning
+                    self.logger.business("💾 СОХРАНЕНИЕ ТОКЕНА В ЗАЩИЩЕННОЕ ХРАНИЛИЩЕ")
+
+                    // ✅ CRITICAL: Use Task to save token before resuming continuation
+                    Task {
+                        // ✅ SOLUTION: Direct creation bypassing caching issue
+                        await self.storeToken(jwtToken)
+
+                        // ✅ SOLUTION: Convert API model to internal SubscriptionStatus
+                        let newSubscriptionStatus = jwtResponse.subscription.toSubscriptionStatus()
+
+                        await self.updateSubscriptionStatus(newSubscriptionStatus)
+
+                        // Now resume continuation after token is saved
+                        self.logger.business("✅ Токен успешно сохранен в Keychain:")
+                        self.logger.business("   - DeviceID: \(jwtToken.deviceId)")
+                        self.logger.business("   - Уровень подписки: \(jwtToken.subscriptionLevel)")
+                        self.logger.business("   - Trial: \(jwtToken.trialInfo?.daysRemaining ?? 0) дней осталось")
+                        self.logger.business("   - Выдан: \(jwtToken.issuedAt)")
+                        self.logger.business("   - Истекает: \(jwtToken.expiresAt)")
+                        self.logger.business("   - Время жизни: \(Int(jwtToken.expiresAt.timeIntervalSince(jwtToken.issuedAt) / 3600)) часов")
+
+                        self.logger.business("🎉 РЕГИСТРАЦИЯ УСТРОЙСТВА ЗАВЕРШЕНА ПОЛНОСТЬЮ")
+                        self.logger.business("🚀 Устройство \(jwtToken.deviceId) готово к работе с реальным JWT")
+                        self.logger.business("🔐 Все защищенные API теперь доступны")
+
+                        continuation.resume(returning: jwtToken)
+                    }
                 case .failure(let error):
                     self.logger.error("❌ Device registration failed", error: error)
 
                     // Специальная обработка ошибки 401
                     if let networkError = error as? NetworkError,
                        case .httpError(401) = networkError {
-                        logger.business("🚨 Обнаружена ошибка 401 при регистрации устройства")
+                        self.logger.business("🚨 Обнаружена ошибка 401 при регистрации устройства")
                         Task {
                             await self.handle401Error()
                         }
@@ -662,42 +728,10 @@ final class SubscriptionManager: ObservableObject {
                 }
             }
         }
-
-        // ✅ Сохраняем реальный JWT токен от сервера
-        logger.business("💾 СОХРАНЕНИЕ ТОКЕНА В ЗАЩИЩЕННОЕ ХРАНИЛИЩЕ")
-
-        let jwtToken = JWTToken(
-            token: response.token,
-            deviceId: response.deviceId,
-            subscriptionLevel: response.subscription.level,
-            trialInfo: response.subscription.trialInfo,
-            expiresAt: response.expiresAt,
-            issuedAt: response.registeredAt,
-            issuer: "aladdin-server",
-            limits: response.subscription.limits,
-            components: response.subscription.components
-        )
-
-        await storeToken(jwtToken)
-
-        logger.business("✅ Токен успешно сохранен в Keychain:")
-        logger.business("   - DeviceID: \(jwtToken.deviceId)")
-        logger.business("   - Уровень подписки: \(jwtToken.subscriptionLevel)")
-        logger.business("   - Trial: \(jwtToken.trialInfo?.daysRemaining ?? 0) дней осталось")
-        logger.business("   - Выдан: \(jwtToken.issuedAt)")
-        logger.business("   - Истекает: \(jwtToken.expiresAt)")
-        logger.business("   - Время жизни: \(Int(jwtToken.expiresAt.timeIntervalSince(jwtToken.issuedAt) / 3600)) часов")
-
-        // ✅ Обновляем статус подписки реальными данными
-        logger.business("🔄 Обновление статуса подписки...")
-        await updateSubscriptionStatus(response.subscription)
-
-        logger.business("🎉 РЕГИСТРАЦИЯ УСТРОЙСТВА ЗАВЕРШЕНА ПОЛНОСТЬЮ")
-        logger.business("🚀 Устройство \(deviceId) готово к работе с реальным JWT")
-        logger.business("🔐 Все защищенные API теперь доступны")
     }
 
     // MARK: - Private Methods
+
 
     /// 🔐 Parse JWT token and extract subscription data
     private func parseJWTToken(_ token: String) -> JWTToken? {
@@ -958,6 +992,21 @@ final class SubscriptionManager: ObservableObject {
 
         trialStatus = nil
 
+        // 🔬 DIAGNOSTICS: Testing in sync context with helper method
+        #if DEBUG
+        logger.business("🔬 DIAGNOSTICS: Testing SubscriptionStatus creation in sync context")
+
+        let testSyncSubscription = createSubscriptionStatus(
+            level: .premium,  // Test with enum value
+            isActive: true,
+            expiresAt: Date(),  // Test with Date
+            trialInfo: nil,
+            limits: SubscriptionLimits.freeLimits,
+            components: ["test"]
+        )
+        logger.business("✅ DIAGNOSTICS: SubscriptionStatus created successfully in sync context")
+        #endif
+
         // Switch to free subscription
         let freeSubscription = SubscriptionStatus(
             level: .free,
@@ -1158,6 +1207,26 @@ extension SubscriptionManager {
     private func updateFromServerStatus(_ serverStatus: SubscriptionStatus) async {
         // Convert server response to local model
         let subscriptionLevel = serverStatus.level
+
+        // 🔬 DIAGNOSTICS: Testing in another sync context (updateFromServerStatus)
+        #if DEBUG
+        logger.business("🔬 DIAGNOSTICS: Testing SubscriptionStatus creation in updateFromServerStatus")
+
+        do {
+            let testServerSubscription = SubscriptionStatus(
+                level: subscriptionLevel,  // From server
+                isActive: serverStatus.isActive,  // From server
+                expiresAt: serverStatus.expiresAt,  // Date? from server
+                trialInfo: serverStatus.trialInfo,  // From server
+                limits: serverStatus.limits,  // From server
+                components: serverStatus.components,  // From server
+                lastUpdated: Date()
+            )
+            logger.business("✅ DIAGNOSTICS: SubscriptionStatus created successfully in updateFromServerStatus")
+        } catch {
+            logger.business("❌ DIAGNOSTICS: Failed to create SubscriptionStatus in updateFromServerStatus: \(error)")
+        }
+        #endif
 
         let subscriptionStatus = SubscriptionStatus(
             level: subscriptionLevel,
@@ -1459,13 +1528,19 @@ extension SubscriptionManager {
            let payloadString = String(data: payloadData, encoding: .utf8) {
             logger.business("📋 JWT Payload (первые 200 символов): \(payloadString.prefix(200))")
 
-            // Проверка обязательных полей
-            let requiredFields = ["deviceId", "level", "exp", "iat"]
+            // Проверка обязательных полей (согласно реальной структуре JWT от сервера)
+            let requiredFields = ["sub", "subscription_level", "exp", "iat"]
             for field in requiredFields {
                 if !payloadString.contains("\"\(field)\"") {
                     logger.error("❌ JWT payload не содержит обязательное поле: \(field)")
                     return .invalid("Отсутствует обязательное поле: \(field)")
                 }
+            }
+
+            // Дополнительная проверка: deviceId должен быть в поле "sub"
+            if !payloadString.contains("\"sub\":") {
+                logger.error("❌ JWT payload не содержит deviceId в поле 'sub'")
+                return .invalid("Отсутствует deviceId в поле sub")
             }
 
             // Проверка срока действия

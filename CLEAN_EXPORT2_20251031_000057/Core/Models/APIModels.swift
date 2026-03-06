@@ -180,13 +180,7 @@ struct TariffResponse: Codable, Identifiable {
     let isRecommended: Bool
 }
 
-struct SubscriptionStatus: Codable {
-    let isActive: Bool
-    let tariffId: String
-    let startDate: Date
-    let endDate: Date
-    let autoRenew: Bool
-}
+// Removed conflicting SubscriptionStatus definition to prevent type conflicts
 
 // MARK: - Auth Models
 

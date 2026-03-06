@@ -1,7 +1,4 @@
 import Foundation
-
-// Import for Circuit Breaker categories
-import Core.Managers
 import Combine
 import Security
 import os.log  // ✅ ДОБАВЛЕНО: Для Production логирования

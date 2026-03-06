@@ -1,5 +1,6 @@
-Traceback (most recent call last):
-  File "start_sfm_core_http.py", line 121, in <module>
+======== Running on http://127.0.0.1:8003 ========
+(Press CTRL+C to quit)
+21, in <module>
     web.run_app(app, host='127.0.0.1', port=8003)
   File "/Users/sergejhlystov/Library/Python/3.8/lib/python/site-packages/aiohttp/web.py", line 526, in run_app
     loop.run_until_complete(main_task)

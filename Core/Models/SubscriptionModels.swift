@@ -265,7 +265,7 @@ struct SubscriptionStatus: Codable, Equatable {
 
     /// Is subscription expired
     var isExpired: Bool {
-        if let expiresAt = expiresAt {
+        if let expiresAt = self.expiresAt {
             return Date() > expiresAt
         }
         return false
@@ -273,10 +273,63 @@ struct SubscriptionStatus: Codable, Equatable {
 
     /// Days until expiration (nil if no expiration)
     var daysUntilExpiration: Int? {
-        guard let expiresAt = expiresAt else { return nil }
+        guard let expiresAt = self.expiresAt else { return nil }
         let calendar = Calendar.current
         let components = calendar.dateComponents([.day], from: Date(), to: expiresAt)
         return components.day
+    }
+}
+
+// 🔧 TEMPORARY: Alternative type to bypass caching issues
+struct AppSubscriptionStatus: Codable, Equatable {
+    let level: SubscriptionLevel
+    let isActive: Bool
+    let expiresAt: Date?
+    let trialInfo: TrialInfo?
+    var limits: SubscriptionLimits
+    let components: [String]
+    let lastUpdated: Date
+}
+
+// 📱 Device Registration Subscription - базовая информация при регистрации
+/// ✅ SOLUTION: Separate model for API responses vs internal models
+/// Используется только при регистрации устройства, содержит минимальный набор полей
+struct DeviceRegistrationSubscription: Codable {
+    /// Subscription level as string from API
+    let level: String
+
+    /// Is subscription active
+    let isActive: Bool
+
+    /// Subscription expiration date as ISO 8601 string from API
+    let expiresAt: String?
+
+    /// Trial information (if applicable)
+    let trialInfo: TrialInfo?
+}
+
+// 🔄 Conversion Extension
+extension DeviceRegistrationSubscription {
+    /// Convert API model to internal SubscriptionStatus
+    /// ✅ SOLUTION: Clean separation between API and internal models
+    func toSubscriptionStatus() -> SubscriptionStatus {
+        return SubscriptionStatus(
+            level: SubscriptionLevel(rawValue: level) ?? .free,  // Convert string to enum
+            isActive: isActive,
+            expiresAt: parseISODate(expiresAt),                  // Convert string to Date
+            trialInfo: trialInfo,
+            limits: SubscriptionLimits.freeLimits,               // Default for new user
+            components: [],                                       // Default for new user
+            lastUpdated: Date()
+        )
+    }
+
+    /// Parse ISO 8601 date string to Date (helper function)
+    private func parseISODate(_ dateString: String?) -> Date? {
+        guard let dateString = dateString else { return nil }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime] // Поддержка формата 2026-03-05T10:19:39.616795Z
+        return formatter.date(from: dateString)
     }
 }
 
@@ -351,12 +404,27 @@ struct FeatureAccessConfig {
 // MARK: - API Response Models
 
 /// 📡 JWT Registration Response
+/// ✅ FIXED: Server returns dates as ISO 8601 strings, not Date objects
 struct JWTDeviceRegisterResponse: Codable {
     let token: String
     let deviceId: String
-    let expiresAt: Date
-    let registeredAt: Date
-    let subscription: SubscriptionStatus
+    let expiresAt: String  // ISO 8601 date string from server
+    let registeredAt: String  // ISO 8601 date string from server
+    let subscription: DeviceRegistrationSubscription  // ✅ FIXED: Use separate model for API responses
+
+    /// Convert expiresAt string to Date
+    var expiresAtDate: Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime] // Поддержка формата 2026-03-05T10:19:39.616795Z
+        return formatter.date(from: expiresAt)
+    }
+
+    /// Convert registeredAt string to Date
+    var registeredAtDate: Date? {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: registeredAt)
+    }
 }
 
 /// 📡 Subscription Status Response

@@ -2611,6 +2611,57 @@ struct DeviceRegisterRequest: Codable {
     let deviceType: String
 }
 
+/// 📱 Device Registration Response
+/// ✅ FIXED: Proper date format handling (ISO 8601)
+struct DeviceRegisterResponse: Codable {
+    let deviceId: String
+    let token: String
+    let subscription: DeviceSubscription
+    let registeredAt: String  // ISO 8601 date string
+    let expiresAt: String?    // ISO 8601 date string (nullable)
+
+    /// 🔧 Subscription info within device registration
+    struct DeviceSubscription: Codable {
+        let level: String      // "free", "trial", "personal", etc.
+        let isActive: Bool
+        let expiresAt: String? // ISO 8601 date string (nullable)
+        let trialInfo: TrialInfo?
+
+        /// ✅ STORED: Default limits for FREE level during registration
+        /// 🔧 FIXED: Stored properties work with Codable, computed don't
+        let limits: SubscriptionLimits
+        let components: [String]
+
+        /// ✅ CUSTOM DECODER: Handle missing fields with defaults
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+
+            // Decode required fields
+            level = try container.decode(String.self, forKey: .level)
+            isActive = try container.decode(Bool.self, forKey: .isActive)
+            expiresAt = try container.decodeIfPresent(String.self, forKey: .expiresAt)
+            trialInfo = try container.decodeIfPresent(TrialInfo.self, forKey: .trialInfo)
+
+            // ✅ Handle missing limits/components with FREE defaults
+            limits = try container.decodeIfPresent(SubscriptionLimits.self, forKey: .limits) ?? SubscriptionLimits(
+                maxDevices: 1,
+                maxAIMessages: 10,
+                maxScans: 5,
+                maxReports: 3,
+                currentUsage: UsageCounters(aiMessages: 0, scans: 0, reports: 0, devices: 0)
+            )
+
+            components = try container.decodeIfPresent([String].self, forKey: .components) ?? []
+        }
+
+        /// ✅ CODING KEYS: Include limits and components
+        enum CodingKeys: String, CodingKey {
+            case level, isActive, expiresAt, trialInfo
+            case limits, components  // ✅ Now included in Codable
+        }
+    }
+}
+
 /// 📱 Trial Device Registration Request
 struct TrialDeviceRegisterRequest: Codable {
     let deviceId: String
