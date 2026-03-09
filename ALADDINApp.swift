@@ -313,7 +313,7 @@ struct ALADDINApp: App {
             .onAppear {
                 // 🔍 ТЕСТОВОЕ ЛОГИРОВАНИЕ - проверяем onAppear
                 print("🎯 ALADDIN_APP: onAppear triggered - testing logger")
-                MasterLogger.shared.business("ALADDINApp onAppear - testing logging system")
+                // ВРЕМЕННО ОТКЛЮЧЕНО: MasterLogger.shared.business("ALADDINApp onAppear - testing logging system")
 
                 // Запускаем инициализацию при появлении
                 Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager)
@@ -681,15 +681,17 @@ extension ALADDINApp {
         // 🔔 ИНИЦИАЛИЗИРУЕМ PUSH УВЕДОМЛЕНИЯ
         // NotificationManager инициализируется для обработки push уведомлений
         _ = NotificationManager.shared
-        MasterLogger.shared.business("NotificationManager initialized for push notifications")
+        // ВРЕМЕННО ОТКЛЮЧЕНО: MasterLogger.shared.business("NotificationManager initialized for push notifications")
 
         // Запрашиваем разрешение на push уведомления (асинхронно, не блокирует UI)
         Task {
             let granted = await NotificationManager.shared.requestAuthorization()
             if granted {
-                MasterLogger.shared.business("Push notifications authorized by user")
+                // ВРЕМЕННО ОТКЛЮЧЕНО: MasterLogger.shared.business("Push notifications authorized by user")
+                print("✅ Push notifications authorized by user")
             } else {
-                MasterLogger.shared.business("Push notifications denied by user")
+                // ВРЕМЕННО ОТКЛЮЧЕНО: MasterLogger.shared.business("Push notifications denied by user")
+                print("❌ Push notifications denied by user")
             }
         }
 
@@ -709,7 +711,8 @@ extension ALADDINApp {
 
         // 📊 МЕТРИКИ ПРОИЗВОДИТЕЛЬНОСТИ: Логируем время инициализации
         let initTime = Date().timeIntervalSince(startTime)
-        MasterLogger.shared.performance("App initialization completed in \(String(format: "%.2f", initTime)) seconds")
+        // ВРЕМЕННО ОТКЛЮЧЕНО: MasterLogger.shared.performance("App initialization completed in \(String(format: "%.2f", initTime)) seconds")
+        print("✅ App initialization completed in \(String(format: "%.2f", initTime)) seconds")
     }
 
     /// Автоматически проверяет и удаляет debug токены при запуске

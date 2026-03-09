@@ -42,12 +42,14 @@ class NotificationManager: NSObject, ObservableObject {
     
     private override init() {
         super.init()
-        logger.business("Initializing NotificationManager")
+        // ВРЕМЕННО ОТКЛЮЧЕНО: logger.business("Initializing NotificationManager")
+        print("🔔 Initializing NotificationManager")
         notificationCenter.delegate = self
         // ✅ ИСПРАВЛЕНО: Синхронная инициализация (как в бэкапах - работало)
         checkAuthorizationStatus()
         loadSettings()
-        logger.business("NotificationManager initialized successfully")
+        // ВРЕМЕННО ОТКЛЮЧЕНО: logger.business("NotificationManager initialized successfully")
+        print("✅ NotificationManager initialized successfully")
     }
     
     // MARK: - Authorization
@@ -56,7 +58,8 @@ class NotificationManager: NSObject, ObservableObject {
      * Запросить разрешение на уведомления
      */
     func requestAuthorization() async -> Bool {
-        logger.business("Requesting notification authorization from user")
+        // ВРЕМЕННО ОТКЛЮЧЕНО: logger.business("Requesting notification authorization from user")
+        print("🔔 Requesting notification authorization from user")
         do {
             let granted = try await notificationCenter.requestAuthorization(
                 options: [.alert, .badge, .sound, .provisional]
