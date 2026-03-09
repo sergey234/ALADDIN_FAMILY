@@ -5,13 +5,32 @@ import UIKit
  * Передает APNs токен в NotificationManager
  */
 
+// Глобальная функция для обработки крашей
+func crashExceptionHandler(exception: NSException) {
+    let crashLog = """
+    🚨 CRASH DETECTED!
+    Exception: \(exception.name.rawValue)
+    Reason: \(exception.reason ?? "Unknown")
+    Time: \(Date())
+    Device: \(UIDevice.current.model)
+    iOS: \(UIDevice.current.systemVersion)
+    """
+
+    // Сохраняем в UserDefaults
+    UserDefaults.standard.set(crashLog, forKey: "last_crash_log")
+    UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "crash_timestamp")
+    UserDefaults.standard.synchronize()
+
+    print("💥 CRASH LOG SAVED: \(crashLog)")
+}
+
 class AppDelegate: NSObject, UIApplicationDelegate {
 
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         print("🚀 ALADDIN AppDelegate: Starting performance optimizations...")
 
-        // 🛑 ДОБАВИТЬ CRASH HANDLER ДЛЯ ЛОВЛИ КРАШЕЙ
+        // 🛑 CRASH HANDLER - для диагностики крашей при запуске
         setupCrashHandler()
 
         // 🚫 ВРЕМЕННО ОТКЛЮЧЕНО: DNS prefetching вызывает краш
@@ -29,30 +48,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     private func setupCrashHandler() {
         print("🛑 Setting up crash handler...")
 
-        // Сохраняем логи при краше
-        let exceptionHandler = NSGetUncaughtExceptionHandler()
-        NSSetUncaughtExceptionHandler { exception in
-            let crashLog = """
-            🚨 CRASH DETECTED!
-            Exception: \(exception.name.rawValue)
-            Reason: \(exception.reason ?? "Unknown")
-            Time: \(Date())
-            Device: \(UIDevice.current.model)
-            iOS: \(UIDevice.current.systemVersion)
-            """
-
-            // Сохраняем в UserDefaults
-            UserDefaults.standard.set(crashLog, forKey: "last_crash_log")
-            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "crash_timestamp")
-            UserDefaults.standard.synchronize()
-
-            print("💥 CRASH LOG SAVED: \(crashLog)")
-
-            // Вызываем оригинальный handler
-            if let originalHandler = exceptionHandler {
-                originalHandler(exception)
-            }
-        }
+        // Устанавливаем глобальный обработчик крашей
+        NSSetUncaughtExceptionHandler(crashExceptionHandler)
 
         print("✅ Crash handler installed")
     }
