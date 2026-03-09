@@ -677,12 +677,16 @@ extension ALADDINApp {
         // ✅ ЗАГРУЖАЕМ ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ
         // UserProfileManager инициализируется автоматически при первом обращении
         // и загружает профиль в фоне
-        _ = UserProfileManager.shared
-        print("✅ UserProfileManager initialized and profile loading started")
+        // ВРЕМЕННО ОТКЛЮЧЕНО: _ = UserProfileManager.shared (может вызывать сетевые запросы)
+        print("🚫 UserProfileManager initialization SKIPPED (temporary)")
+        // _ = UserProfileManager.shared
+        // print("✅ UserProfileManager initialized and profile loading started")
 
         // 🔔 ИНИЦИАЛИЗИРУЕМ PUSH УВЕДОМЛЕНИЯ
         // NotificationManager инициализируется для обработки push уведомлений
-        _ = NotificationManager.shared
+        // ВРЕМЕННО ОТКЛЮЧЕНО: _ = NotificationManager.shared (логирует в init)
+        print("🚫 NotificationManager initialization SKIPPED (temporary)")
+        // _ = NotificationManager.shared
         // ВРЕМЕННО ОТКЛЮЧЕНО: MasterLogger.shared.business("NotificationManager initialized for push notifications")
 
         // Запрашиваем разрешение на push уведомления (асинхронно, не блокирует UI)
