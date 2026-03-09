@@ -43,7 +43,8 @@ class MasterLogger {
         maxLogLevel = .info   // В RELEASE только INFO и выше
         #endif
 
-        log(.info, category: .system, message: "🎯 MasterLogger initialized with level: \(maxLogLevel.rawValue)")
+        // 🚨 КРИТИЧНОЕ ИСПРАВЛЕНИЕ: ПОЛНОСТЬЮ УБРАНО ЛОГИРОВАНИЕ ИЗ INIT
+        // Даже закомментированное логирование может вызывать проблемы!
     }
 
     // MARK: - Log Levels

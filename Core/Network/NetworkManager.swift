@@ -632,13 +632,19 @@ class NetworkManager: NSObject, ObservableObject {
     private func performRequest<T: Decodable>(
         request: URLRequest,
         requiresAuth: Bool = false,
+        isRetry: Bool = false,  // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Флаг для retry запросов
         completion: @escaping (Result<T, Error>) -> Void
     ) {
-        print("🚀🚀🚀 PERFORM_REQUEST STARTED for \(request.url?.absoluteString ?? "unknown")")
+        // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Ограничиваем длину URL для логирования
+        let urlString = request.url?.absoluteString ?? "unknown"
+        let safeURLString = urlString.count > 200 ? String(urlString.prefix(200)) + "..." : urlString
+        
+        #if DEBUG
+        print("🚀🚀🚀 PERFORM_REQUEST STARTED for \(safeURLString)")
+        #endif
 
         // ✅ ЗАДАЧА 62: Проверка rate limit перед запросом
         let endpoint = request.url?.path ?? "unknown"
-        print("📊 ENDPOINT: \(endpoint)")
 
         guard rateLimiter.canMakeRequest(to: endpoint) else {
             // Лимит превышен - возвращаем ошибку
@@ -650,12 +656,14 @@ class NetworkManager: NSObject, ObservableObject {
             print("   - Время до сброса: \(String(format: "%.1f", timeUntilReset)) сек")
             #endif
 
-            // Production логирование
-            os_log("🚫 Rate Limit: Request blocked for %{public}@, retry in %.1fs",
-                   log: Self.networkLogger,
-                   type: .error,
-                   endpoint,
-                   timeUntilReset)
+            // Production логирование (только если не retry)
+            if !isRetry {
+                os_log("🚫 Rate Limit: Request blocked for %{public}@, retry in %.1fs",
+                       log: Self.networkLogger,
+                       type: .error,
+                       endpoint,
+                       timeUntilReset)
+            }
 
             completion(.failure(NetworkError.tooManyRequests(errorMessage)))
             return
@@ -664,31 +672,43 @@ class NetworkManager: NSObject, ObservableObject {
         // Регистрируем запрос в rate limiter
         rateLimiter.recordRequest(to: endpoint)
 
-        // ✅ Production логирование (видно в Xcode Console на реальном устройстве)
-        os_log("🌐 API Request: %{public}@ %{public}@", 
-               log: Self.networkLogger, 
-               type: .info,
-               request.httpMethod ?? "unknown",
-               request.url?.absoluteString ?? "unknown")
+        // ✅ Production логирование (только если не retry, чтобы избежать рекурсии)
+        if !isRetry {
+            os_log("🌐 API Request: %{public}@ %{public}@", 
+                   log: Self.networkLogger, 
+                   type: .info,
+                   request.httpMethod ?? "unknown",
+                   safeURLString)
+        }
         
         #if DEBUG
         print("🔵 NetworkManager.performRequest: Начало")
-        print("   - URL: \(request.url?.absoluteString ?? "unknown")")
+        print("   - URL: \(safeURLString)")
         print("   - Method: \(request.httpMethod ?? "unknown")")
         print("   - Rate limit: OK (\(rateLimiter.getRequestCount(for: endpoint))/100)")
+        print("   - Is Retry: \(isRetry)")
         #endif
         
         let requestStartTime = Date()
 
-        // 🔍 NETWORK: Логируем исходящий запрос
-        logger.logRequest(request)
+        // 🔍 NETWORK: Логируем исходящий запрос (ТОЛЬКО если не retry, чтобы избежать рекурсии)
+        if !isRetry {
+            logger.logRequest(request)
+        }
 
-        print("🔥🔥🔥 ABOUT TO CALL session.dataTask for \(request.url?.absoluteString ?? "unknown")")
+        #if DEBUG
+        print("🔥🔥🔥 ABOUT TO CALL session.dataTask for \(safeURLString)")
+        #endif
 
         session.dataTask(with: request) { [weak self] data, response, error in
-            print("🔥🔥🔥 SESSION DATATASK CALLBACK STARTED for \(request.url?.absoluteString ?? "unknown")")
-            // 🔍 NETWORK: Логируем входящий ответ
-            logger.logResponse(response, data: data)
+            #if DEBUG
+            print("🔥🔥🔥 SESSION DATATASK CALLBACK STARTED for \(safeURLString)")
+            #endif
+            
+            // 🔍 NETWORK: Логируем входящий ответ (ТОЛЬКО если не retry, чтобы избежать рекурсии)
+            if !isRetry {
+                logger.logResponse(response, data: data)
+            }
 
             DispatchQueue.main.async {
                 let duration = Date().timeIntervalSince(requestStartTime)
@@ -712,11 +732,16 @@ class NetworkManager: NSObject, ObservableObject {
                 // Проверка ошибки
                 if let error = error {
                     // ✅ Production логирование ошибок (критично для диагностики!)
-                    os_log("❌ Network Error: %{public}@ - %{public}@", 
-                           log: Self.networkLogger, 
-                           type: .error,
-                           request.url?.absoluteString ?? "unknown",
-                           error.localizedDescription)
+                    // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Ограничиваем длину URL и отключаем логирование для retry
+                    if !isRetry {
+                        let safeURLString = (request.url?.absoluteString ?? "unknown")
+                        let truncatedURL = safeURLString.count > 200 ? String(safeURLString.prefix(200)) + "..." : safeURLString
+                        os_log("❌ Network Error: %{public}@ - %{public}@", 
+                               log: Self.networkLogger, 
+                               type: .error,
+                               truncatedURL,
+                               error.localizedDescription)
+                    }
                     
                     if let nsError = error as NSError? {
                         os_log("   Domain: %{public}@, Code: %d", 
@@ -756,11 +781,15 @@ class NetworkManager: NSObject, ObservableObject {
                 
                 // Проверка HTTP статуса
                 guard let httpResponse = response as? HTTPURLResponse else {
-                    // ✅ Production логирование неверного ответа
-                    os_log("❌ Invalid Response: %{public}@", 
-                           log: Self.networkLogger, 
-                           type: .error,
-                           request.url?.absoluteString ?? "unknown")
+                    // ✅ Production логирование неверного ответа (только если не retry)
+                    if !isRetry {
+                        let safeURLString = (request.url?.absoluteString ?? "unknown")
+                        let truncatedURL = safeURLString.count > 200 ? String(safeURLString.prefix(200)) + "..." : safeURLString
+                        os_log("❌ Invalid Response: %{public}@", 
+                               log: Self.networkLogger, 
+                               type: .error,
+                               truncatedURL)
+                    }
                     
                     #if DEBUG
                     print("❌ NetworkManager.performRequest: Неверный ответ (не HTTPURLResponse)")
@@ -770,13 +799,15 @@ class NetworkManager: NSObject, ObservableObject {
                     return
                 }
                 
-                // ✅ Production логирование HTTP статуса (только для ошибок)
-                if httpResponse.statusCode >= 400 {
+                // ✅ Production логирование HTTP статуса (только для ошибок и если не retry)
+                if httpResponse.statusCode >= 400 && !isRetry {
+                    let safeURLString = (request.url?.absoluteString ?? "unknown")
+                    let truncatedURL = safeURLString.count > 200 ? String(safeURLString.prefix(200)) + "..." : safeURLString
                     os_log("⚠️ HTTP Error: %d - %{public}@", 
                            log: Self.networkLogger, 
                            type: .error,
                            httpResponse.statusCode,
-                           request.url?.absoluteString ?? "unknown")
+                           truncatedURL)
                 }
                 
                 #if DEBUG
@@ -820,11 +851,12 @@ class NetworkManager: NSObject, ObservableObject {
                     let currentRetryCount = self?.retryCounts[endpointKey] ?? 0
                     
                     if currentRetryCount >= self?.maxRetriesPerEndpoint ?? 1 {
-                        // ✅ Production логирование превышения лимита retry
+                        // ✅ Production логирование превышения лимита retry (ограничиваем длину URL)
+                        let safeEndpointKey = endpointKey.count > 200 ? String(endpointKey.prefix(200)) + "..." : endpointKey
                         os_log("❌ Max retries exceeded for 401: %{public}@ (attempts: %d)", 
                                log: Self.networkLogger, 
                                type: .error,
-                               endpointKey,
+                               safeEndpointKey,
                                currentRetryCount)
                         
                         #if DEBUG
@@ -842,11 +874,12 @@ class NetworkManager: NSObject, ObservableObject {
                         return
                     }
                     
-                    // ✅ Production логирование 401 ошибки
+                    // ✅ Production логирование 401 ошибки (ограничиваем длину URL)
+                    let safeEndpointKey = endpointKey.count > 200 ? String(endpointKey.prefix(200)) + "..." : endpointKey
                     os_log("⚠️ 401 Unauthorized: %{public}@ - Attempting token refresh (attempt %d/%d)", 
                            log: Self.networkLogger, 
                            type: .error,
-                           endpointKey,
+                           safeEndpointKey,
                            currentRetryCount + 1,
                            self?.maxRetriesPerEndpoint ?? 1)
                     
@@ -856,11 +889,12 @@ class NetworkManager: NSObject, ObservableObject {
 
                     // Проверяем, есть ли токен в Keychain перед обновлением
                     guard JWTTokenManager.shared.hasValidToken() else {
-                        // ✅ Production логирование отсутствия токена
+                        // ✅ Production логирование отсутствия токена (ограничиваем длину URL)
+                        let safeEndpointKey = endpointKey.count > 200 ? String(endpointKey.prefix(200)) + "..." : endpointKey
                         os_log("❌ No valid token: %{public}@", 
                                log: Self.networkLogger, 
                                type: .error,
-                               endpointKey)
+                               safeEndpointKey)
                         
                         #if DEBUG
                         print("❌ NetworkManager: Валидный токен отсутствует, не повторяем запрос")
@@ -881,11 +915,12 @@ class NetworkManager: NSObject, ObservableObject {
                         let tokenWasRefreshed = await JWTTokenManager.shared.forceRefreshToken()
                         
                         if tokenWasRefreshed {
-                            // ✅ Production логирование успешного обновления токена
+                            // ✅ Production логирование успешного обновления токена (ограничиваем длину URL)
+                            let safeEndpointKey = endpointKey.count > 200 ? String(endpointKey.prefix(200)) + "..." : endpointKey
                             os_log("✅ Token refreshed: %{public}@ - Retrying request", 
                                    log: Self.networkLogger, 
                                    type: .info,
-                                   endpointKey)
+                                   safeEndpointKey)
                             
                             #if DEBUG
                             print("✅ NetworkManager: Токен обновлён, повторяем запрос...")
@@ -919,13 +954,15 @@ class NetworkManager: NSObject, ObservableObject {
                             }
                             
                             // Повторяем запрос с новым токеном (retry count уже увеличен)
-                            strongSelf.performRequest(request: retryRequest, requiresAuth: true, completion: completion)
+                            // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Передаем isRetry=true чтобы отключить логирование
+                            strongSelf.performRequest(request: retryRequest, requiresAuth: true, isRetry: true, completion: completion)
                         } else {
-                            // ✅ Production логирование ошибки обновления токена
+                            // ✅ Production логирование ошибки обновления токена (ограничиваем длину URL)
+                            let safeEndpointKey = endpointKey.count > 200 ? String(endpointKey.prefix(200)) + "..." : endpointKey
                             os_log("❌ Token refresh failed: %{public}@", 
                                    log: Self.networkLogger, 
                                    type: .error,
-                                   endpointKey)
+                                   safeEndpointKey)
                             
                             #if DEBUG
                             print("❌ NetworkManager: Не удалось обновить токен")

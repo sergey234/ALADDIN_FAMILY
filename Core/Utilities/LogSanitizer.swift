@@ -19,32 +19,60 @@ class LogSanitizer {
 
     /// Санитизация строки от чувствительных данных
     static func sanitizeString(_ input: String) -> String {
-        var result = input
+        // 🔒 ЗАЩИТА: Ограничить длину входной строки
+        let safeInput = input.count > 10000 ? String(input.prefix(10000)) + "..." : input
 
-        // 1. JWT токены (eyJ... алгоритм)
-        result = sanitizeJWT(result)
+        var result = safeInput
 
-        // 2. Email адреса
-        result = sanitizeEmail(result)
+        // 🔒 ЗАЩИТА: Try-catch вокруг каждого метода санитизации
+        do {
+            // 1. JWT токены (eyJ... алгоритм)
+            result = try sanitizeJWT(result)
+        } catch {
+            print("⚠️ LogSanitizer.JWT error: \(error.localizedDescription)")
+        }
 
-        // 3. Номера кредитных карт
-        result = sanitizeCreditCard(result)
+        do {
+            // 2. Email адреса
+            result = try sanitizeEmail(result)
+        } catch {
+            print("⚠️ LogSanitizer.Email error: \(error.localizedDescription)")
+        }
 
-        // 4. Номера телефонов
-        result = sanitizePhone(result)
+        do {
+            // 3. Номера кредитных карт
+            result = try sanitizeCreditCard(result)
+        } catch {
+            print("⚠️ LogSanitizer.CreditCard error: \(error.localizedDescription)")
+        }
 
-        // 5. Пароли (password, pwd, pin)
-        result = sanitizePasswords(result)
+        do {
+            // 4. Номера телефонов
+            result = try sanitizePhone(result)
+        } catch {
+            print("⚠️ LogSanitizer.Phone error: \(error.localizedDescription)")
+        }
 
-        // 6. API ключи
-        result = sanitizeAPIKeys(result)
+        do {
+            // 5. Пароли (password, pwd, pin)
+            result = try sanitizePasswords(result)
+        } catch {
+            print("⚠️ LogSanitizer.Password error: \(error.localizedDescription)")
+        }
+
+        do {
+            // 6. API ключи
+            result = try sanitizeAPIKeys(result)
+        } catch {
+            print("⚠️ LogSanitizer.APIKeys error: \(error.localizedDescription)")
+        }
 
         return result
     }
 
     // MARK: - JWT Tokens
 
-    private static func sanitizeJWT(_ input: String) -> String {
+    private static func sanitizeJWT(_ input: String) throws -> String {
         // JWT паттерн: header.payload.signature
         let jwtPattern = #"eyJ[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*"#
         return input.replacingOccurrences(of: jwtPattern, with: "<jwt-token>", options: .regularExpression)
@@ -52,14 +80,14 @@ class LogSanitizer {
 
     // MARK: - Email
 
-    private static func sanitizeEmail(_ input: String) -> String {
+    private static func sanitizeEmail(_ input: String) throws -> String {
         let emailPattern = #"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"#
         return input.replacingOccurrences(of: emailPattern, with: "***@***.***", options: .regularExpression)
     }
 
     // MARK: - Credit Cards
 
-    private static func sanitizeCreditCard(_ input: String) -> String {
+    private static func sanitizeCreditCard(_ input: String) throws -> String {
         // Visa, Mastercard, Amex паттерны
         let patterns = [
             #"4[0-9]{12}(?:[0-9]{3})?"#,  // Visa
@@ -97,7 +125,7 @@ class LogSanitizer {
 
     // MARK: - Phone Numbers
 
-    private static func sanitizePhone(_ input: String) -> String {
+    private static func sanitizePhone(_ input: String) throws -> String {
         // Российские номера: +7, 8, и международные
         let phonePatterns = [
             #"\+7[0-9]{10}"#,           // +7XXXXXXXXXX
@@ -115,7 +143,7 @@ class LogSanitizer {
 
     // MARK: - Passwords
 
-    private static func sanitizePasswords(_ input: String) -> String {
+    private static func sanitizePasswords(_ input: String) throws -> String {
         var result = input
 
         // Пароли в JSON и формах
@@ -138,7 +166,7 @@ class LogSanitizer {
 
     // MARK: - API Keys
 
-    private static func sanitizeAPIKeys(_ input: String) -> String {
+    private static func sanitizeAPIKeys(_ input: String) throws -> String {
         var result = input
 
         // API ключи в заголовках и параметрах

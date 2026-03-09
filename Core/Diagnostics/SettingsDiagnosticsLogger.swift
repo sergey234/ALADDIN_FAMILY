@@ -29,7 +29,10 @@ class SettingsDiagnosticsLogger {
         label: "com.aladdin.settings.logger",
         qos: .utility
     )
-    
+
+    /// 🛡️ Флаг защиты от рекурсии - предотвращает бесконечный цикл
+    private var isLoggingInProgress = false
+
     // MARK: - Models
     
     struct LogEntry: Codable {
@@ -124,7 +127,12 @@ class SettingsDiagnosticsLogger {
         includeStackTrace: Bool = false
     ) {
         guard Self.ENABLE_LOGS else { return }
-        
+
+        // 🛡️ ЗАЩИТА ОТ РЕКУРСИИ - если уже логируем, выходим
+        guard !isLoggingInProgress else { return }
+        isLoggingInProgress = true
+        defer { isLoggingInProgress = false }
+
         let thread = Thread.isMainThread ? "MAIN" : "BACKGROUND"
         let stackTrace: [String]? = includeStackTrace ? Array(Thread.callStackSymbols.prefix(5)) : nil
         
@@ -137,19 +145,28 @@ class SettingsDiagnosticsLogger {
             thread: thread,
             stackTrace: stackTrace
         )
-        
+
+        // 🔒 ОГРАНИЧИТЬ ДЛИНУ СООБЩЕНИЯ ДЛЯ БЕЗОПАСНОСТИ
+        let safeMessage = entry.formattedMessage.count > 500 ?
+            String(entry.formattedMessage.prefix(500)) + "..." : entry.formattedMessage
+
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала print() для немедленного отображения в Xcode
         // Это гарантирует, что логи будут видны даже если os_log не работает
         // Используем прямой print() - он работает на любом потоке
-        print("🔍 SETTINGS_DIAG: \(entry.formattedMessage)")
-        
-        // 1. os_log (системное логирование) - работает на любом потоке
-        os_log(
-            "%{public}@",
-            log: osLog,
-            type: level.osLogType,
-            entry.formattedMessage
-        )
+        print("🔍 SETTINGS_DIAG: \(safeMessage)")
+
+        // 1. os_log (системное логирование) - с try-catch для безопасности
+        do {
+            os_log(
+                "%{public}@",
+                log: osLog,
+                type: level.osLogType,
+                safeMessage
+            )
+        } catch {
+            // Fallback если os_log сломался - просто print уже сделали выше
+            print("⚠️ OS_LOG_ERROR: \(error.localizedDescription)")
+        }
         
         // 2. Массив (для экспорта) - асинхронно
         logQueue.async { [weak self] in
