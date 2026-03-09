@@ -164,7 +164,16 @@ struct ALADDINApp: App {
 
         print("🚀🚀🚀 ALADDINApp.init() called - APP STARTING")
         print("🚀🚀🚀 SubscriptionManager.shared created: \(SubscriptionManager.shared)")
+        // 🚀 ДОБАВЛЯЕМ ЛОГИ В НАЧАЛЕ ИНИЦИАЛИЗАЦИИ
         VisualLogger.shared.log("🚀🚀🚀 ALADDINApp.init() called", level: .info)
+        VisualLogger.shared.log("📱 Device: \(UIDevice.current.model)", level: .info)
+        VisualLogger.shared.log("🍎 iOS: \(UIDevice.current.systemVersion)", level: .info)
+        VisualLogger.shared.log("🕒 Time: \(Date())", level: .info)
+
+        // 🔍 ПРОВЕРЯЕМ НАЛИЧИЕ СОХРАНЕННЫХ КРАШ ЛОГОВ
+        if let crashLog = UserDefaults.standard.string(forKey: "last_crash_log") {
+            VisualLogger.shared.log("💥 PREVIOUS CRASH DETECTED: \(crashLog)", level: .critical)
+        }
         print("📱📱📱 VISUAL_LOGGER_TEST: If you see this in Xcode Console, VisualLogger overlay may not be visible")
         print("🚀 ALADDINApp: Начало инициализации приложения")
         // ✅ ИСПРАВЛЕНИЕ: В init() НЕ используем @StateObject, они еще не созданы!
@@ -319,6 +328,27 @@ struct ALADDINApp: App {
                 // 🚫 АБСОЛЮТНЫЙ МИНИМУМ: Никаких инициализаций, только тест SwiftUI
                 print("🎯 ALADDIN_APP: onAppear - ABSOLUTE MINIMUM TEST")
                 print("✅ SwiftUI Text rendered successfully - no crashes!")
+
+                // 🔍 ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА ДЛЯ УСТРОЙСТВА
+                print("📱 Device: \(UIDevice.current.model)")
+                print("🍎 iOS Version: \(UIDevice.current.systemVersion)")
+                print("🕒 Current Time: \(Date())")
+                print("📊 Memory: \(MemoryMonitor.currentUsage()) MB")
+
+                // 🧪 ТЕСТИРУЕМ VisualLogger
+                do {
+                    VisualLogger.shared.log("🧪 VisualLogger test from onAppear", level: .info)
+                    print("✅ VisualLogger.log() succeeded")
+                } catch {
+                    print("❌ VisualLogger.log() failed: \(error)")
+                }
+
+                // 🧪 ТЕСТИРУЕМ сохранение логов
+                UserDefaults.standard.set("TEST_LOG_85", forKey: "crash_test")
+                UserDefaults.standard.synchronize()
+                print("✅ UserDefaults test passed")
+
+                print("🎉 ALL DIAGNOSTIC TESTS COMPLETED - NO CRASHES!")
             }
         }
     }

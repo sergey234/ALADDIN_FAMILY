@@ -11,6 +11,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         print("🚀 ALADDIN AppDelegate: Starting performance optimizations...")
 
+        // 🛑 ДОБАВИТЬ CRASH HANDLER ДЛЯ ЛОВЛИ КРАШЕЙ
+        setupCrashHandler()
+
         // 🚫 ВРЕМЕННО ОТКЛЮЧЕНО: DNS prefetching вызывает краш
         // performDNSPrefetching()
 
@@ -21,6 +24,37 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
         print("✅ AppDelegate optimizations completed")
         return true
+    }
+
+    private func setupCrashHandler() {
+        print("🛑 Setting up crash handler...")
+
+        // Сохраняем логи при краше
+        let exceptionHandler = NSGetUncaughtExceptionHandler()
+        NSSetUncaughtExceptionHandler { exception in
+            let crashLog = """
+            🚨 CRASH DETECTED!
+            Exception: \(exception.name.rawValue)
+            Reason: \(exception.reason ?? "Unknown")
+            Time: \(Date())
+            Device: \(UIDevice.current.model)
+            iOS: \(UIDevice.current.systemVersion)
+            """
+
+            // Сохраняем в UserDefaults
+            UserDefaults.standard.set(crashLog, forKey: "last_crash_log")
+            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "crash_timestamp")
+            UserDefaults.standard.synchronize()
+
+            print("💥 CRASH LOG SAVED: \(crashLog)")
+
+            // Вызываем оригинальный handler
+            if let originalHandler = exceptionHandler {
+                originalHandler(exception)
+            }
+        }
+
+        print("✅ Crash handler installed")
     }
 
     /**

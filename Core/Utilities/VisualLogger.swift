@@ -28,15 +28,87 @@ class VisualLogger: ObservableObject {
     private let maxLogs = 50
     private var logQueue = DispatchQueue(label: "com.aladdin.visualLogger", qos: .utility)
     
-    private init() {}
+    private init() {
+        // 🔄 ВОССТАНАВЛИВАЕМ ЛОГИ ИЗ UserDefaults ПРИ ЗАПУСКЕ
+        loadLogsFromUserDefaults()
+
+        // Добавляем лог о запуске
+        log("🚀 VisualLogger initialized with \(logs.count) restored logs", level: .info)
+    }
+
+    // 💾 СОХРАНЕНИЕ ЛОГА В UserDefaults
+    private func saveLogToUserDefaults(_ entry: LogEntry) {
+        let key = "visual_logger_logs"
+        let encoder = JSONEncoder()
+
+        do {
+            // Добавляем новый лог к существующим
+            var savedLogs = getSavedLogs()
+            savedLogs.append(entry)
+
+            // Ограничиваем количество сохраненных логов
+            if savedLogs.count > maxLogs {
+                savedLogs.removeFirst(savedLogs.count - maxLogs)
+            }
+
+            let data = try encoder.encode(savedLogs)
+            UserDefaults.standard.set(data, forKey: key)
+            UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "visual_logger_last_save")
+        } catch {
+            print("❌ Failed to save log to UserDefaults: \(error)")
+        }
+    }
+
+    // 🔄 ЗАГРУЗКА ЛОГОВ ИЗ UserDefaults
+    private func loadLogsFromUserDefaults() {
+        let savedLogs = getSavedLogs()
+
+        // Добавляем сохраненные логи в текущий массив
+        DispatchQueue.main.async {
+            self.logs.append(contentsOf: savedLogs)
+            if self.logs.count > self.maxLogs {
+                self.logs = Array(self.logs.suffix(self.maxLogs))
+            }
+        }
+    }
+
+    // 📖 ПОЛУЧЕНИЕ СОХРАНЕННЫХ ЛОГОВ
+    private func getSavedLogs() -> [LogEntry] {
+        let key = "visual_logger_logs"
+        guard let data = UserDefaults.standard.data(forKey: key) else { return [] }
+
+        let decoder = JSONDecoder()
+        do {
+            return try decoder.decode([LogEntry].self, from: data)
+        } catch {
+            print("❌ Failed to load logs from UserDefaults: \(error)")
+            return []
+        }
+    }
+
+    // 🧹 ОЧИСТКА СОХРАНЕННЫХ ЛОГОВ
+    func clearSavedLogs() {
+        UserDefaults.standard.removeObject(forKey: "visual_logger_logs")
+        UserDefaults.standard.removeObject(forKey: "visual_logger_last_save")
+        UserDefaults.standard.synchronize()
+    }
     
-    struct LogEntry: Identifiable {
-        let id = UUID()
+    struct LogEntry: Identifiable, Codable {
+        let id: UUID
         let timestamp: Date
         let message: String
         let level: LogLevel
         let file: String
         let line: Int
+
+        init(timestamp: Date, message: String, level: LogLevel, file: String, line: Int) {
+            self.id = UUID()
+            self.timestamp = timestamp
+            self.message = message
+            self.level = level
+            self.file = file
+            self.line = line
+        }
         
         var formattedTime: String {
             let formatter = DateFormatter()
@@ -45,7 +117,7 @@ class VisualLogger: ObservableObject {
         }
     }
     
-    enum LogLevel: String {
+    enum LogLevel: String, Codable {
         case debug = "🔍"
         case info = "ℹ️"
         case success = "✅"
@@ -81,7 +153,10 @@ class VisualLogger: ObservableObject {
                 self.logs.removeFirst()
             }
         }
-        
+
+        // 💾 СОХРАНЯЕМ ЛОГИ В UserDefaults ДЛЯ ВОССТАНОВЛЕНИЯ ПОСЛЕ КРАША
+        saveLogToUserDefaults(entry)
+
         // Также пишем в консоль для Xcode
         print("[\(entry.formattedTime)] [\(level.rawValue)] [\(fileName):\(line)] \(message)")
     }
