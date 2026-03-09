@@ -112,6 +112,9 @@ class MasterLogger {
 
     // MARK: - Public Methods
 
+    /// 🛡️ Флаг защиты от рекурсии - предотвращает бесконечный цикл
+    private var isLoggingInProgress = false
+    
     /// Основной метод логирования
     func log(
         _ level: LogLevel,
@@ -121,6 +124,11 @@ class MasterLogger {
         file: String = #file,
         line: Int = #line
     ) {
+        // 🛡️ ЗАЩИТА ОТ РЕКУРСИИ - если уже логируем, выходим
+        guard !isLoggingInProgress else { return }
+        isLoggingInProgress = true
+        defer { isLoggingInProgress = false }
+        
         // Проверка уровня логирования
         guard level.priority >= maxLogLevel.priority else { return }
 

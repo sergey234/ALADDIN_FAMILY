@@ -117,6 +117,21 @@ class SettingsDiagnosticsLogger {
         log(level: .info, section: section, function: function, message: "API: \(message)")
     }
     
+    // MARK: - String Sanitization
+    
+    /// Удаляет эмодзи из строки для безопасного использования в os_log
+    /// Эмодзи могут вызывать рекурсию в os_log при обработке UTF-16
+    private func removeEmoji(_ string: String) -> String {
+        return string.unicodeScalars
+            .filter { scalar in
+                // Удаляем все эмодзи и связанные символы
+                !scalar.properties.isEmoji &&
+                !scalar.properties.isEmojiPresentation &&
+                scalar.value != 0xFE0F // Variation Selector-16 (emoji modifier)
+            }
+            .reduce("") { $0 + String($1) }
+    }
+    
     // MARK: - Private Methods
     
     private func log(
@@ -155,18 +170,22 @@ class SettingsDiagnosticsLogger {
         // Используем прямой print() - он работает на любом потоке
         print("🔍 SETTINGS_DIAG: \(safeMessage)")
 
-        // 1. os_log (системное логирование) - с try-catch для безопасности
-        do {
+        // 1. os_log (системное логирование) - ТОЛЬКО в DEBUG
+        // ✅ FIXED BUILD 86: Отключен в RELEASE для предотвращения рекурсии при обработке эмодзи
+        #if DEBUG
+            // В DEBUG используем os_log для системного логирования
+            // Убираем эмодзи перед os_log для безопасности
+            let messageForOSLog = removeEmoji(safeMessage)
             os_log(
                 "%{public}@",
                 log: osLog,
                 type: level.osLogType,
-                safeMessage
+                messageForOSLog
             )
-        } catch {
-            // Fallback если os_log сломался - просто print уже сделали выше
-            print("⚠️ OS_LOG_ERROR: \(error.localizedDescription)")
-        }
+        #else
+            // В RELEASE используем только print() - os_log вызывает рекурсию при обработке эмодзи
+            // print() уже вызван выше (строка 156), os_log отключен для предотвращения рекурсии в TestFlight/Production
+        #endif
         
         // 2. Массив (для экспорта) - асинхронно
         logQueue.async { [weak self] in

@@ -632,9 +632,8 @@ final class SubscriptionManager: ObservableObject {
     }
 
     /// 🔑 Register device anonymously with trial
-    func registerDeviceAnonymously() async throws {
-        // SubscriptionStatus will be created inside Task with real data
-
+    /// Returns: JWTToken - созданный и сохраненный токен
+    func registerDeviceAnonymously() async throws -> JWTToken {
         logger.business("📱 НАЧАЛО РЕГИСТРАЦИИ УСТРОЙСТВА АНОНИМНО")
 
         let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
@@ -652,7 +651,8 @@ final class SubscriptionManager: ObservableObject {
         logger.business("🔗 URL: https://aladdin-ai.ru/api/auth/register-device")
         logger.business("📤 Запрос: \(String(describing: request))")
 
-        let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JWTToken, Error>) in
+        // ✅ FIXED BUILD 77: Убрали Task {} из continuation - возвращаем ответ сразу
+        let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JWTDeviceRegisterResponse, Error>) in
             APIService.shared.registerDeviceAnonymously(request: request) { [self] result in
                 switch result {
                 case .success(let jwtResponse):
@@ -677,47 +677,8 @@ final class SubscriptionManager: ObservableObject {
                         return
                     }
 
-                    // ✅ FIXED: Create JWTToken from JWTDeviceRegisterResponse with proper conversions
-                    let jwtToken = JWTToken(
-                        token: jwtResponse.token,
-                        deviceId: jwtResponse.deviceId,
-                        subscriptionLevel: SubscriptionLevel(rawValue: jwtResponse.subscription.level) ?? .free, // ✅ Convert String to enum
-                        trialInfo: jwtResponse.subscription.trialInfo,
-                        expiresAt: jwtResponse.expiresAtDate ?? Date().addingTimeInterval(86400), // Default to 24h if parsing fails
-                        issuedAt: jwtResponse.registeredAtDate ?? Date(),
-                        issuer: "ALADDIN",
-                        limits: SubscriptionLimits.freeLimits,      // ✅ Default limits for new user
-                        components: []                               // ✅ Default components for new user
-                    )
-
-                    // ✅ Save token and update subscription status BEFORE returning
-                    self.logger.business("💾 СОХРАНЕНИЕ ТОКЕНА В ЗАЩИЩЕННОЕ ХРАНИЛИЩЕ")
-
-                    // ✅ CRITICAL: Use Task to save token before resuming continuation
-                    Task {
-                        // ✅ SOLUTION: Direct creation bypassing caching issue
-                        await self.storeToken(jwtToken)
-
-                        // ✅ SOLUTION: Convert API model to internal SubscriptionStatus
-                        let newSubscriptionStatus = jwtResponse.subscription.toSubscriptionStatus()
-
-                        await self.updateSubscriptionStatus(newSubscriptionStatus)
-
-                        // Now resume continuation after token is saved
-                        self.logger.business("✅ Токен успешно сохранен в Keychain:")
-                        self.logger.business("   - DeviceID: \(jwtToken.deviceId)")
-                        self.logger.business("   - Уровень подписки: \(jwtToken.subscriptionLevel)")
-                        self.logger.business("   - Trial: \(jwtToken.trialInfo?.daysRemaining ?? 0) дней осталось")
-                        self.logger.business("   - Выдан: \(jwtToken.issuedAt)")
-                        self.logger.business("   - Истекает: \(jwtToken.expiresAt)")
-                        self.logger.business("   - Время жизни: \(Int(jwtToken.expiresAt.timeIntervalSince(jwtToken.issuedAt) / 3600)) часов")
-
-                        self.logger.business("🎉 РЕГИСТРАЦИЯ УСТРОЙСТВА ЗАВЕРШЕНА ПОЛНОСТЬЮ")
-                        self.logger.business("🚀 Устройство \(jwtToken.deviceId) готово к работе с реальным JWT")
-                        self.logger.business("🔐 Все защищенные API теперь доступны")
-
-                        continuation.resume(returning: jwtToken)
-                    }
+                    // ✅ FIXED BUILD 77: Сразу возвращаем ответ без Task {}
+                    continuation.resume(returning: jwtResponse)
                 case .failure(let error):
                     self.logger.error("❌ Device registration failed", error: error)
 
@@ -738,6 +699,43 @@ final class SubscriptionManager: ObservableObject {
                 }
             }
         }
+
+        // ✅ FIXED BUILD 77: Сохранение токена ПОСЛЕ получения ответа (последовательно, не внутри Task {})
+        logger.business("💾 СОХРАНЕНИЕ ТОКЕНА В ЗАЩИЩЕННОЕ ХРАНИЛИЩЕ")
+
+        // ✅ FIXED: Create JWTToken from JWTDeviceRegisterResponse with proper conversions
+        let jwtToken = JWTToken(
+            token: response.token,
+            deviceId: response.deviceId,
+            subscriptionLevel: SubscriptionLevel(rawValue: response.subscription.level) ?? .free, // ✅ Convert String to enum
+            trialInfo: response.subscription.trialInfo,
+            expiresAt: response.expiresAtDate ?? Date().addingTimeInterval(86400), // Default to 24h if parsing fails
+            issuedAt: response.registeredAtDate ?? Date(),
+            issuer: "ALADDIN",
+            limits: SubscriptionLimits.freeLimits,      // ✅ Default limits for new user
+            components: []                               // ✅ Default components for new user
+        )
+
+        await storeToken(jwtToken)
+
+        // ✅ SOLUTION: Convert API model to internal SubscriptionStatus
+        let newSubscriptionStatus = response.subscription.toSubscriptionStatus()
+        await updateSubscriptionStatus(newSubscriptionStatus)
+
+        // Логирование после сохранения токена
+        logger.business("✅ Токен успешно сохранен в Keychain:")
+        logger.business("   - DeviceID: \(jwtToken.deviceId)")
+        logger.business("   - Уровень подписки: \(jwtToken.subscriptionLevel)")
+        logger.business("   - Trial: \(jwtToken.trialInfo?.daysRemaining ?? 0) дней осталось")
+        logger.business("   - Выдан: \(jwtToken.issuedAt)")
+        logger.business("   - Истекает: \(jwtToken.expiresAt)")
+        logger.business("   - Время жизни: \(Int(jwtToken.expiresAt.timeIntervalSince(jwtToken.issuedAt) / 3600)) часов")
+
+        logger.business("🎉 РЕГИСТРАЦИЯ УСТРОЙСТВА ЗАВЕРШЕНА ПОЛНОСТЬЮ")
+        logger.business("🚀 Устройство \(jwtToken.deviceId) готово к работе с реальным JWT")
+        logger.business("🔐 Все защищенные API теперь доступны")
+
+        return jwtToken
     }
 
     // MARK: - Private Methods

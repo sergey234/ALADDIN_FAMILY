@@ -137,7 +137,15 @@ class VisualLogger: ObservableObject {
         }
     }
     
+    /// 🛡️ Флаг защиты от рекурсии - предотвращает бесконечный цикл
+    private var isLoggingInProgress = false
+    
     func log(_ message: String, level: LogLevel = .info, file: String = #file, line: Int = #line) {
+        // 🛡️ ЗАЩИТА ОТ РЕКУРСИИ - если уже логируем, выходим
+        guard !isLoggingInProgress else { return }
+        isLoggingInProgress = true
+        defer { isLoggingInProgress = false }
+        
         let fileName = (file as NSString).lastPathComponent
         let entry = LogEntry(
             timestamp: Date(),

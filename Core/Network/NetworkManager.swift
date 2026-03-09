@@ -124,7 +124,7 @@ class NetworkManager: NSObject, ObservableObject {
         // В продакшене SSL Pinning ОБЯЗАТЕЛЬНО должен быть включен!
         assert(isSSLPinningEnabled, "🚨 КРИТИЧЕСКАЯ ОШИБКА: SSL Pinning должен быть включен в продакшене!")
         if !isSSLPinningEnabled {
-            os_log("🚨 КРИТИЧЕСКАЯ ОШИБКА: SSL Pinning отключен в продакшене!", log: Self.networkLogger, type: .error)
+            os_log("CRITICAL ERROR: SSL Pinning отключен в продакшене!", log: Self.networkLogger, type: .error)
         }
         #endif
         
@@ -134,7 +134,7 @@ class NetworkManager: NSObject, ObservableObject {
         print("🔐 SSL Pinning домены: \(pinnedDomains)")
         print("🔐 SSL Pinning сертификаты: \(pinnedCertificates.count) шт.")
         #else
-        os_log("🔐 SSL Pinning: %{public}@, доменов: %d, сертификатов: %d", 
+        os_log("SSL Pinning: %{public}@, доменов: %d, сертификатов: %d", 
                log: Self.networkLogger, 
                type: .info,
                isSSLPinningEnabled ? "ВКЛЮЧЕН" : "ВЫКЛЮЧЕН",
@@ -658,7 +658,7 @@ class NetworkManager: NSObject, ObservableObject {
 
             // Production логирование (только если не retry)
             if !isRetry {
-                os_log("🚫 Rate Limit: Request blocked for %{public}@, retry in %.1fs",
+                os_log("Rate Limit: Request blocked for %{public}@, retry in %.1fs",
                        log: Self.networkLogger,
                        type: .error,
                        endpoint,
@@ -736,7 +736,7 @@ class NetworkManager: NSObject, ObservableObject {
                     if !isRetry {
                         let safeURLString = (request.url?.absoluteString ?? "unknown")
                         let truncatedURL = safeURLString.count > 200 ? String(safeURLString.prefix(200)) + "..." : safeURLString
-                        os_log("❌ Network Error: %{public}@ - %{public}@", 
+                        os_log("Network Error: %{public}@ - %{public}@", 
                                log: Self.networkLogger, 
                                type: .error,
                                truncatedURL,
@@ -785,7 +785,7 @@ class NetworkManager: NSObject, ObservableObject {
                     if !isRetry {
                         let safeURLString = (request.url?.absoluteString ?? "unknown")
                         let truncatedURL = safeURLString.count > 200 ? String(safeURLString.prefix(200)) + "..." : safeURLString
-                        os_log("❌ Invalid Response: %{public}@", 
+                        os_log("Invalid Response: %{public}@", 
                                log: Self.networkLogger, 
                                type: .error,
                                truncatedURL)
@@ -800,15 +800,15 @@ class NetworkManager: NSObject, ObservableObject {
                 }
                 
                 // ✅ Production логирование HTTP статуса (только для ошибок и если не retry)
-                if httpResponse.statusCode >= 400 && !isRetry {
+                    if httpResponse.statusCode >= 400 && !isRetry {
                     let safeURLString = (request.url?.absoluteString ?? "unknown")
                     let truncatedURL = safeURLString.count > 200 ? String(safeURLString.prefix(200)) + "..." : safeURLString
-                    os_log("⚠️ HTTP Error: %d - %{public}@", 
+                    os_log("HTTP Error: %d - %{public}@", 
                            log: Self.networkLogger, 
                            type: .error,
                            httpResponse.statusCode,
                            truncatedURL)
-                }
+                    }
                 
                 #if DEBUG
                 print("   - HTTP Status: \(httpResponse.statusCode)")
@@ -832,7 +832,7 @@ class NetworkManager: NSObject, ObservableObject {
                     #endif
 
                     // Production логирование
-                    os_log("⚠️ 429 Too Many Requests: %{public}@ - Retry-After: %{public}@",
+                    os_log("429 Too Many Requests: %{public}@ - Retry-After: %{public}@",
                            log: Self.networkLogger,
                            type: .error,
                            request.url?.absoluteString ?? "unknown",
@@ -853,7 +853,7 @@ class NetworkManager: NSObject, ObservableObject {
                     if currentRetryCount >= self?.maxRetriesPerEndpoint ?? 1 {
                         // ✅ Production логирование превышения лимита retry (ограничиваем длину URL)
                         let safeEndpointKey = endpointKey.count > 200 ? String(endpointKey.prefix(200)) + "..." : endpointKey
-                        os_log("❌ Max retries exceeded for 401: %{public}@ (attempts: %d)", 
+                        os_log("Max retries exceeded for 401: %{public}@ (attempts: %d)", 
                                log: Self.networkLogger, 
                                type: .error,
                                safeEndpointKey,
@@ -876,7 +876,7 @@ class NetworkManager: NSObject, ObservableObject {
                     
                     // ✅ Production логирование 401 ошибки (ограничиваем длину URL)
                     let safeEndpointKey = endpointKey.count > 200 ? String(endpointKey.prefix(200)) + "..." : endpointKey
-                    os_log("⚠️ 401 Unauthorized: %{public}@ - Attempting token refresh (attempt %d/%d)", 
+                    os_log("401 Unauthorized: %{public}@ - Attempting token refresh (attempt %d/%d)", 
                            log: Self.networkLogger, 
                            type: .error,
                            safeEndpointKey,
@@ -891,7 +891,7 @@ class NetworkManager: NSObject, ObservableObject {
                     guard JWTTokenManager.shared.hasValidToken() else {
                         // ✅ Production логирование отсутствия токена (ограничиваем длину URL)
                         let safeEndpointKey = endpointKey.count > 200 ? String(endpointKey.prefix(200)) + "..." : endpointKey
-                        os_log("❌ No valid token: %{public}@", 
+                        os_log("No valid token: %{public}@", 
                                log: Self.networkLogger, 
                                type: .error,
                                safeEndpointKey)
@@ -917,7 +917,7 @@ class NetworkManager: NSObject, ObservableObject {
                         if tokenWasRefreshed {
                             // ✅ Production логирование успешного обновления токена (ограничиваем длину URL)
                             let safeEndpointKey = endpointKey.count > 200 ? String(endpointKey.prefix(200)) + "..." : endpointKey
-                            os_log("✅ Token refreshed: %{public}@ - Retrying request", 
+                            os_log("Token refreshed: %{public}@ - Retrying request", 
                                    log: Self.networkLogger, 
                                    type: .info,
                                    safeEndpointKey)
@@ -959,7 +959,7 @@ class NetworkManager: NSObject, ObservableObject {
                         } else {
                             // ✅ Production логирование ошибки обновления токена (ограничиваем длину URL)
                             let safeEndpointKey = endpointKey.count > 200 ? String(endpointKey.prefix(200)) + "..." : endpointKey
-                            os_log("❌ Token refresh failed: %{public}@", 
+                            os_log("Token refresh failed: %{public}@", 
                                    log: Self.networkLogger, 
                                    type: .error,
                                    safeEndpointKey)
@@ -997,7 +997,7 @@ class NetworkManager: NSObject, ObservableObject {
                     }
                     
                     // ✅ Production логирование HTTP ошибок
-                    os_log("❌ HTTP Error %d: %{public}@ - %{public}@", 
+                    os_log("HTTP Error %d: %{public}@ - %{public}@", 
                            log: Self.networkLogger, 
                            type: .error,
                            httpResponse.statusCode,
@@ -1051,7 +1051,7 @@ class NetworkManager: NSObject, ObservableObject {
                 // Проверка данных
                 guard let data = data else {
                     // ✅ Production логирование отсутствия данных
-                    os_log("❌ No data in response: %{public}@", 
+                    os_log("No data in response: %{public}@", 
                            log: Self.networkLogger, 
                            type: .error,
                            request.url?.absoluteString ?? "unknown")
@@ -1113,7 +1113,7 @@ class NetworkManager: NSObject, ObservableObject {
                         print("❌ NetworkManager.performRequest: Неожиданная ошибка валидации: \(error)")
                         #endif
 
-                        os_log("❌ Unexpected validation error: %{public}@ - %{public}@",
+                        os_log("Unexpected validation error: %{public}@ - %{public}@",
                                log: Self.networkLogger,
                                type: .error,
                                request.url?.absoluteString ?? "unknown",
@@ -1124,7 +1124,7 @@ class NetworkManager: NSObject, ObservableObject {
                     }
                 } catch {
                     // ✅ Production логирование ошибок декодирования
-                    os_log("❌ Decoding Error: %{public}@ - %{public}@", 
+                    os_log("Decoding Error: %{public}@ - %{public}@", 
                            log: Self.networkLogger, 
                            type: .error,
                            request.url?.absoluteString ?? "unknown",
@@ -1238,7 +1238,7 @@ extension NetworkManager: URLSessionDelegate {
             
             #if !DEBUG
             // ✅ ЗАДАЧА 61: Логируем успешную проверку SSL Pinning в продакшене
-            os_log("✅ SSL Pinning: Сертификат для %{public}@ успешно проверен", 
+            os_log("SSL Pinning: Сертификат для %{public}@ успешно проверен", 
                    log: Self.networkLogger, 
                    type: .info,
                    host)
@@ -1249,7 +1249,7 @@ extension NetworkManager: URLSessionDelegate {
             
             // ✅ ЗАДАЧА 61: Метрика для отслеживания SSL Pinning ошибок
             #if !DEBUG
-            os_log("🚨 SSL Pinning ERROR: Соединение заблокировано для %{public}@ - неверный сертификат", 
+            os_log("SSL Pinning ERROR: Соединение заблокировано для %{public}@ - неверный сертификат", 
                    log: Self.networkLogger, 
                    type: .error,
                    host)
