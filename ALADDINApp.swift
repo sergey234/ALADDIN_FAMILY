@@ -322,8 +322,10 @@ struct ALADDINApp: App {
                 print("🚀 ALADDINApp: Starting SubscriptionManager initialization Task")
                 Task {
                     print("🚀 ALADDINApp: Task started, calling initializeOnAppStart()")
-                    await subscriptionManager.initializeOnAppStart()
-                    print("🚀 ALADDINApp: Task completed, initializeOnAppStart() finished")
+                    // 🚫 ВРЕМЕННО ОТКЛЮЧЕНО: вызывает сетевые запросы и логирование
+                    // await subscriptionManager.initializeOnAppStart()
+                    print("🚫 SubscriptionManager initialization SKIPPED (temporary)")
+                    print("🚀 ALADDINApp: Task completed, initializeOnAppStart() skipped")
                 }
 
                 print("✅ ALADDINApp: Инициализация завершена")
