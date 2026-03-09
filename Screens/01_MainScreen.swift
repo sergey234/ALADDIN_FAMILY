@@ -948,26 +948,45 @@ struct MainScreen: View {
         }
     }
 
+    // ✅ ИСПРАВЛЕНИЕ BUILD 89: Статические форматтеры для предотвращения рекурсии
+    // Форматтеры создаются один раз, не каждый раз в computed property
+    
+    // Статический ISO8601DateFormatter для парсинга дат
+    private static let isoFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+    
+    // Статический ISO8601DateFormatter без fractional seconds (fallback)
+    private static let isoFormatterFallback: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter
+    }()
+    
+    // Статический DateFormatter для отображения дат
+    private static let displayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        // Используем статический locale вместо Locale.current (может читать из UserDefaults)
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
+    
     private var subscriptionExpirationText: String? {
         guard !subscriptionExpiresAtIso.isEmpty else { return nil }
         
-        let isoFormatter = ISO8601DateFormatter()
-        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        
-        var parsedDate = isoFormatter.date(from: subscriptionExpiresAtIso)
+        // ✅ Используем статический formatter вместо создания нового каждый раз
+        var parsedDate = Self.isoFormatter.date(from: subscriptionExpiresAtIso)
         if parsedDate == nil {
-            isoFormatter.formatOptions = [.withInternetDateTime]
-            parsedDate = isoFormatter.date(from: subscriptionExpiresAtIso)
+            parsedDate = Self.isoFormatterFallback.date(from: subscriptionExpiresAtIso)
         }
         guard let date = parsedDate else { return nil }
         
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateStyle = .medium
-        displayFormatter.timeStyle = .none
-        // ✅ ИСПРАВЛЕНИЕ BUILD 88: Locale.current вместо Locale.preferredLanguages
-        // Locale.preferredLanguages читает из UserDefaults, что вызывает рекурсию с @AppStorage
-        displayFormatter.locale = Locale.current
-        return displayFormatter.string(from: date)
+        // ✅ Используем статический displayFormatter
+        return Self.displayFormatter.string(from: date)
     }
     
     // MARK: - Navigation Button Content

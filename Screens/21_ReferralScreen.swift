@@ -892,14 +892,26 @@ struct ReferralScreen: View {
         }
     }
     
+    // ✅ ИСПРАВЛЕНИЕ BUILD 89: Статические форматтеры для предотвращения рекурсии
+    private static let isoFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+    
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        // Используем статический locale вместо Locale.current (может читать из UserDefaults)
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
+    
     private func formattedDate(from isoString: String) -> String {
-        let isoFormatter = ISO8601DateFormatter()
-        if let date = isoFormatter.date(from: isoString) {
-            let formatter = DateFormatter()
-            formatter.locale = Locale.current
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .none
-            return formatter.string(from: date)
+        if let date = Self.isoFormatter.date(from: isoString) {
+            // ✅ Используем статический formatter вместо создания нового каждый раз
+            return Self.dateFormatter.string(from: date)
         }
         return isoString
     }
