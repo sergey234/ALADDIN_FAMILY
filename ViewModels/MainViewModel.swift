@@ -3,6 +3,8 @@ import Combine
 
 // Master Logger for business logic logging
 private let logger = MasterLogger.shared
+// Visual Logger for on-screen display
+private let visualLogger = VisualLogger.shared
 
 // MARK: - Family Protection Status
 
@@ -93,33 +95,39 @@ class MainViewModel: ObservableObject {
         var debugLog: [String] = []
         debugLog.append("\(logPrefix) START - \(Date())")
         print("\(logPrefix) START - \(Date())")
+        visualLogger.log("\(logPrefix) START", level: .debug)
         logger.business("Initializing MainViewModel")
         
         // ✅ ШАГ 1: Проверка параметров
         debugLog.append("\(logPrefix) ШАГ 1: Проверка параметров...")
         print("\(logPrefix) ШАГ 1: Проверка параметров...")
+        visualLogger.log("\(logPrefix) ШАГ 1: Проверка параметров...", level: .debug)
         
         do {
             // Проверяем APIService
             let _ = apiService
             debugLog.append("✅ APIService доступен")
             print("✅ \(logPrefix) APIService доступен")
+            visualLogger.log("✅ APIService доступен", level: .success)
             
             // Проверяем KeychainManager
             let _ = keychainManager
             debugLog.append("✅ KeychainManager доступен")
             print("✅ \(logPrefix) KeychainManager доступен")
+            visualLogger.log("✅ KeychainManager доступен", level: .success)
             
         } catch {
             let errorMsg = "❌ Ошибка при проверке параметров: \(error)"
             debugLog.append(errorMsg)
             print("\(logPrefix) \(errorMsg)")
+            visualLogger.log(errorMsg, level: .error)
             logger.error(errorMsg)
         }
         
         // ✅ ШАГ 2: Инициализация свойств
         debugLog.append("\(logPrefix) ШАГ 2: Инициализация свойств...")
         print("\(logPrefix) ШАГ 2: Инициализация свойств...")
+        visualLogger.log("\(logPrefix) ШАГ 2: Инициализация свойств...", level: .debug)
         
         do {
             self.apiService = apiService
@@ -127,25 +135,30 @@ class MainViewModel: ObservableObject {
             
             debugLog.append("✅ Свойства инициализированы")
             print("✅ \(logPrefix) Свойства инициализированы")
+            visualLogger.log("✅ Свойства инициализированы", level: .success)
             
         } catch {
             let errorMsg = "❌ Ошибка при инициализации свойств: \(error)"
             debugLog.append(errorMsg)
             print("\(logPrefix) \(errorMsg)")
+            visualLogger.log(errorMsg, level: .error)
             logger.error(errorMsg)
         }
         
         // ✅ ШАГ 3: Проверка thread safety
         debugLog.append("\(logPrefix) ШАГ 3: Проверка thread safety...")
         print("\(logPrefix) ШАГ 3: Проверка thread safety...")
+        visualLogger.log("\(logPrefix) ШАГ 3: Проверка thread safety...", level: .debug)
         
         if Thread.isMainThread {
             debugLog.append("✅ Выполняется на main thread")
             print("✅ \(logPrefix) Выполняется на main thread")
+            visualLogger.log("✅ Выполняется на main thread", level: .success)
         } else {
             let warningMsg = "⚠️ Выполняется НЕ на main thread: \(Thread.current)"
             debugLog.append(warningMsg)
             print("\(logPrefix) \(warningMsg)")
+            visualLogger.log(warningMsg, level: .warning)
             logger.warn(warningMsg)
         }
         
@@ -153,8 +166,10 @@ class MainViewModel: ObservableObject {
         // loadDashboardData() // Закомментировано чтобы избежать бесконечных циклов
         
         let duration = Date().timeIntervalSince(startTime)
-        debugLog.append("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
-        print("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
+        let completeMsg = "✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s"
+        debugLog.append(completeMsg)
+        print(completeMsg)
+        visualLogger.log(completeMsg, level: .success)
         
         // Сохраняем логи
         saveInitDebugLog(debugLog)

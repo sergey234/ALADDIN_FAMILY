@@ -3,6 +3,8 @@ import UIKit
 
 // Master Logger for screen logging
 private let logger = MasterLogger.shared
+// Visual Logger for on-screen display
+private let visualLogger = VisualLogger.shared
 
 struct MainScreen: View {
     @State private var aiQuestion: String = ""
@@ -27,40 +29,47 @@ struct MainScreen: View {
         var debugLog: [String] = []
         debugLog.append("\(logPrefix) START - \(Date())")
         
-        // Логируем в консоль (работает в RELEASE)
+        // Логируем в консоль И в VisualLogger (работает в RELEASE)
         print("\(logPrefix) START - \(Date())")
+        visualLogger.log("\(logPrefix) START", level: .debug)
         logger.screenLoad("MainScreen.init")
         
         // ✅ ШАГ 1: Проверка Singleton перед созданием MainViewModel
         debugLog.append("\(logPrefix) ШАГ 1: Проверка Singleton...")
         print("\(logPrefix) ШАГ 1: Проверка Singleton...")
+        visualLogger.log("\(logPrefix) ШАГ 1: Проверка Singleton...", level: .debug)
         
         do {
             // Проверяем TariffManager
             let _ = TariffManager.shared
             debugLog.append("✅ TariffManager.shared доступен")
             print("✅ \(logPrefix) TariffManager.shared доступен")
+            visualLogger.log("✅ TariffManager.shared доступен", level: .success)
             
             // Проверяем AntivirusManager
             let _ = AntivirusManager.shared
             debugLog.append("✅ AntivirusManager.shared доступен")
             print("✅ \(logPrefix) AntivirusManager.shared доступен")
+            visualLogger.log("✅ AntivirusManager.shared доступен", level: .success)
             
             // Проверяем ProfileImageManager
             let _ = ProfileImageManager.shared
             debugLog.append("✅ ProfileImageManager.shared доступен")
             print("✅ \(logPrefix) ProfileImageManager.shared доступен")
+            visualLogger.log("✅ ProfileImageManager.shared доступен", level: .success)
             
         } catch {
             let errorMsg = "❌ Ошибка при проверке Singleton: \(error)"
             debugLog.append(errorMsg)
             print("\(logPrefix) \(errorMsg)")
+            visualLogger.log(errorMsg, level: .error)
             logger.error(errorMsg)
         }
         
         // ✅ ШАГ 2: Создание MainViewModel
         debugLog.append("\(logPrefix) ШАГ 2: Создание MainViewModel...")
         print("\(logPrefix) ШАГ 2: Создание MainViewModel...")
+        visualLogger.log("\(logPrefix) ШАГ 2: Создание MainViewModel...", level: .debug)
         
         // Создаем MainViewModel с логированием
         let viewModel: MainViewModel
@@ -68,10 +77,12 @@ struct MainScreen: View {
             viewModel = MainViewModel()
             debugLog.append("✅ MainViewModel создан успешно")
             print("✅ \(logPrefix) MainViewModel создан успешно")
+            visualLogger.log("✅ MainViewModel создан успешно", level: .success)
         } catch {
             let errorMsg = "❌ Ошибка при создании MainViewModel: \(error)"
             debugLog.append(errorMsg)
             print("\(logPrefix) \(errorMsg)")
+            visualLogger.log(errorMsg, level: .error)
             logger.error(errorMsg)
             // Создаем с дефолтными параметрами
             viewModel = MainViewModel()
@@ -83,10 +94,13 @@ struct MainScreen: View {
         // ✅ ШАГ 3: Проверка EnvironmentObject (они будут доступны позже)
         debugLog.append("\(logPrefix) ШАГ 3: EnvironmentObject будут проверены в body")
         print("\(logPrefix) ШАГ 3: EnvironmentObject будут проверены в body")
+        visualLogger.log("\(logPrefix) ШАГ 3: EnvironmentObject будут проверены в body", level: .info)
         
         let duration = Date().timeIntervalSince(startTime)
-        debugLog.append("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
-        print("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
+        let completeMsg = "✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s"
+        debugLog.append(completeMsg)
+        print(completeMsg)
+        visualLogger.log(completeMsg, level: .success)
         
         // Сохраняем логи
         saveInitDebugLog(debugLog)
@@ -101,48 +115,58 @@ struct MainScreen: View {
         var debugLog: [String] = []
         debugLog.append("\(logPrefix) START - \(Date())")
         print("\(logPrefix) START - \(Date())")
+        visualLogger.log("\(logPrefix) START", level: .debug)
         
         // ✅ ШАГ 1: Проверка EnvironmentObject
         debugLog.append("\(logPrefix) ШАГ 1: Проверка EnvironmentObject...")
         print("\(logPrefix) ШАГ 1: Проверка EnvironmentObject...")
+        visualLogger.log("\(logPrefix) ШАГ 1: Проверка EnvironmentObject...", level: .debug)
         
         // Проверяем что EnvironmentObject доступны (они не могут быть nil, но проверим доступ)
         do {
             let _ = localizationManager
             debugLog.append("✅ localizationManager доступен")
             print("✅ \(logPrefix) localizationManager доступен")
+            visualLogger.log("✅ localizationManager доступен", level: .success)
             
             let _ = navigationManager
             debugLog.append("✅ navigationManager доступен")
             print("✅ \(logPrefix) navigationManager доступен")
+            visualLogger.log("✅ navigationManager доступен", level: .success)
         } catch {
             let errorMsg = "❌ Ошибка при доступе к EnvironmentObject: \(error)"
             debugLog.append(errorMsg)
             print("\(logPrefix) \(errorMsg)")
+            visualLogger.log(errorMsg, level: .error)
             logger.error(errorMsg)
         }
         
         // ✅ ШАГ 2: Проверка Singleton в body
         debugLog.append("\(logPrefix) ШАГ 2: Проверка Singleton в body...")
         print("\(logPrefix) ШАГ 2: Проверка Singleton в body...")
+        visualLogger.log("\(logPrefix) ШАГ 2: Проверка Singleton в body...", level: .debug)
         
         do {
             let _ = tariffManager
             debugLog.append("✅ tariffManager доступен")
             print("✅ \(logPrefix) tariffManager доступен")
+            visualLogger.log("✅ tariffManager доступен", level: .success)
             
             let _ = antivirusManager
             debugLog.append("✅ antivirusManager доступен")
             print("✅ \(logPrefix) antivirusManager доступен")
+            visualLogger.log("✅ antivirusManager доступен", level: .success)
         } catch {
             let errorMsg = "❌ Ошибка при доступе к Singleton: \(error)"
             debugLog.append(errorMsg)
             print("\(logPrefix) \(errorMsg)")
+            visualLogger.log(errorMsg, level: .error)
             logger.error(errorMsg)
         }
         
         debugLog.append("✅ \(logPrefix) Начинаем рендеринг UI...")
         print("✅ \(logPrefix) Начинаем рендеринг UI...")
+        visualLogger.log("✅ Начинаем рендеринг UI...", level: .info)
         
         // Сохраняем логи
         saveBodyDebugLog(debugLog)
@@ -426,16 +450,19 @@ struct MainScreen: View {
         var debugLog: [String] = []
         debugLog.append("\(logPrefix) START - \(Date())")
         print("\(logPrefix) START - \(Date())")
+        visualLogger.log("\(logPrefix) START", level: .debug)
         
         // ✅ ШАГ 1: Проверка ProfileImageManager
         debugLog.append("\(logPrefix) ШАГ 1: Проверка ProfileImageManager...")
         print("\(logPrefix) ШАГ 1: Проверка ProfileImageManager...")
+        visualLogger.log("\(logPrefix) ШАГ 1: Проверка ProfileImageManager...", level: .debug)
         
         // ✅ ИСПРАВЛЕНИЕ: Проверяем thread и выполняем на main thread если нужно
         if !Thread.isMainThread {
             let errorMsg = "⚠️ \(logPrefix) Вызов не на main thread! Текущий поток: \(Thread.current)"
             debugLog.append(errorMsg)
             print(errorMsg)
+            visualLogger.log(errorMsg, level: .warning)
             logger.warn(errorMsg)
             
             // ✅ ИСПРАВЛЕНИЕ: Выполняем на main thread (без weak self, так как struct)
@@ -448,6 +475,7 @@ struct MainScreen: View {
         // ✅ ШАГ 2: Загрузка изображения с обработкой ошибок
         debugLog.append("\(logPrefix) ШАГ 2: Загрузка изображения...")
         print("\(logPrefix) ШАГ 2: Загрузка изображения...")
+        visualLogger.log("\(logPrefix) ШАГ 2: Загрузка изображения...", level: .debug)
         
         // ✅ ИСПРАВЛЕНИЕ: loadProfileImage не выбрасывает ошибки, убираем do-catch
         let image = ProfileImageManager.shared.loadProfileImage(for: .main)
@@ -455,17 +483,20 @@ struct MainScreen: View {
         if let image = image {
             debugLog.append("✅ \(logPrefix) Изображение загружено успешно")
             print("✅ \(logPrefix) Изображение загружено успешно")
+            visualLogger.log("✅ Изображение загружено успешно", level: .success)
             
             // ✅ ИСПРАВЛЕНИЕ: Мы уже на main thread, просто обновляем
             profileImage = image
         } else {
             debugLog.append("ℹ️ \(logPrefix) Изображение не найдено (это нормально)")
             print("ℹ️ \(logPrefix) Изображение не найдено (это нормально)")
+            visualLogger.log("ℹ️ Изображение не найдено (это нормально)", level: .info)
             // Не устанавливаем profileImage - останется nil
         }
         
         debugLog.append("✅ \(logPrefix) COMPLETE")
         print("✅ \(logPrefix) COMPLETE")
+        visualLogger.log("✅ \(logPrefix) COMPLETE", level: .success)
         
         // Сохраняем логи
         saveLoadProfileImageDebugLog(debugLog)
@@ -933,7 +964,9 @@ struct MainScreen: View {
         let displayFormatter = DateFormatter()
         displayFormatter.dateStyle = .medium
         displayFormatter.timeStyle = .none
-        displayFormatter.locale = Locale(identifier: Locale.preferredLanguages.first ?? "ru_RU")
+        // ✅ ИСПРАВЛЕНИЕ BUILD 88: Locale.current вместо Locale.preferredLanguages
+        // Locale.preferredLanguages читает из UserDefaults, что вызывает рекурсию с @AppStorage
+        displayFormatter.locale = Locale.current
         return displayFormatter.string(from: date)
     }
     
