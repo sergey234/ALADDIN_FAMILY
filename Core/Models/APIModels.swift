@@ -391,14 +391,39 @@ struct RefreshTokenResponse: Codable {
 struct UserProfile: Codable {
     let id: String
     let name: String
-    let email: String
+    let email: String?
     let phone: String?
-    let registrationDate: String
-    let subscriptionType: String
+    let registrationDate: String?
+    let subscriptionType: String?
     let subscriptionEndDate: String?
-    let threatsBlocked: Int
-    let familyMembers: Int
-    let devices: Int
+    let threatsBlocked: Int?
+    let familyMembers: Int?
+    let devices: Int?
+    
+    // ✅ КОМПЬЮТЕД ПРОПЕРТИ: Безопасные значения по умолчанию для опциональных полей
+    var safeEmail: String {
+        return email ?? ""
+    }
+    
+    var safeRegistrationDate: String {
+        return registrationDate ?? ""
+    }
+    
+    var safeSubscriptionType: String {
+        return subscriptionType ?? "free"
+    }
+    
+    var safeThreatsBlocked: Int {
+        return threatsBlocked ?? 0
+    }
+    
+    var safeFamilyMembers: Int {
+        return familyMembers ?? 0
+    }
+    
+    var safeDevices: Int {
+        return devices ?? 0
+    }
 }
 
 struct UpdateProfileRequest: Codable {

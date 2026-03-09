@@ -42,17 +42,17 @@ class ProfileViewModel: ObservableObject {
                 
                 switch result {
                 case .success(let profile):
-                    // ✅ ИСПРАВЛЕНО: profile.name и profile.email - не опциональные (String), убрали ??
+                    // ✅ ИСПРАВЛЕНО: Используем safe-проперти для опциональных полей
                     self?.userName = profile.name
-                    self?.userEmail = profile.email
+                    self?.userEmail = profile.safeEmail // ✅ Используем safe-проперти
                     // ✅ phone опциональный (String?), используем ?? для него
                     self?.userPhone = profile.phone ?? "+7 (999) 123-45-67"
-                    self?.registrationDate = profile.registrationDate
-                    self?.subscriptionType = profile.subscriptionType
+                    self?.registrationDate = profile.safeRegistrationDate // ✅ Используем safe-проперти
+                    self?.subscriptionType = profile.safeSubscriptionType // ✅ Используем safe-проперти
                     self?.subscriptionEndDate = profile.subscriptionEndDate ?? ""
-                    self?.threatsBlocked = profile.threatsBlocked
-                    self?.familyMembers = profile.familyMembers
-                    self?.devices = profile.devices
+                    self?.threatsBlocked = profile.safeThreatsBlocked // ✅ Используем safe-проперти
+                    self?.familyMembers = profile.safeFamilyMembers // ✅ Используем safe-проперти
+                    self?.devices = profile.safeDevices // ✅ Используем safe-проперти
 
                     // ✅ ДОБАВЛЕНО: Сохраняем имя пользователя для детского интерфейса
                     self?.saveUserNameToCache(profile.name)

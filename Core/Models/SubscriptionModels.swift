@@ -333,6 +333,30 @@ extension DeviceRegistrationSubscription {
     }
 }
 
+extension SubscriptionStatusSummaryResponse {
+    /// Convert API model to internal SubscriptionStatus
+    /// ✅ SOLUTION: Clean separation between API and internal models
+    func toSubscriptionStatus(currentSubscription: SubscriptionStatus?) -> SubscriptionStatus {
+        return SubscriptionStatus(
+            level: currentSubscription?.level ?? .free,              // Use current subscription level
+            isActive: isActive,
+            expiresAt: currentSubscription?.expiresAt,               // Use current expiration date
+            trialInfo: currentSubscription?.trialInfo,               // Use current trial info
+            limits: currentSubscription?.limits ?? SubscriptionLimits.freeLimits, // Use current limits
+            components: currentSubscription?.components ?? [],       // Use current components
+            lastUpdated: parseISODate(lastModified) ?? Date()        // Parse lastModified as lastUpdated
+        )
+    }
+
+    /// Parse ISO 8601 date string to Date (helper function)
+    private func parseISODate(_ dateString: String?) -> Date? {
+        guard let dateString = dateString else { return nil }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime] // Поддержка формата 2026-03-06T15:43:24.486626
+        return formatter.date(from: dateString)
+    }
+}
+
 /// ⚠️ Subscription Error Types
 enum SubscriptionError: LocalizedError {
     case tokenExpired
@@ -425,6 +449,15 @@ struct JWTDeviceRegisterResponse: Codable {
         formatter.formatOptions = [.withInternetDateTime]
         return formatter.date(from: registeredAt)
     }
+}
+
+/// 📡 Subscription Status Summary Response (for /api/subscription/status)
+struct SubscriptionStatusSummaryResponse: Codable {
+    let userId: String
+    let isActive: Bool
+    let daysRemaining: Int?
+    let canRenew: Bool
+    let lastModified: String // ISO 8601 date string
 }
 
 /// 📡 Subscription Status Response

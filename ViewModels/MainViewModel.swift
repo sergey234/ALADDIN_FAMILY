@@ -80,6 +80,7 @@ class MainViewModel: ObservableObject {
     // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ
     private var isLoadingDashboard = false
     private var lastOnAppearTime: Date?
+    private var isLoadingFamilyStats = false // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Флаг для getFamilyStats
     
     // MARK: - Init
     
@@ -193,6 +194,15 @@ class MainViewModel: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + timeoutInterval, execute: timeoutWorkItem)
         
         // ✅ РЕАЛЬНЫЙ API ВЫЗОВ: Загружаем статистику семьи
+        // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Проверяем, не загружается ли уже статистика
+        guard !isLoadingFamilyStats else {
+            #if DEBUG
+            print("⚠️ MainViewModel: Статистика семьи уже загружается, пропускаем повторный вызов")
+            #endif
+            return
+        }
+        
+        isLoadingFamilyStats = true
         apiService.getFamilyStats { [weak self] result in
             guard let self = self else { return }
             
@@ -201,6 +211,8 @@ class MainViewModel: ObservableObject {
             
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
+                
+                self.isLoadingFamilyStats = false // Сбрасываем флаг в любом случае
                 
                 switch result {
                 case .success(let stats):

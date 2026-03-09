@@ -538,25 +538,35 @@ final class SubscriptionManager: ObservableObject {
         do {
             isLoading = true
 
-            let response: SubscriptionStatusResponse = try await withCheckedThrowingContinuation { continuation in
-                APIService.shared.getSubscriptionStatus(userId: "current") { result in
+            // Get current token for explicit authorization
+            guard let token = currentToken?.token else {
+                logger.error("❌ Refresh failed: No token available")
+                lastError = .networkError
+                return
+            }
+
+            let summary: SubscriptionStatusSummaryResponse = try await withCheckedThrowingContinuation { continuation in
+                APIService.shared.getSubscriptionStatusWithToken(userId: "current", token: token) { result in
                     switch result {
-                    case .success(let statusResponse):
-                        continuation.resume(returning: statusResponse)
+                    case .success(let statusSummary):
+                        continuation.resume(returning: statusSummary)
                     case .failure(let error):
                         continuation.resume(throwing: error)
                     }
                 }
             }
 
-            await updateSubscriptionStatus(response.status)
+            // Convert summary to SubscriptionStatus using current subscription data
+            let subscriptionStatus = summary.toSubscriptionStatus(currentSubscription: currentSubscription)
 
-            // Update trial status if present
-            if let trialInfo = response.status.trialInfo {
+            await updateSubscriptionStatus(subscriptionStatus)
+
+            // Update trial status if present (trial info comes from current subscription)
+            if let trialInfo = currentSubscription?.trialInfo {
                 await updateTrialStatus(trialInfo)
             }
 
-            logger.business("✅ Subscription status refreshed: \(response.status.level)")
+            logger.business("✅ Subscription status refreshed: \(subscriptionStatus.level)")
 
         } catch {
             logger.error("❌ Failed to refresh subscription: \(error)")
@@ -1154,27 +1164,26 @@ extension SubscriptionManager {
         logger.network("📡 Starting subscription sync with server")
 
         do {
-            // Get current subscription status from server
-            let serverStatus: SubscriptionStatus = try await withCheckedThrowingContinuation { continuation in
-                APIService.shared.getSubscriptionStatus(userId: "current") { result in
+            // Get current token for explicit authorization
+            guard let token = currentToken?.token else {
+                logger.error("❌ Sync failed: No token available")
+                return
+            }
+
+            // Get current subscription status summary from server with explicit token
+            let serverSummary: SubscriptionStatusSummaryResponse = try await withCheckedThrowingContinuation { continuation in
+                APIService.shared.getSubscriptionStatusWithToken(userId: "current", token: token) { result in
                     switch result {
-                    case .success(let response):
-                        // Convert response to SubscriptionStatus
-                        let subscriptionStatus = SubscriptionStatus(
-                            level: response.status.level,
-                            isActive: response.status.isActive,
-                            expiresAt: response.status.expiresAt,
-                            trialInfo: response.status.trialInfo,
-                            limits: response.status.limits,
-                            components: response.status.components,
-                            lastUpdated: Date()
-                        )
-                        continuation.resume(returning: subscriptionStatus)
+                    case .success(let summary):
+                        continuation.resume(returning: summary)
                     case .failure(let error):
                         continuation.resume(throwing: error)
                     }
                 }
             }
+
+            // Convert summary to SubscriptionStatus using current subscription data
+            let serverStatus = serverSummary.toSubscriptionStatus(currentSubscription: currentSubscription)
 
             // Update local data if server has newer information
             if shouldUpdateFromServer(serverStatus) {

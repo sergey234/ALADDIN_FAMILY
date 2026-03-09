@@ -114,14 +114,14 @@ class UserProfileManager {
                                 let profile = UserProfile(
                                     id: syncResponse.profile.userId,
                                     name: syncResponse.profile.name,
-                                    email: syncResponse.profile.email ?? "",
+                                    email: syncResponse.profile.email, // ✅ Теперь опциональный
                                     phone: syncResponse.profile.phone,
                                     registrationDate: syncResponse.profile.registrationDate,
                                     subscriptionType: "free", // Дефолтное значение
                                     subscriptionEndDate: nil,
-                                    threatsBlocked: 0, // Дефолтное значение
-                                    familyMembers: 0, // Дефолтное значение
-                                    devices: 1 // Дефолтное значение
+                                    threatsBlocked: nil, // ✅ Теперь опциональный
+                                    familyMembers: nil, // ✅ Теперь опциональный
+                                    devices: nil // ✅ Теперь опциональный
                                 )
                                 self.saveProfileToCache(profile)
                                 print("✅ User profile loaded via syncUserProfile: \(profile.name)")
@@ -175,7 +175,7 @@ class UserProfileManager {
         logger.business("Saving user profile to cache: \(profile.name)")
         userDefaults.set(profile.name, forKey: displayNameKey)
         userDefaults.set(profile.name, forKey: profileNameKey) // Для совместимости
-        userDefaults.set(profile.email, forKey: emailKey)
+        userDefaults.set(profile.safeEmail, forKey: emailKey) // ✅ Используем safe-проперти
         userDefaults.set(Date().timeIntervalSince1970, forKey: lastUpdateKey)
         userDefaults.synchronize()
     }

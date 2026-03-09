@@ -90,10 +90,24 @@ class FamilyViewModel: ObservableObject {
     }
     
     /// ✅ ДОБАВЛЕНО: Загрузка статистики семьи
+    /// ✅ ЗАЩИТА ОТ РЕКУРСИИ: Флаг для предотвращения повторных вызовов
+    private var isLoadingFamilyStats = false
+    
     private func loadFamilyStats() {
+        // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Проверяем, не загружается ли уже статистика
+        guard !isLoadingFamilyStats else {
+            #if DEBUG
+            print("⚠️ FamilyViewModel: Статистика уже загружается, пропускаем повторный вызов")
+            #endif
+            return
+        }
+        
+        isLoadingFamilyStats = true
         logger.business("Loading family statistics")
         apiService.getFamilyStats { [weak self] result in
             DispatchQueue.main.async {
+                self?.isLoadingFamilyStats = false // Сбрасываем флаг в любом случае
+                
                 switch result {
                 case .success(let stats):
                     self?.totalThreatsBlocked = stats.totalThreats

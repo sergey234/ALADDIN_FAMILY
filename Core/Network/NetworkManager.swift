@@ -33,6 +33,10 @@ class NetworkManager: NSObject, ObservableObject {
     private let slowRequestLimitBeforeAdjusting: Int = 2
     private var didIncreaseTimeouts = false
     private var cancellables = Set<AnyCancellable>()
+    
+    // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Отслеживание retry для каждого endpoint
+    private var retryCounts: [String: Int] = [:]
+    private let maxRetriesPerEndpoint = 1 // Максимум 1 retry при 401
 
     // ✅ ЗАДАЧА 62: Rate Limiting
     /// Rate limiter для защиты от перегрузки API
@@ -810,14 +814,44 @@ class NetworkManager: NSObject, ObservableObject {
 
                 // Обработка 401 ошибки (Unauthorized) - токен истёк
                 if httpResponse.statusCode == 401 {
+                    let endpointKey = request.url?.absoluteString ?? "unknown"
+                    
+                    // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Проверяем количество retry для этого endpoint
+                    let currentRetryCount = self?.retryCounts[endpointKey] ?? 0
+                    
+                    if currentRetryCount >= self?.maxRetriesPerEndpoint ?? 1 {
+                        // ✅ Production логирование превышения лимита retry
+                        os_log("❌ Max retries exceeded for 401: %{public}@ (attempts: %d)", 
+                               log: Self.networkLogger, 
+                               type: .error,
+                               endpointKey,
+                               currentRetryCount)
+                        
+                        #if DEBUG
+                        print("❌ NetworkManager: Превышен лимит retry для \(endpointKey) - прекращаем попытки")
+                        #endif
+                        
+                        // Очищаем счётчик retry для этого endpoint
+                        self?.retryCounts.removeValue(forKey: endpointKey)
+                        
+                        // 🛡️ DEFENSIVE JWT: Record failure
+                        JWTCircuitBreaker.shared.recordFailure(for: determineCategory(for: endpoint))
+                        logger.network("❌ DEFENSIVE JWT: Circuit breaker failure recorded - max retries exceeded")
+                        
+                        completion(.failure(NetworkError.tokenExpired))
+                        return
+                    }
+                    
                     // ✅ Production логирование 401 ошибки
-                    os_log("⚠️ 401 Unauthorized: %{public}@ - Attempting token refresh", 
+                    os_log("⚠️ 401 Unauthorized: %{public}@ - Attempting token refresh (attempt %d/%d)", 
                            log: Self.networkLogger, 
                            type: .error,
-                           request.url?.absoluteString ?? "unknown")
+                           endpointKey,
+                           currentRetryCount + 1,
+                           self?.maxRetriesPerEndpoint ?? 1)
                     
                     #if DEBUG
-                    print("⚠️ NetworkManager: Получен 401 - токен истёк, пытаемся обновить...")
+                    print("⚠️ NetworkManager: Получен 401 - токен истёк, пытаемся обновить... (попытка \(currentRetryCount + 1))")
                     #endif
 
                     // Проверяем, есть ли токен в Keychain перед обновлением
@@ -826,15 +860,21 @@ class NetworkManager: NSObject, ObservableObject {
                         os_log("❌ No valid token: %{public}@", 
                                log: Self.networkLogger, 
                                type: .error,
-                               request.url?.absoluteString ?? "unknown")
+                               endpointKey)
                         
                         #if DEBUG
                         print("❌ NetworkManager: Валидный токен отсутствует, не повторяем запрос")
                         #endif
                         
+                        // Очищаем счётчик retry
+                        self?.retryCounts.removeValue(forKey: endpointKey)
+                        
                         completion(.failure(NetworkError.tokenExpired))
                         return
                     }
+                    
+                    // Увеличиваем счётчик retry для этого endpoint
+                    self?.retryCounts[endpointKey] = currentRetryCount + 1
                     
                     // Пытаемся обновить токен
                     Task { [weak self] in
@@ -845,19 +885,21 @@ class NetworkManager: NSObject, ObservableObject {
                             os_log("✅ Token refreshed: %{public}@ - Retrying request", 
                                    log: Self.networkLogger, 
                                    type: .info,
-                                   request.url?.absoluteString ?? "unknown")
+                                   endpointKey)
                             
                             #if DEBUG
                             print("✅ NetworkManager: Токен обновлён, повторяем запрос...")
                             #endif
                             
                             guard let strongSelf = self else {
+                                self?.retryCounts.removeValue(forKey: endpointKey)
                                 completion(.failure(NetworkError.tokenExpired))
                                 return
                             }
                             
                             // Создаём новый запрос с обновлённым токеном
                             guard let url = request.url else {
+                                strongSelf.retryCounts.removeValue(forKey: endpointKey)
                                 completion(.failure(NetworkError.invalidURL))
                                 return
                             }
@@ -876,18 +918,21 @@ class NetworkManager: NSObject, ObservableObject {
                                 retryRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
                             }
                             
-                            // Повторяем запрос с новым токеном
+                            // Повторяем запрос с новым токеном (retry count уже увеличен)
                             strongSelf.performRequest(request: retryRequest, requiresAuth: true, completion: completion)
                         } else {
                             // ✅ Production логирование ошибки обновления токена
                             os_log("❌ Token refresh failed: %{public}@", 
                                    log: Self.networkLogger, 
                                    type: .error,
-                                   request.url?.absoluteString ?? "unknown")
+                                   endpointKey)
                             
                             #if DEBUG
                             print("❌ NetworkManager: Не удалось обновить токен")
                             #endif
+                            
+                            // Очищаем счётчик retry
+                            self?.retryCounts.removeValue(forKey: endpointKey)
                             
                             // 🛡️ DEFENSIVE JWT: Record failure for JWT-protected endpoints
                             JWTCircuitBreaker.shared.recordFailure(for: determineCategory(for: endpoint))
@@ -897,6 +942,11 @@ class NetworkManager: NSObject, ObservableObject {
                         }
                     }
                     return
+                }
+                
+                // ✅ УСПЕШНЫЙ ОТВЕТ: Очищаем счётчик retry для этого endpoint
+                if let endpointKey = request.url?.absoluteString {
+                    self?.retryCounts.removeValue(forKey: endpointKey)
                 }
                 
                 // Обработка ошибок HTTP

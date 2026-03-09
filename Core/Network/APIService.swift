@@ -692,9 +692,44 @@ class APIService: ObservableObject {
         networkManager.get(endpoint: endpoint, completion: completion)
     }
     
-    func getSubscriptionStatus(userId: String, completion: @escaping (Result<SubscriptionStatusResponse, Error>) -> Void) {
+    func getSubscriptionStatus(userId: String, completion: @escaping (Result<SubscriptionStatusSummaryResponse, Error>) -> Void) {
         let endpoint = AppConfig.Endpoint.subscriptionStatus + "?userId=\(userId)"
         networkManager.get(endpoint: endpoint, completion: completion)
+    }
+
+    /// 🔄 Get subscription status with explicit token (for background sync)
+    func getSubscriptionStatusWithToken(userId: String, token: String, completion: @escaping (Result<SubscriptionStatusSummaryResponse, Error>) -> Void) {
+        let endpoint = AppConfig.Endpoint.subscriptionStatus + "?userId=\(userId)"
+
+        // Создаем запрос с явным токеном
+        guard let url = URL(string: AppConfig.apiBaseURL + endpoint) else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(NetworkError.unknown(error)))
+                return
+            }
+
+            guard let data = data else {
+                completion(.failure(NetworkError.noData))
+                return
+            }
+
+            do {
+                let decodedResponse = try JSONDecoder().decode(SubscriptionStatusSummaryResponse.self, from: data)
+                completion(.success(decodedResponse))
+            } catch {
+                completion(.failure(NetworkError.decodingError(error)))
+            }
+        }.resume()
     }
     
     func updateSubscriptionStatus(userId: String, status: String, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<SubscriptionStatusResponse, Error>) -> Void) {
