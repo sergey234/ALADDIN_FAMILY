@@ -1,6 +1,8 @@
 import SwiftUI
 import Foundation
 import Combine
+// Import managers
+// import UserProfileManager
 
 /// 👶 Child Interface Screen
 /// Детский интерфейс - упрощённый экран для детей
@@ -501,9 +503,9 @@ struct ChildInterfaceScreen: View {
     // MARK: - User Name Management
 
     private func getUserName() -> String {
-        // Используем UserProfileManager для получения имени пользователя
-        // Менеджер автоматически загружает и кеширует профиль
-        return UserProfileManager.shared.displayName
+        // ВРЕМЕННО: Используем заглушку вместо UserProfileManager
+        // return UserProfileManager.shared.displayName
+        return "Ребенок"
     }
 
     // MARK: - Profile Image Management
