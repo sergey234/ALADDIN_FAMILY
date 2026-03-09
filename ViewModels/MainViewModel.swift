@@ -85,11 +85,95 @@ class MainViewModel: ObservableObject {
     // MARK: - Init
     
     init(apiService: APIService = .shared, keychainManager: KeychainManager = .shared) {
+        // ✅ КРИТИЧНО: Детальное логирование для диагностики краша (работает в RELEASE)
+        let startTime = Date()
+        let logPrefix = "🔍 MainViewModel.init"
+        
+        // Сохраняем в UserDefaults для получения после краша
+        var debugLog: [String] = []
+        debugLog.append("\(logPrefix) START - \(Date())")
+        print("\(logPrefix) START - \(Date())")
         logger.business("Initializing MainViewModel")
-        self.apiService = apiService
-        self.keychainManager = keychainManager
+        
+        // ✅ ШАГ 1: Проверка параметров
+        debugLog.append("\(logPrefix) ШАГ 1: Проверка параметров...")
+        print("\(logPrefix) ШАГ 1: Проверка параметров...")
+        
+        do {
+            // Проверяем APIService
+            let _ = apiService
+            debugLog.append("✅ APIService доступен")
+            print("✅ \(logPrefix) APIService доступен")
+            
+            // Проверяем KeychainManager
+            let _ = keychainManager
+            debugLog.append("✅ KeychainManager доступен")
+            print("✅ \(logPrefix) KeychainManager доступен")
+            
+        } catch {
+            let errorMsg = "❌ Ошибка при проверке параметров: \(error)"
+            debugLog.append(errorMsg)
+            print("\(logPrefix) \(errorMsg)")
+            logger.error(errorMsg)
+        }
+        
+        // ✅ ШАГ 2: Инициализация свойств
+        debugLog.append("\(logPrefix) ШАГ 2: Инициализация свойств...")
+        print("\(logPrefix) ШАГ 2: Инициализация свойств...")
+        
+        do {
+            self.apiService = apiService
+            self.keychainManager = keychainManager
+            
+            debugLog.append("✅ Свойства инициализированы")
+            print("✅ \(logPrefix) Свойства инициализированы")
+            
+        } catch {
+            let errorMsg = "❌ Ошибка при инициализации свойств: \(error)"
+            debugLog.append(errorMsg)
+            print("\(logPrefix) \(errorMsg)")
+            logger.error(errorMsg)
+        }
+        
+        // ✅ ШАГ 3: Проверка thread safety
+        debugLog.append("\(logPrefix) ШАГ 3: Проверка thread safety...")
+        print("\(logPrefix) ШАГ 3: Проверка thread safety...")
+        
+        if Thread.isMainThread {
+            debugLog.append("✅ Выполняется на main thread")
+            print("✅ \(logPrefix) Выполняется на main thread")
+        } else {
+            let warningMsg = "⚠️ Выполняется НЕ на main thread: \(Thread.current)"
+            debugLog.append(warningMsg)
+            print("\(logPrefix) \(warningMsg)")
+            logger.warn(warningMsg)
+        }
+        
         // НЕ загружаем данные автоматически при инициализации - только по требованию
         // loadDashboardData() // Закомментировано чтобы избежать бесконечных циклов
+        
+        let duration = Date().timeIntervalSince(startTime)
+        debugLog.append("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
+        print("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
+        
+        // Сохраняем логи
+        saveInitDebugLog(debugLog)
+    }
+    
+    /// Сохраняет логи инициализации MainViewModel
+    private func saveInitDebugLog(_ logs: [String]) {
+        let key = "main_view_model_init_debug_log"
+        let logText = logs.joined(separator: "\n")
+        UserDefaults.standard.set(logText, forKey: key)
+        
+        // Добавляем к истории
+        var history = UserDefaults.standard.stringArray(forKey: "\(key)_history") ?? []
+        history.append(logText)
+        if history.count > 5 {
+            history.removeFirst()
+        }
+        UserDefaults.standard.set(history, forKey: "\(key)_history")
+        UserDefaults.standard.synchronize()
     }
     
     // MARK: - Public Methods
@@ -256,12 +340,16 @@ class MainViewModel: ObservableObject {
                             self.handleSessionExpired()
                         } else {
                             // Другая ошибка - просто показываем сообщение
-                        self.isLoading = false
-                        self.errorMessage = error.localizedDescription
-                        #if DEBUG
-                        print("❌ MainViewModel: Ошибка после \(maxAttempts) попыток: \(error.localizedDescription)")
-                        #endif
-                        NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+                            // ✅ ИСПРАВЛЕНИЕ: Обновление UI на main thread
+                            Task { @MainActor [weak self] in
+                                guard let self = self else { return }
+                                self.isLoading = false
+                                self.errorMessage = error.localizedDescription
+                                #if DEBUG
+                                print("❌ MainViewModel: Ошибка после \(maxAttempts) попыток: \(error.localizedDescription)")
+                                #endif
+                                NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+                            }
                         }
                     }
                 }

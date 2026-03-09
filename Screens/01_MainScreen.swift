@@ -6,7 +6,7 @@ private let logger = MasterLogger.shared
 
 struct MainScreen: View {
     @State private var aiQuestion: String = ""
-    @StateObject private var mainViewModel = MainViewModel()
+    @StateObject private var mainViewModel: MainViewModel
     @State private var hasAppeared = false
     @ObservedObject private var tariffManager = TariffManager.shared
     @ObservedObject private var antivirusManager = AntivirusManager.shared
@@ -16,8 +16,138 @@ struct MainScreen: View {
     @AppStorage("subscription_expires_at_iso") private var subscriptionExpiresAtIso: String = ""
     @AppStorage("antivirusEnabled") private var antivirusEnabled = true
     
+    // MARK: - Init с детальным логированием
+    
+    init() {
+        // ✅ КРИТИЧНО: Логирование для диагностики краша (работает в RELEASE)
+        let startTime = Date()
+        let logPrefix = "🔍 MainScreen.init"
+        
+        // Сохраняем в UserDefaults для получения после краша
+        var debugLog: [String] = []
+        debugLog.append("\(logPrefix) START - \(Date())")
+        
+        // Логируем в консоль (работает в RELEASE)
+        print("\(logPrefix) START - \(Date())")
+        logger.screenLoad("MainScreen.init")
+        
+        // ✅ ШАГ 1: Проверка Singleton перед созданием MainViewModel
+        debugLog.append("\(logPrefix) ШАГ 1: Проверка Singleton...")
+        print("\(logPrefix) ШАГ 1: Проверка Singleton...")
+        
+        do {
+            // Проверяем TariffManager
+            let _ = TariffManager.shared
+            debugLog.append("✅ TariffManager.shared доступен")
+            print("✅ \(logPrefix) TariffManager.shared доступен")
+            
+            // Проверяем AntivirusManager
+            let _ = AntivirusManager.shared
+            debugLog.append("✅ AntivirusManager.shared доступен")
+            print("✅ \(logPrefix) AntivirusManager.shared доступен")
+            
+            // Проверяем ProfileImageManager
+            let _ = ProfileImageManager.shared
+            debugLog.append("✅ ProfileImageManager.shared доступен")
+            print("✅ \(logPrefix) ProfileImageManager.shared доступен")
+            
+        } catch {
+            let errorMsg = "❌ Ошибка при проверке Singleton: \(error)"
+            debugLog.append(errorMsg)
+            print("\(logPrefix) \(errorMsg)")
+            logger.error(errorMsg)
+        }
+        
+        // ✅ ШАГ 2: Создание MainViewModel
+        debugLog.append("\(logPrefix) ШАГ 2: Создание MainViewModel...")
+        print("\(logPrefix) ШАГ 2: Создание MainViewModel...")
+        
+        // Создаем MainViewModel с логированием
+        let viewModel: MainViewModel
+        do {
+            viewModel = MainViewModel()
+            debugLog.append("✅ MainViewModel создан успешно")
+            print("✅ \(logPrefix) MainViewModel создан успешно")
+        } catch {
+            let errorMsg = "❌ Ошибка при создании MainViewModel: \(error)"
+            debugLog.append(errorMsg)
+            print("\(logPrefix) \(errorMsg)")
+            logger.error(errorMsg)
+            // Создаем с дефолтными параметрами
+            viewModel = MainViewModel()
+        }
+        
+        // Сохраняем MainViewModel
+        _mainViewModel = StateObject(wrappedValue: viewModel)
+        
+        // ✅ ШАГ 3: Проверка EnvironmentObject (они будут доступны позже)
+        debugLog.append("\(logPrefix) ШАГ 3: EnvironmentObject будут проверены в body")
+        print("\(logPrefix) ШАГ 3: EnvironmentObject будут проверены в body")
+        
+        let duration = Date().timeIntervalSince(startTime)
+        debugLog.append("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
+        print("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
+        
+        // Сохраняем логи
+        saveInitDebugLog(debugLog)
+    }
+    
     var body: some View {
-        ZStack {
+        // ✅ КРИТИЧНО: Логирование в начале body (работает в RELEASE)
+        let bodyStartTime = Date()
+        let logPrefix = "🔍 MainScreen.body"
+        
+        // Сохраняем в UserDefaults
+        var debugLog: [String] = []
+        debugLog.append("\(logPrefix) START - \(Date())")
+        print("\(logPrefix) START - \(Date())")
+        
+        // ✅ ШАГ 1: Проверка EnvironmentObject
+        debugLog.append("\(logPrefix) ШАГ 1: Проверка EnvironmentObject...")
+        print("\(logPrefix) ШАГ 1: Проверка EnvironmentObject...")
+        
+        // Проверяем что EnvironmentObject доступны (они не могут быть nil, но проверим доступ)
+        do {
+            let _ = localizationManager
+            debugLog.append("✅ localizationManager доступен")
+            print("✅ \(logPrefix) localizationManager доступен")
+            
+            let _ = navigationManager
+            debugLog.append("✅ navigationManager доступен")
+            print("✅ \(logPrefix) navigationManager доступен")
+        } catch {
+            let errorMsg = "❌ Ошибка при доступе к EnvironmentObject: \(error)"
+            debugLog.append(errorMsg)
+            print("\(logPrefix) \(errorMsg)")
+            logger.error(errorMsg)
+        }
+        
+        // ✅ ШАГ 2: Проверка Singleton в body
+        debugLog.append("\(logPrefix) ШАГ 2: Проверка Singleton в body...")
+        print("\(logPrefix) ШАГ 2: Проверка Singleton в body...")
+        
+        do {
+            let _ = tariffManager
+            debugLog.append("✅ tariffManager доступен")
+            print("✅ \(logPrefix) tariffManager доступен")
+            
+            let _ = antivirusManager
+            debugLog.append("✅ antivirusManager доступен")
+            print("✅ \(logPrefix) antivirusManager доступен")
+        } catch {
+            let errorMsg = "❌ Ошибка при доступе к Singleton: \(error)"
+            debugLog.append(errorMsg)
+            print("\(logPrefix) \(errorMsg)")
+            logger.error(errorMsg)
+        }
+        
+        debugLog.append("✅ \(logPrefix) Начинаем рендеринг UI...")
+        print("✅ \(logPrefix) Начинаем рендеринг UI...")
+        
+        // Сохраняем логи
+        saveBodyDebugLog(debugLog)
+        
+        return ZStack {
             // Фон - красивый градиент как в SupportScreen
             LinearGradient(
                 colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
@@ -291,7 +421,54 @@ struct MainScreen: View {
     // MARK: - Profile Image Management
     
     private func loadProfileImage() {
-        profileImage = ProfileImageManager.shared.loadProfileImage(for: .main)
+        // ✅ КРИТИЧНО: Логирование и обработка ошибок для диагностики краша
+        let logPrefix = "🔍 MainScreen.loadProfileImage"
+        var debugLog: [String] = []
+        debugLog.append("\(logPrefix) START - \(Date())")
+        print("\(logPrefix) START - \(Date())")
+        
+        // ✅ ШАГ 1: Проверка ProfileImageManager
+        debugLog.append("\(logPrefix) ШАГ 1: Проверка ProfileImageManager...")
+        print("\(logPrefix) ШАГ 1: Проверка ProfileImageManager...")
+        
+        // ✅ ИСПРАВЛЕНИЕ: Проверяем thread и выполняем на main thread если нужно
+        if !Thread.isMainThread {
+            let errorMsg = "⚠️ \(logPrefix) Вызов не на main thread! Текущий поток: \(Thread.current)"
+            debugLog.append(errorMsg)
+            print(errorMsg)
+            logger.warn(errorMsg)
+            
+            // ✅ ИСПРАВЛЕНИЕ: Выполняем на main thread (без weak self, так как struct)
+            DispatchQueue.main.async {
+                self.loadProfileImage()
+            }
+            return
+        }
+        
+        // ✅ ШАГ 2: Загрузка изображения с обработкой ошибок
+        debugLog.append("\(logPrefix) ШАГ 2: Загрузка изображения...")
+        print("\(logPrefix) ШАГ 2: Загрузка изображения...")
+        
+        // ✅ ИСПРАВЛЕНИЕ: loadProfileImage не выбрасывает ошибки, убираем do-catch
+        let image = ProfileImageManager.shared.loadProfileImage(for: .main)
+        
+        if let image = image {
+            debugLog.append("✅ \(logPrefix) Изображение загружено успешно")
+            print("✅ \(logPrefix) Изображение загружено успешно")
+            
+            // ✅ ИСПРАВЛЕНИЕ: Мы уже на main thread, просто обновляем
+            profileImage = image
+        } else {
+            debugLog.append("ℹ️ \(logPrefix) Изображение не найдено (это нормально)")
+            print("ℹ️ \(logPrefix) Изображение не найдено (это нормально)")
+            // Не устанавливаем profileImage - останется nil
+        }
+        
+        debugLog.append("✅ \(logPrefix) COMPLETE")
+        print("✅ \(logPrefix) COMPLETE")
+        
+        // Сохраняем логи
+        saveLoadProfileImageDebugLog(debugLog)
     }
     
     // MARK: - Debug Logging для TestFlight
@@ -333,6 +510,54 @@ struct MainScreen: View {
         } catch {
             // Игнорируем ошибки записи файла
         }
+    }
+    
+    /// Сохраняет логи инициализации MainScreen
+    private func saveInitDebugLog(_ logs: [String]) {
+        let key = "main_screen_init_debug_log"
+        let logText = logs.joined(separator: "\n")
+        UserDefaults.standard.set(logText, forKey: key)
+        
+        // Добавляем к истории
+        var history = UserDefaults.standard.stringArray(forKey: "\(key)_history") ?? []
+        history.append(logText)
+        if history.count > 5 {
+            history.removeFirst()
+        }
+        UserDefaults.standard.set(history, forKey: "\(key)_history")
+        UserDefaults.standard.synchronize()
+    }
+    
+    /// Сохраняет логи body MainScreen
+    private func saveBodyDebugLog(_ logs: [String]) {
+        let key = "main_screen_body_debug_log"
+        let logText = logs.joined(separator: "\n")
+        UserDefaults.standard.set(logText, forKey: key)
+        
+        // Добавляем к истории
+        var history = UserDefaults.standard.stringArray(forKey: "\(key)_history") ?? []
+        history.append(logText)
+        if history.count > 5 {
+            history.removeFirst()
+        }
+        UserDefaults.standard.set(history, forKey: "\(key)_history")
+        UserDefaults.standard.synchronize()
+    }
+    
+    /// Сохраняет логи loadProfileImage
+    private func saveLoadProfileImageDebugLog(_ logs: [String]) {
+        let key = "main_screen_load_profile_image_debug_log"
+        let logText = logs.joined(separator: "\n")
+        UserDefaults.standard.set(logText, forKey: key)
+        
+        // Добавляем к истории
+        var history = UserDefaults.standard.stringArray(forKey: "\(key)_history") ?? []
+        history.append(logText)
+        if history.count > 5 {
+            history.removeFirst()
+        }
+        UserDefaults.standard.set(history, forKey: "\(key)_history")
+        UserDefaults.standard.synchronize()
     }
     
     // MARK: - Home Content
