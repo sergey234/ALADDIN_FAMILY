@@ -311,27 +311,14 @@ struct ALADDINApp: App {
     
     var body: some Scene {
         WindowGroup {
-            // 🚫 ВРЕМЕННО: Упрощено до минимума - только загрузочный экран
-            AppLoadingView()
+            // 🚫 АБСОЛЮТНЫЙ МИНИМУМ: Только базовый SwiftUI, без наших компонентов
+            Text("ALADDIN")
+                .font(.largeTitle)
+                .foregroundColor(.blue)
             .onAppear {
-                // 🔍 ТЕСТОВОЕ ЛОГИРОВАНИЕ - проверяем onAppear
-                print("🎯 ALADDIN_APP: onAppear triggered - testing logger")
-                // ВРЕМЕННО ОТКЛЮЧЕНО: MasterLogger.shared.business("ALADDINApp onAppear - testing logging system")
-
-                // Запускаем инициализацию при появлении
-                Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager)
-
-                // ✅ Инициализируем SubscriptionManager для JWT токенов
-                print("🚀 ALADDINApp: Starting SubscriptionManager initialization Task")
-                Task {
-                    print("🚀 ALADDINApp: Task started, calling initializeOnAppStart()")
-                    // 🚫 ВРЕМЕННО ОТКЛЮЧЕНО: вызывает сетевые запросы и логирование
-                    // await subscriptionManager.initializeOnAppStart()
-                    print("🚫 SubscriptionManager initialization SKIPPED (temporary)")
-                    print("🚀 ALADDINApp: Task completed, initializeOnAppStart() skipped")
-                }
-
-                print("✅ ALADDINApp: Инициализация завершена")
+                // 🚫 АБСОЛЮТНЫЙ МИНИМУМ: Никаких инициализаций, только тест SwiftUI
+                print("🎯 ALADDIN_APP: onAppear - ABSOLUTE MINIMUM TEST")
+                print("✅ SwiftUI Text rendered successfully - no crashes!")
             }
         }
     }
