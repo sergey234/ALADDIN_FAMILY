@@ -11,11 +11,11 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         print("🚀 ALADDIN AppDelegate: Starting performance optimizations...")
 
-        // 🚀 DNS prefetching для ускорения первого запроса
-        performDNSPrefetching()
+        // 🚫 ВРЕМЕННО ОТКЛЮЧЕНО: DNS prefetching вызывает краш
+        // performDNSPrefetching()
 
-        // 🔄 Connection warming для поддержания соединений
-        performConnectionWarming()
+        // 🚫 ВРЕМЕННО ОТКЛЮЧЕНО: Connection warming вызывает краш
+        // performConnectionWarming()
 
         // 📊 Production monitoring инициализируется автоматически через shared
 
