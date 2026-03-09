@@ -120,10 +120,13 @@ struct ALADDINApp: App {
         return ()
     }()
 
-    // КРИТИЧНО: Инициализация NavigationManager
-    @StateObject private var navigationManager = NavigationManager()
-    // ✅ Добавляем LocalizationManager
-    @StateObject private var localizationManager = LocalizationManager()
+    // 🚫 ВРЕМЕННО ОТКЛЮЧЕНО: @StateObject могут вызывать краш при SwiftUI рендеринге
+    // @StateObject private var navigationManager = NavigationManager()
+    // @StateObject private var localizationManager = LocalizationManager()
+
+    // ВРЕМЕННАЯ ЗАГЛУШКА: обычные объекты вместо ObservableObject
+    private let navigationManager = NavigationManager()
+    private let localizationManager = LocalizationManager()
     // ✅ Добавляем SubscriptionManager для JWT токенов
     private var subscriptionManager = SubscriptionManager.shared
     @AppStorage("selected_theme") private var selectedTheme: String = "system"
@@ -308,8 +311,8 @@ struct ALADDINApp: App {
     
     var body: some Scene {
         WindowGroup {
-            // ✅ Основное приложение
-            mainAppContent()
+            // 🚫 ВРЕМЕННО: Упрощено до минимума - только загрузочный экран
+            AppLoadingView()
             .onAppear {
                 // 🔍 ТЕСТОВОЕ ЛОГИРОВАНИЕ - проверяем onAppear
                 print("🎯 ALADDIN_APP: onAppear triggered - testing logger")
