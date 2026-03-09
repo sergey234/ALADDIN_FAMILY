@@ -912,6 +912,141 @@ func checkIfTokensAreDebug() -> Bool {
     return isDebug
 }
 
+/// 🔍 ПОЛУЧИТЬ ЛОГИ КРАШЕЙ
+/// Использование в Debug Console: getCrashLogs()
+/// Возвращает все доступные логи крашей из UserDefaults
+func getCrashLogs() -> String {
+    var result = "=== 🔍 CRASH LOGS ===\n\n"
+    
+    // 1. Основной лог краша из AppDelegate
+    if let crashLog = UserDefaults.standard.string(forKey: "last_crash_log") {
+        result += "🚨 LAST CRASH LOG:\n\(crashLog)\n\n"
+    } else {
+        result += "✅ No crash log found in UserDefaults[\"last_crash_log\"]\n\n"
+    }
+    
+    // 2. Время краша
+    let timestamp = UserDefaults.standard.double(forKey: "crash_timestamp")
+    if timestamp > 0 {
+        let date = Date(timeIntervalSince1970: timestamp)
+        let formatter = DateFormatter()
+        formatter.dateStyle = .full
+        formatter.timeStyle = .full
+        result += "⏰ CRASH TIME: \(formatter.string(from: date))\n"
+        result += "   Timestamp: \(timestamp)\n\n"
+    } else {
+        result += "✅ No crash timestamp found\n\n"
+    }
+    
+    // 3. VisualLogger логи
+    if let data = UserDefaults.standard.data(forKey: "visual_logger_logs") {
+        do {
+            let logs = try JSONDecoder().decode([VisualLogger.LogEntry].self, from: data)
+            result += "📋 VISUAL LOGGER LOGS (\(logs.count) entries):\n"
+            if logs.isEmpty {
+                result += "   No logs found\n\n"
+            } else {
+                // Последние 30 логов
+                for log in logs.suffix(30) {
+                    result += "   [\(log.formattedTime)] \(log.level.rawValue) \(log.message)\n"
+                    if log.file != "" {
+                        result += "      📁 \(log.file):\(log.line)\n"
+                    }
+                }
+                result += "\n"
+            }
+        } catch {
+            result += "❌ Failed to decode visual_logger_logs: \(error.localizedDescription)\n\n"
+        }
+    } else {
+        result += "✅ No visual_logger_logs found in UserDefaults\n\n"
+    }
+    
+    // 4. Информация о текущем состоянии
+    result += "📱 CURRENT DEVICE INFO:\n"
+    result += "   Model: \(UIDevice.current.model)\n"
+    result += "   iOS: \(UIDevice.current.systemVersion)\n"
+    result += "   App Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")\n"
+    result += "   Build: \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown")\n"
+    
+    print(result)
+    return result
+}
+
+/// 🧹 ОЧИСТИТЬ ЛОГИ КРАШЕЙ
+/// Использование в Debug Console: clearCrashLogs()
+func clearCrashLogs() -> Bool {
+    UserDefaults.standard.removeObject(forKey: "last_crash_log")
+    UserDefaults.standard.removeObject(forKey: "crash_timestamp")
+    UserDefaults.standard.removeObject(forKey: "last_crash_stack_trace")
+    VisualLogger.shared.clearSavedLogs()
+    print("✅ Crash logs cleared from UserDefaults")
+    return true
+}
+
+/// 📁 ПОЛУЧИТЬ ЛОГИ ИЗ ФАЙЛОВ (для TestFlight)
+/// Использование в Debug Console: getCrashLogsFromFiles()
+/// Возвращает логи из файлов, сохраненных в Documents directory
+func getCrashLogsFromFiles() -> String {
+    var result = "=== 📁 CRASH LOGS FROM FILES ===\n\n"
+    
+    guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+        result += "❌ Documents directory not found\n"
+        print(result)
+        return result
+    }
+    
+    // 1. Основной лог краша
+    let crashLogFile = documentsPath.appendingPathComponent("crash_log.txt")
+    if let crashLog = try? String(contentsOf: crashLogFile, encoding: .utf8) {
+        result += "🚨 CRASH LOG FILE:\n\(crashLog)\n\n"
+    } else {
+        result += "✅ No crash_log.txt found\n\n"
+    }
+    
+    // 2. Stack trace файл
+    let stackTraceFile = documentsPath.appendingPathComponent("crash_stack_trace.txt")
+    if let stackTrace = try? String(contentsOf: stackTraceFile, encoding: .utf8) {
+        result += "📋 STACK TRACE FILE:\n\(stackTrace)\n\n"
+    } else {
+        result += "✅ No crash_stack_trace.txt found\n\n"
+    }
+    
+    // 3. MainScreen debug log
+    let mainScreenLogFile = documentsPath.appendingPathComponent("main_screen_debug_log.txt")
+    if let mainScreenLog = try? String(contentsOf: mainScreenLogFile, encoding: .utf8) {
+        result += "📱 MAIN SCREEN DEBUG LOG:\n\(mainScreenLog)\n\n"
+    } else {
+        result += "✅ No main_screen_debug_log.txt found\n\n"
+    }
+    
+    // 4. Список всех файлов в Documents
+    result += "📂 ALL FILES IN DOCUMENTS:\n"
+    if let files = try? FileManager.default.contentsOfDirectory(at: documentsPath, includingPropertiesForKeys: nil) {
+        for file in files {
+            result += "   - \(file.lastPathComponent)\n"
+        }
+    }
+    
+    print(result)
+    return result
+}
+
+/// 📊 ПОЛУЧИТЬ ВСЕ ЛОГИ (UserDefaults + файлы)
+/// Использование в Debug Console: getAllCrashLogs()
+func getAllCrashLogs() -> String {
+    var result = "=== 🔍 ALL CRASH LOGS ===\n\n"
+    
+    // Логи из UserDefaults
+    result += getCrashLogs()
+    result += "\n\n"
+    
+    // Логи из файлов
+    result += getCrashLogsFromFiles()
+    
+    return result
+}
+
 /// 🔄 Синхронизация демо-настроек на сервер после авторизации
 func syncDemoSettingsToServer() {
     print("🔄 Начинаем синхронизацию демо-настроек на сервер...")

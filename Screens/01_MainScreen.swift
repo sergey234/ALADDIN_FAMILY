@@ -218,30 +218,50 @@ struct MainScreen: View {
             }
         }
         .onAppear {
+            // ✅ КРИТИЧНО: Логирование для TestFlight (работает в RELEASE)
+            let startTime = Date()
+            let logPrefix = "🔍 MainScreen.onAppear"
+            
+            // Сохраняем в UserDefaults для получения после краша
+            var debugLog: [String] = []
+            debugLog.append("\(logPrefix) START - \(Date())")
+            
             // ✅ ИСПРАВЛЕНИЕ: Предотвращаем двойной вызов onAppear
             guard !hasAppeared else {
-                print("⚠️ MainScreen.onAppear: Повторный вызов пропущен")
+                let message = "\(logPrefix) Повторный вызов пропущен"
+                print("⚠️ \(message)")
+                debugLog.append("⚠️ \(message)")
+                saveDebugLog(debugLog)
                 return
             }
             hasAppeared = true
+            debugLog.append("✅ hasAppeared установлен в true")
 
             logger.screenLoad("MainScreen")
+            debugLog.append("✅ logger.screenLoad вызван")
 
             // ✅ КРИТИЧНО: Проверяем, завершен ли онбординг
             let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            debugLog.append("✅ onboardingDone = \(onboardingDone)")
             if !onboardingDone {
-                logger.warn("Onboarding not completed, redirecting back")
+                let message = "Onboarding not completed, redirecting back"
+                logger.warn(message)
+                debugLog.append("⚠️ \(message)")
+                saveDebugLog(debugLog)
                 navigationManager.currentScreen = .onboarding
                 return
             }
 
             // ✅ ОТЛАДКА: Проверяем наличие ID при загрузке экрана
             let memberId = UserDefaults.standard.string(forKey: "your_member_id")
+            debugLog.append("✅ memberId = \(memberId ?? "nil")")
             logger.business("Member ID check: \(memberId ?? "nil")")
             if let id = memberId, !id.isEmpty {
                 logger.business("Member ID found: \(id)")
+                debugLog.append("✅ Member ID found: \(id)")
             } else {
                 logger.warn("Member ID not found in UserDefaults")
+                debugLog.append("⚠️ Member ID not found")
                 // ✅ ВРЕМЕННО: Для тестирования можно установить тестовый ID
                 #if DEBUG
                 if memberId == nil {
@@ -251,10 +271,18 @@ struct MainScreen: View {
                 #endif
             }
 
+            debugLog.append("✅ Загрузка profileImage...")
             loadProfileImage()
+            debugLog.append("✅ profileImage загружен")
 
             // ✅ ВЫЗОВ onAppear MainViewModel для автоматической загрузки данных из API
+            debugLog.append("✅ Вызов mainViewModel.onAppear()...")
             mainViewModel.onAppear()
+            debugLog.append("✅ mainViewModel.onAppear() завершен")
+            
+            let duration = Date().timeIntervalSince(startTime)
+            debugLog.append("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
+            saveDebugLog(debugLog)
         }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("main_lang_\(localizationManager.currentLanguage.rawValue)")
@@ -264,6 +292,47 @@ struct MainScreen: View {
     
     private func loadProfileImage() {
         profileImage = ProfileImageManager.shared.loadProfileImage(for: .main)
+    }
+    
+    // MARK: - Debug Logging для TestFlight
+    
+    /// Сохраняет debug логи в UserDefaults для получения после краша
+    private func saveDebugLog(_ logs: [String]) {
+        let key = "main_screen_debug_log"
+        let logText = logs.joined(separator: "\n")
+        
+        // Сохраняем текущий лог
+        UserDefaults.standard.set(logText, forKey: key)
+        
+        // Добавляем к истории (последние 5 запусков)
+        var history = UserDefaults.standard.stringArray(forKey: "\(key)_history") ?? []
+        history.append(logText)
+        if history.count > 5 {
+            history.removeFirst()
+        }
+        UserDefaults.standard.set(history, forKey: "\(key)_history")
+        UserDefaults.standard.synchronize()
+        
+        // Также сохраняем в файл для TestFlight
+        saveDebugLogToFile(logs)
+    }
+    
+    /// Сохраняет debug логи в файл (работает в RELEASE/TestFlight)
+    private func saveDebugLogToFile(_ logs: [String]) {
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return
+        }
+        
+        let logFile = documentsPath.appendingPathComponent("main_screen_debug_log.txt")
+        let logText = logs.joined(separator: "\n")
+        
+        do {
+            try logText.write(to: logFile, atomically: true, encoding: .utf8)
+            UserDefaults.standard.set(logFile.path, forKey: "main_screen_debug_log_file_path")
+            UserDefaults.standard.synchronize()
+        } catch {
+            // Игнорируем ошибки записи файла
+        }
     }
     
     // MARK: - Home Content
