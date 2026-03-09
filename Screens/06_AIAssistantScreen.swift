@@ -668,10 +668,17 @@ struct AIAssistantScreen: View {
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
     }
     
-    private func currentTime() -> String {
+    // ✅ ИСПРАВЛЕНИЕ BUILD 90: Статический форматтер для предотвращения рекурсии
+    private static let timeFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
-        return formatter.string(from: Date())
+        formatter.locale = Locale(identifier: "ru_RU") // Статический locale
+        return formatter
+    }()
+    
+    private func currentTime() -> String {
+        // ✅ Используем статический formatter вместо создания нового каждый раз
+        return Self.timeFormatter.string(from: Date())
     }
 
     private func handleQuickAction(_ action: QuickActionType) {

@@ -517,23 +517,34 @@ struct FamilyChatScreen: View {
         )
     }
     
-    private func formatTimestamp(_ timestamp: String) -> String {
-        // Поддерживаем разные форматы timestamp
-        let formatters = [
+    // ✅ ИСПРАВЛЕНИЕ BUILD 90: Статические форматтеры для предотвращения рекурсии
+    private static let timestampFormatters: [DateFormatter] = {
+        let formats = [
             "yyyy-MM-dd'T'HH:mm:ss",
             "yyyy-MM-dd'T'HH:mm:ss.SSS",
             "yyyy-MM-dd'T'HH:mm:ssZ",
             "yyyy-MM-dd HH:mm:ss"
         ]
-        
-        for format in formatters {
+        return formats.map { format in
             let formatter = DateFormatter()
             formatter.dateFormat = format
-            
+            formatter.locale = Locale(identifier: "ru_RU") // Статический locale
+            return formatter
+        }
+    }()
+    
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.locale = Locale(identifier: "ru_RU") // Статический locale
+        return formatter
+    }()
+    
+    private func formatTimestamp(_ timestamp: String) -> String {
+        // ✅ Используем статические форматтеры вместо создания новых каждый раз
+        for formatter in Self.timestampFormatters {
             if let date = formatter.date(from: timestamp) {
-                let timeFormatter = DateFormatter()
-                timeFormatter.dateFormat = "HH:mm"
-                return timeFormatter.string(from: date)
+                return Self.timeFormatter.string(from: date)
             }
         }
         
@@ -541,9 +552,8 @@ struct FamilyChatScreen: View {
     }
     
     private func getCurrentTime() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: Date())
+        // ✅ Используем статический formatter вместо создания нового каждый раз
+        return Self.timeFormatter.string(from: Date())
     }
     
     // MARK: - Extended Features

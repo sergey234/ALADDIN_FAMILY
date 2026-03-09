@@ -37,10 +37,17 @@ struct FamilyChatView: View {
         let sender: String
         let timestamp: Date
 
-        var timeString: String {
+        // ✅ ИСПРАВЛЕНИЕ BUILD 90: Статический форматтер для предотвращения рекурсии
+        private static let timeFormatter: DateFormatter = {
             let formatter = DateFormatter()
             formatter.timeStyle = .short
-            return formatter.string(from: timestamp)
+            formatter.locale = Locale(identifier: "ru_RU") // Статический locale
+            return formatter
+        }()
+
+        var timeString: String {
+            // ✅ Используем статический formatter вместо создания нового каждый раз
+            return Self.timeFormatter.string(from: timestamp)
         }
     }
 

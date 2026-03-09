@@ -502,15 +502,34 @@ struct ProfileScreen: View {
         }
     }
     
-    private func formatConsentDate(_ dateString: String) -> String {
+    // ✅ ИСПРАВЛЕНИЕ BUILD 90: Статические форматтеры для предотвращения рекурсии
+    private static let isoDateFormatter: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
-        if let date = formatter.date(from: dateString) {
-            let displayFormatter = DateFormatter()
-            displayFormatter.dateStyle = .medium
-            displayFormatter.timeStyle = .short
-            // ✅ Используем текущий язык из LocalizationManager
-            let localeIdentifier = localizationManager.currentLanguage == .russian ? "ru_RU" : "en_US"
-            displayFormatter.locale = Locale(identifier: localeIdentifier)
+        return formatter
+    }()
+    
+    private static let consentDateFormatterRU: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
+    
+    private static let consentDateFormatterEN: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "en_US")
+        return formatter
+    }()
+    
+    private func formatConsentDate(_ dateString: String) -> String {
+        if let date = Self.isoDateFormatter.date(from: dateString) {
+            // ✅ Используем статические форматтеры вместо создания новых каждый раз
+            let displayFormatter = localizationManager.currentLanguage == .russian 
+                ? Self.consentDateFormatterRU 
+                : Self.consentDateFormatterEN
             return displayFormatter.string(from: date)
         }
         return dateString
@@ -626,21 +645,31 @@ struct ProfileScreen: View {
     
     // MARK: - Load Registration Date
     
+    // ✅ ИСПРАВЛЕНИЕ BUILD 90: Статические форматтеры для предотвращения рекурсии
+    private static let registrationDateFormatterRU: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMMM yyyy"
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
+    
+    private static let registrationDateFormatterEN: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMMM yyyy"
+        formatter.locale = Locale(identifier: "en_US")
+        return formatter
+    }()
+    
     private func loadRegistrationDate() {
+        let formatter = localizationManager.currentLanguage == .russian 
+            ? Self.registrationDateFormatterRU 
+            : Self.registrationDateFormatterEN
+        
         if let savedDate = UserDefaults.standard.object(forKey: "registration_date") as? Date {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "d MMMM yyyy"
-            // ✅ Используем текущий язык из LocalizationManager
-            let localeIdentifier = localizationManager.currentLanguage == .russian ? "ru_RU" : "en_US"
-            formatter.locale = Locale(identifier: localeIdentifier)
+            // ✅ Используем статический formatter вместо создания нового каждый раз
             registrationDate = formatter.string(from: savedDate)
         } else {
             // Если дата не сохранена, используем текущую дату
-            let formatter = DateFormatter()
-            formatter.dateFormat = "d MMMM yyyy"
-            // ✅ Используем текущий язык из LocalizationManager
-            let localeIdentifier = localizationManager.currentLanguage == .russian ? "ru_RU" : "en_US"
-            formatter.locale = Locale(identifier: localeIdentifier)
             registrationDate = formatter.string(from: Date())
         }
     }

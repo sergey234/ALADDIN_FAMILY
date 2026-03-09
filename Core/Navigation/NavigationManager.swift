@@ -6,8 +6,9 @@ private let logger = MasterLogger.shared
 // MARK: - Navigation Manager для всех экранов ALADDIN - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
 @MainActor
 class NavigationManager: ObservableObject {
-    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Начинаем с онбординга для первого запуска
-    @Published var currentScreen: ALADDINScreen = .loading
+    // ✅ ИСПРАВЛЕНИЕ BUILD 90: Проверяем онбординг сразу при инициализации
+    // Убираем страницу загрузки перед онбордингом для лучшего UX
+    @Published var currentScreen: ALADDINScreen
     @Published var navigationStack: [ALADDINScreen] = []
     @Published var isPresentingModal: Bool = false
     @Published var currentModal: ALADDINModal? = nil
@@ -18,6 +19,21 @@ class NavigationManager: ObservableObject {
     
     // ✅ ИСПРАВЛЕНИЕ: Добавляем для PaymentQRScreen через NavigationLink
     @Published var selectedTariffForPayment: Tariff? = nil
+    
+    // ✅ ИСПРАВЛЕНИЕ BUILD 90: Инициализация с проверкой онбординга
+    init() {
+        // Проверяем онбординг сразу при инициализации
+        let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        if onboardingDone {
+            // Онбординг пройден - показываем главный экран
+            self.currentScreen = .main
+            print("🟢 NavigationManager.init: Онбординг пройден - начинаем с главного экрана")
+        } else {
+            // Онбординг не пройден - показываем онбординг сразу (без страницы загрузки)
+            self.currentScreen = .onboarding
+            print("🔴 NavigationManager.init: Онбординг не пройден - начинаем с онбординга")
+        }
+    }
     
     // MARK: - Основные экраны (25)
     enum ALADDINScreen: String, CaseIterable {

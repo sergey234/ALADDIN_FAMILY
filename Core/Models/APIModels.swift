@@ -254,12 +254,18 @@ struct ChatMessageResponse: Codable {
         case timestamp
     }
 
+    // ✅ ИСПРАВЛЕНИЕ BUILD 90: Статический форматтер для предотвращения рекурсии
+    private static let timestampFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime] // Поддержка формата 2026-03-03T00:37:41.912231
+        return formatter
+    }()
+
     // ✅ ДОБАВЛЕНО: Вычисляемое свойство для конвертации timestamp в Date (для UI)
     var timestampDate: Date? {
         guard let timestamp = timestamp else { return nil }
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime] // Поддержка формата 2026-03-03T00:37:41.912231
-        return formatter.date(from: timestamp)
+        // ✅ Используем статический formatter вместо создания нового каждый раз
+        return Self.timestampFormatter.date(from: timestamp)
     }
 }
 
