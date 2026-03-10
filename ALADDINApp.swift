@@ -129,11 +129,11 @@ struct ALADDINApp: App {
     @AppStorage("selected_theme") private var selectedTheme: String = "system"
     // ✅ BUILD 95: Показ VisualLogger overlay в RELEASE/TestFlight по флагу
     @AppStorage("enable_visual_logging_release") private var enableVisualLoggingRelease: Bool = false
+    // ✅ BUILD 95: Используем @AppStorage вместо UserDefaults для предотвращения рекурсии
+    @AppStorage(AppConfig.UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
 
     // ✅ ИСПРАВЛЕНИЕ: Отслеживаем состояние приложения для предотвращения сброса навигации
     @Environment(\.scenePhase) private var scenePhase
-    // Убрали @AppStorage для онбординга
-    // private var hasCompletedOnboarding: Bool = false // больше не используется
 
     // ✅ Состояние навигации
     @State private var navigationInitialized: Bool = false
@@ -333,7 +333,8 @@ struct ALADDINApp: App {
                 MonitoredUserDefaults.slowThresholdMs = 50
 
                 // Запускаем инициализацию при появлении
-                Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager)
+                // ✅ BUILD 95: Передаем hasCompletedOnboarding из @AppStorage для предотвращения рекурсии
+                Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager, hasCompletedOnboarding: hasCompletedOnboarding)
 
                 // ✅ Инициализируем SubscriptionManager для JWT токенов
                 print("🚀 ALADDINApp: Starting SubscriptionManager initialization Task")
@@ -621,7 +622,8 @@ struct ALADDINApp: App {
             .onAppear {
                 let navManager = navigationManager
                 let locManager = localizationManager
-                Self.initializeNavigation(navigationManager: navManager, localizationManager: locManager)
+                // ✅ BUILD 95: Передаем hasCompletedOnboarding из @AppStorage для предотвращения рекурсии
+                Self.initializeNavigation(navigationManager: navManager, localizationManager: locManager, hasCompletedOnboarding: hasCompletedOnboarding)
             }
             // ✅ ИСПРАВЛЕНИЕ: Упрощенная обработка возврата из фона - без лишних проверок
             .onChange(of: scenePhase) { newPhase in
@@ -674,7 +676,8 @@ extension ALADDINApp {
     private static var hasInitializedNavigation = false
 
     // MARK: - Navigation Initialization
-    private static func initializeNavigation(navigationManager: NavigationManager, localizationManager: LocalizationManager) {
+    // ✅ BUILD 95: Добавлен параметр hasCompletedOnboarding для предотвращения рекурсии
+    private static func initializeNavigation(navigationManager: NavigationManager, localizationManager: LocalizationManager, hasCompletedOnboarding: Bool? = nil) {
         // 📊 МЕТРИКИ ПРОИЗВОДИТЕЛЬНОСТИ: Замер времени инициализации
         let startTime = Date()
 
@@ -726,9 +729,10 @@ extension ALADDINApp {
             }
         }
 
-        // ✅ ИСПРАВЛЕНИЕ BUILD 93: Используем UserDefaults напрямую (безопасно, так как не в View)
-        // НЕ используем @AppStorage здесь, так как это статическая функция
-        let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        // ✅ BUILD 95: Используем переданное значение hasCompletedOnboarding
+        // КРИТИЧНО: НЕ используем UserDefaults напрямую здесь - может вызвать рекурсию!
+        // Если значение не передано, используем false (безопасное значение по умолчанию)
+        let onboardingDone = hasCompletedOnboarding ?? false
         print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")
 
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда начинаем с онбординга при первом запуске

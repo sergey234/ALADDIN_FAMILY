@@ -315,7 +315,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         
         let state: [String: Any] = [
             "memory_usage_mb": memoryUsage,
-            "active_threads": Thread.activeThreadCount,
+            // Thread.activeThreadCount недоступен на этой платформе, используем длину стека вызовов как приближение
+            "active_threads": Thread.callStackSymbols.count,
             "timestamp": timestamp,
             "app_state": UIApplication.shared.applicationState.rawValue,
             "device": UIDevice.current.model,

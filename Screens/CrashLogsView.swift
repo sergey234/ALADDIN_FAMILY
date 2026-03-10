@@ -42,7 +42,7 @@ struct CrashLogsView: View {
             .navigationTitle("Crash Logs")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Закрыть") { dismiss() }
                 }
             }

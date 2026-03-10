@@ -20,19 +20,13 @@ class NavigationManager: ObservableObject {
     // ✅ ИСПРАВЛЕНИЕ: Добавляем для PaymentQRScreen через NavigationLink
     @Published var selectedTariffForPayment: Tariff? = nil
     
-    // ✅ ИСПРАВЛЕНИЕ BUILD 90: Инициализация с проверкой онбординга
+    // ✅ BUILD 95: Инициализация БЕЗ чтения UserDefaults - предотвращает рекурсию
     init() {
-        // Проверяем онбординг сразу при инициализации
-        let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-        if onboardingDone {
-            // Онбординг пройден - показываем главный экран
-            self.currentScreen = .main
-            print("🟢 NavigationManager.init: Онбординг пройден - начинаем с главного экрана")
-        } else {
-            // Онбординг не пройден - показываем онбординг сразу (без страницы загрузки)
-            self.currentScreen = .onboarding
-            print("🔴 NavigationManager.init: Онбординг не пройден - начинаем с онбординга")
-        }
+        // ✅ ИСПРАВЛЕНИЕ BUILD 95: Убрано чтение UserDefaults из init() - может вызывать рекурсию
+        // Реальное значение будет установлено в initializeNavigation() через параметр
+        // Используем значение по умолчанию (.onboarding) для безопасности
+        self.currentScreen = .onboarding
+        print("🟢 NavigationManager.init: Инициализация с экраном по умолчанию (.onboarding)")
     }
     
     // MARK: - Основные экраны (25)

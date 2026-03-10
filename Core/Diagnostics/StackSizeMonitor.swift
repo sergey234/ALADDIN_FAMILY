@@ -12,7 +12,7 @@ enum StackSizeMonitor {
     static func logCurrentThreadStackSize(context: String) {
         let bytes = currentThreadStackSizeBytes()
         let kb = Double(bytes) / 1024.0
-        print("📚 [StackSizeMonitor] \(context): stackSize=\(String(format: \"%.0f\", kb)) KB")
+        print("📚 [StackSizeMonitor] \(context): stackSize=\(String(format: "%.0f", kb)) KB")
     }
 
     static func logMainThreadStackSize(context: String) {

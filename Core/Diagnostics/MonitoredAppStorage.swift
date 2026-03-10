@@ -8,21 +8,8 @@ import Foundation
 struct MonitoredAppStorage<Value>: DynamicProperty {
     @AppStorage private var value: Value
     private let key: String
-    private let slowThresholdMs: Double
-
-    init(_ key: String, defaultValue: Value, slowThresholdMs: Double = 50) where Value: ExpressibleByNilLiteral {
-        self.key = key
-        self.slowThresholdMs = slowThresholdMs
-        self._value = AppStorage(key)
-        // Для nil-значений AppStorage сам разрулит дефолт, оставляем как есть
-        _ = defaultValue
-    }
-
-    init(_ key: String, defaultValue: Value, slowThresholdMs: Double = 50) {
-        self.key = key
-        self.slowThresholdMs = slowThresholdMs
-        self._value = AppStorage(wrappedValue: defaultValue, key)
-    }
+    /// Порог медленной операции в миллисекундах
+    private var slowThresholdMs: Double = 50
 
     var wrappedValue: Value {
         get {
@@ -32,7 +19,7 @@ struct MonitoredAppStorage<Value>: DynamicProperty {
             let v = value
             let ms = (CFAbsoluteTimeGetCurrent() - start) * 1000.0
             if ms >= slowThresholdMs {
-                print("⚠️ [@AppStorage READ] slow \(String(format: \"%.1f\", ms))ms key='\(key)'")
+                print("⚠️ [@AppStorage READ] slow \(String(format: "%.1f", ms))ms key='\(key)'")
             }
             return v
         }
@@ -43,7 +30,7 @@ struct MonitoredAppStorage<Value>: DynamicProperty {
             value = newValue
             let ms = (CFAbsoluteTimeGetCurrent() - start) * 1000.0
             if ms >= slowThresholdMs {
-                print("⚠️ [@AppStorage WRITE] slow \(String(format: \"%.1f\", ms))ms key='\(key)'")
+                print("⚠️ [@AppStorage WRITE] slow \(String(format: "%.1f", ms))ms key='\(key)'")
             }
         }
     }

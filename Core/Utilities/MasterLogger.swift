@@ -48,7 +48,9 @@ class MasterLogger {
         // Настройка уровней логирования
         #if DEBUG
         maxLogLevel = .trace  // В DEBUG все уровни
-        enableVisualLogging = true  // В DEBUG включаем визуальное логирование
+        // ✅ BUILD 95: Убрано присваивание enableVisualLogging из init() - может вызывать рекурсию
+        // enableVisualLogging = true  // УБРАНО - вызывает UserDefaults.set() в init()
+        // Значение по умолчанию уже false, будет установлено при первом использовании или через UI
         #else
         maxLogLevel = .info   // В RELEASE только INFO и выше
         #endif

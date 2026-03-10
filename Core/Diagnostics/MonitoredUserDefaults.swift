@@ -31,14 +31,14 @@ enum MonitoredUserDefaults {
     }
 
     static func set(_ value: Any?, forKey key: String, file: String = #fileID, line: Int = #line) {
-        _ = measure("WRITE", key: key, file: file, line: line) {
+        _ = measure("WRITE", key: key, file: file, line: line) { () -> Bool in
             UserDefaults.standard.set(value, forKey: key)
             return true
         }
     }
 
     static func removeObject(forKey key: String, file: String = #fileID, line: Int = #line) {
-        _ = measure("WRITE", key: key, file: file, line: line) {
+        _ = measure("WRITE", key: key, file: file, line: line) { () -> Bool in
             UserDefaults.standard.removeObject(forKey: key)
             return true
         }
@@ -54,7 +54,7 @@ enum MonitoredUserDefaults {
         let ms = (CFAbsoluteTimeGetCurrent() - start) * 1000.0
 
         if ms >= slowThresholdMs {
-            print("⚠️ [UserDefaults \(op)] slow \(String(format: \"%.1f\", ms))ms key='\(key)' at \(file):\(line)")
+            print("⚠️ [UserDefaults \(op)] slow \(String(format: "%.1f", ms))ms key='\(key)' at \(file):\(line)")
         }
         return result
     }
