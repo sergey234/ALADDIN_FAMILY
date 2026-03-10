@@ -21,13 +21,8 @@ struct SettingsScreen: View {
     // ✅ BUILD 95: Встроенный просмотр логов крашей/диагностики прямо на устройстве
     @State private var showCrashLogsView: Bool = false
 
-    // ТЕСТОВЫЙ ЛОГ - проверяем инициализацию
-    private let testLogger: Void = {
-        print("🧪 SETTINGS_SCREEN: Struct initialized - testing logger")
-        logger.screenLoad("SettingsScreen")
-        print("🧪 SETTINGS_SCREEN: Logger called - should see this in Xcode")
-        return ()
-    }()
+    // ✅ BUILD 100: Убран testLogger из struct - логирование перемещено в .onAppear
+    // Это предотвращает избыточное логирование при пересоздании View
 
     // Конструктор с dependency injection
     init(viewModel: SettingsViewModel) {
@@ -600,6 +595,9 @@ struct SettingsScreen: View {
         }
         .navigationBarHidden(true)
         .onAppear {
+            // ✅ BUILD 100: Логирование загрузки экрана перемещено из testLogger в .onAppear
+            // Это предотвращает избыточное логирование при пересоздании View
+            logger.screenLoad("SettingsScreen")
             viewModel.initializeView()
         }
         .sheet(isPresented: $viewModel.showProfileEdit) {

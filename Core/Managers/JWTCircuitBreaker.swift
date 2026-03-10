@@ -84,15 +84,23 @@ class JWTCircuitBreaker {
 
     /// 🔀 Separate CB instances for different endpoint categories
     private var categoryBreakers: [EndpointCategory: JWTCircuitBreaker] = [:]
+    
+    /// ✅ BUILD 100: Thread-safe lock для предотвращения многократной инициализации
+    private let breakerLock = NSLock()
 
     /// Get or create CB for specific category
+    /// ✅ BUILD 100: Добавлена thread-safe проверка для предотвращения многократной инициализации
     private func breaker(for category: EndpointCategory) -> JWTCircuitBreaker {
+        breakerLock.lock()
+        defer { breakerLock.unlock() }
+        
         if let breaker = categoryBreakers[category] {
             return breaker
         }
 
         // Create new CB with category-specific settings
-        let breaker = JWTCircuitBreaker()
+        // ✅ BUILD 100: Создаем без логирования (isMainInstance: false)
+        let breaker = JWTCircuitBreaker(isMainInstance: false)
         breaker.failureThreshold = category.failureThreshold
         breaker.timeout = category.recoveryTimeout
         categoryBreakers[category] = breaker
@@ -126,13 +134,18 @@ class JWTCircuitBreaker {
     private let logger = MasterLogger.shared
 
     /// Singleton instance
-    static let shared = JWTCircuitBreaker()
+    static let shared = JWTCircuitBreaker(isMainInstance: true)
 
     // MARK: - Initialization
 
     /// Private initializer for singleton
-    private init() {
-        logger.business("🔌 DEFENSIVE JWT: JWTCircuitBreaker initialized - \(state.description)")
+    /// ✅ BUILD 100: Добавлен параметр isMainInstance для контроля логирования
+    /// Логируем только для главного экземпляра (shared), не для категорийных экземпляров
+    private init(isMainInstance: Bool = false) {
+        // Логируем только для главного экземпляра
+        if isMainInstance {
+            logger.business("🔌 DEFENSIVE JWT: JWTCircuitBreaker initialized - \(state.description)")
+        }
     }
 
     // MARK: - Public Methods

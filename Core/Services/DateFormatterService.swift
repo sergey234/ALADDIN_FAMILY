@@ -52,13 +52,14 @@ class DateFormatterService {
     // MARK: - Display Formatters
     
     /// Статический DateFormatter для отображения дат (medium style)
+    /// ✅ BUILD 100: Используем статический Calendar вместо Calendar.current
     private static let displayFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
         formatter.locale = Locale(identifier: "ru_RU")
-        // ✅ BUILD 100: Используем статический Calendar вместо Calendar.current
-        formatter.calendar = Self.calendar
+        // ✅ BUILD 100: Используем статический Calendar - обращаемся напрямую к calendar
+        formatter.calendar = DateFormatterService.calendar
         return formatter
     }()
     
@@ -68,7 +69,7 @@ class DateFormatterService {
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
         formatter.locale = Locale(identifier: "ru_RU")
-        formatter.calendar = Self.calendar
+        formatter.calendar = DateFormatterService.calendar
         return formatter
     }()
     
@@ -78,7 +79,7 @@ class DateFormatterService {
         formatter.dateStyle = .none
         formatter.timeStyle = .short
         formatter.locale = Locale(identifier: "ru_RU")
-        formatter.calendar = Self.calendar
+        formatter.calendar = DateFormatterService.calendar
         return formatter
     }()
     
@@ -88,7 +89,7 @@ class DateFormatterService {
         formatter.dateStyle = .full
         formatter.timeStyle = .full
         formatter.locale = Locale(identifier: "ru_RU")
-        formatter.calendar = Self.calendar
+        formatter.calendar = DateFormatterService.calendar
         return formatter
     }()
     

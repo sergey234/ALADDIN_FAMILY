@@ -39,6 +39,10 @@ struct MainScreen: View {
     // Вместо computed property используем @State, который обновляется только при изменении subscriptionExpiresAtIso
     @State private var cachedExpirationText: String? = nil
     
+    // ✅ BUILD 100: Рефакторинг - используем DateFormatterService вместо статических форматтеров
+    // Централизованное управление форматтерами предотвращает рекурсию и упрощает поддержку
+    private let dateFormatterService = DateFormatterService.shared
+    
     // ✅ BUILD 99: Защита от рекурсии теперь через глобальный флаг (см. выше)
     // @State не работает при пересоздании View, поэтому используем глобальный флаг
     
@@ -943,41 +947,9 @@ struct MainScreen: View {
         }
     }
 
-    // ✅ BUILD 100: Статические форматтеры для предотвращения рекурсии
-    // Используем статические форматтеры с статическим Calendar
-    
-    // Статический ISO8601DateFormatter для парсинга дат
-    private static let isoFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
-    }()
-    
-    // Статический ISO8601DateFormatter без fractional seconds (fallback)
-    private static let isoFormatterFallback: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
-        return formatter
-    }()
-    
-    // ✅ BUILD 100 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Статический Calendar для предотвращения рекурсии через Calendar.current
-    private static let calendar: Calendar = {
-        var cal = Calendar(identifier: .gregorian)
-        cal.locale = Locale(identifier: "ru_RU")
-        return cal
-    }()
-    
-    // Статический DateFormatter для отображения дат
-    private static let displayFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        formatter.locale = Locale(identifier: "ru_RU")
-        // ✅ BUILD 100 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем статический Calendar вместо Calendar.current
-        // Calendar.current может читать из UserDefaults, что вызывает рекурсию через ICU библиотеку
-        formatter.calendar = Self.calendar
-        return formatter
-    }()
+    // ✅ BUILD 100: Старые статические форматтеры удалены
+    // Теперь используется DateFormatterService для всех операций форматирования дат
+    // Это предотвращает рекурсию и упрощает поддержку кода
     
     // ✅ ИСПРАВЛЕНИЕ BUILD 92: Функция для обновления кеша БЕЗ чтения @AppStorage напрямую
     // Принимает значение как параметр, чтобы избежать рекурсии через @AppStorage
@@ -1011,23 +983,13 @@ struct MainScreen: View {
             return
         }
         
-        // ✅ Используем статический formatter вместо создания нового каждый раз
-        var parsedDate = Self.isoFormatter.date(from: isoString)
-        if parsedDate == nil {
-            parsedDate = Self.isoFormatterFallback.date(from: isoString)
-        }
-        guard let date = parsedDate else {
-            await MainActor.run {
-                cachedExpirationText = nil
-            }
-            return
+        // ✅ BUILD 100 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем DateFormatterService вместо старого кода
+        // DateFormatterService использует статический Calendar и предотвращает рекурсию
+        // Это исправляет краш в background thread (Thread 7)
+        let formattedText = await MainActor.run {
+            dateFormatterService.formatExpirationDate(from: isoString)
         }
         
-        // ✅ BUILD 100 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Форматирование на main thread
-        // Это предотвращает проблемы с UserDefaults и рекурсию через ICU библиотеку
-        let formattedText = await MainActor.run {
-            Self.displayFormatter.string(from: date)
-        }
         await MainActor.run {
             cachedExpirationText = formattedText
         }
