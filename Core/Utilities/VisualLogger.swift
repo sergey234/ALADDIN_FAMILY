@@ -29,11 +29,16 @@ class VisualLogger: ObservableObject {
     private var logQueue = DispatchQueue(label: "com.aladdin.visualLogger", qos: .utility)
     
     private init() {
-        // 🔄 ВОССТАНАВЛИВАЕМ ЛОГИ ИЗ UserDefaults ПРИ ЗАПУСКЕ
-        loadLogsFromUserDefaults()
-
-        // Добавляем лог о запуске
-        log("🚀 VisualLogger initialized with \(logs.count) restored logs", level: .info)
+        // ✅ ИСПРАВЛЕНИЕ BUILD 93: Убрано чтение UserDefaults из init() - может вызывать рекурсию
+        // Логи будут загружены асинхронно после инициализации через loadLogsAsync()
+    }
+    
+    // ✅ НОВОЕ: Асинхронная загрузка логов после инициализации
+    func loadLogsAsync() {
+        Task { @MainActor in
+            loadLogsFromUserDefaults()
+            log("🚀 VisualLogger initialized with \(logs.count) restored logs", level: .info)
+        }
     }
 
     // 💾 СОХРАНЕНИЕ ЛОГА В UserDefaults

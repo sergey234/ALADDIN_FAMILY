@@ -25,7 +25,17 @@ class MasterLogger {
     private let visualLogger = VisualLogger.shared
 
     /// Флаг включения визуального логирования
-    @AppStorage("enable_visual_logging") private var enableVisualLogging = false
+    // ✅ ИСПРАВЛЕНИЕ BUILD 93: Заменен @AppStorage на UserDefaults для singleton
+    // @AppStorage предназначен только для SwiftUI View, не для singleton'ов
+    // Использование @AppStorage в singleton может вызвать рекурсию с UserDefaults
+    private var enableVisualLogging: Bool {
+        get {
+            UserDefaults.standard.bool(forKey: "enable_visual_logging")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "enable_visual_logging")
+        }
+    }
 
     /// Флаг включения логирования в консоль
     private let enableConsoleLogging = true

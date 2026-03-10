@@ -1,10 +1,16 @@
 import SwiftUI
 import UIKit
 
+// ✅ ИСПРАВЛЕНИЕ BUILD 93: Отложенное создание логгеров
+// Создаются только при использовании, не при загрузке файла - предотвращает рекурсию
 // Master Logger for screen logging
-private let logger = MasterLogger.shared
+private var logger: MasterLogger {
+    MasterLogger.shared
+}
 // Visual Logger for on-screen display
-private let visualLogger = VisualLogger.shared
+private var visualLogger: VisualLogger {
+    VisualLogger.shared
+}
 
 struct MainScreen: View {
     @State private var aiQuestion: String = ""

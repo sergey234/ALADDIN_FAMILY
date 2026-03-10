@@ -161,8 +161,9 @@ struct ALADDINApp: App {
 
         print("🚀🚀🚀 ALADDINApp.init() called - APP STARTING")
         print("🚀🚀🚀 SubscriptionManager.shared created: \(SubscriptionManager.shared)")
-        VisualLogger.shared.log("🚀🚀🚀 ALADDINApp.init() called", level: .info)
-        print("📱📱📱 VISUAL_LOGGER_TEST: If you see this in Xcode Console, VisualLogger overlay may not be visible")
+        // ✅ ИСПРАВЛЕНИЕ BUILD 93: Убрано создание VisualLogger.shared из init() - может вызывать рекурсию
+        // VisualLogger будет создан только при первом использовании
+        // print("📱📱📱 VISUAL_LOGGER_TEST: If you see this in Xcode Console, VisualLogger overlay may not be visible")
         print("🚀 ALADDINApp: Начало инициализации приложения")
         // ✅ ИСПРАВЛЕНИЕ: В init() НЕ используем @StateObject, они еще не созданы!
         // Вся логика инициализации перенесена в .onAppear
@@ -313,7 +314,14 @@ struct ALADDINApp: App {
             .onAppear {
                 // 🔍 ТЕСТОВОЕ ЛОГИРОВАНИЕ - проверяем onAppear
                 print("🎯 ALADDIN_APP: onAppear triggered - testing logger")
-                MasterLogger.shared.business("ALADDINApp onAppear - testing logging system")
+                
+                // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронное логирование
+                Task {
+                    MasterLogger.shared.business("ALADDINApp onAppear - testing logging system")
+                }
+                
+                // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронная загрузка логов VisualLogger
+                VisualLogger.shared.loadLogsAsync()
 
                 // Запускаем инициализацию при появлении
                 Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager)
@@ -596,8 +604,10 @@ struct ALADDINApp: App {
             .environmentObject(localizationManager)
             // ✅ Применяем локализацию через environment
             .environment(\.locale, localizationManager.locale)
-            // ✅ КРИТИЧНО: Пересоздаём NavigationView при изменении currentScreen
-            .id("nav_\(navigationManager.currentScreen.rawValue)_\(localizationManager.currentLanguage.rawValue)")
+            // ✅ ИСПРАВЛЕНИЕ BUILD 93: УБРАН .id() с localizationManager - вызывает рекурсию
+            // localizationManager.currentLanguage читает из UserDefaults, что может вызвать рекурсию с @AppStorage
+            // View будет обновляться автоматически через @EnvironmentObject
+            .id("nav_\(navigationManager.currentScreen.rawValue)")
             // ✅ Инициализация навигации при первом появлении
             .onAppear {
                 let navManager = navigationManager
@@ -681,7 +691,10 @@ extension ALADDINApp {
         // 🔔 ИНИЦИАЛИЗИРУЕМ PUSH УВЕДОМЛЕНИЯ
         // NotificationManager инициализируется для обработки push уведомлений
         _ = NotificationManager.shared
-        MasterLogger.shared.business("NotificationManager initialized for push notifications")
+        // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронное логирование
+        Task {
+            MasterLogger.shared.business("NotificationManager initialized for push notifications")
+        }
 
         // Запрашиваем разрешение на push уведомления (асинхронно, не блокирует UI)
         Task {
@@ -693,6 +706,8 @@ extension ALADDINApp {
             }
         }
 
+        // ✅ ИСПРАВЛЕНИЕ BUILD 93: Используем UserDefaults напрямую (безопасно, так как не в View)
+        // НЕ используем @AppStorage здесь, так как это статическая функция
         let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
         print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")
 
@@ -709,7 +724,10 @@ extension ALADDINApp {
 
         // 📊 МЕТРИКИ ПРОИЗВОДИТЕЛЬНОСТИ: Логируем время инициализации
         let initTime = Date().timeIntervalSince(startTime)
-        MasterLogger.shared.performance("App initialization completed in \(String(format: "%.2f", initTime)) seconds")
+        // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронное логирование
+        Task {
+            MasterLogger.shared.performance("App initialization completed in \(String(format: "%.2f", initTime)) seconds")
+        }
     }
 
     /// Автоматически проверяет и удаляет debug токены при запуске
