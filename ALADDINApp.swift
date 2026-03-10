@@ -961,6 +961,15 @@ func checkIfTokensAreDebug() -> Bool {
 
 // MARK: - Crash Logs Functions (Available in Release for CrashLogsView)
 
+// ✅ BUILD 98: Статический DateFormatter для предотвращения рекурсии
+private let crashTimeFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .full
+    formatter.timeStyle = .full
+    formatter.locale = Locale(identifier: "ru_RU")  // Статический locale вместо Locale.current
+    return formatter
+}()
+
 /// 🔍 ПОЛУЧИТЬ ЛОГИ КРАШЕЙ
 /// Использование в Debug Console: getCrashLogs()
 /// Возвращает все доступные логи крашей из UserDefaults
@@ -978,10 +987,8 @@ func getCrashLogs() -> String {
     let timestamp = UserDefaults.standard.double(forKey: "crash_timestamp")
     if timestamp > 0 {
         let date = Date(timeIntervalSince1970: timestamp)
-        let formatter = DateFormatter()
-        formatter.dateStyle = .full
-        formatter.timeStyle = .full
-        result += "⏰ CRASH TIME: \(formatter.string(from: date))\n"
+        // ✅ BUILD 98: Используем статический DateFormatter для предотвращения рекурсии
+        result += "⏰ CRASH TIME: \(crashTimeFormatter.string(from: date))\n"
         result += "   Timestamp: \(timestamp)\n\n"
     } else {
         result += "✅ No crash timestamp found\n\n"

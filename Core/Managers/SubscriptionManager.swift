@@ -1282,7 +1282,8 @@ extension SubscriptionManager {
     func getOfflineStatusInfo() -> (isOffline: Bool, lastSync: String) {
         let lastSyncText = lastSyncDate.map { date in
             let formatter = RelativeDateTimeFormatter()
-            formatter.locale = Locale.current
+            // ✅ BUILD 98: Используем статический locale вместо Locale.current для предотвращения рекурсии
+            formatter.locale = Locale(identifier: "ru_RU")
             return formatter.localizedString(for: date, relativeTo: Date())
         } ?? "Never"
 

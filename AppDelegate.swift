@@ -7,11 +7,18 @@ import Darwin.Mach
  * ✅ BUILD 94: Добавлена диагностика крашей на реальном устройстве
  */
 
+// ✅ BUILD 98: Статический DateFormatter для предотвращения рекурсии
+private let crashLogFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+    formatter.locale = Locale(identifier: "ru_RU")  // Статический locale вместо Locale.current
+    return formatter
+}()
+
 // Глобальная функция для обработки крашей
 func crashExceptionHandler(exception: NSException) {
     let timestamp = Date()
-    let formatter = DateFormatter()
-    formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+    let formattedTime = crashLogFormatter.string(from: timestamp)
     
     // Собираем полный stack trace
     var stackTrace = ""
@@ -23,7 +30,7 @@ func crashExceptionHandler(exception: NSException) {
     🚨 CRASH DETECTED!
     Exception: \(exception.name.rawValue)
     Reason: \(exception.reason ?? "Unknown")
-    Time: \(formatter.string(from: timestamp))
+    Time: \(formattedTime)
     Device: \(UIDevice.current.model)
     iOS: \(UIDevice.current.systemVersion)
     App Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")
@@ -204,13 +211,13 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
         let memoryUsage = getMemoryUsageMB()
         let timestamp = Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        // ✅ BUILD 98: Используем статический DateFormatter для предотвращения рекурсии
+        let formattedTime = crashLogFormatter.string(from: timestamp)
         
         let memoryWarningLog = """
         🚨 MEMORY WARNING DETECTED!
         Memory Usage: \(String(format: "%.1f", memoryUsage)) MB
-        Time: \(formatter.string(from: timestamp))
+        Time: \(formattedTime)
         Device: \(UIDevice.current.model)
         iOS: \(UIDevice.current.systemVersion)
         App Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")

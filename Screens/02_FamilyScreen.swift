@@ -3467,6 +3467,14 @@ struct ScheduleSettingsModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
     
+    // ✅ BUILD 98: Статический DateFormatter для предотвращения рекурсии
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "ru_RU")  // Статический locale вместо Locale.current
+        return formatter
+    }()
+    
     // Сохранение дат через TimeInterval в UserDefaults
     @AppStorage("schedule_weekday_start") private var weekdayStartInterval: Double = 0
     @AppStorage("schedule_weekday_end") private var weekdayEndInterval: Double = 0
@@ -3574,9 +3582,8 @@ struct ScheduleSettingsModal: View {
                 
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                    let formatter = DateFormatter()
-                    formatter.timeStyle = .short
-                    print("✅ Schedule saved: weekdays \(formatter.string(from: weekdayStart.wrappedValue)) - \(formatter.string(from: weekdayEnd.wrappedValue)), weekends \(formatter.string(from: weekendStart.wrappedValue)) - \(formatter.string(from: weekendEnd.wrappedValue))")
+                    // ✅ BUILD 98: Используем статический DateFormatter для предотвращения рекурсии
+                    print("✅ Schedule saved: weekdays \(Self.timeFormatter.string(from: weekdayStart.wrappedValue)) - \(Self.timeFormatter.string(from: weekdayEnd.wrappedValue)), weekends \(Self.timeFormatter.string(from: weekendStart.wrappedValue)) - \(Self.timeFormatter.string(from: weekendEnd.wrappedValue))")
                     isPresented = false
                 }) {
                     Text(localizationManager.localized("schedule_save"))
@@ -3611,6 +3618,14 @@ struct ScheduleSettingsModal: View {
 struct SleepTimeSettingsModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    
+    // ✅ BUILD 98: Статический DateFormatter для предотвращения рекурсии
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "ru_RU")  // Статический locale вместо Locale.current
+        return formatter
+    }()
     
     // Сохранение дат через TimeInterval в UserDefaults
     @AppStorage("sleep_bedtime_start") private var bedtimeStartInterval: Double = 0
@@ -3678,9 +3693,8 @@ struct SleepTimeSettingsModal: View {
                 
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                    let formatter = DateFormatter()
-                    formatter.timeStyle = .short
-                    print("✅ Bedtime saved: \(formatter.string(from: bedtimeStart.wrappedValue)) - \(formatter.string(from: bedtimeEnd.wrappedValue)), emergency calls \(isEmergencyCallsEnabled ? "ON" : "OFF")")
+                    // ✅ BUILD 98: Используем статический DateFormatter для предотвращения рекурсии
+                    print("✅ Bedtime saved: \(Self.timeFormatter.string(from: bedtimeStart.wrappedValue)) - \(Self.timeFormatter.string(from: bedtimeEnd.wrappedValue)), emergency calls \(isEmergencyCallsEnabled ? "ON" : "OFF")")
                     isPresented = false
                 }) {
                     Text(localizationManager.localized("bedtime_save"))
@@ -3715,6 +3729,14 @@ struct AppLimitsSettingsModal: View {
     
     // Сохранение лимитов приложений в UserDefaults
     private let limitsKey = "app_limits_settings"
+    
+    // ✅ BUILD 98: Статический DateFormatter для предотвращения рекурсии
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "ru_RU")  // Статический locale вместо Locale.current
+        return formatter
+    }()
     
     @State private var appLimits: [AppLimitItem] = []
     

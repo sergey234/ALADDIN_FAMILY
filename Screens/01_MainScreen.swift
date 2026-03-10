@@ -31,6 +31,9 @@ struct MainScreen: View {
     // Вместо computed property используем @State, который обновляется только при изменении subscriptionExpiresAtIso
     @State private var cachedExpirationText: String? = nil
     
+    // ✅ BUILD 99: Защита от рекурсии при обновлении expiration text
+    @State private var isUpdatingExpirationText: Bool = false
+    
     // MARK: - Init с детальным логированием
     
     init() {
@@ -384,10 +387,11 @@ struct MainScreen: View {
                 .padding(.bottom, 20)
             }
         }
-        .onAppear {
+        .task {
+            // ✅ BUILD 99: Заменено .onAppear на .task для предотвращения повторных вызовов при обновлении View
             // ✅ КРИТИЧНО: Логирование для TestFlight (работает в RELEASE)
             let startTime = Date()
-            let logPrefix = "🔍 MainScreen.onAppear"
+            let logPrefix = "🔍 MainScreen.task"
             
             // Сохраняем в UserDefaults для получения после краша
             var debugLog: [String] = []
@@ -439,11 +443,13 @@ struct MainScreen: View {
             mainViewModel.onAppear()
             debugLog.append("✅ mainViewModel.onAppear() завершен")
             
-            // ✅ ИСПРАВЛЕНИЕ BUILD 92: Инициализация кеша expiration text БЕЗ рекурсии
+            // ✅ BUILD 99: Асинхронное обновление кеша expiration text для предотвращения рекурсии
             // Читаем значение один раз и передаем в функцию, чтобы избежать повторного чтения @AppStorage
             let currentExpiresAt = subscriptionExpiresAtIso
-            updateExpirationTextCache(from: currentExpiresAt)
-            debugLog.append("✅ cachedExpirationText инициализирован")
+            Task { @MainActor in
+                await updateExpirationTextCache(from: currentExpiresAt)
+                debugLog.append("✅ cachedExpirationText инициализирован")
+            }
             
             let duration = Date().timeIntervalSince(startTime)
             debugLog.append("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
@@ -947,9 +953,25 @@ struct MainScreen: View {
     
     // ✅ ИСПРАВЛЕНИЕ BUILD 92: Функция для обновления кеша БЕЗ чтения @AppStorage напрямую
     // Принимает значение как параметр, чтобы избежать рекурсии через @AppStorage
-    private func updateExpirationTextCache(from isoString: String) {
+    // ✅ BUILD 99: Функция сделана асинхронной для предотвращения блокировки main thread и рекурсии
+    private func updateExpirationTextCache(from isoString: String) async {
+        // ✅ BUILD 99: Защита от рекурсии
+        guard !isUpdatingExpirationText else {
+            print("⚠️ [MainScreen] updateExpirationTextCache уже выполняется, пропускаем")
+            return
+        }
+        
+        isUpdatingExpirationText = true
+        defer { 
+            Task { @MainActor in
+                isUpdatingExpirationText = false
+            }
+        }
+        
         guard !isoString.isEmpty else {
-            cachedExpirationText = nil
+            await MainActor.run {
+                cachedExpirationText = nil
+            }
             return
         }
         
@@ -959,12 +981,17 @@ struct MainScreen: View {
             parsedDate = Self.isoFormatterFallback.date(from: isoString)
         }
         guard let date = parsedDate else {
-            cachedExpirationText = nil
+            await MainActor.run {
+                cachedExpirationText = nil
+            }
             return
         }
         
         // ✅ Используем статический displayFormatter
-        cachedExpirationText = Self.displayFormatter.string(from: date)
+        let formattedText = Self.displayFormatter.string(from: date)
+        await MainActor.run {
+            cachedExpirationText = formattedText
+        }
     }
     
     // MARK: - Navigation Button Content
