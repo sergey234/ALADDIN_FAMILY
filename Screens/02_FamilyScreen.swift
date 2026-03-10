@@ -77,9 +77,29 @@ struct FamilyScreen: View {
     
     @State private var unicornBalance: Int = 245
     
+    // ✅ BUILD 96: Кешированное значение для предотвращения рекурсии
+    @State private var cachedParentalRules: ParentalControlRules? = nil
+    
     // Computed property для получения актуального баланса из UserDefaults
     private var currentUnicornBalance: Int {
         UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+    }
+    
+    // ✅ BUILD 96: Асинхронная загрузка для предотвращения рекурсии
+    private func loadParentalRules() {
+        Task { @MainActor in
+            cachedParentalRules = ParentalControlRules(
+                websiteBlocking: UserDefaults.standard.bool(forKey: "parental_website_blocking"),
+                appBlocking: UserDefaults.standard.bool(forKey: "parental_app_blocking"),
+                searchBlocking: UserDefaults.standard.bool(forKey: "parental_search_blocking"),
+                safesearch: UserDefaults.standard.bool(forKey: "parental_safesearch"),
+                screenTimeLimit: nil,
+                bedtimeStart: nil,
+                bedtimeEnd: nil,
+                appLimits: nil,
+                geofences: nil
+            )
+        }
     }
     
     // MARK: - Navigation Helper
@@ -692,6 +712,7 @@ struct FamilyScreen: View {
             } else {
                 print("🔄 [FamilyScreen.onAppear] Список уже загружен (\(familyMembers.count) участников), пропускаем загрузку")
             }
+            loadParentalRules()  // ✅ BUILD 96: Загружаем ParentalControlRules асинхронно
         }
         // ✅ ИСПРАВЛЕНИЕ #6: Убрали onChange для showAddMemberModal - теперь используем NavigationManager
         // При возврате с AddMemberOptionsScreen список обновится автоматически через onAppear
@@ -3720,14 +3741,17 @@ struct AppLimitsSettingsModal: View {
             ]
         }
         
+        // ✅ BUILD 96: Асинхронная загрузка для предотвращения рекурсии
         // Проверяем индивидуальные ключи для каждого приложения (приоритет выше)
-        for index in loadedLimits.indices {
-            let app = loadedLimits[index].app
-            let appKey = "app_\(app.lowercased().replacingOccurrences(of: " ", with: "_"))_time_limit"
-            if UserDefaults.standard.object(forKey: appKey) != nil {
-                let savedLimit = UserDefaults.standard.double(forKey: appKey)
-                if savedLimit > 0 {
-                    loadedLimits[index].limit = savedLimit
+        Task { @MainActor in
+            for index in loadedLimits.indices {
+                let app = loadedLimits[index].app
+                let appKey = "app_\(app.lowercased().replacingOccurrences(of: " ", with: "_"))_time_limit"
+                if UserDefaults.standard.object(forKey: appKey) != nil {
+                    let savedLimit = UserDefaults.standard.double(forKey: appKey)
+                    if savedLimit > 0 {
+                        loadedLimits[index].limit = savedLimit
+                    }
                 }
             }
         }
@@ -4993,12 +5017,13 @@ struct FamilyParentalControlSettingsModal: View {
         // Логируем применение правил
         print("✅ Rules applied for \(selectedChild), age group: \(selectedAgeGroup.rawValue)")
         
-        // Вызываем API через Manager для применения правил на бэкенде
-        let parentalRules = ParentalControlRules(
-            websiteBlocking: UserDefaults.standard.bool(forKey: "parental_website_blocking"),
-            appBlocking: UserDefaults.standard.bool(forKey: "parental_app_blocking"),
-            searchBlocking: UserDefaults.standard.bool(forKey: "parental_search_blocking"),
-            safesearch: UserDefaults.standard.bool(forKey: "parental_safesearch"),
+        // ✅ BUILD 96: Используем кешированное значение для предотвращения рекурсии
+        // Если кеш пуст, используем значения по умолчанию
+        let parentalRules = cachedParentalRules ?? ParentalControlRules(
+            websiteBlocking: false,
+            appBlocking: false,
+            searchBlocking: false,
+            safesearch: false,
             screenTimeLimit: nil,
             bedtimeStart: nil,
             bedtimeEnd: nil,

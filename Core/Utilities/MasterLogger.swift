@@ -25,15 +25,33 @@ class MasterLogger {
     private let visualLogger = VisualLogger.shared
 
     /// Флаг включения визуального логирования
-    // ✅ ИСПРАВЛЕНИЕ BUILD 93: Заменен @AppStorage на UserDefaults для singleton
-    // @AppStorage предназначен только для SwiftUI View, не для singleton'ов
-    // Использование @AppStorage в singleton может вызвать рекурсию с UserDefaults
+    // ✅ BUILD 96: Кешированное значение для предотвращения рекурсии
+    // Используем thread-safe кеширование через Thread.current.threadDictionary
+    private var _enableVisualLogging: Bool? = nil
+    
     private var enableVisualLogging: Bool {
         get {
-            UserDefaults.standard.bool(forKey: "enable_visual_logging")
+            // Проверяем кеш в thread dictionary для thread-safe доступа
+            let dict = Thread.current.threadDictionary
+            if let cached = dict["MasterLogger.enableVisualLogging"] as? Bool {
+                return cached
+            }
+            
+            // Если кеша нет, загружаем значение асинхронно
+            let value = UserDefaults.standard.bool(forKey: "enable_visual_logging")
+            dict["MasterLogger.enableVisualLogging"] = value
+            _enableVisualLogging = value
+            return value
         }
         set {
-            UserDefaults.standard.set(newValue, forKey: "enable_visual_logging")
+            _enableVisualLogging = newValue
+            // Сохраняем в thread dictionary для быстрого доступа
+            Thread.current.threadDictionary["MasterLogger.enableVisualLogging"] = newValue
+            
+            // ✅ BUILD 96: Асинхронная установка для предотвращения рекурсии
+            Task { @MainActor in
+                UserDefaults.standard.set(newValue, forKey: "enable_visual_logging")
+            }
         }
     }
 

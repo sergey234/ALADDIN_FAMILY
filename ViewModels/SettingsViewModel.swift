@@ -213,11 +213,21 @@ class SettingsViewModel: ObservableObject {
     // Initialization flag
     @Published var isInitializing: Bool = false
 
+    // ✅ BUILD 96: Кешированное значение для предотвращения рекурсии
+    @Published private var _isAdmin: Bool = false
+
     // MARK: - Computed Properties
 
     var isAdmin: Bool {
-        let userRole = UserDefaults.standard.string(forKey: "user_role") ?? "user"
-        return userRole == "admin" || userRole == "administrator"
+        return _isAdmin
+    }
+    
+    // ✅ BUILD 96: Асинхронная загрузка для предотвращения рекурсии
+    private func loadIsAdmin() {
+        Task { @MainActor in
+            let userRole = UserDefaults.standard.string(forKey: "user_role") ?? "user"
+            _isAdmin = userRole == "admin" || userRole == "administrator"
+        }
     }
 
     var currentTariff: TariffType {
@@ -257,6 +267,7 @@ class SettingsViewModel: ObservableObject {
         toastService = nil      // ✅ Реальный сервис будет передан через DI
         historyService = nil    // ✅ Реальный сервис будет передан через DI
         loadInitialState()
+        loadIsAdmin()  // ✅ BUILD 96: Загружаем isAdmin асинхронно
     }
 
     // Constructor with dependency injection
@@ -338,7 +349,10 @@ class SettingsViewModel: ObservableObject {
         $consentAccepted
             .dropFirst()
             .sink { accepted in
-                UserDefaults.standard.set(accepted, forKey: "personal_data_consent_accepted")
+                // ✅ BUILD 96: Асинхронная установка для предотвращения рекурсии
+                Task { @MainActor in
+                    UserDefaults.standard.set(accepted, forKey: "personal_data_consent_accepted")
+                }
             }
             .store(in: &cancellables)
 
@@ -346,7 +360,10 @@ class SettingsViewModel: ObservableObject {
         $isBiometricEnabled
             .dropFirst()
             .sink { enabled in
-                UserDefaults.standard.set(enabled, forKey: "biometricEnabled")
+                // ✅ BUILD 96: Асинхронная установка для предотвращения рекурсии
+                Task { @MainActor in
+                    UserDefaults.standard.set(enabled, forKey: "biometricEnabled")
+                }
             }
             .store(in: &cancellables)
 
@@ -354,7 +371,11 @@ class SettingsViewModel: ObservableObject {
         $selectedTheme
             .dropFirst()
             .sink { [weak self] theme in
-                UserDefaults.standard.set(theme.rawValue, forKey: "selected_theme")
+                // ✅ BUILD 96: Асинхронная установка для предотвращения рекурсии
+                Task { @MainActor in
+                    UserDefaults.standard.set(theme.rawValue, forKey: "selected_theme")
+                }
+                // Применяем тему синхронно для немедленного эффекта
                 self?.applyTheme(theme)
             }
             .store(in: &cancellables)

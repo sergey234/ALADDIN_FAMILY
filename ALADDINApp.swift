@@ -231,7 +231,8 @@ struct ALADDINApp: App {
             // ✅ ПРОДАКШЕН: Проверяем сохраненные credentials
             let savedEmail = UserDefaults.standard.string(forKey: "saved_login_email")
             let savedPassword = UserDefaults.standard.string(forKey: "saved_login_password")
-            let autoLoginEnabled = UserDefaults.standard.bool(forKey: "auto_login_enabled")
+            // ✅ BUILD 96: Используем @AppStorage вместо UserDefaults для предотвращения рекурсии
+            // autoLoginEnabled теперь доступен как свойство @AppStorage
             
             print("🔍 ALADDINApp: Проверка переменных окружения...")
             let skipDebugTokensValue = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""
@@ -681,9 +682,9 @@ extension ALADDINApp {
         // ✅ КРИТИЧНО: ПЕРВЫЙ ЗАПУСК - СБРАСЫВАЕМ ВСЕ СОСТОЯНИЕ
         if !ALADDINApp.hasInitializedNavigation {
             print("🛠️ [ALADDINApp.initializeNavigation] Первый запуск - сбрасываем состояние")
-            // Принудительный сброс онбординга для первого запуска
-            UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-            UserDefaults.standard.synchronize()
+            // ✅ BUILD 96: Убрано UserDefaults.set() - значение уже false по умолчанию в @AppStorage
+            // Не нужно устанавливать false, так как @AppStorage уже имеет значение по умолчанию false
+            // Это предотвращает рекурсию через обновление @AppStorage
         }
 
         // ✅ Используем статический флаг для предотвращения повторной инициализации
