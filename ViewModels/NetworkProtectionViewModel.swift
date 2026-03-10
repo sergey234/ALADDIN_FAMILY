@@ -268,14 +268,38 @@ class NetworkProtectionViewModel: ObservableObject {
     }
 
     // MARK: - Private Toggle Method
+    
+    /// ✅ BUILD 101: Защита от повторного переключения для предотвращения рекурсии
+    /// На реальном устройстве синхронный UserDefaults.standard.set() вызывает обновление View,
+    /// которое может вызвать повторное переключение тумблера → рекурсия
+    private var isToggling = false
+    private let togglingLock = NSLock()
 
     private func toggleComponent(
         componentId: String,
         newValue: Bool,
         updateClosure: @escaping (Bool) -> Void
     ) async {
+        // ✅ BUILD 101: Защита от повторного переключения
+        togglingLock.lock()
+        guard !isToggling else {
+            togglingLock.unlock()
+            print("⚠️ NetworkProtectionViewModel: toggleComponent уже выполняется, пропускаем повторный вызов")
+            return
+        }
+        isToggling = true
+        togglingLock.unlock()
+        
+        defer {
+            togglingLock.lock()
+            isToggling = false
+            togglingLock.unlock()
+        }
+        
         // Оптимистичное обновление UI с переданным значением
-        updateClosure(newValue)
+        await MainActor.run {
+            updateClosure(newValue)
+        }
 
         // Проверяем демо режим (отсутствие токена)
         if AppConfig.authToken == nil {
@@ -292,18 +316,26 @@ class NetworkProtectionViewModel: ObservableObject {
         newValue: Bool,
         updateClosure: @escaping (Bool) -> Void
     ) async {
-        // Демо режим: сохраняем статус локально в UserDefaults
+        // ✅ BUILD 101 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: UserDefaults.standard.set() вызывается асинхронно на main thread
+        // Синхронный вызов в background thread вызывает обновление View, которое может вызвать повторное переключение тумблера → рекурсия
+        // На реальном устройстве это вызывает краш с "Thread stack size exceeded due to excessive recursion"
         let userDefaultsKey = "demo_component_\(componentId)_enabled"
-        UserDefaults.standard.set(newValue, forKey: userDefaultsKey)
+        await MainActor.run {
+            UserDefaults.standard.set(newValue, forKey: userDefaultsKey)
+        }
 
-        // Отследить успешное переключение
-        componentAnalytics.trackComponentToggle(
-            componentId: componentId,
-            enabled: newValue
-        )
+        // ✅ BUILD 101: Отслеживание аналитики также выполняется на main thread для безопасности
+        await MainActor.run {
+            componentAnalytics.trackComponentToggle(
+                componentId: componentId,
+                enabled: newValue
+            )
+        }
 
         // Показываем уведомление для демо режима
-        toastManager.showSuccess("Компонент обновлен (демо режим)")
+        await MainActor.run {
+            toastManager.showSuccess("Компонент обновлен (демо режим)")
+        }
         print("✅ Демо режим: Компонент \(componentId) установлен в \(newValue)")
     }
 

@@ -150,9 +150,25 @@ final class SubscriptionManager: ObservableObject {
     // 🏥 DEFENSIVE JWT: Token Health Monitor работает через singleton
 
     // MARK: - Initialization
+    
+    /// ✅ BUILD 101: Защита от повторного вызова initializeOnAppStart()
+    /// SwiftUI может вызывать onAppear несколько раз при пересоздании View
+    private static var hasInitialized = false
+    private static let initializationLock = NSLock()
 
     /// Initialize on app start (async operations)
+    /// ✅ BUILD 101: Добавлена защита от повторного вызова для предотвращения дублирования инициализации
     func initializeOnAppStart() async {
+        SubscriptionManager.initializationLock.lock()
+        defer { SubscriptionManager.initializationLock.unlock() }
+        
+        guard !SubscriptionManager.hasInitialized else {
+            logger.business("⚠️ SubscriptionManager.initializeOnAppStart() уже вызван, пропускаем повторный вызов")
+            return
+        }
+        
+        SubscriptionManager.hasInitialized = true
+        
         print("🚀🚀🚀 INITIALIZE_ON_APP_START: Method called")
         logger.business("🚀 SubscriptionManager.initializeOnAppStart() called")
         VisualLogger.shared.log("🚀 SubscriptionManager.initializeOnAppStart() called", level: .info)
