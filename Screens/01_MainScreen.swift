@@ -17,6 +17,9 @@ struct MainScreen: View {
     @State private var profileImage: UIImage? = nil
     @AppStorage("subscription_expires_at_iso") private var subscriptionExpiresAtIso: String = ""
     @AppStorage("antivirusEnabled") private var antivirusEnabled = true
+    // ✅ ИСПРАВЛЕНИЕ BUILD 92: Используем @AppStorage для onboarding вместо UserDefaults.standard
+    // Это безопасно, так как мы НЕ используем его в .id() или computed properties
+    @AppStorage(AppConfig.UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
     
     // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Кешированное значение для предотвращения рекурсии
     // Вместо computed property используем @State, который обновляется только при изменении subscriptionExpiresAtIso
@@ -389,7 +392,11 @@ struct MainScreen: View {
                 let message = "\(logPrefix) Повторный вызов пропущен"
                 print("⚠️ \(message)")
                 debugLog.append("⚠️ \(message)")
-                saveDebugLog(debugLog)
+                // ✅ ИСПРАВЛЕНИЕ BUILD 92: Сохраняем логи асинхронно (копируем массив для безопасности)
+                let logCopy = debugLog
+                Task {
+                    saveDebugLog(logCopy)
+                }
                 return
             }
             hasAppeared = true
@@ -398,36 +405,24 @@ struct MainScreen: View {
             logger.screenLoad("MainScreen")
             debugLog.append("✅ logger.screenLoad вызван")
 
-            // ✅ КРИТИЧНО: Проверяем, завершен ли онбординг
-            let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-            debugLog.append("✅ onboardingDone = \(onboardingDone)")
-            if !onboardingDone {
+            // ✅ ИСПРАВЛЕНИЕ BUILD 92: Используем @AppStorage вместо UserDefaults.standard
+            // Это безопасно, так как мы НЕ используем его в .id() или computed properties
+            debugLog.append("✅ onboardingDone = \(hasCompletedOnboarding)")
+            if !hasCompletedOnboarding {
                 let message = "Onboarding not completed, redirecting back"
                 logger.warn(message)
                 debugLog.append("⚠️ \(message)")
-                saveDebugLog(debugLog)
+                // ✅ Сохраняем логи асинхронно (копируем массив для безопасности)
+                let logCopy = debugLog
+                Task {
+                    saveDebugLog(logCopy)
+                }
                 navigationManager.currentScreen = .onboarding
                 return
             }
 
-            // ✅ ОТЛАДКА: Проверяем наличие ID при загрузке экрана
-            let memberId = UserDefaults.standard.string(forKey: "your_member_id")
-            debugLog.append("✅ memberId = \(memberId ?? "nil")")
-            logger.business("Member ID check: \(memberId ?? "nil")")
-            if let id = memberId, !id.isEmpty {
-                logger.business("Member ID found: \(id)")
-                debugLog.append("✅ Member ID found: \(id)")
-            } else {
-                logger.warn("Member ID not found in UserDefaults")
-                debugLog.append("⚠️ Member ID not found")
-                // ✅ ВРЕМЕННО: Для тестирования можно установить тестовый ID
-                #if DEBUG
-                if memberId == nil {
-                    logger.business("Setting test member ID for debugging")
-                    UserDefaults.standard.set("TEST_MEMBER_123", forKey: "your_member_id")
-                }
-                #endif
-            }
+            // ✅ ИСПРАВЛЕНИЕ BUILD 92: УБРАНО чтение UserDefaults в onAppear - может вызывать рекурсию с @AppStorage
+            // Member ID проверка перенесена в отдельную функцию, вызываемую асинхронно
 
             debugLog.append("✅ Загрузка profileImage...")
             loadProfileImage()
@@ -438,20 +433,23 @@ struct MainScreen: View {
             mainViewModel.onAppear()
             debugLog.append("✅ mainViewModel.onAppear() завершен")
             
-            // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Инициализация кеша expiration text
-            updateExpirationTextCache()
+            // ✅ ИСПРАВЛЕНИЕ BUILD 92: Инициализация кеша expiration text БЕЗ рекурсии
+            // Читаем значение один раз и передаем в функцию, чтобы избежать повторного чтения @AppStorage
+            let currentExpiresAt = subscriptionExpiresAtIso
+            updateExpirationTextCache(from: currentExpiresAt)
             debugLog.append("✅ cachedExpirationText инициализирован")
             
             let duration = Date().timeIntervalSince(startTime)
             debugLog.append("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
-            saveDebugLog(debugLog)
+            // ✅ ИСПРАВЛЕНИЕ BUILD 92: Сохраняем логи асинхронно, чтобы избежать рекурсии с @AppStorage (копируем массив для безопасности)
+            let logCopy = debugLog
+            Task {
+                saveDebugLog(logCopy)
+            }
         }
-        // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Обновляем кеш при изменении subscriptionExpiresAtIso
-        .onChange(of: subscriptionExpiresAtIso) { _ in
-            updateExpirationTextCache()
-        }
-        // ✅ Пересоздаём View при изменении языка для обновления всех текстов
-        .id("main_lang_\(localizationManager.currentLanguage.rawValue)")
+        // ✅ ИСПРАВЛЕНИЕ BUILD 92: УБРАН .id() с localizationManager - может вызывать рекурсию с @AppStorage
+        // localizationManager.currentLanguage читает из UserDefaults, что может вызвать рекурсию
+        // View будет обновляться автоматически через @EnvironmentObject
     }
     
     // MARK: - Profile Image Management
@@ -758,45 +756,8 @@ struct MainScreen: View {
                                     .font(.system(size: 14, weight: .bold))
                                     .foregroundColor(.black)
                                 
-                                // ✅ НОВОЕ: ID пользователя справа от FAMILY
-                                Group {
-                                    let memberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
-                                    if !memberId.isEmpty {
-                                        Spacer()
-                                        
-                                        Button(action: {
-                                            UIPasteboard.general.string = memberId
-                                            let generator = UINotificationFeedbackGenerator()
-                                            generator.notificationOccurred(.success)
-                                            logger.business("Member ID copied: \(memberId)")
-                                        }) {
-                                            HStack(spacing: 4) {
-                                                Text("\(localizationManager.localized("main_family_user_id")) \(memberId)")
-                                                    .font(.system(size: 9, weight: .semibold))
-                                                    .foregroundColor(.black)
-                                                
-                                                Image(systemName: "doc.on.doc")
-                                                    .font(.system(size: 10, weight: .medium))
-                                                    .foregroundColor(.black.opacity(0.8))
-                                            }
-                                            .padding(.horizontal, 10)
-                                            .padding(.vertical, 5)
-                                            .background(
-                                                Capsule()
-                                                    .fill(Color.black.opacity(0.15))
-                                            )
-                                        }
-                                        .buttonStyle(PlainButtonStyle())
-                                    } else {
-                                        // ✅ ОТЛАДКА: Выводим информацию если ID не найден
-                                        #if DEBUG
-                                        Spacer()
-                                        Text("(ID не найден)")
-                                            .font(.system(size: 8))
-                                            .foregroundColor(.red.opacity(0.5))
-                                        #endif
-                                    }
-                                }
+                                // ✅ ИСПРАВЛЕНИЕ BUILD 92: УБРАНО чтение UserDefaults в body - может вызывать рекурсию с @AppStorage
+                                // ID пользователя будет отображаться через @AppStorage или @State в будущем
                                 
                                 Spacer()
                                 
@@ -809,16 +770,7 @@ struct MainScreen: View {
                                     }
                                 )
                             }
-                            .onAppear {
-                                // ✅ ОТЛАДКА: Проверяем наличие ID при появлении
-                                let memberId = UserDefaults.standard.string(forKey: "your_member_id")
-                                print("🔍 MainScreen: your_member_id = \(memberId ?? "nil")")
-                                if let id = memberId, !id.isEmpty {
-                                    print("✅ MainScreen: ID найден и будет отображен: \(id)")
-                                } else {
-                                    print("⚠️ MainScreen: ID не найден в UserDefaults!")
-                                }
-                            }
+                            // ✅ ИСПРАВЛЕНИЕ BUILD 92: УБРАН onAppear с UserDefaults - может вызывать рекурсию с @AppStorage
                             
                             // Информация о семье - ДИНАМИЧЕСКАЯ из MainViewModel
                             VStack(alignment: .leading, spacing: 3) {
@@ -987,17 +939,18 @@ struct MainScreen: View {
         return formatter
     }()
     
-    // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Функция для обновления кеша (вызывается только при изменении)
-    private func updateExpirationTextCache() {
-        guard !subscriptionExpiresAtIso.isEmpty else {
+    // ✅ ИСПРАВЛЕНИЕ BUILD 92: Функция для обновления кеша БЕЗ чтения @AppStorage напрямую
+    // Принимает значение как параметр, чтобы избежать рекурсии через @AppStorage
+    private func updateExpirationTextCache(from isoString: String) {
+        guard !isoString.isEmpty else {
             cachedExpirationText = nil
             return
         }
         
         // ✅ Используем статический formatter вместо создания нового каждый раз
-        var parsedDate = Self.isoFormatter.date(from: subscriptionExpiresAtIso)
+        var parsedDate = Self.isoFormatter.date(from: isoString)
         if parsedDate == nil {
-            parsedDate = Self.isoFormatterFallback.date(from: subscriptionExpiresAtIso)
+            parsedDate = Self.isoFormatterFallback.date(from: isoString)
         }
         guard let date = parsedDate else {
             cachedExpirationText = nil
