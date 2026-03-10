@@ -18,6 +18,9 @@ typealias Language = String
 struct SettingsScreen: View {
     @StateObject private var viewModel: SettingsViewModel
 
+    // ✅ BUILD 95: Встроенный просмотр логов крашей/диагностики прямо на устройстве
+    @State private var showCrashLogsView: Bool = false
+
     // ТЕСТОВЫЙ ЛОГ - проверяем инициализацию
     private let testLogger: Void = {
         print("🧪 SETTINGS_SCREEN: Struct initialized - testing logger")
@@ -533,6 +536,15 @@ struct SettingsScreen: View {
 
                 Divider()
 
+                // ✅ BUILD 95: Диагностика (лог крашей/предупреждений памяти/Pre-Crash State)
+                settingsButton(
+                    "ladybug.fill",
+                    "Диагностика (Crash Logs)",
+                    "Просмотр/копирование/шаринг логов на устройстве"
+                ) {
+                    showCrashLogsView = true
+                }
+
             }
             .background(Color.secondary.opacity(0.05))
             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -607,6 +619,9 @@ struct SettingsScreen: View {
         }
         .sheet(isPresented: $viewModel.showShareSheet) {
             ShareSheet(activityItems: [viewModel.localizedStrings.settingsShareMessage])
+        }
+        .sheet(isPresented: $showCrashLogsView) {
+            CrashLogsView()
         }
         .sheet(isPresented: $viewModel.showProtectionExplanation) {
             ProtectionLevelExplanationModal(isPresented: $viewModel.showProtectionExplanation, currentTariff: viewModel.currentTariff)

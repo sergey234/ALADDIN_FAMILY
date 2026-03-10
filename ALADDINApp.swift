@@ -127,6 +127,8 @@ struct ALADDINApp: App {
     // ✅ Добавляем SubscriptionManager для JWT токенов
     private var subscriptionManager = SubscriptionManager.shared
     @AppStorage("selected_theme") private var selectedTheme: String = "system"
+    // ✅ BUILD 95: Показ VisualLogger overlay в RELEASE/TestFlight по флагу
+    @AppStorage("enable_visual_logging_release") private var enableVisualLoggingRelease: Bool = false
 
     // ✅ ИСПРАВЛЕНИЕ: Отслеживаем состояние приложения для предотвращения сброса навигации
     @Environment(\.scenePhase) private var scenePhase
@@ -322,6 +324,13 @@ struct ALADDINApp: App {
                 
                 // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронная загрузка логов VisualLogger
                 VisualLogger.shared.loadLogsAsync()
+                
+                // ✅ BUILD 94: Запускаем периодическое сохранение состояния перед крашем
+                startPreCrashStateMonitoring()
+                
+                // ✅ BUILD 95: Дополнительная диагностика (stack size + мониторинг медленных UserDefaults)
+                StackSizeMonitor.logMainThreadStackSize(context: "ALADDINApp.onAppear")
+                MonitoredUserDefaults.slowThresholdMs = 50
 
                 // Запускаем инициализацию при появлении
                 Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager)
@@ -626,21 +635,32 @@ struct ALADDINApp: App {
             .preferredColorScheme(preferredColorScheme)
 
             // 🔍 VISUAL LOGGING: Добавляем визуальное логирование в DEBUG режиме
-            #if DEBUG
             .overlay(
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        MasterLogger.shared.visualLogView
-                            .frame(maxWidth: 280) // Ограничиваем только ширину
-                            .padding(.trailing, 16)
-                            .padding(.bottom, 120) // Подняли чуть выше, чтобы не мешало кнопке отправки
+                Group {
+                    #if DEBUG
+                    visualLoggerOverlay()
+                    #else
+                    if enableVisualLoggingRelease {
+                        visualLoggerOverlay()
                     }
+                    #endif
                 }
-                // .ignoresSafeArea() // Убрали, чтобы окно логов поднималось вместе с клавиатурой
             )
-            #endif
+        }
+    }
+
+    // MARK: - Visual Logger Overlay
+    @ViewBuilder
+    private func visualLoggerOverlay() -> some View {
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                MasterLogger.shared.visualLogView
+                    .frame(maxWidth: 280)
+                    .padding(.trailing, 16)
+                    .padding(.bottom, 120)
+            }
         }
     }
 
@@ -1063,6 +1083,28 @@ func getAllCrashLogs() -> String {
     result += getCrashLogsFromFiles()
     
     return result
+}
+
+// ✅ BUILD 94: Запуск периодического сохранения состояния перед крашем
+extension ALADDINApp {
+    private static var preCrashStateTimer: Timer?
+    
+    func startPreCrashStateMonitoring() {
+        // Останавливаем предыдущий таймер если есть
+        Self.preCrashStateTimer?.invalidate()
+        
+        // Сохраняем состояние каждые 5 секунд
+        Self.preCrashStateTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+            if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+                appDelegate.savePreCrashState()
+            }
+        }
+        
+        // Сохраняем состояние сразу при запуске
+        if let appDelegate = UIApplication.shared.delegate as? AppDelegate {
+            appDelegate.savePreCrashState()
+        }
+    }
 }
 
 /// 🔄 Синхронизация демо-настроек на сервер после авторизации

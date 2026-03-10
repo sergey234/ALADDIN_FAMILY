@@ -92,6 +92,11 @@
 		5E6C6B0A2F3D405000F6FFEA /* APIResponseValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B092F3D405000F6FFEA /* APIResponseValidator.swift */; };
 		5E6C6B0C2F3D406F00F6FFEA /* RoadsideAssistanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B0B2F3D406F00F6FFEA /* RoadsideAssistanceView.swift */; };
 		5E6C6B0E2F427C3700F6FFEA /* SettingsDiagnosticsLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6B0D2F427C3600F6FFEA /* SettingsDiagnosticsLogger.swift */; };
+		5E95A0022F9B000100000001 /* RecursionMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E95A0012F9B000100000001 /* RecursionMonitor.swift */; };
+		5E95A0042F9B000200000001 /* StackSizeMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E95A0032F9B000200000001 /* StackSizeMonitor.swift */; };
+		5E95A0062F9B000300000001 /* MonitoredUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E95A0052F9B000300000001 /* MonitoredUserDefaults.swift */; };
+		5E95A0082F9B000400000001 /* MonitoredAppStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E95A0072F9B000400000001 /* MonitoredAppStorage.swift */; };
+		5E95A00A2F9B000500000001 /* CrashLogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E95A0092F9B000500000001 /* CrashLogsView.swift */; };
 		5E6F38F72F151E1400CEC103 /* MediaMessageBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */; };
 		5E6F38F92F151E2800CEC103 /* MessageActionsMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */; };
 		5E6F38FB2F151E3700CEC103 /* MessageReactionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */; };
@@ -418,6 +423,11 @@
 		5E6C6B092F3D405000F6FFEA /* APIResponseValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APIResponseValidator.swift; path = Core/Validation/APIResponseValidator.swift; sourceTree = "<group>"; };
 		5E6C6B0B2F3D406F00F6FFEA /* RoadsideAssistanceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RoadsideAssistanceView.swift; path = Screens/RoadsideAssistanceView.swift; sourceTree = "<group>"; };
 		5E6C6B0D2F427C3600F6FFEA /* SettingsDiagnosticsLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SettingsDiagnosticsLogger.swift; path = Core/Diagnostics/SettingsDiagnosticsLogger.swift; sourceTree = "<group>"; };
+		5E95A0012F9B000100000001 /* RecursionMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecursionMonitor.swift; path = Core/Diagnostics/RecursionMonitor.swift; sourceTree = "<group>"; };
+		5E95A0032F9B000200000001 /* StackSizeMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StackSizeMonitor.swift; path = Core/Diagnostics/StackSizeMonitor.swift; sourceTree = "<group>"; };
+		5E95A0052F9B000300000001 /* MonitoredUserDefaults.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MonitoredUserDefaults.swift; path = Core/Diagnostics/MonitoredUserDefaults.swift; sourceTree = "<group>"; };
+		5E95A0072F9B000400000001 /* MonitoredAppStorage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MonitoredAppStorage.swift; path = Core/Diagnostics/MonitoredAppStorage.swift; sourceTree = "<group>"; };
+		5E95A0092F9B000500000001 /* CrashLogsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CrashLogsView.swift; path = Screens/CrashLogsView.swift; sourceTree = "<group>"; };
 		5E6F38F62F151E1400CEC103 /* MediaMessageBubble.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MediaMessageBubble.swift; path = Shared/Components/Chat/MediaMessageBubble.swift; sourceTree = "<group>"; };
 		5E6F38F82F151E2800CEC103 /* MessageActionsMenu.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MessageActionsMenu.swift; path = Shared/Components/Chat/MessageActionsMenu.swift; sourceTree = "<group>"; };
 		5E6F38FA2F151E3700CEC103 /* MessageReactionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MessageReactionsView.swift; path = Shared/Components/Chat/MessageReactionsView.swift; sourceTree = "<group>"; };
@@ -693,6 +703,7 @@
 				5EC308F52EA6AB8C00C7D34B /* 03_NetworkProtectionScreen.swift */,
 				5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */,
 				5EC309042EA6AB8C00C7D34B /* 05_SettingsScreen.swift */,
+				5E95A0092F9B000500000001 /* CrashLogsView.swift */,
 				5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */,
 				5EC308F72EA6AB8C00C7D34B /* 07_ParentalControlScreen.swift */,
 				5EC308E72EA6AB8B00C7D34B /* 08_ChildInterfaceScreen.swift */,
@@ -788,6 +799,10 @@
 				5E13D35B2F46523A0010F7CE /* SettingsScreenFallback.swift */,
 				5E13D3592F4652130010F7CE /* SettingsTestSuiteView.swift */,
 				5E6C6B0D2F427C3600F6FFEA /* SettingsDiagnosticsLogger.swift */,
+				5E95A0012F9B000100000001 /* RecursionMonitor.swift */,
+				5E95A0032F9B000200000001 /* StackSizeMonitor.swift */,
+				5E95A0052F9B000300000001 /* MonitoredUserDefaults.swift */,
+				5E95A0072F9B000400000001 /* MonitoredAppStorage.swift */,
 				5E6C6B0B2F3D406F00F6FFEA /* RoadsideAssistanceView.swift */,
 				5E6C6B092F3D405000F6FFEA /* APIResponseValidator.swift */,
 				5E6C6B072F3D381500F6FFEA /* PerformanceMonitor.swift */,
@@ -1291,9 +1306,14 @@
 				B2000150B2000150B2000150 /* ProtectionLevelExplanationModal.swift in Sources */,
 				B2000160B2000160B2000160 /* ProtectionLevelHistoryModal.swift in Sources */,
 				5E6C6B0E2F427C3700F6FFEA /* SettingsDiagnosticsLogger.swift in Sources */,
+				5E95A0022F9B000100000001 /* RecursionMonitor.swift in Sources */,
+				5E95A0042F9B000200000001 /* StackSizeMonitor.swift in Sources */,
+				5E95A0062F9B000300000001 /* MonitoredUserDefaults.swift in Sources */,
+				5E95A0082F9B000400000001 /* MonitoredAppStorage.swift in Sources */,
 				B1000011 /* RecoveryCodeModal.swift in Sources */,
 				A3000023 /* ViewModels/SupportViewModel.swift in Sources */,
 				5E6F38FB2F151E3700CEC103 /* MessageReactionsView.swift in Sources */,
+				5E95A00A2F9B000500000001 /* CrashLogsView.swift in Sources */,
 				A3000025 /* ViewModels/ChildInterfaceViewModel.swift in Sources */,
 				5EC309142EA6B62500C7D34B /* 12_NotificationsScreen.swift in Sources */,
 				5E6C6B062F3D37FB00F6FFEA /* InputSanitizer.swift in Sources */,
@@ -1527,7 +1547,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 94;
+				CURRENT_PROJECT_VERSION = 95;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1559,7 +1579,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 94;
+				CURRENT_PROJECT_VERSION = 95;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1715,7 +1735,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 94;
+				CURRENT_PROJECT_VERSION = 95;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1747,7 +1767,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 94;
+				CURRENT_PROJECT_VERSION = 95;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1778,7 +1798,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 94;
+				CURRENT_PROJECT_VERSION = 95;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1803,7 +1823,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 94;
+				CURRENT_PROJECT_VERSION = 95;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1826,7 +1846,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 94;
+				CURRENT_PROJECT_VERSION = 95;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1850,7 +1870,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 94;
+				CURRENT_PROJECT_VERSION = 95;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

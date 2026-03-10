@@ -1,8 +1,10 @@
 import UIKit
+import Darwin.Mach
 
 /**
  * 🧩 AppDelegate
  * Передает APNs токен в NotificationManager
+ * ✅ BUILD 94: Добавлена диагностика крашей на реальном устройстве
  */
 
 // Глобальная функция для обработки крашей
@@ -196,6 +198,160 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
         NotificationManager.shared.didFailToRegisterForRemoteNotifications(error: error)
+    }
+    
+    // ✅ BUILD 94: Memory Warning Handler для диагностики крашей на реальном устройстве
+    func applicationDidReceiveMemoryWarning(_ application: UIApplication) {
+        let memoryUsage = getMemoryUsageMB()
+        let timestamp = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        
+        let memoryWarningLog = """
+        🚨 MEMORY WARNING DETECTED!
+        Memory Usage: \(String(format: "%.1f", memoryUsage)) MB
+        Time: \(formatter.string(from: timestamp))
+        Device: \(UIDevice.current.model)
+        iOS: \(UIDevice.current.systemVersion)
+        App Version: \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown")
+        Build: \(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown")
+        """
+        
+        // Сохраняем в UserDefaults
+        UserDefaults.standard.set(memoryWarningLog, forKey: "memory_warning_log")
+        UserDefaults.standard.set(timestamp.timeIntervalSince1970, forKey: "memory_warning_timestamp")
+        UserDefaults.standard.set(memoryUsage, forKey: "memory_warning_usage_mb")
+        UserDefaults.standard.synchronize()
+        
+        // Сохраняем в файл
+        saveMemoryWarningToFile(log: memoryWarningLog, memoryUsage: memoryUsage)
+        
+        // Отправляем на сервер асинхронно
+        sendMemoryWarningToServer(memoryUsage: memoryUsage)
+        
+        print("🚨 MEMORY WARNING: \(String(format: "%.1f", memoryUsage)) MB")
+        
+        // ✅ BUILD 94: Сохраняем состояние перед возможным крашем
+        savePreCrashState()
+    }
+    
+    // ✅ BUILD 94: Сохранение Memory Warning в файл
+    private func saveMemoryWarningToFile(log: String, memoryUsage: Double) {
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return
+        }
+        
+        let memoryWarningFile = documentsPath.appendingPathComponent("memory_warning_log.txt")
+        
+        do {
+            try log.write(to: memoryWarningFile, atomically: true, encoding: .utf8)
+            UserDefaults.standard.set(memoryWarningFile.path, forKey: "memory_warning_file_path")
+            UserDefaults.standard.synchronize()
+        } catch {
+            UserDefaults.standard.set("Failed to save memory warning file: \(error.localizedDescription)", forKey: "memory_warning_file_error")
+        }
+    }
+    
+    // ✅ BUILD 94: Отправка Memory Warning на сервер
+    private func sendMemoryWarningToServer(memoryUsage: Double) {
+        DispatchQueue.global(qos: .utility).async {
+            guard let url = URL(string: "https://aladdin-ai.ru/api/crash-detection/memory-warning") else {
+                return
+            }
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            let report: [String: Any] = [
+                "memory_usage_mb": memoryUsage,
+                "device": UIDevice.current.model,
+                "ios_version": UIDevice.current.systemVersion,
+                "app_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown",
+                "build": Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown",
+                "timestamp": Date().timeIntervalSince1970
+            ]
+            
+            if let jsonData = try? JSONSerialization.data(withJSONObject: report) {
+                request.httpBody = jsonData
+                
+                URLSession.shared.dataTask(with: request) { data, response, error in
+                    if let error = error {
+                        UserDefaults.standard.set("Failed to send memory warning: \(error.localizedDescription)", forKey: "memory_warning_send_error")
+                    } else {
+                        UserDefaults.standard.set("Memory warning sent successfully", forKey: "memory_warning_send_status")
+                    }
+                    UserDefaults.standard.synchronize()
+                }.resume()
+            }
+        }
+    }
+    
+    // ✅ BUILD 94: Получение использования памяти в MB
+    private func getMemoryUsageMB() -> Double {
+        var info = mach_task_basic_info()
+        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
+        
+        let kerr: kern_return_t = withUnsafeMutablePointer(to: &info) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
+                task_info(mach_task_self_,
+                         task_flavor_t(MACH_TASK_BASIC_INFO),
+                         $0,
+                         &count)
+            }
+        }
+        
+        if kerr == KERN_SUCCESS {
+            return Double(info.resident_size) / 1024.0 / 1024.0
+        } else {
+            return 0.0
+        }
+    }
+    
+    // ✅ BUILD 94: Сохранение состояния перед возможным крашем
+    func savePreCrashState() {
+        let memoryUsage = getMemoryUsageMB()
+        let timestamp = Date().timeIntervalSince1970
+        
+        let state: [String: Any] = [
+            "memory_usage_mb": memoryUsage,
+            "active_threads": Thread.activeThreadCount,
+            "timestamp": timestamp,
+            "app_state": UIApplication.shared.applicationState.rawValue,
+            "device": UIDevice.current.model,
+            "ios_version": UIDevice.current.systemVersion,
+            "app_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown",
+            "build": Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"
+        ]
+        
+        if let data = try? JSONSerialization.data(withJSONObject: state) {
+            UserDefaults.standard.set(data, forKey: "pre_crash_state")
+            UserDefaults.standard.set(timestamp, forKey: "pre_crash_state_timestamp")
+            UserDefaults.standard.synchronize()
+        }
+        
+        // Также сохраняем в файл
+        savePreCrashStateToFile(state: state)
+    }
+    
+    // ✅ BUILD 94: Сохранение Pre-Crash State в файл
+    private func savePreCrashStateToFile(state: [String: Any]) {
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return
+        }
+        
+        let stateFile = documentsPath.appendingPathComponent("pre_crash_state.json")
+        
+        if let jsonData = try? JSONSerialization.data(withJSONObject: state, options: .prettyPrinted),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            do {
+                try jsonString.write(to: stateFile, atomically: true, encoding: .utf8)
+                UserDefaults.standard.set(stateFile.path, forKey: "pre_crash_state_file_path")
+                UserDefaults.standard.synchronize()
+            } catch {
+                UserDefaults.standard.set("Failed to save pre-crash state: \(error.localizedDescription)", forKey: "pre_crash_state_file_error")
+            }
+        }
     }
 }
 
