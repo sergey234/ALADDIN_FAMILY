@@ -12,6 +12,14 @@ private var visualLogger: VisualLogger {
     VisualLogger.shared
 }
 
+// ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Глобальные флаги для защиты от рекурсии
+// @State не работает при пересоздании View, поэтому используем глобальные флаги с NSLock
+private var isUpdatingExpirationTextGlobal: Bool = false
+private let expirationTextUpdateLock = NSLock()
+
+private var mainScreenTaskExecuted: Bool = false
+private let mainScreenTaskLock = NSLock()
+
 struct MainScreen: View {
     @State private var aiQuestion: String = ""
     @StateObject private var mainViewModel: MainViewModel
@@ -31,8 +39,8 @@ struct MainScreen: View {
     // Вместо computed property используем @State, который обновляется только при изменении subscriptionExpiresAtIso
     @State private var cachedExpirationText: String? = nil
     
-    // ✅ BUILD 99: Защита от рекурсии при обновлении expiration text
-    @State private var isUpdatingExpirationText: Bool = false
+    // ✅ BUILD 99: Защита от рекурсии теперь через глобальный флаг (см. выше)
+    // @State не работает при пересоздании View, поэтому используем глобальный флаг
     
     // MARK: - Init с детальным логированием
     
@@ -393,13 +401,25 @@ struct MainScreen: View {
             let startTime = Date()
             let logPrefix = "🔍 MainScreen.task"
             
+            // ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Глобальный флаг для предотвращения повторных вызовов
+            // @State не работает при пересоздании View, поэтому используем глобальный флаг
+            mainScreenTaskLock.lock()
+            guard !mainScreenTaskExecuted else {
+                mainScreenTaskLock.unlock()
+                let message = "\(logPrefix) Повторный вызов пропущен (глобальный флаг)"
+                print("⚠️ \(message)")
+                return
+            }
+            mainScreenTaskExecuted = true
+            mainScreenTaskLock.unlock()
+            
             // Сохраняем в UserDefaults для получения после краша
             var debugLog: [String] = []
             debugLog.append("\(logPrefix) START - \(Date())")
             
-            // ✅ ИСПРАВЛЕНИЕ: Предотвращаем двойной вызов onAppear
+            // ✅ ИСПРАВЛЕНИЕ: Предотвращаем двойной вызов onAppear (дополнительная защита)
             guard !hasAppeared else {
-                let message = "\(logPrefix) Повторный вызов пропущен"
+                let message = "\(logPrefix) Повторный вызов пропущен (hasAppeared)"
                 print("⚠️ \(message)")
                 debugLog.append("⚠️ \(message)")
                 // ✅ ИСПРАВЛЕНИЕ BUILD 92: Сохраняем логи асинхронно (копируем массив для безопасности)
@@ -443,13 +463,12 @@ struct MainScreen: View {
             mainViewModel.onAppear()
             debugLog.append("✅ mainViewModel.onAppear() завершен")
             
-            // ✅ BUILD 99: Асинхронное обновление кеша expiration text для предотвращения рекурсии
+            // ✅ BUILD 100: Асинхронное обновление кеша expiration text для предотвращения рекурсии
             // Читаем значение один раз и передаем в функцию, чтобы избежать повторного чтения @AppStorage
+            // ✅ ИСПРАВЛЕНИЕ: Убран избыточный Task { @MainActor in }, так как .task {} уже выполняется на MainActor
             let currentExpiresAt = subscriptionExpiresAtIso
-            Task { @MainActor in
-                await updateExpirationTextCache(from: currentExpiresAt)
-                debugLog.append("✅ cachedExpirationText инициализирован")
-            }
+            await updateExpirationTextCache(from: currentExpiresAt)
+            debugLog.append("✅ cachedExpirationText инициализирован")
             
             let duration = Date().timeIntervalSince(startTime)
             debugLog.append("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
@@ -941,6 +960,13 @@ struct MainScreen: View {
         return formatter
     }()
     
+    // ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Статический Calendar для предотвращения рекурсии через Calendar.current
+    private static let calendar: Calendar = {
+        var cal = Calendar(identifier: .gregorian)
+        cal.locale = Locale(identifier: "ru_RU")
+        return cal
+    }()
+    
     // Статический DateFormatter для отображения дат
     private static let displayFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -948,6 +974,9 @@ struct MainScreen: View {
         formatter.timeStyle = .none
         // Используем статический locale вместо Locale.current (может читать из UserDefaults)
         formatter.locale = Locale(identifier: "ru_RU")
+        // ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем статический Calendar вместо Calendar.current
+        // Calendar.current может читать из UserDefaults, что вызывает рекурсию через ICU библиотеку
+        formatter.calendar = Self.calendar
         return formatter
     }()
     
@@ -955,17 +984,25 @@ struct MainScreen: View {
     // Принимает значение как параметр, чтобы избежать рекурсии через @AppStorage
     // ✅ BUILD 99: Функция сделана асинхронной для предотвращения блокировки main thread и рекурсии
     private func updateExpirationTextCache(from isoString: String) async {
-        // ✅ BUILD 99: Защита от рекурсии
-        guard !isUpdatingExpirationText else {
-            print("⚠️ [MainScreen] updateExpirationTextCache уже выполняется, пропускаем")
+        // ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Глобальный флаг с NSLock для защиты от рекурсии
+        // @State не работает при пересоздании View, поэтому используем глобальный флаг
+        let callId = UUID().uuidString
+        print("🔍 [MainScreen] updateExpirationTextCache START - \(callId) - \(Date())")
+        
+        expirationTextUpdateLock.lock()
+        guard !isUpdatingExpirationTextGlobal else {
+            expirationTextUpdateLock.unlock()
+            print("⚠️ [MainScreen] updateExpirationTextCache уже выполняется, пропускаем - \(callId)")
             return
         }
+        isUpdatingExpirationTextGlobal = true
+        expirationTextUpdateLock.unlock()
         
-        isUpdatingExpirationText = true
-        defer { 
-            Task { @MainActor in
-                isUpdatingExpirationText = false
-            }
+        defer {
+            expirationTextUpdateLock.lock()
+            isUpdatingExpirationTextGlobal = false
+            expirationTextUpdateLock.unlock()
+            print("✅ [MainScreen] updateExpirationTextCache COMPLETE - \(callId) - \(Date())")
         }
         
         guard !isoString.isEmpty else {
@@ -987,8 +1024,11 @@ struct MainScreen: View {
             return
         }
         
-        // ✅ Используем статический displayFormatter
-        let formattedText = Self.displayFormatter.string(from: date)
+        // ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Форматирование на main thread
+        // Это предотвращает проблемы с UserDefaults и рекурсию через ICU библиотеку
+        let formattedText = await MainActor.run {
+            Self.displayFormatter.string(from: date)
+        }
         await MainActor.run {
             cachedExpirationText = formattedText
         }
