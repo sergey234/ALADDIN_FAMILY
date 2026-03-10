@@ -325,9 +325,6 @@ struct ALADDINApp: App {
                 // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронная загрузка логов VisualLogger
                 VisualLogger.shared.loadLogsAsync()
                 
-                // ✅ BUILD 94: Запускаем периодическое сохранение состояния перед крашем
-                startPreCrashStateMonitoring()
-                
                 // ✅ BUILD 95: Дополнительная диагностика (stack size + мониторинг медленных UserDefaults)
                 StackSizeMonitor.logMainThreadStackSize(context: "ALADDINApp.onAppear")
                 MonitoredUserDefaults.slowThresholdMs = 50
@@ -953,6 +950,9 @@ func checkIfTokensAreDebug() -> Bool {
     
     return isDebug
 }
+#endif
+
+// MARK: - Crash Logs Functions (Available in Release for CrashLogsView)
 
 /// 🔍 ПОЛУЧИТЬ ЛОГИ КРАШЕЙ
 /// Использование в Debug Console: getCrashLogs()
@@ -1089,7 +1089,8 @@ func getAllCrashLogs() -> String {
     return result
 }
 
-// ✅ BUILD 94: Запуск периодического сохранения состояния перед крашем
+#if DEBUG
+// MARK: - Debug Console Functions (DEBUG only)
 extension ALADDINApp {
     private static var preCrashStateTimer: Timer?
     
