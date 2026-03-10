@@ -1519,24 +1519,32 @@ struct ChildRewardsScreen: View {
         return isReward ? "✅" : "❌"
     }
     
+    // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Статические форматтеры для предотвращения рекурсии
+    private static let timeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
+    
+    private static let dateTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
+    
     /// Форматирование даты
     private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.locale = localizationManager.locale
-        
-        let timeFormatter = DateFormatter()
-        timeFormatter.dateFormat = "HH:mm"
-        timeFormatter.locale = localizationManager.locale
-        let timeString = timeFormatter.string(from: date)
+        let timeString = Self.timeFormatter.string(from: date)
         
         if Calendar.current.isDateInToday(date) {
             return String(format: localizationManager.localized("child_rewards_date_today"), timeString)
         } else if Calendar.current.isDateInYesterday(date) {
             return String(format: localizationManager.localized("child_rewards_date_yesterday"), timeString)
         } else {
-            formatter.dateStyle = .short
-            formatter.timeStyle = .short
-            return formatter.string(from: date)
+            return Self.dateTimeFormatter.string(from: date)
         }
     }
     

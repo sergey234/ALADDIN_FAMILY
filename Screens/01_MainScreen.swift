@@ -18,6 +18,10 @@ struct MainScreen: View {
     @AppStorage("subscription_expires_at_iso") private var subscriptionExpiresAtIso: String = ""
     @AppStorage("antivirusEnabled") private var antivirusEnabled = true
     
+    // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Кешированное значение для предотвращения рекурсии
+    // Вместо computed property используем @State, который обновляется только при изменении subscriptionExpiresAtIso
+    @State private var cachedExpirationText: String? = nil
+    
     // MARK: - Init с детальным логированием
     
     init() {
@@ -434,9 +438,17 @@ struct MainScreen: View {
             mainViewModel.onAppear()
             debugLog.append("✅ mainViewModel.onAppear() завершен")
             
+            // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Инициализация кеша expiration text
+            updateExpirationTextCache()
+            debugLog.append("✅ cachedExpirationText инициализирован")
+            
             let duration = Date().timeIntervalSince(startTime)
             debugLog.append("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
             saveDebugLog(debugLog)
+        }
+        // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Обновляем кеш при изменении subscriptionExpiresAtIso
+        .onChange(of: subscriptionExpiresAtIso) { _ in
+            updateExpirationTextCache()
         }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("main_lang_\(localizationManager.currentLanguage.rawValue)")
@@ -827,7 +839,7 @@ struct MainScreen: View {
                                     .font(.system(size: 9, weight: .semibold))
                                     .foregroundColor(.black)
 
-                                if let expirationText = subscriptionExpirationText {
+                                if let expirationText = cachedExpirationText {
                                     Text("\(localizationManager.localized("main_family_subscription_valid_until")) \(expirationText)")
                                         .font(.system(size: 9))
                                         .foregroundColor(.black)
@@ -975,18 +987,25 @@ struct MainScreen: View {
         return formatter
     }()
     
-    private var subscriptionExpirationText: String? {
-        guard !subscriptionExpiresAtIso.isEmpty else { return nil }
+    // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Функция для обновления кеша (вызывается только при изменении)
+    private func updateExpirationTextCache() {
+        guard !subscriptionExpiresAtIso.isEmpty else {
+            cachedExpirationText = nil
+            return
+        }
         
         // ✅ Используем статический formatter вместо создания нового каждый раз
         var parsedDate = Self.isoFormatter.date(from: subscriptionExpiresAtIso)
         if parsedDate == nil {
             parsedDate = Self.isoFormatterFallback.date(from: subscriptionExpiresAtIso)
         }
-        guard let date = parsedDate else { return nil }
+        guard let date = parsedDate else {
+            cachedExpirationText = nil
+            return
+        }
         
         // ✅ Используем статический displayFormatter
-        return Self.displayFormatter.string(from: date)
+        cachedExpirationText = Self.displayFormatter.string(from: date)
     }
     
     // MARK: - Navigation Button Content

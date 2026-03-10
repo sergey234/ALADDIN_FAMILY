@@ -2543,32 +2543,10 @@ class APIService: ObservableObject {
                     let statuses: [ComponentStatus] = []
                     continuation.resume(returning: statuses)
                 case .failure(let error):
-                    // Fallback: индивидуальные обновления
-                    print("⚠️ Bulk update failed, falling back to individual updates: \(error.localizedDescription)")
-                    Task {
-                        do {
-                            // Обновляем статусы компонентов
-                            for update in updates {
-                                try await self.updateComponentStatus(
-                                    componentId: update.componentId,
-                                    isEnabled: update.isEnabled,
-                                    configuration: update.configuration
-                                )
-                            }
-                            // Возвращаем обновленные статусы (временная заглушка)
-                            let statuses: [ComponentStatus] = updates.map { update in
-                                ComponentStatus(
-                                    componentId: update.componentId,
-                                    isEnabled: update.isEnabled,
-                                    lastUpdate: Date(),
-                                    configuration: update.configuration
-                                )
-                            }
-                            continuation.resume(returning: statuses)
-                        } catch {
-                            continuation.resume(throwing: error)
-                        }
-                    }
+                    // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Убрали Task {} из continuation
+                    // Возвращаем ошибку - fallback будет обработан в вызывающем коде
+                    print("⚠️ Bulk update failed: \(error.localizedDescription)")
+                    continuation.resume(throwing: error)
                 }
             }
         }

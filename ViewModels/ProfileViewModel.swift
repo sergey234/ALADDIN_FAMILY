@@ -91,37 +91,56 @@ class ProfileViewModel: ObservableObject {
     
     // MARK: - Subscription End Date Parsing
     
+    // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Статические форматтеры для предотвращения рекурсии
+    private static let isoFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        return formatter
+    }()
+    
+    private static let dotFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd.MM.yyyy"
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
+    
+    private static let dashFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
+    
+    private static let standardFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
+    
     /**
      * Парсинг даты окончания подписки из строки
      * Поддерживает различные форматы: ISO8601, "dd.MM.yyyy", "yyyy-MM-dd"
      */
     private func parseSubscriptionEndDate(_ dateString: String) -> Date? {
         // Пробуем ISO8601 формат
-        let isoFormatter = ISO8601DateFormatter()
-        if let date = isoFormatter.date(from: dateString) {
+        if let date = Self.isoFormatter.date(from: dateString) {
             return date
         }
         
         // Пробуем формат "dd.MM.yyyy" (например, "31.12.2025")
-        let dotFormatter = DateFormatter()
-        dotFormatter.dateFormat = "dd.MM.yyyy"
-        dotFormatter.locale = Locale(identifier: "ru_RU")
-        if let date = dotFormatter.date(from: dateString) {
+        if let date = Self.dotFormatter.date(from: dateString) {
             return date
         }
         
         // Пробуем формат "yyyy-MM-dd"
-        let dashFormatter = DateFormatter()
-        dashFormatter.dateFormat = "yyyy-MM-dd"
-        if let date = dashFormatter.date(from: dateString) {
+        if let date = Self.dashFormatter.date(from: dateString) {
             return date
         }
         
         // Пробуем стандартный формат
-        let standardFormatter = DateFormatter()
-        standardFormatter.dateStyle = .medium
-        standardFormatter.timeStyle = .none
-        if let date = standardFormatter.date(from: dateString) {
+        if let date = Self.standardFormatter.date(from: dateString) {
             return date
         }
         

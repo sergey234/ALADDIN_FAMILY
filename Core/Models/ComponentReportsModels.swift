@@ -626,7 +626,19 @@ extension DateFormatter {
 }
 
 extension JSONDecoder {
+    // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Статический форматтер для fallback
+    private static let fallbackDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        return formatter
+    }()
+    
     static let componentReportsDecoder: JSONDecoder = {
+        // ✅ ИСПРАВЛЕНИЕ: Создаем локальную ссылку на форматтер вне stored property initializer
+        let fallbackFormatter = JSONDecoder.fallbackDateFormatter
+        
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .custom { decoder in
             let container = try decoder.singleValueContainer()
@@ -636,10 +648,8 @@ extension JSONDecoder {
                 return date
             }
             
-            // Fallback на другие форматы
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-            if let date = formatter.date(from: dateString) {
+            // ✅ Fallback на другие форматы с использованием статического форматтера
+            if let date = fallbackFormatter.date(from: dateString) {
                 return date
             }
             

@@ -20,10 +20,16 @@ class AIAssistantViewModel: ObservableObject {
         let isUser: Bool
         let timestamp: Date
         
-        var timeString: String {
+        // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Статический форматтер для предотвращения рекурсии
+        private static let timeFormatter: DateFormatter = {
             let formatter = DateFormatter()
             formatter.dateFormat = "HH:mm"
-            return formatter.string(from: timestamp)
+            formatter.locale = Locale(identifier: "ru_RU")
+            return formatter
+        }()
+        
+        var timeString: String {
+            return Self.timeFormatter.string(from: timestamp)
         }
     }
     

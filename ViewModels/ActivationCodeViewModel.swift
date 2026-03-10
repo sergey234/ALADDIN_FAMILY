@@ -14,6 +14,20 @@ final class ActivationCodeViewModel: ObservableObject {
     
     private let apiService: APIService
     
+    // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Статические форматтеры для предотвращения рекурсии
+    private static let isoFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        return formatter
+    }()
+    
+    private static let displayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.locale = Locale(identifier: "ru_RU")
+        return formatter
+    }()
+    
     init(apiService: APIService = APIService.shared) {
         self.apiService = apiService
     }
@@ -140,13 +154,9 @@ final class ActivationCodeViewModel: ObservableObject {
                                 
                                 self.updateLocalSubscription(tariffId: activateResponse.tariffId, expiresAt: activateResponse.expiresAt)
                                 
-                                let formatter = ISO8601DateFormatter()
-                                if let date = formatter.date(from: activateResponse.expiresAt) {
-                                    let displayFormatter = DateFormatter()
-                                    displayFormatter.dateStyle = .medium
-                                    displayFormatter.timeStyle = .none
-                                    displayFormatter.locale = Locale(identifier: "ru_RU")
-                                    self.activationExpiration = displayFormatter.string(from: date)
+                                // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Используем статические форматтеры
+                                if let date = Self.isoFormatter.date(from: activateResponse.expiresAt) {
+                                    self.activationExpiration = Self.displayFormatter.string(from: date)
                                 } else {
                                     self.activationExpiration = activateResponse.expiresAt
                                 }
