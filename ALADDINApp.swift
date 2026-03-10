@@ -131,6 +131,8 @@ struct ALADDINApp: App {
     @AppStorage("enable_visual_logging_release") private var enableVisualLoggingRelease: Bool = false
     // ✅ BUILD 95: Используем @AppStorage вместо UserDefaults для предотвращения рекурсии
     @AppStorage(AppConfig.UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
+    // ✅ BUILD 96: Используем @AppStorage вместо UserDefaults для предотвращения рекурсии
+    @AppStorage("auto_login_enabled") private var autoLoginEnabled: Bool = false
 
     // ✅ ИСПРАВЛЕНИЕ: Отслеживаем состояние приложения для предотвращения сброса навигации
     @Environment(\.scenePhase) private var scenePhase
@@ -223,6 +225,8 @@ struct ALADDINApp: App {
 
         // ✅ АВТОМАТИЧЕСКИЙ ЛОГИН: Если установлены переменные окружения, выполняем логин автоматически
         // ✅ ПРОДАКШЕН: Проверяем сохраненные credentials для автоматического логина
+        // ✅ BUILD 96: Захватываем значение autoLoginEnabled до входа в closure для предотвращения ошибки компиляции
+        let isAutoLoginEnabled = autoLoginEnabled
         DispatchQueue.global(qos: .utility).async {
             // ✅ ДИАГНОСТИКА: Проверяем переменные окружения
             let email = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"]
@@ -262,7 +266,7 @@ struct ALADDINApp: App {
             
             // ✅ ПРОДАКШЕН: Проверяем условия для автоматического логина
             let shouldAutoLogin = (email != nil && password != nil && !email!.isEmpty && !password!.isEmpty) ||
-                                 (autoLoginEnabled && savedEmail != nil && savedPassword != nil)
+                                 (isAutoLoginEnabled && savedEmail != nil && savedPassword != nil)
 
             if shouldAutoLogin {
                 let loginEmail = email ?? savedEmail!

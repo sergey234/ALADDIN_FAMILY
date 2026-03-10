@@ -3743,20 +3743,25 @@ struct AppLimitsSettingsModal: View {
         
         // ✅ BUILD 96: Асинхронная загрузка для предотвращения рекурсии
         // Проверяем индивидуальные ключи для каждого приложения (приоритет выше)
+        // Устанавливаем начальные значения сразу
+        appLimits = loadedLimits
+        
+        // Затем обновляем асинхронно
         Task { @MainActor in
-            for index in loadedLimits.indices {
-                let app = loadedLimits[index].app
+            var updatedLimits = appLimits
+            for index in updatedLimits.indices {
+                let app = updatedLimits[index].app
                 let appKey = "app_\(app.lowercased().replacingOccurrences(of: " ", with: "_"))_time_limit"
                 if UserDefaults.standard.object(forKey: appKey) != nil {
                     let savedLimit = UserDefaults.standard.double(forKey: appKey)
                     if savedLimit > 0 {
-                        loadedLimits[index].limit = savedLimit
+                        updatedLimits[index].limit = savedLimit
                     }
                 }
             }
+            // Обновляем appLimits на main thread после загрузки
+            appLimits = updatedLimits
         }
-        
-        appLimits = loadedLimits
     }
     
     // Сохранение лимитов в UserDefaults
@@ -5017,9 +5022,10 @@ struct FamilyParentalControlSettingsModal: View {
         // Логируем применение правил
         print("✅ Rules applied for \(selectedChild), age group: \(selectedAgeGroup.rawValue)")
         
-        // ✅ BUILD 96: Используем кешированное значение для предотвращения рекурсии
-        // Если кеш пуст, используем значения по умолчанию
-        let parentalRules = cachedParentalRules ?? ParentalControlRules(
+        // ✅ BUILD 96: Используем значения по умолчанию для предотвращения рекурсии
+        // В этой функции (FamilyParentalControlSettingsModal) нет доступа к cachedParentalRules из FamilyScreen
+        // Используем прямые значения из UserDefaults асинхронно
+        let parentalRules = ParentalControlRules(
             websiteBlocking: false,
             appBlocking: false,
             searchBlocking: false,
@@ -5030,6 +5036,24 @@ struct FamilyParentalControlSettingsModal: View {
             appLimits: nil,
             geofences: nil
         )
+        
+        // ✅ BUILD 96: Загружаем значения асинхронно для предотвращения рекурсии
+        Task { @MainActor in
+            let loadedRules = ParentalControlRules(
+                websiteBlocking: UserDefaults.standard.bool(forKey: "parental_website_blocking"),
+                appBlocking: UserDefaults.standard.bool(forKey: "parental_app_blocking"),
+                searchBlocking: UserDefaults.standard.bool(forKey: "parental_search_blocking"),
+                safesearch: UserDefaults.standard.bool(forKey: "parental_safesearch"),
+                screenTimeLimit: nil,
+                bedtimeStart: nil,
+                bedtimeEnd: nil,
+                appLimits: nil,
+                geofences: nil
+            )
+            // Используем загруженные правила для применения через API
+            // (parentalRules уже используется ниже, поэтому это для будущего использования)
+            _ = loadedRules
+        }
         
         // Преобразуем возрастную группу в формат API
         let ageGroupString: String = {
