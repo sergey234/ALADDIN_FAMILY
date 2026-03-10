@@ -686,9 +686,11 @@ extension ALADDINApp {
         // ✅ КРИТИЧНО: ПЕРВЫЙ ЗАПУСК - СБРАСЫВАЕМ ВСЕ СОСТОЯНИЕ
         if !ALADDINApp.hasInitializedNavigation {
             print("🛠️ [ALADDINApp.initializeNavigation] Первый запуск - сбрасываем состояние")
-            // ✅ BUILD 96: Убрано UserDefaults.set() - значение уже false по умолчанию в @AppStorage
-            // Не нужно устанавливать false, так как @AppStorage уже имеет значение по умолчанию false
-            // Это предотвращает рекурсию через обновление @AppStorage
+            // ✅ BUILD 98: Устанавливаем false асинхронно для предотвращения рекурсии
+            // Это обеспечивает синхронизацию между UserDefaults и @AppStorage
+            Task { @MainActor in
+                UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            }
         }
 
         // ✅ Используем статический флаг для предотвращения повторной инициализации

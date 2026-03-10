@@ -37,18 +37,28 @@ class MasterLogger {
                 return cached
             }
             
-            // Если кеша нет, загружаем значение асинхронно
-            let value = UserDefaults.standard.bool(forKey: "enable_visual_logging")
-            dict["MasterLogger.enableVisualLogging"] = value
-            _enableVisualLogging = value
-            return value
+            // ✅ BUILD 98: Используем значение по умолчанию false без чтения из UserDefaults при инициализации
+            // Читаем из UserDefaults только если это не первый запуск (когда уже есть кеш)
+            // Это предотвращает рекурсию при инициализации View
+            let defaultValue = false
+            dict["MasterLogger.enableVisualLogging"] = defaultValue
+            _enableVisualLogging = defaultValue
+            
+            // Загружаем реальное значение асинхронно после инициализации
+            Task { @MainActor in
+                let realValue = UserDefaults.standard.bool(forKey: "enable_visual_logging")
+                dict["MasterLogger.enableVisualLogging"] = realValue
+                _enableVisualLogging = realValue
+            }
+            
+            return defaultValue
         }
         set {
             _enableVisualLogging = newValue
             // Сохраняем в thread dictionary для быстрого доступа
             Thread.current.threadDictionary["MasterLogger.enableVisualLogging"] = newValue
             
-            // ✅ BUILD 96: Асинхронная установка для предотвращения рекурсии
+            // ✅ BUILD 98: Асинхронная установка для предотвращения рекурсии
             Task { @MainActor in
                 UserDefaults.standard.set(newValue, forKey: "enable_visual_logging")
             }

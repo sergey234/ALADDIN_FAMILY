@@ -59,7 +59,9 @@ struct OnboardingAladdinLogoView: View {
 /// Экран онбординга - первое знакомство с приложением + прогрессивная регистрация
 /// Источник: стандартный паттерн iOS онбординга
 struct OnboardingScreen: View {
-    @AppStorage(AppConfig.UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
+    // ✅ BUILD 98: Используем @State вместо @AppStorage для предотвращения конфликта с ALADDINApp
+    // @AppStorage в OnboardingScreen конфликтовал с @AppStorage в ALADDINApp, вызывая рекурсию
+    @State private var hasCompletedOnboarding: Bool = false
     
     // ✅ КРИТИЧНО: Добавляем NavigationManager для навигации
     @EnvironmentObject private var navigationManager: NavigationManager
@@ -323,7 +325,11 @@ struct OnboardingScreen: View {
                 onRecoverySuccess: {
                     // После успешного восстановления
                     // Обновить UI или перейти на главный экран
+                    // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
                     hasCompletedOnboarding = true
+                    Task { @MainActor in
+                        UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+                    }
                     navigationManager.navigateTo(.main)
                 }
             )
@@ -356,6 +362,11 @@ struct OnboardingScreen: View {
                 Button(action: {
                     // ✅ Сохраняем статус онбординга
                     hasCompletedOnboarding = true
+                    // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
+                    hasCompletedOnboarding = true
+                    Task { @MainActor in
+                        UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+                    }
                     // ✅ Используем NavigationManager для перехода на главный экран
                     navigationManager.navigateTo(.main)
                     print("✅ OnboardingScreen: Пропущен, переход на главный экран")
@@ -405,7 +416,12 @@ struct OnboardingScreen: View {
                             // ✅ Начать регистрацию - сохраняем статус и переходим через NavigationManager
                             // Сохраняем согласие на обработку данных
                             UserDefaults.standard.set(dataConsentAccepted, forKey: "personal_data_consent_accepted")
+                            
+                            // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
                             hasCompletedOnboarding = true
+                            Task { @MainActor in
+                                UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+                            }
 
                             // ✅ ИСПРАВЛЕНИЕ: НЕ создаем demo токены - приложение работает в демо режиме
                             print("ℹ️ OnboardingScreen: Онбординг завершен - приложение работает в демо режиме")
