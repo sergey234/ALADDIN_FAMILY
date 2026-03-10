@@ -943,8 +943,8 @@ struct MainScreen: View {
         }
     }
 
-    // ✅ ИСПРАВЛЕНИЕ BUILD 89: Статические форматтеры для предотвращения рекурсии
-    // Форматтеры создаются один раз, не каждый раз в computed property
+    // ✅ BUILD 100: Статические форматтеры для предотвращения рекурсии
+    // Используем статические форматтеры с статическим Calendar
     
     // Статический ISO8601DateFormatter для парсинга дат
     private static let isoFormatter: ISO8601DateFormatter = {
@@ -960,7 +960,7 @@ struct MainScreen: View {
         return formatter
     }()
     
-    // ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Статический Calendar для предотвращения рекурсии через Calendar.current
+    // ✅ BUILD 100 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Статический Calendar для предотвращения рекурсии через Calendar.current
     private static let calendar: Calendar = {
         var cal = Calendar(identifier: .gregorian)
         cal.locale = Locale(identifier: "ru_RU")
@@ -972,9 +972,8 @@ struct MainScreen: View {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
-        // Используем статический locale вместо Locale.current (может читать из UserDefaults)
         formatter.locale = Locale(identifier: "ru_RU")
-        // ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем статический Calendar вместо Calendar.current
+        // ✅ BUILD 100 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем статический Calendar вместо Calendar.current
         // Calendar.current может читать из UserDefaults, что вызывает рекурсию через ICU библиотеку
         formatter.calendar = Self.calendar
         return formatter
@@ -1024,7 +1023,7 @@ struct MainScreen: View {
             return
         }
         
-        // ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Форматирование на main thread
+        // ✅ BUILD 100 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Форматирование на main thread
         // Это предотвращает проблемы с UserDefaults и рекурсию через ICU библиотеку
         let formattedText = await MainActor.run {
             Self.displayFormatter.string(from: date)
