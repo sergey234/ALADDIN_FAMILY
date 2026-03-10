@@ -8,8 +8,10 @@ private let logger = MasterLogger.shared
  * 📊 Analytics Manager
  * Управление аналитикой пользователей
  * Firebase Analytics интеграция
+ * ✅ BUILD 102: @MainActor для автоматического выполнения на main thread
  */
 
+@MainActor
 class AnalyticsManager {
     
     // MARK: - Singleton
@@ -43,11 +45,24 @@ class AnalyticsManager {
     
     /**
      * Отслеживать событие
+     * ✅ BUILD 102: Убраны parameters ?? [:] и parameters?.description для предотвращения создания Dictionary в background thread
      */
     func trackEvent(_ eventName: String, parameters: [String: Any]? = nil) {
-        logger.business("Analytics: Event - \(eventName) with params: \(parameters?.description ?? "none")")
+        // ✅ BUILD 102: Создаем строку описания БЕЗ создания Dictionary
+        let paramsDescription: String
+        if let params = parameters {
+            paramsDescription = String(describing: params)
+        } else {
+            paramsDescription = "none"
+        }
+        
+        logger.business("Analytics: Event - \(eventName) with params: \(paramsDescription)")
         #if DEBUG
-        print("📊 Event: \(eventName), params: \(parameters ?? [:])")
+        if let params = parameters {
+            print("📊 Event: \(eventName), params: \(params)")
+        } else {
+            print("📊 Event: \(eventName), params: none")
+        }
         #endif
         
         // В production:

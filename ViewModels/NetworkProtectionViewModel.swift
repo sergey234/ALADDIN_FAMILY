@@ -296,71 +296,47 @@ class NetworkProtectionViewModel: ObservableObject {
             togglingLock.unlock()
         }
         
-        // Оптимистичное обновление UI с переданным значением
-        await MainActor.run {
-            updateClosure(newValue)
-        }
+        // ✅ BUILD 102: Оптимистичное обновление UI
+        // Автоматически на main thread благодаря @MainActor
+        updateClosure(newValue)
 
-        // Проверяем демо режим (отсутствие токена)
-        if AppConfig.authToken == nil {
-            // Демо режим: сохраняем локально в UserDefaults
-            await handleDemoModeToggle(componentId: componentId, newValue: newValue, updateClosure: updateClosure)
-        } else {
-            // Продакшен режим: используем API
-            await handleProductionModeToggle(componentId: componentId, newValue: newValue, updateClosure: updateClosure)
-        }
-    }
-
-    private func handleDemoModeToggle(
-        componentId: String,
-        newValue: Bool,
-        updateClosure: @escaping (Bool) -> Void
-    ) async {
-        // ✅ BUILD 101 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: UserDefaults.standard.set() вызывается асинхронно на main thread
-        // Синхронный вызов в background thread вызывает обновление View, которое может вызвать повторное переключение тумблера → рекурсия
-        // На реальном устройстве это вызывает краш с "Thread stack size exceeded due to excessive recursion"
-        let userDefaultsKey = "demo_component_\(componentId)_enabled"
-        await MainActor.run {
-            UserDefaults.standard.set(newValue, forKey: userDefaultsKey)
-        }
-
-        // ✅ BUILD 101: Отслеживание аналитики также выполняется на main thread для безопасности
-        await MainActor.run {
-            componentAnalytics.trackComponentToggle(
-                componentId: componentId,
-                enabled: newValue
-            )
-        }
-
-        // Показываем уведомление для демо режима
-        await MainActor.run {
-            toastManager.showSuccess("Компонент обновлен (демо режим)")
-        }
-        print("✅ Демо режим: Компонент \(componentId) установлен в \(newValue)")
-    }
-
-    private func handleProductionModeToggle(
-        componentId: String,
-        newValue: Bool,
-        updateClosure: @escaping (Bool) -> Void
-    ) async {
+        // ✅ BUILD 102: Единая логика для всех режимов
         do {
-            try await statusService.updateStatus(
-                componentId: componentId,
-                isEnabled: newValue
-            )
+            // Пытаемся обновить через API (если есть токен)
+            if AppConfig.authToken != nil {
+                try await statusService.updateStatus(
+                    componentId: componentId,
+                    isEnabled: newValue
+                )
+            } else {
+                // Демо режим: сохраняем локально в UserDefaults
+                // ✅ BUILD 102: UserDefaults.standard.set() на main thread
+                await MainActor.run {
+                    let userDefaultsKey = "demo_component_\(componentId)_enabled"
+                    UserDefaults.standard.set(newValue, forKey: userDefaultsKey)
+                }
+            }
 
             // Успешное обновление
+            // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
             componentAnalytics.trackComponentToggle(
                 componentId: componentId,
                 enabled: newValue
             )
-            toastManager.showSuccess("Компонент обновлен")
+            
+            if AppConfig.authToken == nil {
+                toastManager.showSuccess("Компонент обновлен (демо режим)")
+            } else {
+                toastManager.showSuccess("Компонент обновлен")
+            }
 
         } catch {
             // Откат изменений при ошибке
+            // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
             updateClosure(!newValue)
+            
             // Отследить ошибку
+            // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
             componentAnalytics.trackComponentError(componentId: componentId, error: error)
             toastManager.showError("Ошибка: \(error.localizedDescription)")
         }
