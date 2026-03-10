@@ -124,9 +124,10 @@ struct PhishingProtectionSettingsModal: View {
     }
     
     // ✅ Загрузка настроек при открытии
+    // ✅ BUILD 103: Task { @MainActor in } для гарантии выполнения на main thread
     private func loadSettings() {
         isLoading = true
-        Task {
+        Task { @MainActor in
             // Загружаем через API
             do {
                 let config = try await configurationService.getConfiguration(for: componentId)
@@ -138,65 +139,62 @@ struct PhishingProtectionSettingsModal: View {
                     let newBlockKnownPhishingDomains = (settings["blockKnownPhishingDomains"]?.value as? Bool) ?? blockKnownPhishingDomains
                     let newSensitivityLevel = (settings["sensitivityLevel"]?.value as? String) ?? sensitivityLevel
 
-                    await MainActor.run {
-                        blockSuspiciousLinks = newBlockSuspiciousLinks
-                        warnBeforeOpening = newWarnBeforeOpening
-                        checkEmailLinks = newCheckEmailLinks
-                        checkSMSLinks = newCheckSMSLinks
-                        blockKnownPhishingDomains = newBlockKnownPhishingDomains
-                        sensitivityLevel = newSensitivityLevel
-                    }
+                    // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
+                    blockSuspiciousLinks = newBlockSuspiciousLinks
+                    warnBeforeOpening = newWarnBeforeOpening
+                    checkEmailLinks = newCheckEmailLinks
+                    checkSMSLinks = newCheckSMSLinks
+                    blockKnownPhishingDomains = newBlockKnownPhishingDomains
+                    sensitivityLevel = newSensitivityLevel
                 }
                 print("✅ PhishingProtectionSettingsModal: Настройки загружены из API")
             } catch {
                 print("⚠️ PhishingProtectionSettingsModal: Ошибка загрузки настроек: \(error.localizedDescription)")
             }
-            await MainActor.run {
-                isLoading = false
-            }
+            // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
+            isLoading = false
         }
     }
     
     // ✅ Сохранение настроек
+    // ✅ BUILD 103: Task { @MainActor in } для гарантии создания Dictionary на main thread
     private func saveSettings() {
-        Task {
+        Task { @MainActor in
             // Сохраняем через API
-                do {
-                    let isComponentEnabled = await MainActor.run {
-                        ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
-                    }
+            do {
+                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
+                let isComponentEnabled = ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
 
-                    let config = ComponentConfiguration(
-                        isEnabled: isComponentEnabled,
-                        priority: .normal,
-                        additionalSettings: [
-                            "blockSuspiciousLinks": AnyCodable(blockSuspiciousLinks),
-                            "warnBeforeOpening": AnyCodable(warnBeforeOpening),
-                            "checkEmailLinks": AnyCodable(checkEmailLinks),
-                            "checkSMSLinks": AnyCodable(checkSMSLinks),
-                            "blockKnownPhishingDomains": AnyCodable(blockKnownPhishingDomains),
-                            "sensitivityLevel": AnyCodable(sensitivityLevel)
-                        ]
-                    )
+                // ✅ BUILD 103: Dictionary создается на main thread благодаря @MainActor
+                let config = ComponentConfiguration(
+                    isEnabled: isComponentEnabled,
+                    priority: .normal,
+                    additionalSettings: [
+                        "blockSuspiciousLinks": AnyCodable(blockSuspiciousLinks),
+                        "warnBeforeOpening": AnyCodable(warnBeforeOpening),
+                        "checkEmailLinks": AnyCodable(checkEmailLinks),
+                        "checkSMSLinks": AnyCodable(checkSMSLinks),
+                        "blockKnownPhishingDomains": AnyCodable(blockKnownPhishingDomains),
+                        "sensitivityLevel": AnyCodable(sensitivityLevel)
+                    ]
+                )
 
-                    try await configurationService.saveConfiguration(
-                        componentId: componentId,
-                        configuration: config
-                    )
+                try await configurationService.saveConfiguration(
+                    componentId: componentId,
+                    configuration: config
+                )
 
-                    await MainActor.run {
-                        toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                        isPresented = false
-                    }
+                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
+                toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                isPresented = false
 
-                    print("✅ PhishingProtectionSettingsModal: Настройки сохранены через API")
-                } catch {
-                    await MainActor.run {
-                        toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                        isPresented = false
-                    }
-                    print("⚠️ PhishingProtectionSettingsModal: Ошибка сохранения: \(error.localizedDescription)")
-                }
+                print("✅ PhishingProtectionSettingsModal: Настройки сохранены через API")
+            } catch {
+                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
+                toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                isPresented = false
+                print("⚠️ PhishingProtectionSettingsModal: Ошибка сохранения: \(error.localizedDescription)")
             }
         }
     }
+}

@@ -207,7 +207,7 @@ struct NetworkProtectionScreen: View {
                     hasSettings: false, // ⚠️ Temporarily disabled due to scope issue
                     onToggle: { newValue in
                         logger.toggleChanged("Crash Detection", newValue: newValue, screen: "NetworkProtection")
-                        Task { await viewModel.toggleCrashDetection(newValue) }
+                        Task { @MainActor in await viewModel.toggleCrashDetection(newValue) }
                     }
                     // onSettingsTap: { showCrashDetectionSettings = true } // ⚠️ Temporarily disabled
                 )
@@ -254,7 +254,7 @@ struct NetworkProtectionScreen: View {
                     hasSettings: false,
                     onToggle: { newValue in
                         logger.toggleChanged("Roadside Assistance", newValue: newValue, screen: "NetworkProtection")
-                        Task { await viewModel.toggleRoadsideAssistance(newValue) }
+                        Task { @MainActor in await viewModel.toggleRoadsideAssistance(newValue) }
                     }
                 )
                 
@@ -264,7 +264,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.emergency_response_bot.desc"),
                     isEnabled: $viewModel.emergencyResponseEnabled,
                     hasSettings: false,
-                    onToggle: { newValue in Task { await viewModel.toggleEmergencyResponse(newValue) } }
+                    onToggle: { newValue in Task { @MainActor in await viewModel.toggleEmergencyResponse(newValue) } }
                 )
                 
                 SecurityFeatureRow(
@@ -273,7 +273,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.emergency_event_manager.desc"),
                     isEnabled: $viewModel.emergencyEventEnabled,
                     hasSettings: false,
-                    onToggle: { newValue in Task { await viewModel.toggleEmergencyEvent(newValue) } }
+                    onToggle: { newValue in Task { @MainActor in await viewModel.toggleEmergencyEvent(newValue) } }
                 )
             }
             
@@ -290,7 +290,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.phishing_protection_agent.desc"),
                     isEnabled: $viewModel.phishingProtectionEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in Task { await viewModel.togglePhishingProtection(newValue) } },
+                    onToggle: { newValue in Task { @MainActor in await viewModel.togglePhishingProtection(newValue) } },
                     onSettingsTap: { showPhishingSettings = true }
                 )
                 
@@ -300,7 +300,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.malware_detection_agent.desc"),
                     isEnabled: $viewModel.malwareDetectionEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in Task { await viewModel.toggleMalwareDetection(newValue) } },
+                    onToggle: { newValue in Task { @MainActor in await viewModel.toggleMalwareDetection(newValue) } },
                     onSettingsTap: { showMalwareSettings = true }
                 )
                 
@@ -310,7 +310,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.mobile_security_agent.desc"),
                     isEnabled: $viewModel.mobileSecurityEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in Task { await viewModel.toggleMobileSecurity(newValue) } },
+                    onToggle: { newValue in Task { @MainActor in await viewModel.toggleMobileSecurity(newValue) } },
                     onSettingsTap: { showMobileSecuritySettings = true }
                 )
                 
@@ -320,7 +320,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.network_security_agent.desc"),
                     isEnabled: $viewModel.networkSecurityEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in Task { await viewModel.toggleNetworkSecurity(newValue) } },
+                    onToggle: { newValue in Task { @MainActor in await viewModel.toggleNetworkSecurity(newValue) } },
                     onSettingsTap: { showNetworkSecuritySettings = true }
                 )
             }
@@ -338,7 +338,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.incident_response_agent.desc"),
                     isEnabled: $viewModel.incidentResponseEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in Task { await viewModel.toggleIncidentResponse(newValue) } },
+                    onToggle: { newValue in Task { @MainActor in await viewModel.toggleIncidentResponse(newValue) } },
                     onSettingsTap: { showIncidentResponseSettings = true }
                 )
             }
@@ -356,7 +356,7 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.password_security_agent.desc"),
                     isEnabled: $viewModel.passwordSecurityEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in Task { await viewModel.togglePasswordSecurity(newValue) } },
+                    onToggle: { newValue in Task { @MainActor in await viewModel.togglePasswordSecurity(newValue) } },
                     onSettingsTap: { showPasswordGenerator = true }
                 )
             }

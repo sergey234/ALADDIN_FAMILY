@@ -123,9 +123,10 @@ struct NetworkSecuritySettingsModal: View {
     }
     
     // ✅ Загрузка настроек при открытии через API
+    // ✅ BUILD 103: Task { @MainActor in } для гарантии выполнения на main thread
     private func loadSettings() {
         isLoading = true
-        Task {
+        Task { @MainActor in
             do {
                 let config = try await configurationService.getConfiguration(for: componentId)
                 if let settings = config.additionalSettings {
@@ -136,39 +137,35 @@ struct NetworkSecuritySettingsModal: View {
                     let newEncryptTraffic = (settings["encryptTraffic"]?.value as? Bool) ?? encryptTraffic
                     let newFirewallEnabled = (settings["firewallEnabled"]?.value as? Bool) ?? firewallEnabled
 
-                    await MainActor.run {
-                        blockUnsafeNetworks = newBlockUnsafeNetworks
-                        warnOnPublicWiFi = newWarnOnPublicWiFi
-                        autoConnectVPN = newAutoConnectVPN
-                        blockTracking = newBlockTracking
-                        encryptTraffic = newEncryptTraffic
-                        firewallEnabled = newFirewallEnabled
-                    }
+                    // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
+                    blockUnsafeNetworks = newBlockUnsafeNetworks
+                    warnOnPublicWiFi = newWarnOnPublicWiFi
+                    autoConnectVPN = newAutoConnectVPN
+                    blockTracking = newBlockTracking
+                    encryptTraffic = newEncryptTraffic
+                    firewallEnabled = newFirewallEnabled
 
                     print("✅ NetworkSecuritySettingsModal: Настройки загружены из API")
                 }
             } catch {
                 // 404 или ошибка сети - используем дефолты
-                await MainActor.run {
-                    // Оставляем дефолтные значения
-                }
+                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 print("⚠️ NetworkSecuritySettingsModal: Настройки не найдены (404), используются дефолты: \(error.localizedDescription)")
             }
-            await MainActor.run {
-                isLoading = false
-            }
+            // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
+            isLoading = false
         }
     }
     
     // ✅ Сохранение настроек через ComponentConfigurationService
+    // ✅ BUILD 103: Task { @MainActor in } для гарантии создания Dictionary на main thread
     private func saveSettings() {
-        Task {
+        Task { @MainActor in
             do {
-                // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
-                let isComponentEnabled = await MainActor.run {
-                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
-                }
+                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
+                let isComponentEnabled = ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
 
+                // ✅ BUILD 103: Dictionary создается на main thread благодаря @MainActor
                 let config = ComponentConfiguration(
                     isEnabled: isComponentEnabled,
                     priority: .normal,
@@ -187,16 +184,14 @@ struct NetworkSecuritySettingsModal: View {
                     configuration: config
                 )
 
-                await MainActor.run {
-                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                    isPresented = false
-                }
+                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
+                toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                isPresented = false
                 print("✅ NetworkSecuritySettingsModal: Настройки сохранены через API")
             } catch {
-                await MainActor.run {
-                    toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                    isPresented = false
-                }
+                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
+                toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                isPresented = false
                 print("⚠️ NetworkSecuritySettingsModal: Ошибка сохранения, но кэшировано: \(error.localizedDescription)")
             }
         }

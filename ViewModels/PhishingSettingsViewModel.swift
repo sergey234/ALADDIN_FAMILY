@@ -136,11 +136,13 @@ class PhishingSettingsViewModel: ObservableObject {
 
         isApplyingState = true
 
-        Task {
+        // ✅ BUILD 103: Task { @MainActor in } для гарантии создания Dictionary на main thread
+        Task { @MainActor in
             do {
                 // Получаем статус компонента
                 let isComponentEnabled = ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
 
+                // ✅ BUILD 103: Dictionary создается на main thread благодаря @MainActor
                 // Создаем конфигурацию
                 let config = ComponentConfiguration(
                     isEnabled: isComponentEnabled,
@@ -161,12 +163,11 @@ class PhishingSettingsViewModel: ObservableObject {
                     configuration: config
                 )
 
-                await MainActor.run {
-                    lastSavedState = state
-                    hasChanges = false
-                    isApplyingState = false
-                    toastManager.showSuccess("Настройки сохранены")
-                }
+                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
+                lastSavedState = state
+                hasChanges = false
+                isApplyingState = false
+                toastManager.showSuccess("Настройки сохранены")
 
                 log("✅ Настройки phishing protection успешно сохранены")
 
@@ -174,19 +175,16 @@ class PhishingSettingsViewModel: ObservableObject {
                 log("❌ Ошибка сохранения настроек phishing protection: \(error.localizedDescription)")
 
                 // Rollback к последнему сохраненному состоянию
+                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 if let lastSaved = lastSavedState {
-                    await MainActor.run {
-                        state = lastSaved
-                        hasChanges = false
-                        isApplyingState = false
-                        toastManager.showError("Ошибка сохранения. Изменения отменены.")
-                    }
+                    state = lastSaved
+                    hasChanges = false
+                    isApplyingState = false
+                    toastManager.showError("Ошибка сохранения. Изменения отменены.")
                     log("🔄 Rollback выполнен - возвращены последние сохраненные настройки")
                 } else {
-                    await MainActor.run {
-                        isApplyingState = false
-                        toastManager.showError("Ошибка сохранения настроек")
-                    }
+                    isApplyingState = false
+                    toastManager.showError("Ошибка сохранения настроек")
                 }
             }
         }
