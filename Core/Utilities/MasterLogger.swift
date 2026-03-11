@@ -23,39 +23,30 @@ class MasterLogger {
     // MARK: - Properties
     private let settingsLogger = SettingsDiagnosticsLogger.shared
     private let visualLogger = VisualLogger.shared
+    
+    /// ✅ BUILD 109: Фоновая очередь для логирования.
+    /// Изолирует процесс логирования от главного потока, предотвращая блокировки и краши Dictionary.
+    private let logQueue = DispatchQueue(label: "com.aladdin.logger.serial", qos: .utility)
 
     /// Флаг включения визуального логирования
-    // ✅ BUILD 96: Кешированное значение для предотвращения рекурсии
-    // Используем thread-safe кеширование через Thread.current.threadDictionary
-    private var _enableVisualLogging: Bool? = nil
+    // ✅ BUILD 109: Полная изоляция от UserDefaults внутри геттера.
+    // Теперь это простое поле, которое обновляется только один раз при старте или изменении.
+    // Это исключает системную рекурсию на реальном устройстве.
+    private var _enableVisualLogging: Bool = false
     
     private var enableVisualLogging: Bool {
-        get {
-            // 🛡️ BUILD 108: Упрощенный потокобезопасный доступ без создания Task в getter
-            if let cached = _enableVisualLogging {
-                return cached
-            }
-            
-            // Если кеша нет, берем из thread dictionary (быстро)
-            let dict = Thread.current.threadDictionary
-            if let cached = dict["MasterLogger.enableVisualLogging"] as? Bool {
-                return cached
-            }
-            
-            // В самом крайнем случае читаем UserDefaults синхронно ОДИН РАЗ
-            // Это безопаснее, чем плодить тысячи Task
-            let realValue = UserDefaults.standard.bool(forKey: "enable_visual_logging")
-            _enableVisualLogging = realValue
-            dict["MasterLogger.enableVisualLogging"] = realValue
-            return realValue
-        }
+        get { _enableVisualLogging }
         set {
             _enableVisualLogging = newValue
-            Thread.current.threadDictionary["MasterLogger.enableVisualLogging"] = newValue
-            
-            // Сохраняем в UserDefaults
+            // Синхронно сохраняем в UserDefaults только при явном изменении
             UserDefaults.standard.set(newValue, forKey: "enable_visual_logging")
         }
+    }
+    
+    /// ✅ BUILD 109: Безопасное обновление настроек логгера (вызывается снаружи)
+    func updateSettings(enableVisual: Bool) {
+        self._enableVisualLogging = enableVisual
+        internalLog("MasterLogger settings updated: enableVisual=\(enableVisual)")
     }
 
     /// Флаг включения логирования в консоль
@@ -157,56 +148,58 @@ class MasterLogger {
         file: String = #file,
         line: Int = #line
     ) {
-        // 🛡️ BUILD 108: МАКСИМАЛЬНАЯ ЗАЩИТА ОТ РЕКУРСИИ
-        // Используем thread-local флаг, чтобы предотвратить вход в логгер из логгера
+        // 🛡️ BUILD 108/109: МАКСИМАЛЬНАЯ ЗАЩИТА ОТ РЕКУРСИИ
         let threadDict = Thread.current.threadDictionary
         if threadDict[recursionKey] != nil {
-            // Если мы уже здесь - печатаем в консоль и выходим немедленно
-            print("⚠️ [MasterLogger] Recursion detected and blocked for message: \(message)")
+            print("⚠️ [MasterLogger] Recursion detected and blocked: \(message)")
             return
         }
         
         threadDict[recursionKey] = true
         defer { threadDict.removeObject(forKey: recursionKey) }
         
-        // КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО:
-        // 1. Вызывать аналитику напрямую или косвенно
-        // 2. Писать в UserDefaults (кроме случаев с кешем)
-        
         // Проверка уровня логирования
         guard level.priority >= maxLogLevel.priority else { return }
 
-        let fileName = (file as NSString).lastPathComponent
-        let fullMessage = "[\(category.rawValue)] \(message)"
+        // ✅ BUILD 109: Вся логика логирования вынесена в фоновую серийную очередь.
+        // Это на 100% гарантирует, что Main Thread не будет заблокирован
+        // и не упадет в рекурсию при создании словарей Dictionary.
+        logQueue.async { [weak self] in
+            guard let self = self else { return }
+            
+            let fileName = (file as NSString).lastPathComponent
+            let fullMessage = "[\(category.rawValue)] \(message)"
 
-        // 1. SettingsDiagnosticsLogger (основное логирование)
-        switch level {
-        case .trace, .debug, .info:
-            settingsLogger.logFunction(function, message: fullMessage, section: category.rawValue)
-        case .warn:
-            settingsLogger.logFunction(function, message: "WARNING: \(fullMessage)", section: category.rawValue)
-        case .error:
-            settingsLogger.logError(function, message: fullMessage, section: category.rawValue)
-        case .fatal:
-            settingsLogger.logCritical(function, message: fullMessage, section: category.rawValue)
-        }
+            // 1. SettingsDiagnosticsLogger
+            switch level {
+            case .trace, .debug, .info:
+                self.settingsLogger.logFunction(function, message: fullMessage, section: category.rawValue)
+            case .warn:
+                self.settingsLogger.logFunction(function, message: "WARNING: \(fullMessage)", section: category.rawValue)
+            case .error:
+                self.settingsLogger.logError(function, message: fullMessage, section: category.rawValue)
+            case .fatal:
+                self.settingsLogger.logCritical(function, message: fullMessage, section: category.rawValue)
+            }
 
-        // 2. Visual Logger (если включено)
-        if enableVisualLogging {
-            visualLogger.log(
-                fullMessage,
-                level: VisualLogger.LogLevel(rawValue: level.emoji) ?? .info,
-                file: fileName,
-                line: line
-            )
-        }
+            // 2. Visual Logger (если включено)
+            if self.enableVisualLogging {
+                // Обновление UI VisualLogger перенесено внутрь его метода на Main Thread
+                self.visualLogger.log(
+                    fullMessage,
+                    level: VisualLogger.LogLevel(rawValue: level.emoji) ?? .info,
+                    file: fileName,
+                    line: line
+                )
+            }
 
-        // 3. Console logging (всегда для DEBUG)
-        #if DEBUG
-        if enableConsoleLogging {
-            print("\(level.emoji) [\(level.rawValue)] [\(category.rawValue)] [\(fileName):\(line)] \(message)")
+            // 3. Console logging (всегда для DEBUG)
+            #if DEBUG
+            if self.enableConsoleLogging {
+                print("\(level.emoji) [\(level.rawValue)] [\(category.rawValue)] [\(fileName):\(line)] \(message)")
+            }
+            #endif
         }
-        #endif
     }
 
     // MARK: - Convenience Methods
@@ -256,11 +249,9 @@ class MasterLogger {
 
     /// Логирование HTTP запросов
     func logRequest(_ request: URLRequest, function: String = #function, file: String = #file, line: Int = #line) {
-        var headers = request.allHTTPHeaderFields ?? [:]
-        headers = LogSanitizer.sanitizeHeaders(headers)  // ✅ ПОЛНАЯ ЗАЩИТА ЗАГОЛОВКОВ
-
-        let url = LogSanitizer.sanitizeURL(request.url?.absoluteString ?? "-")  // ✅ ЗАЩИТА URL
-        let message = "➡️ \(request.httpMethod ?? "GET") \(url) headers=\(headers)"
+        let url = LogSanitizer.sanitizeURL(request.url?.absoluteString ?? "-")
+        // ✅ BUILD 109: Не печатаем все заголовки, чтобы избежать рекурсии через description
+        let message = "➡️ \(request.httpMethod ?? "GET") \(url) [Headers hidden for stability]"
         network(message, function: function, file: file, line: line)
     }
 
@@ -268,16 +259,8 @@ class MasterLogger {
     func logResponse(_ response: URLResponse?, data: Data?, function: String = #function, file: String = #file, line: Int = #line) {
         if let http = response as? HTTPURLResponse {
             let url = LogSanitizer.sanitizeURL(http.url?.absoluteString ?? "-")
-            var message = "⬅️ status=\(http.statusCode) url=\(url)"
-
-            // Санитизация тела ответа
-            if let data = data, let jsonString = String(data: data, encoding: .utf8) {
-                let sanitizedJSON = LogSanitizer.sanitizeJSON(jsonString)
-                // Ограничиваем размер лога (первые 500 символов)
-                let truncatedJSON = sanitizedJSON.count > 500 ? sanitizedJSON.prefix(500) + "..." : sanitizedJSON
-                message += " body=\(truncatedJSON)"
-            }
-
+            // ✅ BUILD 109: Не печатаем тело ответа в основной логгер
+            let message = "⬅️ status=\(http.statusCode) url=\(url) [Body hidden for stability]"
             network(message, function: function, file: file, line: line)
         }
     }

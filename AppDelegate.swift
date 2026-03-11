@@ -126,6 +126,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         print("🚀 ALADDIN AppDelegate: Starting performance optimizations...")
 
+        // ✅ BUILD 109: Безопасная инициализация настроек логгера
+        // Читаем UserDefaults ОДИН РАЗ при старте и кешируем в логгере.
+        // Это исключает обращения к UserDefaults внутри метода log().
+        let enableVisual = UserDefaults.standard.bool(forKey: "enable_visual_logging")
+        MasterLogger.shared.updateSettings(enableVisual: enableVisual)
+
         // 🛑 CRASH HANDLER - для диагностики крашей при запуске
         setupCrashHandler()
 

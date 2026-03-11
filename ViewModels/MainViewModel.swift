@@ -87,108 +87,9 @@ class MainViewModel: ObservableObject {
     // MARK: - Init
     
     init(apiService: APIService = .shared, keychainManager: KeychainManager = .shared) {
-        // ✅ КРИТИЧНО: Детальное логирование для диагностики краша (работает в RELEASE)
-        let startTime = Date()
-        let logPrefix = "🔍 MainViewModel.init"
-        
-        // Сохраняем в UserDefaults для получения после краша
-        var debugLog: [String] = []
-        debugLog.append("\(logPrefix) START - \(Date())")
-        print("\(logPrefix) START - \(Date())")
-        visualLogger.log("\(logPrefix) START", level: .debug)
-        logger.business("Initializing MainViewModel")
-        
-        // ✅ ШАГ 1: Проверка параметров
-        debugLog.append("\(logPrefix) ШАГ 1: Проверка параметров...")
-        print("\(logPrefix) ШАГ 1: Проверка параметров...")
-        visualLogger.log("\(logPrefix) ШАГ 1: Проверка параметров...", level: .debug)
-        
-        do {
-            // Проверяем APIService
-            let _ = apiService
-            debugLog.append("✅ APIService доступен")
-            print("✅ \(logPrefix) APIService доступен")
-            visualLogger.log("✅ APIService доступен", level: .success)
-            
-            // Проверяем KeychainManager
-            let _ = keychainManager
-            debugLog.append("✅ KeychainManager доступен")
-            print("✅ \(logPrefix) KeychainManager доступен")
-            visualLogger.log("✅ KeychainManager доступен", level: .success)
-            
-        } catch {
-            let errorMsg = "❌ Ошибка при проверке параметров: \(error)"
-            debugLog.append(errorMsg)
-            print("\(logPrefix) \(errorMsg)")
-            visualLogger.log(errorMsg, level: .error)
-            logger.error(errorMsg)
-        }
-        
-        // ✅ ШАГ 2: Инициализация свойств
-        debugLog.append("\(logPrefix) ШАГ 2: Инициализация свойств...")
-        print("\(logPrefix) ШАГ 2: Инициализация свойств...")
-        visualLogger.log("\(logPrefix) ШАГ 2: Инициализация свойств...", level: .debug)
-        
-        do {
-            self.apiService = apiService
-            self.keychainManager = keychainManager
-            
-            debugLog.append("✅ Свойства инициализированы")
-            print("✅ \(logPrefix) Свойства инициализированы")
-            visualLogger.log("✅ Свойства инициализированы", level: .success)
-            
-        } catch {
-            let errorMsg = "❌ Ошибка при инициализации свойств: \(error)"
-            debugLog.append(errorMsg)
-            print("\(logPrefix) \(errorMsg)")
-            visualLogger.log(errorMsg, level: .error)
-            logger.error(errorMsg)
-        }
-        
-        // ✅ ШАГ 3: Проверка thread safety
-        debugLog.append("\(logPrefix) ШАГ 3: Проверка thread safety...")
-        print("\(logPrefix) ШАГ 3: Проверка thread safety...")
-        visualLogger.log("\(logPrefix) ШАГ 3: Проверка thread safety...", level: .debug)
-        
-        if Thread.isMainThread {
-            debugLog.append("✅ Выполняется на main thread")
-            print("✅ \(logPrefix) Выполняется на main thread")
-            visualLogger.log("✅ Выполняется на main thread", level: .success)
-        } else {
-            let warningMsg = "⚠️ Выполняется НЕ на main thread: \(Thread.current)"
-            debugLog.append(warningMsg)
-            print("\(logPrefix) \(warningMsg)")
-            visualLogger.log(warningMsg, level: .warning)
-            logger.warn(warningMsg)
-        }
-        
-        // НЕ загружаем данные автоматически при инициализации - только по требованию
-        // loadDashboardData() // Закомментировано чтобы избежать бесконечных циклов
-        
-        let duration = Date().timeIntervalSince(startTime)
-        let completeMsg = "✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s"
-        debugLog.append(completeMsg)
-        print(completeMsg)
-        visualLogger.log(completeMsg, level: .success)
-        
-        // Сохраняем логи
-        saveInitDebugLog(debugLog)
-    }
-    
-    /// Сохраняет логи инициализации MainViewModel
-    private func saveInitDebugLog(_ logs: [String]) {
-        let key = "main_view_model_init_debug_log"
-        let logText = logs.joined(separator: "\n")
-        UserDefaults.standard.set(logText, forKey: key)
-        
-        // Добавляем к истории
-        var history = UserDefaults.standard.stringArray(forKey: "\(key)_history") ?? []
-        history.append(logText)
-        if history.count > 5 {
-            history.removeFirst()
-        }
-        UserDefaults.standard.set(history, forKey: "\(key)_history")
-        UserDefaults.standard.synchronize()
+        // ✅ BUILD 109: Полная изоляция конструктора. Никаких логов или системных вызовов.
+        self.apiService = apiService
+        self.keychainManager = keychainManager
     }
     
     // MARK: - Public Methods
@@ -445,34 +346,12 @@ class MainViewModel: ObservableObject {
     
     /// ✅ АВТООБНОВЛЕНИЕ: Загрузка данных при открытии экрана
     func onAppear() {
-        // ✅ КРИТИЧНО: Проверяем, завершен ли онбординг
-        let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-        if !onboardingDone {
-            #if DEBUG
-            print("⚠️ MainViewModel: Онбординг не завершен - пропускаем загрузку данных")
-            #endif
-            return
-        }
-
+        // ✅ BUILD 109: Минимальная проверка onAppear без избыточного логирования
         // ✅ ЗАЩИТА ОТ ЧАСТЫХ ВЫЗОВОВ: Проверяем, не было ли onAppear недавно
         if let lastCall = lastOnAppearTime, Date().timeIntervalSince(lastCall) < 30 {
-            #if DEBUG
-            print("⚠️ MainViewModel: onAppear вызван слишком часто, пропускаем")
-            #endif
             return
         }
         lastOnAppearTime = Date()
-
-        // Проверяем, используются ли debug токены
-        if isUsingDebugTokens() {
-            #if DEBUG
-            print("ℹ️ MainViewModel: Debug токены - работаем в демо-режиме, пропускаем загрузку API")
-            #endif
-            // Для debug токенов показываем демо-сообщение
-            errorMessage = "Демо-режим: тестовые данные"
-            NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
-            return
-        }
 
         // Проверяем, нужно ли обновлять данные
         let shouldRefresh: Bool
@@ -487,14 +366,7 @@ class MainViewModel: ObservableObject {
         }
         
         if shouldRefresh {
-            #if DEBUG
-            print("🔄 MainViewModel: Автообновление данных (onAppear)")
-            #endif
             loadDashboardData()
-        } else {
-            #if DEBUG
-            print("ℹ️ MainViewModel: Данные актуальны, пропускаем обновление")
-            #endif
         }
     }
     

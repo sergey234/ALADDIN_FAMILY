@@ -46,160 +46,17 @@ struct MainScreen: View {
     // ✅ BUILD 99: Защита от рекурсии теперь через глобальный флаг (см. выше)
     // @State не работает при пересоздании View, поэтому используем глобальный флаг
     
-    // MARK: - Init с детальным логированием
+    // MARK: - Init
     
     init() {
-        // ✅ КРИТИЧНО: Логирование для диагностики краша (работает в RELEASE)
-        let startTime = Date()
-        let logPrefix = "🔍 MainScreen.init"
-        
-        // Сохраняем в UserDefaults для получения после краша
-        var debugLog: [String] = []
-        debugLog.append("\(logPrefix) START - \(Date())")
-        
-        // Логируем в консоль И в VisualLogger (работает в RELEASE)
-        print("\(logPrefix) START - \(Date())")
-        visualLogger.log("\(logPrefix) START", level: .debug)
-        logger.screenLoad("MainScreen.init")
-        
-        // ✅ ШАГ 1: Проверка Singleton перед созданием MainViewModel
-        debugLog.append("\(logPrefix) ШАГ 1: Проверка Singleton...")
-        print("\(logPrefix) ШАГ 1: Проверка Singleton...")
-        visualLogger.log("\(logPrefix) ШАГ 1: Проверка Singleton...", level: .debug)
-        
-        do {
-            // Проверяем TariffManager
-            let _ = TariffManager.shared
-            debugLog.append("✅ TariffManager.shared доступен")
-            print("✅ \(logPrefix) TariffManager.shared доступен")
-            visualLogger.log("✅ TariffManager.shared доступен", level: .success)
-            
-            // Проверяем AntivirusManager
-            let _ = AntivirusManager.shared
-            debugLog.append("✅ AntivirusManager.shared доступен")
-            print("✅ \(logPrefix) AntivirusManager.shared доступен")
-            visualLogger.log("✅ AntivirusManager.shared доступен", level: .success)
-            
-            // Проверяем ProfileImageManager
-            let _ = ProfileImageManager.shared
-            debugLog.append("✅ ProfileImageManager.shared доступен")
-            print("✅ \(logPrefix) ProfileImageManager.shared доступен")
-            visualLogger.log("✅ ProfileImageManager.shared доступен", level: .success)
-            
-        } catch {
-            let errorMsg = "❌ Ошибка при проверке Singleton: \(error)"
-            debugLog.append(errorMsg)
-            print("\(logPrefix) \(errorMsg)")
-            visualLogger.log(errorMsg, level: .error)
-            logger.error(errorMsg)
-        }
-        
-        // ✅ ШАГ 2: Создание MainViewModel
-        debugLog.append("\(logPrefix) ШАГ 2: Создание MainViewModel...")
-        print("\(logPrefix) ШАГ 2: Создание MainViewModel...")
-        visualLogger.log("\(logPrefix) ШАГ 2: Создание MainViewModel...", level: .debug)
-        
-        // Создаем MainViewModel с логированием
-        let viewModel: MainViewModel
-        do {
-            viewModel = MainViewModel()
-            debugLog.append("✅ MainViewModel создан успешно")
-            print("✅ \(logPrefix) MainViewModel создан успешно")
-            visualLogger.log("✅ MainViewModel создан успешно", level: .success)
-        } catch {
-            let errorMsg = "❌ Ошибка при создании MainViewModel: \(error)"
-            debugLog.append(errorMsg)
-            print("\(logPrefix) \(errorMsg)")
-            visualLogger.log(errorMsg, level: .error)
-            logger.error(errorMsg)
-            // Создаем с дефолтными параметрами
-            viewModel = MainViewModel()
-        }
-        
-        // Сохраняем MainViewModel
+        // ✅ BUILD 109: Конструктор теперь абсолютно бесшумный. 
+        // Логирование перенесено в .task {}, когда экран уже создан.
+        let viewModel = MainViewModel()
         _mainViewModel = StateObject(wrappedValue: viewModel)
-        
-        // ✅ ШАГ 3: Проверка EnvironmentObject (они будут доступны позже)
-        debugLog.append("\(logPrefix) ШАГ 3: EnvironmentObject будут проверены в body")
-        print("\(logPrefix) ШАГ 3: EnvironmentObject будут проверены в body")
-        visualLogger.log("\(logPrefix) ШАГ 3: EnvironmentObject будут проверены в body", level: .info)
-        
-        let duration = Date().timeIntervalSince(startTime)
-        let completeMsg = "✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s"
-        debugLog.append(completeMsg)
-        print(completeMsg)
-        visualLogger.log(completeMsg, level: .success)
-        
-        // Сохраняем логи
-        saveInitDebugLog(debugLog)
     }
     
     var body: some View {
-        // ✅ КРИТИЧНО: Логирование в начале body (работает в RELEASE)
-        let bodyStartTime = Date()
-        let logPrefix = "🔍 MainScreen.body"
-        
-        // Сохраняем в UserDefaults
-        var debugLog: [String] = []
-        debugLog.append("\(logPrefix) START - \(Date())")
-        print("\(logPrefix) START - \(Date())")
-        visualLogger.log("\(logPrefix) START", level: .debug)
-        
-        // ✅ ШАГ 1: Проверка EnvironmentObject
-        debugLog.append("\(logPrefix) ШАГ 1: Проверка EnvironmentObject...")
-        print("\(logPrefix) ШАГ 1: Проверка EnvironmentObject...")
-        visualLogger.log("\(logPrefix) ШАГ 1: Проверка EnvironmentObject...", level: .debug)
-        
-        // Проверяем что EnvironmentObject доступны (они не могут быть nil, но проверим доступ)
-        do {
-            let _ = localizationManager
-            debugLog.append("✅ localizationManager доступен")
-            print("✅ \(logPrefix) localizationManager доступен")
-            visualLogger.log("✅ localizationManager доступен", level: .success)
-            
-            let _ = navigationManager
-            debugLog.append("✅ navigationManager доступен")
-            print("✅ \(logPrefix) navigationManager доступен")
-            visualLogger.log("✅ navigationManager доступен", level: .success)
-        } catch {
-            let errorMsg = "❌ Ошибка при доступе к EnvironmentObject: \(error)"
-            debugLog.append(errorMsg)
-            print("\(logPrefix) \(errorMsg)")
-            visualLogger.log(errorMsg, level: .error)
-            logger.error(errorMsg)
-        }
-        
-        // ✅ ШАГ 2: Проверка Singleton в body
-        debugLog.append("\(logPrefix) ШАГ 2: Проверка Singleton в body...")
-        print("\(logPrefix) ШАГ 2: Проверка Singleton в body...")
-        visualLogger.log("\(logPrefix) ШАГ 2: Проверка Singleton в body...", level: .debug)
-        
-        do {
-            let _ = tariffManager
-            debugLog.append("✅ tariffManager доступен")
-            print("✅ \(logPrefix) tariffManager доступен")
-            visualLogger.log("✅ tariffManager доступен", level: .success)
-            
-            let _ = antivirusManager
-            debugLog.append("✅ antivirusManager доступен")
-            print("✅ \(logPrefix) antivirusManager доступен")
-            visualLogger.log("✅ antivirusManager доступен", level: .success)
-        } catch {
-            let errorMsg = "❌ Ошибка при доступе к Singleton: \(error)"
-            debugLog.append(errorMsg)
-            print("\(logPrefix) \(errorMsg)")
-            visualLogger.log(errorMsg, level: .error)
-            logger.error(errorMsg)
-        }
-        
-        debugLog.append("✅ \(logPrefix) Начинаем рендеринг UI...")
-        print("✅ \(logPrefix) Начинаем рендеринг UI...")
-        visualLogger.log("✅ Начинаем рендеринг UI...", level: .info)
-        
-        // Сохраняем логи
-        saveBodyDebugLog(debugLog)
-        
-        return ZStack {
+        ZStack {
             // Фон - красивый градиент как в SupportScreen
             LinearGradient(
                 colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],

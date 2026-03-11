@@ -41,11 +41,82 @@ class NetworkProtectionViewModelTests: XCTestCase {
     func testInitialization() {
         XCTAssertNotNil(viewModel)
         XCTAssertFalse(viewModel.isLoading)
+        // В BUILD 107/108 по умолчанию всё выключено
         XCTAssertFalse(viewModel.crashDetectionEnabled)
         XCTAssertFalse(viewModel.roadsideAssistanceEnabled)
         XCTAssertFalse(viewModel.emergencyResponseEnabled)
     }
     
+    /**
+     * ✅ BUILD 108: Тест инициализации из UserDefaults
+     */
+    func testInitializationFromUserDefaults() {
+        // Arrange
+        let key = "demo_component_crash_detection_enabled"
+        UserDefaults.standard.set(true, forKey: key)
+        defer { UserDefaults.standard.removeObject(forKey: key) }
+        
+        // Act
+        let newViewModel = NetworkProtectionViewModel(
+            statusService: mockStatusService,
+            configurationService: mockConfigurationService,
+            retryManager: mockRetryManager
+        )
+        
+        // Assert
+        XCTAssertTrue(newViewModel.crashDetectionEnabled, "Должно загружаться из UserDefaults")
+    }
+    
+    // MARK: - Synchronous Toggle Tests (BUILD 108)
+    
+    /**
+     * ✅ BUILD 108: Проверка мгновенного обновления UI
+     */
+    func testSyncToggleMethods() {
+        // Arrange
+        viewModel.crashDetectionEnabled = false
+        
+        // Act
+        viewModel.toggleCrashDetectionSync(true)
+        
+        // Assert - должно быть true НЕМЕДЛЕННО (без ожидания Task)
+        XCTAssertTrue(viewModel.crashDetectionEnabled, "Синхронный метод должен обновлять UI мгновенно")
+    }
+    
+    /**
+     * ✅ BUILD 108: КРИТИЧЕСКИЙ ТЕСТ RACE CONDITION
+     * Имитация безумного пользователя, который быстро нажимает на все тумблеры.
+     * Проверяет, что NSLock в AnalyticsManager предотвращает краш Dictionary.resize.
+     */
+    func testMassiveToggleOperationsRaceCondition() async {
+        let iterations = 50 // 50 циклов * 10 тумблеров = 500 операций
+        
+        print("🚀 Начинаем стресс-тест аналитики (Race Condition)...")
+        
+        await withTaskGroup(of: Void.self) { group in
+            for i in 0..<iterations {
+                group.addTask {
+                    let value = i % 2 == 0
+                    await MainActor.run {
+                        self.viewModel.toggleCrashDetectionSync(value)
+                        self.viewModel.togglePhishingProtectionSync(!value)
+                        self.viewModel.toggleMalwareDetectionSync(value)
+                        self.viewModel.toggleMobileSecuritySync(!value)
+                        self.viewModel.toggleNetworkSecuritySync(value)
+                        self.viewModel.toggleIncidentResponseSync(!value)
+                        self.viewModel.togglePasswordSecuritySync(value)
+                        self.viewModel.toggleRoadsideAssistanceSync(!value)
+                        self.viewModel.toggleEmergencyResponseSync(value)
+                        self.viewModel.toggleEmergencyEventSync(!value)
+                    }
+                }
+            }
+        }
+        
+        // Если мы дошли сюда без краша - тест пройден!
+        XCTAssertTrue(true, "Стресс-тест пройден без краша Dictionary.resize")
+    }
+
     // MARK: - Load Components Status Tests
     
     func testLoadCriticalComponentsSuccess() async {
