@@ -185,7 +185,7 @@ class TariffsViewModel: ObservableObject {
     func purchaseSelectedTariff() async {
         logger.business("Initiating purchase of selected tariff")
         guard let selectedTariff = selectedTariff else {
-            let localizationManager = LocalizationManager()
+            let localizationManager = LocalizationManager.shared
             errorMessage = localizationManager.localized("tariffs_error_select_tariff")
             return
         }
@@ -209,7 +209,7 @@ class TariffsViewModel: ObservableObject {
             print("❌ КРИТИЧЕСКАЯ ОШИБКА: НЕВАЛИДНЫЙ ТАРИФ!")
             print("   - id.isEmpty: \(tariff.id.isEmpty)")
             print("   - title.isEmpty: \(tariff.title.isEmpty)")
-            let localizationManager = LocalizationManager()
+            let localizationManager = LocalizationManager.shared
             errorMessage = localizationManager.localized("tariffs_error_invalid_tariff")
             return
         }
@@ -256,13 +256,13 @@ class TariffsViewModel: ObservableObject {
         // Проверяем доступность StoreKit перед использованием
         #if targetEnvironment(simulator)
         print("❌ КРИТИЧЕСКАЯ ОШИБКА: StoreKit вызывается в симуляторе!")
-        let localizationManager = LocalizationManager()
+        let localizationManager = LocalizationManager.shared
         errorMessage = localizationManager.localized("store.error.simulator.not.supported")
         return
         #else
         // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что StoreManager не выполняет другую операцию
         guard !storeManager.isLoading else {
-            let localizationManager = LocalizationManager()
+            let localizationManager = LocalizationManager.shared
             errorMessage = localizationManager.localized("tariffs_error_loading_products")
             print("⚠️ StoreManager уже загружает продукты")
             return
@@ -270,7 +270,7 @@ class TariffsViewModel: ObservableObject {
         
         // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Проверка что продукты загружены
         if storeManager.products.isEmpty {
-            let localizationManager = LocalizationManager()
+            let localizationManager = LocalizationManager.shared
             errorMessage = localizationManager.localized("tariffs_error_products_not_loaded")
             print("⚠️ [TariffsViewModel] ========== ПРОДУКТЫ НЕ ЗАГРУЖЕНЫ ПЕРЕД ПОКУПКОЙ ==========")
             print("⚠️ [TariffsViewModel] Попытка покупки тарифа: \(tariff.title) (ID: \(tariff.id))")
@@ -284,7 +284,7 @@ class TariffsViewModel: ObservableObject {
             
             // Проверяем снова после загрузки
             guard !storeManager.products.isEmpty else {
-                let localizationManager = LocalizationManager()
+                let localizationManager = LocalizationManager.shared
                 errorMessage = localizationManager.localized("tariffs_error_products_load_failed")
                 print("❌ [TariffsViewModel] ========== ПРОДУКТЫ ВСЕ ЕЩЕ НЕ ЗАГРУЖЕНЫ ==========")
                 print("❌ [TariffsViewModel] Продукты все еще не загружены после попытки перезагрузки")
@@ -357,7 +357,7 @@ class TariffsViewModel: ObservableObject {
                 isLoading = false
                 
                 // ✅ УЛУЧШЕНИЕ: Специальная обработка для productsNotLoaded
-                let localizationManager = LocalizationManager()
+                let localizationManager = LocalizationManager.shared
                 if let storeError = error as? StoreError, storeError == .productsNotLoaded {
                     errorMessage = localizationManager.localized("tariffs_error_products_load_failed")
                     print("❌ [TariffsViewModel] Products not loaded error")
@@ -388,7 +388,7 @@ class TariffsViewModel: ObservableObject {
                 // ✅ КРИТИЧЕСКАЯ ЗАЩИТА: Дополнительная проверка продукта
                 guard !product.id.isEmpty else {
                     isLoading = false
-                    let localizationManager = LocalizationManager()
+                    let localizationManager = LocalizationManager.shared
                     errorMessage = localizationManager.localized("tariffs_error_invalid_tariff")
                     print("❌ КРИТИЧЕСКАЯ ОШИБКА: Product ID пустой!")
                     return
@@ -436,7 +436,7 @@ class TariffsViewModel: ObservableObject {
                     isLoading = false
                     
                     // ✅ УЛУЧШЕНИЕ: Специальная обработка для productsNotLoaded
-                    let localizationManager = LocalizationManager()
+                    let localizationManager = LocalizationManager.shared
                     if let storeError = error as? StoreError, storeError == .productsNotLoaded {
                         errorMessage = localizationManager.localized("tariffs_error_products_load_failed")
                         print("❌ [TariffsViewModel] Products not loaded error")
@@ -456,7 +456,7 @@ class TariffsViewModel: ObservableObject {
             } else {
                 // Продукт не загружен из App Store
                 isLoading = false
-                let localizationManager = LocalizationManager()
+                let localizationManager = LocalizationManager.shared
                 errorMessage = localizationManager.localized("tariffs_error_products_load_failed")
                 print("❌ Продукт не найден в StoreManager для ProductID: \(productID.rawValue)")
                 print("💡 Это может означать:")
@@ -467,7 +467,7 @@ class TariffsViewModel: ObservableObject {
         } else {
             // Не удалось найти ProductID
             isLoading = false
-            let localizationManager = LocalizationManager()
+            let localizationManager = LocalizationManager.shared
             errorMessage = localizationManager.localized("tariffs_error_invalid_tariff")
             print("❌ Не удалось найти ProductID для tariff.id: '\(tariff.id)'")
             print("💡 Проверьте маппинг в функции findProductID")

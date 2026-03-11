@@ -7,7 +7,6 @@ import Foundation
  * Firebase Analytics интеграция
  */
 
-@MainActor
 class AnalyticsManager {
     
     // MARK: - Recursion Protection
@@ -20,7 +19,6 @@ class AnalyticsManager {
     private let lock = NSLock()
     
     private init() {
-        print("📊 [AnalyticsManager] Initializing")
         // Firebase будет инициализирован в AppDelegate
     }
     
@@ -30,16 +28,21 @@ class AnalyticsManager {
      * Отслеживать просмотр экрана
      */
     func trackScreen(_ screenName: String, screenClass: String? = nil) {
-        // 🛡️ BUILD 110: Защита от рекурсии
-        let threadDict = Thread.current.threadDictionary
-        if threadDict[Self.recursionKey] != nil { return }
-        threadDict[Self.recursionKey] = true
-        defer { threadDict.removeObject(forKey: Self.recursionKey) }
-        
-        lock.lock()
-        defer { lock.unlock() }
-        
-        print("📊 [Analytics] Screen view: \(screenName)")
+        // ✅ BUILD 112: Гарантируем выполнение на Main Thread внутри метода
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // 🛡️ BUILD 110: Защита от рекурсии
+            let threadDict = Thread.current.threadDictionary
+            if threadDict[Self.recursionKey] != nil { return }
+            threadDict[Self.recursionKey] = true
+            defer { threadDict.removeObject(forKey: Self.recursionKey) }
+            
+            self.lock.lock()
+            defer { self.lock.unlock() }
+            
+            print("📊 [Analytics] Screen view: \(screenName)")
+        }
     }
     
     // MARK: - Event Tracking
@@ -49,21 +52,26 @@ class AnalyticsManager {
      * ✅ BUILD 102: Убраны parameters ?? [:] и parameters?.description для предотвращения создания Dictionary в background thread
      */
     func trackEvent(_ eventName: String, parameters: [String: Any]? = nil) {
-        // 🛡️ BUILD 110: Защита от рекурсии
-        let threadDict = Thread.current.threadDictionary
-        if threadDict[Self.recursionKey] != nil { return }
-        threadDict[Self.recursionKey] = true
-        defer { threadDict.removeObject(forKey: Self.recursionKey) }
-        
-        // 🛡️ BUILD 108: Максимальная изоляция
-        // Используем lock только для критических операций
-        lock.lock()
-        defer { lock.unlock() }
-        
-        #if DEBUG
-        // Печатаем только имя события, чтобы избежать тяжелого описания словаря в Lock
-        print("📊 [AnalyticsManager] Event: \(eventName)")
-        #endif
+        // ✅ BUILD 112: Гарантируем выполнение на Main Thread внутри метода
+        // Это делает вызов из любого потока безопасным для Dictionary.resize
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // 🛡️ BUILD 110: Защита от рекурсии
+            let threadDict = Thread.current.threadDictionary
+            if threadDict[Self.recursionKey] != nil { return }
+            threadDict[Self.recursionKey] = true
+            defer { threadDict.removeObject(forKey: Self.recursionKey) }
+            
+            // 🛡️ BUILD 108: Максимальная изоляция
+            self.lock.lock()
+            defer { self.lock.unlock() }
+            
+            #if DEBUG
+            // Печатаем только имя события, чтобы избежать тяжелого описания словаря в Lock
+            print("📊 [AnalyticsManager] Event: \(eventName)")
+            #endif
+        }
     }
     
     // MARK: - User Properties

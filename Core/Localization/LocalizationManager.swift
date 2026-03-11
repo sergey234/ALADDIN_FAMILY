@@ -13,6 +13,13 @@ private let logger = MasterLogger.shared
 
 class LocalizationManager: ObservableObject {
     
+    // MARK: - Singleton
+    
+    /// ✅ BUILD 112: Единый экземпляр для всего приложения
+    /// Предотвращает многократную инициализацию тяжелого словаря переводов (9000+ строк)
+    /// Это устраняет причину переполнения стека (excessive recursion) при старте.
+    static let shared = LocalizationManager()
+    
     // MARK: - Published Properties
 
     @Published var currentLanguage: Language = .russian
@@ -9106,11 +9113,22 @@ Settings
         ]
     ]
     // MARK: - Get Localized String
+    // MARK: - Recursion Protection
+    private static let recursionKey = "LocalizationManager.isLocalizing"
+
     /**
      * Получить локализованную строку из словаря переводов
      * ✅ РАБОТАЕТ БЕЗ ФАЙЛОВ ЛОКАЛИЗАЦИИ!
      */
     func localized(_ key: String) -> String {
+        // 🛡️ BUILD 112: Защита от рекурсии при поиске переводов
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[Self.recursionKey] != nil {
+            return key // Возвращаем сам ключ при обнаружении рекурсии
+        }
+        threadDict[Self.recursionKey] = true
+        defer { threadDict.removeObject(forKey: Self.recursionKey) }
+
         // ✅ СНАЧАЛА проверяем словарь переводов для текущего языка
         if let translation = translations[currentLanguage]?[key] {
             #if DEBUG

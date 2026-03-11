@@ -63,7 +63,7 @@ struct OnboardingScreen: View {
     // @AppStorage в OnboardingScreen конфликтовал с @AppStorage в ALADDINApp, вызывая рекурсию
     @State private var hasCompletedOnboarding: Bool = false
     
-    // ✅ КРИТИЧНО: Добавляем NavigationManager для навигации
+    // ✅ BUILD 112: Используем Singleton LocalizationManager для предотвращения переполнения стека
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     

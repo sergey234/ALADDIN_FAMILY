@@ -1,16 +1,11 @@
 import SwiftUI
 import UIKit
 
-// ✅ ИСПРАВЛЕНИЕ BUILD 93: Отложенное создание логгеров
-// Создаются только при использовании, не при загрузке файла - предотвращает рекурсию
+// ✅ BUILD 112: Оптимизация - используем статические ссылки вместо computed properties
 // Master Logger for screen logging
-private var logger: MasterLogger {
-    MasterLogger.shared
-}
+private let logger = MasterLogger.shared
 // Visual Logger for on-screen display
-private var visualLogger: VisualLogger {
-    VisualLogger.shared
-}
+private let visualLogger = VisualLogger.shared
 
 // ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Глобальные флаги для защиты от рекурсии
 // @State не работает при пересоздании View, поэтому используем глобальные флаги с NSLock

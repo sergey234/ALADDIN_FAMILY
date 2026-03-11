@@ -66,7 +66,7 @@ struct PaymentQRScreen: View {
             print("❌ КРИТИЧЕСКАЯ ОШИБКА: Tariff.id пустой! Создаем fallback тариф")
             // Создаем безопасный fallback тариф
             // Создаем безопасный fallback тариф (используем ключи локализации позже)
-            let localizationManager = LocalizationManager()
+            let localizationManager = LocalizationManager.shared
             safeTariff = Tariff(
                 id: "fallback_\(UUID().uuidString)",
                 title: localizationManager.localized("payment_qr_fallback_tariff"),

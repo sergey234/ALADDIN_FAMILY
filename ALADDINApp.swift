@@ -122,8 +122,8 @@ struct ALADDINApp: App {
 
     // КРИТИЧНО: Инициализация NavigationManager
     @StateObject private var navigationManager = NavigationManager()
-    // ✅ Добавляем LocalizationManager
-    @StateObject private var localizationManager = LocalizationManager()
+    // ✅ BUILD 112: Используем Singleton для LocalizationManager
+    @StateObject private var localizationManager = LocalizationManager.shared
     // ✅ Добавляем SubscriptionManager для JWT токенов
     private var subscriptionManager = SubscriptionManager.shared
     @AppStorage("selected_theme") private var selectedTheme: String = "system"
@@ -319,14 +319,6 @@ struct ALADDINApp: App {
             // ✅ Основное приложение
             mainAppContent()
             .onAppear {
-                // 🔍 ТЕСТОВОЕ ЛОГИРОВАНИЕ - проверяем onAppear
-                print("🎯 ALADDIN_APP: onAppear triggered - testing logger")
-                
-                // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронное логирование
-                Task {
-                    MasterLogger.shared.business("ALADDINApp onAppear - testing logging system")
-                }
-                
                 // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронная загрузка логов VisualLogger
                 VisualLogger.shared.loadLogsAsync()
                 

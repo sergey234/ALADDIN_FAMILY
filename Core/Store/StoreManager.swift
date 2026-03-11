@@ -167,7 +167,7 @@ class StoreManager: ObservableObject {
                 print("     • \(ProductID.individual.rawValue)")
                 print("     • \(ProductID.family.rawValue)")
                 print("     • \(ProductID.premium.rawValue)")
-                let localizationManager = LocalizationManager()
+                let localizationManager = LocalizationManager.shared
                 errorMessage = localizationManager.localized("tariffs_error_products_load_failed")
             } else {
                 print("✅ [StoreManager.loadProducts] ========== ПРОДУКТЫ ЗАГРУЖЕНЫ УСПЕШНО ==========")
@@ -182,7 +182,7 @@ class StoreManager: ObservableObject {
                 }
             }
         } catch {
-            let localizationManager = LocalizationManager()
+            let localizationManager = LocalizationManager.shared
             errorMessage = String(format: localizationManager.localized("store_error_load_products"), error.localizedDescription)
             isLoading = false
             print("❌ [StoreManager.loadProducts] ========== ОШИБКА ЗАГРУЗКИ ==========")
@@ -356,7 +356,7 @@ class StoreManager: ObservableObject {
             }
         } catch {
             isLoading = false
-            let localizationManager = LocalizationManager()
+            let localizationManager = LocalizationManager.shared
             
             // ✅ УЛУЧШЕННАЯ ОБРАБОТКА ОШИБОК ДЛЯ IPAD
             print("❌ [StoreManager] ========== ОШИБКА ПОКУПКИ ==========")
@@ -429,7 +429,7 @@ class StoreManager: ObservableObject {
             isLoading = false
             print("✅ Purchases restored")
         } catch {
-            let localizationManager = LocalizationManager()
+            let localizationManager = LocalizationManager.shared
             errorMessage = String(format: localizationManager.localized("store_error_restore"), error.localizedDescription)
             isLoading = false
             print("❌ Restore error: \(error)")
@@ -652,7 +652,7 @@ enum StoreError: LocalizedError {
     case receiptValidationFailed
     
     var errorDescription: String? {
-        let localizationManager = LocalizationManager()
+        let localizationManager = LocalizationManager.shared
         switch self {
         case .failedVerification:
             return localizationManager.localized("store.error.verification.failed")

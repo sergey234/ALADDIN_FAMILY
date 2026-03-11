@@ -53,14 +53,14 @@ struct FamilyScreen: View {
     @State private var contentBlockTotal: Int = 4
     @State private var contentBlockedCount: Int = 1245
     
-    @State private var timeRemaining: String = LocalizationManager().localized("family_time_remaining_placeholder")
+    @State private var timeRemaining: String = LocalizationManager.shared.localized("family_time_remaining_placeholder")
     @State private var timeSchedules: Int = 3
     
     @State private var monitoringWebsites: Int = 342
     @State private var monitoringApps: Int = 28
     
-    @State private var locationStatus: String = LocalizationManager().localized("parental_location_home")
-    @State private var locationLastUpdate: String = LocalizationManager().localized("family_location_last_update_placeholder")
+    @State private var locationStatus: String = LocalizationManager.shared.localized("parental_location_home")
+    @State private var locationLastUpdate: String = LocalizationManager.shared.localized("family_location_last_update_placeholder")
     @State private var locationWarnings: Int = 2
     
     @State private var reportsToday: Bool = true
