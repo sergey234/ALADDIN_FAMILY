@@ -70,7 +70,9 @@ struct Toast: View {
 
 /// 🔔 Toast Manager
 /// Менеджер для управления toast уведомлениями
+/// ✅ BUILD 106: Добавлен @MainActor для гарантии main thread (требуется для @Published свойств)
 
+@MainActor
 class ToastManager: ObservableObject {
     static let shared = ToastManager()
     

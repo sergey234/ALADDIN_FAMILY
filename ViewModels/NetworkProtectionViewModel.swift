@@ -321,17 +321,17 @@ class NetworkProtectionViewModel: ObservableObject {
             }
 
             // Успешное обновление
-            // ✅ BUILD 105: Используем DispatchQueue.main.async для гарантии main thread (рекомендация другой ML системы)
-            DispatchQueue.main.async { [self] in
-                self.componentAnalytics.trackComponentToggle(
+            // ✅ BUILD 106: Используем await MainActor.run для гарантии main thread НЕМЕДЛЕННО после await
+            await MainActor.run {
+                componentAnalytics.trackComponentToggle(
                     componentId: componentId,
                     enabled: newValue
                 )
                 
                 if AppConfig.authToken == nil {
-                    self.toastManager.showSuccess("Компонент обновлен (демо режим)")
+                    toastManager.showSuccess("Компонент обновлен (демо режим)")
                 } else {
-                    self.toastManager.showSuccess("Компонент обновлен")
+                    toastManager.showSuccess("Компонент обновлен")
                 }
             }
 
@@ -341,12 +341,12 @@ class NetworkProtectionViewModel: ObservableObject {
             updateClosure(!newValue)
             
             // Отследить ошибку
-            // ✅ BUILD 105: Используем DispatchQueue.main.async для гарантии main thread (рекомендация другой ML системы)
+            // ✅ BUILD 106: Используем await MainActor.run для гарантии main thread НЕМЕДЛЕННО после await
             // Явно захватываем error в замыкании для избежания ошибок компиляции
             let errorToReport = error
-            DispatchQueue.main.async { [self] in
-                self.componentAnalytics.trackComponentError(componentId: componentId, error: errorToReport)
-                self.toastManager.showError("Ошибка: \(errorToReport.localizedDescription)")
+            await MainActor.run {
+                componentAnalytics.trackComponentError(componentId: componentId, error: errorToReport)
+                toastManager.showError("Ошибка: \(errorToReport.localizedDescription)")
             }
         }
     }
