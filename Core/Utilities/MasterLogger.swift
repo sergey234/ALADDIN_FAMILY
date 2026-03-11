@@ -31,37 +31,30 @@ class MasterLogger {
     
     private var enableVisualLogging: Bool {
         get {
-            // Проверяем кеш в thread dictionary для thread-safe доступа
+            // 🛡️ BUILD 108: Упрощенный потокобезопасный доступ без создания Task в getter
+            if let cached = _enableVisualLogging {
+                return cached
+            }
+            
+            // Если кеша нет, берем из thread dictionary (быстро)
             let dict = Thread.current.threadDictionary
             if let cached = dict["MasterLogger.enableVisualLogging"] as? Bool {
                 return cached
             }
             
-            // ✅ BUILD 98: Используем значение по умолчанию false без чтения из UserDefaults при инициализации
-            // Читаем из UserDefaults только если это не первый запуск (когда уже есть кеш)
-            // Это предотвращает рекурсию при инициализации View
-            let defaultValue = false
-            dict["MasterLogger.enableVisualLogging"] = defaultValue
-            _enableVisualLogging = defaultValue
-            
-            // Загружаем реальное значение асинхронно после инициализации
-            Task { @MainActor in
-                let realValue = UserDefaults.standard.bool(forKey: "enable_visual_logging")
-                dict["MasterLogger.enableVisualLogging"] = realValue
-                _enableVisualLogging = realValue
-            }
-            
-            return defaultValue
+            // В самом крайнем случае читаем UserDefaults синхронно ОДИН РАЗ
+            // Это безопаснее, чем плодить тысячи Task
+            let realValue = UserDefaults.standard.bool(forKey: "enable_visual_logging")
+            _enableVisualLogging = realValue
+            dict["MasterLogger.enableVisualLogging"] = realValue
+            return realValue
         }
         set {
             _enableVisualLogging = newValue
-            // Сохраняем в thread dictionary для быстрого доступа
             Thread.current.threadDictionary["MasterLogger.enableVisualLogging"] = newValue
             
-            // ✅ BUILD 98: Асинхронная установка для предотвращения рекурсии
-            Task { @MainActor in
-                UserDefaults.standard.set(newValue, forKey: "enable_visual_logging")
-            }
+            // Сохраняем в UserDefaults
+            UserDefaults.standard.set(newValue, forKey: "enable_visual_logging")
         }
     }
 
@@ -152,8 +145,8 @@ class MasterLogger {
 
     // MARK: - Public Methods
 
-    /// 🛡️ Флаг защиты от рекурсии - предотвращает бесконечный цикл
-    private var isLoggingInProgress = false
+    /// 🛡️ Ключ для защиты от рекурсии в threadDictionary
+    private let recursionKey = "com.aladdin.logger.isLogging"
     
     /// Основной метод логирования
     func log(
@@ -164,10 +157,21 @@ class MasterLogger {
         file: String = #file,
         line: Int = #line
     ) {
-        // 🛡️ ЗАЩИТА ОТ РЕКУРСИИ - если уже логируем, выходим
-        guard !isLoggingInProgress else { return }
-        isLoggingInProgress = true
-        defer { isLoggingInProgress = false }
+        // 🛡️ BUILD 108: МАКСИМАЛЬНАЯ ЗАЩИТА ОТ РЕКУРСИИ
+        // Используем thread-local флаг, чтобы предотвратить вход в логгер из логгера
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[recursionKey] != nil {
+            // Если мы уже здесь - печатаем в консоль и выходим немедленно
+            print("⚠️ [MasterLogger] Recursion detected and blocked for message: \(message)")
+            return
+        }
+        
+        threadDict[recursionKey] = true
+        defer { threadDict.removeObject(forKey: recursionKey) }
+        
+        // КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО:
+        // 1. Вызывать аналитику напрямую или косвенно
+        // 2. Писать в UserDefaults (кроме случаев с кешем)
         
         // Проверка уровня логирования
         guard level.priority >= maxLogLevel.priority else { return }
@@ -351,5 +355,17 @@ extension MasterLogger {
     /// Логирование загрузки экранов
     func screenLoad(_ screenName: String, function: String = #function, file: String = #file, line: Int = #line) {
         ui("📱 Screen loaded: \(screenName)", function: function, file: file, line: line)
+    }
+}
+
+// MARK: - Internal Diagnostics (BUILD 108)
+
+extension MasterLogger {
+    /// Безопасное внутреннее логирование для отладки самой системы логов/аналитики
+    /// Гарантированно не вызывает внешние сервисы и не создает рекурсию
+    func internalLog(_ message: String) {
+        #if DEBUG
+        print("🛠️ [Internal] \(message)")
+        #endif
     }
 }

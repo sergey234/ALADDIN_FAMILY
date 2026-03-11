@@ -216,16 +216,9 @@ struct LanguageSettingsScreen: View {
             showProfileButton: false,
             showListButton: false,
             onBack: {
-                // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
+                // ✅ ИСПРАВЛЕНИЕ: Просто закрываем sheet и возвращаемся на SettingsScreen
+                // Не вызываем switchToMainScreen(), чтобы не перенаправлять на онбординг
                 dismiss()
-                
-                // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                DispatchQueue.main.async {
-                    if navigationManager.canGoBack {
-                        navigationManager.goBack()
-                    }
-                }
             }
         )
         .accessibilityElement(children: .combine)

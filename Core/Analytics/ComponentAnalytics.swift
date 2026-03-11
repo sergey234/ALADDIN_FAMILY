@@ -23,7 +23,8 @@ class ComponentAnalytics {
      * ✅ BUILD 102: Dictionary создается на main thread автоматически благодаря @MainActor
      */
     func trackComponentToggle(componentId: String, enabled: Bool) {
-        // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
+        // 🛡️ BUILD 108: Прямое создание словаря. 
+        // Потокобезопасность обеспечивается NSLock внутри AnalyticsManager.
         let parameters: [String: Any] = [
             "component_id": componentId,
             "enabled": enabled,
@@ -36,10 +37,8 @@ class ComponentAnalytics {
     
     /**
      * Отследить открытие настроек компонента
-     * ✅ BUILD 102: Dictionary создается на main thread автоматически благодаря @MainActor
      */
     func trackComponentSettingsOpened(componentId: String) {
-        // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
         let parameters: [String: Any] = [
             "component_id": componentId,
             "timestamp": Date().timeIntervalSince1970
@@ -49,10 +48,8 @@ class ComponentAnalytics {
     
     /**
      * Отследить сохранение настроек компонента
-     * ✅ BUILD 102: Dictionary создается на main thread автоматически благодаря @MainActor
      */
     func trackComponentSettingsSaved(componentId: String, settings: [String: Any]) {
-        // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
         let parameters: [String: Any] = [
             "component_id": componentId,
             "settings": settings,
@@ -63,10 +60,8 @@ class ComponentAnalytics {
 
     /**
      * Отследить переключение настройки компонента
-     * ✅ BUILD 102: Dictionary создается на main thread автоматически благодаря @MainActor
      */
     func trackSettingToggle(componentId: String, settingKey: String, enabled: Bool) {
-        // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
         let parameters: [String: Any] = [
             "component_id": componentId,
             "setting_key": settingKey,
@@ -80,10 +75,8 @@ class ComponentAnalytics {
     
     /**
      * Отследить ошибку компонента
-     * ✅ BUILD 102: Dictionary создается на main thread автоматически благодаря @MainActor
      */
     func trackComponentError(componentId: String, error: Error) {
-        // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
         let parameters: [String: Any] = [
             "component_id": componentId,
             "error_type": String(describing: type(of: error)),
@@ -97,10 +90,8 @@ class ComponentAnalytics {
     
     /**
      * Отследить загрузку статуса компонента
-     * ✅ BUILD 102: Dictionary создается на main thread автоматически благодаря @MainActor
      */
     func trackComponentStatusLoaded(componentId: String, isEnabled: Bool, loadTime: TimeInterval) {
-        // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
         let parameters: [String: Any] = [
             "component_id": componentId,
             "is_enabled": isEnabled,
@@ -114,10 +105,8 @@ class ComponentAnalytics {
     
     /**
      * Отследить использование компонента (включен/выключен)
-     * ✅ BUILD 102: Dictionary создается на main thread автоматически благодаря @MainActor
      */
     func trackComponentUsage(componentId: String, duration: TimeInterval, enabled: Bool) {
-        // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
         let parameters: [String: Any] = [
             "component_id": componentId,
             "duration": duration,
@@ -131,10 +120,8 @@ class ComponentAnalytics {
     
     /**
      * Отследить просмотр экрана с компонентами
-     * ✅ BUILD 102: Dictionary создается на main thread автоматически благодаря @MainActor
      */
     func trackComponentScreenView(screenName: String, componentCount: Int) {
-        // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
         analyticsManager.trackScreen(
             screenName,
             screenClass: "ComponentScreen"

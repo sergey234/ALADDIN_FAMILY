@@ -1,9 +1,6 @@
 import Foundation
 // import Firebase // Uncomment when Firebase SDK added
 
-// Master Logger for analytics logging
-private let logger = MasterLogger.shared
-
 /**
  * 📊 Analytics Manager
  * Управление аналитикой пользователей
@@ -16,8 +13,10 @@ class AnalyticsManager {
     
     static let shared = AnalyticsManager()
     
+    private let lock = NSLock()
+    
     private init() {
-        logger.business("Initializing AnalyticsManager")
+        print("📊 [AnalyticsManager] Initializing")
         // Firebase будет инициализирован в AppDelegate
     }
     
@@ -27,10 +26,10 @@ class AnalyticsManager {
      * Отслеживать просмотр экрана
      */
     func trackScreen(_ screenName: String, screenClass: String? = nil) {
-        logger.business("Analytics: Screen view - \(screenName)")
-        #if DEBUG
-        print("📊 Screen: \(screenName)")
-        #endif
+        lock.lock()
+        defer { lock.unlock() }
+        
+        print("📊 [Analytics] Screen view: \(screenName)")
         
         // В production:
         // Analytics.logEvent(AnalyticsEventScreenView, parameters: [
@@ -46,16 +45,22 @@ class AnalyticsManager {
      * ✅ BUILD 102: Убраны parameters ?? [:] и parameters?.description для предотвращения создания Dictionary в background thread
      */
     func trackEvent(_ eventName: String, parameters: [String: Any]? = nil) {
-        // Оптимизированное логирование без создания лишних объектов
+        // 🛡️ BUILD 108: Максимальная изоляция
+        // Используем lock только для критических операций
+        lock.lock()
+        defer { lock.unlock() }
+        
+        // КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО:
+        // 1. Использовать MasterLogger (рекурсия)
+        // 2. Писать в UserDefaults (рекурсия через didChangeNotification)
+        // 3. Вызывать любые методы, которые могут слать Notification
+        
         #if DEBUG
-        let paramsInfo = parameters != nil ? "\(parameters!)" : "none"
-        print("📊 Analytics Event: \(eventName), params: \(paramsInfo)")
+        // Печатаем только имя события, чтобы избежать тяжелого описания словаря в Lock
+        print("📊 [AnalyticsManager] Event: \(eventName)")
         #endif
         
-        logger.business("Analytics: Event - \(eventName)")
-        
-        // В production SDK Firebase сам обрабатывает потокобезопасность
-        // Analytics.logEvent(eventName, parameters: parameters)
+        // В будущем здесь будет безопасный вызов Firebase SDK
     }
     
     // MARK: - User Properties

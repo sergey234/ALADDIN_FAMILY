@@ -683,16 +683,6 @@ extension ALADDINApp {
         // 📊 МЕТРИКИ ПРОИЗВОДИТЕЛЬНОСТИ: Замер времени инициализации
         let startTime = Date()
 
-        // ✅ КРИТИЧНО: ПЕРВЫЙ ЗАПУСК - СБРАСЫВАЕМ ВСЕ СОСТОЯНИЕ
-        if !ALADDINApp.hasInitializedNavigation {
-            print("🛠️ [ALADDINApp.initializeNavigation] Первый запуск - сбрасываем состояние")
-            // ✅ BUILD 98: Устанавливаем false асинхронно для предотвращения рекурсии
-            // Это обеспечивает синхронизацию между UserDefaults и @AppStorage
-            Task { @MainActor in
-                UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-            }
-        }
-
         // ✅ Используем статический флаг для предотвращения повторной инициализации
         if ALADDINApp.hasInitializedNavigation {
             print("🛠️ [ALADDINApp.initializeNavigation] Уже инициализировано, пропускаем")
