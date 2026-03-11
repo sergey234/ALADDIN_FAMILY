@@ -4,10 +4,8 @@ import Foundation
  * 📊 Component Analytics
  * Аналитика для отслеживания использования 42 компонентов
  * Интеграция с AnalyticsManager
- * ✅ BUILD 102: @MainActor для автоматического выполнения на main thread
  */
 
-@MainActor
 class ComponentAnalytics {
     
     // MARK: - Singleton

@@ -53,7 +53,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.shouldSucceed = true
         
         // Act
-        await viewModel.loadCriticalComponents()
+        await viewModel.loadComponentStatuses()
         
         // Assert
         XCTAssertFalse(viewModel.isLoading)
@@ -66,7 +66,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.error = ComponentError.networkError("Network error")
         
         // Act
-        await viewModel.loadCriticalComponents()
+        await viewModel.loadComponentStatuses()
         
         // Assert
         XCTAssertFalse(viewModel.isLoading)
@@ -81,7 +81,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.shouldSucceed = true
         
         // Act
-        viewModel.toggleCrashDetection()
+        await viewModel.toggleCrashDetection(true)
         
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
@@ -96,7 +96,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.shouldSucceed = true
         
         // Act
-        viewModel.toggleCrashDetection()
+        await viewModel.toggleCrashDetection(false)
         
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
@@ -113,7 +113,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.shouldSucceed = true
         
         // Act
-        viewModel.toggleRoadsideAssistance()
+        await viewModel.toggleRoadsideAssistance(true)
         
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000)
@@ -130,7 +130,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.shouldSucceed = true
         
         // Act
-        viewModel.toggleEmergencyResponse()
+        await viewModel.toggleEmergencyResponse(true)
         
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000)
@@ -147,7 +147,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.shouldSucceed = true
         
         // Act
-        viewModel.toggleEmergencyEvent()
+        await viewModel.toggleEmergencyEvent(true)
         
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000)
@@ -164,7 +164,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.shouldSucceed = true
         
         // Act
-        viewModel.togglePhishingProtection()
+        await viewModel.togglePhishingProtection(true)
         
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000)
@@ -181,7 +181,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.shouldSucceed = true
         
         // Act
-        viewModel.toggleMalwareDetection()
+        await viewModel.toggleMalwareDetection(true)
         
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000)
@@ -198,7 +198,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.shouldSucceed = true
         
         // Act
-        viewModel.toggleNetworkSecurity()
+        await viewModel.toggleNetworkSecurity(true)
         
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000)
@@ -215,7 +215,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.shouldSucceed = true
         
         // Act
-        viewModel.toggleIncidentResponse()
+        await viewModel.toggleIncidentResponse(true)
         
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000)
@@ -232,7 +232,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.shouldSucceed = true
         
         // Act
-        viewModel.togglePasswordSecurity()
+        await viewModel.togglePasswordSecurity(true)
         
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000)
@@ -250,7 +250,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockStatusService.error = ComponentError.networkError("Network error")
         
         // Act
-        viewModel.toggleCrashDetection()
+        await viewModel.toggleCrashDetection(true)
         
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000)

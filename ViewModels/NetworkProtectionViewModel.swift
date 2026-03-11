@@ -24,22 +24,22 @@ class NetworkProtectionViewModel: ObservableObject {
     // MARK: - Published Properties - Component Statuses
 
     // Экстренная помощь (4 компонента)
-    @Published var crashDetectionEnabled: Bool = false
-    @Published var roadsideAssistanceEnabled: Bool = false
-    @Published var emergencyResponseEnabled: Bool = false
-    @Published var emergencyEventEnabled: Bool = false
+    @Published var crashDetectionEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_crash_detection_agent_enabled")
+    @Published var roadsideAssistanceEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_roadside_assistance_agent_enabled")
+    @Published var emergencyResponseEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_emergency_response_bot_enabled")
+    @Published var emergencyEventEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_emergency_event_manager_enabled")
 
     // Защита от угроз (4 компонента)
-    @Published var phishingProtectionEnabled: Bool = false
-    @Published var malwareDetectionEnabled: Bool = false
-    @Published var mobileSecurityEnabled: Bool = false
-    @Published var networkSecurityEnabled: Bool = false
+    @Published var phishingProtectionEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_phishing_protection_agent_enabled")
+    @Published var malwareDetectionEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_malware_detection_agent_enabled")
+    @Published var mobileSecurityEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_mobile_security_agent_enabled")
+    @Published var networkSecurityEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_network_security_agent_enabled")
 
     // Автоматическая система защиты (1 компонент)
-    @Published var incidentResponseEnabled: Bool = false
+    @Published var incidentResponseEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_incident_response_agent_enabled")
 
     // Безопасность паролей (1 компонент)
-    @Published var passwordSecurityEnabled: Bool = false
+    @Published var passwordSecurityEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_password_security_agent_enabled")
 
     // MARK: - Published Properties - UI State
 
@@ -64,9 +64,59 @@ class NetworkProtectionViewModel: ObservableObject {
         // Это предотвращает рекурсию при пересоздании View
     }
 
-    // MARK: - Public Methods
+    // MARK: - Public Methods - Synchronous (BUILD 107)
+    
+    func toggleCrashDetectionSync(_ newValue: Bool) {
+        self.crashDetectionEnabled = newValue
+        Task { @MainActor in await toggleCrashDetection(newValue) }
+    }
+    
+    func toggleRoadsideAssistanceSync(_ newValue: Bool) {
+        self.roadsideAssistanceEnabled = newValue
+        Task { @MainActor in await toggleRoadsideAssistance(newValue) }
+    }
+    
+    func toggleEmergencyResponseSync(_ newValue: Bool) {
+        self.emergencyResponseEnabled = newValue
+        Task { @MainActor in await toggleEmergencyResponse(newValue) }
+    }
+    
+    func toggleEmergencyEventSync(_ newValue: Bool) {
+        self.emergencyEventEnabled = newValue
+        Task { @MainActor in await toggleEmergencyEvent(newValue) }
+    }
+    
+    func togglePhishingProtectionSync(_ newValue: Bool) {
+        self.phishingProtectionEnabled = newValue
+        Task { @MainActor in await togglePhishingProtection(newValue) }
+    }
+    
+    func toggleMalwareDetectionSync(_ newValue: Bool) {
+        self.malwareDetectionEnabled = newValue
+        Task { @MainActor in await toggleMalwareDetection(newValue) }
+    }
+    
+    func toggleMobileSecuritySync(_ newValue: Bool) {
+        self.mobileSecurityEnabled = newValue
+        Task { @MainActor in await toggleMobileSecurity(newValue) }
+    }
+    
+    func toggleNetworkSecuritySync(_ newValue: Bool) {
+        self.networkSecurityEnabled = newValue
+        Task { @MainActor in await toggleNetworkSecurity(newValue) }
+    }
+    
+    func toggleIncidentResponseSync(_ newValue: Bool) {
+        self.incidentResponseEnabled = newValue
+        Task { @MainActor in await toggleIncidentResponse(newValue) }
+    }
+    
+    func togglePasswordSecuritySync(_ newValue: Bool) {
+        self.passwordSecurityEnabled = newValue
+        Task { @MainActor in await togglePasswordSecurity(newValue) }
+    }
 
-    /// Загрузить статусы всех компонентов
+    // MARK: - Public Methods - Asynchronous (Core Logic)
     func loadComponentStatuses() async {
         // ✅ BUILD 104: Защита от повторной загрузки
         guard !hasLoadedStatuses else {
