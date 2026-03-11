@@ -321,17 +321,17 @@ class NetworkProtectionViewModel: ObservableObject {
             }
 
             // Успешное обновление
-            // ✅ BUILD 104: Используем DispatchQueue.main.async для гарантии main thread (рекомендация другой ML системы)
-            DispatchQueue.main.async {
-                componentAnalytics.trackComponentToggle(
+            // ✅ BUILD 105: Используем DispatchQueue.main.async для гарантии main thread (рекомендация другой ML системы)
+            DispatchQueue.main.async { [self] in
+                self.componentAnalytics.trackComponentToggle(
                     componentId: componentId,
                     enabled: newValue
                 )
                 
                 if AppConfig.authToken == nil {
-                    toastManager.showSuccess("Компонент обновлен (демо режим)")
+                    self.toastManager.showSuccess("Компонент обновлен (демо режим)")
                 } else {
-                    toastManager.showSuccess("Компонент обновлен")
+                    self.toastManager.showSuccess("Компонент обновлен")
                 }
             }
 
@@ -341,10 +341,12 @@ class NetworkProtectionViewModel: ObservableObject {
             updateClosure(!newValue)
             
             // Отследить ошибку
-            // ✅ BUILD 104: Используем DispatchQueue.main.async для гарантии main thread (рекомендация другой ML системы)
-            DispatchQueue.main.async {
-                componentAnalytics.trackComponentError(componentId: componentId, error: error)
-                toastManager.showError("Ошибка: \(error.localizedDescription)")
+            // ✅ BUILD 105: Используем DispatchQueue.main.async для гарантии main thread (рекомендация другой ML системы)
+            // Явно захватываем error в замыкании для избежания ошибок компиляции
+            let errorToReport = error
+            DispatchQueue.main.async { [self] in
+                self.componentAnalytics.trackComponentError(componentId: componentId, error: errorToReport)
+                self.toastManager.showError("Ошибка: \(errorToReport.localizedDescription)")
             }
         }
     }
