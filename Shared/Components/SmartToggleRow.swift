@@ -26,12 +26,16 @@ struct SmartToggleRow: View {
             Spacer()
             Toggle("", isOn: $isOn)
                 .onChange(of: isOn) { newValue in
-                    // Логируем событие переключения
-                    componentAnalytics.trackSettingToggle(
-                        componentId: componentId,
-                        settingKey: settingKey,
-                        enabled: newValue
-                    )
+                    // ✅ BUILD 111: Гарантируем выполнение аналитики на main thread асинхронно
+                    // Это предотвращает рекурсию и блокировку UI
+                    DispatchQueue.main.async {
+                        // Логируем событие переключения
+                        componentAnalytics.trackSettingToggle(
+                            componentId: componentId,
+                            settingKey: settingKey,
+                            enabled: newValue
+                        )
+                    }
 
                     // Вызываем колбэк если есть
                     onValueChanged?(newValue)

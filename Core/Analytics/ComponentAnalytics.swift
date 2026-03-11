@@ -6,7 +6,11 @@ import Foundation
  * Интеграция с AnalyticsManager
  */
 
+@MainActor
 class ComponentAnalytics {
+    
+    // MARK: - Recursion Protection
+    private static let recursionKey = "ComponentAnalytics.isTracking"
     
     // MARK: - Singleton
     
@@ -23,8 +27,15 @@ class ComponentAnalytics {
      * ✅ BUILD 102: Dictionary создается на main thread автоматически благодаря @MainActor
      */
     func trackComponentToggle(componentId: String, enabled: Bool) {
-        // 🛡️ BUILD 108: Прямое создание словаря. 
-        // Потокобезопасность обеспечивается NSLock внутри AnalyticsManager.
+        // 🛡️ BUILD 110: Защита от рекурсии на главном потоке
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[Self.recursionKey] != nil {
+            print("⚠️ [ComponentAnalytics] Recursion detected and blocked for \(componentId)")
+            return
+        }
+        threadDict[Self.recursionKey] = true
+        defer { threadDict.removeObject(forKey: Self.recursionKey) }
+        
         let parameters: [String: Any] = [
             "component_id": componentId,
             "enabled": enabled,
@@ -39,6 +50,12 @@ class ComponentAnalytics {
      * Отследить открытие настроек компонента
      */
     func trackComponentSettingsOpened(componentId: String) {
+        // 🛡️ BUILD 111: Защита от рекурсии
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[Self.recursionKey] != nil { return }
+        threadDict[Self.recursionKey] = true
+        defer { threadDict.removeObject(forKey: Self.recursionKey) }
+        
         let parameters: [String: Any] = [
             "component_id": componentId,
             "timestamp": Date().timeIntervalSince1970
@@ -50,6 +67,12 @@ class ComponentAnalytics {
      * Отследить сохранение настроек компонента
      */
     func trackComponentSettingsSaved(componentId: String, settings: [String: Any]) {
+        // 🛡️ BUILD 111: Защита от рекурсии
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[Self.recursionKey] != nil { return }
+        threadDict[Self.recursionKey] = true
+        defer { threadDict.removeObject(forKey: Self.recursionKey) }
+        
         let parameters: [String: Any] = [
             "component_id": componentId,
             "settings": settings,
@@ -62,6 +85,12 @@ class ComponentAnalytics {
      * Отследить переключение настройки компонента
      */
     func trackSettingToggle(componentId: String, settingKey: String, enabled: Bool) {
+        // 🛡️ BUILD 111: Защита от рекурсии
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[Self.recursionKey] != nil { return }
+        threadDict[Self.recursionKey] = true
+        defer { threadDict.removeObject(forKey: Self.recursionKey) }
+        
         let parameters: [String: Any] = [
             "component_id": componentId,
             "setting_key": settingKey,
@@ -77,6 +106,12 @@ class ComponentAnalytics {
      * Отследить ошибку компонента
      */
     func trackComponentError(componentId: String, error: Error) {
+        // 🛡️ BUILD 111: Защита от рекурсии
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[Self.recursionKey] != nil { return }
+        threadDict[Self.recursionKey] = true
+        defer { threadDict.removeObject(forKey: Self.recursionKey) }
+        
         let parameters: [String: Any] = [
             "component_id": componentId,
             "error_type": String(describing: type(of: error)),
@@ -92,6 +127,12 @@ class ComponentAnalytics {
      * Отследить загрузку статуса компонента
      */
     func trackComponentStatusLoaded(componentId: String, isEnabled: Bool, loadTime: TimeInterval) {
+        // 🛡️ BUILD 111: Защита от рекурсии
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[Self.recursionKey] != nil { return }
+        threadDict[Self.recursionKey] = true
+        defer { threadDict.removeObject(forKey: Self.recursionKey) }
+        
         let parameters: [String: Any] = [
             "component_id": componentId,
             "is_enabled": isEnabled,
@@ -107,6 +148,12 @@ class ComponentAnalytics {
      * Отследить использование компонента (включен/выключен)
      */
     func trackComponentUsage(componentId: String, duration: TimeInterval, enabled: Bool) {
+        // 🛡️ BUILD 111: Защита от рекурсии
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[Self.recursionKey] != nil { return }
+        threadDict[Self.recursionKey] = true
+        defer { threadDict.removeObject(forKey: Self.recursionKey) }
+        
         let parameters: [String: Any] = [
             "component_id": componentId,
             "duration": duration,
@@ -122,6 +169,12 @@ class ComponentAnalytics {
      * Отследить просмотр экрана с компонентами
      */
     func trackComponentScreenView(screenName: String, componentCount: Int) {
+        // 🛡️ BUILD 111: Защита от рекурсии
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[Self.recursionKey] != nil { return }
+        threadDict[Self.recursionKey] = true
+        defer { threadDict.removeObject(forKey: Self.recursionKey) }
+        
         analyticsManager.trackScreen(
             screenName,
             screenClass: "ComponentScreen"

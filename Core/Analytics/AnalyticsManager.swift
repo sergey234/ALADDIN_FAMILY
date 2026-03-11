@@ -7,7 +7,11 @@ import Foundation
  * Firebase Analytics интеграция
  */
 
+@MainActor
 class AnalyticsManager {
+    
+    // MARK: - Recursion Protection
+    private static let recursionKey = "AnalyticsManager.isTracking"
     
     // MARK: - Singleton
     
@@ -26,16 +30,16 @@ class AnalyticsManager {
      * Отслеживать просмотр экрана
      */
     func trackScreen(_ screenName: String, screenClass: String? = nil) {
+        // 🛡️ BUILD 110: Защита от рекурсии
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[Self.recursionKey] != nil { return }
+        threadDict[Self.recursionKey] = true
+        defer { threadDict.removeObject(forKey: Self.recursionKey) }
+        
         lock.lock()
         defer { lock.unlock() }
         
         print("📊 [Analytics] Screen view: \(screenName)")
-        
-        // В production:
-        // Analytics.logEvent(AnalyticsEventScreenView, parameters: [
-        //     AnalyticsParameterScreenName: screenName,
-        //     AnalyticsParameterScreenClass: screenClass ?? screenName
-        // ])
     }
     
     // MARK: - Event Tracking
@@ -45,22 +49,21 @@ class AnalyticsManager {
      * ✅ BUILD 102: Убраны parameters ?? [:] и parameters?.description для предотвращения создания Dictionary в background thread
      */
     func trackEvent(_ eventName: String, parameters: [String: Any]? = nil) {
+        // 🛡️ BUILD 110: Защита от рекурсии
+        let threadDict = Thread.current.threadDictionary
+        if threadDict[Self.recursionKey] != nil { return }
+        threadDict[Self.recursionKey] = true
+        defer { threadDict.removeObject(forKey: Self.recursionKey) }
+        
         // 🛡️ BUILD 108: Максимальная изоляция
         // Используем lock только для критических операций
         lock.lock()
         defer { lock.unlock() }
         
-        // КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО:
-        // 1. Использовать MasterLogger (рекурсия)
-        // 2. Писать в UserDefaults (рекурсия через didChangeNotification)
-        // 3. Вызывать любые методы, которые могут слать Notification
-        
         #if DEBUG
         // Печатаем только имя события, чтобы избежать тяжелого описания словаря в Lock
         print("📊 [AnalyticsManager] Event: \(eventName)")
         #endif
-        
-        // В будущем здесь будет безопасный вызов Firebase SDK
     }
     
     // MARK: - User Properties

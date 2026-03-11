@@ -293,15 +293,15 @@ struct MainScreen: View {
             hasAppeared = true
             debugLog.append("✅ hasAppeared установлен в true")
 
-            logger.screenLoad("MainScreen")
-            debugLog.append("✅ logger.screenLoad вызван")
+            // ✅ BUILD 110: Удален logger.screenLoad для абсолютной тишины на старте
+            debugLog.append("✅ logger.screenLoad пропущен (BUILD 110)")
 
             // ✅ ИСПРАВЛЕНИЕ BUILD 92: Используем @AppStorage вместо UserDefaults.standard
             // Это безопасно, так как мы НЕ используем его в .id() или computed properties
             debugLog.append("✅ onboardingDone = \(hasCompletedOnboarding)")
             if !hasCompletedOnboarding {
                 let message = "Onboarding not completed, redirecting back"
-                logger.warn(message)
+                // ✅ BUILD 110: Удален logger.warn
                 debugLog.append("⚠️ \(message)")
                 // ✅ Сохраняем логи асинхронно (копируем массив для безопасности)
                 let logCopy = debugLog
@@ -365,7 +365,7 @@ struct MainScreen: View {
             debugLog.append(errorMsg)
             print(errorMsg)
             visualLogger.log(errorMsg, level: .warning)
-            logger.warn(errorMsg)
+            // ✅ BUILD 110: Удален logger.warn
             
             // ✅ ИСПРАВЛЕНИЕ: Выполняем на main thread (без weak self, так как struct)
             DispatchQueue.main.async {

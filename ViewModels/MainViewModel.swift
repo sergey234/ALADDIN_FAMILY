@@ -96,7 +96,7 @@ class MainViewModel: ObservableObject {
     
     /// ✅ ИНТЕГРАЦИЯ С API: Загрузка данных дашборда из реального API
     func loadDashboardData() {
-        logger.business("Loading dashboard data")
+        // ✅ BUILD 110: Полное удаление логов из критических методов
         // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ: Если уже загружается, пропускаем
         guard !isLoadingDashboard else {
             print("⚠️ MainViewModel: Загрузка дашборда уже выполняется, пропускаем")
@@ -275,7 +275,7 @@ class MainViewModel: ObservableObject {
     
     /// Переключение защиты сети
     func toggleNetworkProtection() {
-        logger.business("Toggling network protection")
+        // ✅ BUILD 110: Удален лог
         isNetworkProtectionEnabled.toggle()
         
         // Haptic feedback
@@ -401,7 +401,7 @@ class MainViewModel: ObservableObject {
     // MARK: - Private Methods
     
     private func connectNetworkProtection() {
-        logger.business("Connecting to network protection service")
+        // ✅ BUILD 110: Удален лог
         // В реальности: API вызов к сервису защиты сети
         #if DEBUG
         print("Connecting to Network Protection...")
@@ -409,7 +409,7 @@ class MainViewModel: ObservableObject {
     }
 
     private func disconnectNetworkProtection() {
-        logger.business("Disconnecting from network protection service")
+        // ✅ BUILD 110: Удален лог
         // В реальности: API вызов к сервису защиты сети
         #if DEBUG
         print("Disconnecting Network Protection...")
