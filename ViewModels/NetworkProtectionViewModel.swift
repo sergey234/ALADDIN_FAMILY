@@ -46,6 +46,9 @@ class NetworkProtectionViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
 
+    // ✅ BUILD 104: Защита от повторной загрузки статусов
+    private var hasLoadedStatuses = false
+
     // MARK: - Initialization
 
     init(
@@ -57,16 +60,21 @@ class NetworkProtectionViewModel: ObservableObject {
         self.configurationService = configurationService
         self.retryManager = retryManager
 
-        // Загружаем статусы компонентов при инициализации
-        Task {
-            await loadComponentStatuses()
-        }
+        // ✅ BUILD 104: УБРАЛИ Task {} из init() - загрузка статусов перенесена в .onAppear
+        // Это предотвращает рекурсию при пересоздании View
     }
 
     // MARK: - Public Methods
 
     /// Загрузить статусы всех компонентов
     func loadComponentStatuses() async {
+        // ✅ BUILD 104: Защита от повторной загрузки
+        guard !hasLoadedStatuses else {
+            print("⚠️ NetworkProtectionViewModel: Статусы уже загружены, пропускаем")
+            return
+        }
+        
+        hasLoadedStatuses = true
         isLoading = true
         defer { isLoading = false }
 
@@ -87,13 +95,12 @@ class NetworkProtectionViewModel: ObservableObject {
 
     private func loadDemoModeStatuses(prioritizedItems: [(id: String, priority: ComponentLoadPriority)]) async {
         // Демо режим: загружаем статусы из UserDefaults
+        // ✅ BUILD 104: УБРАЛИ await MainActor.run {} - метод уже на @MainActor
         for item in prioritizedItems {
             let userDefaultsKey = "demo_component_\(item.id)_enabled"
             let isEnabled = UserDefaults.standard.bool(forKey: userDefaultsKey)
 
-            await MainActor.run {
-                self.updateStatusForComponent(componentId: item.id, isEnabled: isEnabled)
-            }
+            self.updateStatusForComponent(componentId: item.id, isEnabled: isEnabled)
 
             print("📱 Демо режим: Загружен статус \(item.id) = \(isEnabled)")
         }
@@ -101,12 +108,11 @@ class NetworkProtectionViewModel: ObservableObject {
 
     private func loadProductionModeStatuses(prioritizedItems: [(id: String, priority: ComponentLoadPriority)]) async {
         // Продакшен режим: загружаем из API
+        // ✅ BUILD 104: УБРАЛИ await MainActor.run {} - метод уже на @MainActor
         for item in prioritizedItems {
             do {
                 let status = try await APIService.shared.getComponentStatus(componentId: item.id)
-                await MainActor.run {
-                    self.updateStatusForComponent(componentId: item.id, status: status)
-                }
+                self.updateStatusForComponent(componentId: item.id, status: status)
             } catch {
                 print("⚠️ Ошибка загрузки статуса для \(item.id): \(error.localizedDescription)")
             }
@@ -239,31 +245,30 @@ class NetworkProtectionViewModel: ObservableObject {
     }
 
     private func updateStatusForComponent(componentId: String, isEnabled: Bool) {
-        Task { @MainActor in
-            switch componentId {
-            case "crash_detection_agent":
-                crashDetectionEnabled = isEnabled
-            case "roadside_assistance_agent":
-                roadsideAssistanceEnabled = isEnabled
-            case "emergency_response_bot":
-                emergencyResponseEnabled = isEnabled
-            case "emergency_event_manager":
-                emergencyEventEnabled = isEnabled
-            case "phishing_protection_agent":
-                phishingProtectionEnabled = isEnabled
-            case "malware_detection_agent":
-                malwareDetectionEnabled = isEnabled
-            case "mobile_security_agent":
-                mobileSecurityEnabled = isEnabled
-            case "network_security_agent":
-                networkSecurityEnabled = isEnabled
-            case "incident_response_agent":
-                incidentResponseEnabled = isEnabled
-            case "password_security_agent":
-                passwordSecurityEnabled = isEnabled
-            default:
-                break
-            }
+        // ✅ BUILD 104: УБРАЛИ Task { @MainActor in } - метод уже на @MainActor
+        switch componentId {
+        case "crash_detection_agent":
+            crashDetectionEnabled = isEnabled
+        case "roadside_assistance_agent":
+            roadsideAssistanceEnabled = isEnabled
+        case "emergency_response_bot":
+            emergencyResponseEnabled = isEnabled
+        case "emergency_event_manager":
+            emergencyEventEnabled = isEnabled
+        case "phishing_protection_agent":
+            phishingProtectionEnabled = isEnabled
+        case "malware_detection_agent":
+            malwareDetectionEnabled = isEnabled
+        case "mobile_security_agent":
+            mobileSecurityEnabled = isEnabled
+        case "network_security_agent":
+            networkSecurityEnabled = isEnabled
+        case "incident_response_agent":
+            incidentResponseEnabled = isEnabled
+        case "password_security_agent":
+            passwordSecurityEnabled = isEnabled
+        default:
+            break
         }
     }
 
@@ -310,35 +315,37 @@ class NetworkProtectionViewModel: ObservableObject {
                 )
             } else {
                 // Демо режим: сохраняем локально в UserDefaults
-                // ✅ BUILD 102: UserDefaults.standard.set() на main thread
-                await MainActor.run {
-                    let userDefaultsKey = "demo_component_\(componentId)_enabled"
-                    UserDefaults.standard.set(newValue, forKey: userDefaultsKey)
-                }
+                // ✅ BUILD 104: УБРАЛИ await MainActor.run {} - метод уже на @MainActor
+                let userDefaultsKey = "demo_component_\(componentId)_enabled"
+                UserDefaults.standard.set(newValue, forKey: userDefaultsKey)
             }
 
             // Успешное обновление
-            // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
-            componentAnalytics.trackComponentToggle(
-                componentId: componentId,
-                enabled: newValue
-            )
-            
-            if AppConfig.authToken == nil {
-                toastManager.showSuccess("Компонент обновлен (демо режим)")
-            } else {
-                toastManager.showSuccess("Компонент обновлен")
+            // ✅ BUILD 104: Используем DispatchQueue.main.async для гарантии main thread (рекомендация другой ML системы)
+            DispatchQueue.main.async {
+                componentAnalytics.trackComponentToggle(
+                    componentId: componentId,
+                    enabled: newValue
+                )
+                
+                if AppConfig.authToken == nil {
+                    toastManager.showSuccess("Компонент обновлен (демо режим)")
+                } else {
+                    toastManager.showSuccess("Компонент обновлен")
+                }
             }
 
         } catch {
             // Откат изменений при ошибке
-            // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
+            // ✅ BUILD 102: Оптимистичное обновление UI
             updateClosure(!newValue)
             
             // Отследить ошибку
-            // ✅ BUILD 102: Автоматически на main thread благодаря @MainActor
-            componentAnalytics.trackComponentError(componentId: componentId, error: error)
-            toastManager.showError("Ошибка: \(error.localizedDescription)")
+            // ✅ BUILD 104: Используем DispatchQueue.main.async для гарантии main thread (рекомендация другой ML системы)
+            DispatchQueue.main.async {
+                componentAnalytics.trackComponentError(componentId: componentId, error: error)
+                toastManager.showError("Ошибка: \(error.localizedDescription)")
+            }
         }
     }
 }

@@ -39,6 +39,10 @@ struct NetworkProtectionScreen: View {
     // Временный тестовый триггер для демонстрации модала
     @State private var testCrashDetection = false
     
+    // ✅ BUILD 104: Защита от повторной загрузки статусов и отслеживания экрана
+    @State private var hasLoadedStatuses = false
+    @State private var hasTrackedScreenView = false
+    
     // Состояния для аккордеонов
     @State private var emergencyHelpExpanded = false
     @State private var threatProtectionExpanded = false
@@ -363,11 +367,22 @@ struct NetworkProtectionScreen: View {
         }
         .padding(.vertical, Spacing.m)
         .onAppear {
-            // Отследить просмотр экрана с компонентами
-            ComponentAnalytics.shared.trackComponentScreenView(
-                screenName: "NetworkProtectionScreen",
-                componentCount: 10
-            )
+            // ✅ BUILD 104: Загружаем статусы только один раз
+            if !hasLoadedStatuses {
+                hasLoadedStatuses = true
+                Task {
+                    await viewModel.loadComponentStatuses()
+                }
+            }
+            
+            // ✅ BUILD 104: Отследить просмотр экрана с компонентами (с защитой от повторного вызова)
+            if !hasTrackedScreenView {
+                hasTrackedScreenView = true
+                ComponentAnalytics.shared.trackComponentScreenView(
+                    screenName: "NetworkProtectionScreen",
+                    componentCount: 10
+                )
+            }
         }
     }
     
