@@ -146,32 +146,36 @@ class VisualLogger: ObservableObject {
     private var isLoggingInProgress = false
     
     func log(_ message: String, level: LogLevel = .info, file: String = #file, line: Int = #line) {
-        // 🛡️ ЗАЩИТА ОТ РЕКУРСИИ - если уже логируем, выходим
-        guard !isLoggingInProgress else { return }
-        isLoggingInProgress = true
-        defer { isLoggingInProgress = false }
-        
-        let fileName = (file as NSString).lastPathComponent
-        let entry = LogEntry(
-            timestamp: Date(),
-            message: message,
-            level: level,
-            file: fileName,
-            line: line
-        )
-        
-        DispatchQueue.main.async {
+        // ✅ BUILD 113: Внутренняя асинхронность для разрыва петли рекурсии
+        // Все операции с UserDefaults и массивом logs должны быть на Main Thread асинхронно
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // 🛡️ ЗАЩИТА ОТ РЕКУРСИИ - если уже логируем, выходим
+            guard !self.isLoggingInProgress else { return }
+            self.isLoggingInProgress = true
+            defer { self.isLoggingInProgress = false }
+            
+            let fileName = (file as NSString).lastPathComponent
+            let entry = LogEntry(
+                timestamp: Date(),
+                message: message,
+                level: level,
+                file: fileName,
+                line: line
+            )
+            
             self.logs.append(entry)
             if self.logs.count > self.maxLogs {
                 self.logs.removeFirst()
             }
+            
+            // 💾 СОХРАНЯЕМ ЛОГИ В UserDefaults ДЛЯ ВОССТАНОВЛЕНИЯ ПОСЛЕ КРАША
+            self.saveLogToUserDefaults(entry)
+
+            // Также пишем в консоль для Xcode
+            print("[\(entry.formattedTime)] [\(level.rawValue)] [\(fileName):\(line)] \(message)")
         }
-
-        // 💾 СОХРАНЯЕМ ЛОГИ В UserDefaults ДЛЯ ВОССТАНОВЛЕНИЯ ПОСЛЕ КРАША
-        saveLogToUserDefaults(entry)
-
-        // Также пишем в консоль для Xcode
-        print("[\(entry.formattedTime)] [\(level.rawValue)] [\(fileName):\(line)] \(message)")
     }
     
     func clear() {

@@ -9116,6 +9116,10 @@ Settings
     // MARK: - Recursion Protection
     private static let recursionKey = "LocalizationManager.isLocalizing"
 
+    // ✅ BUILD 113: Добавляем Lock для защиты гигантского словаря (9000+ строк)
+    // Доступ к Dictionary в Swift не потокобезопасен, что вызывает Dictionary.resize краш.
+    private let lock = NSLock()
+
     /**
      * Получить локализованную строку из словаря переводов
      * ✅ РАБОТАЕТ БЕЗ ФАЙЛОВ ЛОКАЛИЗАЦИИ!
@@ -9129,33 +9133,17 @@ Settings
         threadDict[Self.recursionKey] = true
         defer { threadDict.removeObject(forKey: Self.recursionKey) }
 
+        // 🛡️ BUILD 113: Гарантированная потокобезопасность для гигантского словаря
+        lock.lock()
+        defer { lock.unlock() }
+
         // ✅ СНАЧАЛА проверяем словарь переводов для текущего языка
         if let translation = translations[currentLanguage]?[key] {
-            #if DEBUG
-            if key.hasPrefix("faq_") {
-                print("✅ Found translation for key '\(key)' in language '\(currentLanguage.rawValue)': '\(translation.prefix(50))...'")
-            }
-            #endif
             return translation
         }
         
-        #if DEBUG
-        if key.hasPrefix("faq_") {
-            print("⚠️ Translation NOT found for key '\(key)' in language '\(currentLanguage.rawValue)'")
-            if let englishDict = translations[.english] {
-                print("   English dict has \(englishDict.count) keys")
-                print("   Key exists in English dict: \(englishDict.keys.contains(key))")
-            }
-            if let russianDict = translations[.russian] {
-                print("   Russian dict has \(russianDict.count) keys")
-                print("   Key exists in Russian dict: \(russianDict.keys.contains(key))")
-            }
-        }
-        #endif
-        
         // ✅ ЕСЛИ текущий язык - русский, но перевод не найден, пробуем принудительно русский
         if currentLanguage == .russian, let russianTranslation = translations[.russian]?[key] {
-            print("⚠️ Translation found in Russian dict but not in currentLanguage dict for key: '\(key)'")
             return russianTranslation
         }
         
@@ -9165,25 +9153,9 @@ Settings
             return nsLocalized
         }
         
-        // ✅ ДЕБАГ: Если ничего не найдено, выводим подробную информацию
-        print("⚠️ Translation not found for key: '\(key)' in language: \(currentLanguage.displayName)")
-        print("   Current language: \(currentLanguage.rawValue)")
-        print("   Available languages: \(translations.keys.map { $0.rawValue })")
-        if let russianDict = translations[.russian] {
-            print("   Russian dict has \(russianDict.count) keys")
-            if russianDict.keys.contains(key) {
-                print("   ✅ Key EXISTS in Russian dict! But currentLanguage is: \(currentLanguage.rawValue)")
-                // ✅ ПРИНУДИТЕЛЬНО возвращаем русский перевод
-                if let forceRussian = russianDict[key] {
-                    print("   🔧 FORCE RETURNING Russian translation: '\(forceRussian)'")
-                    return forceRussian
-                }
-            } else {
-                print("   ❌ Key NOT in Russian dict")
-                // Показать первые 10 ключей в русском словаре
-                let firstKeys = Array(russianDict.keys.prefix(10))
-                print("   First 10 keys in Russian dict: \(firstKeys)")
-            }
+        // ✅ ФИНАЛЬНЫЙ FALLBACK: Проверяем русский словарь если язык не русский
+        if currentLanguage != .russian, let russianFallback = translations[.russian]?[key] {
+            return russianFallback
         }
         
         // Если ничего не найдено, возвращаем ключ

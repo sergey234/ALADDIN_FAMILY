@@ -342,61 +342,23 @@ struct MainScreen: View {
     // MARK: - Profile Image Management
     
     private func loadProfileImage() {
-        // ✅ КРИТИЧНО: Логирование и обработка ошибок для диагностики краша
-        let logPrefix = "🔍 MainScreen.loadProfileImage"
-        var debugLog: [String] = []
-        debugLog.append("\(logPrefix) START - \(Date())")
-        print("\(logPrefix) START - \(Date())")
-        visualLogger.log("\(logPrefix) START", level: .debug)
+        // ✅ BUILD 113: Абсолютная детоксикация. 
+        // Удалены все вызовы visualLogger.log и print, которые могут вызвать рекурсию при старте.
         
-        // ✅ ШАГ 1: Проверка ProfileImageManager
-        debugLog.append("\(logPrefix) ШАГ 1: Проверка ProfileImageManager...")
-        print("\(logPrefix) ШАГ 1: Проверка ProfileImageManager...")
-        visualLogger.log("\(logPrefix) ШАГ 1: Проверка ProfileImageManager...", level: .debug)
-        
-        // ✅ ИСПРАВЛЕНИЕ: Проверяем thread и выполняем на main thread если нужно
+        // ШАГ 1: Проверка на Main Thread (важно для UI)
         if !Thread.isMainThread {
-            let errorMsg = "⚠️ \(logPrefix) Вызов не на main thread! Текущий поток: \(Thread.current)"
-            debugLog.append(errorMsg)
-            print(errorMsg)
-            visualLogger.log(errorMsg, level: .warning)
-            // ✅ BUILD 110: Удален logger.warn
-            
-            // ✅ ИСПРАВЛЕНИЕ: Выполняем на main thread (без weak self, так как struct)
             DispatchQueue.main.async {
                 self.loadProfileImage()
             }
             return
         }
         
-        // ✅ ШАГ 2: Загрузка изображения с обработкой ошибок
-        debugLog.append("\(logPrefix) ШАГ 2: Загрузка изображения...")
-        print("\(logPrefix) ШАГ 2: Загрузка изображения...")
-        visualLogger.log("\(logPrefix) ШАГ 2: Загрузка изображения...", level: .debug)
-        
-        // ✅ ИСПРАВЛЕНИЕ: loadProfileImage не выбрасывает ошибки, убираем do-catch
+        // ШАГ 2: Загрузка изображения через Singleton
         let image = ProfileImageManager.shared.loadProfileImage(for: .main)
         
         if let image = image {
-            debugLog.append("✅ \(logPrefix) Изображение загружено успешно")
-            print("✅ \(logPrefix) Изображение загружено успешно")
-            visualLogger.log("✅ Изображение загружено успешно", level: .success)
-            
-            // ✅ ИСПРАВЛЕНИЕ: Мы уже на main thread, просто обновляем
             profileImage = image
-        } else {
-            debugLog.append("ℹ️ \(logPrefix) Изображение не найдено (это нормально)")
-            print("ℹ️ \(logPrefix) Изображение не найдено (это нормально)")
-            visualLogger.log("ℹ️ Изображение не найдено (это нормально)", level: .info)
-            // Не устанавливаем profileImage - останется nil
         }
-        
-        debugLog.append("✅ \(logPrefix) COMPLETE")
-        print("✅ \(logPrefix) COMPLETE")
-        visualLogger.log("✅ \(logPrefix) COMPLETE", level: .success)
-        
-        // Сохраняем логи
-        saveLoadProfileImageDebugLog(debugLog)
     }
     
     // MARK: - Debug Logging для TestFlight

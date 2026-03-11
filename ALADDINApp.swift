@@ -276,31 +276,11 @@ struct ALADDINApp: App {
                 print("   - Email: \(loginEmail)")
                 print("   - Тип: \(email != nil ? "переменные окружения" : "сохраненные credentials")")
 
-                // Небольшая задержка, чтобы приложение успело запуститься
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    performRealLogin(email: loginEmail, password: loginPassword) { success in
-                        if success {
-                            print("✅ ALADDINApp: Автоматический логин успешен!")
-
-                            // ✅ ПРОВЕРКА: Убеждаемся, что токены действительно сохранены
-                            let keychain = KeychainManager.shared
-                            // ✅ ИСПРАВЛЕНО: Используем loadString вместо load(String.self, ...)
-                            if let token = keychain.loadString(forKey: .authToken) {
-                                print("✅ ALADDINApp: Токен подтвержден в Keychain (длина: \(token.count))")
-                            } else {
-                                print("⚠️ ALADDINApp: ВНИМАНИЕ! Токен не найден в Keychain после успешного логина!")
-                            }
-                        } else {
-                            print("❌ ALADDINApp: Ошибка автоматического логина")
-                            print("   - Проверьте правильность email и password")
-                            print("   - Проверьте доступность сервера")
-                            // В продакшене не показываем детали для безопасности
-                            #if DEBUG
-                            print("   - Проверьте endpoint /auth/login на сервере")
-                            #endif
-                        }
-                    }
-                }
+            // ✅ BUILD 113: Убрано автоматическое выполнение логина из init()
+            // Это вызывало лавину обновлений в первые секунды старта приложения,
+            // что приводило к рекурсии и крашам при отрисовке MainScreen.
+            // Теперь логин должен выполняться только по требованию или в стабильном состоянии.
+            print("ℹ️ ALADDINApp: Автоматический логин пропущен в init() для стабильности")
             } else {
                 #if DEBUG
                 if email == nil || password == nil || email!.isEmpty || password!.isEmpty {
@@ -700,19 +680,11 @@ extension ALADDINApp {
         // 🔔 ИНИЦИАЛИЗИРУЕМ PUSH УВЕДОМЛЕНИЯ
         // NotificationManager инициализируется для обработки push уведомлений
         _ = NotificationManager.shared
-        // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронное логирование
-        Task {
-            MasterLogger.shared.business("NotificationManager initialized for push notifications")
-        }
+        // ✅ BUILD 113: Убрано логирование для абсолютной тишины на старте навигации
 
         // Запрашиваем разрешение на push уведомления (асинхронно, не блокирует UI)
         Task {
-            let granted = await NotificationManager.shared.requestAuthorization()
-            if granted {
-                MasterLogger.shared.business("Push notifications authorized by user")
-            } else {
-                MasterLogger.shared.business("Push notifications denied by user")
-            }
+            _ = await NotificationManager.shared.requestAuthorization()
         }
 
         // ✅ BUILD 95: Используем переданное значение hasCompletedOnboarding
@@ -734,10 +706,8 @@ extension ALADDINApp {
 
         // 📊 МЕТРИКИ ПРОИЗВОДИТЕЛЬНОСТИ: Логируем время инициализации
         let initTime = Date().timeIntervalSince(startTime)
-        // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронное логирование
-        Task {
-            MasterLogger.shared.performance("App initialization completed in \(String(format: "%.2f", initTime)) seconds")
-        }
+        // ✅ BUILD 113: Убрано логирование MasterLogger для разгрузки стека
+        print("🚀 App initialization completed in \(String(format: "%.2f", initTime)) seconds")
     }
 
     /// Автоматически проверяет и удаляет debug токены при запуске
