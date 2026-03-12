@@ -223,7 +223,8 @@ class NavigationManager: ObservableObject {
     
     /// Переход к экрану
     func navigateTo(_ screen: ALADDINScreen) {
-        logger.navigation(from: currentScreen.displayName, to: screen.displayName)
+        logger.navigation(from: currentScreen.displayName, to: screen.displayName, function: #function)
+        
         // ✅ ИСПРАВЛЕНИЕ: Весь NavigationManager работает под @MainActor,
         // поэтому выполняем изменения синхронно, без DispatchQueue.main.async.
         if case .paymentQR = screen {
@@ -257,6 +258,9 @@ class NavigationManager: ObservableObject {
     
     /// Возврат к предыдущему экрану
     func goBack(reason: String? = nil) {
+        let fromScreen = currentScreen.displayName
+        let toScreen = navigationStack.last?.displayName ?? "Main"
+        logger.navigation(from: fromScreen, to: "<-- \(toScreen)", function: #function) // Добавляем лог для возврата
         if let reason = reason {
             appendLog("⬅️ goBack(reason: \(reason))")
         } else {
@@ -389,6 +393,7 @@ class NavigationManager: ObservableObject {
     
     /// Переход к экрану с очисткой стека
     func navigateToRoot(_ screen: ALADDINScreen) {
+        logger.navigation(from: currentScreen.displayName, to: "<-- Root (\(screen.displayName))", function: #function) // Логируем переход к корню
         appendLog("⬆️ navigateToRoot(\(screen)) | до очистки стека = \(navigationStack)")
         navigationStack.removeAll()
         currentScreen = screen
@@ -410,23 +415,28 @@ class NavigationManager: ObservableObject {
     
     /// Переключение между основными экранами
     func switchToMainScreen() {
+        logger.ui("Switching to Main Screen", function: #function)
         navigateToRoot(.main)
     }
     
     func switchToFamilyScreen() {
+        logger.ui("Switching to Family Screen", function: #function)
         navigateToRoot(.family)
     }
     
     func switchToNetworkProtectionScreen() {
+        logger.ui("Switching to Network Protection Screen", function: #function)
         navigateToRoot(.networkProtection)
     }
     
     
     func switchToAnalyticsScreen() {
+        logger.ui("Switching to Analytics Screen", function: #function)
         navigateToRoot(.analytics)
     }
     
     func switchToSettingsScreen() {
+        logger.ui("Switching to Settings Screen", function: #function)
         navigateToRoot(.settings)
     }
     
@@ -434,23 +444,27 @@ class NavigationManager: ObservableObject {
     
     /// Переход к экрану устройства
     func navigateToDevice(_ deviceId: String) {
+        logger.ui("Navigating to Device Detail for ID: \(deviceId)", function: #function)
         navigateTo(.deviceDetail)
         // Здесь можно передать deviceId в ViewModel
     }
     
     /// Переход к профилю пользователя
     func navigateToProfile(_ userId: String) {
+        logger.ui("Navigating to Profile for ID: \(userId)", function: #function)
         navigateTo(.profile)
         // Здесь можно передать userId в ViewModel
     }
     
     /// Переход к настройкам уведомлений
     func navigateToNotificationSettings() {
+        logger.ui("Navigating to Notification Settings", function: #function)
         navigateTo(.notificationSettings)
     }
     
     /// Переход к языковым настройкам
     func navigateToLanguageSettings() {
+        logger.ui("Navigating to Language Settings", function: #function)
         navigateTo(.languageSettings)
     }
     

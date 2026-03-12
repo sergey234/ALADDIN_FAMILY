@@ -139,6 +139,11 @@ struct ALADDINApp: App {
 
     // ✅ Состояние навигации
     @State private var navigationInitialized: Bool = false
+    
+    // ✅ BUILD 113: Защита от повторных вызовов onAppear
+    // SwiftUI может вызывать onAppear несколько раз при пересоздании View
+    private static var hasInitialized = false
+    private static let initializationLock = NSLock()
 
     // MARK: - Theme Helper
     private var preferredColorScheme: ColorScheme? {
@@ -302,6 +307,27 @@ struct ALADDINApp: App {
             // ✅ Основное приложение
             mainAppContent()
             .onAppear {
+                // ✅ BUILD 114: КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ - Проверяем состояние онбординга ДО проверки флага
+                // Если онбординг не пройден, устанавливаем экран онбординга СРАЗУ
+                // Это гарантирует, что онбординг будет показан даже если hasInitialized уже true
+                if !hasCompletedOnboarding {
+                    print("🔴 BUILD 114: Онбординг не пройден - устанавливаем экран онбординга")
+                    navigationManager.currentScreen = .onboarding
+                    // НЕ возвращаемся - продолжаем инициализацию для других компонентов
+                }
+                
+                // ✅ BUILD 113: Защита от повторных вызовов onAppear
+                // SwiftUI может вызывать onAppear несколько раз при пересоздании View
+                Self.initializationLock.lock()
+                defer { Self.initializationLock.unlock() }
+                
+                guard !Self.hasInitialized else {
+                    print("⚠️ ALADDINApp.onAppear уже вызван, пропускаем повторную инициализацию")
+                    return
+                }
+                
+                Self.hasInitialized = true
+                
                 // ✅ BUILD 114: Убрана принудительная инициализация через DispatchQueue.main.async,
                 // так как она вызывала Deadlock (зависание) в симуляторе.
                 // Оставляем только один чистый вызов ниже.
@@ -324,6 +350,9 @@ struct ALADDINApp: App {
                 }
 
                 print("✅ ALADDINApp: Инициализация завершена")
+                #if DEBUG
+                LocalizationDiagnostics.runInitialChecks(with: localizationManager)
+                #endif
             }
         }
     }

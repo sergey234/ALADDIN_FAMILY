@@ -686,14 +686,17 @@ final class SubscriptionManager: ObservableObject {
                     switch validationResult {
                     case .valid:
                         self.logger.business("✅ JWT токен прошел полную валидацию")
+                        // ✅ BUILD 114: Защита от повторного вызова resume
+                        // Продолжаем выполнение и вызываем resume только один раз ниже
                     case .invalid(let reason):
                         self.logger.error("❌ JWT токен не прошел валидацию: \(reason)")
                         let error = SubscriptionError.invalidToken
                         continuation.resume(throwing: error)
-                        return
+                        return  // ✅ Возвращаемся - resume уже вызван
                     }
 
                     // ✅ FIXED BUILD 77: Сразу возвращаем ответ без Task {}
+                    // ✅ BUILD 114: Гарантируем, что resume вызывается только один раз
                     continuation.resume(returning: jwtResponse)
                 case .failure(let error):
                     self.logger.error("❌ Device registration failed", error: error)

@@ -75,7 +75,15 @@ class ProtectionSettingsManager: ObservableObject {
             print("❌ ProtectionSettingsManager: Ошибка кодирования настроек")
             return
         }
-        userDefaults.set(data, forKey: settingsKey)
+        
+        // ✅ BUILD 114: Асинхронный разрыв для предотвращения рекурсии
+        // Мы используем DispatchQueue.main.async, чтобы запись в UserDefaults
+        // не вызывала мгновенного уведомления во время текущего цикла отрисовки.
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            self.userDefaults.set(data, forKey: self.settingsKey)
+            print("💾 ProtectionSettingsManager: Настройки сохранены асинхронно")
+        }
     }
     
     /// Сохранить настройки на сервер

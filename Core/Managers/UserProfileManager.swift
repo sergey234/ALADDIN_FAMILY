@@ -57,7 +57,7 @@ class UserProfileManager {
             userDefaults.set(email, forKey: emailKey)
         }
         userDefaults.set(Date().timeIntervalSince1970, forKey: lastUpdateKey)
-        userDefaults.synchronize()
+        // userDefaults.synchronize() - не требуется в современных версиях iOS
     }
 
     /// Очистить кеш профиля
@@ -66,7 +66,7 @@ class UserProfileManager {
         userDefaults.removeObject(forKey: profileNameKey)
         userDefaults.removeObject(forKey: emailKey)
         userDefaults.removeObject(forKey: lastUpdateKey)
-        userDefaults.synchronize()
+        // userDefaults.synchronize() - не требуется в современных версиях iOS
     }
 
     // MARK: - Private Methods

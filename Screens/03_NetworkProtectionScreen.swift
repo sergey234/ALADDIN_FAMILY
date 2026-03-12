@@ -268,7 +268,10 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.emergency_response_bot.desc"),
                     isEnabled: $viewModel.emergencyResponseEnabled,
                     hasSettings: false,
-                    onToggle: { newValue in viewModel.toggleEmergencyResponseSync(newValue) }
+                    onToggle: { newValue in
+                        logger.toggleChanged("Emergency Response", newValue: newValue, screen: "NetworkProtection")
+                        viewModel.toggleEmergencyResponseSync(newValue)
+                    }
                 )
                 
                 SecurityFeatureRow(
@@ -277,7 +280,10 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.emergency_event_manager.desc"),
                     isEnabled: $viewModel.emergencyEventEnabled,
                     hasSettings: false,
-                    onToggle: { newValue in viewModel.toggleEmergencyEventSync(newValue) }
+                    onToggle: { newValue in
+                        logger.toggleChanged("Emergency Event", newValue: newValue, screen: "NetworkProtection")
+                        viewModel.toggleEmergencyEventSync(newValue)
+                    }
                 )
             }
             
@@ -294,7 +300,10 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.phishing_protection_agent.desc"),
                     isEnabled: $viewModel.phishingProtectionEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.togglePhishingProtectionSync(newValue) },
+                    onToggle: { newValue in
+                        logger.toggleChanged("Phishing Protection", newValue: newValue, screen: "NetworkProtection")
+                        viewModel.togglePhishingProtectionSync(newValue)
+                    },
                     onSettingsTap: { showPhishingSettings = true }
                 )
                 
@@ -304,7 +313,10 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.malware_detection_agent.desc"),
                     isEnabled: $viewModel.malwareDetectionEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.toggleMalwareDetectionSync(newValue) },
+                    onToggle: { newValue in
+                        logger.toggleChanged("Malware Detection", newValue: newValue, screen: "NetworkProtection")
+                        viewModel.toggleMalwareDetectionSync(newValue)
+                    },
                     onSettingsTap: { showMalwareSettings = true }
                 )
                 
@@ -314,7 +326,10 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.mobile_security_agent.desc"),
                     isEnabled: $viewModel.mobileSecurityEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.toggleMobileSecuritySync(newValue) },
+                    onToggle: { newValue in
+                        logger.toggleChanged("Mobile Security", newValue: newValue, screen: "NetworkProtection")
+                        viewModel.toggleMobileSecuritySync(newValue)
+                    },
                     onSettingsTap: { showMobileSecuritySettings = true }
                 )
                 
@@ -324,7 +339,10 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.network_security_agent.desc"),
                     isEnabled: $viewModel.networkSecurityEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.toggleNetworkSecuritySync(newValue) },
+                    onToggle: { newValue in
+                        logger.toggleChanged("Network Security", newValue: newValue, screen: "NetworkProtection")
+                        viewModel.toggleNetworkSecuritySync(newValue)
+                    },
                     onSettingsTap: { showNetworkSecuritySettings = true }
                 )
             }
@@ -342,7 +360,10 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.incident_response_agent.desc"),
                     isEnabled: $viewModel.incidentResponseEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.toggleIncidentResponseSync(newValue) },
+                    onToggle: { newValue in
+                        logger.toggleChanged("Incident Response", newValue: newValue, screen: "NetworkProtection")
+                        viewModel.toggleIncidentResponseSync(newValue)
+                    },
                     onSettingsTap: { showIncidentResponseSettings = true }
                 )
             }
@@ -360,7 +381,10 @@ struct NetworkProtectionScreen: View {
                     description: localizationManager.localized("component.password_security_agent.desc"),
                     isEnabled: $viewModel.passwordSecurityEnabled,
                     hasSettings: true,
-                    onToggle: { newValue in viewModel.togglePasswordSecuritySync(newValue) },
+                    onToggle: { newValue in
+                        logger.toggleChanged("Password Security", newValue: newValue, screen: "NetworkProtection")
+                        viewModel.togglePasswordSecuritySync(newValue)
+                    },
                     onSettingsTap: { showPasswordGenerator = true }
                 )
             }

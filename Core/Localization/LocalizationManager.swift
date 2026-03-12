@@ -67,7 +67,7 @@ class LocalizationManager: ObservableObject {
     // MARK: - Init
     
     init() {
-        logger.business("Initializing LocalizationManager")
+        // ✅ BUILD 115: Убрано логирование из init() для "Тихого старта"
         // ✅ СНАЧАЛА проверяем сохранённый язык
         if let savedLanguage = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage),
            let language = Language(rawValue: savedLanguage) {
@@ -82,7 +82,7 @@ class LocalizationManager: ObservableObject {
         }
 
 #if DEBUG
-        LocalizationDiagnostics.runInitialChecks(with: self)
+        // ✅ BUILD 115: LocalizationDiagnostics.runInitialChecks перенесен в ALADDINApp.onAppear
 #endif
 
         // ✅ НОВОЕ: Отмечаем готовность после полной инициализации
@@ -9171,7 +9171,7 @@ Settings
 }
 
 #if DEBUG
-private enum LocalizationDiagnostics {
+enum LocalizationDiagnostics {
     private static let childRewardSettingKeys = [
         "child_rewards_settings_title",
         "child_rewards_settings_subtitle",

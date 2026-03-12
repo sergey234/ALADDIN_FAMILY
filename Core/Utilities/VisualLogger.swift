@@ -13,10 +13,11 @@ class VisualLogger: ObservableObject {
     @Published var isVisible: Bool = true
     @Published var showErrorOnly: Bool = false
     @Published var showCopySuccess: Bool = false
+    @Published var selectedLogLevelFilter: LogLevel? = nil // ✅ BUILD 115: Добавляем фильтр по уровню логов
 
     /// Публичный доступ к логам для отладки (можно просмотреть в Xcode debugger)
     public var allLogsText: String {
-        logs.map { "[\($0.formattedTime)] [\($0.level.rawValue)] \($0.message)" }
+        logs.map { "[\($0.formattedTime)] [\($0.level.rawValue)] [\($0.category)] \($0.message)" }
             .joined(separator: "\n")
     }
 
@@ -28,13 +29,29 @@ class VisualLogger: ObservableObject {
     private let maxLogs = 50
     private var logQueue = DispatchQueue(label: "com.aladdin.visualLogger", qos: .utility)
     
+    // ✅ BUILD 113: Защита от повторных вызовов loadLogsAsync()
+    // SwiftUI может вызывать onAppear несколько раз при пересоздании View
+    private static var hasLoadedLogs = false
+    private static let loadLogsLock = NSLock()
+    
     private init() {
         // ✅ ИСПРАВЛЕНИЕ BUILD 93: Убрано чтение UserDefaults из init() - может вызывать рекурсию
         // Логи будут загружены асинхронно после инициализации через loadLogsAsync()
     }
     
     // ✅ НОВОЕ: Асинхронная загрузка логов после инициализации
+    // ✅ BUILD 113: Добавлена защита от повторных вызовов для предотвращения множественных запусков
     func loadLogsAsync() {
+        Self.loadLogsLock.lock()
+        defer { Self.loadLogsLock.unlock() }
+        
+        guard !Self.hasLoadedLogs else {
+            print("⚠️ VisualLogger.loadLogsAsync() уже вызван, пропускаем повторный вызов")
+            return
+        }
+        
+        Self.hasLoadedLogs = true
+        
         Task { @MainActor in
             loadLogsFromUserDefaults()
             log("🚀 VisualLogger initialized with \(logs.count) restored logs", level: .info)
@@ -103,14 +120,16 @@ class VisualLogger: ObservableObject {
         let timestamp: Date
         let message: String
         let level: LogLevel
+        let category: String // ✅ BUILD 115: Добавляем категорию лога
         let file: String
         let line: Int
 
-        init(timestamp: Date, message: String, level: LogLevel, file: String, line: Int) {
+        init(timestamp: Date, message: String, level: LogLevel, category: String, file: String, line: Int) { // ✅ BUILD 115: Добавляем категорию лога
             self.id = UUID()
             self.timestamp = timestamp
             self.message = message
             self.level = level
+            self.category = category // ✅ BUILD 115: Добавляем категорию лога
             self.file = file
             self.line = line
         }
@@ -122,7 +141,7 @@ class VisualLogger: ObservableObject {
         }
     }
     
-    enum LogLevel: String, Codable {
+    enum LogLevel: String, Codable, CaseIterable {
         case debug = "🔍"
         case info = "ℹ️"
         case success = "✅"
@@ -145,7 +164,7 @@ class VisualLogger: ObservableObject {
     /// 🛡️ Флаг защиты от рекурсии - предотвращает бесконечный цикл
     private var isLoggingInProgress = false
     
-    func log(_ message: String, level: LogLevel = .info, file: String = #file, line: Int = #line) {
+    func log(_ message: String, level: LogLevel = .info, category: String = "SYSTEM", file: String = #file, line: Int = #line) { // ✅ BUILD 115: Добавляем категорию лога
         // ✅ BUILD 113: Внутренняя асинхронность для разрыва петли рекурсии
         // Все операции с UserDefaults и массивом logs должны быть на Main Thread асинхронно
         DispatchQueue.main.async { [weak self] in
@@ -161,6 +180,7 @@ class VisualLogger: ObservableObject {
                 timestamp: Date(),
                 message: message,
                 level: level,
+                category: category, // ✅ BUILD 115: Передаем категорию
                 file: fileName,
                 line: line
             )
@@ -213,8 +233,21 @@ struct VisualLogView: View {
             // Header
             HStack {
                 Text("📋 ЛОГИ")
-                    .font(.headline)
+                    .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
+                // ✅ BUILD 115: Добавляем фильтр по уровню логов
+                Picker("Фильтр", selection: $logger.selectedLogLevelFilter) {
+                    Text("Все").tag(nil as VisualLogger.LogLevel?)
+                    ForEach(VisualLogger.LogLevel.allCases, id: \.self) { level in
+                        Text(level.rawValue).tag(Optional(level) as VisualLogger.LogLevel?)
+                    }
+                }
+                .pickerStyle(.menu)
+                .font(.caption2)
+                .foregroundColor(.white)
+                .background(Color.black.opacity(0.3))
+                .cornerRadius(4)
+                
                 Spacer()
                 HStack(spacing: 4) {
                     if logger.showCopySuccess {
@@ -257,15 +290,21 @@ struct VisualLogView: View {
             if logger.isVisible {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 2) {
-                        ForEach(logger.logs.reversed()) { entry in
+                        ForEach(logger.logs.reversed().filter { entry in
+                            logger.selectedLogLevelFilter == nil || entry.level == logger.selectedLogLevelFilter
+                        }) { entry in
                             HStack(alignment: .top, spacing: 4) {
-                                Text(entry.level.rawValue)
-                                    .font(.caption)
                                 Text("[\(entry.formattedTime)]")
-                                    .font(.caption2)
+                                    .font(.system(size: 9))
                                     .foregroundColor(.gray)
+                                Text("[\(entry.category)]") // ✅ BUILD 115: Отображаем категорию
+                                    .font(.system(size: 9))
+                                    .foregroundColor(.white.opacity(0.8))
+                                Text(entry.level.rawValue)
+                                    .font(.system(size: 10))
+                                    .foregroundColor(entry.level.color)
                                 Text(entry.message)
-                                    .font(.caption)
+                                    .font(.system(size: 10))
                                     .foregroundColor(entry.level.color)
                                     .multilineTextAlignment(.leading)
                             }
@@ -279,7 +318,7 @@ struct VisualLogView: View {
                 .background(Color.black.opacity(0.8))
             }
         }
-        .font(.system(size: 10, design: .monospaced))
+        .font(.system(size: 11, design: .monospaced))
         .cornerRadius(8)
         .padding(8)
     }
