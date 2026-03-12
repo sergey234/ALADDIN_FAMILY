@@ -109,6 +109,9 @@ class JWTCircuitBreaker {
 
     // MARK: - Properties
 
+    /// ✅ BUILD 114: Lock для защиты состояния конкретного инстанса CB
+    private let stateLock = NSLock()
+
     /// Current circuit state
     private var state: CircuitState = .closed
 
@@ -165,21 +168,25 @@ class JWTCircuitBreaker {
         }
 
         let breaker = self.breaker(for: category)
-        return breaker.shouldAllowRequest()
-        switch state {
+        
+        // ✅ BUILD 114: Защита состояния
+        breaker.stateLock.lock()
+        defer { breaker.stateLock.unlock() }
+        
+        switch breaker.state {
         case .closed:
             // Normal operation - allow all requests
             return true
 
         case .open:
             // Check if timeout has passed - attempt recovery
-            if let lastFailure = lastFailureTime,
-               Date().timeIntervalSince(lastFailure) > timeout {
+            if let lastFailure = breaker.lastFailureTime,
+               Date().timeIntervalSince(lastFailure) > breaker.timeout {
 
                 // Transition to half-open for testing
-                state = .halfOpen
-                halfOpenSuccessCount = 0
-                logger.business("🔄 DEFENSIVE JWT: Circuit Breaker → HALF-OPEN (testing recovery after \(Int(timeout/60))min)")
+                breaker.state = .halfOpen
+                breaker.halfOpenSuccessCount = 0
+                logger.business("🔄 DEFENSIVE JWT: Circuit Breaker → HALF-OPEN (testing recovery after \(Int(breaker.timeout/60))min)")
 
                 // Log state change
                 JWTEventLogger.logEvent(.circuitBreakerStateChanged(
@@ -214,17 +221,21 @@ class JWTCircuitBreaker {
         }
 
         let breaker = self.breaker(for: category)
-        breaker.recordSuccess()
-        failureCount = 0  // Reset failure count
+        
+        // ✅ BUILD 114: Защита состояния
+        breaker.stateLock.lock()
+        defer { breaker.stateLock.unlock() }
+        
+        breaker.failureCount = 0  // Reset failure count
 
-        switch state {
+        switch breaker.state {
         case .halfOpen:
-            halfOpenSuccessCount += 1
-            logger.business("✅ DEFENSIVE JWT: Success in HALF-OPEN state (\(halfOpenSuccessCount)/\(successThreshold))")
+            breaker.halfOpenSuccessCount += 1
+            logger.business("✅ DEFENSIVE JWT: Success in HALF-OPEN state (\(breaker.halfOpenSuccessCount)/\(breaker.successThreshold))")
 
-            if halfOpenSuccessCount >= successThreshold {
+            if breaker.halfOpenSuccessCount >= breaker.successThreshold {
                 // Recovery successful - close circuit
-                state = .closed
+                breaker.state = .closed
                 logger.business("🎉 DEFENSIVE JWT: Circuit Breaker → CLOSED (system recovered)")
 
                 // Log state change
@@ -259,21 +270,25 @@ class JWTCircuitBreaker {
         }
 
         let breaker = self.breaker(for: category)
-        breaker.recordFailure()
-        failureCount += 1
-        lastFailureTime = Date()
+        
+        // ✅ BUILD 114: Защита состояния
+        breaker.stateLock.lock()
+        defer { breaker.stateLock.unlock() }
+        
+        breaker.failureCount += 1
+        breaker.lastFailureTime = Date()
 
-        logger.business("❌ DEFENSIVE JWT: Circuit Breaker failure #\(failureCount)")
+        logger.business("❌ DEFENSIVE JWT: Circuit Breaker failure #\(breaker.failureCount)")
 
-        if failureCount >= failureThreshold {
+        if breaker.failureCount >= breaker.failureThreshold {
             // Too many failures - open circuit
-            state = .open
-            logger.error("🚨 DEFENSIVE JWT: Circuit Breaker → OPEN (too many failures: \(failureCount))")
+            breaker.state = .open
+            logger.error("🚨 DEFENSIVE JWT: Circuit Breaker → OPEN (too many failures: \(breaker.failureCount))")
 
             // Log state change
             JWTEventLogger.logEvent(.circuitBreakerStateChanged(
                 state: CircuitState.open.rawValue,
-                reason: "Failure threshold exceeded: \(failureCount) failures"
+                reason: "Failure threshold exceeded: \(breaker.failureCount) failures"
             ))
         }
     }

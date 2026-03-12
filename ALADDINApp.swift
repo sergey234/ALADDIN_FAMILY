@@ -152,6 +152,8 @@ struct ALADDINApp: App {
     
     init() {
         // 🔴 ГЛОБАЛЬНЫЙ EXCEPTION HANDLER - для диагностики крашей
+        // ✅ BUILD 114: Временно отключаем кастомный перехватчик, чтобы вернуть системные логи iOS
+        /*
         NSSetUncaughtExceptionHandler { exception in
             print("💥💥💥 GLOBAL CRASH DETECTED! 💥💥💥")
             print("💥 Exception Name: \(exception.name)")
@@ -162,6 +164,7 @@ struct ALADDINApp: App {
             }
             print("💥💥💥 END OF CRASH REPORT 💥💥💥")
         }
+        */
 
         print("🚀🚀🚀 ALADDINApp.init() called - APP STARTING")
         print("🚀🚀🚀 SubscriptionManager.shared created: \(SubscriptionManager.shared)")
@@ -299,6 +302,10 @@ struct ALADDINApp: App {
             // ✅ Основное приложение
             mainAppContent()
             .onAppear {
+                // ✅ BUILD 114: Убрана принудительная инициализация через DispatchQueue.main.async,
+                // так как она вызывала Deadlock (зависание) в симуляторе.
+                // Оставляем только один чистый вызов ниже.
+
                 // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронная загрузка логов VisualLogger
                 VisualLogger.shared.loadLogsAsync()
                 
@@ -313,9 +320,7 @@ struct ALADDINApp: App {
                 // ✅ Инициализируем SubscriptionManager для JWT токенов
                 print("🚀 ALADDINApp: Starting SubscriptionManager initialization Task")
                 Task {
-                    print("🚀 ALADDINApp: Task started, calling initializeOnAppStart()")
                     await subscriptionManager.initializeOnAppStart()
-                    print("🚀 ALADDINApp: Task completed, initializeOnAppStart() finished")
                 }
 
                 print("✅ ALADDINApp: Инициализация завершена")
@@ -594,10 +599,13 @@ struct ALADDINApp: App {
             .id("nav_\(navigationManager.currentScreen.rawValue)")
             // ✅ Инициализация навигации при первом появлении
             .onAppear {
+                // ✅ BUILD 114: Убрано дублирование вызова initializeNavigation
+                // Этот вызов уже происходит в основном WindowGroup.onAppear (линия 315)
+                /*
                 let navManager = navigationManager
                 let locManager = localizationManager
-                // ✅ BUILD 95: Передаем hasCompletedOnboarding из @AppStorage для предотвращения рекурсии
                 Self.initializeNavigation(navigationManager: navManager, localizationManager: locManager, hasCompletedOnboarding: hasCompletedOnboarding)
+                */
             }
             // ✅ ИСПРАВЛЕНИЕ: Упрощенная обработка возврата из фона - без лишних проверок
             .onChange(of: scenePhase) { newPhase in

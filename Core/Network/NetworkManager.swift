@@ -36,6 +36,7 @@ class NetworkManager: NSObject, ObservableObject {
     
     // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Отслеживание retry для каждого endpoint
     private var retryCounts: [String: Int] = [:]
+    private let retryLock = NSLock() // ✅ BUILD 114: Броня для сетевых счетчиков
     private let maxRetriesPerEndpoint = 1 // Максимум 1 retry при 401
 
     // ✅ ЗАДАЧА 62: Rate Limiting
@@ -848,7 +849,9 @@ class NetworkManager: NSObject, ObservableObject {
                     let endpointKey = request.url?.absoluteString ?? "unknown"
                     
                     // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Проверяем количество retry для этого endpoint
+                    self?.retryLock.lock()
                     let currentRetryCount = self?.retryCounts[endpointKey] ?? 0
+                    self?.retryLock.unlock()
                     
                     if currentRetryCount >= self?.maxRetriesPerEndpoint ?? 1 {
                         // ✅ Production логирование превышения лимита retry (ограничиваем длину URL)
@@ -864,7 +867,9 @@ class NetworkManager: NSObject, ObservableObject {
                         #endif
                         
                         // Очищаем счётчик retry для этого endpoint
+                        self?.retryLock.lock()
                         self?.retryCounts.removeValue(forKey: endpointKey)
+                        self?.retryLock.unlock()
                         
                         // 🛡️ DEFENSIVE JWT: Record failure
                         JWTCircuitBreaker.shared.recordFailure(for: determineCategory(for: endpoint))
@@ -901,14 +906,18 @@ class NetworkManager: NSObject, ObservableObject {
                         #endif
                         
                         // Очищаем счётчик retry
+                        self?.retryLock.lock()
                         self?.retryCounts.removeValue(forKey: endpointKey)
+                        self?.retryLock.unlock()
                         
                         completion(.failure(NetworkError.tokenExpired))
                         return
                     }
                     
                     // Увеличиваем счётчик retry для этого endpoint
+                    self?.retryLock.lock()
                     self?.retryCounts[endpointKey] = currentRetryCount + 1
+                    self?.retryLock.unlock()
                     
                     // Пытаемся обновить токен
                     Task { [weak self] in
@@ -927,14 +936,18 @@ class NetworkManager: NSObject, ObservableObject {
                             #endif
                             
                             guard let strongSelf = self else {
+                                self?.retryLock.lock()
                                 self?.retryCounts.removeValue(forKey: endpointKey)
+                                self?.retryLock.unlock()
                                 completion(.failure(NetworkError.tokenExpired))
                                 return
                             }
                             
                             // Создаём новый запрос с обновлённым токеном
                             guard let url = request.url else {
+                                strongSelf.retryLock.lock()
                                 strongSelf.retryCounts.removeValue(forKey: endpointKey)
+                                strongSelf.retryLock.unlock()
                                 completion(.failure(NetworkError.invalidURL))
                                 return
                             }
@@ -969,7 +982,9 @@ class NetworkManager: NSObject, ObservableObject {
                             #endif
                             
                             // Очищаем счётчик retry
+                            self?.retryLock.lock()
                             self?.retryCounts.removeValue(forKey: endpointKey)
+                            self?.retryLock.unlock()
                             
                             // 🛡️ DEFENSIVE JWT: Record failure for JWT-protected endpoints
                             JWTCircuitBreaker.shared.recordFailure(for: determineCategory(for: endpoint))
@@ -983,7 +998,9 @@ class NetworkManager: NSObject, ObservableObject {
                 
                 // ✅ УСПЕШНЫЙ ОТВЕТ: Очищаем счётчик retry для этого endpoint
                 if let endpointKey = request.url?.absoluteString {
+                    self?.retryLock.lock()
                     self?.retryCounts.removeValue(forKey: endpointKey)
+                    self?.retryLock.unlock()
                 }
                 
                 // Обработка ошибок HTTP

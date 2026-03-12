@@ -42,11 +42,13 @@ struct PhishingProtectionSettingsModal: View {
                         isOn: $blockSuspiciousLinks
                     )
                     .onChange(of: blockSuspiciousLinks) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "blockSuspiciousLinks",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "blockSuspiciousLinks",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Phishing: blockSuspiciousLinks = \(newValue)")
                     }
 
@@ -55,11 +57,13 @@ struct PhishingProtectionSettingsModal: View {
                         isOn: $warnBeforeOpening
                     )
                     .onChange(of: warnBeforeOpening) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "warnBeforeOpening",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "warnBeforeOpening",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Phishing: warnBeforeOpening = \(newValue)")
                     }
 
@@ -68,11 +72,13 @@ struct PhishingProtectionSettingsModal: View {
                         isOn: $checkEmailLinks
                     )
                     .onChange(of: checkEmailLinks) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "checkEmailLinks",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "checkEmailLinks",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Phishing: checkEmailLinks = \(newValue)")
                     }
 
@@ -81,11 +87,13 @@ struct PhishingProtectionSettingsModal: View {
                         isOn: $checkSMSLinks
                     )
                     .onChange(of: checkSMSLinks) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "checkSMSLinks",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "checkSMSLinks",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Phishing: checkSMSLinks = \(newValue)")
                     }
 
@@ -94,11 +102,13 @@ struct PhishingProtectionSettingsModal: View {
                         isOn: $blockKnownPhishingDomains
                     )
                     .onChange(of: blockKnownPhishingDomains) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "blockKnownPhishingDomains",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "blockKnownPhishingDomains",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Phishing: blockKnownPhishingDomains = \(newValue)")
                     }
                 }
@@ -157,15 +167,17 @@ struct PhishingProtectionSettingsModal: View {
     }
     
     // ✅ Сохранение настроек
-    // ✅ BUILD 103: Task { @MainActor in } для гарантии создания Dictionary на main thread
+    // ✅ BUILD 114: Асинхронное сохранение, закрываем окно СРАЗУ
     private func saveSettings() {
+        // Сначала закрываем окно для отзывчивости UI
+        isPresented = false
+        
+        // Затем выполняем сохранение асинхронно
         Task { @MainActor in
             // Сохраняем через API
             do {
-                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 let isComponentEnabled = ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
 
-                // ✅ BUILD 103: Dictionary создается на main thread благодаря @MainActor
                 let config = ComponentConfiguration(
                     isEnabled: isComponentEnabled,
                     priority: .normal,
@@ -184,15 +196,10 @@ struct PhishingProtectionSettingsModal: View {
                     configuration: config
                 )
 
-                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                isPresented = false
-
                 print("✅ PhishingProtectionSettingsModal: Настройки сохранены через API")
             } catch {
-                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                isPresented = false
                 print("⚠️ PhishingProtectionSettingsModal: Ошибка сохранения: \(error.localizedDescription)")
             }
         }

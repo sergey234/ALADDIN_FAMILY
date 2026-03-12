@@ -42,11 +42,13 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $blockUnsafeNetworks
                     )
                     .onChange(of: blockUnsafeNetworks) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "blockUnsafeNetworks",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "blockUnsafeNetworks",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Network: blockUnsafeNetworks = \(newValue)")
                     }
 
@@ -55,11 +57,13 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $warnOnPublicWiFi
                     )
                     .onChange(of: warnOnPublicWiFi) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "warnOnPublicWiFi",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "warnOnPublicWiFi",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Network: warnOnPublicWiFi = \(newValue)")
                     }
 
@@ -68,11 +72,13 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $autoConnectVPN
                     )
                     .onChange(of: autoConnectVPN) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "autoConnectVPN",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "autoConnectVPN",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Network: autoConnectVPN = \(newValue)")
                     }
 
@@ -81,11 +87,13 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $blockTracking
                     )
                     .onChange(of: blockTracking) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "blockTracking",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "blockTracking",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Network: blockTracking = \(newValue)")
                     }
 
@@ -94,11 +102,13 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $encryptTraffic
                     )
                     .onChange(of: encryptTraffic) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "encryptTraffic",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "encryptTraffic",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Network: encryptTraffic = \(newValue)")
                     }
 
@@ -107,11 +117,13 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $firewallEnabled
                     )
                     .onChange(of: firewallEnabled) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "firewallEnabled",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "firewallEnabled",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Network: firewallEnabled = \(newValue)")
                     }
                 }
@@ -158,14 +170,16 @@ struct NetworkSecuritySettingsModal: View {
     }
     
     // ✅ Сохранение настроек через ComponentConfigurationService
-    // ✅ BUILD 103: Task { @MainActor in } для гарантии создания Dictionary на main thread
+    // ✅ BUILD 114: Асинхронное сохранение, закрываем окно СРАЗУ
     private func saveSettings() {
+        // Сначала закрываем окно для отзывчивости UI
+        isPresented = false
+        
+        // Затем выполняем сохранение асинхронно
         Task { @MainActor in
             do {
-                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 let isComponentEnabled = ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
 
-                // ✅ BUILD 103: Dictionary создается на main thread благодаря @MainActor
                 let config = ComponentConfiguration(
                     isEnabled: isComponentEnabled,
                     priority: .normal,
@@ -184,14 +198,10 @@ struct NetworkSecuritySettingsModal: View {
                     configuration: config
                 )
 
-                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                isPresented = false
                 print("✅ NetworkSecuritySettingsModal: Настройки сохранены через API")
             } catch {
-                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                isPresented = false
                 print("⚠️ NetworkSecuritySettingsModal: Ошибка сохранения, но кэшировано: \(error.localizedDescription)")
             }
         }

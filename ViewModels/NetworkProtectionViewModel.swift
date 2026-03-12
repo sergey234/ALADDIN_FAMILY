@@ -67,52 +67,86 @@ class NetworkProtectionViewModel: ObservableObject {
     // MARK: - Public Methods - Synchronous (BUILD 107)
     
     func toggleCrashDetectionSync(_ newValue: Bool) {
+        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.crashDetectionEnabled = newValue
-        Task { @MainActor in await toggleCrashDetection(newValue) }
+        
+        // Затем асинхронно запускаем логику сохранения и аналитики
+        Task { @MainActor in 
+            await toggleCrashDetection(newValue) 
+        }
     }
     
     func toggleRoadsideAssistanceSync(_ newValue: Bool) {
+        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.roadsideAssistanceEnabled = newValue
-        Task { @MainActor in await toggleRoadsideAssistance(newValue) }
+        
+        // Затем асинхронно запускаем логику сохранения и аналитики
+        Task { @MainActor in 
+            await toggleRoadsideAssistance(newValue) 
+        }
     }
     
     func toggleEmergencyResponseSync(_ newValue: Bool) {
+        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.emergencyResponseEnabled = newValue
+        
+        // Затем асинхронно запускаем логику сохранения
         Task { @MainActor in await toggleEmergencyResponse(newValue) }
     }
     
     func toggleEmergencyEventSync(_ newValue: Bool) {
+        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.emergencyEventEnabled = newValue
+        
+        // Затем асинхронно запускаем логику сохранения
         Task { @MainActor in await toggleEmergencyEvent(newValue) }
     }
     
     func togglePhishingProtectionSync(_ newValue: Bool) {
+        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.phishingProtectionEnabled = newValue
+        
+        // Затем асинхронно запускаем логику сохранения
         Task { @MainActor in await togglePhishingProtection(newValue) }
     }
     
     func toggleMalwareDetectionSync(_ newValue: Bool) {
+        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.malwareDetectionEnabled = newValue
+        
+        // Затем асинхронно запускаем логику сохранения
         Task { @MainActor in await toggleMalwareDetection(newValue) }
     }
     
     func toggleMobileSecuritySync(_ newValue: Bool) {
+        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.mobileSecurityEnabled = newValue
+        
+        // Затем асинхронно запускаем логику сохранения
         Task { @MainActor in await toggleMobileSecurity(newValue) }
     }
     
     func toggleNetworkSecuritySync(_ newValue: Bool) {
+        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.networkSecurityEnabled = newValue
+        
+        // Затем асинхронно запускаем логику сохранения
         Task { @MainActor in await toggleNetworkSecurity(newValue) }
     }
     
     func toggleIncidentResponseSync(_ newValue: Bool) {
+        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.incidentResponseEnabled = newValue
+        
+        // Затем асинхронно запускаем логику сохранения
         Task { @MainActor in await toggleIncidentResponse(newValue) }
     }
     
     func togglePasswordSecuritySync(_ newValue: Bool) {
+        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.passwordSecurityEnabled = newValue
+        
+        // Затем асинхронно запускаем логику сохранения
         Task { @MainActor in await togglePasswordSecurity(newValue) }
     }
 
@@ -335,11 +369,20 @@ class NetworkProtectionViewModel: ObservableObject {
         newValue: Bool,
         updateClosure: @escaping (Bool) -> Void
     ) async {
-        // ✅ BUILD 101: Защита от повторного переключения
+        // 🛡️ BUILD 114: Защита от рекурсии через thread dictionary
+        let recursionKey = "NetworkProtectionViewModel.isToggling.\(componentId)"
+        if Thread.current.threadDictionary[recursionKey] != nil {
+            print("⚠️ [NetworkProtectionViewModel] Рекурсия заблокирована для \(componentId)")
+            return
+        }
+        Thread.current.threadDictionary[recursionKey] = true
+        defer { Thread.current.threadDictionary.removeObject(forKey: recursionKey) }
+
+        // ✅ BUILD 101: Защита от повторного переключения (второй уровень)
         togglingLock.lock()
         guard !isToggling else {
             togglingLock.unlock()
-            print("⚠️ NetworkProtectionViewModel: toggleComponent уже выполняется, пропускаем повторный вызов")
+            print("⚠️ NetworkProtectionViewModel: toggleComponent уже выполняется, пропускаем")
             return
         }
         isToggling = true
@@ -352,51 +395,35 @@ class NetworkProtectionViewModel: ObservableObject {
         }
         
         // ✅ BUILD 102: Оптимистичное обновление UI
-        // Автоматически на main thread благодаря @MainActor
         updateClosure(newValue)
 
-        // ✅ BUILD 102: Единая логика для всех режимов
-        do {
-            // Пытаемся обновить через API (если есть токен)
-            if AppConfig.authToken != nil {
-                try await statusService.updateStatus(
-                    componentId: componentId,
-                    isEnabled: newValue
-                )
-            } else {
-                // Демо режим: сохраняем локально в UserDefaults
-                // ✅ BUILD 104: УБРАЛИ await MainActor.run {} - метод уже на @MainActor
-                let userDefaultsKey = "demo_component_\(componentId)_enabled"
-                UserDefaults.standard.set(newValue, forKey: userDefaultsKey)
-            }
+        // ✅ BUILD 114: Асинхронная запись для предотвращения петли уведомлений
+        let userDefaultsKey = "demo_component_\(componentId)_enabled"
+        let isProduction = AppConfig.authToken != nil
 
-            // Успешное обновление
-            // ✅ BUILD 106: Используем await MainActor.run для гарантии main thread НЕМЕДЛЕННО после await
-            await MainActor.run {
-                componentAnalytics.trackComponentToggle(
-                    componentId: componentId,
-                    enabled: newValue
-                )
+        if isProduction {
+            do {
+                try await statusService.updateStatus(componentId: componentId, isEnabled: newValue)
                 
-                if AppConfig.authToken == nil {
-                    toastManager.showSuccess("Компонент обновлен (демо режим)")
-                } else {
-                    toastManager.showSuccess("Компонент обновлен")
+                // Успешная аналитика (асинхронно)
+                DispatchQueue.main.async { [weak self] in
+                    self?.componentAnalytics.trackComponentToggle(componentId: componentId, enabled: newValue)
+                    self?.toastManager.showSuccess("Компонент обновлен")
+                }
+            } catch {
+                // Откат изменений (асинхронно)
+                DispatchQueue.main.async { [weak self] in
+                    updateClosure(!newValue)
+                    self?.componentAnalytics.trackComponentError(componentId: componentId, error: error)
+                    self?.toastManager.showError("Ошибка: \(error.localizedDescription)")
                 }
             }
-
-        } catch {
-            // Откат изменений при ошибке
-            // ✅ BUILD 102: Оптимистичное обновление UI
-            updateClosure(!newValue)
-            
-            // Отследить ошибку
-            // ✅ BUILD 106: Используем await MainActor.run для гарантии main thread НЕМЕДЛЕННО после await
-            // Явно захватываем error в замыкании для избежания ошибок компиляции
-            let errorToReport = error
-            await MainActor.run {
-                componentAnalytics.trackComponentError(componentId: componentId, error: errorToReport)
-                toastManager.showError("Ошибка: \(errorToReport.localizedDescription)")
+        } else {
+            // Демо режим: асинхронно в UserDefaults
+            DispatchQueue.main.async { [weak self] in
+                UserDefaults.standard.set(newValue, forKey: userDefaultsKey)
+                self?.componentAnalytics.trackComponentToggle(componentId: componentId, enabled: newValue)
+                self?.toastManager.showSuccess("Компонент обновлен (демо режим)")
             }
         }
     }

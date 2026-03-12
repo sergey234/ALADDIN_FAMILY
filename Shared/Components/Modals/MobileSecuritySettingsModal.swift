@@ -42,11 +42,13 @@ struct MobileSecuritySettingsModal: View {
                         isOn: $deviceEncryption
                     )
                     .onChange(of: deviceEncryption) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "deviceEncryption",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "deviceEncryption",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Mobile: deviceEncryption = \(newValue)")
                     }
 
@@ -55,11 +57,13 @@ struct MobileSecuritySettingsModal: View {
                         isOn: $appLock
                     )
                     .onChange(of: appLock) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "appLock",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "appLock",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Mobile: appLock = \(newValue)")
                     }
 
@@ -68,11 +72,13 @@ struct MobileSecuritySettingsModal: View {
                         isOn: $screenLock
                     )
                     .onChange(of: screenLock) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "screenLock",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "screenLock",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Mobile: screenLock = \(newValue)")
                     }
 
@@ -81,11 +87,13 @@ struct MobileSecuritySettingsModal: View {
                         isOn: $biometricAuth
                     )
                     .onChange(of: biometricAuth) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "biometricAuth",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "biometricAuth",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Mobile: biometricAuth = \(newValue)")
                     }
 
@@ -94,11 +102,13 @@ struct MobileSecuritySettingsModal: View {
                         isOn: $remoteWipe
                     )
                     .onChange(of: remoteWipe) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "remoteWipe",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "remoteWipe",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Mobile: remoteWipe = \(newValue)")
                     }
 
@@ -107,11 +117,13 @@ struct MobileSecuritySettingsModal: View {
                         isOn: $trackDevice
                     )
                     .onChange(of: trackDevice) { newValue in
-                        componentAnalytics.trackSettingToggle(
-                            componentId: componentId,
-                            settingKey: "trackDevice",
-                            enabled: newValue
-                        )
+                        DispatchQueue.main.async { [componentAnalytics, componentId] in
+                            componentAnalytics.trackSettingToggle(
+                                componentId: componentId,
+                                settingKey: "trackDevice",
+                                enabled: newValue
+                            )
+                        }
                         print("🔄 Mobile: trackDevice = \(newValue)")
                     }
                 }
@@ -158,14 +170,16 @@ struct MobileSecuritySettingsModal: View {
     }
     
     // ✅ Сохранение настроек через ComponentConfigurationService
-    // ✅ BUILD 103: Task { @MainActor in } для гарантии создания Dictionary на main thread
+    // ✅ BUILD 114: Асинхронное сохранение, закрываем окно СРАЗУ
     private func saveSettings() {
+        // Сначала закрываем окно для отзывчивости UI
+        isPresented = false
+        
+        // Затем выполняем сохранение асинхронно
         Task { @MainActor in
             do {
-                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 let isComponentEnabled = ComponentStatusService.shared.getComponentEnabledStatus(componentId: componentId)
 
-                // ✅ BUILD 103: Dictionary создается на main thread благодаря @MainActor
                 let config = ComponentConfiguration(
                     isEnabled: isComponentEnabled,
                     priority: .normal,
@@ -184,14 +198,10 @@ struct MobileSecuritySettingsModal: View {
                     configuration: config
                 )
 
-                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                isPresented = false
                 print("✅ MobileSecuritySettingsModal: Настройки сохранены через API")
             } catch {
-                // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                isPresented = false
                 print("⚠️ MobileSecuritySettingsModal: Ошибка сохранения, но кэшировано: \(error.localizedDescription)")
             }
         }

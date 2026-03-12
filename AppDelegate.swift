@@ -148,12 +148,15 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     }
 
     private func setupCrashHandler() {
-        print("🛑 Setting up crash handler...")
+        print("🛑 setupCrashHandler: Custom handler DISABLED to restore system logs (BUILD 114)")
 
-        // Устанавливаем глобальный обработчик крашей
+        // ✅ BUILD 114: Мы отключаем кастомный перехватчик, чтобы iOS могла сама 
+        // генерировать стандартные отчеты (.ips файлы) в настройках iPhone.
+        /*
         NSSetUncaughtExceptionHandler(crashExceptionHandler)
+        */
 
-        print("✅ Crash handler installed")
+        print("✅ System logs will now be visible in iPhone Settings -> Privacy -> Analytics")
     }
 
     /**
