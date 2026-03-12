@@ -522,11 +522,30 @@ struct AIAssistantScreen: View {
                         isUser: false,
                         time: currentTime()
                     )
+                    
+                    // ✅ BUILD 115: Детальное логирование для подтверждения добавления сообщения
+                    logger.business("✅ AI Assistant: Adding message to UI - text: '\(finalResponse.prefix(50))...', isUser: false")
                     messages.append(aiResponse)
+                    logger.business("✅ AI Assistant: Message added successfully. Total messages: \(messages.count)")
                     saveMessages()
+                    logger.business("✅ AI Assistant: Messages saved to storage")
 
                 case .failure(let error):
                     logger.error("❌ AI Assistant: Failed to get AI response", error: error)
+                    logger.error("❌ AI Assistant: Error details - \(error.localizedDescription)")
+                    
+                    // ✅ BUILD 115: Детальное логирование для диагностики на реальном устройстве
+                    if let networkError = error as? NetworkError {
+                        logger.error("❌ AI Assistant: NetworkError type - \(networkError)")
+                    }
+                    
+                    #if DEBUG
+                    print("❌ AI Assistant: Full error: \(error)")
+                    if let decodingError = error as? DecodingError {
+                        print("❌ AI Assistant: DecodingError details: \(decodingError)")
+                    }
+                    #endif
+                    
                     showError = true
                     errorMessage = "Не удалось получить ответ от AI: \(error.localizedDescription)"
 

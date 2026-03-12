@@ -120,11 +120,20 @@ class CrashDetectionManager: NSObject, ObservableObject {
         // Отправить алерт на сервер
         do {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+                var hasResumed = false
+                
                 apiService.sendCrashAlert(
                     latitude: location.coordinate.latitude,
                     longitude: location.coordinate.longitude,
                     severity: severity.rawValue
                 ) { result in
+                    guard !hasResumed else {
+                        print("⚠️ CRITICAL: Attempted to resume crash alert continuation twice!")
+                        return
+                    }
+                    hasResumed = true
+                    
                     switch result {
                     case .success:
                         continuation.resume()
@@ -427,11 +436,20 @@ class CrashDetectionManager: NSObject, ObservableObject {
         // Отправить алерт на сервер
         do {
             try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+                var hasResumed = false
+                
                 apiService.sendCrashAlert(
                     latitude: location.coordinate.latitude,
                     longitude: location.coordinate.longitude,
                     severity: severity.rawValue
                 ) { result in
+                    guard !hasResumed else {
+                        print("⚠️ CRITICAL: Attempted to resume crash alert continuation twice!")
+                        return
+                    }
+                    hasResumed = true
+                    
                     switch result {
                     case .success:
                         continuation.resume()

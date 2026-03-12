@@ -38,6 +38,22 @@ class NetworkManager: NSObject, ObservableObject {
     private var retryCounts: [String: Int] = [:]
     private let retryLock = NSLock() // ✅ BUILD 114: Броня для сетевых счетчиков
     private let maxRetriesPerEndpoint = 1 // Максимум 1 retry при 401
+    
+    // ✅ BUILD 115: Защита от двойного вызова completion в Task блоке
+    private class CompletionGuard {
+        private let lock = NSLock()
+        private var _completionCalled = false
+        
+        func setCalled() -> Bool {
+            lock.lock()
+            defer { lock.unlock() }
+            if _completionCalled {
+                return false
+            }
+            _completionCalled = true
+            return true
+        }
+    }
 
     // ✅ ЗАДАЧА 62: Rate Limiting
     /// Rate limiter для защиты от перегрузки API
@@ -921,6 +937,9 @@ class NetworkManager: NSObject, ObservableObject {
                     
                     // Пытаемся обновить токен
                     Task { [weak self] in
+                        // ✅ BUILD 115: Защита от двойного вызова completion в Task блоке
+                        let completionGuard = CompletionGuard()
+                        
                         let tokenWasRefreshed = await JWTTokenManager.shared.forceRefreshToken()
                         
                         if tokenWasRefreshed {
@@ -939,6 +958,10 @@ class NetworkManager: NSObject, ObservableObject {
                                 self?.retryLock.lock()
                                 self?.retryCounts.removeValue(forKey: endpointKey)
                                 self?.retryLock.unlock()
+                                guard completionGuard.setCalled() else {
+                                    logger.error("⚠️ CRITICAL: Attempted to call completion twice in 401 retry Task!")
+                                    return
+                                }
                                 completion(.failure(NetworkError.tokenExpired))
                                 return
                             }
@@ -948,6 +971,10 @@ class NetworkManager: NSObject, ObservableObject {
                                 strongSelf.retryLock.lock()
                                 strongSelf.retryCounts.removeValue(forKey: endpointKey)
                                 strongSelf.retryLock.unlock()
+                                guard completionGuard.setCalled() else {
+                                    logger.error("⚠️ CRITICAL: Attempted to call completion twice in 401 retry Task!")
+                                    return
+                                }
                                 completion(.failure(NetworkError.invalidURL))
                                 return
                             }
@@ -968,7 +995,14 @@ class NetworkManager: NSObject, ObservableObject {
                             
                             // Повторяем запрос с новым токеном (retry count уже увеличен)
                             // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Передаем isRetry=true чтобы отключить логирование
-                            strongSelf.performRequest(request: retryRequest, requiresAuth: true, isRetry: true, completion: completion)
+                            // ✅ BUILD 115: completion будет вызван внутри performRequest, не здесь
+                            strongSelf.performRequest(request: retryRequest, requiresAuth: true, isRetry: true) { (result: Result<T, Error>) in
+                                guard completionGuard.setCalled() else {
+                                    logger.error("⚠️ CRITICAL: Attempted to call completion twice in 401 retry Task!")
+                                    return
+                                }
+                                completion(result)
+                            }
                         } else {
                             // ✅ Production логирование ошибки обновления токена (ограничиваем длину URL)
                             let safeEndpointKey = endpointKey.count > 200 ? String(endpointKey.prefix(200)) + "..." : endpointKey
@@ -990,6 +1024,10 @@ class NetworkManager: NSObject, ObservableObject {
                             JWTCircuitBreaker.shared.recordFailure(for: determineCategory(for: endpoint))
                             logger.network("❌ DEFENSIVE JWT: Circuit breaker failure recorded for 401 token expired")
 
+                            guard completionGuard.setCalled() else {
+                                logger.error("⚠️ CRITICAL: Attempted to call completion twice in 401 retry Task!")
+                                return
+                            }
                             completion(.failure(NetworkError.tokenExpired))
                         }
                     }
@@ -1087,7 +1125,27 @@ class NetworkManager: NSObject, ObservableObject {
                 
                 // Декодирование
                 do {
-                    let decoded = try JSONDecoder().decode(T.self, from: data)
+                    // ✅ BUILD 115: Детальное логирование ошибок декодирования для диагностики
+                    let decoded: T
+                    do {
+                        decoded = try JSONDecoder().decode(T.self, from: data)
+                    } catch let decodingError {
+                        // Логируем детали ошибки декодирования
+                        let responseString = String(data: data, encoding: .utf8) ?? "Unable to convert to string"
+                        logger.error("❌ NetworkManager: Decoding error for \(T.self)")
+                        logger.error("   - Response body: \(responseString.prefix(500))")
+                        logger.error("   - Error: \(decodingError.localizedDescription)")
+                        
+                        #if DEBUG
+                        print("❌ NetworkManager: Decoding failed")
+                        print("   - Type: \(T.self)")
+                        print("   - Response: \(responseString.prefix(500))")
+                        print("   - Error: \(decodingError)")
+                        #endif
+                        
+                        completion(.failure(NetworkError.decodingError(decodingError)))
+                        return
+                    }
 
                     #if DEBUG
                     print("✅ NetworkManager.performRequest: Декодирование успешно")

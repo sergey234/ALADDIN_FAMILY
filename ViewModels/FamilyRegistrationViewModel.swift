@@ -292,9 +292,22 @@ class FamilyRegistrationViewModel: ObservableObject {
                     self?.familyID = response.family_id
                     self?.recoveryCode = response.recovery_code
 
-                    // ✅ НОВОЕ: Сохраняем your_member_id
-                    UserDefaults.standard.set(response.your_member_id, forKey: "your_member_id")
-                    logger.business("Member ID saved: \(response.your_member_id)")
+                    // ✅ BUILD 115: Сохраняем your_member_id с диагностикой
+                    // ✅ КРЕПОСТЬ 2.1: Асинхронный разрыв - UserDefaults.set в async для предотвращения рекурсии
+                    let memberIdToSave = response.your_member_id
+                    DispatchQueue.main.async {
+                        UserDefaults.standard.set(memberIdToSave, forKey: "your_member_id")
+                        logger.business("✅ Member ID saved: \(memberIdToSave)")
+                        logger.business("✅ FamilyRegistrationViewModel: your_member_id сохранен при создании семьи: \(memberIdToSave)")
+                        
+                        // ✅ BUILD 115: Проверяем сохранение
+                        let savedId = UserDefaults.standard.string(forKey: "your_member_id")
+                        if savedId == memberIdToSave {
+                            logger.business("✅ FamilyRegistrationViewModel: Проверка успешна - ID сохранен корректно")
+                        } else {
+                            logger.business("❌ FamilyRegistrationViewModel: ОШИБКА - ID не сохранен!")
+                        }
+                    }
 
                     // ✅ ПОПЫТКА 1: Проверяем, есть ли токены в response
                     if self?.isValidJWTToken(response.access_token) == true,
@@ -529,9 +542,22 @@ class FamilyRegistrationViewModel: ObservableObject {
                     // ✅ НОВОЕ: Сохраняем family_id в UserDefaults
                     UserDefaults.standard.set(data.family_id, forKey: "family_id")
                     
-                    // ✅ НОВОЕ: Сохраняем your_member_id
-                    UserDefaults.standard.set(data.your_member_id, forKey: "your_member_id")
-                    print("✅ your_member_id сохранен: \(data.your_member_id)")
+                    // ✅ BUILD 115: Сохраняем your_member_id с диагностикой
+                    // ✅ КРЕПОСТЬ 2.1: Асинхронный разрыв - UserDefaults.set в async для предотвращения рекурсии
+                    let memberIdToSave = data.your_member_id
+                    DispatchQueue.main.async {
+                        UserDefaults.standard.set(memberIdToSave, forKey: "your_member_id")
+                        logger.business("✅ Member ID saved: \(memberIdToSave)")
+                        logger.business("✅ FamilyRegistrationViewModel: your_member_id сохранен при присоединении к семье: \(memberIdToSave)")
+                        
+                        // ✅ BUILD 115: Проверяем сохранение
+                        let savedId = UserDefaults.standard.string(forKey: "your_member_id")
+                        if savedId == memberIdToSave {
+                            logger.business("✅ FamilyRegistrationViewModel: Проверка успешна - ID сохранен корректно")
+                        } else {
+                            logger.business("❌ FamilyRegistrationViewModel: ОШИБКА - ID не сохранен!")
+                        }
+                    }
 
                     self?.familyMembers = data.members.map { member in
                         FamilyMember(

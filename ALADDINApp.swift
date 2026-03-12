@@ -179,12 +179,19 @@ struct ALADDINApp: App {
         print("🚀 ALADDINApp: Начало инициализации приложения")
         // ✅ ИСПРАВЛЕНИЕ: В init() НЕ используем @StateObject, они еще не созданы!
         // Вся логика инициализации перенесена в .onAppear
+        // ✅ BUILD 115: Сброс онбординга для тестирования
         if ProcessInfo.processInfo.environment["RESET_ONBOARDING"] == "1" {
             UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
             #if DEBUG
-            print("🌍 RESET_ONBOARDING активирован — ключ сброшен")
+            print("🌍 BUILD 115: RESET_ONBOARDING активирован — ключ сброшен")
             #endif
         }
+        
+        // ✅ BUILD 115: Диагностика значения hasCompletedOnboarding при старте
+        #if DEBUG
+        let currentOnboardingValue = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        print("🔍 BUILD 115: Значение hasCompletedOnboarding в UserDefaults при старте = \(currentOnboardingValue)")
+        #endif
         
 #if DEBUG
         KeychainAutoRecoveryService.repairTokensIfNeeded()
@@ -307,13 +314,19 @@ struct ALADDINApp: App {
             // ✅ Основное приложение
             mainAppContent()
             .onAppear {
-                // ✅ BUILD 114: КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ - Проверяем состояние онбординга ДО проверки флага
-                // Если онбординг не пройден, устанавливаем экран онбординга СРАЗУ
-                // Это гарантирует, что онбординг будет показан даже если hasInitialized уже true
+                // ✅ BUILD 115: КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ - Проверяем состояние онбординга ПЕРВЫМ ДЕЛОМ
+                // Логируем текущее состояние для диагностики
+                print("🔍 BUILD 115: onAppear вызван")
+                print("🔍 BUILD 115: hasCompletedOnboarding = \(hasCompletedOnboarding)")
+                print("🔍 BUILD 115: Текущий экран = \(navigationManager.currentScreen)")
+                
+                // ✅ BUILD 115: ВСЕГДА проверяем онбординг ПЕРЕД инициализацией навигации
+                // Если онбординг не пройден, устанавливаем экран онбординга СРАЗУ и НЕ вызываем initializeNavigation
                 if !hasCompletedOnboarding {
-                    print("🔴 BUILD 114: Онбординг не пройден - устанавливаем экран онбординга")
+                    print("🔴 BUILD 115: Онбординг не пройден - устанавливаем экран онбординга и ПРОПУСКАЕМ initializeNavigation")
                     navigationManager.currentScreen = .onboarding
-                    // НЕ возвращаемся - продолжаем инициализацию для других компонентов
+                    // ✅ BUILD 115: НЕ вызываем initializeNavigation если онбординг не пройден
+                    // Это гарантирует, что онбординг не будет перезаписан
                 }
                 
                 // ✅ BUILD 113: Защита от повторных вызовов onAppear
@@ -339,9 +352,15 @@ struct ALADDINApp: App {
                 StackSizeMonitor.logMainThreadStackSize(context: "ALADDINApp.onAppear")
                 MonitoredUserDefaults.slowThresholdMs = 50
 
-                // Запускаем инициализацию при появлении
-                // ✅ BUILD 95: Передаем hasCompletedOnboarding из @AppStorage для предотвращения рекурсии
-                Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager, hasCompletedOnboarding: hasCompletedOnboarding)
+                // ✅ BUILD 115: Запускаем инициализацию ТОЛЬКО если онбординг пройден
+                // Если онбординг не пройден, initializeNavigation НЕ вызывается, чтобы не перезаписать экран
+                if hasCompletedOnboarding {
+                    print("🟢 BUILD 115: Онбординг пройден - вызываем initializeNavigation")
+                    // ✅ BUILD 95: Передаем hasCompletedOnboarding из @AppStorage для предотвращения рекурсии
+                    Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager, hasCompletedOnboarding: hasCompletedOnboarding)
+                } else {
+                    print("🔴 BUILD 115: Онбординг не пройден - ПРОПУСКАЕМ initializeNavigation для сохранения экрана онбординга")
+                }
 
                 // ✅ Инициализируем SubscriptionManager для JWT токенов
                 print("🚀 ALADDINApp: Starting SubscriptionManager initialization Task")
@@ -729,17 +748,25 @@ extension ALADDINApp {
         // Если значение не передано, используем false (безопасное значение по умолчанию)
         let onboardingDone = hasCompletedOnboarding ?? false
         print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")
+        print("🛠️ [ALADDINApp.initializeNavigation] Текущий экран ДО проверки: \(navigationManager.currentScreen)")
 
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда начинаем с онбординга при первом запуске
-        if !onboardingDone {
+        // ✅ BUILD 115: КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ - Проверяем текущий экран перед изменением
+        // Если экран уже установлен в .onboarding, НЕ перезаписываем его
+        // Это предотвращает перезапись онбординга, если он был установлен ранее
+        if navigationManager.currentScreen == .onboarding {
+            print("🔴 ONBOARDING: Экран уже установлен в .onboarding - НЕ перезаписываем")
+            // НЕ меняем экран - он уже правильный
+        } else if !onboardingDone {
             // Первый запуск - всегда показываем онбординг
             print("🔴 ONBOARDING: Первый запуск - показываем онбординг")
             navigationManager.currentScreen = .onboarding
         } else {
-            // Онбординг пройден - переходим на main
+            // Онбординг пройден - переходим на main (только если экран не .onboarding)
             print("🟢 ONBOARDING: Пройден - переходим на главный экран")
             navigationManager.currentScreen = .main
         }
+        
+        print("🛠️ [ALADDINApp.initializeNavigation] Текущий экран ПОСЛЕ проверки: \(navigationManager.currentScreen)")
 
         // 📊 МЕТРИКИ ПРОИЗВОДИТЕЛЬНОСТИ: Логируем время инициализации
         let initTime = Date().timeIntervalSince(startTime)

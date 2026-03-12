@@ -669,7 +669,16 @@ final class SubscriptionManager: ObservableObject {
 
         // ✅ FIXED BUILD 77: Убрали Task {} из continuation - возвращаем ответ сразу
         let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JWTDeviceRegisterResponse, Error>) in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             APIService.shared.registerDeviceAnonymously(request: request) { [self] result in
+                // ✅ BUILD 115: Проверка перед каждым вызовом continuation.resume()
+                guard !hasResumed else {
+                    self.logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in registerDeviceAnonymously()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let jwtResponse):
                     self.logger.business("✅ РЕГИСТРАЦИЯ УСТРОЙСТВА ПРОШЛА УСПЕШНО")
@@ -687,33 +696,41 @@ final class SubscriptionManager: ObservableObject {
                     case .valid:
                         self.logger.business("✅ JWT токен прошел полную валидацию")
                         // ✅ BUILD 114: Защита от повторного вызова resume
-                        // Продолжаем выполнение и вызываем resume только один раз ниже
+                        // ✅ BUILD 115: Продолжаем выполнение и вызываем resume только один раз ниже
                     case .invalid(let reason):
                         self.logger.error("❌ JWT токен не прошел валидацию: \(reason)")
                         let error = SubscriptionError.invalidToken
+                        hasResumed = true
                         continuation.resume(throwing: error)
                         return  // ✅ Возвращаемся - resume уже вызван
                     }
 
                     // ✅ FIXED BUILD 77: Сразу возвращаем ответ без Task {}
                     // ✅ BUILD 114: Гарантируем, что resume вызывается только один раз
+                    // ✅ BUILD 115: Защита от двойного вызова
+                    hasResumed = true
                     continuation.resume(returning: jwtResponse)
                 case .failure(let error):
                     self.logger.error("❌ Device registration failed", error: error)
 
-                    // Специальная обработка ошибки 401
+                    // ✅ BUILD 115: Специальная обработка ошибки 401 - НЕ вызываем continuation.resume() сразу
                     if let networkError = error as? NetworkError,
                        case .httpError(401) = networkError {
                         self.logger.business("🚨 Обнаружена ошибка 401 при регистрации устройства")
+                        // ✅ BUILD 115: handle401Error() обработает ошибку асинхронно
+                        // НЕ вызываем continuation.resume() здесь - handle401Error() обработает
                         Task {
                             await self.handle401Error()
                         }
+                        return  // ✅ Выходим, не вызывая continuation.resume()
                     } else {
                         // Показываем понятное сообщение пользователю для других ошибок
                         let userMessage = self.getUserFriendlyErrorMessage(for: error)
                         self.showUserError(message: userMessage)
                     }
 
+                    // ✅ BUILD 115: Вызываем continuation.resume() только для не-401 ошибок
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -749,6 +766,18 @@ final class SubscriptionManager: ObservableObject {
         logger.business("   - Выдан: \(jwtToken.issuedAt)")
         logger.business("   - Истекает: \(jwtToken.expiresAt)")
         logger.business("   - Время жизни: \(Int(jwtToken.expiresAt.timeIntervalSince(jwtToken.issuedAt) / 3600)) часов")
+
+        // ✅ BUILD 115: Диагностика your_member_id
+        let existingMemberId = UserDefaults.standard.string(forKey: "your_member_id")
+        logger.business("🔍 Проверка your_member_id после регистрации устройства:")
+        logger.business("   - your_member_id в UserDefaults: \(existingMemberId ?? "НЕ НАЙДЕН")")
+        if existingMemberId == nil {
+            logger.business("   - ⚠️ ВНИМАНИЕ: your_member_id не сохранен!")
+            logger.business("   - ℹ️ your_member_id сохраняется ТОЛЬКО при создании/присоединении к семье")
+            logger.business("   - ℹ️ Для отображения ID нужно создать семью или присоединиться к существующей")
+        } else {
+            logger.business("   - ✅ your_member_id найден и будет отображаться на главном экране")
+        }
 
         logger.business("🎉 РЕГИСТРАЦИЯ УСТРОЙСТВА ЗАВЕРШЕНА ПОЛНОСТЬЮ")
         logger.business("🚀 Устройство \(jwtToken.deviceId) готово к работе с реальным JWT")

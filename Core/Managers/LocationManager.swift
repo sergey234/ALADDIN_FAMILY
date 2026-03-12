@@ -80,6 +80,8 @@ class LocationManager: NSObject, ObservableObject {
     
     private let locationManager = CLLocationManager()
     private var locationContinuation: CheckedContinuation<CLLocation, Error>?
+    // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+    private var locationContinuationHasResumed = false
     private var cancellables = Set<AnyCancellable>()
     
     // Константы iOS
@@ -172,14 +174,17 @@ class LocationManager: NSObject, ObservableObject {
         }
         
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Сброс флага для нового запроса
+            locationContinuationHasResumed = false
             locationContinuation = continuation
             locationManager.requestLocation()
             
             // Таймаут через 30 секунд
             Task {
                 try? await Task.sleep(nanoseconds: 30_000_000_000)
-                if locationContinuation != nil {
+                if let continuation = locationContinuation, !locationContinuationHasResumed {
                     locationContinuation = nil
+                    locationContinuationHasResumed = true
                     continuation.resume(throwing: LocationManagerError.locationUnavailable)
                 }
             }
@@ -422,20 +427,26 @@ extension LocationManager: CLLocationManagerDelegate {
         currentLocation = location
         print("📍 LocationManager: Обновление местоположения: \(location.coordinate.latitude), \(location.coordinate.longitude)")
         
-        // Если есть ожидающий continuation для one-time location
-        if let continuation = locationContinuation {
+        // ✅ BUILD 115: Если есть ожидающий continuation для one-time location
+        if let continuation = locationContinuation, !locationContinuationHasResumed {
             locationContinuation = nil
+            locationContinuationHasResumed = true
             continuation.resume(returning: location)
+        } else if locationContinuation != nil && locationContinuationHasResumed {
+            print("⚠️ CRITICAL: Attempted to resume location continuation twice in didUpdateLocations!")
         }
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("❌ LocationManager: Ошибка: \(error.localizedDescription)")
         
-        // Если есть ожидающий continuation, передаем ошибку
-        if let continuation = locationContinuation {
+        // ✅ BUILD 115: Если есть ожидающий continuation, передаем ошибку
+        if let continuation = locationContinuation, !locationContinuationHasResumed {
             locationContinuation = nil
+            locationContinuationHasResumed = true
             continuation.resume(throwing: error)
+        } else if locationContinuation != nil && locationContinuationHasResumed {
+            print("⚠️ CRITICAL: Attempted to resume location continuation twice in didFailWithError!")
         }
         
         // Обработка специфичных ошибок

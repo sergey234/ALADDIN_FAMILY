@@ -64,9 +64,9 @@ class MainViewModel: ObservableObject {
     // MARK: - Published Properties
     
     @Published var isNetworkProtectionEnabled: Bool = true
-    @Published var familyMembers: Int = 4 // Дефолтное значение (fallback)
-    @Published var threatsBlocked: Int = 47 // Дефолтное значение (fallback)
-    @Published var devicesProtected: Int = 8 // Дефолтное значение (fallback)
+    @Published var familyMembers: Int = 0 // ✅ BUILD 115: Начальное значение 0 - будет обновлено из API
+    @Published var threatsBlocked: Int = 0 // ✅ BUILD 115: Начальное значение 0 - будет обновлено из API
+    @Published var devicesProtected: Int = 0 // ✅ BUILD 115: Начальное значение 0 - будет обновлено из API
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var lastUpdateTime: Date?
@@ -96,7 +96,11 @@ class MainViewModel: ObservableObject {
     
     /// ✅ ИНТЕГРАЦИЯ С API: Загрузка данных дашборда из реального API
     func loadDashboardData() {
-        // ✅ BUILD 110: Полное удаление логов из критических методов
+        // ✅ BUILD 115: Добавлена диагностика для отслеживания загрузки
+        print("🔄 MainViewModel.loadDashboardData: Начало загрузки данных")
+        print("   - isLoadingDashboard: \(isLoadingDashboard)")
+        print("   - Текущие значения: члены=\(familyMembers), устройства=\(devicesProtected), угрозы=\(threatsBlocked)")
+        
         // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ: Если уже загружается, пропускаем
         guard !isLoadingDashboard else {
             print("⚠️ MainViewModel: Загрузка дашборда уже выполняется, пропускаем")
@@ -129,9 +133,13 @@ class MainViewModel: ObservableObject {
         
         // ✅ ПРОВЕРКА ТОКЕНА: Если нет токена, не делаем API вызов
         let hasAuthToken = keychainManager.isDataAvailable(forKey: .authToken)
-        #if DEBUG
-        print("🔐 MainViewModel: Проверка токена авторизации - \(hasAuthToken ? "✅ токен найден" : "ℹ️ токен отсутствует (демо режим)")")
-        #endif
+        print("🔐 MainViewModel: Проверка токена авторизации")
+        print("   - Токен найден: \(hasAuthToken ? "✅ ДА" : "❌ НЕТ")")
+        if hasAuthToken {
+            if let token = keychainManager.loadString(forKey: .authToken) {
+                print("   - Токен: \(token.prefix(20))...")
+            }
+        }
 
         if !hasAuthToken {
             // ❌ НЕТ ТОКЕНА: В продакшн требуем авторизацию, в DEBUG показываем демо данные
@@ -198,13 +206,12 @@ class MainViewModel: ObservableObject {
         // ✅ РЕАЛЬНЫЙ API ВЫЗОВ: Загружаем статистику семьи
         // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Проверяем, не загружается ли уже статистика
         guard !isLoadingFamilyStats else {
-            #if DEBUG
             print("⚠️ MainViewModel: Статистика семьи уже загружается, пропускаем повторный вызов")
-            #endif
             return
         }
         
         isLoadingFamilyStats = true
+        print("🔄 MainViewModel: Вызов API getFamilyStats...")
         apiService.getFamilyStats { [weak self] result in
             guard let self = self else { return }
             
@@ -223,7 +230,13 @@ class MainViewModel: ObservableObject {
 
                     // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности загрузки дашборда
                     PerformanceMonitor.shared.endScreenLoad("MainDashboard")
-                    // ✅ ОБНОВЛЯЕМ ДАННЫЕ ИЗ API
+                    // ✅ BUILD 115: ОБНОВЛЯЕМ ДАННЫЕ ИЗ API с диагностикой
+                    print("📊 MainViewModel: Обновление данных из API:")
+                    print("   - Члены семьи: \(self.familyMembers) → \(stats.totalMembers)")
+                    print("   - Устройства: \(self.devicesProtected) → \(stats.totalDevices)")
+                    print("   - Угрозы: \(self.threatsBlocked) → \(stats.totalThreats)")
+                    print("   - Статус: \(stats.familyStatus ?? "nil")")
+                    
                     self.familyMembers = stats.totalMembers
                     self.devicesProtected = stats.totalDevices
                     self.threatsBlocked = stats.totalThreats
@@ -232,18 +245,19 @@ class MainViewModel: ObservableObject {
                     self.familyProtectionStatus = FamilyProtectionStatus(apiValue: stats.familyStatus)
                     self.familyProtectionStatusMessage = stats.familyStatusMessage
                     
-                    #if DEBUG
-                    print("✅ MainViewModel: Данные загружены успешно")
-                    #endif
+                    print("✅ MainViewModel: Данные успешно обновлены из API")
                     NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
                     
                 case .failure(let error):
+                    // ✅ BUILD 115: Улучшенная диагностика ошибок
+                    print("❌ MainViewModel: Ошибка загрузки данных из API (попытка \(currentAttempt)/\(maxAttempts))")
+                    print("   - Ошибка: \(error.localizedDescription)")
+                    print("   - Текущие значения (fallback): члены=\(self.familyMembers), устройства=\(self.devicesProtected), угрозы=\(self.threatsBlocked)")
+                    
                     // Экспоненциальный бэк-офф: 0.5s, 1.0s, 2.0s
                     if currentAttempt < maxAttempts {
                         let delay = pow(2.0, Double(currentAttempt - 1)) * 0.5
-                        #if DEBUG
-                        print("❌ MainViewModel: Ошибка загрузки (попытка \(currentAttempt)): \(error.localizedDescription). Повтор через \(delay)s")
-                        #endif
+                        print("   - Повтор через \(delay)s...")
                         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                             self.loadDashboardDataWithRetry(maxAttempts: maxAttempts, currentAttempt: currentAttempt + 1)
                         }
@@ -254,18 +268,19 @@ class MainViewModel: ObservableObject {
                                           error.localizedDescription.contains("Token")
 
                         if isTokenError {
+                            print("   - Ошибка связана с токеном - требуется авторизация")
                             // Сессия истекла - очищаем токены и отправляем на логин
                             self.handleSessionExpired()
                         } else {
-                            // Другая ошибка - просто показываем сообщение
-                            // ✅ ИСПРАВЛЕНИЕ: Обновление UI на main thread
+                            // Другая ошибка - показываем сообщение и оставляем fallback значения
+                            print("   - Критическая ошибка после всех попыток - данные НЕ обновлены из API")
+                            print("   - ⚠️ ВНИМАНИЕ: Отображаются fallback значения, а не реальные данные!")
                             Task { @MainActor [weak self] in
                                 guard let self = self else { return }
                                 self.isLoading = false
-                                self.errorMessage = error.localizedDescription
-                                #if DEBUG
+                                self.isLoadingDashboard = false
+                                self.errorMessage = "Не удалось загрузить данные: \(error.localizedDescription)"
                                 print("❌ MainViewModel: Ошибка после \(maxAttempts) попыток: \(error.localizedDescription)")
-                                #endif
                                 NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
                             }
                         }
@@ -348,9 +363,14 @@ class MainViewModel: ObservableObject {
     
     /// ✅ АВТООБНОВЛЕНИЕ: Загрузка данных при открытии экрана
     func onAppear() {
-        // ✅ BUILD 109: Минимальная проверка onAppear без избыточного логирования
+        // ✅ BUILD 115: Добавлена диагностика для отслеживания загрузки данных
+        print("🔄 MainViewModel.onAppear: Вызван")
+        print("   - Текущие значения: члены=\(familyMembers), устройства=\(devicesProtected), угрозы=\(threatsBlocked)")
+        print("   - lastUpdateTime: \(lastUpdateTime?.description ?? "nil")")
+        
         // ✅ ЗАЩИТА ОТ ЧАСТЫХ ВЫЗОВОВ: Проверяем, не было ли onAppear недавно
         if let lastCall = lastOnAppearTime, Date().timeIntervalSince(lastCall) < 30 {
+            print("   - ⚠️ onAppear вызван слишком часто (<30 сек), пропускаем")
             return
         }
         lastOnAppearTime = Date()
@@ -362,13 +382,19 @@ class MainViewModel: ObservableObject {
             // Обновляем, если прошло больше 5 минут
             let timeSinceUpdate = Date().timeIntervalSince(lastUpdate)
             shouldRefresh = timeSinceUpdate > 300 // 5 минут
+            print("   - Время с последнего обновления: \(Int(timeSinceUpdate)) сек")
+            print("   - Нужно обновить: \(shouldRefresh ? "ДА" : "НЕТ")")
         } else {
             // Если данных ещё нет - загружаем
             shouldRefresh = true
+            print("   - Данных нет - загружаем обязательно")
         }
         
         if shouldRefresh {
+            print("   - ✅ Запускаем loadDashboardData()...")
             loadDashboardData()
+        } else {
+            print("   - ⏭️ Пропускаем загрузку (данные свежие)")
         }
     }
     

@@ -605,8 +605,45 @@ struct MainScreen: View {
                                     .font(.system(size: 14, weight: .bold))
                                     .foregroundColor(.black)
                                 
-                                // ✅ ИСПРАВЛЕНИЕ BUILD 92: УБРАНО чтение UserDefaults в body - может вызывать рекурсию с @AppStorage
-                                // ID пользователя будет отображаться через @AppStorage или @State в будущем
+                                // ✅ BUILD 115: Восстановлен ID пользователя из бэкапа от 6 марта
+                                Group {
+                                    let memberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
+                                    if !memberId.isEmpty {
+                                        Spacer()
+                                        
+                                        Button(action: {
+                                            UIPasteboard.general.string = memberId
+                                            let generator = UINotificationFeedbackGenerator()
+                                            generator.notificationOccurred(.success)
+                                            logger.business("Member ID copied: \(memberId)")
+                                        }) {
+                                            HStack(spacing: 4) {
+                                                Text("\(localizationManager.localized("main_family_user_id")) \(memberId)")
+                                                    .font(.system(size: 9, weight: .semibold))
+                                                    .foregroundColor(.black)
+                                                
+                                                Image(systemName: "doc.on.doc")
+                                                    .font(.system(size: 10, weight: .medium))
+                                                    .foregroundColor(.black.opacity(0.8))
+                                            }
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 5)
+                                            .background(
+                                                Capsule()
+                                                    .fill(Color.black.opacity(0.15))
+                                            )
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    } else {
+                                        // ✅ ОТЛАДКА: Выводим информацию если ID не найден
+                                        #if DEBUG
+                                        Spacer()
+                                        Text("(ID не найден)")
+                                            .font(.system(size: 8))
+                                            .foregroundColor(.red.opacity(0.5))
+                                        #endif
+                                    }
+                                }
                                 
                                 Spacer()
                                 
@@ -619,7 +656,18 @@ struct MainScreen: View {
                                     }
                                 )
                             }
-                            // ✅ ИСПРАВЛЕНИЕ BUILD 92: УБРАН onAppear с UserDefaults - может вызывать рекурсию с @AppStorage
+                            .onAppear {
+                                // ✅ BUILD 115: Восстановлена отладка ID пользователя из бэкапа
+                                let memberId = UserDefaults.standard.string(forKey: "your_member_id")
+                                logger.business("🔍 MainScreen: Проверка ID пользователя")
+                                logger.business("   - your_member_id = \(memberId ?? "nil")")
+                                if let id = memberId, !id.isEmpty {
+                                    logger.business("✅ MainScreen: ID найден и будет отображен: \(id)")
+                                } else {
+                                    logger.business("⚠️ MainScreen: ID не найден в UserDefaults!")
+                                    logger.business("   - ID будет отображаться только после регистрации/присоединения к семье")
+                                }
+                            }
                             
                             // Информация о семье - ДИНАМИЧЕСКАЯ из MainViewModel
                             VStack(alignment: .leading, spacing: 3) {

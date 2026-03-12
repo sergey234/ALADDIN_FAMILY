@@ -167,10 +167,18 @@ class APIService: ObservableObject {
      */
     func removeFamilyMember(_ memberId: String) async throws -> FamilyMemberResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             struct RemoveMemberRequest: Codable {
                 let memberId: String
             }
             networkManager.delete(endpoint: AppConfig.Endpoint.removeFamilyMember, body: RemoveMemberRequest(memberId: memberId)) { (result: Result<FamilyMemberResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in removeFamilyMember()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -1219,8 +1227,16 @@ class APIService: ObservableObject {
     /// Получить статус IoT безопасности
     func getIoTStatus(homeId: String) async throws -> IoTStatusResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             let endpoint = AppConfig.Endpoint.iotStatus.replacingOccurrences(of: "{homeId}", with: homeId)
             networkManager.get(endpoint: endpoint) { (result: Result<IoTStatusResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getIoTStatus()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -1229,8 +1245,16 @@ class APIService: ObservableObject {
     /// Получить список IoT устройств
     func getIoTDevices(homeId: String) async throws -> IoTDevicesResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             let endpoint = AppConfig.Endpoint.iotDevices.replacingOccurrences(of: "{homeId}", with: homeId)
             networkManager.get(endpoint: endpoint) { (result: Result<IoTDevicesResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getIoTDevices()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -1239,8 +1263,16 @@ class APIService: ObservableObject {
     /// Получить список угроз
     func getIoTThreats(homeId: String) async throws -> IoTThreatsResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             let endpoint = AppConfig.Endpoint.iotThreats.replacingOccurrences(of: "{homeId}", with: homeId)
             networkManager.get(endpoint: endpoint) { (result: Result<IoTThreatsResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getIoTThreats()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -1249,9 +1281,17 @@ class APIService: ObservableObject {
     /// Заблокировать IoT устройство
     func blockIoTDevice(deviceId: String) async throws -> APIResponse<Bool> {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             struct EmptyBody: Codable {}
             let endpoint = AppConfig.Endpoint.iotDeviceBlock.replacingOccurrences(of: "{deviceId}", with: deviceId)
             networkManager.post(endpoint: endpoint, body: EmptyBody()) { (result: Result<APIResponse<Bool>, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in blockIoTDevice()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -1280,9 +1320,17 @@ class APIService: ObservableObject {
     /// Запустить сканирование IoT устройств
     func startIoTScan(homeId: String) async throws -> APIResponse<String> {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             struct EmptyBody: Codable {}
             let endpoint = AppConfig.Endpoint.iotScan.replacingOccurrences(of: "{homeId}", with: homeId)
             networkManager.post(endpoint: endpoint, body: EmptyBody()) { (result: Result<APIResponse<String>, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in startIoTScan()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -1291,9 +1339,17 @@ class APIService: ObservableObject {
     /// Исправить угрозу
     func fixIoTThreat(threatId: String) async throws -> APIResponse<Bool> {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             struct EmptyBody: Codable {}
             let endpoint = AppConfig.Endpoint.iotFix.replacingOccurrences(of: "{threatId}", with: threatId)
             networkManager.post(endpoint: endpoint, body: EmptyBody()) { (result: Result<APIResponse<Bool>, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in fixIoTThreat()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -1393,7 +1449,15 @@ class APIService: ObservableObject {
     /// Получить статус компонента
     func getComponentStatus(componentId: String) async throws -> ComponentStatus {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             networkManager.get(endpoint: "\(AppConfig.Endpoint.componentStatus)/\(componentId)") { (result: Result<ComponentStatusResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getComponentStatus()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
                     // Создаем ComponentStatus с правильным componentId
@@ -1403,8 +1467,10 @@ class APIService: ObservableObject {
                         lastUpdate: response.componentStatus.lastUpdate,
                         configuration: response.componentStatus.configuration
                     )
+                    hasResumed = true
                     continuation.resume(returning: componentStatus)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -1414,6 +1480,9 @@ class APIService: ObservableObject {
     /// Включить компонент
     func enableComponent(componentId: String, configuration: ComponentConfiguration? = nil) async throws -> ComponentStatus {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             struct EnableRequest: Codable {
                 let componentId: String
                 let configuration: ComponentConfiguration?
@@ -1422,6 +1491,11 @@ class APIService: ObservableObject {
                 endpoint: "\(AppConfig.Endpoint.componentEnable)/\(componentId)",
                 body: EnableRequest(componentId: componentId, configuration: configuration)
             ) { (result: Result<ComponentStatusResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in enableComponent()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
                     // Создаем ComponentStatus с правильным componentId
@@ -1431,8 +1505,10 @@ class APIService: ObservableObject {
                         lastUpdate: response.componentStatus.lastUpdate,
                         configuration: response.componentStatus.configuration
                     )
+                    hasResumed = true
                     continuation.resume(returning: componentStatus)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -1442,6 +1518,9 @@ class APIService: ObservableObject {
     /// Выключить компонент
     func disableComponent(componentId: String) async throws -> ComponentStatus {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             struct DisableRequest: Codable {
                 let componentId: String
             }
@@ -1449,6 +1528,11 @@ class APIService: ObservableObject {
                 endpoint: "\(AppConfig.Endpoint.componentDisable)/\(componentId)",
                 body: DisableRequest(componentId: componentId)
             ) { (result: Result<ComponentStatusResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in disableComponent()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
                     // Создаем ComponentStatus с правильным componentId
@@ -1458,8 +1542,10 @@ class APIService: ObservableObject {
                         lastUpdate: response.componentStatus.lastUpdate,
                         configuration: response.componentStatus.configuration
                     )
+                    hasResumed = true
                     continuation.resume(returning: componentStatus)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -1473,6 +1559,9 @@ class APIService: ObservableObject {
         configuration: ComponentConfiguration? = nil
     ) async throws {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             struct UpdateRequest: Codable {
                 let componentId: String
                 let isEnabled: Bool
@@ -1487,11 +1576,18 @@ class APIService: ObservableObject {
                 endpoint: endpoint,
                 body: requestBody
             ) { (result: Result<APIResponse<Bool>, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in updateComponentStatus()!")
+                    return
+                }
+                
                 switch result {
                 case .success:
+                    hasResumed = true
                     continuation.resume()
                 case .failure(let error):
                     // Пробрасываем все ошибки, не скрываем их
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -1501,11 +1597,21 @@ class APIService: ObservableObject {
     /// Получить конфигурацию компонента
     func getComponentConfiguration(componentId: String) async throws -> ComponentConfiguration {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             networkManager.get(endpoint: "\(AppConfig.Endpoint.componentConfiguration)/\(componentId)") { (result: Result<ComponentConfigurationResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getComponentConfiguration()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.configuration)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -1518,6 +1624,9 @@ class APIService: ObservableObject {
         configuration: ComponentConfiguration
     ) async throws {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             struct UpdateRequest: Codable {
                 let componentId: String
                 let configuration: ComponentConfiguration
@@ -1526,10 +1635,17 @@ class APIService: ObservableObject {
                 endpoint: "\(AppConfig.Endpoint.componentConfiguration)/\(componentId)",
                 body: UpdateRequest(componentId: componentId, configuration: configuration)
             ) { (result: Result<ComponentConfigurationResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in updateComponentConfiguration()!")
+                    return
+                }
+                
                 switch result {
                 case .success:
+                    hasResumed = true
                     continuation.resume()
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2057,7 +2173,15 @@ class APIService: ObservableObject {
         }
 
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             setupCrashDetection(latitude: latitude, longitude: longitude, radius: radius) { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in setupCrashDetection()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -2066,7 +2190,15 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Отправить алерт о краше
     func sendCrashAlert(latitude: Double, longitude: Double, severity: String) async throws -> APIResponse<Bool> {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             sendCrashAlert(latitude: latitude, longitude: longitude, severity: severity) { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in sendCrashAlert()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -2075,7 +2207,15 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Запустить мониторинг Crash Detection
     func startCrashDetectionMonitoring() async throws -> APIResponse<Bool> {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             startCrashDetectionMonitoring { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in startCrashDetectionMonitoring()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -2084,7 +2224,15 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Остановить мониторинг Crash Detection
     func stopCrashDetectionMonitoring() async throws -> APIResponse<Bool> {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             stopCrashDetectionMonitoring { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in stopCrashDetectionMonitoring()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -2093,7 +2241,15 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Отправить данные сенсоров Crash Detection
     func sendCrashDetectionData(accelerometer: [String: Double], gyroscope: [String: Double], speed: Double, location: CLLocation?) async throws -> APIResponse<Bool> {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             sendCrashDetectionData(accelerometer: accelerometer, gyroscope: gyroscope, speed: speed, location: location) { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in sendCrashDetectionData()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -2102,7 +2258,15 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Получить статус Crash Detection
     func getCrashDetectionStatus() async throws -> APIResponse<Bool> {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             getCrashDetectionStatus { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getCrashDetectionStatus()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -2117,7 +2281,15 @@ class APIService: ObservableObject {
         }
 
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             updateCrashDetectionSettings(userId: userId, sensitivity: sensitivity, geofenceRadius: geofenceRadius) { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in updateCrashDetectionSettings()!")
+                    return
+                }
+                hasResumed = true
                 continuation.resume(with: result)
             }
         }
@@ -2126,11 +2298,21 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Получить историю Crash Detection
     func getCrashDetectionHistory(userId: String, limit: Int = 50) async throws -> CrashHistoryResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             getCrashDetectionHistory(userId: userId, limit: limit) { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getCrashDetectionHistory()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.data!)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2180,11 +2362,21 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Получить здоровье системы
     func getSystemHealth() async throws -> SystemHealthResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             getSystemHealth { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getSystemHealth()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.data!)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2194,11 +2386,21 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Получить информацию о системе
     func getSystemInfo() async throws -> SystemInfoResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             getSystemInfo { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getSystemInfo()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.data!)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2208,11 +2410,21 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Получить метрики системы
     func getSystemMetrics(timeRange: String = "1h") async throws -> SystemMetricsResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             getSystemMetrics(timeRange: timeRange) { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getSystemMetrics()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.data!)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2222,11 +2434,21 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Получить статус системы
     func getSystemStatus() async throws -> SystemStatusResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             getSystemStatus { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getSystemStatus()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.data!)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2236,11 +2458,21 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Создать бэкап системы
     func createSystemBackup() async throws -> BackupResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             createSystemBackup { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in createSystemBackup()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.data!)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2250,11 +2482,21 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Получить статус бэкапа
     func getBackupStatus(backupId: String) async throws -> BackupStatusResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             getBackupStatus(backupId: backupId) { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getBackupStatus()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.data!)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2299,11 +2541,21 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Получить категории уведомлений
     func getNotificationCategories() async throws -> NotificationCategoriesResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             getNotificationCategories { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getNotificationCategories()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.data!)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2313,11 +2565,21 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Массово отметить уведомления прочитанными
     func bulkMarkNotificationsRead(notificationIds: [String]) async throws -> Int {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             bulkMarkNotificationsRead(notificationIds: notificationIds) { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in bulkMarkNotificationsRead()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.data!)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2327,11 +2589,21 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Заархивировать уведомление
     func archiveNotification(notificationId: String) async throws -> Bool {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             archiveNotification(notificationId: notificationId) { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in archiveNotification()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.data!)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2341,11 +2613,21 @@ class APIService: ObservableObject {
     // ✅ ASYNC: Получить статистику уведомлений
     func getNotificationStats() async throws -> NotificationStatsResponse {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             getNotificationStats { result in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getNotificationStats()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response.data!)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2449,12 +2731,41 @@ class APIService: ObservableObject {
             let request = BatchRequest(componentIds: componentIds)
             let endpoint = AppConfig.Endpoint.componentStatusBatch
 
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume() - используем класс для синхронизации
+            class ResumeGuard {
+                private let lock = NSLock()
+                private var _hasResumed = false
+                
+                var hasResumed: Bool {
+                    lock.lock()
+                    defer { lock.unlock() }
+                    return _hasResumed
+                }
+                
+                func setResumed() -> Bool {
+                    lock.lock()
+                    defer { lock.unlock() }
+                    if _hasResumed {
+                        return false
+                    }
+                    _hasResumed = true
+                    return true
+                }
+            }
+            
+            let resumeGuard = ResumeGuard()
+            
             networkManager.post(
                 endpoint: endpoint,
                 body: request
             ) { (result: Result<APIResponse<[ComponentStatusResponse]>, Error>) in
+                guard resumeGuard.setResumed() else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getMultipleComponentStatuses()!")
+                    return
+                }
+                
                 switch result {
-                case .success(let response):
+                case .success(_):
                     // Временная заглушка для компиляции
                     let statuses: [ComponentStatus] = []
                     continuation.resume(returning: statuses)
@@ -2462,6 +2773,11 @@ class APIService: ObservableObject {
                     // Fallback: индивидуальные запросы если batch не поддерживается
                     print("⚠️ Batch request failed, falling back to individual requests: \(error.localizedDescription)")
                     Task {
+                        guard resumeGuard.setResumed() else {
+                            logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getMultipleComponentStatuses() fallback!")
+                            return
+                        }
+                        
                         do {
                             var statuses: [ComponentStatus] = []
                             for componentId in componentIds {
@@ -2512,6 +2828,9 @@ class APIService: ObservableObject {
      */
     func updateMultipleComponents(updates: [(componentId: String, isEnabled: Bool, configuration: ComponentConfiguration?)]) async throws -> [ComponentStatus] {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             struct BulkUpdateRequest: Codable {
                 let updates: [ComponentUpdate]
 
@@ -2537,15 +2856,22 @@ class APIService: ObservableObject {
                 endpoint: endpoint,
                 body: request
             ) { (result: Result<APIResponse<[ComponentStatusResponse]>, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in updateMultipleComponents()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
                     // Временная заглушка для компиляции
                     let statuses: [ComponentStatus] = []
+                    hasResumed = true
                     continuation.resume(returning: statuses)
                 case .failure(let error):
                     // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Убрали Task {} из continuation
                     // Возвращаем ошибку - fallback будет обработан в вызывающем коде
                     print("⚠️ Bulk update failed: \(error.localizedDescription)")
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }
@@ -2562,11 +2888,21 @@ class APIService: ObservableObject {
     /// Обычный health check без кэширования
     private func healthCheck() async throws -> APIResponse<HealthResponse> {
         return try await withCheckedThrowingContinuation { continuation in
+            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
+            var hasResumed = false
+            
             networkManager.get(endpoint: "/health") { (result: Result<APIResponse<HealthResponse>, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in healthCheck()!")
+                    return
+                }
+                
                 switch result {
                 case .success(let response):
+                    hasResumed = true
                     continuation.resume(returning: response)
                 case .failure(let error):
+                    hasResumed = true
                     continuation.resume(throwing: error)
                 }
             }

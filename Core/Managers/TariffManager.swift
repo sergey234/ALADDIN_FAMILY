@@ -86,10 +86,16 @@ class TariffManager: ObservableObject {
     func loadTariff() {
         if let rawValue = userDefaults.string(forKey: tariffKey),
            let tariff = TariffType(rawValue: rawValue) {
+            print("📊 TariffManager: Тариф загружен из UserDefaults: \(tariff.rawValue)")
             currentTariff = tariff
         } else {
+            print("📊 TariffManager: Тариф не найден в UserDefaults, проверяем StoreKit...")
             // Проверяем StoreKit для определения тарифа
             determineTariffFromStoreKit()
+            // ✅ BUILD 115: Если не найден нигде, используем free по умолчанию
+            if currentTariff == .free {
+                print("📊 TariffManager: Используется тариф по умолчанию: free (БАЗОВЫЙ)")
+            }
         }
     }
     
