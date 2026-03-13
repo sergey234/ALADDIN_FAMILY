@@ -93,7 +93,8 @@ struct SettingsAccordion<Content: View>: View {
                 VStack(spacing: Spacing.s) {
                     content()
                 }
-                .padding(Spacing.m)
+                .padding(.horizontal, Spacing.s)
+                .padding(.vertical, Spacing.xs)
                 .background(
                     RoundedRectangle(cornerRadius: CornerRadius.medium)
                         .fill(Color.backgroundMedium.opacity(0.1))

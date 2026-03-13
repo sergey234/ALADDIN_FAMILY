@@ -35,30 +35,6 @@ struct SettingsScreen: View {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     
-    // MARK: - Theme Mode
-    
-    enum ThemeMode: String, CaseIterable {
-        case light = "light"
-        case dark = "dark"
-        case system = "system"
-        
-        func displayName(_ localizationManager: LocalizationManager) -> String {
-            switch self {
-            case .light: return localizationManager.localized("theme_light")
-            case .dark: return localizationManager.localized("theme_dark")
-            case .system: return localizationManager.localized("theme_system")
-            }
-        }
-        
-        var icon: String {
-            switch self {
-            case .light: return "sun.max.fill"
-            case .dark: return "moon.fill"
-            case .system: return "gear"
-            }
-        }
-    }
-    
     // MARK: - Environment
 
     @Environment(\.dismiss) private var dismiss
@@ -135,7 +111,7 @@ struct SettingsScreen: View {
                         viewModel.showProfileEdit = true
                     }) {
                         HStack {
-                            Text("Редактировать профиль")
+                            Text(viewModel.localizedStrings.settingsProfileEditAccessibility)
                                 .fontWeight(.medium)
                             Spacer()
                             Image(systemName: "chevron.right")
@@ -295,7 +271,7 @@ struct SettingsScreen: View {
                     logger.buttonTap("Language Settings", screen: "Settings")
                     viewModel.showLanguageSettings = true
                 }) {
-            HStack {
+                    HStack {
                         Image(systemName: "globe")
                             .foregroundColor(.secondary)
                             .frame(width: 24)
@@ -306,7 +282,7 @@ struct SettingsScreen: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
-                Spacer()
+                        Spacer()
                         Image(systemName: "chevron.right")
                             .foregroundColor(.secondary)
                     }
@@ -316,7 +292,7 @@ struct SettingsScreen: View {
                 Divider()
 
                 // Theme
-            HStack {
+                HStack {
                     Image(systemName: viewModel.selectedTheme.icon)
                         .foregroundColor(.secondary)
                         .frame(width: 24)
@@ -327,7 +303,7 @@ struct SettingsScreen: View {
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
-                Spacer()
+                    Spacer()
                     Button(action: {
                         logger.buttonTap("Cycle Theme", screen: "Settings")
                         viewModel.cycleTheme()
@@ -374,7 +350,7 @@ struct SettingsScreen: View {
                             .foregroundColor(.secondary)
                             .frame(width: 24)
                         VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text("Система позиционирования")
+                            Text(viewModel.localizedStrings.positioningSystemTitle)
                                 .foregroundColor(.primary)
                             Text(viewModel.selectedPositioningSystem.displayName)
                                 .font(.caption)
@@ -443,7 +419,10 @@ struct SettingsScreen: View {
             } else {
                 LazyVStack(spacing: 0) {
                     ForEach(viewModel.components, id: \.componentId) { component in
-                        ComponentRow(component: component) {
+                        ComponentRow(
+                            component: component,
+                            description: viewModel.localizedStrings.systemComponentDescription
+                        ) {
                             viewModel.toggleComponent(component)
                         }
                     }
@@ -534,8 +513,8 @@ struct SettingsScreen: View {
                 // ✅ BUILD 95: Диагностика (лог крашей/предупреждений памяти/Pre-Crash State)
                 settingsButton(
                     "ladybug.fill",
-                    "Диагностика (Crash Logs)",
-                    "Просмотр/копирование/шаринг логов на устройстве"
+                    viewModel.localizedStrings.settingsDiagnosticsTitle,
+                    viewModel.localizedStrings.settingsDiagnosticsSubtitle
                 ) {
                     showCrashLogsView = true
                 }
@@ -792,6 +771,7 @@ struct SettingsScreen: View {
 
     private struct ComponentRow: View {
         let component: SettingsComponentStatus
+        let description: String
         let onToggle: () -> Void
 
         var body: some View {
@@ -801,7 +781,7 @@ struct SettingsScreen: View {
                         .font(.headline)
                         .foregroundColor(.primary)
 
-                    Text("Системный компонент")
+                    Text(description)
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

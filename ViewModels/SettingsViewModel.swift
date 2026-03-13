@@ -69,90 +69,95 @@ protocol PositioningService {
     func saveSelectedSystem(_ system: PositioningSystem)
 }
 
-// MARK: - Temporary LocalizedStrings for compilation
+// MARK: - LocalizedStrings wrapper for LocalizationManager
 struct LocalizedStrings {
+    private let localizationManager = LocalizationManager.shared
+    
     // Navigation & Common
-    let settingsTitle: String = "Настройки"
-    let settingsSubtitle: String = "Управление приложением"
-    let settingsAccessibilityBackground: String = "Фон настроек"
-    let settingsAccessibilityList: String = "Список настроек"
-    let settingsAccessibilityNavbar: String = "Панель навигации настроек"
+    var settingsTitle: String { localizationManager.localized("settings_title") }
+    var settingsSubtitle: String { localizationManager.localized("settings_subtitle") }
+    var settingsAccessibilityBackground: String { localizationManager.localized("settings_accessibility_background") }
+    var settingsAccessibilityList: String { localizationManager.localized("settings_accessibility_list") }
+    var settingsAccessibilityNavbar: String { localizationManager.localized("settings_accessibility_navbar") }
 
     // Profile Section
-    let profileSection: String = "Профиль"
-    let profileNamePlaceholder: String = "Имя"
-    let profileEmailPlaceholder: String = "Email"
-    let profileStatus: String = "Активен"
-    let profileAvatarAccessibility: String = "Аватар профиля"
-    let profileNameAccessibilityFormat: String = "Имя: %@"
-    let profileEmailAccessibilityFormat: String = "Email: %@"
-    let profileStatusAccessibilityFormat: String = "Статус: %@"
-    let settingsProfileEditAccessibility: String = "Редактировать профиль"
+    var profileSection: String { localizationManager.localized("profile_section") }
+    var profileNamePlaceholder: String { localizationManager.localized("profile_name") }
+    var profileEmailPlaceholder: String { localizationManager.localized("profile_email") }
+    var profileStatus: String { localizationManager.localized("profile_status_active") }
+    var profileAvatarAccessibility: String { localizationManager.localized("settings_profile_avatar_accessibility") }
+    var profileNameAccessibilityFormat: String { localizationManager.localized("settings_profile_name_accessibility") }
+    var profileEmailAccessibilityFormat: String { localizationManager.localized("settings_profile_email_accessibility") }
+    var profileStatusAccessibilityFormat: String { localizationManager.localized("settings_profile_status_accessibility") }
+    var settingsProfileEditAccessibility: String { localizationManager.localized("settings_profile_edit") }
 
     // Security Section
-    let securitySection: String = "Безопасность"
-    let networkProtectionProtection: String = "Защита сети"
-    let networkProtectionProtectionSubtitle: String = "Защита от сетевых угроз"
-    let biometricAuth: String = "Биометрия"
-    let biometricAuthSubtitle: String = "Отпечаток пальца / Face ID"
-    let protectionLevel: String = "Уровень защиты"
-    let settingsProtectionLevelValueFormat: String = "Уровень: %d%%"
-    let settingsProtectionLevel: String = "Защита"
-    let settingsProtectionHistory: String = "История"
-    let settingsAdvancedSettings: String = "Расширенные настройки"
-    let settingsImproveProtection: String = "Улучшить защиту"
-    let settingsProtectionLevelAccessibility: String = "Уровень защиты"
+    var securitySection: String { localizationManager.localized("security_section") }
+    var networkProtectionProtection: String { localizationManager.localized("network_protection_protection") }
+    var networkProtectionProtectionSubtitle: String { localizationManager.localized("network_protection_protection_subtitle") }
+    var biometricAuth: String { localizationManager.localized("biometric_auth") }
+    var biometricAuthSubtitle: String { localizationManager.localized("biometric_auth_subtitle") }
+    var protectionLevel: String { localizationManager.localized("protection_level") }
+    var settingsProtectionLevelValueFormat: String { localizationManager.localized("settings_protection_level_value_format") }
+    var settingsProtectionLevel: String { localizationManager.localized("settings_protection_level") }
+    var settingsProtectionHistory: String { localizationManager.localized("settings_protection_history") }
+    var settingsAdvancedSettings: String { localizationManager.localized("settings_advanced_settings") }
+    var settingsImproveProtection: String { localizationManager.localized("settings_improve_protection") }
+    var settingsProtectionLevelAccessibility: String { localizationManager.localized("settings_protection_level_accessibility") }
 
     // Protection level texts
-    let protectionLevelLow: String = "Низкий"
-    let protectionLevelMedium: String = "Средний"
-    let protectionLevelHigh: String = "Высокий"
-    let protectionLevelMaximum: String = "Максимальный"
+    var protectionLevelLow: String { localizationManager.localized("settings_protection_level_low") }
+    var protectionLevelMedium: String { localizationManager.localized("settings_protection_level_medium") }
+    var protectionLevelHigh: String { localizationManager.localized("settings_protection_level_high") }
+    var protectionLevelMaximum: String { localizationManager.localized("settings_protection_level_maximum") }
 
     // Notifications Section
-    let notificationsSection: String = "Уведомления"
-    let pushNotifications: String = "Push уведомления"
-    let pushNotificationsSubtitle: String = "Важные оповещения"
-    let soundNotifications: String = "Звуковые уведомления"
-    let soundNotificationsSubtitle: String = "Звук уведомлений"
+    var notificationsSection: String { localizationManager.localized("notifications_section") }
+    var pushNotifications: String { localizationManager.localized("push_notifications") }
+    var pushNotificationsSubtitle: String { localizationManager.localized("push_notifications_subtitle") }
+    var soundNotifications: String { localizationManager.localized("sound_notifications") }
+    var soundNotificationsSubtitle: String { localizationManager.localized("sound_notifications_subtitle") }
 
     // App Section
-    let appSection: String = "Приложение"
-    let language: String = "Язык"
-    let languageSubtitle: String = "Выберите язык"
-    let darkTheme: String = "Тема"
-    let updates: String = "Обновления"
-    let updatesSubtitle: String = "Проверить обновления"
+    var appSection: String { localizationManager.localized("app_section") }
+    var language: String { localizationManager.localized("language") }
+    var languageSubtitle: String { localizationManager.localized("language_subtitle_select") }
+    var darkTheme: String { localizationManager.localized("dark_theme") }
+    var updates: String { localizationManager.localized("updates") }
+    var updatesSubtitle: String { localizationManager.localized("updates_subtitle") }
+    var positioningSystemTitle: String { localizationManager.localized("positioning_system_title") }
 
     // System Components
-    let systemComponentsTitle: String = "Системные компоненты"
-    let retry: String = "Повторить"
-    let systemComponentsEmpty: String = "Компоненты не найдены"
-    let systemComponentsLastUpdate: String = "Последнее обновление"
+    var systemComponentsTitle: String { localizationManager.localized("system_components_title") }
+    var retry: String { localizationManager.localized("system_components_retry") }
+    var systemComponentsEmpty: String { localizationManager.localized("system_components_empty") }
+    var systemComponentsLastUpdate: String { localizationManager.localized("system_components_last_update") }
+    var systemComponentDescription: String { localizationManager.localized("system_component_description") }
 
     // Additional Section
-    let additionalSection: String = "Дополнительно"
-    let helpSupport: String = "Помощь и поддержка"
-    let helpSupportSubtitle: String = "Связаться с поддержкой"
-    let privacyPolicy: String = "Политика конфиденциальности"
-    let privacyPolicySubtitle: String = "Узнать о приватности"
-    let termsOfService: String = "Условия использования"
-    let termsOfServiceSubtitle: String = "Правила использования"
-    let shareApp: String = "Поделиться приложением"
-    let shareAppSubtitle: String = "Рекомендовать друзьям"
-    let settingsShareMessage: String = "Попробуйте ALADDIN - лучшее приложение для защиты!"
+    var additionalSection: String { localizationManager.localized("additional_section") }
+    var helpSupport: String { localizationManager.localized("help_support") }
+    var helpSupportSubtitle: String { localizationManager.localized("help_support_subtitle") }
+    var privacyPolicy: String { localizationManager.localized("privacy_policy") }
+    var privacyPolicySubtitle: String { localizationManager.localized("privacy_policy_subtitle") }
+    var termsOfService: String { localizationManager.localized("terms_of_service") }
+    var termsOfServiceSubtitle: String { localizationManager.localized("terms_of_service_subtitle") }
+    var shareApp: String { localizationManager.localized("share_app") }
+    var shareAppSubtitle: String { localizationManager.localized("share_app_subtitle") }
+    var settingsShareMessage: String { localizationManager.localized("settings_share_message") }
+    var settingsDiagnosticsTitle: String { localizationManager.localized("settings_diagnostics_title") }
+    var settingsDiagnosticsSubtitle: String { localizationManager.localized("settings_diagnostics_subtitle") }
 
     // Personal Data Consent
-    let settingsConsentPersonalData: String = "Согласие на обработку персональных данных"
-    let settingsConsentGranted: String = "Согласие предоставлено"
-    let settingsConsentManage: String = "Управление согласием"
+    var settingsConsentPersonalData: String { localizationManager.localized("settings_consent_personal_data") }
+    var settingsConsentGranted: String { localizationManager.localized("settings_consent_granted") }
+    var settingsConsentManage: String { localizationManager.localized("settings_consent_manage") }
 
     // Biometric notifications
-    let biometricEnabled: String = "Биометрия включена"
-    let biometricDisabled: String = "Биометрия отключена"
-    let biometricEnableFailed: String = "Не удалось включить биометрию"
-    let biometricUnavailable: String = "Биометрия недоступна"
-
+    var biometricEnabled: String { localizationManager.localized("settings_biometric_enabled") }
+    var biometricDisabled: String { localizationManager.localized("settings_biometric_disabled") }
+    var biometricEnableFailed: String { localizationManager.localized("settings_biometric_enable_failed") }
+    var biometricUnavailable: String { localizationManager.localized("settings_biometric_unavailable") }
 }
 
 class SettingsViewModel: ObservableObject {
@@ -194,7 +199,7 @@ class SettingsViewModel: ObservableObject {
 
     // Protection Level (computed from tariff)
     @Published var cachedProtectionLevel: Double = 25.0
-    @Published var cachedProtectionLevelText: String = "Низкий"
+    @Published var cachedProtectionLevelText: String = ""
     @Published var cachedProtectionColor: Color = .red
 
     // Personal Data Consent
@@ -490,7 +495,7 @@ class SettingsViewModel: ObservableObject {
         } else {
             // Mock implementation for testing
             cachedProtectionLevel = 75.0
-            cachedProtectionLevelText = "Высокий"
+            cachedProtectionLevelText = localizedStrings.protectionLevelHigh
             cachedProtectionColor = .yellow
         }
     }
@@ -601,10 +606,11 @@ enum ThemeMode: String, CaseIterable {
     case system = "system"
 
     var displayName: String {
+        let localizationManager = LocalizationManager.shared
         switch self {
-        case .light: return "Светлая"
-        case .dark: return "Темная"
-        case .system: return "Системная"
+        case .light: return localizationManager.localized("theme_light_display")
+        case .dark: return localizationManager.localized("theme_dark_display")
+        case .system: return localizationManager.localized("theme_system_display")
         }
     }
 

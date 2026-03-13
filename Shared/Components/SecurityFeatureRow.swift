@@ -36,24 +36,30 @@ struct SecurityFeatureRow: View {
     }
     
     var body: some View {
-        HStack(spacing: Spacing.m) {
+        HStack(alignment: .top, spacing: Spacing.s) {
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text(title)
                     .font(.body)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                     .dynamicTypeSize(...DynamicTypeSize.accessibility5)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.75)
+                    .multilineTextAlignment(.leading)
                 
                 Text(description)
                     .font(.caption)
                     .foregroundColor(.textSecondary)
                     .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .minimumScaleFactor(0.7)
+                    .multilineTextAlignment(.leading)
                     .dynamicTypeSize(...DynamicTypeSize.accessibility5)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityElement(children: .combine)
             .accessibilityLabel("\(title). \(description)")
-            
-            Spacer()
             
             if hasSettings, let onSettingsTap = onSettingsTap {
                 Button(action: {
@@ -61,8 +67,9 @@ struct SecurityFeatureRow: View {
                     onSettingsTap()
                 }) {
                     Image(systemName: "gearshape.fill")
-                        .font(.system(size: 18))
+                        .font(.system(size: 16))
                         .foregroundColor(.textSecondary)
+                        .frame(width: 24, height: 24)
                 }
                 .accessibilityLabel(localizationManager.localized("component.settings"))
                 .accessibilityHint(localizationManager.localized("component_settings_hint"))
@@ -89,7 +96,9 @@ struct SecurityFeatureRow: View {
             )
             .accessibilityAddTraits(.isButton)
         }
-        .padding(Spacing.m)
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, Spacing.s)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
                 .fill(Color.backgroundMedium.opacity(0.2))

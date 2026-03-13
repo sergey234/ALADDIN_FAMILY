@@ -473,6 +473,9 @@ struct OnboardingScreen: View {
                                         .font(.caption)
                                         .foregroundColor(.primaryBlue)
                                         .underline()
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.8)
                                 }
                             }
                             .padding(.horizontal, Spacing.screenPadding)
@@ -576,19 +579,12 @@ struct OnboardingScreen: View {
             if index == 6 { // Страница 7 (индекс 6)
                 // Логотип приложения или изображение профиля
                 // ✅ ТОЛЬКО ОДИН ЗОЛОТОЙ ОБОДОК вокруг логотипа!
-                // Логотип приложения
-                if UIImage(named: "app_icon") != nil || UIImage(named: "AppIcon") != nil {
-                    Image("app_icon")
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 140, height: 140)
-                        .clipShape(Circle())
-                        .overlay(
-                            Circle()
-                                .stroke(Color.secondaryGold, lineWidth: 14) // ✅ ОДИН золотой ободок (14px)
-                        )
-                } else {
-                    // Пробуем загрузить логотип из Assets или используем fallback
+                // ✅ Опускаем логотип вниз на несколько мм, чтобы не заходил за края экрана
+                VStack(spacing: 0) {
+                    Spacer()
+                        .frame(height: 50) // Отступ сверху для кнопки SKIP (увеличено с 40 до 50)
+                    
+                    // Логотип приложения
                     if UIImage(named: "app_icon") != nil || UIImage(named: "AppIcon") != nil {
                         Image("app_icon")
                             .resizable()
@@ -600,13 +596,26 @@ struct OnboardingScreen: View {
                                     .stroke(Color.secondaryGold, lineWidth: 14) // ✅ ОДИН золотой ободок (14px)
                             )
                     } else {
-                        Text(page.icon)
-                            .font(.system(size: 80))
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.secondaryGold, lineWidth: 14) // ✅ ОДИН золотой ободок (14px)
-                                    .frame(width: 140, height: 140)
-                            )
+                        // Пробуем загрузить логотип из Assets или используем fallback
+                        if UIImage(named: "app_icon") != nil || UIImage(named: "AppIcon") != nil {
+                            Image("app_icon")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 140, height: 140)
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.secondaryGold, lineWidth: 14) // ✅ ОДИН золотой ободок (14px)
+                                )
+                        } else {
+                            Text(page.icon)
+                                .font(.system(size: 80))
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.secondaryGold, lineWidth: 14) // ✅ ОДИН золотой ободок (14px)
+                                        .frame(width: 140, height: 140)
+                                )
+                        }
                     }
                 }
             } else {
@@ -640,22 +649,24 @@ struct OnboardingScreen: View {
                 // ✅ На странице 7 (index == 6) название "ALADDIN" золотым цветом
                 if index == 6 {
                     Text(page.title)
-                        .font(.system(size: 32, weight: .bold))
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundColor(.secondaryGold) // ✅ Золотой цвет для ALADDIN
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
-                        .minimumScaleFactor(0.8)
-                        .padding(.horizontal, Spacing.l)
+                        .minimumScaleFactor(0.7)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, Spacing.m)
                         .accessibilityLabel("Заголовок: \(page.title)")
                         .accessibilityAddTraits(.isHeader)
                 } else {
                     Text(page.title)
-                        .font(.system(size: 28, weight: .bold))
+                        .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
                         .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.8)
-                        .padding(.horizontal, Spacing.l)
+                        .lineLimit(3)
+                        .minimumScaleFactor(0.7)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, Spacing.m)
                         .accessibilityLabel("Заголовок: \(page.title)")
                         .accessibilityAddTraits(.isHeader)
                 }
