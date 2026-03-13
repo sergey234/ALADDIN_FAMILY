@@ -104,7 +104,7 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "1"
+    static let buildNumber = "118"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -404,6 +404,17 @@ struct AppConfig {
         static let protectionDisable = "/api/protection/disable"
         static let protectionStats = "/api/protection/stats"
         static let protectionSync = "/api/protection/sync"
+        
+        // Protection Threats & Quarantine (Antivirus)
+        // Используем /api/malware/ так как эти эндпоинты уже есть на сервере
+        static let malwareThreats = "/api/malware/threats"
+        static let malwareThreatsByStatus = "/api/malware/threats"  // Используем query параметр ?status=
+        static let malwareQuarantineAction = "/api/malware/quarantine/action"
+        
+        // Альтернативные пути (если будут созданы)
+        static let protectionThreats = "/api/protection/threats"
+        static let protectionThreatsByStatus = "/api/protection/threats/{status}"
+        static let protectionQuarantineAction = "/api/protection/quarantine/action"
         
         // Referral
         static let referralCode = "/api/referral/code"

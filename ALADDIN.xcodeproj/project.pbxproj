@@ -175,6 +175,7 @@
 		5EB01F422ECB092A00168BE9 /* URLHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F412ECB092800168BE9 /* URLHelper.swift */; };
 		5EB01F442ECB097500168BE9 /* ActivationCodeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F432ECB097500168BE9 /* ActivationCodeViewModel.swift */; };
 		5EB01F462ECB09D300168BE9 /* 26_ActivationCodeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F452ECB09D300168BE9 /* 26_ActivationCodeScreen.swift */; };
+		5EB1A4A52F6418CB0030F5C1 /* QuarantineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB1A4A42F6418CB0030F5C1 /* QuarantineManager.swift */; };
 		5EC309092EA6B5F600C7D34B /* 01_MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */; };
 		5EC3090B2EA6B60500C7D34B /* 03_NetworkProtectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F52EA6AB8C00C7D34B /* 03_NetworkProtectionScreen.swift */; };
 		5EC3090C2EA6B60900C7D34B /* 04_AnalyticsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */; };
@@ -507,6 +508,7 @@
 		5EB01F412ECB092800168BE9 /* URLHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = URLHelper.swift; path = Core/Helpers/URLHelper.swift; sourceTree = "<group>"; };
 		5EB01F432ECB097500168BE9 /* ActivationCodeViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ActivationCodeViewModel.swift; path = ViewModels/ActivationCodeViewModel.swift; sourceTree = "<group>"; };
 		5EB01F452ECB09D300168BE9 /* 26_ActivationCodeScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = 26_ActivationCodeScreen.swift; sourceTree = "<group>"; };
+		5EB1A4A42F6418CB0030F5C1 /* QuarantineManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = QuarantineManager.swift; path = Core/Antivirus/QuarantineManager.swift; sourceTree = "<group>"; };
 		5EC308E22EA6AB8B00C7D34B /* 22_DeviceDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 22_DeviceDetailScreen.swift; sourceTree = "<group>"; };
 		5EC308E42EA6AB8B00C7D34B /* RewardsQuickModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsQuickModal.swift; sourceTree = "<group>"; };
 		5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 06_AIAssistantScreen.swift; sourceTree = "<group>"; };
@@ -773,6 +775,7 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5EB1A4A42F6418CB0030F5C1 /* QuarantineManager.swift */,
 				5E5978062F60A0BC00854BDE /* DateFormatterService.swift */,
 				5E7056D42F597D610065BDC4 /* JWTCircuitBreaker.swift */,
 				5E7056D22F597D3F0065BDC4 /* JWTErrorRecovery.swift */,
@@ -1266,6 +1269,7 @@
 				5EC309292EA6B67800C7D34B /* UnicornPetView.swift in Sources */,
 				5E13D3642F4DB6830010F7CE /* VisualLogger.swift in Sources */,
 				A3000009 /* Core/Network/APIService.swift in Sources */,
+				5EB1A4A52F6418CB0030F5C1 /* QuarantineManager.swift in Sources */,
 				5E6F39132F15AC3300CEC103 /* NetworkProtectionViewModel.swift in Sources */,
 				5EC309172EA6B62E00C7D34B /* 18_PrivacyPolicyScreen.swift in Sources */,
 				5E6F39422F15B00B00CEC103 /* ComponentStatusService.swift in Sources */,

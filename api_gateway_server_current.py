@@ -221,6 +221,47 @@ async def scan_malware_now():
     else:
         return {"action": "scan_started", "scan_id": "mock_scan_123", "source": "mock"}
 
+@app.get("/api/malware/threats")
+async def get_malware_threats(status: str = None):
+    """Получить список угроз пользователя"""
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        params = {}
+        if status:
+            params["status"] = status
+        success, result, message = sfm_adapter.execute_function("get_malware_threats", params)
+        if success:
+            return result
+        else:
+            return {"error": message, "threats": [], "total": 0, "active": 0, "quarantined": 0, "resolved": 0}
+    else:
+        # Mock данные для тестирования
+        return {
+            "threats": [],
+            "total": 0,
+            "active": 0,
+            "quarantined": 0,
+            "resolved": 0,
+            "source": "mock"
+        }
+
+@app.post("/api/malware/quarantine/action")
+async def quarantine_action(request: dict):
+    """Выполнить действие с файлом в карантине (quarantine, restore, remove)"""
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        success, result, message = sfm_adapter.execute_function("quarantine_file_action", request)
+        if success:
+            return result
+        else:
+            return {"success": False, "error": message, "message": message}
+    else:
+        # Mock данные для тестирования
+        return {
+            "success": True,
+            "message": f"Действие '{request.get('action', 'unknown')}' выполнено (mock)",
+            "threat": None,
+            "source": "mock"
+        }
+
 # Mobile Security (3 endpoints)
 @app.get("/api/mobile/app_lock")
 async def get_mobile_app_lock():

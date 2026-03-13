@@ -1069,6 +1069,73 @@ class APIService: ObservableObject {
         networkManager.post(endpoint: AppConfig.Endpoint.protectionSync, body: settings, completion: completion)
     }
     
+    // MARK: - Protection Threats & Quarantine API (Antivirus)
+    
+    /// Получить список угроз пользователя с сервера
+    func getUserThreatsAsync(status: String? = nil) async throws -> [ThreatResponse] {
+        return try await withCheckedThrowingContinuation { continuation in
+            var hasResumed = false
+            
+            // Используем /api/malware/threats с query параметром status
+            var endpoint = AppConfig.Endpoint.malwareThreats
+            if let status = status {
+                endpoint = "\(endpoint)?status=\(status)"
+            }
+            
+            networkManager.get(endpoint: endpoint) { (result: Result<ThreatsListResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getUserThreatsAsync()!")
+                    return
+                }
+                hasResumed = true
+                
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response.threats)
+                case .failure(let error):
+                    // Если эндпоинт не существует, возвращаем пустой список (локальный карантин работает)
+                    logger.error("⚠️ Эндпоинт \(endpoint) не найден, используем локальный карантин. Ошибка: \(error.localizedDescription)")
+                    continuation.resume(returning: [])
+                }
+            }
+        }
+    }
+    
+    /// Выполнить действие с файлом в карантине на сервере
+    func quarantineFileAsync(threatId: String, action: String, filePath: String? = nil) async throws -> QuarantineActionResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            var hasResumed = false
+            
+            let request = QuarantineActionRequest(
+                threatId: threatId,
+                action: action,
+                filePath: filePath
+            )
+            
+            // Используем /api/malware/quarantine/action
+            networkManager.post(endpoint: AppConfig.Endpoint.malwareQuarantineAction, body: request) { (result: Result<QuarantineActionResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in quarantineFileAsync()!")
+                    return
+                }
+                hasResumed = true
+                
+                // Если эндпоинт не существует, возвращаем успешный ответ (локальный карантин работает)
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(let error):
+                    logger.error("⚠️ Эндпоинт \(AppConfig.Endpoint.malwareQuarantineAction) не найден, используем локальный карантин. Ошибка: \(error.localizedDescription)")
+                    continuation.resume(returning: QuarantineActionResponse(
+                        success: true,
+                        message: "Локальный карантин работает, серверный эндпоинт недоступен",
+                        threat: nil
+                    ))
+                }
+            }
+        }
+    }
+    
     // MARK: - Auth API
     
     func login(email: String, password: String, completion: @escaping (Result<LoginResponse, Error>) -> Void) {

@@ -98,8 +98,13 @@ class QuarantineManager: ObservableObject {
         saveQuarantineMetadata()
         updateQuarantineSize()
 
-        // Отправляем на сервер
-        try await syncWithServer(quarantinedFile, action: "quarantine")
+        // Отправляем на сервер (временно отключено, API не реализовано)
+        do {
+            try await syncWithServer(quarantinedFile, action: "quarantine")
+        } catch {
+            // Игнорируем ошибки синхронизации с сервером, локальный карантин работает
+            print("[QuarantineManager] ⚠️ Не удалось синхронизировать с сервером: \(error.localizedDescription)")
+        }
 
         print("[QuarantineManager] ✅ Файл помещен в карантин: \(quarantinedName)")
         return quarantinedFile
@@ -157,8 +162,12 @@ class QuarantineManager: ObservableObject {
         saveQuarantineMetadata()
         updateQuarantineSize()
 
-        // Отправляем на сервер
-        try await syncWithServer(quarantinedFile, action: "remove")
+        // Отправляем на сервер (временно отключено, API не реализовано)
+        do {
+            try await syncWithServer(quarantinedFile, action: "remove")
+        } catch {
+            print("[QuarantineManager] ⚠️ Не удалось синхронизировать с сервером: \(error.localizedDescription)")
+        }
 
         print("[QuarantineManager] ✅ Файл удален из карантина")
     }
@@ -226,7 +235,7 @@ class QuarantineManager: ObservableObject {
     /// Синхронизировать карантин с сервером
     func syncQuarantineWithServer() async {
         print("[QuarantineManager] Синхронизация карантина с сервером")
-
+        
         do {
             // Получаем список угроз с сервера
             let serverThreats = try await APIService.shared.getUserThreatsAsync(status: "quarantined")
@@ -238,7 +247,21 @@ class QuarantineManager: ObservableObject {
                 if !existsLocally && serverThreat.quarantinePath != nil {
                     // Сервер имеет файл в карантине, которого нет локально
                     // TODO: Скачать файл из серверного карантина если нужно
-                    print("[QuarantineManager] Найден файл в серверном карантине: \(serverThreat.fileName)")
+                    print("[QuarantineManager] ⚠️ Сервер имеет файл в карантине, которого нет локально: \(serverThreat.name)")
+                }
+            }
+
+            // Отправляем локальные файлы, которых нет на сервере
+            for localFile in quarantinedFiles where localFile.status == "quarantined" {
+                let existsOnServer = serverThreats.contains { $0.id == localFile.id }
+                if !existsOnServer {
+                    // Отправляем файл на сервер
+                    do {
+                        try await syncWithServer(localFile, action: "quarantine")
+                        print("[QuarantineManager] ✅ Синхронизирован файл с сервером: \(localFile.originalName)")
+                    } catch {
+                        print("[QuarantineManager] ❌ Ошибка синхронизации файла \(localFile.originalName): \(error.localizedDescription)")
+                    }
                 }
             }
 
@@ -246,6 +269,7 @@ class QuarantineManager: ObservableObject {
 
         } catch {
             print("[QuarantineManager] ❌ Ошибка синхронизации: \(error.localizedDescription)")
+            print("[QuarantineManager] ✅ Локальный карантин продолжает работать нормально")
         }
     }
 
@@ -307,10 +331,19 @@ class QuarantineManager: ObservableObject {
 
     private func syncWithServer(_ quarantinedFile: QuarantinedFile, action: String) async throws {
         // Синхронизируем действие с сервером
-        _ = try await APIService.shared.quarantineFileAsync(
+        let response = try await APIService.shared.quarantineFileAsync(
             threatId: quarantinedFile.id,
-            action: action
+            action: action,
+            filePath: quarantinedFile.originalPath
         )
+        
+        if !response.success {
+            throw NSError(domain: "QuarantineManager", code: -1, userInfo: [
+                NSLocalizedDescriptionKey: response.message ?? "Неизвестная ошибка синхронизации"
+            ])
+        }
+        
+        print("[QuarantineManager] ✅ Действие '\(action)' синхронизировано с сервером для файла \(quarantinedFile.originalName)")
     }
 }
 

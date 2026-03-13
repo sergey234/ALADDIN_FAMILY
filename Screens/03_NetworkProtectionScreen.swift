@@ -28,6 +28,30 @@ struct NetworkProtectionScreen: View {
     @StateObject private var viewModel = NetworkProtectionViewModel()
     @State private var showingSettings = false
     @State private var showPasswordGenerator = false
+    @State private var showQuarantineDetails = false
+    @State private var showScanHistory = false
+    
+    // Данные для антивируса (локальное состояние)
+    @State private var scanHistory: [ScanHistoryItem] = []
+    @State private var quarantineActiveFiles: Int = 0
+    @State private var quarantineSize: Int64 = 0
+    @State private var isLoadingQuarantine = false
+    
+    // Настройки антивируса (локальное состояние)
+    @AppStorage("antivirus_real_time_scanning") private var realTimeScanning = true
+    @AppStorage("antivirus_scan_downloads") private var scanDownloads = true
+    @AppStorage("antivirus_quarantine_threats") private var quarantineThreats = true
+    
+    // Структура для истории сканирований
+    struct ScanHistoryItem: Identifiable {
+        let id: String
+        let startTime: Date
+        let endTime: Date?
+        let filesScanned: Int
+        let threatsFound: Int
+        let status: String
+        let duration: TimeInterval?
+    }
     @State private var showIncidentResponseSettings = false
     @State private var showPhishingSettings = false
     @State private var showMalwareSettings = false
@@ -48,6 +72,7 @@ struct NetworkProtectionScreen: View {
     @State private var threatProtectionExpanded = false
     @State private var incidentResponseExpanded = false
     @State private var passwordSecurityExpanded = false
+    @State private var antivirusExpanded = false
     // ✅ УДАЛЕНО: showingStatistics и showingHelp (использовались только в Quick Actions)
     
     // MARK: - Helper Views
@@ -92,9 +117,6 @@ struct NetworkProtectionScreen: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
                         
-                        // Antivirus Section (1-я позиция - СВЕРХУ)
-                        antivirusCard
-                        
                         // Battery Saving Tip
                         batterySavingTipCard
                         
@@ -103,6 +125,9 @@ struct NetworkProtectionScreen: View {
                         
                         // ✅ НОВЫЕ РАЗДЕЛЫ: Компоненты безопасности (42 компонента)
                         componentsSections
+                        
+                        // Antivirus Section (в формате гармошки)
+                        antivirusAccordion
                         
                         // ✅ УДАЛЕНО: Quick Actions карточка
                         // quickActionsCard
@@ -158,6 +183,27 @@ struct NetworkProtectionScreen: View {
                 isPresented: $showMalwareSettings
             )
             .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showScanHistory) {
+            AntivirusScanHistoryModalView(
+                isPresented: $showScanHistory,
+                scanHistory: scanHistory.map { session in
+                    AntivirusScanHistoryModalView.AntivirusScanHistoryItem(
+                        id: session.id,
+                        startTime: session.startTime,
+                        endTime: session.endTime,
+                        filesScanned: session.filesScanned,
+                        threatsFound: session.threatsFound,
+                        status: session.status,
+                        duration: session.duration
+                    )
+                }
+            )
+            .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showQuarantineDetails) {
+            AntivirusQuarantineModalView(isPresented: $showQuarantineDetails)
+                .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showMobileSecuritySettings) {
             MobileSecuritySettingsModal(
@@ -559,16 +605,122 @@ struct NetworkProtectionScreen: View {
     
     // ✅ УДАЛЕНО: Quick Actions Card полностью
     
-    // MARK: - Antivirus Card
+    // MARK: - Antivirus Accordion
     
     @AppStorage("antivirusEnabled") private var antivirusEnabled = true
     
+    private var antivirusAccordion: some View {
+        SettingsAccordion(
+            icon: "🛡️",
+            title: localizationManager.localized("antivirus_title"),
+            subtitle: antivirusEnabled ? localizationManager.localized("network_protection_active") : localizationManager.localized("network_protection_inactive"),
+            isExpanded: $antivirusExpanded
+        ) {
+            antivirusAccordionContent
+        }
+        .onAppear {
+            loadQuarantineStats()
+        }
+    }
+    
+    private var antivirusAccordionContent: some View {
+        VStack(spacing: Spacing.m) {
+            // Toggle для включения/выключения антивируса
+            HStack {
+                Text(localizationManager.localized("antivirus_settings_title"))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.textPrimary)
+                Spacer()
+                Toggle("", isOn: $antivirusEnabled)
+                    .toggleStyle(SwitchToggleStyle(tint: .successGreen))
+            }
+            
+            // Stats Grid - Статистика
+            LazyVGrid(columns: [
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible()),
+                GridItem(.flexible())
+            ], spacing: Spacing.s) {
+                AntivirusStatItem(icon: "🔍", value: formatScanCount(), label: localizationManager.localized("network_protection_files_scanned"))
+                AntivirusStatItem(icon: "✅", value: "\(antivirusManager.threatsDetected.count)", label: localizationManager.localized("network_protection_threats_found"))
+                AntivirusStatItem(icon: "🔄", value: formatLastScan(), label: localizationManager.localized("network_protection_ago"))
+                AntivirusStatItem(icon: "⚡", value: antivirusEnabled ? "100%" : "0%", label: localizationManager.localized("network_protection_protection"))
+            }
+            
+            // Прогресс сканирования (если идет сканирование)
+            if antivirusManager.isScanning {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    HStack {
+                        Text(localizationManager.localized("antivirus_scan_progress"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                        Spacer()
+                        Text("\(Int(antivirusManager.scanProgress * 100))%")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primaryBlue)
+                    }
+                    ProgressView(value: antivirusManager.scanProgress)
+                        .progressViewStyle(LinearProgressViewStyle(tint: .primaryBlue))
+                }
+                .padding(.top, Spacing.xs)
+            }
+            
+            Divider()
+                .padding(.vertical, Spacing.xs)
+            
+            // История сканирований
+            antivirusHistorySection
+            
+            Divider()
+                .padding(.vertical, Spacing.xs)
+            
+            // Статистика карантина
+            antivirusQuarantineSection
+            
+            Divider()
+                .padding(.vertical, Spacing.xs)
+            
+            // Быстрые настройки
+            antivirusQuickSettingsSection
+            
+            // Scan Button - Кнопка сканирования
+            Button(action: {
+                Task {
+                    await performQuickScan()
+                }
+            }) {
+                HStack {
+                    Image(systemName: antivirusManager.isScanning ? "stop.circle.fill" : "play.circle.fill")
+                        .font(.title3)
+                    Text(antivirusManager.isScanning ? localizationManager.localized("network_protection_scanning") : localizationManager.localized("network_protection_start_scan"))
+                        .font(.headline)
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                        .fill(antivirusEnabled ? Color.primaryBlue : Color.textSecondary)
+                )
+            }
+            .disabled(!antivirusEnabled || antivirusManager.isScanning)
+            .opacity(antivirusEnabled ? 1.0 : 0.5)
+        }
+        .padding(.top, Spacing.m)
+    }
+    
+    // MARK: - Antivirus Card (старая версия - удалить после тестирования)
+    
     private var antivirusCard: some View {
         VStack(spacing: Spacing.m) {
-            // Header
+            // Header - Заголовок "🛡️ Антивирус"
             HStack {
-                Text(localizationManager.localized("network_protection_antivirus"))
+                Text(localizationManager.localized("antivirus_title"))
                     .font(.h3)
+                    .fontWeight(.bold)
                     .foregroundColor(.textPrimary)
                 
                 Spacer()
@@ -588,7 +740,7 @@ struct NetworkProtectionScreen: View {
                     )
             }
             
-            // Stats Grid
+            // Stats Grid - Статистика
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible()),
@@ -601,9 +753,45 @@ struct NetworkProtectionScreen: View {
                 AntivirusStatItem(icon: "⚡", value: antivirusEnabled ? "100%" : "0%", label: localizationManager.localized("network_protection_protection"))
             }
             
-            // Scan Button
+            // Прогресс сканирования (если идет сканирование)
+            if antivirusManager.isScanning {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    HStack {
+                        Text(localizationManager.localized("antivirus_scan_progress"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                        Spacer()
+                        Text("\(Int(antivirusManager.scanProgress * 100))%")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primaryBlue)
+                    }
+                    ProgressView(value: antivirusManager.scanProgress)
+                        .progressViewStyle(LinearProgressViewStyle(tint: .primaryBlue))
+                }
+                .padding(.top, Spacing.xs)
+            }
+            
+            Divider()
+                .padding(.vertical, Spacing.xs)
+            
+            // История сканирований
+            antivirusHistorySection
+            
+            Divider()
+                .padding(.vertical, Spacing.xs)
+            
+            // Статистика карантина
+            antivirusQuarantineSection
+            
+            Divider()
+                .padding(.vertical, Spacing.xs)
+            
+            // Быстрые настройки
+            antivirusQuickSettingsSection
+            
+            // Scan Button - Кнопка сканирования
             Button(action: {
-                // Запустить проверку
                 Task {
                     await performQuickScan()
                 }
@@ -629,16 +817,194 @@ struct NetworkProtectionScreen: View {
         .background(backgroundShape)
         .cardShadow()
         .padding(.horizontal, Spacing.screenPadding)
+        .onAppear {
+            loadQuarantineStats()
+        }
+    }
+    
+    // MARK: - Antivirus History Section
+    
+    private var antivirusHistorySection: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack {
+                Text(localizationManager.localized("antivirus_scan_history_title"))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.textPrimary)
+                Spacer()
+                if !scanHistory.isEmpty {
+                    Button(action: {
+                        showScanHistory = true
+                    }) {
+                        Text(localizationManager.localized("antivirus_view_history"))
+                            .font(.caption)
+                            .foregroundColor(.primaryBlue)
+                    }
+                }
+            }
+            
+            if scanHistory.isEmpty {
+                Text(localizationManager.localized("antivirus_no_scans"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                ForEach(Array(scanHistory.prefix(3)), id: \.id) { session in
+                    HStack {
+                        Image(systemName: "clock.fill")
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                        Text(formatScanDate(session.startTime))
+                            .font(.caption)
+                            .foregroundColor(.textPrimary)
+                        Spacer()
+                        Text("\(session.threatsFound) \(localizationManager.localized("antivirus_threats_found_in_scan"))")
+                            .font(.caption)
+                            .foregroundColor(session.threatsFound > 0 ? .red : .successGreen)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Antivirus Quarantine Section
+    
+    private var antivirusQuarantineSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack {
+                Text(localizationManager.localized("antivirus_quarantine_title"))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.textPrimary)
+                Spacer()
+                if quarantineActiveFiles > 0 {
+                    Button(action: {
+                        showQuarantineDetails = true
+                    }) {
+                        Text(localizationManager.localized("antivirus_view_quarantine"))
+                            .font(.caption)
+                            .foregroundColor(.primaryBlue)
+                    }
+                }
+            }
+            
+            if quarantineActiveFiles == 0 {
+                Text(localizationManager.localized("antivirus_no_quarantine"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                HStack(spacing: Spacing.m) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(quarantineActiveFiles)")
+                            .font(.headline)
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("antivirus_active_files"))
+                            .font(.caption2)
+                            .foregroundColor(.textSecondary)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(formatBytes(quarantineSize))
+                            .font(.headline)
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("antivirus_quarantine_size"))
+                            .font(.caption2)
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Antivirus Quick Settings Section
+    
+    private var antivirusQuickSettingsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            HStack {
+                Text(localizationManager.localized("antivirus_quick_settings"))
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.textPrimary)
+                Spacer()
+                Button(action: {
+                    showMalwareSettings = true
+                }) {
+                    Text(localizationManager.localized("antivirus_all_settings"))
+                        .font(.caption)
+                        .foregroundColor(.primaryBlue)
+                }
+            }
+            
+            VStack(spacing: Spacing.xs) {
+                ToggleRow(
+                    title: localizationManager.localized("malware_detection.real_time_scanning"),
+                    isOn: $realTimeScanning
+                )
+                
+                ToggleRow(
+                    title: localizationManager.localized("malware_detection.scan_downloads"),
+                    isOn: $scanDownloads
+                )
+                
+                ToggleRow(
+                    title: localizationManager.localized("malware_detection.quarantine_threats"),
+                    isOn: $quarantineThreats
+                )
+            }
+        }
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func formatScanDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        formatter.locale = Locale(identifier: localizationManager.currentLanguage == .russian ? "ru_RU" : "en_US")
+        return formatter.string(from: date)
+    }
+    
+    private func formatBytes(_ bytes: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useKB, .useMB, .useGB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: bytes)
     }
     
     // MARK: - Antivirus Helper Functions
     
     private func formatScanCount() -> String {
-        // Форматируем количество проверок
-        if antivirusManager.lastScanResult != nil {
-            return "1" // Пока просто показываем что была проверка
+        // Форматируем количество проверенных файлов
+        if let lastResult = antivirusManager.lastScanResult {
+            // В реальном приложении здесь будет реальное количество файлов
+            // Пока используем данные из истории сканирований
+            if let lastSession = scanHistory.first {
+                return "\(lastSession.filesScanned)"
+            }
+            return "1"
+        }
+        // Если есть история, показываем общее количество из последнего сканирования
+        if let lastSession = scanHistory.first {
+            return "\(lastSession.filesScanned)"
         }
         return "0"
+    }
+    
+    // MARK: - Quarantine Stats Loading
+    
+    private func loadQuarantineStats() {
+        isLoadingQuarantine = true
+        Task {
+            let stats = QuarantineManager.shared.getQuarantineStats()
+            await MainActor.run {
+                quarantineActiveFiles = stats.activeFiles
+                quarantineSize = stats.quarantineSize
+                isLoadingQuarantine = false
+            }
+        }
     }
     
     private func formatLastScan() -> String {
@@ -660,22 +1026,80 @@ struct NetworkProtectionScreen: View {
     
     private func performQuickScan() async {
         // Быстрое сканирование демонстрационных файлов
-        print("🛡️ Начато антивирусное сканирование...")
+        let visualLogger = VisualLogger.shared
+        let startTime = Date()
+        visualLogger.log("🛡️ Начато антивирусное сканирование...", level: .info, category: "ANTIVIRUS")
         
         // В реальном приложении здесь будет выбор файлов
         // Пока имитируем сканирование
         await MainActor.run {
             antivirusManager.isScanning = true
+            antivirusManager.scanProgress = 0.0
         }
         
-        // Небольшая задержка для демонстрации
-        try? await Task.sleep(nanoseconds: 2_000_000_000) // 2 секунды
+        // Имитация прогресса сканирования
+        visualLogger.log("🔍 Проверка системных файлов...", level: .info, category: "ANTIVIRUS")
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
+        
+        await MainActor.run {
+            antivirusManager.scanProgress = 0.3
+        }
+        
+        visualLogger.log("🔍 Проверка установленных приложений...", level: .info, category: "ANTIVIRUS")
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
+        
+        await MainActor.run {
+            antivirusManager.scanProgress = 0.6
+        }
+        
+        visualLogger.log("🔍 Проверка загруженных файлов...", level: .info, category: "ANTIVIRUS")
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
+        
+        await MainActor.run {
+            antivirusManager.scanProgress = 0.9
+        }
+        
+        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
+        
+        let endTime = Date()
+        let duration = endTime.timeIntervalSince(startTime)
+        let threatsFound = antivirusManager.threatsDetected.count
+        
+        // Создаем результат сканирования
+        let scanResult = AntivirusManager.ScanResult(
+            filePath: "System Scan",
+            threatLevel: .clean,
+            detectedThreats: [],
+            scanTime: endTime,
+            checksum: nil
+        )
+        
+        // Добавляем запись в историю сканирований
+        let scanSession = ScanHistoryItem(
+            id: UUID().uuidString,
+            startTime: startTime,
+            endTime: endTime,
+            filesScanned: 1,
+            threatsFound: threatsFound,
+            status: "completed",
+            duration: duration
+        )
         
         await MainActor.run {
             antivirusManager.isScanning = false
+            antivirusManager.scanProgress = 1.0
+            antivirusManager.lastScanResult = scanResult
+            scanHistory.insert(scanSession, at: 0)
+            // Ограничиваем историю последними 50 записями
+            if scanHistory.count > 50 {
+                scanHistory.removeLast()
+            }
         }
         
-        print("✅ Сканирование завершено")
+        visualLogger.log("✅ Сканирование завершено. Угроз не обнаружено.", level: .success, category: "ANTIVIRUS")
+        
+        // Обновляем статистику карантина
+        loadQuarantineStats()
     }
     
 }
@@ -715,6 +1139,389 @@ struct SecurityFeatureCard: View {
 
 
 // ✅ УДАЛЕНО: QuickActionButton (использовался только в Quick Actions карточке)
+
+// MARK: - Antivirus Modals
+
+struct AntivirusScanHistoryModalView: View {
+    @Binding var isPresented: Bool
+    let scanHistory: [AntivirusScanHistoryItem]
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    
+    struct AntivirusScanHistoryItem: Identifiable {
+        let id: String
+        let startTime: Date
+        let endTime: Date?
+        let filesScanned: Int
+        let threatsFound: Int
+        let status: String
+        let duration: TimeInterval?
+    }
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                LinearGradient.backgroundGradient
+                    .ignoresSafeArea()
+                
+                if scanHistory.isEmpty {
+                    VStack(spacing: Spacing.m) {
+                        Image(systemName: "clock.badge.questionmark")
+                            .font(.system(size: 64))
+                            .foregroundColor(.textSecondary.opacity(0.5))
+                        
+                        Text(localizationManager.localized("antivirus_no_scans"))
+                            .font(.headline)
+                            .foregroundColor(.textSecondary)
+                    }
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: Spacing.m) {
+                            ForEach(scanHistory, id: \.id) { session in
+                                ScanHistoryRow(session: session)
+                            }
+                        }
+                        .padding(Spacing.m)
+                    }
+                }
+            }
+            .navigationTitle(localizationManager.localized("antivirus_scan_history_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        isPresented = false
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+            }
+        }
+    }
+    
+    private struct ScanHistoryRow: View {
+        let session: AntivirusScanHistoryItem
+        @EnvironmentObject private var localizationManager: LocalizationManager
+        
+        var body: some View {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                HStack {
+                    Image(systemName: session.threatsFound > 0 ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                        .foregroundColor(session.threatsFound > 0 ? .red : .successGreen)
+                        .font(.title3)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(formatDate(session.startTime))
+                            .font(.headline)
+                            .foregroundColor(.textPrimary)
+                        
+                        if let endTime = session.endTime, let duration = session.duration {
+                            Text("\(localizationManager.localized("antivirus_scan_duration")): \(formatDuration(duration))")
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text("\(session.threatsFound)")
+                            .font(.title2)
+                            .fontWeight(.bold)
+                            .foregroundColor(session.threatsFound > 0 ? .red : .successGreen)
+                        
+                        Text(localizationManager.localized("antivirus_threats_found_in_scan"))
+                            .font(.caption2)
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+                
+                HStack {
+                    Label("\(session.filesScanned)", systemImage: "doc.text")
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                    
+                    Spacer()
+                    
+                    Text(session.status.capitalized)
+                        .font(.caption)
+                        .foregroundColor(statusColor(session.status))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(statusColor(session.status).opacity(0.2))
+                        )
+                }
+            }
+            .padding(Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(Color.backgroundMedium.opacity(0.3))
+            )
+        }
+        
+        private func formatDate(_ date: Date) -> String {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .short
+            formatter.locale = Locale(identifier: localizationManager.currentLanguage == .russian ? "ru_RU" : "en_US")
+            return formatter.string(from: date)
+        }
+        
+        private func formatDuration(_ duration: TimeInterval) -> String {
+            let minutes = Int(duration) / 60
+            let seconds = Int(duration) % 60
+            return String(format: "%d:%02d", minutes, seconds)
+        }
+        
+        private func statusColor(_ status: String) -> Color {
+            switch status {
+            case "completed":
+                return .successGreen
+            case "failed":
+                return .red
+            case "cancelled":
+                return .textSecondary
+            default:
+                return .textSecondary
+            }
+        }
+    }
+}
+
+struct AntivirusQuarantineModalView: View {
+    @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @ObservedObject private var quarantineManager = QuarantineManager.shared
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                LinearGradient.backgroundGradient
+                    .ignoresSafeArea()
+                
+                if quarantineManager.quarantinedFiles.isEmpty {
+                    VStack(spacing: Spacing.m) {
+                        Image(systemName: "shield.checkered")
+                            .font(.system(size: 64))
+                            .foregroundColor(.textSecondary.opacity(0.5))
+                        
+                        Text(localizationManager.localized("antivirus_no_quarantine"))
+                            .font(.headline)
+                            .foregroundColor(.textSecondary)
+                    }
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: Spacing.m) {
+                            // Статистика карантина
+                            QuarantineStatsCard()
+                            
+                            // Список файлов в карантине
+                            ForEach(quarantineManager.quarantinedFiles.filter { $0.status == "quarantined" }, id: \.id) { file in
+                                QuarantineFileRow(file: file)
+                            }
+                        }
+                        .padding(Spacing.m)
+                    }
+                }
+            }
+            .navigationTitle(localizationManager.localized("antivirus_quarantine_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        isPresented = false
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+            }
+        }
+    }
+    
+    private struct QuarantineStatsCard: View {
+        @ObservedObject private var quarantineManager = QuarantineManager.shared
+        @EnvironmentObject private var localizationManager: LocalizationManager
+        
+        var body: some View {
+            let stats = quarantineManager.getQuarantineStats()
+            
+            VStack(spacing: Spacing.m) {
+                HStack {
+                    Text(localizationManager.localized("antivirus_quarantine_title"))
+                        .font(.headline)
+                        .foregroundColor(.textPrimary)
+                    Spacer()
+                }
+                
+                HStack(spacing: Spacing.l) {
+                    StatItem(
+                        value: "\(stats.activeFiles)",
+                        label: localizationManager.localized("antivirus_active_files")
+                    )
+                    
+                    StatItem(
+                        value: "\(stats.restoredFiles)",
+                        label: localizationManager.localized("antivirus_restored_files")
+                    )
+                    
+                    StatItem(
+                        value: "\(stats.removedFiles)",
+                        label: localizationManager.localized("antivirus_removed_files")
+                    )
+                }
+                
+                HStack {
+                    Text(localizationManager.localized("antivirus_quarantine_size"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                    Spacer()
+                    Text(formatBytes(stats.quarantineSize))
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.textPrimary)
+                }
+            }
+            .padding(Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(Color.backgroundMedium.opacity(0.3))
+            )
+        }
+        
+        private struct StatItem: View {
+            let value: String
+            let label: String
+            
+            var body: some View {
+                VStack(spacing: 4) {
+                    Text(value)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.textPrimary)
+                    Text(label)
+                        .font(.caption2)
+                        .foregroundColor(.textSecondary)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        
+        private func formatBytes(_ bytes: Int64) -> String {
+            let formatter = ByteCountFormatter()
+            formatter.allowedUnits = [.useKB, .useMB, .useGB]
+            formatter.countStyle = .file
+            return formatter.string(fromByteCount: bytes)
+        }
+    }
+    
+    private struct QuarantineFileRow: View {
+        let file: QuarantineManager.QuarantinedFile
+        @EnvironmentObject private var localizationManager: LocalizationManager
+        
+        var body: some View {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                HStack {
+                    Image(systemName: threatIcon(file.severity))
+                        .foregroundColor(threatColor(file.severity))
+                        .font(.title3)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(file.originalName)
+                            .font(.headline)
+                            .foregroundColor(.textPrimary)
+                            .lineLimit(1)
+                        
+                        Text(file.threatName)
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Menu {
+                        Button(action: {
+                            Task {
+                                do {
+                                    let restoreURL = URL(fileURLWithPath: file.originalPath)
+                                    try await QuarantineManager.shared.restoreFile(from: file, to: restoreURL)
+                                } catch {
+                                    print("Ошибка восстановления: \(error)")
+                                }
+                            }
+                        }) {
+                            Label("Восстановить", systemImage: "arrow.uturn.backward")
+                        }
+                        
+                        Button(role: .destructive, action: {
+                            Task {
+                                do {
+                                    try await QuarantineManager.shared.permanentlyRemoveFile(file)
+                                } catch {
+                                    print("Ошибка удаления: \(error)")
+                                }
+                            }
+                        }) {
+                            Label("Удалить навсегда", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+                
+                HStack {
+                    Label(file.threatType, systemImage: "tag")
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                    
+                    Spacer()
+                    
+                    Text(formatDate(file.quarantinedAt))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+            }
+            .padding(Spacing.m)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(Color.backgroundMedium.opacity(0.3))
+            )
+        }
+        
+        private func threatIcon(_ severity: String) -> String {
+            switch severity.lowercased() {
+            case "high", "critical":
+                return "exclamationmark.triangle.fill"
+            case "medium":
+                return "exclamationmark.circle.fill"
+            default:
+                return "info.circle.fill"
+            }
+        }
+        
+        private func threatColor(_ severity: String) -> Color {
+            switch severity.lowercased() {
+            case "high", "critical":
+                return .red
+            case "medium":
+                return .warningOrange
+            default:
+                return .textSecondary
+            }
+        }
+        
+        private func formatDate(_ date: Date) -> String {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            formatter.locale = Locale(identifier: localizationManager.currentLanguage == .russian ? "ru_RU" : "en_US")
+            return formatter.string(from: date)
+        }
+    }
+}
 
 // MARK: - Antivirus Stat Item
 

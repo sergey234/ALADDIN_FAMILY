@@ -5,6 +5,9 @@ import SwiftUI
 // Master Logger for antivirus logging
 private let logger = MasterLogger.shared
 
+// Forward declaration для QuarantineManager
+// Файл QuarantineManager.swift должен быть подключен к тому же target
+
 /// Antivirus Manager для ALADDIN
 /// Быстрая проверка метаданных на клиенте, полное сканирование на сервере
 class AntivirusManager: ObservableObject {
@@ -392,20 +395,50 @@ class AntivirusManager: ObservableObject {
     
     // MARK: - Threat Management
     
-    /// Очистка обнаруженных угроз
-    func quarantineThreat(_ threat: Threat) async -> Bool {
+    /// Поместить угрозу в карантин
+    func quarantineThreat(_ threat: Threat, fileURL: URL) async -> Bool {
         log("🚫 Карантин угрозы: \(threat.name)")
         
-        // TODO: Реализовать карантин
-        return true
+        do {
+            let quarantinedFile = try await QuarantineManager.shared.quarantineFile(
+                from: fileURL,
+                threatName: threat.name,
+                threatType: threat.type,
+                severity: threat.severity,
+                confidence: threat.confidence
+            )
+            
+            await MainActor.run {
+                threatsDetected.removeAll { $0.id == threat.id }
+            }
+            
+            log("✅ Угроза \(threat.name) помещена в карантин: \(quarantinedFile.originalName)")
+            return true
+        } catch {
+            log("❌ Ошибка помещения в карантин: \(error.localizedDescription)")
+            return false
+        }
     }
     
     /// Удаление угрозы
-    func removeThreat(_ threat: Threat) async -> Bool {
+    func removeThreat(_ threat: Threat, fileURL: URL) async -> Bool {
         log("🗑️ Удаление угрозы: \(threat.name)")
         
-        // TODO: Реализовать удаление
-        return true
+        do {
+            // Удаляем файл
+            try FileManager.default.removeItem(at: fileURL)
+            
+            // Обновляем список обнаруженных угроз
+            await MainActor.run {
+                threatsDetected.removeAll { $0.id == threat.id }
+            }
+            
+            log("✅ Угроза \(threat.name) удалена: \(fileURL.lastPathComponent)")
+            return true
+        } catch {
+            log("❌ Ошибка удаления угрозы: \(error.localizedDescription)")
+            return false
+        }
     }
     
     // MARK: - Logging

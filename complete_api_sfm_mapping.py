@@ -42,13 +42,15 @@ API_TO_SFM_MAPPING = {
     "get_phishing_exclusions": "get_phishing_protection_agent_exclusions",
 
     # ============================================================================
-    # MALWARE PROTECTION (5 функций) - Защита от вредоносного ПО
+    # MALWARE PROTECTION (7 функций) - Защита от вредоносного ПО
     # ============================================================================
     "get_malware_scan_scheduled": "get_malware_detection_agent_scheduled_scan",
     "update_malware_scan_scheduled": "update_malware_detection_agent_scheduled_scan",
     "get_malware_quarantine": "get_malware_detection_agent_quarantine",
     "update_malware_quarantine": "update_malware_detection_agent_quarantine",
     "scan_malware_now": "run_malware_detection_agent_scan_now",
+    "get_malware_threats": "get_malware_detection_agent_threats",
+    "quarantine_file_action": "quarantine_malware_file_action",
 
     # ============================================================================
     # MOBILE & NETWORK SECURITY (4 функции)

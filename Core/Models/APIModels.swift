@@ -1334,6 +1334,56 @@ struct ProtectionStatsResponse: Codable {
     }
 }
 
+// MARK: - Protection Threats & Quarantine Models (Antivirus)
+
+struct ThreatResponse: Codable, Identifiable {
+    let id: String
+    let name: String
+    let type: String
+    let severity: String
+    let confidence: Double
+    let filePath: String?
+    let fileSize: Int64?
+    let detectedAt: String  // ISO 8601 date string
+    let status: String  // "active", "quarantined", "resolved"
+    let quarantinePath: String?
+    let quarantinedAt: String?  // ISO 8601 date string
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case type
+        case severity
+        case confidence
+        case filePath
+        case fileSize
+        case detectedAt
+        case status
+        case quarantinePath
+        case quarantinedAt
+    }
+}
+
+struct ThreatsListResponse: Codable {
+    let threats: [ThreatResponse]
+    let total: Int
+    let active: Int
+    let quarantined: Int
+    let resolved: Int
+}
+
+struct QuarantineActionRequest: Codable {
+    let threatId: String
+    let action: String  // "quarantine", "restore", "remove"
+    let filePath: String?
+}
+
+struct QuarantineActionResponse: Codable {
+    let success: Bool
+    let message: String?
+    let threat: ThreatResponse?
+}
+
 // MARK: - Component Models
 
 struct ComponentStatusResponse: Codable {
