@@ -39,6 +39,8 @@ struct ComponentReportCard: View {
                         .font(.bodyBold)
                         .foregroundColor(.textPrimary)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.8)  // ✅ ПУНКТЫ 4-9: Автоматическое уменьшение шрифта для предотвращения обрезания
+                        .fixedSize(horizontal: false, vertical: true)  // ✅ ПУНКТЫ 4-9: Предотвращение обрезания текста
                     
                     // Метрики (максимум 2)
                     ForEach(Array(metrics.prefix(2)), id: \.0) { key, value in

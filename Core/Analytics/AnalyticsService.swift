@@ -37,6 +37,16 @@ struct HealthStatus {
     let issues: [String] = []
 }
 
+// MARK: - Data Source Enum
+
+/// Источник данных для аналитики
+enum DataSource: String, Codable {
+    case api          // Реальные данные из API
+    case cache        // Кэшированные данные
+    case empty        // Нет данных (показываем 0)
+    case error        // Ошибка API
+}
+
 // MARK: - Data Models
 
 /// Фильтры для аналитики
@@ -274,10 +284,10 @@ struct AnalyticsDeviceStatus: Codable {
 
 /// Протокол для получения аналитики
 protocol AnalyticsService {
-    func fetchSummary(period: String, filters: AnalyticsFilters) async throws -> AnalyticsSummary
-    func fetchSecurityAnalytics(period: String) async throws -> SecurityAnalytics
+    func fetchSummary(period: String, filters: AnalyticsFilters) async throws -> (AnalyticsSummary, DataSource)
+    func fetchSecurityAnalytics(period: String) async throws -> (SecurityAnalytics, DataSource)
     func fetchFamilyAnalytics(period: String) async throws -> FamilyAnalytics
-    func fetchUsageAnalytics(period: String) async throws -> UsageAnalytics
+    func fetchUsageAnalytics(period: String) async throws -> (UsageAnalytics, DataSource)
     func fetchDevicesAnalytics(period: String) async throws -> DevicesAnalytics
 
     // Production monitoring methods
@@ -295,48 +305,50 @@ final class LocalAnalyticsService: AnalyticsService {
     
     // MARK: - Summary
     
-    func fetchSummary(period: String, filters: AnalyticsFilters) async throws -> AnalyticsSummary {
+    func fetchSummary(period: String, filters: AnalyticsFilters) async throws -> (AnalyticsSummary, DataSource) {
         // Небольшая задержка для имитации загрузки
         try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 секунды
         
+        let summary: AnalyticsSummary
         switch period {
         case "day":
-            return AnalyticsSummary(
+            summary = AnalyticsSummary(
                 threatsDetected: 12,
                 threatsBlocked: 12,
                 itemsScanned: 847,
                 protectionLevel: 96.0
             )
         case "week":
-            return AnalyticsSummary(
+            summary = AnalyticsSummary(
                 threatsDetected: 47,
                 threatsBlocked: 45,
                 itemsScanned: 5234,
                 protectionLevel: 96.0
             )
         case "month":
-            return AnalyticsSummary(
+            summary = AnalyticsSummary(
                 threatsDetected: 189,
                 threatsBlocked: 185,
                 itemsScanned: 21890,
                 protectionLevel: 98.0
             )
         default:
-            return AnalyticsSummary(
+            summary = AnalyticsSummary(
                 threatsDetected: 0,
                 threatsBlocked: 0,
                 itemsScanned: 0,
                 protectionLevel: 0
             )
         }
+        return (summary, .api) // LocalAnalyticsService всегда возвращает .api
     }
     
     // MARK: - Security Analytics
     
-    func fetchSecurityAnalytics(period: String) async throws -> SecurityAnalytics {
+    func fetchSecurityAnalytics(period: String) async throws -> (SecurityAnalytics, DataSource) {
         try? await Task.sleep(nanoseconds: 100_000_000)
         
-        return SecurityAnalytics(
+        let security = SecurityAnalytics(
             blockedThreats: [
                 ThreatTypeCount(type: "web", count: 542, icon: "globe"),
                 ThreatTypeCount(type: "file", count: 318, icon: "doc"),
@@ -354,6 +366,7 @@ final class LocalAnalyticsService: AnalyticsService {
                 protection: "100%"
             )
         )
+        return (security, .api) // LocalAnalyticsService всегда возвращает .api
     }
     
     // MARK: - Family Analytics
@@ -384,10 +397,10 @@ final class LocalAnalyticsService: AnalyticsService {
     
     // MARK: - Usage Analytics
     
-    func fetchUsageAnalytics(period: String) async throws -> UsageAnalytics {
+    func fetchUsageAnalytics(period: String) async throws -> (UsageAnalytics, DataSource) {
         try? await Task.sleep(nanoseconds: 100_000_000)
         
-        return UsageAnalytics(
+        let usage = UsageAnalytics(
             activityByTime: [
                 TimePeriodActivity(emoji: "🌅", period: "Утро (6-12)", time: "2ч 15м", percent: 27),
                 TimePeriodActivity(emoji: "☀️", period: "День (12-18)", time: "3ч 42м", percent: 44),
@@ -409,6 +422,7 @@ final class LocalAnalyticsService: AnalyticsService {
             ],
             totalTraffic: "2.3 GB"
         )
+        return (usage, .api) // LocalAnalyticsService всегда возвращает .api
     }
     
     // MARK: - Devices Analytics

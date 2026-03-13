@@ -42,6 +42,11 @@ struct AnalyticsScreen: View {
                 // Навигационная панель
                 navigationHeader
                 
+                // ✅ ВАРИАНТ 4: Индикатор источника данных
+                dataSourceIndicator
+                    .padding(.horizontal, Spacing.screenPadding)
+                    .padding(.top, Spacing.s)
+                
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
@@ -155,6 +160,45 @@ struct AnalyticsScreen: View {
         .accessibilityLabel(localizationManager.localized("analytics_accessibility_navbar"))
     }
     
+    // MARK: - Data Source Indicator
+    
+    /// ✅ ВАРИАНТ 4: Индикатор источника данных
+    @ViewBuilder
+    private var dataSourceIndicator: some View {
+        HStack(spacing: Spacing.xs) {
+            switch viewModel.dataSource {
+            case .api:
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(.green)
+                Text(localizationManager.localized("analytics_data_source_api") ?? "Реальные данные")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.textSecondary)
+            case .cache:
+                Image(systemName: "clock.fill")
+                    .foregroundColor(.orange)
+                Text(localizationManager.localized("analytics_data_source_cache") ?? "Данные из кэша")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.textSecondary)
+            case .empty:
+                Image(systemName: "circle")
+                    .foregroundColor(.gray)
+                Text(localizationManager.localized("analytics_data_source_empty") ?? "Нет данных")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.textSecondary)
+            case .error:
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundColor(.red)
+                Text(localizationManager.localized("analytics_data_source_error") ?? "Ошибка загрузки")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, Spacing.xs)
+        .background(Color.backgroundMedium.opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+    }
+    
     // MARK: - Main Stats (компактные карточки в 1 строку)
     
     private var mainStats: some View {
@@ -199,9 +243,16 @@ struct AnalyticsScreen: View {
                 .accessibilityAddTraits(.isHeader)
             
             VStack(spacing: Spacing.s) {
-                if viewModel.threatCategories.isEmpty {
+                if viewModel.isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .primaryBlue))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, Spacing.l)
+                } else if viewModel.threatCategories.isEmpty {
+                    // ✅ ВАРИАНТ 4: Показываем сообщение "Нет данных" вместо бесконечной загрузки
+                    Text(localizationManager.localized("analytics_no_threats") ?? "Нет данных об угрозах")
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.vertical, Spacing.l)
                 } else {
@@ -301,6 +352,10 @@ struct AnalyticsScreen: View {
                 .font(.system(size: 10))
                 .foregroundColor(.textSecondary)
                 .lineLimit(1)
+                .minimumScaleFactor(0.7)  // ✅ ПУНКТ 1,2: Автоматическое уменьшение шрифта для предотвращения обрезания
+                .fixedSize(horizontal: false, vertical: true)  // ✅ ПУНКТ 1,2: Предотвращение обрезания текста
+                .frame(maxWidth: .infinity)  // ✅ ПУНКТ 2: Выравнивание по ширине
+                .multilineTextAlignment(.center)  // ✅ ПУНКТ 2: Центрирование текста
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
@@ -372,6 +427,134 @@ struct AnalyticsScreen: View {
             .shadow(radius: 6)
     }
     
+    // MARK: - Component Real Data Helpers
+    
+    /// ✅ ВАРИАНТ 4: Получить реальные метрики компонента
+    private func getRealMetrics(for componentId: String) -> [(String, String)] {
+        guard let components = viewModel.componentsAnalytics,
+              let stats = components.getStats(for: componentId) else {
+            // Fallback на пустые данные
+            return getEmptyMetrics(for: componentId)
+        }
+        
+        // Преобразуем метрики компонента в формат для UI
+        switch componentId {
+        case "driving_reports_agent":
+            return [
+                (localizationManager.localized("component_driving_reports_metric_trips"), stats.getMetric(key: "trips")),
+                (localizationManager.localized("component_driving_reports_metric_safety"), "\(stats.getMetric(key: "safety_score"))/10")
+            ]
+        case "dark_web_monitoring_agent":
+            return [
+                (localizationManager.localized("component_dark_web_metric_leaks"), stats.getMetric(key: "leaks_found")),
+                (localizationManager.localized("component_dark_web_metric_new"), stats.getMetric(key: "new_leaks"))
+            ]
+        case "russian_identity_theft_protection_agent":
+            return [
+                (localizationManager.localized("component_identity_theft_metric_attempts"), stats.getMetric(key: "attempts")),
+                (localizationManager.localized("component_identity_theft_metric_blocked"), stats.getMetric(key: "blocked"))
+            ]
+        case "location_bubble_agent":
+            return [
+                (localizationManager.localized("component_location_bubble_metric_blocked"), stats.getMetric(key: "blocked")),
+                (localizationManager.localized("component_location_bubble_metric_accuracy"), stats.getMetric(key: "accuracy"))
+            ]
+        case "personal_data_cleanup_agent":
+            let freedGB = stats.getMetric(key: "freed_space_gb")
+            let hoursAgo = stats.getIntMetric(key: "last_cleanup_hours_ago")
+            let timeAgo = hoursAgo > 0 ? "\(hoursAgo)ч назад" : "Недавно"
+            return [
+                (localizationManager.localized("component_data_cleanup_metric_freed"), "\(freedGB) ГБ"),
+                (localizationManager.localized("component_data_cleanup_metric_last"), timeAgo)
+            ]
+        case "anti_tracker_agent":
+            let total = stats.getIntMetric(key: "blocked_total")
+            let week = stats.getIntMetric(key: "blocked_this_week")
+            return [
+                (localizationManager.localized("component_anti_tracker_metric_blocked"), formatNumber(total)),
+                (localizationManager.localized("component_anti_tracker_metric_week"), "+\(week)")
+            ]
+        case "ai_categories_agent":
+            return [
+                (localizationManager.localized("component_ai_categories_metric_categorized"), stats.getMetric(key: "categorized")),
+                (localizationManager.localized("component_ai_categories_metric_blocked"), stats.getMetric(key: "blocked"))
+            ]
+        default:
+            return getEmptyMetrics(for: componentId)
+        }
+    }
+    
+    /// ✅ ВАРИАНТ 4: Получить реальный badgeCount компонента
+    private func getRealBadgeCount(for componentId: String) -> Int? {
+        guard let components = viewModel.componentsAnalytics,
+              let stats = components.getStats(for: componentId) else {
+            return nil
+        }
+        
+        // Возвращаем количество новых событий как badgeCount
+        switch componentId {
+        case "driving_reports_agent":
+            let count = stats.getIntMetric(key: "new_events")
+            return count > 0 ? count : nil
+        case "dark_web_monitoring_agent":
+            let count = stats.getIntMetric(key: "new_events")
+            return count > 0 ? count : nil
+        default:
+            return nil
+        }
+    }
+    
+    /// Получить пустые метрики для компонента (fallback)
+    private func getEmptyMetrics(for componentId: String) -> [(String, String)] {
+        switch componentId {
+        case "driving_reports_agent":
+            return [
+                (localizationManager.localized("component_driving_reports_metric_trips"), "0"),
+                (localizationManager.localized("component_driving_reports_metric_safety"), "0.0/10")
+            ]
+        case "dark_web_monitoring_agent":
+            return [
+                (localizationManager.localized("component_dark_web_metric_leaks"), "0"),
+                (localizationManager.localized("component_dark_web_metric_new"), "0")
+            ]
+        case "russian_identity_theft_protection_agent":
+            return [
+                (localizationManager.localized("component_identity_theft_metric_attempts"), "0"),
+                (localizationManager.localized("component_identity_theft_metric_blocked"), "0")
+            ]
+        case "location_bubble_agent":
+            return [
+                (localizationManager.localized("component_location_bubble_metric_blocked"), "0"),
+                (localizationManager.localized("component_location_bubble_metric_accuracy"), "Нет данных")
+            ]
+        case "personal_data_cleanup_agent":
+            return [
+                (localizationManager.localized("component_data_cleanup_metric_freed"), "0.0 ГБ"),
+                (localizationManager.localized("component_data_cleanup_metric_last"), "Нет данных")
+            ]
+        case "anti_tracker_agent":
+            return [
+                (localizationManager.localized("component_anti_tracker_metric_blocked"), "0"),
+                (localizationManager.localized("component_anti_tracker_metric_week"), "0")
+            ]
+        case "ai_categories_agent":
+            return [
+                (localizationManager.localized("component_ai_categories_metric_categorized"), "0"),
+                (localizationManager.localized("component_ai_categories_metric_blocked"), "0")
+            ]
+        default:
+            return []
+        }
+    }
+    
+    /// Форматировать число с разделителями тысяч
+    private func formatNumber(_ number: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.groupingSeparator = ","
+        return formatter.string(from: NSNumber(value: number)) ?? "\(number)"
+    }
+    
     // MARK: - Components Reports Section (НОВОЕ)
     
     private var componentsReportsSection: some View {
@@ -383,101 +566,80 @@ struct AnalyticsScreen: View {
                 .accessibilityAddTraits(.isHeader)
             
             VStack(spacing: Spacing.s) {
-                // Отчеты о вождении
+                // ✅ ВАРИАНТ 4: Отчеты о вождении (реальные данные)
                 componentReportCard(
                     componentId: "driving_reports_agent",
                     icon: "🚗",
                     titleKey: "component_driving_reports_title",
-                    metrics: [
-                        (localizationManager.localized("component_driving_reports_metric_trips"), "12"),
-                        (localizationManager.localized("component_driving_reports_metric_safety"), "8.5/10")
-                    ],
+                    metrics: getRealMetrics(for: "driving_reports_agent"),
                     color: .primaryBlue,
-                    badgeCount: 3,
+                    badgeCount: getRealBadgeCount(for: "driving_reports_agent"),
                     onTap: { showDrivingReportsModal = true }
                 )
                 
-                // Мониторинг Дарк вэб
+                // ✅ ВАРИАНТ 4: Мониторинг Дарк вэб (реальные данные)
                 componentReportCard(
                     componentId: "dark_web_monitoring_agent",
                     icon: "🌑",
                     titleKey: "component_dark_web_title",
-                    metrics: [
-                        (localizationManager.localized("component_dark_web_metric_leaks"), "3"),
-                        (localizationManager.localized("component_dark_web_metric_new"), "0")
-                    ],
+                    metrics: getRealMetrics(for: "dark_web_monitoring_agent"),
                     color: .dangerRed,
-                    badgeCount: 1,
+                    badgeCount: getRealBadgeCount(for: "dark_web_monitoring_agent"),
                     onTap: { showDarkWebMonitoringModal = true }
                 )
                 
-                // Защита кражи личности
+                // ✅ ВАРИАНТ 4: Защита кражи личности (реальные данные)
                 componentReportCard(
                     componentId: "russian_identity_theft_protection_agent",
                     icon: "🛡️",
                     titleKey: "component_identity_theft_title",
-                    metrics: [
-                        (localizationManager.localized("component_identity_theft_metric_attempts"), "0"),
-                        (localizationManager.localized("component_identity_theft_metric_blocked"), "47")
-                    ],
+                    metrics: getRealMetrics(for: "russian_identity_theft_protection_agent"),
                     color: .primaryBlue,
-                    badgeCount: nil,
+                    badgeCount: getRealBadgeCount(for: "russian_identity_theft_protection_agent"),
                     onTap: { showIdentityTheftModal = true }
                 )
                 
-                // Пузырь местоположения
+                // ✅ ВАРИАНТ 4: Пузырь местоположения (реальные данные)
                 componentReportCard(
                     componentId: "location_bubble_agent",
                     icon: "📍",
                     titleKey: "component_location_bubble_title",
-                    metrics: [
-                        (localizationManager.localized("component_location_bubble_metric_blocked"), "47"),
-                        (localizationManager.localized("component_location_bubble_metric_accuracy"), "Средняя")
-                    ],
+                    metrics: getRealMetrics(for: "location_bubble_agent"),
                     color: .primaryBlue,
-                    badgeCount: nil,
+                    badgeCount: getRealBadgeCount(for: "location_bubble_agent"),
                     onTap: { showPrivacyReportsModal = true }
                 )
                 
-                // Очистка данных
+                // ✅ ВАРИАНТ 4: Очистка данных (реальные данные)
                 componentReportCard(
                     componentId: "personal_data_cleanup_agent",
                     icon: "🧹",
                     titleKey: "component_data_cleanup_title",
-                    metrics: [
-                        (localizationManager.localized("component_data_cleanup_metric_freed"), "2.3 ГБ"),
-                        (localizationManager.localized("component_data_cleanup_metric_last"), "2ч назад")
-                    ],
+                    metrics: getRealMetrics(for: "personal_data_cleanup_agent"),
                     color: .primaryBlue,
-                    badgeCount: nil,
+                    badgeCount: getRealBadgeCount(for: "personal_data_cleanup_agent"),
                     onTap: { showPrivacyReportsModal = true }
                 )
                 
-                // Блокировка трекеров
+                // ✅ ВАРИАНТ 4: Блокировка трекеров (реальные данные)
                 componentReportCard(
                     componentId: "anti_tracker_agent",
                     icon: "🚫",
                     titleKey: "component_anti_tracker_title",
-                    metrics: [
-                        (localizationManager.localized("component_anti_tracker_metric_blocked"), "1,247"),
-                        (localizationManager.localized("component_anti_tracker_metric_week"), "+234")
-                    ],
+                    metrics: getRealMetrics(for: "anti_tracker_agent"),
                     color: .primaryBlue,
-                    badgeCount: nil,
+                    badgeCount: getRealBadgeCount(for: "anti_tracker_agent"),
                     onTap: { showPrivacyReportsModal = true }
                 )
                 
-                // AI категоризация
+                // ✅ ВАРИАНТ 4: AI категоризация (реальные данные)
                 componentReportCard(
                     componentId: "ai_categories_agent",
                     icon: "🤖",
                     titleKey: "component_ai_categories_title",
-                    metrics: [
-                        (localizationManager.localized("component_ai_categories_metric_categorized"), "342"),
-                        (localizationManager.localized("component_ai_categories_metric_blocked"), "12")
-                    ],
+                    metrics: getRealMetrics(for: "ai_categories_agent"),
                     color: .primaryBlue,
-                    badgeCount: nil,
+                    badgeCount: getRealBadgeCount(for: "ai_categories_agent"),
                     onTap: { showAICategoriesModal = true }
                 )
             }
@@ -511,22 +673,14 @@ struct AnalyticsScreen: View {
 }
 
 private extension AnalyticsScreen {
-    /// ✅ ИСПРАВЛЕНО: Переключение между Local и Remote сервисами
+    /// ✅ ИСПРАВЛЕНО: Всегда используем RemoteAnalyticsService для реальных данных
     static func makeViewModel() -> AnalyticsViewModel {
-        // Используем ту же логику что и для useMockAPI для консистентности
-        let service: AnalyticsService = {
-            if AppConfig.useMockAPI {
-                // Для разработки с флагом USE_MOCK_FOR_DEVELOPMENT используем локальные данные
-                return LocalAnalyticsService()
-            } else {
-                // Продакшен и обычный DEBUG используют реальный API
-                return RemoteAnalyticsService()
-            }
-        }()
+        // ✅ ИСПРАВЛЕНО: Всегда используем RemoteAnalyticsService, даже в DEBUG режиме
+        // Это гарантирует, что мы используем реальный API и видим ошибки вместо MOCK данных
+        let service: AnalyticsService = RemoteAnalyticsService()
         
         #if DEBUG
-        let serviceType = service is LocalAnalyticsService ? "LocalAnalyticsService" : "RemoteAnalyticsService"
-        print("📊 AnalyticsScreen: Используется \(serviceType) (useMockAPI: \(AppConfig.useMockAPI))")
+        print("📊 AnalyticsScreen: Используется RemoteAnalyticsService (всегда реальный API)")
         #endif
         
         return AnalyticsViewModel(service: service)

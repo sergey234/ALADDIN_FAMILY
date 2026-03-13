@@ -81,6 +81,23 @@ except ImportError:
     except ImportError:
         print("⚠️ Предупреждение: FAMILY_API_ENDPOINTS не найден. Endpoint /api/family/stats будет недоступен.")
         family_router_available = False
+
+# ✅ ДОБАВЛЕНО: Импортируем роутер для Analytics API
+try:
+    from app.routers import analytics_router
+    analytics_router_available = True
+except ImportError:
+    # Если файл находится в docs/server, используем прямой импорт
+    import sys
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, current_dir)
+    try:
+        from analytics_router import router as analytics_router_router
+        analytics_router_available = True
+    except ImportError:
+        print("⚠️ Предупреждение: analytics_router не найден. Endpoint /api/analytics будет недоступен.")
+        analytics_router_available = False
 # ✅ ДОБАВЛЕНО: Импортируем Security Routers
 security_routers = {}
 
@@ -381,6 +398,21 @@ if family_router_available:
             print("⚠️ Не удалось подключить роутер Family API")
 else:
     print("⚠️ Роутер Family API недоступен")
+
+# ✅ ДОБАВЛЕНО: Добавлен роутер для Analytics API
+if analytics_router_available:
+    try:
+        app.include_router(analytics_router.router, tags=["analytics"])
+        print("✅ Роутер Analytics API подключен: /api/analytics доступен")
+    except NameError:
+        try:
+            # Роутер уже имеет prefix="/api", поэтому не добавляем дополнительный префикс
+            app.include_router(analytics_router_router, tags=["analytics"])
+            print("✅ Роутер Analytics API подключен (альтернативный импорт): /api/analytics доступен")
+        except NameError:
+            print("⚠️ Не удалось подключить роутер Analytics API")
+else:
+    print("⚠️ Роутер Analytics API недоступен")
 
 # ✅ ДОБАВЛЕНО: Подключение Security Routers
 print(f"📦 Подключение Security Routers (найдено: {len(security_routers)} роутеров)")

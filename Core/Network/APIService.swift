@@ -1,5 +1,8 @@
 import Foundation
 import Combine
+
+// Импортируем модели компонентов
+// ComponentStats и ComponentsAnalytics определены в Core/Analytics/ComponentAnalyticsModels.swift
 import CoreLocation
 
 // Master Logger for API logging
@@ -294,6 +297,117 @@ class APIService: ObservableObject {
     
     func getTopThreats(completion: @escaping (Result<[ThreatItem], Error>) -> Void) {
         networkManager.get(endpoint: AppConfig.Endpoint.topThreats, completion: completion)
+    }
+    
+    // MARK: - Component Stats API
+    
+    /// ✅ ВАРИАНТ 4: Получить статистику компонента по ID
+    func getComponentStats(componentId: String, completion: @escaping (Result<ComponentStats, Error>) -> Void) {
+        let endpoint: String
+        switch componentId {
+        case "driving_reports_agent", "driving":
+            endpoint = AppConfig.Endpoint.drivingStats
+        case "dark_web_monitoring_agent", "darkweb":
+            endpoint = AppConfig.Endpoint.darkWebStats
+        case "russian_identity_theft_protection_agent", "identity":
+            endpoint = AppConfig.Endpoint.identityTheftStats
+        case "location_bubble_agent", "location":
+            endpoint = AppConfig.Endpoint.locationStats
+        case "personal_data_cleanup_agent", "cleanup":
+            endpoint = AppConfig.Endpoint.dataCleanupStats
+        case "anti_tracker_agent", "tracker":
+            endpoint = AppConfig.Endpoint.antiTrackerStats
+        case "ai_categories_agent", "ai":
+            endpoint = AppConfig.Endpoint.aiCategoriesStats
+        default:
+            completion(.failure(NSError(domain: "APIService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown component: \(componentId)"])))
+            return
+        }
+        
+        // Используем generic метод с Dictionary для гибкого парсинга
+        networkManager.get(endpoint: endpoint) { (result: Result<[String: AnyCodable], Error>) in
+            switch result {
+            case .success(let jsonDict):
+                // Преобразуем AnyCodable в обычный Dictionary
+                var plainDict: [String: Any] = [:]
+                for (key, value) in jsonDict {
+                    plainDict[key] = value.value
+                }
+                // Преобразуем ответ в ComponentStats
+                let stats = self.parseComponentStats(componentId: componentId, json: plainDict)
+                completion(.success(stats))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    /// Преобразует ответ API в ComponentStats
+    private func parseComponentStats(componentId: String, json: [String: Any]) -> ComponentStats {
+        var metrics: [String: String] = [:]
+        
+        // Преобразуем данные в зависимости от типа компонента
+        switch componentId {
+        case "driving_reports_agent", "driving":
+            if let trips = json["trips"] as? Int {
+                metrics["trips"] = "\(trips)"
+            }
+            if let safety_score = json["safety_score"] as? Double {
+                metrics["safety_score"] = String(format: "%.1f", safety_score)
+            }
+            if let new_events = json["new_events"] as? Int {
+                metrics["new_events"] = "\(new_events)"
+            }
+        case "dark_web_monitoring_agent", "darkweb":
+            if let leaks_found = (json["leaks_found"] as? Int) ?? (json["totalLeaks"] as? Int) {
+                metrics["leaks_found"] = "\(leaks_found)"
+            }
+            if let new_leaks = (json["new_leaks"] as? Int) ?? (json["newLeaks"] as? Int) {
+                metrics["new_leaks"] = "\(new_leaks)"
+            }
+            if let new_events = (json["new_events"] as? Int) ?? (json["newEvents"] as? Int) {
+                metrics["new_events"] = "\(new_events)"
+            }
+        case "russian_identity_theft_protection_agent", "identity":
+            if let attempts = (json["attempts"] as? Int) ?? (json["totalAttempts"] as? Int) {
+                metrics["attempts"] = "\(attempts)"
+            }
+            if let blocked = (json["blocked"] as? Int) ?? (json["blockedAttempts"] as? Int) {
+                metrics["blocked"] = "\(blocked)"
+            }
+        case "location_bubble_agent", "location":
+            if let blocked = (json["blocked"] as? Int) ?? (json["blockedRequests"] as? Int) {
+                metrics["blocked"] = "\(blocked)"
+            }
+            if let accuracy = json["accuracy"] as? String {
+                metrics["accuracy"] = accuracy
+            }
+        case "personal_data_cleanup_agent", "cleanup":
+            if let freed_space_gb = (json["freed_space_gb"] as? Double) ?? (json["totalFreed"] as? Double) {
+                metrics["freed_space_gb"] = String(format: "%.1f", freed_space_gb)
+            }
+            if let last_cleanup_hours_ago = json["last_cleanup_hours_ago"] as? Int {
+                metrics["last_cleanup_hours_ago"] = "\(last_cleanup_hours_ago)"
+            }
+        case "anti_tracker_agent", "tracker":
+            if let blocked_total = (json["blocked_total"] as? Int) ?? (json["totalBlocked"] as? Int) {
+                metrics["blocked_total"] = "\(blocked_total)"
+            }
+            if let blocked_this_week = (json["blocked_this_week"] as? Int) ?? (json["blockedThisWeek"] as? Int) {
+                metrics["blocked_this_week"] = "\(blocked_this_week)"
+            }
+        case "ai_categories_agent", "ai":
+            if let categorized = (json["categorized"] as? Int) ?? (json["totalCategorized"] as? Int) {
+                metrics["categorized"] = "\(categorized)"
+            }
+            if let blocked = (json["blocked"] as? Int) ?? (json["blockedContent"] as? Int) {
+                metrics["blocked"] = "\(blocked)"
+            }
+        default:
+            break
+        }
+        
+        return ComponentStats(componentId: componentId, metrics: metrics, dataSource: .api)
     }
     
     // MARK: - AI Assistant API

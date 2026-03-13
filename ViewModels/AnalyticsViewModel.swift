@@ -17,6 +17,13 @@ class AnalyticsViewModel: ObservableObject {
     // ✅ ЗАДАЧА 64: Индикатор офлайн режима для graceful degradation
     @Published private(set) var isOfflineMode: Bool = false
     
+    // ✅ ВАРИАНТ 4: Индикатор источника данных
+    @Published private(set) var dataSource: DataSource = .empty
+    
+    // ✅ ВАРИАНТ 4: Данные компонентов
+    @Published private(set) var componentsAnalytics: ComponentsAnalytics?
+    @Published private(set) var componentsDataSource: DataSource = .empty
+    
     private let service: AnalyticsService
     
     // Ключи для UserDefaults
@@ -25,22 +32,27 @@ class AnalyticsViewModel: ObservableObject {
     private let filtersIncludeFamilyKey = "analytics_last_filters_include_family"
     private let filtersIncludeDevicesKey = "analytics_last_filters_include_devices"
     
-    // Загружаем сохраненные значения или используем дефолтные
-    private var defaultPeriod: String {
-        UserDefaults.standard.string(forKey: periodKey) ?? "day"
-    }
-    
-    private var defaultFilters: AnalyticsFilters {
-        AnalyticsFilters(
-            onlyBlocked: UserDefaults.standard.bool(forKey: filtersOnlyBlockedKey),
-            includeFamily: UserDefaults.standard.object(forKey: filtersIncludeFamilyKey) as? Bool ?? true,
-            includeDevices: UserDefaults.standard.object(forKey: filtersIncludeDevicesKey) as? Bool ?? true
-        )
-    }
+    // ✅ ИСПРАВЛЕНО: @State вместо computed properties (защита от рекурсии)
+    @Published private(set) var cachedPeriod: String = "day"
+    @Published private(set) var cachedFilters: AnalyticsFilters = AnalyticsFilters(
+        onlyBlocked: false,
+        includeFamily: true,
+        includeDevices: true
+    )
     
     init(service: AnalyticsService) {
         logger.business("Initializing AnalyticsViewModel")
         self.service = service
+        
+        // ✅ ИСПРАВЛЕНО: Загружаем из UserDefaults один раз при инициализации (асинхронно)
+        Task { @MainActor in
+            cachedPeriod = UserDefaults.standard.string(forKey: periodKey) ?? "day"
+            cachedFilters = AnalyticsFilters(
+                onlyBlocked: UserDefaults.standard.bool(forKey: filtersOnlyBlockedKey),
+                includeFamily: UserDefaults.standard.object(forKey: filtersIncludeFamilyKey) as? Bool ?? true,
+                includeDevices: UserDefaults.standard.object(forKey: filtersIncludeDevicesKey) as? Bool ?? true
+            )
+        }
     }
     
     @MainActor
@@ -55,15 +67,23 @@ class AnalyticsViewModel: ObservableObject {
 
         #if DEBUG
         print("📊 AnalyticsViewModel: Загрузка аналитики...")
-        print("   - Period: \(defaultPeriod)")
-        print("   - Filters: onlyBlocked=\(defaultFilters.onlyBlocked), includeFamily=\(defaultFilters.includeFamily), includeDevices=\(defaultFilters.includeDevices)")
+        print("   - Period: \(cachedPeriod)")
+        print("   - Filters: onlyBlocked=\(cachedFilters.onlyBlocked), includeFamily=\(cachedFilters.includeFamily), includeDevices=\(cachedFilters.includeDevices)")
         #endif
 
         do {
-            async let summaryTask = service.fetchSummary(period: defaultPeriod, filters: defaultFilters)
-            async let securityTask = service.fetchSecurityAnalytics(period: defaultPeriod)
+            async let summaryTask = service.fetchSummary(period: cachedPeriod, filters: cachedFilters)
+            async let securityTask = service.fetchSecurityAnalytics(period: cachedPeriod)
 
-            let (summary, security) = try await (summaryTask, securityTask)
+            let (summaryResult, securityResult) = try await (summaryTask, securityTask)
+            
+            // Извлекаем данные и источник
+            let (summary, summarySource) = summaryResult
+            let (security, securitySource) = securityResult
+            
+            // Определяем общий источник данных
+            dataSource = summarySource == .api && securitySource == .api ? .api :
+                         summarySource == .cache || securitySource == .cache ? .cache : .empty
 
             #if DEBUG
             print("✅ AnalyticsViewModel: Данные загружены:")
@@ -72,52 +92,67 @@ class AnalyticsViewModel: ObservableObject {
             print("   - Items scanned: \(summary.itemsScanned)")
             print("   - Protection level: \(summary.protectionLevel)%")
             print("   - Threat categories: \(security.blockedThreats.count)")
+            print("   - Data Source: Summary=\(summarySource), Security=\(securitySource), Final=\(dataSource)")
             #endif
+            
+            logger.business("Analytics data loaded: threats=\(summary.threatsDetected), source=\(dataSource)")
 
             // ✅ ЗАДАЧА 64: Проверяем, используется ли офлайн режим
-            // Если сервис - RemoteAnalyticsService и данные получены из кэша/fallback, включаем индикатор
-            if service is RemoteAnalyticsService {
-                // Для RemoteAnalyticsService мы можем определить использование кэша по логированию выше
-                // Индикатор включается только если была ошибка API, но данные получены
-                isOfflineMode = false // По умолчанию онлайн режим
-            }
+            // Если данные из кэша - включаем индикатор офлайн режима
+            isOfflineMode = (summarySource == .cache || securitySource == .cache)
 
             apply(summary: summary)
             apply(securityAnalytics: security)
+            
+            // ✅ ВАРИАНТ 4: Загружаем данные компонентов (если сервис поддерживает)
+            if let remoteService = service as? RemoteAnalyticsService {
+                do {
+                    #if DEBUG
+                    print("📊 AnalyticsViewModel: Начинаем загрузку компонентов...")
+                    #endif
+                    let components = try await remoteService.fetchAllComponentsStats()
+                    componentsAnalytics = components
+                    componentsDataSource = .api // Если загрузилось успешно - данные из API
+                    #if DEBUG
+                    print("✅ AnalyticsViewModel: Компоненты загружены успешно")
+                    #endif
+                } catch {
+                    #if DEBUG
+                    print("⚠️ AnalyticsViewModel: Ошибка загрузки компонентов: \(error)")
+                    #endif
+                    // При ошибке компоненты остаются nil - UI покажет пустые данные
+                    componentsDataSource = .error
+                }
+            }
 
             // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности загрузки
             PerformanceMonitor.shared.endScreenLoad("AnalyticsScreen")
+            
+            // ✅ ВАРИАНТ 4: Убеждаемся, что isLoading установлен в false
+            isLoading = false
 
         } catch {
             // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности даже при ошибке
             PerformanceMonitor.shared.endScreenLoad("AnalyticsScreen")
-            // ✅ ЗАДАЧА 64: Проверяем, удалось ли получить данные через graceful degradation
-            let isUsingFallback = errorMessage == nil || !errorMessage!.contains("Не удалось загрузить аналитику")
+            
+            // ✅ ВАРИАНТ 4: Если ошибка - устанавливаем dataSource = .error
+            dataSource = .error
+            
+            // Полная ошибка - не удалось получить данные даже через fallback
+            let errorMsg = getErrorMessage(from: error)
+            errorMessage = errorMsg
+            resetState()
+            isOfflineMode = false
 
-            if isUsingFallback && service is RemoteAnalyticsService {
-                // ✅ ЗАДАЧА 64: Включаем индикатор офлайн режима
-                isOfflineMode = true
-
-                #if DEBUG
-                print("🛡️ AnalyticsViewModel: Включен офлайн режим - используются кэшированные данные")
-                #endif
-            } else {
-                // Полная ошибка - не удалось получить данные даже через fallback
-                let errorMsg = getErrorMessage(from: error)
-                errorMessage = errorMsg
-                resetState()
-                isOfflineMode = false
-
-                #if DEBUG
-                print("❌ AnalyticsViewModel: Ошибка загрузки:")
-                print("   - Ошибка: \(error)")
-                if let networkError = error as? NetworkError {
-                    print("   - Тип: \(networkError)")
-                    print("   - Описание: \(networkError.localizedDescription)")
-                }
-                print("   - Сообщение пользователю: \(errorMsg)")
-                #endif
+            #if DEBUG
+            print("❌ AnalyticsViewModel: Ошибка загрузки:")
+            print("   - Ошибка: \(error)")
+            if let networkError = error as? NetworkError {
+                print("   - Тип: \(networkError)")
+                print("   - Описание: \(networkError.localizedDescription)")
             }
+            print("   - Сообщение пользователю: \(errorMsg)")
+            #endif
         }
 
         isLoading = false
