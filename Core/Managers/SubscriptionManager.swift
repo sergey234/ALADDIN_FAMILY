@@ -18,6 +18,10 @@ import Security
 import UserNotifications
 import SwiftUI
 
+// ✅ Typealias для явного указания структуры JWTPayload из APIModels.swift
+// Используем полное имя структуры из APIModels для избежания конфликтов
+// Примечание: JWTPayload определена в Core/Models/APIModels.swift
+
 // Import subscription models
 // Note: This file uses both local models and API models
 // Models are defined in separate files in Core/Models/
@@ -790,33 +794,50 @@ final class SubscriptionManager: ObservableObject {
 
 
     /// 🔐 Parse JWT token and extract subscription data
+    /// ✅ ИСПРАВЛЕНО: Используем структуру JWTPayload из APIModels.swift (реальная структура JWT от сервера)
     private func parseJWTToken(_ token: String) -> JWTToken? {
         // Split JWT token
         let parts = token.split(separator: ".")
         guard parts.count == 3 else { return nil }
 
-        // Decode payload
+        // Decode payload - используем структуру JWTPayload из APIModels.swift напрямую
         guard let payloadData = decodeBase64(String(parts[1])),
-              let payload = try? JSONDecoder().decode(JWTPayload.self, from: payloadData) else {
+              let apiPayload = try? JSONDecoder().decode(JWTPayload.self, from: payloadData) else {
             return nil
         }
+
+        // Извлекаем данные из реальной структуры JWT
+        let deviceId = apiPayload.device_id ?? apiPayload.sub ?? ""
+        let subscription = apiPayload.subscription
+        
+        // Получаем subscription level, trial info, limits, components из subscription
+        let subscriptionLevel = subscription != nil ? (SubscriptionLevel(rawValue: subscription!.level) ?? .free) : .free
+        let trialInfo = subscription?.trial_info
+        let limits = subscription?.limits?.toSubscriptionLimits() ?? SubscriptionLimits.freeLimits
+        let components = subscription?.components ?? []
+        
+        // Получаем exp и iat (могут быть nil, используем значения по умолчанию)
+        let exp = apiPayload.exp ?? Date().addingTimeInterval(86400).timeIntervalSince1970
+        let iat = apiPayload.iat ?? Date().timeIntervalSince1970
+        let iss = apiPayload.iss ?? "aladdin_server"
 
         // Convert to our model
         return JWTToken(
             token: token,
-            deviceId: payload.deviceId,
-            subscriptionLevel: payload.subscriptionLevel,
-            trialInfo: payload.trialInfo,
-            expiresAt: Date(timeIntervalSince1970: payload.exp),
-            issuedAt: Date(timeIntervalSince1970: payload.iat),
-            issuer: payload.iss,
-            limits: payload.limits,
-            components: payload.components
+            deviceId: deviceId,
+            subscriptionLevel: subscriptionLevel,
+            trialInfo: trialInfo,
+            expiresAt: Date(timeIntervalSince1970: exp),
+            issuedAt: Date(timeIntervalSince1970: iat),
+            issuer: iss,
+            limits: limits,
+            components: components
         )
     }
 
     /// 🔄 Update subscription status
-    private func updateSubscriptionStatus(_ status: SubscriptionStatus) async {
+    /// ✅ ИСПРАВЛЕНО: Изменено с private на internal для использования в TokenHealthMonitor
+    func updateSubscriptionStatus(_ status: SubscriptionStatus) async {
         currentSubscription = status
         persistSubscriptionStatus(status)
         logger.business("📊 Subscription updated: \(status.level)")
@@ -929,7 +950,8 @@ final class SubscriptionManager: ObservableObject {
     }
 
     /// 🔐 Store JWT token securely
-    private func storeToken(_ token: JWTToken) async {
+    /// ✅ ИСПРАВЛЕНО: Изменено с private на internal для использования в TokenHealthMonitor
+    func storeToken(_ token: JWTToken) async {
         print("💾💾💾 STORE_TOKEN: Starting to store token")
         print("💾💾💾 STORE_TOKEN: Token deviceId = \(token.deviceId)")
         print("💾💾💾 STORE_TOKEN: Token level = \(token.subscriptionLevel)")
@@ -1138,50 +1160,15 @@ final class SubscriptionManager: ObservableObject {
 
 // MARK: - Helper Extensions
 
-extension SubscriptionLimits {
-    /// Free tier limits
-    static var freeLimits: SubscriptionLimits {
-        SubscriptionLimits(
-            maxDevices: 1,
-            maxAIMessages: 10,
-            maxScans: 5,
-            maxReports: 2,
-            currentUsage: UsageCounters(aiMessages: 0, scans: 0, reports: 0, devices: 0)
-        )
-    }
-
-    /// Trial limits
-    static var trialLimits: SubscriptionLimits {
-        SubscriptionLimits(
-            maxDevices: 3,
-            maxAIMessages: 50,
-            maxScans: 100,
-            maxReports: 10,
-            currentUsage: UsageCounters(aiMessages: 0, scans: 0, reports: 0, devices: 0)
-        )
-    }
-}
+// ✅ УДАЛЕНО: extension SubscriptionLimits с freeLimits и trialLimits
+// Эти свойства уже определены в SubscriptionModels.swift
+// Используем их оттуда, чтобы избежать дублирования
 
 // MARK: - API Request Models
 
-/// 📡 JWT Payload Structure
-private struct JWTPayload: Codable {
-    let deviceId: String
-    let subscriptionLevel: SubscriptionLevel
-    let trialInfo: TrialInfo?
-    let exp: Double
-    let iat: Double
-    let iss: String
-    let limits: SubscriptionLimits
-    let components: [String]
-
-    enum CodingKeys: String, CodingKey {
-        case deviceId = "device_id"
-        case subscriptionLevel = "subscription_level"
-        case trialInfo = "trial_info"
-        case exp, iat, iss, limits, components
-    }
-}
+// ✅ УДАЛЕНО: private struct JWTPayload больше не используется
+// Теперь используется JWTPayload из APIModels.swift напрямую
+// Это предотвращает конфликт имен и использует правильную структуру JWT от сервера
 
 // MARK: - Network Monitoring & Offline Support
 

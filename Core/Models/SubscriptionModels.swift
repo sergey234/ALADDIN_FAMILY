@@ -45,11 +45,78 @@ struct JWTToken: Codable, Equatable {
     let components: [String]
 
     enum CodingKeys: String, CodingKey {
-        case token, deviceId = "device_id"
+        case token
+        case deviceId = "device_id"
         case subscriptionLevel = "subscription_level"
         case trialInfo = "trial_info"
-        case expiresAt = "exp", issuedAt = "iat"
-        case issuer = "iss", limits, components
+        case expiresAt = "exp"
+        case issuedAt = "iat"
+        case issuer = "iss"
+        case limits
+        case components
+    }
+    
+    /// ✅ ИСПРАВЛЕНО: Явный инициализатор для предотвращения ошибок компиляции
+    /// Также требуется для Codable, чтобы автоматический инициализатор работал правильно
+    init(
+        token: String,
+        deviceId: String,
+        subscriptionLevel: SubscriptionLevel,
+        trialInfo: TrialInfo?,
+        expiresAt: Date,
+        issuedAt: Date,
+        issuer: String,
+        limits: SubscriptionLimits,
+        components: [String]
+    ) {
+        self.token = token
+        self.deviceId = deviceId
+        self.subscriptionLevel = subscriptionLevel
+        self.trialInfo = trialInfo
+        self.expiresAt = expiresAt
+        self.issuedAt = issuedAt
+        self.issuer = issuer
+        self.limits = limits
+        self.components = components
+    }
+    
+    /// ✅ ИСПРАВЛЕНО: Явный инициализатор из Decoder для Codable
+    /// Обрабатывает Date как TimeInterval (Unix timestamp) из JSON
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        token = try container.decode(String.self, forKey: .token)
+        deviceId = try container.decode(String.self, forKey: .deviceId)
+        subscriptionLevel = try container.decode(SubscriptionLevel.self, forKey: .subscriptionLevel)
+        trialInfo = try container.decodeIfPresent(TrialInfo.self, forKey: .trialInfo)
+        
+        // ✅ ИСПРАВЛЕНО: Date декодируется как TimeInterval (Unix timestamp)
+        let expiresAtInterval = try container.decode(TimeInterval.self, forKey: .expiresAt)
+        expiresAt = Date(timeIntervalSince1970: expiresAtInterval)
+        
+        let issuedAtInterval = try container.decode(TimeInterval.self, forKey: .issuedAt)
+        issuedAt = Date(timeIntervalSince1970: issuedAtInterval)
+        
+        issuer = try container.decode(String.self, forKey: .issuer)
+        limits = try container.decode(SubscriptionLimits.self, forKey: .limits)
+        components = try container.decode([String].self, forKey: .components)
+    }
+    
+    /// ✅ ИСПРАВЛЕНО: Явный метод encode для Codable
+    /// Кодирует Date как TimeInterval (Unix timestamp) в JSON
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(token, forKey: .token)
+        try container.encode(deviceId, forKey: .deviceId)
+        try container.encode(subscriptionLevel, forKey: .subscriptionLevel)
+        try container.encodeIfPresent(trialInfo, forKey: .trialInfo)
+        
+        // ✅ ИСПРАВЛЕНО: Date кодируется как TimeInterval (Unix timestamp)
+        try container.encode(expiresAt.timeIntervalSince1970, forKey: .expiresAt)
+        try container.encode(issuedAt.timeIntervalSince1970, forKey: .issuedAt)
+        
+        try container.encode(issuer, forKey: .issuer)
+        try container.encode(limits, forKey: .limits)
+        try container.encode(components, forKey: .components)
     }
 }
 
@@ -498,6 +565,61 @@ extension SubscriptionLimits {
         lhs.maxScans == rhs.maxScans &&
         lhs.maxReports == rhs.maxReports &&
         lhs.currentUsage == rhs.currentUsage
+    }
+    
+    /// Free tier limits
+    static var freeLimits: SubscriptionLimits {
+        SubscriptionLimits(
+            maxDevices: 1,
+            maxAIMessages: 10,
+            maxScans: 5,
+            maxReports: 3,
+            currentUsage: UsageCounters(aiMessages: 0, scans: 0, reports: 0, devices: 0)
+        )
+    }
+    
+    /// Trial tier limits
+    static var trialLimits: SubscriptionLimits {
+        SubscriptionLimits(
+            maxDevices: 3,
+            maxAIMessages: 50,
+            maxScans: 100,
+            maxReports: 10,
+            currentUsage: UsageCounters(aiMessages: 0, scans: 0, reports: 0, devices: 0)
+        )
+    }
+    
+    /// Personal tier limits
+    static var personalLimits: SubscriptionLimits {
+        SubscriptionLimits(
+            maxDevices: 2,
+            maxAIMessages: 100,
+            maxScans: 50,
+            maxReports: 20,
+            currentUsage: UsageCounters(aiMessages: 0, scans: 0, reports: 0, devices: 0)
+        )
+    }
+    
+    /// Family tier limits
+    static var familyLimits: SubscriptionLimits {
+        SubscriptionLimits(
+            maxDevices: 6,
+            maxAIMessages: 1000,
+            maxScans: 200,
+            maxReports: 100,
+            currentUsage: UsageCounters(aiMessages: 0, scans: 0, reports: 0, devices: 0)
+        )
+    }
+    
+    /// Premium tier limits
+    static var premiumLimits: SubscriptionLimits {
+        SubscriptionLimits(
+            maxDevices: 10,
+            maxAIMessages: 10000,
+            maxScans: 1000,
+            maxReports: 500,
+            currentUsage: UsageCounters(aiMessages: 0, scans: 0, reports: 0, devices: 0)
+        )
     }
 }
 

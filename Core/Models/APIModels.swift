@@ -394,6 +394,49 @@ struct RefreshTokenResponse: Codable {
     let token_type: String?
 }
 
+// MARK: - JWT Payload Models (для декодирования JWT)
+
+/// Структура для декодирования JWT payload
+/// JWT Payload structure for token decoding (used in TokenHealthMonitor)
+/// Note: This is different from private JWTPayload in SubscriptionManager.swift
+struct JWTPayload: Codable {
+    let sub: String?  // User ID
+    let device_id: String?
+    let exp: TimeInterval?  // Expiration time (Unix timestamp)
+    let iat: TimeInterval?  // Issued at (Unix timestamp)
+    let iss: String?  // Issuer
+    let subscription: JWTSubscriptionPayload?
+}
+
+/// Структура subscription в JWT payload
+struct JWTSubscriptionPayload: Codable {
+    let level: String  // subscription level (trial, free, personal, family, premium)
+    let is_active: Bool?
+    let expires_at: String?  // ISO 8601 date string
+    let trial_info: TrialInfo?
+    let limits: JWTSubscriptionLimits?
+    let components: [String]?
+}
+
+/// Структура limits в JWT payload
+struct JWTSubscriptionLimits: Codable {
+    let max_devices: Int?
+    let max_ai_messages: Int?
+    let max_scans: Int?
+    let max_reports: Int?
+    
+    /// Конвертировать в SubscriptionLimits
+    func toSubscriptionLimits() -> SubscriptionLimits {
+        return SubscriptionLimits(
+            maxDevices: max_devices ?? 1,
+            maxAIMessages: max_ai_messages ?? 10,
+            maxScans: max_scans ?? 5,
+            maxReports: max_reports ?? 3,
+            currentUsage: UsageCounters(aiMessages: 0, scans: 0, reports: 0, devices: 0)
+        )
+    }
+}
+
 struct UserProfile: Codable {
     let id: String
     let name: String
