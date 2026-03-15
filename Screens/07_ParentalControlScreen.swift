@@ -586,23 +586,131 @@ struct ParentalControlScreen: View {
     private func loadChildMembers() {
         isChildrenLoading = true
         childrenErrorMessage = nil
+        
+        // ✅ ИСПРАВЛЕНИЕ: Сначала пробуем загрузить из UserDefaults (локальный кэш)
+        var hasLocalChildren = false
+        if let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
+           let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
+            // Фильтруем только детей (child и teenager)
+            let localChildren = decoded.filter { member in
+                member.role == .child || member.role == .teenager
+            }
+            
+            if !localChildren.isEmpty {
+                // Преобразуем FamilyMemberData в FamilyMemberResponse
+                let convertedChildren = localChildren.map { member in
+                    FamilyMemberResponse(
+                        id: UUID().uuidString, // Временный ID
+                        name: member.name,
+                        role: member.role.rawValue, // Преобразуем enum в строку
+                        avatar: member.avatar,
+                        status: member.status.rawValue,
+                        threatsBlocked: member.threatsBlocked,
+                        lastActive: member.lastActive,
+                        devices: 1 // Дефолтное значение
+                    )
+                }
+                self.children = convertedChildren
+                hasLocalChildren = true
+                print("✅ Загружено \(convertedChildren.count) детей из локального кэша")
+            }
+        }
+        
+        // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой из API
+        guard AppConfig.authToken != nil else {
+            DispatchQueue.main.async {
+                self.isChildrenLoading = false
+                // Если есть локальные дети - не показываем ошибку
+                if hasLocalChildren && !self.childMembers.isEmpty {
+                    self.childrenErrorMessage = nil
+                    // Загружаем данные для выбранного ребенка
+                    if let resolvedId = self.resolveSelectedChildID() {
+                        self.loadParentalControlData(for: resolvedId)
+                    }
+                } else {
+                    // Если нет локальных детей и нет токена - список пустой
+                    self.children = []
+                    self.childrenErrorMessage = nil
+                }
+            }
+            return
+        }
+        
+        // Загружаем из API для синхронизации
         apiService.getFamilyMembers { result in
             DispatchQueue.main.async {
                 self.isChildrenLoading = false
                 switch result {
                 case .success(let members):
                     self.statsErrorMessage = nil
+                    // Обновляем список детей из API
                     self.children = members
-                    guard let resolvedId = resolveSelectedChildID() else {
-                        self.statsErrorMessage = localizationManager.localized("parental_children_empty")
+                    
+                    // ✅ ИСПРАВЛЕНИЕ: Если после фильтрации нет детей из API, но есть локальные - используем локальные
+                    if self.childMembers.isEmpty && hasLocalChildren {
+                        // Пробуем снова загрузить из UserDefaults
+                        if let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
+                           let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
+                            let localChildren = decoded.filter { member in
+                                member.role == .child || member.role == .teenager
+                            }
+                            if !localChildren.isEmpty {
+                                // Используем локальные данные
+                                let convertedChildren = localChildren.map { member in
+                                    FamilyMemberResponse(
+                                        id: UUID().uuidString,
+                                        name: member.name,
+                                        role: member.role.rawValue,
+                                        avatar: member.avatar,
+                                        status: member.status.rawValue,
+                                        threatsBlocked: member.threatsBlocked,
+                                        lastActive: member.lastActive,
+                                        devices: 1 // Дефолтное значение
+                                    )
+                                }
+                                self.children = convertedChildren
+                                print("✅ Используем локальные данные: \(convertedChildren.count) детей")
+                            }
+                        }
+                    }
+                    
+                    // Проверяем, есть ли дети после фильтрации
+                    if self.childMembers.isEmpty {
+                        // Если нет детей, не показываем ошибку - это нормальная ситуация
+                        self.childrenErrorMessage = nil
+                        self.statsErrorMessage = self.localizationManager.localized("parental_children_empty")
                         return
                     }
-                    loadParentalControlData(for: resolvedId)
+                    
+                    guard let resolvedId = self.resolveSelectedChildID() else {
+                        self.statsErrorMessage = self.localizationManager.localized("parental_children_empty")
+                        return
+                    }
+                    self.loadParentalControlData(for: resolvedId)
                 case .failure(let error):
-                    let message = localizationManager.localized("parental_children_error_generic")
-                    self.childrenErrorMessage = message
-                    self.statsErrorMessage = message
-                    print("❌ Ошибка загрузки списка детей: \(error.localizedDescription)")
+                    // ✅ ИСПРАВЛЕНИЕ: Если ошибка API, но есть локальные данные - используем их
+                    if hasLocalChildren && !self.childMembers.isEmpty {
+                        print("⚠️ Ошибка загрузки из API, используем локальные данные")
+                        self.childrenErrorMessage = nil
+                        // Загружаем данные для выбранного ребенка
+                        if let resolvedId = self.resolveSelectedChildID() {
+                            self.loadParentalControlData(for: resolvedId)
+                        }
+                    } else {
+                        // Если нет локальных данных - показываем ошибку
+                        let networkError = NetworkError.from(error)
+                        if case .unauthorized = networkError {
+                            // Для ошибки авторизации не показываем ошибку загрузки детей
+                            self.children = []
+                            self.childrenErrorMessage = nil
+                        } else {
+                            // Только для других ошибок показываем сообщение
+                            let message = self.localizationManager.localized("parental_children_error_generic")
+                            self.childrenErrorMessage = message
+                            self.statsErrorMessage = message
+                            print("❌ Ошибка загрузки списка детей: \(error.localizedDescription)")
+                        }
+                    }
                 }
             }
         }

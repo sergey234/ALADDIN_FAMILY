@@ -181,16 +181,14 @@ class ParentalControlViewModel: ObservableObject {
         newValue: Bool,
         updateClosure: @escaping (Bool) -> Void
     ) async {
-        // ✅ ЭТАП 2: Проверка токена перед переключением
+        // ✅ ИСПРАВЛЕНИЕ: Проверка токена перед переключением
+        // ✅ НЕ отправляем SessionExpired при отсутствии токена - это может быть нормальная ситуация
         guard AppConfig.authToken != nil else {
             print("⚠️ ParentalControlViewModel: Токен отсутствует, невозможно переключить компонент \(componentId)")
+            // ✅ ИСПРАВЛЕНИЕ: Откатываем изменение UI, но НЕ отправляем на онбординг
+            updateClosure(!newValue) // Откатываем обратно
             toastManager.showError("Требуется авторизация. Войдите в аккаунт.")
-            // Отправляем уведомление о необходимости логина
-            NotificationCenter.default.post(
-                name: NSNotification.Name("SessionExpired"),
-                object: nil,
-                userInfo: ["message": "Требуется авторизация. Войдите в аккаунт."]
-            )
+            // ✅ ИСПРАВЛЕНИЕ: НЕ отправляем SessionExpired - это не истекшая сессия, а просто отсутствие токена
             return
         }
         
@@ -219,18 +217,23 @@ class ParentalControlViewModel: ObservableObject {
         case .success:
             toastManager.showSuccess("Компонент обновлен")
         case .failure(let error):
-            // ✅ ЭТАП 3: Обработка unauthorized
+            // ✅ ИСПРАВЛЕНИЕ: Обработка unauthorized
             if case .unauthorized(let message) = error {
                 // Откат при ошибке - используем противоположное значение
                 updateClosure(!newValue)
                 let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
                 toastManager.showError(errorMessage)
-                // Отправляем уведомление о необходимости логина
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("SessionExpired"),
-                    object: nil,
-                    userInfo: ["message": errorMessage]
-                )
+                // ✅ ИСПРАВЛЕНИЕ: Отправляем SessionExpired ТОЛЬКО если это действительно истекшая сессия
+                // Проверяем, что токен был установлен ранее (не просто отсутствует)
+                if AppConfig.authToken != nil {
+                    // Токен был, но стал невалидным - это истекшая сессия
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("SessionExpired"),
+                        object: nil,
+                        userInfo: ["message": errorMessage]
+                    )
+                }
+                // Если токена не было, не отправляем SessionExpired - это не истекшая сессия
             } else {
                 // Откат при ошибке - используем противоположное значение
                 updateClosure(!newValue)
