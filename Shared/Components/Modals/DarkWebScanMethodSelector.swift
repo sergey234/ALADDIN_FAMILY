@@ -85,14 +85,31 @@ struct DarkWebScanMethodSelector: View {
         }) {
             VStack(alignment: .leading, spacing: Spacing.s) {
                 // Заголовок с иконкой
-                HStack {
+                HStack(alignment: .top, spacing: Spacing.xs) {
                     Image(systemName: method.icon)
                         .font(.title2)
                         .foregroundColor(method == .secure ? .successGreen : .warningOrange)
+                        .padding(.top, 2)
                     
-                    Text(title)
-                        .font(.h3)
-                        .foregroundColor(.textPrimary)
+                    if method == .secure {
+                        // ✅ ИСПРАВЛЕНИЕ: Разбиваем "Безопасное сканирование" на 2 строчки
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(localizationManager.localized("dark_web_scan_method_secure_line1"))
+                                .font(.h3)
+                                .foregroundColor(.textPrimary)
+                                .lineLimit(1)
+                            Text(localizationManager.localized("dark_web_scan_method_secure_line2"))
+                                .font(.h3)
+                                .foregroundColor(.textPrimary)
+                                .lineLimit(1)
+                        }
+                    } else {
+                        Text(title)
+                            .font(.h3)
+                            .foregroundColor(.textPrimary)
+                            .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                     
                     Spacer()
                     

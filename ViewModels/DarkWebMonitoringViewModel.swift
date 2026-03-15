@@ -37,7 +37,7 @@ class DarkWebMonitoringViewModel: ObservableObject {
     func loadData(status: String? = nil, severity: String? = nil) async {
         // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой
         guard AppConfig.authToken != nil else {
-            errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+            errorMessage = localizationManager.localized("dark_web_error_unauthorized")
             return
         }
         
@@ -77,7 +77,7 @@ class DarkWebMonitoringViewModel: ObservableObject {
             
             // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
             if case .unauthorized = networkError {
-                errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+                errorMessage = localizationManager.localized("dark_web_error_unauthorized")
                 self.stats = nil
                 self.leaks = []
                 self.scans = []
@@ -129,6 +129,12 @@ class DarkWebMonitoringViewModel: ObservableObject {
     }
     
     func startScan() async {
+        // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед запуском сканирования
+        guard AppConfig.authToken != nil else {
+            errorMessage = localizationManager.localized("dark_web_error_unauthorized")
+            return
+        }
+        
         isScanning = true
         errorMessage = nil
         defer { isScanning = false }
@@ -143,8 +149,23 @@ class DarkWebMonitoringViewModel: ObservableObject {
             await loadData()
         } catch {
             let networkError = NetworkError.from(error)
-            if networkError.isCritical || !networkError.isRetryable {
-                let errorKey = "dark_web_error_resource_not_found"
+            
+            // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
+            if case .unauthorized = networkError {
+                errorMessage = localizationManager.localized("dark_web_error_unauthorized")
+                return
+            }
+            
+            // ✅ ИСПРАВЛЕНИЕ: Правильная обработка ошибки "Ресурс не найден"
+            if case .notFound = networkError {
+                errorMessage = localizationManager.localized("dark_web_error_resource_not_found")
+            } else if networkError.isCritical || !networkError.isRetryable {
+                let errorKey = "dark_web_error_scan_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            } else {
+                // Для других ошибок показываем временную ошибку
+                let errorKey = "dark_web_error_temporary"
                 let errorFormat = localizationManager.localized(errorKey)
                 errorMessage = String(format: errorFormat, networkError.localizedDescription)
             }
@@ -215,8 +236,23 @@ class DarkWebMonitoringViewModel: ObservableObject {
             await loadData()
         } catch {
             let networkError = NetworkError.from(error)
-            if networkError.isCritical || !networkError.isRetryable {
+            
+            // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
+            if case .unauthorized = networkError {
+                errorMessage = localizationManager.localized("dark_web_error_unauthorized")
+                return
+            }
+            
+            // ✅ ИСПРАВЛЕНИЕ: Правильная обработка ошибки "Ресурс не найден"
+            if case .notFound = networkError {
+                errorMessage = localizationManager.localized("dark_web_error_resource_not_found")
+            } else if networkError.isCritical || !networkError.isRetryable {
                 let errorKey = "dark_web_scan_error_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            } else {
+                // Для других ошибок показываем временную ошибку
+                let errorKey = "dark_web_error_temporary"
                 let errorFormat = localizationManager.localized(errorKey)
                 errorMessage = String(format: errorFormat, networkError.localizedDescription)
             }
@@ -268,8 +304,23 @@ class DarkWebMonitoringViewModel: ObservableObject {
             await loadData()
         } catch {
             let networkError = NetworkError.from(error)
-            if networkError.isCritical || !networkError.isRetryable {
+            
+            // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
+            if case .unauthorized = networkError {
+                errorMessage = localizationManager.localized("dark_web_error_unauthorized")
+                return
+            }
+            
+            // ✅ ИСПРАВЛЕНИЕ: Правильная обработка ошибки "Ресурс не найден"
+            if case .notFound = networkError {
+                errorMessage = localizationManager.localized("dark_web_error_resource_not_found")
+            } else if networkError.isCritical || !networkError.isRetryable {
                 let errorKey = "dark_web_scan_error_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            } else {
+                // Для других ошибок показываем временную ошибку
+                let errorKey = "dark_web_error_temporary"
                 let errorFormat = localizationManager.localized(errorKey)
                 errorMessage = String(format: errorFormat, networkError.localizedDescription)
             }

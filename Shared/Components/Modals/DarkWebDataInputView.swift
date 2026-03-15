@@ -248,14 +248,32 @@ struct DarkWebDataInputView: View {
     }
     
     private func errorBanner(message: String) -> some View {
-        Text(message)
-            .font(.footnote)
-            .foregroundColor(.white)
-            .padding(.horizontal, Spacing.m)
-            .padding(.vertical, Spacing.s)
-            .background(Color.dangerRed.opacity(0.9))
-            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
-            .shadow(radius: 6)
+        HStack {
+            Text(message)
+                .font(.footnote)
+                .foregroundColor(.white)
+
+            Spacer()
+
+            Button(action: {
+                Task {
+                    await startScan()
+                }
+            }) {
+                Text(localizationManager.localized("dark_web_retry_scan"))
+                    .font(.caption)
+                    .foregroundColor(.primaryBlue)
+                    .padding(.horizontal, Spacing.s)
+                    .padding(.vertical, Spacing.xs)
+                    .background(Color.white.opacity(0.2))
+                    .clipShape(Capsule())
+            }
+        }
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, Spacing.s)
+        .background(Color.dangerRed.opacity(0.9))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+        .shadow(radius: 6)
     }
 }
 
