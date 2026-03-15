@@ -38,18 +38,54 @@ class DrivingReportsViewModel: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
         
-        // ✅ ЭТАП 2: Проверка токена перед загрузкой
-        guard AppConfig.authToken != nil else {
-            errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра отчетов."
-            self.stats = nil
-            self.reports = []
-            // Отправляем уведомление о необходимости логина
-            NotificationCenter.default.post(
-                name: NSNotification.Name("SessionExpired"),
-                object: nil,
-                userInfo: ["message": "Требуется авторизация. Войдите в аккаунт."]
-            )
-            return
+        // ✅ ИСПРАВЛЕНО: Умная проверка токена через TokenManager (как в AnalyticsViewModel)
+        // Проверяет SubscriptionManager.currentToken первым делом!
+        let tokenAvailability = TokenManager.shared.checkTokenAvailability()
+        
+        // Если токен загружается - ждем немного
+        if tokenAvailability.isAvailable {
+            // Токен доступен - продолжаем загрузку
+            #if DEBUG
+            VisualLogger.shared.log("✅ DrivingReportsViewModel: Токен доступен, начинаем загрузку отчетов", level: .success, category: "DRIVING_REPORTS")
+            print("✅ DrivingReportsViewModel: Токен доступен, начинаем загрузку отчетов")
+            #endif
+        } else {
+            // Токен не найден - проверяем, загружается ли он
+            if TokenManager.shared.isTokenLoading() {
+                // Токен загружается - ждем до 500ms
+                #if DEBUG
+                VisualLogger.shared.log("⏳ DrivingReportsViewModel: Токен загружается, ждем...", level: .info, category: "DRIVING_REPORTS")
+                print("⏳ DrivingReportsViewModel: Токен загружается, ждем...")
+                #endif
+                if let token = await TokenManager.shared.waitForTokenLoad(maxWaitTime: 0.5) {
+                    // Токен загрузился - продолжаем
+                    #if DEBUG
+                    VisualLogger.shared.log("✅ DrivingReportsViewModel: Токен загрузился, продолжаем загрузку отчетов", level: .success, category: "DRIVING_REPORTS")
+                    print("✅ DrivingReportsViewModel: Токен загрузился, продолжаем загрузку отчетов")
+                    #endif
+                } else {
+                    // Токен не загрузился - показываем ошибку (БЕЗ SessionExpired)
+                    #if DEBUG
+                    VisualLogger.shared.log("⚠️ DrivingReportsViewModel: Токен не загрузился, показываем ошибку", level: .warning, category: "DRIVING_REPORTS")
+                    print("⚠️ DrivingReportsViewModel: Токен не загрузился, показываем ошибку")
+                    #endif
+                    errorMessage = "Не удалось загрузить отчеты. Проверьте подключение к интернету."
+                    self.stats = nil
+                    self.reports = []
+                    return
+                }
+            } else {
+                // Токена нет нигде - показываем ошибку (БЕЗ SessionExpired)
+                // SessionExpired отправляется только при реальных 401 ошибках от API
+                #if DEBUG
+                VisualLogger.shared.log("⚠️ DrivingReportsViewModel: Токен отсутствует, показываем ошибку", level: .warning, category: "DRIVING_REPORTS")
+                print("⚠️ DrivingReportsViewModel: Токен отсутствует, показываем ошибку")
+                #endif
+                errorMessage = "Не удалось загрузить отчеты. Проверьте подключение к интернету."
+                self.stats = nil
+                self.reports = []
+                return
+            }
         }
         
         do {
@@ -75,14 +111,14 @@ class DrivingReportsViewModel: ObservableObject {
             // Проверяем тип ошибки - показываем только реальные проблемы
             let networkError = NetworkError.from(error)
             
-            // ✅ ЭТАП 3: Обработка unauthorized
+            // ✅ ИСПРАВЛЕНО: Обработка unauthorized - SessionExpired отправляется только при реальных 401 ошибках
             if case .unauthorized(let message) = networkError {
-                // Ошибка авторизации - показываем понятное сообщение
+                // Реальная ошибка авторизации от API (401) - отправляем SessionExpired
                 let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
                 self.errorMessage = errorMessage
                 self.stats = nil
                 self.reports = []
-                // Отправляем уведомление о необходимости логина
+                // ✅ Отправляем SessionExpired только при реальных 401 ошибках от API
                 NotificationCenter.default.post(
                     name: NSNotification.Name("SessionExpired"),
                     object: nil,
