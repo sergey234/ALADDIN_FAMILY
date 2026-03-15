@@ -38,7 +38,7 @@ class TariffsViewModel: ObservableObject {
     // MARK: - Init
     
     init(storeManager: StoreManager? = nil) {
-        logger.business("Initializing TariffsViewModel")
+        // ✅ BUILD 104: Silent Startup - убрали logger.business из init()
         self.storeManager = storeManager ?? StoreManager()
         
         // Подписка на изменения продуктов
@@ -183,7 +183,24 @@ class TariffsViewModel: ObservableObject {
      * За границей → использует IAP (App Store)
      */
     func purchaseSelectedTariff() async {
-        logger.business("Initiating purchase of selected tariff")
+        // ✅ ЭТАП 2: Проверка токена перед покупкой (для синхронизации с сервером)
+        // Для бесплатного тарифа токен не требуется
+        if let selectedTariff = selectedTariff,
+           selectedTariff.id != "free" && selectedTariff.id != StoreManager.FREE_TARIFF_ID {
+            guard AppConfig.authToken != nil else {
+                print("⚠️ TariffsViewModel: Токен отсутствует, невозможно синхронизировать покупку с сервером")
+                let localizationManager = LocalizationManager.shared
+                errorMessage = "Требуется авторизация для синхронизации подписки с сервером."
+                // Отправляем уведомление о необходимости логина
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("SessionExpired"),
+                    object: nil,
+                    userInfo: ["message": "Требуется авторизация. Войдите в аккаунт для синхронизации подписки."]
+                )
+                return
+            }
+        }
+        
         guard let selectedTariff = selectedTariff else {
             let localizationManager = LocalizationManager.shared
             errorMessage = localizationManager.localized("tariffs_error_select_tariff")
@@ -584,22 +601,56 @@ class TariffsViewModel: ObservableObject {
      * Восстановить покупки
      */
     func restorePurchases() async {
-        logger.business("User initiated purchase restoration")
+        // ✅ ЭТАП 2: Проверка токена перед восстановлением (для синхронизации с сервером)
+        guard AppConfig.authToken != nil else {
+            print("⚠️ TariffsViewModel: Токен отсутствует, невозможно синхронизировать восстановление с сервером")
+            errorMessage = "Требуется авторизация для синхронизации подписки с сервером."
+            // Отправляем уведомление о необходимости логина
+            NotificationCenter.default.post(
+                name: NSNotification.Name("SessionExpired"),
+                object: nil,
+                userInfo: ["message": "Требуется авторизация. Войдите в аккаунт для синхронизации подписки."]
+            )
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
         
-        await storeManager.restorePurchases()
-        
-        // ✅ ПЛАНИРОВАНИЕ УВЕДОМЛЕНИЙ О ПОДПИСКЕ (при восстановлении покупок)
-        // Если есть активная подписка, планируем уведомления
-        if let _ = getActiveSubscription(),
-           let endDate = calculateSubscriptionEndDate() {
-            NotificationManager.shared.scheduleRenewalNotifications(subscriptionEndDate: endDate)
-            print("✅ Уведомления о подписке запланированы при восстановлении покупок")
+        do {
+            await storeManager.restorePurchases()
+            
+            // ✅ ПЛАНИРОВАНИЕ УВЕДОМЛЕНИЙ О ПОДПИСКЕ (при восстановлении покупок)
+            // Если есть активная подписка, планируем уведомления
+            if let _ = getActiveSubscription(),
+               let endDate = calculateSubscriptionEndDate() {
+                NotificationManager.shared.scheduleRenewalNotifications(subscriptionEndDate: endDate)
+                print("✅ Уведомления о подписке запланированы при восстановлении покупок")
+            }
+            
+            // ✅ ЭТАП 2: Синхронизация с сервером через обновленный роутер
+            // SubscriptionManager автоматически синхронизируется при восстановлении покупок
+            // Если синхронизация не удалась из-за unauthorized, это обработается в SubscriptionManager
+            
+            isLoading = false
+            print("✅ Purchases restored")
+        } catch {
+            isLoading = false
+            // ✅ ЭТАП 3: Обработка unauthorized
+            let networkError = NetworkError.from(error)
+            if case .unauthorized(let message) = networkError {
+                let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                self.errorMessage = errorMessage
+                // Отправляем уведомление о необходимости логина
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("SessionExpired"),
+                    object: nil,
+                    userInfo: ["message": errorMessage]
+                )
+            } else {
+                errorMessage = "Ошибка восстановления покупок: \(error.localizedDescription)"
+            }
         }
-        
-        isLoading = false
-        print("✅ Purchases restored")
     }
     
     // MARK: - Get Active Subscription

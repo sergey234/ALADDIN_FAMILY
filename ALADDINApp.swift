@@ -1,6 +1,14 @@
 import SwiftUI
 import Foundation
 
+// ✅ Глобальные флаги для защиты от рекурсии SessionExpired
+// ✅ BUILD 114: Используем принципы из ПОЛНАЯ_ИСТОРИЯ_ИСПРАВЛЕНИЙ_BUILD_77_99.md
+// - Глобальный флаг виден всем экземплярам View
+// - NSLock обеспечивает thread-safety
+// - Синхронный сброс в defer предотвращает race condition
+private var isHandlingSessionExpiredGlobal: Bool = false
+private let sessionExpiredLockGlobal = NSLock()
+
 /// 👤 User Profile Manager
 /// Singleton класс для управления профилем пользователя
 /// Предоставляет быстрый доступ к данным пользователя из кеша
@@ -663,6 +671,49 @@ struct ALADDINApp: App {
                     // НЕ вызываем initializeNavigation - это может вызвать двойную загрузку
                 }
             }
+            // ✅ ЭТАП 1: Обработка уведомления SessionExpired
+            // ✅ BUILD 114: Используем принципы из ПОЛНАЯ_ИСТОРИЯ_ИСПРАВЛЕНИЙ_BUILD_77_99.md
+            // - Асинхронность операций с Keychain
+            // - Защита от рекурсии через глобальные флаги с NSLock
+            // - Изоляция диагностики (не используем logger внутри)
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SessionExpired"))) { notification in
+                // ✅ Защита от множественных обработок (глобальный флаг с NSLock)
+                sessionExpiredLockGlobal.lock()
+                guard !isHandlingSessionExpiredGlobal else {
+                    sessionExpiredLockGlobal.unlock()
+                    #if DEBUG
+                    print("⚠️ ALADDINApp: SessionExpired уже обрабатывается, пропускаем")
+                    #endif
+                    return
+                }
+                isHandlingSessionExpiredGlobal = true
+                sessionExpiredLockGlobal.unlock()
+                
+                // ✅ Асинхронная обработка (разрыв связи с UI циклом)
+                Task { @MainActor in
+                    defer {
+                        // ✅ Синхронный сброс флага
+                        sessionExpiredLockGlobal.lock()
+                        isHandlingSessionExpiredGlobal = false
+                        sessionExpiredLockGlobal.unlock()
+                    }
+                    
+                    let message = notification.userInfo?["message"] as? String ?? "Сессия истекла. Пожалуйста, войдите снова."
+                    
+                    #if DEBUG
+                    print("⚠️ ALADDINApp: Получено уведомление SessionExpired: \(message)")
+                    #endif
+                    
+                    // ✅ Асинхронная очистка токенов (Keychain операции)
+                    Task { @MainActor in
+                        KeychainManager.shared.delete(forKey: .authToken)
+                        KeychainManager.shared.delete(forKey: .refreshToken)
+                    }
+                    
+                    // ✅ Перенаправление на экран онбординга
+                    navigationManager.navigateToRoot(.onboarding)
+                }
+            }
             // 🌓 ПРИМЕНЯЕМ ТЕМУ
             .preferredColorScheme(preferredColorScheme)
 
@@ -704,6 +755,7 @@ struct ALADDINApp: App {
 extension ALADDINApp {
     // MARK: - Static Properties
     private static var hasInitializedNavigation = false
+    
 
     // MARK: - Navigation Initialization
     // ✅ BUILD 95: Добавлен параметр hasCompletedOnboarding для предотвращения рекурсии

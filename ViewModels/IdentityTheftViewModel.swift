@@ -32,6 +32,12 @@ class IdentityTheftViewModel: ObservableObject {
     // MARK: - Public Methods
     
     func loadData(action: String? = nil, severity: String? = nil) async {
+        // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой
+        guard AppConfig.authToken != nil else {
+            errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
@@ -58,6 +64,14 @@ class IdentityTheftViewModel: ObservableObject {
         } catch {
             // Проверяем тип ошибки - показываем только реальные проблемы
             let networkError = NetworkError.from(error)
+            
+            // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
+            if case .unauthorized = networkError {
+                errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+                self.stats = nil
+                self.attempts = []
+                return
+            }
             
             // Не показываем ошибку для 404 (нет данных - это нормально)
             if case .notFound = networkError {

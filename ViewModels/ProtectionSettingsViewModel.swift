@@ -87,6 +87,15 @@ class ProtectionSettingsViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
         
+        // ✅ ЭТАП 2: Проверка токена перед загрузкой
+        guard AppConfig.authToken != nil else {
+            print("⚠️ ProtectionSettingsViewModel: Токен отсутствует, используем демо режим")
+            isLoading = false
+            // Загружаем из кэша или используем дефолтные значения
+            await updateLocalStatuses()
+            return
+        }
+        
         let componentIds = [
             "telegram_security_bot",
             "whatsapp_security_bot",
@@ -162,6 +171,22 @@ class ProtectionSettingsViewModel: ObservableObject {
             await updateLocalStatuses()
             isLoading = false
         case .failure(let error):
+            // ✅ ЭТАП 3: Обработка unauthorized
+            if case .unauthorized(let message) = error {
+                print("⚠️ ProtectionSettingsViewModel: Ошибка авторизации при загрузке статусов")
+                let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                self.errorMessage = errorMessage
+                isLoading = false
+                // Отправляем уведомление о необходимости логина
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("SessionExpired"),
+                    object: nil,
+                    userInfo: ["message": errorMessage]
+                )
+                // Не загружаем из кэша при ошибке авторизации
+                return
+            }
+            
             // ✅ ИСПРАВЛЕНИЕ: Не показываем ошибку пользователю при загрузке (fallback работает)
             // Ошибка загрузки не критична - используем кэш или дефолтные значения
             print("⚠️ ProtectionSettingsViewModel: Ошибка загрузки компонентов: \(error.localizedDescription)")
@@ -331,6 +356,20 @@ class ProtectionSettingsViewModel: ObservableObject {
         newValue: Bool,
         getCurrentValue: @escaping () -> Bool
     ) async {
+        // ✅ ЭТАП 2: Проверка токена перед запросом
+        guard AppConfig.authToken != nil else {
+            let errorMessage = "Требуется авторизация. Войдите в аккаунт."
+            self.errorMessage = errorMessage
+            toastManager.showError(errorMessage)
+            // Отправляем уведомление о необходимости логина
+            NotificationCenter.default.post(
+                name: NSNotification.Name("SessionExpired"),
+                object: nil,
+                userInfo: ["message": errorMessage]
+            )
+            return
+        }
+        
         let oldValue = getCurrentValue()
         
         // Оптимистичное обновление UI
@@ -359,6 +398,22 @@ class ProtectionSettingsViewModel: ObservableObject {
                 newValue ? "Компонент включен" : "Компонент выключен"
             )
         case .failure(let error):
+            // ✅ ЭТАП 3: Обработка unauthorized
+            if case .unauthorized(let message) = error {
+                // Откат при ошибке
+                updateClosure(oldValue)
+                let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                self.errorMessage = errorMessage
+                toastManager.showError(errorMessage)
+                // Отправляем уведомление о необходимости логина
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("SessionExpired"),
+                    object: nil,
+                    userInfo: ["message": errorMessage]
+                )
+                return
+            }
+            
             // Откат при ошибке
             updateClosure(oldValue)
             // ✅ ИСПРАВЛЕНИЕ: Не показываем технические детали ошибки пользователю

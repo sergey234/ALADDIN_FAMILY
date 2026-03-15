@@ -193,12 +193,33 @@ class NetworkProtectionViewModel: ObservableObject {
     private func loadProductionModeStatuses(prioritizedItems: [(id: String, priority: ComponentLoadPriority)]) async {
         // Продакшен режим: загружаем из API
         // ✅ BUILD 104: УБРАЛИ await MainActor.run {} - метод уже на @MainActor
+        // ✅ ЭТАП 2: Проверка токена перед загрузкой
+        guard AppConfig.authToken != nil else {
+            print("⚠️ NetworkProtectionViewModel: Токен отсутствует, переключаемся на демо режим")
+            await loadDemoModeStatuses(prioritizedItems: prioritizedItems)
+            return
+        }
+        
         for item in prioritizedItems {
             do {
                 let status = try await APIService.shared.getComponentStatus(componentId: item.id)
                 self.updateStatusForComponent(componentId: item.id, status: status)
             } catch {
-                print("⚠️ Ошибка загрузки статуса для \(item.id): \(error.localizedDescription)")
+                // ✅ ЭТАП 3: Обработка unauthorized
+                let networkError = NetworkError.from(error)
+                if case .unauthorized = networkError {
+                    print("⚠️ NetworkProtectionViewModel: Ошибка авторизации при загрузке статуса для \(item.id)")
+                    // Отправляем уведомление о необходимости логина
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("SessionExpired"),
+                        object: nil,
+                        userInfo: ["message": "Сессия истекла. Пожалуйста, войдите снова."]
+                    )
+                    // Прерываем загрузку остальных статусов
+                    break
+                } else {
+                    print("⚠️ Ошибка загрузки статуса для \(item.id): \(error.localizedDescription)")
+                }
             }
         }
     }
@@ -402,6 +423,21 @@ class NetworkProtectionViewModel: ObservableObject {
         let isProduction = AppConfig.authToken != nil
 
         if isProduction {
+            // ✅ ЭТАП 2: Проверка токена перед запросом
+            guard AppConfig.authToken != nil else {
+                DispatchQueue.main.async { [weak self] in
+                    updateClosure(!newValue)
+                    self?.toastManager.showError("Требуется авторизация. Войдите в аккаунт.")
+                    // Отправляем уведомление о необходимости логина
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("SessionExpired"),
+                        object: nil,
+                        userInfo: ["message": "Требуется авторизация. Войдите в аккаунт."]
+                    )
+                }
+                return
+            }
+            
             do {
                 try await statusService.updateStatus(componentId: componentId, isEnabled: newValue)
                 
@@ -411,11 +447,28 @@ class NetworkProtectionViewModel: ObservableObject {
                     self?.toastManager.showSuccess("Компонент обновлен")
                 }
             } catch {
-                // Откат изменений (асинхронно)
-                DispatchQueue.main.async { [weak self] in
-                    updateClosure(!newValue)
-                    self?.componentAnalytics.trackComponentError(componentId: componentId, error: error)
-                    self?.toastManager.showError("Ошибка: \(error.localizedDescription)")
+                // ✅ ЭТАП 3: Обработка unauthorized
+                let networkError = NetworkError.from(error)
+                if case .unauthorized(let message) = networkError {
+                    // Откат изменений (асинхронно)
+                    DispatchQueue.main.async { [weak self] in
+                        updateClosure(!newValue)
+                        let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                        self?.toastManager.showError(errorMessage)
+                        // Отправляем уведомление о необходимости логина
+                        NotificationCenter.default.post(
+                            name: NSNotification.Name("SessionExpired"),
+                            object: nil,
+                            userInfo: ["message": errorMessage]
+                        )
+                    }
+                } else {
+                    // Откат изменений (асинхронно)
+                    DispatchQueue.main.async { [weak self] in
+                        updateClosure(!newValue)
+                        self?.componentAnalytics.trackComponentError(componentId: componentId, error: error)
+                        self?.toastManager.showError("Ошибка: \(error.localizedDescription)")
+                    }
                 }
             }
         } else {

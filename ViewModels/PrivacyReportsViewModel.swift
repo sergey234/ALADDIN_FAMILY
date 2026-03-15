@@ -45,6 +45,12 @@ class PrivacyReportsViewModel: ObservableObject {
     // MARK: - Public Methods
     
     func loadLocationData() async {
+        // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой
+        guard AppConfig.authToken != nil else {
+            errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
@@ -72,6 +78,14 @@ class PrivacyReportsViewModel: ObservableObject {
             // Проверяем тип ошибки - показываем только реальные проблемы
             let networkError = NetworkError.from(error)
             
+            // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
+            if case .unauthorized = networkError {
+                errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+                self.locationStats = nil
+                self.locationRequests = []
+                return
+            }
+            
             // Не показываем ошибку для 404 (нет данных - это нормально)
             if case .notFound = networkError {
                 // Просто используем пустые данные, не показываем ошибку
@@ -98,6 +112,12 @@ class PrivacyReportsViewModel: ObservableObject {
     }
     
     func loadCleanupData() async {
+        // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой
+        guard AppConfig.authToken != nil else {
+            errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
@@ -125,6 +145,14 @@ class PrivacyReportsViewModel: ObservableObject {
             // Проверяем тип ошибки - показываем только реальные проблемы
             let networkError = NetworkError.from(error)
             
+            // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
+            if case .unauthorized = networkError {
+                errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+                self.cleanupStats = nil
+                self.cleanupRecords = []
+                return
+            }
+            
             // Не показываем ошибку для 404 (нет данных - это нормально)
             if case .notFound = networkError {
                 // Просто используем пустые данные, не показываем ошибку
@@ -151,6 +179,12 @@ class PrivacyReportsViewModel: ObservableObject {
     }
     
     func loadTrackerData() async {
+        // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой
+        guard AppConfig.authToken != nil else {
+            errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
@@ -177,6 +211,14 @@ class PrivacyReportsViewModel: ObservableObject {
         } catch {
             // Проверяем тип ошибки - показываем только реальные проблемы
             let networkError = NetworkError.from(error)
+            
+            // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
+            if case .unauthorized = networkError {
+                errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+                self.trackerStats = nil
+                self.topTrackers = []
+                return
+            }
             
             // Не показываем ошибку для 404 (нет данных - это нормально)
             if case .notFound = networkError {

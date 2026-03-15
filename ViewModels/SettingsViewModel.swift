@@ -502,6 +502,21 @@ class SettingsViewModel: ObservableObject {
 
     func loadComponents() {
         guard isAdmin else { return }
+        
+        // ✅ ЭТАП 3: Проверка токена перед загрузкой компонентов
+        guard AppConfig.authToken != nil else {
+            print("⚠️ SettingsViewModel: Токен отсутствует, пропускаем загрузку компонентов")
+            componentsError = "Требуется авторизация для загрузки компонентов."
+            isLoadingComponents = false
+            // Отправляем уведомление о необходимости логина
+            NotificationCenter.default.post(
+                name: NSNotification.Name("SessionExpired"),
+                object: nil,
+                userInfo: ["message": "Требуется авторизация. Войдите в аккаунт для загрузки компонентов."]
+            )
+            return
+        }
+        
         isLoadingComponents = true
         componentsError = nil
 
@@ -515,7 +530,20 @@ class SettingsViewModel: ObservableObject {
                             SettingsComponentStatus(componentId: $0.componentId, isEnabled: $0.isEnabled)
                         }
                     case .failure(let error):
-                        self?.componentsError = error.localizedDescription
+                        // ✅ ЭТАП 3: Обработка unauthorized
+                        let networkError = NetworkError.from(error)
+                        if case .unauthorized(let message) = networkError {
+                            let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                            self?.componentsError = errorMessage
+                            // Отправляем уведомление о необходимости логина
+                            NotificationCenter.default.post(
+                                name: NSNotification.Name("SessionExpired"),
+                                object: nil,
+                                userInfo: ["message": errorMessage]
+                            )
+                        } else {
+                            self?.componentsError = error.localizedDescription
+                        }
                     }
                     self?.isLoadingComponents = false
                 }

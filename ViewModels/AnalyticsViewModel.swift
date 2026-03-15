@@ -41,7 +41,7 @@ class AnalyticsViewModel: ObservableObject {
     )
     
     init(service: AnalyticsService) {
-        logger.business("Initializing AnalyticsViewModel")
+        // ✅ BUILD 104: Silent Startup - убрали logger.business из init()
         self.service = service
         
         // ✅ ИСПРАВЛЕНО: Загружаем из UserDefaults один раз при инициализации (асинхронно)
@@ -57,7 +57,22 @@ class AnalyticsViewModel: ObservableObject {
     
     @MainActor
     func load() async {
-        logger.business("Loading analytics data")
+        // ✅ ЭТАП 2: Проверка токена перед загрузкой данных
+        guard AppConfig.authToken != nil else {
+            print("⚠️ AnalyticsViewModel: Токен отсутствует, пропускаем загрузку аналитики")
+            errorMessage = "Требуется авторизация для просмотра аналитики."
+            isLoading = false
+            isOfflineMode = false
+            dataSource = .error
+            // Отправляем уведомление о необходимости логина
+            NotificationCenter.default.post(
+                name: NSNotification.Name("SessionExpired"),
+                object: nil,
+                userInfo: ["message": "Требуется авторизация. Войдите в аккаунт для просмотра аналитики."]
+            )
+            return
+        }
+        
         isLoading = true
         errorMessage = nil
         isOfflineMode = false // ✅ ЗАДАЧА 64: Сбрасываем индикатор офлайн режима
@@ -138,21 +153,39 @@ class AnalyticsViewModel: ObservableObject {
             // ✅ ВАРИАНТ 4: Если ошибка - устанавливаем dataSource = .error
             dataSource = .error
             
-            // Полная ошибка - не удалось получить данные даже через fallback
-            let errorMsg = getErrorMessage(from: error)
-            errorMessage = errorMsg
-            resetState()
-            isOfflineMode = false
+            // ✅ ЭТАП 3: Обработка unauthorized
+            let networkError = NetworkError.from(error)
+            if case .unauthorized(let message) = networkError {
+                let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                self.errorMessage = errorMessage
+                resetState()
+                isOfflineMode = false
+                // Отправляем уведомление о необходимости логина
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("SessionExpired"),
+                    object: nil,
+                    userInfo: ["message": errorMessage]
+                )
+                #if DEBUG
+                print("⚠️ AnalyticsViewModel: Ошибка авторизации при загрузке аналитики")
+                #endif
+            } else {
+                // Полная ошибка - не удалось получить данные даже через fallback
+                let errorMsg = getErrorMessage(from: error)
+                errorMessage = errorMsg
+                resetState()
+                isOfflineMode = false
 
-            #if DEBUG
-            print("❌ AnalyticsViewModel: Ошибка загрузки:")
-            print("   - Ошибка: \(error)")
-            if let networkError = error as? NetworkError {
-                print("   - Тип: \(networkError)")
-                print("   - Описание: \(networkError.localizedDescription)")
+                #if DEBUG
+                print("❌ AnalyticsViewModel: Ошибка загрузки:")
+                print("   - Ошибка: \(error)")
+                if let networkError = error as? NetworkError {
+                    print("   - Тип: \(networkError)")
+                    print("   - Описание: \(networkError.localizedDescription)")
+                }
+                print("   - Сообщение пользователю: \(errorMsg)")
+                #endif
             }
-            print("   - Сообщение пользователю: \(errorMsg)")
-            #endif
         }
 
         isLoading = false

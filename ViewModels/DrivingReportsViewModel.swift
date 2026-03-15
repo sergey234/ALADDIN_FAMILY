@@ -38,6 +38,20 @@ class DrivingReportsViewModel: ObservableObject {
         errorMessage = nil
         defer { isLoading = false }
         
+        // ✅ ЭТАП 2: Проверка токена перед загрузкой
+        guard AppConfig.authToken != nil else {
+            errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра отчетов."
+            self.stats = nil
+            self.reports = []
+            // Отправляем уведомление о необходимости логина
+            NotificationCenter.default.post(
+                name: NSNotification.Name("SessionExpired"),
+                object: nil,
+                userInfo: ["message": "Требуется авторизация. Войдите в аккаунт."]
+            )
+            return
+        }
+        
         do {
             // Загружаем статистику и отчеты параллельно
             async let statsTask: DrivingStats = withCheckedThrowingContinuation { continuation in
@@ -61,6 +75,22 @@ class DrivingReportsViewModel: ObservableObject {
             // Проверяем тип ошибки - показываем только реальные проблемы
             let networkError = NetworkError.from(error)
             
+            // ✅ ЭТАП 3: Обработка unauthorized
+            if case .unauthorized(let message) = networkError {
+                // Ошибка авторизации - показываем понятное сообщение
+                let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                self.errorMessage = errorMessage
+                self.stats = nil
+                self.reports = []
+                // Отправляем уведомление о необходимости логина
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("SessionExpired"),
+                    object: nil,
+                    userInfo: ["message": errorMessage]
+                )
+                return
+            }
+            
             // Не показываем ошибку для 404 (нет данных - это нормально)
             if case .notFound = networkError {
                 // Просто используем пустые данные, не показываем ошибку
@@ -70,7 +100,7 @@ class DrivingReportsViewModel: ObservableObject {
                 return
             }
             
-            // Показываем ошибку только для реальных проблем
+            // Показываем ошибку только для реальных проблем (кроме unauthorized)
             if networkError.isCritical || !networkError.isRetryable {
                 let errorKey = "driving_reports_error_load_failed"
                 let errorFormat = localizationManager.localized(errorKey)
@@ -122,7 +152,10 @@ class DrivingReportsViewModel: ObservableObject {
                 await loadReports(userId: userId, period: "week")
             } else {
                 let networkError = NetworkError.from(error)
-                if networkError.isCritical || !networkError.isRetryable {
+                // ✅ ИСПРАВЛЕНИЕ 1: Обрабатываем ошибку авторизации отдельно
+                if case .unauthorized = networkError {
+                    errorMessage = "Требуется авторизация. Войдите в аккаунт для начала поездки."
+                } else if networkError.isCritical || !networkError.isRetryable {
                     let errorKey = "driving_reports_error_start_failed"
                     let errorFormat = localizationManager.localized(errorKey)
                     errorMessage = String(format: errorFormat, networkError.localizedDescription)
@@ -159,7 +192,10 @@ class DrivingReportsViewModel: ObservableObject {
                 await loadReports(userId: userId, period: "week")
             } else {
                 let networkError = NetworkError.from(error)
-                if networkError.isCritical || !networkError.isRetryable {
+                // ✅ ИСПРАВЛЕНИЕ 1: Обрабатываем ошибку авторизации отдельно
+                if case .unauthorized = networkError {
+                    errorMessage = "Требуется авторизация. Войдите в аккаунт для завершения поездки."
+                } else if networkError.isCritical || !networkError.isRetryable {
                     let errorKey = "driving_reports_error_end_failed"
                     let errorFormat = localizationManager.localized(errorKey)
                     errorMessage = String(format: errorFormat, networkError.localizedDescription)

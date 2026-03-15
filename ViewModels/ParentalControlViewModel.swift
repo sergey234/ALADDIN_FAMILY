@@ -48,23 +48,24 @@ class ParentalControlViewModel: ObservableObject {
         statusService: ComponentStatusService = .shared,
         retryManager: RetryManager = .balanced()
     ) {
-        logger.business("Initializing ParentalControlViewModel")
+        // ✅ BUILD 104: Silent Startup - убрали logger.business из init()
+        // ✅ BUILD 104: Silent Startup - убрали Task {} из init()
+        // Загрузка статусов перенесена в .onAppear экрана
         self.statusService = statusService
         self.retryManager = retryManager
         
         loadChildren()
-        
-        // Загрузить статусы компонентов
-        Task {
-            await loadComponentStatuses()
-        }
     }
     
     // MARK: - Component Methods
     
     /// Загрузить статусы всех компонентов
     func loadComponentStatuses() async {
-        logger.business("Loading parental control component statuses")
+        // ✅ ЭТАП 2: Проверка токена перед загрузкой
+        guard AppConfig.authToken != nil else {
+            print("⚠️ ParentalControlViewModel: Токен отсутствует, пропускаем загрузку статусов")
+            return
+        }
 
         // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
         // Критичные компоненты загружаются первыми
@@ -84,6 +85,10 @@ class ParentalControlViewModel: ObservableObject {
                 guard let self = self else {
                     throw ComponentError.unknown(NSError(domain: "ParentalControlViewModel", code: -1))
                 }
+                // ✅ ЭТАП 2: Проверка токена перед каждым запросом
+                guard AppConfig.authToken != nil else {
+                    throw ComponentError.unknown(NSError(domain: "ParentalControlViewModel", code: -2, userInfo: [NSLocalizedDescriptionKey: "Токен отсутствует"]))
+                }
                 return try await self.statusService.getStatus(for: componentId)
             }
         }
@@ -98,7 +103,19 @@ class ParentalControlViewModel: ObservableObject {
             
             print("✅ ParentalControlViewModel: Загружено \(results.count) статусов")
         } catch {
-            print("⚠️ ParentalControlViewModel: Ошибка загрузки статусов: \(error)")
+            // ✅ ЭТАП 3: Обработка unauthorized
+            let networkError = NetworkError.from(error)
+            if case .unauthorized(let message) = networkError {
+                print("⚠️ ParentalControlViewModel: Ошибка авторизации при загрузке статусов")
+                // Отправляем уведомление о необходимости логина
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("SessionExpired"),
+                    object: nil,
+                    userInfo: ["message": message ?? "Сессия истекла. Пожалуйста, войдите снова."]
+                )
+            } else {
+                print("⚠️ ParentalControlViewModel: Ошибка загрузки статусов: \(error)")
+            }
         }
     }
 
@@ -164,6 +181,19 @@ class ParentalControlViewModel: ObservableObject {
         newValue: Bool,
         updateClosure: @escaping (Bool) -> Void
     ) async {
+        // ✅ ЭТАП 2: Проверка токена перед переключением
+        guard AppConfig.authToken != nil else {
+            print("⚠️ ParentalControlViewModel: Токен отсутствует, невозможно переключить компонент \(componentId)")
+            toastManager.showError("Требуется авторизация. Войдите в аккаунт.")
+            // Отправляем уведомление о необходимости логина
+            NotificationCenter.default.post(
+                name: NSNotification.Name("SessionExpired"),
+                object: nil,
+                userInfo: ["message": "Требуется авторизация. Войдите в аккаунт."]
+            )
+            return
+        }
+        
         // Оптимистичное обновление UI с переданным значением
         updateClosure(newValue)
 
@@ -176,6 +206,10 @@ class ParentalControlViewModel: ObservableObject {
                     )
                 } catch let error as ComponentError {
                     throw error.toNetworkError()
+                } catch let networkError as NetworkError {
+                    throw networkError
+                } catch {
+                    throw NetworkError.unknown(error)
                 }
             },
             retryCondition: { $0.isRetryable }
@@ -185,9 +219,23 @@ class ParentalControlViewModel: ObservableObject {
         case .success:
             toastManager.showSuccess("Компонент обновлен")
         case .failure(let error):
-            // Откат при ошибке - используем противоположное значение
-            updateClosure(!newValue)
-            toastManager.showError("Ошибка: \(error.localizedDescription)")
+            // ✅ ЭТАП 3: Обработка unauthorized
+            if case .unauthorized(let message) = error {
+                // Откат при ошибке - используем противоположное значение
+                updateClosure(!newValue)
+                let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                toastManager.showError(errorMessage)
+                // Отправляем уведомление о необходимости логина
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("SessionExpired"),
+                    object: nil,
+                    userInfo: ["message": errorMessage]
+                )
+            } else {
+                // Откат при ошибке - используем противоположное значение
+                updateClosure(!newValue)
+                toastManager.showError("Ошибка: \(error.localizedDescription)")
+            }
         }
     }
     

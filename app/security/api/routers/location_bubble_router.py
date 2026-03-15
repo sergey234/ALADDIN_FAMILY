@@ -13,8 +13,13 @@ from enum import Enum
 
 from fastapi import APIRouter, HTTPException, Query, Depends, Body
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+from sqlalchemy import text
 import logging
 import os
+
+# ✅ ПОДКЛЮЧЕНИЕ К БД: Импортируем get_db для работы с базой данных
+from app.database.database import get_db
 
 # Импорты агента
 try:
@@ -65,45 +70,151 @@ class UpdateAccuracyRequest(BaseModel):
 # ═══════════════════════════════════════════════════════════════
 
 @router.get("/stats", response_model=LocationStats)
-async def get_location_stats():
-    """Получить статистику Location Bubble"""
-    # В реальной реализации данные берутся из БД/Агента
-    return {
-        "blockedRequests": 12,
-        "allowedRequests": 45,
-        "modifiedRequests": 89,
-        "currentAccuracy": "medium"
-    }
+async def get_location_stats(db: Session = Depends(get_db)):
+    """Получить статистику Location Bubble из базы данных"""
+    try:
+        # ✅ ПОДКЛЮЧЕНИЕ К БД: Получаем статистику из таблицы location_requests
+        stats_query = text("""
+            SELECT 
+                COUNT(*) FILTER (WHERE action = 'blocked') as blocked_requests,
+                COUNT(*) FILTER (WHERE action = 'allowed') as allowed_requests,
+                COUNT(*) FILTER (WHERE action = 'modified') as modified_requests,
+                COALESCE(MODE() WITHIN GROUP (ORDER BY accuracy), 'medium') as current_accuracy
+            FROM location_requests
+        """)
+        
+        result = db.execute(stats_query)
+        row = result.fetchone()
+        
+        if row:
+            return {
+                "blockedRequests": row[0] or 0,
+                "allowedRequests": row[1] or 0,
+                "modifiedRequests": row[2] or 0,
+                "currentAccuracy": row[3] if row[3] else "medium"
+            }
+        else:
+            # Нет данных - возвращаем пустую статистику
+            return {
+                "blockedRequests": 0,
+                "allowedRequests": 0,
+                "modifiedRequests": 0,
+                "currentAccuracy": "medium"
+            }
+    except Exception as e:
+        # ✅ ОБРАБОТКА ОШИБОК: Graceful degradation - возвращаем пустую статистику
+        print(f"⚠️ Ошибка получения статистики Location Bubble из БД: {e}")
+        return {
+            "blockedRequests": 0,
+            "allowedRequests": 0,
+            "modifiedRequests": 0,
+            "currentAccuracy": "medium"
+        }
 
 @router.get("/requests", response_model=List[LocationRequest])
-async def get_location_requests(limit: int = Query(50, ge=1, le=100)):
-    """Получить историю запросов местоположения"""
-    # Имитация данных для iOS
-    apps = ["Instagram", "Weather", "Uber", "Browser", "Maps"]
-    requests = []
-    
-    for i in range(min(limit, 10)):
-        requests.append({
-            "id": str(uuid.uuid4()),
-            "appName": apps[i % len(apps)],
-            "timestamp": datetime.now() - timedelta(minutes=i*15),
-            "action": "modified" if i % 2 == 0 else "allowed",
-            "accuracy": "medium"
-        })
+async def get_location_requests(
+    limit: int = Query(50, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    """Получить историю запросов местоположения из базы данных"""
+    try:
+        # ✅ ПОДКЛЮЧЕНИЕ К БД: Формируем SQL запрос
+        query = text("""
+            SELECT 
+                id,
+                app_name,
+                timestamp,
+                action,
+                accuracy
+            FROM location_requests
+            ORDER BY timestamp DESC
+            LIMIT :limit
+        """)
         
-    return requests
+        params = {"limit": limit}
+        
+        # ✅ ПОДКЛЮЧЕНИЕ К БД: Выполняем запрос
+        result = db.execute(query, params)
+        rows = result.fetchall()
+        
+        # ✅ ПОДКЛЮЧЕНИЕ К БД: Преобразуем результаты в модели
+        requests = []
+        for row in rows:
+            request = LocationRequest(
+                id=str(row[0]),
+                appName=str(row[1]) if row[1] else "",
+                timestamp=row[2],
+                action=LocationRequestAction(row[3]),
+                accuracy=LocationAccuracy(row[4]) if row[4] else None
+            )
+            requests.append(request)
+        
+        return requests
+        
+    except Exception as e:
+        # ✅ ОБРАБОТКА ОШИБОК: Graceful degradation - возвращаем пустой список
+        print(f"⚠️ Ошибка получения запросов Location Bubble из БД: {e}")
+        return []
 
 @router.post("/allow")
-async def allow_location(request: ActionRequest):
-    """Разрешить запрос местоположения"""
-    logger.info(f"✅ Location allowed for request: {request.requestId}")
-    return {"success": True, "message": "Request allowed"}
+async def allow_location(request: ActionRequest, db: Session = Depends(get_db)):
+    """Разрешить запрос местоположения в базе данных"""
+    try:
+        # ✅ ПОДКЛЮЧЕНИЕ К БД: Обновляем статус запроса
+        query = text("""
+            UPDATE location_requests
+            SET action = 'allowed'
+            WHERE id = :request_id
+        """)
+        
+        params = {"request_id": request.requestId}
+        
+        result = db.execute(query, params)
+        db.commit()
+        
+        logger.info(f"✅ Location allowed for request: {request.requestId}")
+        
+        if result.rowcount > 0:
+            return {"success": True, "message": "Request allowed"}
+        else:
+            raise HTTPException(status_code=404, detail=f"Request {request.requestId} not found")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"⚠️ Ошибка обновления статуса запроса в БД: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update request status: {str(e)}")
 
 @router.post("/block")
-async def block_location(request: ActionRequest):
-    """Заблокировать запрос местоположения"""
-    logger.info(f"🚫 Location blocked for request: {request.requestId}")
-    return {"success": True, "message": "Request blocked"}
+async def block_location(request: ActionRequest, db: Session = Depends(get_db)):
+    """Заблокировать запрос местоположения в базе данных"""
+    try:
+        # ✅ ПОДКЛЮЧЕНИЕ К БД: Обновляем статус запроса
+        query = text("""
+            UPDATE location_requests
+            SET action = 'blocked'
+            WHERE id = :request_id
+        """)
+        
+        params = {"request_id": request.requestId}
+        
+        result = db.execute(query, params)
+        db.commit()
+        
+        logger.info(f"🚫 Location blocked for request: {request.requestId}")
+        
+        if result.rowcount > 0:
+            return {"success": True, "message": "Request blocked"}
+        else:
+            raise HTTPException(status_code=404, detail=f"Request {request.requestId} not found")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"⚠️ Ошибка обновления статуса запроса в БД: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update request status: {str(e)}")
 
 @router.post("/update-accuracy")
 async def update_accuracy(request: UpdateAccuracyRequest):

@@ -115,8 +115,20 @@ struct DrivingReportsModal: View {
             }
         }
         .task {
+            // ✅ ИСПРАВЛЕНИЕ 2: Проверяем токен перед загрузкой
+            guard AppConfig.authToken != nil else {
+                #if DEBUG
+                print("⚠️ DrivingReportsModal: Токен отсутствует - требуется авторизация")
+                #endif
+                // Показываем сообщение об ошибке через ViewModel
+                viewModel.errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра отчетов."
+                return
+            }
+            
             await loadUsers()
-            let userId = selectedUserId.isEmpty ? nil : selectedUserId
+            // ✅ ИСПРАВЛЕНИЕ 3: Синхронизация selectedUserId происходит в конце loadUsers()
+            
+            let userId = selectedUserId.isEmpty ? nil : (selectedUserId == "current" ? nil : selectedUserId)
             await viewModel.loadReports(userId: userId, period: selectedPeriod)
         }
         .overlay(alignment: .center) {
@@ -489,6 +501,13 @@ struct DrivingReportsModal: View {
             print("❌ DrivingReportsModal: Ошибка загрузки членов семьи из API: \(errorDescription)")
             print("   Тип ошибки: \(type(of: error))")
             
+            // ✅ ИСПРАВЛЕНИЕ 4: Проверяем тип ошибки
+            let networkError = NetworkError.from(error)
+            if case .unauthorized = networkError {
+                print("⚠️ DrivingReportsModal: Ошибка авторизации - используем только кэшированные данные")
+                // Не показываем ошибку пользователю, просто используем fallback
+            }
+            
             // Пробуем загрузить из UserDefaults как fallback
             await loadUsersFromUserDefaults()
             
@@ -500,6 +519,12 @@ struct DrivingReportsModal: View {
         }
         
         print("✅ DrivingReportsModal: Загрузка пользователей завершена. Всего: \(users.count), текущий: \(currentUserId)")
+        
+        // ✅ ИСПРАВЛЕНИЕ 3: Синхронизируем selectedUserId с currentUserId если он пустой (один раз в конце)
+        if selectedUserId.isEmpty && !currentUserId.isEmpty {
+            selectedUserId = currentUserId
+            print("✅ DrivingReportsModal: selectedUserId синхронизирован с currentUserId: \(currentUserId)")
+        }
     }
     
     /// Загрузка пользователей из UserDefaults как fallback
