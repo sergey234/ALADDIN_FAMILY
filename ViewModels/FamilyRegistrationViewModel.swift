@@ -223,6 +223,12 @@ class FamilyRegistrationViewModel: ObservableObject {
         selectedRole = role
         showRoleModal = false
         
+        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ ПОДРОСТКА: Добавляем логирование
+        print("🔍 onRoleSelected: role=\(role.rawValue)")
+        if role == .teenager {
+            print("✅ Выбрана роль Подросток (.teenager)")
+        }
+        
         // ✅ ИСПРАВЛЕНО: Убрана искусственная задержка, переход происходит сразу
         currentStep = .selectingAgeGroup
         showAgeGroupModal = true
@@ -231,6 +237,18 @@ class FamilyRegistrationViewModel: ObservableObject {
     func onAgeGroupSelected(_ ageGroup: AgeGroup) {
         selectedAgeGroup = ageGroup
         showAgeGroupModal = false
+        
+        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ ПОДРОСТКА: Добавляем логирование
+        print("🔍 onAgeGroupSelected: ageGroup=\(ageGroup.rawValue)")
+        if ageGroup == .teen {
+            print("✅ Выбрана возрастная группа Подросток (.teen)")
+        }
+        if let role = selectedRole {
+            print("   - Текущая роль: \(role.rawValue)")
+            if role == .teenager && ageGroup == .teen {
+                print("✅ Комбинация: роль .teenager + возрастная группа .teen")
+            }
+        }
         
         // ✅ ИСПРАВЛЕНО: Убрана искусственная задержка, переход происходит сразу
         currentStep = .selectingLetter
@@ -362,11 +380,21 @@ class FamilyRegistrationViewModel: ObservableObject {
                     // Это должно вызываться ДО показа модала, чтобы участник был сохранен
                     if let role = self?.selectedRole,
                        let ageGroup = self?.selectedAgeGroup {
+                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ ПОДРОСТКА: Добавляем логирование
+                        print("🔍 Создание семьи: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue)")
                         self?.saveCreatorAsFamilyMember(role: role, ageGroup: ageGroup)
                         logger.business("✅ Creator saved as family member: \(role.rawValue), ageGroup: \(ageGroup.rawValue)")
                         
                         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная синхронизация UserDefaults
                         UserDefaults.standard.synchronize()
+                    } else {
+                        print("❌ ОШИБКА: selectedRole или selectedAgeGroup отсутствуют!")
+                        if self?.selectedRole == nil {
+                            print("   - selectedRole = nil")
+                        }
+                        if self?.selectedAgeGroup == nil {
+                            print("   - selectedAgeGroup = nil")
+                        }
                     }
 
                     self?.currentStep = .showingRecoveryCode
@@ -646,6 +674,8 @@ class FamilyRegistrationViewModel: ObservableObject {
                     }
                     
                     // ✅ НОВОЕ: Сохраняем присоединившегося участника в family_members_list
+                    // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ ПОДРОСТКА: Добавляем логирование
+                    print("🔍 Присоединение к семье: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue)")
                     self?.saveJoinedMemberAsFamilyMember(role: role, ageGroup: ageGroup)
                     
                     // ✅ НОВОЕ: Инициализируем стартовый баланс единорога для детей
@@ -774,18 +804,26 @@ class FamilyRegistrationViewModel: ObservableObject {
         // Получаем имя пользователя из UserDefaults или используем дефолтное
         let userName = UserDefaults.standard.string(forKey: "current_user_name") ?? "Вы"
         
+        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ ПОДРОСТКА: Добавляем логирование для отладки
+        print("🔍 saveCreatorAsFamilyMember: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), userName=\(userName)")
+        
         // Преобразуем FamilyRole в FamilyMemberCard.FamilyRole
         let cardRole: FamilyMemberCard.FamilyRole
         switch role {
         case .parent:
             cardRole = .parent
         case .child:
+            // ✅ ИСПРАВЛЕНИЕ: Если роль .child и возрастная группа .teen, преобразуем в .teenager
             cardRole = ageGroup == .teen ? .teenager : .child
         case .teenager:
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Роль .teenager всегда преобразуется в .teenager
             cardRole = .teenager
+            print("✅ Подросток: роль .teenager преобразована в cardRole .teenager")
         case .elderly:
             cardRole = .elderly
         }
+        
+        print("🔍 saveCreatorAsFamilyMember: cardRole=\(cardRole)")
         
         // Получаем аватар для роли
         let avatar: String
@@ -846,18 +884,26 @@ class FamilyRegistrationViewModel: ObservableObject {
         // Получаем имя пользователя из UserDefaults или используем дефолтное
         let userName = UserDefaults.standard.string(forKey: "current_user_name") ?? "Вы"
         
+        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ ПОДРОСТКА: Добавляем логирование для отладки
+        print("🔍 saveJoinedMemberAsFamilyMember: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), userName=\(userName)")
+        
         // Преобразуем FamilyRole в FamilyMemberCard.FamilyRole
         let cardRole: FamilyMemberCard.FamilyRole
         switch role {
         case .parent:
             cardRole = .parent
         case .child:
+            // ✅ ИСПРАВЛЕНИЕ: Если роль .child и возрастная группа .teen, преобразуем в .teenager
             cardRole = ageGroup == .teen ? .teenager : .child
         case .teenager:
+            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Роль .teenager всегда преобразуется в .teenager
             cardRole = .teenager
+            print("✅ Подросток: роль .teenager преобразована в cardRole .teenager")
         case .elderly:
             cardRole = .elderly
         }
+        
+        print("🔍 saveJoinedMemberAsFamilyMember: cardRole=\(cardRole)")
         
         // Получаем аватар для роли
         let avatar: String

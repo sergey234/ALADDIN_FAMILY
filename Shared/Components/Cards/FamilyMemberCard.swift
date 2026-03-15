@@ -55,6 +55,16 @@ struct FamilyMemberCard: View {
             case .elderly: return "👴"
             }
         }
+        
+        /// ✅ ИСПРАВЛЕНО: Добавлено свойство rawValue для преобразования в строку (для API)
+        var rawValue: String {
+            switch self {
+            case .parent: return "parent"
+            case .child: return "child"
+            case .teenager: return "teenager"
+            case .elderly: return "elderly"
+            }
+        }
     }
     
     // MARK: - Protection Status
@@ -89,6 +99,16 @@ struct FamilyMemberCard: View {
             case .warning: return "⚠️"
             case .danger: return "🔴"
             case .offline: return "⚫"
+            }
+        }
+        
+        /// ✅ ИСПРАВЛЕНО: Добавлено свойство rawValue для преобразования в строку (для API)
+        var rawValue: String {
+            switch self {
+            case .protected: return "protected"
+            case .warning: return "warning"
+            case .danger: return "danger"
+            case .offline: return "offline"
             }
         }
     }
