@@ -57,20 +57,74 @@ class AnalyticsViewModel: ObservableObject {
     
     @MainActor
     func load() async {
-        // ✅ ЭТАП 2: Проверка токена перед загрузкой данных
-        guard AppConfig.authToken != nil else {
-            print("⚠️ AnalyticsViewModel: Токен отсутствует, пропускаем загрузку аналитики")
-            errorMessage = "Требуется авторизация для просмотра аналитики."
-            isLoading = false
-            isOfflineMode = false
-            dataSource = .error
-            // Отправляем уведомление о необходимости логина
-            NotificationCenter.default.post(
-                name: NSNotification.Name("SessionExpired"),
-                object: nil,
-                userInfo: ["message": "Требуется авторизация. Войдите в аккаунт для просмотра аналитики."]
-            )
-            return
+        // ✅ ДИАГНОСТИКА: Проверка токена во всех хранилищах
+        #if DEBUG
+        let appConfigToken = AppConfig.authToken != nil
+        let keychainToken = KeychainManager.shared.loadString(forKey: .authToken) != nil
+        let subscriptionToken = SubscriptionManager.shared.currentToken != nil
+        let tokenMessage = """
+        🔍 AnalyticsViewModel: Диагностика токена
+           - AppConfig.authToken: \(appConfigToken ? "✅ есть" : "❌ нет")
+           - Keychain token: \(keychainToken ? "✅ есть" : "❌ нет")
+           - SubscriptionManager token: \(subscriptionToken ? "✅ есть" : "❌ нет")
+        """
+        VisualLogger.shared.log(tokenMessage, level: .info, category: "ANALYTICS")
+        print(tokenMessage)
+        #endif
+        
+        // ✅ ИСПРАВЛЕНО: Умная проверка токена (TokenManager)
+        // Теперь проверяет SubscriptionManager.currentToken первым делом!
+        let tokenAvailability = TokenManager.shared.checkTokenAvailability()
+        
+        // Если токен загружается - ждем немного
+        if tokenAvailability.isAvailable {
+            // Токен доступен - продолжаем загрузку
+            #if DEBUG
+            VisualLogger.shared.log("✅ AnalyticsViewModel: Токен доступен, начинаем загрузку", level: .success, category: "ANALYTICS")
+            print("✅ AnalyticsViewModel: Токен доступен, начинаем загрузку")
+            #endif
+        } else {
+            // Токен не найден - проверяем, загружается ли он
+            if TokenManager.shared.isTokenLoading() {
+                // Токен загружается - ждем до 500ms
+                #if DEBUG
+                VisualLogger.shared.log("⏳ AnalyticsViewModel: Токен загружается, ждем...", level: .info, category: "ANALYTICS")
+                print("⏳ AnalyticsViewModel: Токен загружается, ждем...")
+                #endif
+                if let token = await TokenManager.shared.waitForTokenLoad(maxWaitTime: 0.5) {
+                    // Токен загрузился - продолжаем
+                    #if DEBUG
+                    VisualLogger.shared.log("✅ AnalyticsViewModel: Токен загрузился, продолжаем", level: .success, category: "ANALYTICS")
+                    print("✅ AnalyticsViewModel: Токен загрузился, продолжаем")
+                    #endif
+                } else {
+                    // Токен не загрузился - показываем ошибку (БЕЗ кнопки "Войти")
+                    #if DEBUG
+                    VisualLogger.shared.log("⚠️ AnalyticsViewModel: Токен не загрузился, показываем ошибку", level: .warning, category: "ANALYTICS")
+                    print("⚠️ AnalyticsViewModel: Токен не загрузился, показываем ошибку")
+                    #endif
+                    errorMessage = "Не удалось загрузить данные аналитики. Проверьте подключение к интернету."
+                    isLoading = false
+                    isOfflineMode = false
+                    dataSource = .empty
+                    // ✅ Пробуем загрузить кэшированные данные
+                    await loadCachedDataIfAvailable()
+                    return
+                }
+            } else {
+                // Токена нет нигде - показываем ошибку (БЕЗ кнопки "Войти")
+                #if DEBUG
+                VisualLogger.shared.log("⚠️ AnalyticsViewModel: Токен отсутствует, показываем ошибку", level: .warning, category: "ANALYTICS")
+                print("⚠️ AnalyticsViewModel: Токен отсутствует, показываем ошибку")
+                #endif
+                errorMessage = "Не удалось загрузить данные аналитики. Проверьте подключение к интернету."
+                isLoading = false
+                isOfflineMode = false
+                dataSource = .empty
+                // ✅ Пробуем загрузить кэшированные данные
+                await loadCachedDataIfAvailable()
+                return
+            }
         }
         
         isLoading = true
@@ -273,5 +327,63 @@ class AnalyticsViewModel: ObservableObject {
         itemsScanned = 0
         protectionLevel = 0
         threatCategories = []
+    }
+    
+    // ✅ ВАРИАНТ 9: Загрузка кэшированных данных в офлайн режиме
+    @MainActor
+    private func loadCachedDataIfAvailable() async {
+        // Пробуем загрузить кэшированные данные из сервиса
+        if let remoteService = service as? RemoteAnalyticsService {
+            do {
+                // Пробуем загрузить summary из кэша
+                let summaryResult = try await remoteService.fetchSummary(
+                    period: cachedPeriod,
+                    filters: cachedFilters
+                )
+                let (summary, summarySource) = summaryResult
+                
+                // Если данные из кэша - применяем их
+                if summarySource == .cache {
+                    #if DEBUG
+                    print("✅ AnalyticsViewModel: Загружены кэшированные данные summary")
+                    #endif
+                    apply(summary: summary)
+                    isOfflineMode = true
+                    dataSource = .cache
+                }
+                
+                // Пробуем загрузить security из кэша
+                let securityResult = try await remoteService.fetchSecurityAnalytics(
+                    period: cachedPeriod
+                )
+                let (security, securitySource) = securityResult
+                
+                // Если данные из кэша - применяем их
+                if securitySource == .cache {
+                    #if DEBUG
+                    print("✅ AnalyticsViewModel: Загружены кэшированные данные security")
+                    #endif
+                    apply(securityAnalytics: security)
+                    isOfflineMode = true
+                    if dataSource == .empty {
+                        dataSource = .cache
+                    }
+                }
+                
+                // Если загрузили хотя бы что-то из кэша - показываем офлайн режим
+                if summarySource == .cache || securitySource == .cache {
+                    isOfflineMode = true
+                    #if DEBUG
+                    print("✅ AnalyticsViewModel: Офлайн режим активирован с кэшированными данными")
+                    #endif
+                }
+            } catch {
+                #if DEBUG
+                print("⚠️ AnalyticsViewModel: Не удалось загрузить кэшированные данные: \(error)")
+                #endif
+                // Если не удалось загрузить кэш - ничего не делаем
+                // Пользователь увидит ошибку и кнопку "Войти"
+            }
+        }
     }
 }

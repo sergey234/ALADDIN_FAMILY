@@ -196,8 +196,8 @@ class NetworkManager: NSObject, ObservableObject {
         config.httpCookieAcceptPolicy = .never
         config.httpShouldSetCookies = false
 
-        // 📊 Request caching policy - использовать кэш для GET запросов
-        config.requestCachePolicy = .returnCacheDataElseLoad
+        // ✅ ВАРИАНТ 5: Отключить кэширование для API запросов (чтобы получать актуальные данные)
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData
 
         // 🗜️ Включить сжатие ответов
         config.httpAdditionalHeaders = [
@@ -237,7 +237,10 @@ class NetworkManager: NSObject, ObservableObject {
             
             var request = URLRequest(url: url)
             request.httpMethod = "GET"
+            request.cachePolicy = .reloadIgnoringLocalCacheData  // ✅ ВАРИАНТ 5: Отключить кэш для актуальных данных
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")  // ✅ ВАРИАНТ 5: Заголовок для отключения кэша
+            request.setValue("no-cache", forHTTPHeaderField: "Pragma")  // ✅ ВАРИАНТ 5: Заголовок для отключения кэша
             
             // ✅ ПРОВЕРКА АВТОРИЗАЦИИ: Если требуется авторизация, проверяем токен
             if requiresAuth {
@@ -297,7 +300,10 @@ class NetworkManager: NSObject, ObservableObject {
             
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
+            request.cachePolicy = .reloadIgnoringLocalCacheData  // ✅ ВАРИАНТ 5: Отключить кэш
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+            request.setValue("no-cache", forHTTPHeaderField: "Pragma")
             
             // Добавляем X-API-Key для payment_service endpoints
             if endpoint.contains("activation") || endpoint.contains("subscription") {
@@ -362,7 +368,10 @@ class NetworkManager: NSObject, ObservableObject {
             
             var request = URLRequest(url: url)
             request.httpMethod = "DELETE"
+            request.cachePolicy = .reloadIgnoringLocalCacheData  // ✅ ВАРИАНТ 5: Отключить кэш
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+            request.setValue("no-cache", forHTTPHeaderField: "Pragma")
             
             if let token = AppConfig.authToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -440,7 +449,10 @@ class NetworkManager: NSObject, ObservableObject {
             
             var request = URLRequest(url: url)
             request.httpMethod = "PATCH"
+            request.cachePolicy = .reloadIgnoringLocalCacheData  // ✅ ВАРИАНТ 5: Отключить кэш
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+            request.setValue("no-cache", forHTTPHeaderField: "Pragma")
             
             if let token = AppConfig.authToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -479,7 +491,10 @@ class NetworkManager: NSObject, ObservableObject {
             
             var request = URLRequest(url: url)
             request.httpMethod = "DELETE"
+            request.cachePolicy = .reloadIgnoringLocalCacheData  // ✅ ВАРИАНТ 5: Отключить кэш
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+            request.setValue("no-cache", forHTTPHeaderField: "Pragma")
             
             if let token = AppConfig.authToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")

@@ -177,6 +177,7 @@
 		5EB01F462ECB09D300168BE9 /* 26_ActivationCodeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB01F452ECB09D300168BE9 /* 26_ActivationCodeScreen.swift */; };
 		5EB1A4A52F6418CB0030F5C1 /* QuarantineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB1A4A42F6418CB0030F5C1 /* QuarantineManager.swift */; };
 		5EB1A4A72F64B8050030F5C1 /* ComponentAnalyticsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB1A4A62F64B8050030F5C1 /* ComponentAnalyticsModels.swift */; };
+		5EBA79392F66C70B001C50E3 /* TokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EBA79382F66C70B001C50E3 /* TokenManager.swift */; };
 		5EC309092EA6B5F600C7D34B /* 01_MainScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */; };
 		5EC3090B2EA6B60500C7D34B /* 03_NetworkProtectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F52EA6AB8C00C7D34B /* 03_NetworkProtectionScreen.swift */; };
 		5EC3090C2EA6B60900C7D34B /* 04_AnalyticsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC308F82EA6AB8C00C7D34B /* 04_AnalyticsScreen.swift */; };
@@ -511,6 +512,7 @@
 		5EB01F452ECB09D300168BE9 /* 26_ActivationCodeScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = 26_ActivationCodeScreen.swift; sourceTree = "<group>"; };
 		5EB1A4A42F6418CB0030F5C1 /* QuarantineManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = QuarantineManager.swift; path = Core/Antivirus/QuarantineManager.swift; sourceTree = "<group>"; };
 		5EB1A4A62F64B8050030F5C1 /* ComponentAnalyticsModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentAnalyticsModels.swift; path = Core/Analytics/ComponentAnalyticsModels.swift; sourceTree = "<group>"; };
+		5EBA79382F66C70B001C50E3 /* TokenManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TokenManager.swift; path = Core/Managers/TokenManager.swift; sourceTree = "<group>"; };
 		5EC308E22EA6AB8B00C7D34B /* 22_DeviceDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 22_DeviceDetailScreen.swift; sourceTree = "<group>"; };
 		5EC308E42EA6AB8B00C7D34B /* RewardsQuickModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardsQuickModal.swift; sourceTree = "<group>"; };
 		5EC308E52EA6AB8B00C7D34B /* 06_AIAssistantScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 06_AIAssistantScreen.swift; sourceTree = "<group>"; };
@@ -777,6 +779,7 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5EBA79382F66C70B001C50E3 /* TokenManager.swift */,
 				5EB1A4A62F64B8050030F5C1 /* ComponentAnalyticsModels.swift */,
 				5EB1A4A42F6418CB0030F5C1 /* QuarantineManager.swift */,
 				5E5978062F60A0BC00854BDE /* DateFormatterService.swift */,
@@ -1418,6 +1421,7 @@
 				5EC309092EA6B5F600C7D34B /* 01_MainScreen.swift in Sources */,
 				5EC3090B2EA6B60500C7D34B /* 03_NetworkProtectionScreen.swift in Sources */,
 				A4BBB003 /* FamilyProtectorView.swift in Sources */,
+				5EBA79392F66C70B001C50E3 /* TokenManager.swift in Sources */,
 				5EC309362EA6CCBD00C7D34B /* Fonts.swift in Sources */,
 				5EC309222EA6B65D00C7D34B /* GamesParentalControlView.swift in Sources */,
 				5E32FFF12EAD18D4000574C4 /* QRScannerModal.swift in Sources */,

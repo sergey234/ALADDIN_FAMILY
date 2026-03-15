@@ -306,3 +306,146 @@ async def get_analytics(
             topThreats=[],
             threatsByType=[]
         )
+
+# ============================================
+# ENDPOINT: GET /api/analytics/threats
+# ============================================
+
+class ThreatsResponse(BaseModel):
+    """Ответ на запрос угроз"""
+    threats: List[Dict[str, Any]]
+    total: int
+    source: str
+
+@router.get("/analytics/threats", response_model=ThreatsResponse)
+async def get_analytics_threats(
+    period: str = Query("day", regex="^(day|week|month)$"),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Получить список угроз за указанный период.
+    
+    Требуется авторизация (токен в заголовке Authorization: Bearer {token})
+    
+    Параметры:
+    - period: Период аналитики ("day", "week", "month")
+    
+    Возвращает:
+    - threats: Список угроз
+    - total: Общее количество угроз
+    """
+    user_id = current_user.get("sub") or current_user.get("id") or current_user.get("user_id")
+    
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Токен не содержит user_id"
+        )
+    
+    # ✅ Пробуем вызвать SFM функцию
+    try:
+        import sys
+        backend_path = "/opt/aladdin-backend"
+        if backend_path not in sys.path:
+            sys.path.insert(0, backend_path)
+        
+        from sfm_adapter_server import SFMAdapter
+        from complete_api_sfm_mapping import get_sfm_function_name
+        
+        sfm_adapter = SFMAdapter()
+        params = {"user_id": str(user_id), "period": period}
+        
+        success, result, message = sfm_adapter.execute_function(
+            get_sfm_function_name("get_analytics_security_events"),
+            params
+        )
+        
+        if success and isinstance(result, dict):
+            return ThreatsResponse(
+                threats=result.get("threats", []),
+                total=result.get("total", 0),
+                source="sfm_real"
+            )
+    except Exception as e:
+        print(f"⚠️ Analytics SFM Error: {e}")
+    
+    # Fallback: возвращаем пустой список
+    return ThreatsResponse(
+        threats=[],
+        total=0,
+        source="fallback"
+    )
+
+# ============================================
+# ENDPOINT: GET /api/analytics/top-threats
+# ============================================
+
+class TopThreatsResponse(BaseModel):
+    """Ответ на запрос топ угроз"""
+    topThreats: List[TopThreat]
+    total: int
+    source: str
+
+@router.get("/analytics/top-threats", response_model=TopThreatsResponse)
+async def get_analytics_top_threats(
+    limit: int = Query(10, ge=1, le=50),
+    period: str = Query("day", regex="^(day|week|month)$"),
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Получить топ угроз за указанный период.
+    
+    Требуется авторизация (токен в заголовке Authorization: Bearer {token})
+    
+    Параметры:
+    - limit: Количество угроз в топе (1-50)
+    - period: Период аналитики ("day", "week", "month")
+    
+    Возвращает:
+    - topThreats: Список топ угроз
+    - total: Общее количество угроз
+    """
+    user_id = current_user.get("sub") or current_user.get("id") or current_user.get("user_id")
+    
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Токен не содержит user_id"
+        )
+    
+    # ✅ Пробуем вызвать SFM функцию
+    try:
+        import sys
+        backend_path = "/opt/aladdin-backend"
+        if backend_path not in sys.path:
+            sys.path.insert(0, backend_path)
+        
+        from sfm_adapter_server import SFMAdapter
+        from complete_api_sfm_mapping import get_sfm_function_name
+        
+        sfm_adapter = SFMAdapter()
+        params = {"user_id": str(user_id), "period": period, "limit": limit}
+        
+        success, result, message = sfm_adapter.execute_function(
+            get_sfm_function_name("get_analytics_overview"),
+            params
+        )
+        
+        if success and isinstance(result, dict):
+            top_threats = result.get("topThreats", [])
+            return TopThreatsResponse(
+                topThreats=top_threats[:limit],
+                total=len(top_threats),
+                source="sfm_real"
+            )
+    except Exception as e:
+        print(f"⚠️ Analytics SFM Error: {e}")
+    
+    # Fallback: возвращаем пустой список
+    return TopThreatsResponse(
+        topThreats=[],
+        total=0,
+        source="fallback"
+    )

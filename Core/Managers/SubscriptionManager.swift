@@ -881,6 +881,12 @@ final class SubscriptionManager: ObservableObject {
 
     /// 💾 Load persisted data
     private func loadPersistedData() {
+        #if DEBUG
+        let logMessage = "💾💾💾 SubscriptionManager.loadPersistedData: Начало загрузки данных из Keychain"
+        VisualLogger.shared.log(logMessage, level: .info, category: "SUBSCRIPTION")
+        print(logMessage)
+        #endif
+        
         // Load token
         if let tokenData = loadFromKeychain(key: tokenKey),
            let token = try? JSONDecoder().decode(JWTToken.self, from: tokenData) {
@@ -888,6 +894,23 @@ final class SubscriptionManager: ObservableObject {
             // ✅ КРИТИЧНО: Также восстанавливаем токен в AppConfig для NetworkManager
             AppConfig.authToken = token.token
             logger.business("🔑 Token restored from Keychain to AppConfig.authToken")
+            #if DEBUG
+            let successMessage = """
+            ✅ SubscriptionManager.loadPersistedData: Токен загружен из Keychain
+               - DeviceId: \(token.deviceId)
+               - SubscriptionLevel: \(token.subscriptionLevel)
+               - Token length: \(token.token.count)
+               - AppConfig.authToken установлен: \(AppConfig.authToken != nil ? "✅ да" : "❌ нет")
+            """
+            VisualLogger.shared.log(successMessage, level: .success, category: "SUBSCRIPTION")
+            print(successMessage)
+            #endif
+        } else {
+            #if DEBUG
+            let errorMessage = "❌ SubscriptionManager.loadPersistedData: Токен не найден в Keychain или ошибка декодирования"
+            VisualLogger.shared.log(errorMessage, level: .error, category: "SUBSCRIPTION")
+            print(errorMessage)
+            #endif
         }
 
         // Load subscription

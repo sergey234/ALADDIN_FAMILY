@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import time
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from app.routers import referral
 from app.routers import referral_test
 from app.routers import payments
@@ -329,6 +330,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ✅ ВАРИАНТ 5: Middleware для отключения кэширования API ответов
+class NoCacheMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+
+app.add_middleware(NoCacheMiddleware)
+
 # Создание таблиц при запуске (если их нет)
 @app.on_event("startup")
 async def startup_event():
@@ -413,6 +425,24 @@ if analytics_router_available:
             print("⚠️ Не удалось подключить роутер Analytics API")
 else:
     print("⚠️ Роутер Analytics API недоступен")
+
+# ✅ ВАРИАНТ 5: Добавлен роутер для Reports API (stats endpoints)
+try:
+    from security.api.routers.reports_router import router as reports_router
+    reports_router_available = True
+except ImportError as e:
+    print(f"⚠️ reports_router недоступен: {e}")
+    reports_router_available = False
+    reports_router = None
+
+if reports_router_available:
+    try:
+        app.include_router(reports_router)
+        print("✅ Роутер Reports API подключен: /api/reports/*/stats доступны")
+    except Exception as e:
+        print(f"❌ Ошибка подключения Reports Router: {e}")
+else:
+    print("⚠️ Роутер Reports API недоступен")
 
 # ✅ ДОБАВЛЕНО: Подключение Security Routers
 print(f"📦 Подключение Security Routers (найдено: {len(security_routers)} роутеров)")
@@ -582,26 +612,126 @@ async def root():
 async def health():
     return {"status": "ok"}
 
-# ✅ ФИНАЛЬНЫЙ СЛОЙ: Wildcard Proxy (Global Safety Net)
-# Это гарантирует 0 ошибок 404 для всех /api/* эндпоинтов
+# ✅ ВАРИАНТ 5: ФИНАЛЬНЫЙ СЛОЙ: Wildcard Proxy (Global Safety Net)
+# Подключен ПОСЛЕДНИМ - обрабатывает только endpoints без конкретных роутеров
+# Импортируем SFM Adapter и маппинг
+try:
+    import sys
+    backend_path = "/opt/aladdin-backend"
+    if backend_path not in sys.path:
+        sys.path.insert(0, backend_path)
+    
+    from sfm_adapter_server import SFMAdapter
+    from complete_api_sfm_mapping import get_sfm_function_name
+    
+    sfm_adapter_wildcard = SFMAdapter()
+    SFM_ADAPTER_WILDCARD_AVAILABLE = True
+    print("✅ SFM Adapter для Wildcard Proxy инициализирован")
+except ImportError as e:
+    print(f"⚠️ SFM Adapter для Wildcard Proxy недоступен: {e}")
+    sfm_adapter_wildcard = None
+    get_sfm_function_name = None
+    SFM_ADAPTER_WILDCARD_AVAILABLE = False
+
+def path_to_function_name(path: str, method: str = "GET") -> str:
+    """
+    Преобразует API путь в имя функции
+    
+    Примеры:
+    - /api/analytics → get_analytics_overview
+    - /api/reports/driving/stats → get_driving_reports_stats
+    """
+    # Убираем query параметры
+    path = path.split("?")[0]
+    
+    # Убираем префикс /api если есть
+    if path.startswith("/api/"):
+        path = path[5:]
+    elif path.startswith("/"):
+        path = path[1:]
+    
+    # Преобразуем путь в имя функции
+    parts = path.split("/")
+    
+    # Определяем префикс по методу
+    prefix = {
+        "GET": "get_",
+        "POST": "create_",
+        "PUT": "update_",
+        "DELETE": "delete_"
+    }.get(method, "get_")
+    
+    # Собираем имя функции
+    func_name = prefix + "_".join(parts)
+    
+    # Специальные случаи
+    if func_name == "get_analytics":
+        func_name = "get_analytics_overview"
+    
+    return func_name
+
 @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def wildcard_handler(request: Request, path: str):
     """
-    Wildcard Handler для всех путей /api/. 
-    Если путь не был пойман ни одним роутером выше, он попадает сюда.
-    Это превращает любой неизвестный путь в запрос к SFM.
-    """
-    print(f"📡 [WILDCARD] Обработка неизвестного пути: /api/{path} [{request.method}]")
+    Wildcard Handler для endpoints без конкретных роутеров.
+    Преобразует путь в SFM функцию и вызывает её через adapter.
     
-    # Эмуляция ответа от SFM (в проде здесь прокси на порт 8003)
+    ВАРИАНТ 5: Упрощенная версия - только вызов SFM, без исключений.
+    FastAPI автоматически обработает все конкретные роутеры первыми.
+    """
+    print(f"📡 [WILDCARD] Обработка пути: /api/{path} [{request.method}]")
+    
+    # 1. Преобразуем путь в имя функции
+    func_name = path_to_function_name(path, request.method)
+    print(f"🔍 [WILDCARD] Имя функции: {func_name}")
+    
+    # 2. Извлекаем параметры из запроса
+    params = {}
+    if request.method in ["POST", "PUT"]:
+        try:
+            params = await request.json()
+        except:
+            pass
+    
+    # 3. Извлекаем query параметры
+    query_params = dict(request.query_params)
+    params.update(query_params)
+    
+    # 4. Вызываем SFM через adapter
+    if SFM_ADAPTER_WILDCARD_AVAILABLE and sfm_adapter_wildcard:
+        try:
+            # Получаем правильное имя функции SFM через маппинг (если доступен)
+            if get_sfm_function_name:
+                sfm_function_name = get_sfm_function_name(func_name)
+                print(f"🔄 [WILDCARD] Маппинг: {func_name} → {sfm_function_name}")
+            else:
+                sfm_function_name = func_name
+                print(f"🔄 [WILDCARD] Используем имя функции как есть: {func_name}")
+            
+            # Вызываем SFM функцию
+            success, result, message = sfm_adapter_wildcard.execute_function(sfm_function_name, params)
+            
+            if success:
+                print(f"✅ [WILDCARD] SFM функция выполнена успешно: {sfm_function_name}")
+                return JSONResponse(
+                    status_code=200,
+                    content=result  # ✅ Возвращаем реальные данные!
+                )
+            else:
+                print(f"⚠️ [WILDCARD] SFM функция не выполнена: {message}")
+        except Exception as e:
+            print(f"❌ [WILDCARD] Ошибка вызова SFM: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    # 5. Fallback: возвращаем 404 если SFM недоступен
     return JSONResponse(
-        status_code=200,
+        status_code=404,
         content={
-            "success": True,
-            "message": f"Endpoint /api/{path} processed via Wildcard Proxy",
+            "error": f"Endpoint /api/{path} not found",
             "path": path,
             "method": request.method,
-            "status": "SFM_PROXIED",
+            "message": "No router found and SFM unavailable",
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S")
         }
     )

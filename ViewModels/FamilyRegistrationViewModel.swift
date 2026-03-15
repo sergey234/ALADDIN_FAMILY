@@ -436,13 +436,38 @@ class FamilyRegistrationViewModel: ObservableObject {
 
     /// ✅ ДОБАВЛЕНО: Сохранение токенов с проверкой и повторной попыткой
     private func saveTokens(accessToken: String, refreshToken: String?) -> Bool {
+        #if DEBUG
+        let startMessage = """
+        🔐🔐🔐 FamilyRegistrationViewModel.saveTokens: Начало сохранения токенов
+           - Access token длина: \(accessToken.count)
+           - Refresh token: \(refreshToken != nil ? "✅ есть (длина: \(refreshToken!.count))" : "❌ нет")
+        """
+        VisualLogger.shared.log(startMessage, level: .info, category: "AUTH")
+        print(startMessage)
+        #endif
         logger.business("Saving tokens to Keychain (access: \(accessToken.prefix(10))..., refresh: \(refreshToken?.prefix(10) ?? "none")...)")
 
         // Попытка 1: Сохраняем токены
         KeychainManager.shared.save(accessToken, forKey: .authToken)
+        #if DEBUG
+        VisualLogger.shared.log("💾 FamilyRegistrationViewModel.saveTokens: Access token сохранен в Keychain", level: .success, category: "AUTH")
+        print("💾 FamilyRegistrationViewModel.saveTokens: Access token сохранен в Keychain")
+        #endif
+        
         if let refreshToken = refreshToken {
             KeychainManager.shared.save(refreshToken, forKey: .refreshToken)
+            #if DEBUG
+            VisualLogger.shared.log("💾 FamilyRegistrationViewModel.saveTokens: Refresh token сохранен в Keychain", level: .success, category: "AUTH")
+            print("💾 FamilyRegistrationViewModel.saveTokens: Refresh token сохранен в Keychain")
+            #endif
         }
+        
+        // ✅ КРИТИЧНО: Также сохраняем токен в AppConfig для NetworkManager
+        AppConfig.authToken = accessToken
+        #if DEBUG
+        VisualLogger.shared.log("💾 FamilyRegistrationViewModel.saveTokens: Access token установлен в AppConfig.authToken", level: .success, category: "AUTH")
+        print("💾 FamilyRegistrationViewModel.saveTokens: Access token установлен в AppConfig.authToken")
+        #endif
 
         // ✅ ПРОВЕРКА: Убеждаемся, что токены действительно сохранены
         let loadedAccessToken = KeychainManager.shared.loadString(forKey: .authToken)
@@ -451,10 +476,34 @@ class FamilyRegistrationViewModel: ObservableObject {
         if loadedAccessToken == accessToken &&
            (refreshToken == nil || loadedRefreshToken == refreshToken) {
             logger.business("Tokens successfully saved and verified")
+            #if DEBUG
+            let successMessage = """
+            ✅ FamilyRegistrationViewModel.saveTokens: Токены успешно сохранены и проверены
+               - Access token в Keychain: ✅
+               - Refresh token в Keychain: \(refreshToken != nil ? "✅" : "N/A")
+               - AppConfig.authToken: \(AppConfig.authToken != nil ? "✅ установлен" : "❌ не установлен")
+            """
+            VisualLogger.shared.log(successMessage, level: .success, category: "AUTH")
+            print(successMessage)
+            #endif
             // ✅ УВЕДОМЛЕНИЕ: Отправляем уведомление о успешной авторизации
             NotificationCenter.default.post(name: NSNotification.Name("UserDidLogin"), object: nil)
+            #if DEBUG
+            VisualLogger.shared.log("📢 FamilyRegistrationViewModel.saveTokens: Отправлено уведомление UserDidLogin", level: .info, category: "AUTH")
+            print("📢 FamilyRegistrationViewModel.saveTokens: Отправлено уведомление UserDidLogin")
+            #endif
             return true
         } else {
+            #if DEBUG
+            let errorMessage = """
+            ❌ FamilyRegistrationViewModel.saveTokens: Ошибка сохранения токенов в Keychain
+               - Access token совпадает: \(loadedAccessToken == accessToken ? "✅" : "❌")
+               - Refresh token совпадает: \(refreshToken == nil ? "N/A" : (loadedRefreshToken == refreshToken ? "✅" : "❌"))
+               - Повторная попытка через 0.5 секунды...
+            """
+            VisualLogger.shared.log(errorMessage, level: .error, category: "AUTH")
+            print(errorMessage)
+            #endif
             print("❌ Ошибка сохранения токенов в Keychain, повторная попытка...")
 
             // Попытка 2: Повторяем сохранение через 0.5 секунды
