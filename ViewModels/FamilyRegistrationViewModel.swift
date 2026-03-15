@@ -241,6 +241,22 @@ class FamilyRegistrationViewModel: ObservableObject {
         selectedLetter = letter
         showLetterModal = false
         
+        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #1: Сохраняем имя пользователя на основе выбранной буквы
+        // Формируем имя: "Родитель A", "Ребенок B", "Подросток C", "Пожилой D" и т.д.
+        if let role = selectedRole {
+            let roleName: String
+            switch role {
+            case .parent: roleName = "Родитель"
+            case .child: roleName = "Ребенок"
+            case .teenager: roleName = "Подросток"
+            case .elderly: roleName = "Пожилой"
+            }
+            let userName = "\(roleName) \(letter)"
+            UserDefaults.standard.set(userName, forKey: "current_user_name")
+            UserDefaults.standard.synchronize()
+            logger.business("✅ User name saved: \(userName)")
+        }
+        
         // ✅ ИСПРАВЛЕНО: Убрана искусственная задержка, создание семьи происходит сразу
         createFamily()
     }
@@ -340,6 +356,17 @@ class FamilyRegistrationViewModel: ObservableObject {
                         if saved {
                             logger.business("Recovery Code automatically saved to Keychain")
                         }
+                    }
+
+                    // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #1: Сохраняем создателя семьи в список участников
+                    // Это должно вызываться ДО показа модала, чтобы участник был сохранен
+                    if let role = self?.selectedRole,
+                       let ageGroup = self?.selectedAgeGroup {
+                        self?.saveCreatorAsFamilyMember(role: role, ageGroup: ageGroup)
+                        logger.business("✅ Creator saved as family member: \(role.rawValue), ageGroup: \(ageGroup.rawValue)")
+                        
+                        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная синхронизация UserDefaults
+                        UserDefaults.standard.synchronize()
                     }
 
                     self?.currentStep = .showingRecoveryCode
@@ -797,10 +824,13 @@ class FamilyRegistrationViewModel: ObservableObject {
             // Сохраняем обновленный список
             if let encoded = try? JSONEncoder().encode(existingMembers) {
                 UserDefaults.standard.set(encoded, forKey: "family_members_list")
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная синхронизация UserDefaults
+                UserDefaults.standard.synchronize()
                 print("✅ Создатель семьи добавлен к списку участников: \(userName) (\(cardRole)). Всего участников: \(existingMembers.count)")
                 
                 // Уведомляем другие экраны об изменении
                 NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+                NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
             } else {
                 print("❌ Ошибка кодирования списка участников")
             }
@@ -866,10 +896,13 @@ class FamilyRegistrationViewModel: ObservableObject {
             // Сохраняем обновленный список
             if let encoded = try? JSONEncoder().encode(existingMembers) {
                 UserDefaults.standard.set(encoded, forKey: "family_members_list")
+                // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная синхронизация UserDefaults
+                UserDefaults.standard.synchronize()
                 print("✅ Присоединившийся участник добавлен к списку: \(userName) (\(cardRole)). Всего участников: \(existingMembers.count)")
                 
                 // Уведомляем другие экраны об изменении
                 NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+                NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
             } else {
                 print("❌ Ошибка кодирования списка участников")
             }

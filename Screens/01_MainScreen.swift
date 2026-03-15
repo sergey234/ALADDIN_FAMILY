@@ -206,6 +206,8 @@ struct MainScreen: View {
                             Text(localizationManager.localized("main_tab_notifications"))
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(.white.opacity(0.7))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)  // ✅ Исправление: Предотвращение переноса "Уведомления" на две строки
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 6)

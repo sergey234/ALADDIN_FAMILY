@@ -39,8 +39,7 @@ struct ComponentReportCard: View {
                         .font(.bodyBold)
                         .foregroundColor(.textPrimary)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)  // ✅ ПУНКТЫ 4-9: Автоматическое уменьшение шрифта для предотвращения обрезания
-                        .fixedSize(horizontal: false, vertical: true)  // ✅ ПУНКТЫ 4-9: Предотвращение обрезания текста
+                        .minimumScaleFactor(0.7)  // ✅ Исправление: Улучшенное масштабирование для длинных заголовков (Безопасность, Мониторинг Дарк Веб, Защита кражи личности, Пузырь местоположения, Блокировка трекеров)
                     
                     // Метрики (максимум 2)
                     ForEach(Array(metrics.prefix(2)), id: \.0) { key, value in
@@ -48,12 +47,17 @@ struct ComponentReportCard: View {
                             Text(key)
                                 .font(.caption)
                                 .foregroundColor(.textSecondary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)  // ✅ Исправление: Масштабирование для метрик (Безопасность, Освобождено)
                             Text(value)
                                 .font(.captionBold)
                                 .foregroundColor(.textPrimary)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)  // ✅ Исправление: Масштабирование для значений метрик
                         }
                     }
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)  // ✅ Исправление: Ограничение ширины VStack для предотвращения выхода за пределы экрана
                 
                 Spacer()
                 

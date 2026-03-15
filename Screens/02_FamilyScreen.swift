@@ -139,11 +139,14 @@ struct FamilyScreen: View {
     
     // MARK: - Family Members Management
     
-    // Загрузка участников семьи из UserDefaults при открытии экрана
+    // Загрузка участников семьи из UserDefaults и синхронизация с API
     private func loadFamilyMembers() {
         logger.business("Loading family members from storage")
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Синхронизируем UserDefaults перед чтением
         UserDefaults.standard.synchronize()
+        
+        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #2: Сначала пытаемся загрузить из API (синхронизация с сервером)
+        syncFamilyMembersFromAPI()
         
         // 1. Попытка загрузить из UserDefaults
         if let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
@@ -215,6 +218,100 @@ struct FamilyScreen: View {
             
             // Сохраняем созданный список только если он был пуст
             saveFamilyMembers()
+        }
+    }
+    
+    // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #2: Синхронизация участников семьи с сервером
+    private func syncFamilyMembersFromAPI() {
+        // Проверяем, есть ли family_id
+        guard let familyId = UserDefaults.standard.string(forKey: familyIdKey),
+              !familyId.isEmpty else {
+            print("⚠️ [syncFamilyMembersFromAPI] Family ID не найден, пропускаем синхронизацию")
+            return
+        }
+        
+        print("🔄 [syncFamilyMembersFromAPI] Начинаем синхронизацию участников семьи с сервером")
+        let apiService = APIService.shared
+        
+        apiService.getFamilyMembers { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let members):
+                    print("✅ [syncFamilyMembersFromAPI] Получено \(members.count) участников с сервера")
+                    
+                    // Захватываем localizationManager до замыкания map
+                    let locManager = self.localizationManager
+                    
+                    // Преобразуем FamilyMemberResponse в FamilyMemberData
+                    let convertedMembers: [FamilyMemberData] = members.map { member in
+                        // Определяем роль
+                        let normalizedRole = member.role.lowercased()
+                        let role: FamilyMemberCard.FamilyRole
+                        let parentLabels = Set(["parent", locManager.localized("family_role_parent_label").lowercased()])
+                        let childLabels = Set(["child", locManager.localized("family_role_child_label").lowercased()])
+                        let teenLabels = Set(["teenager", "teen", locManager.localized("family_role_teen_label").lowercased()])
+                        let elderlyLabels = Set(["elderly", "grandparent", locManager.localized("family_role_elderly_label").lowercased()])
+                        
+                        switch normalizedRole {
+                        case _ where parentLabels.contains(normalizedRole):
+                            role = .parent
+                        case _ where childLabels.contains(normalizedRole):
+                            role = .child
+                        case _ where teenLabels.contains(normalizedRole):
+                            role = .teenager
+                        case _ where elderlyLabels.contains(normalizedRole):
+                            role = .elderly
+                        default:
+                            role = .parent
+                        }
+                        
+                        // Получаем аватар для роли
+                        let avatar: String
+                        switch role {
+                        case .parent: avatar = "👨"
+                        case .child: avatar = "👧"
+                        case .teenager: avatar = "🧒"
+                        case .elderly: avatar = "👵"
+                        }
+                        
+                        // Преобразуем статус из API в ProtectionStatus
+                        let protectionStatus: FamilyMemberCard.ProtectionStatus
+                        switch member.status.lowercased() {
+                        case "protected":
+                            protectionStatus = .protected
+                        case "warning":
+                            protectionStatus = .warning
+                        case "danger":
+                            protectionStatus = .danger
+                        case "offline":
+                            protectionStatus = .offline
+                        default:
+                            protectionStatus = .protected // По умолчанию защищён
+                        }
+                        
+                        return FamilyMemberData(
+                            name: member.name,
+                            role: role,
+                            avatar: avatar,
+                            status: protectionStatus,
+                            threatsBlocked: member.threatsBlocked,
+                            lastActive: member.lastActive
+                        )
+                    }
+                    
+                    // Обновляем список участников
+                    self.familyMembers = convertedMembers
+                    
+                    // Сохраняем в UserDefaults
+                    self.saveFamilyMembers()
+                    
+                    print("✅ [syncFamilyMembersFromAPI] Синхронизация завершена: \(convertedMembers.count) участников сохранено")
+                    
+                case .failure(let error):
+                    print("❌ [syncFamilyMembersFromAPI] Ошибка синхронизации: \(error.localizedDescription)")
+                    // При ошибке продолжаем использовать локальные данные
+                }
+            }
         }
     }
     
