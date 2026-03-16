@@ -100,8 +100,10 @@ class JWTErrorRecovery {
                 return .silentRetry  // Токен истек - пробуем заново
 
             case 403:
-                logger.business("🚫 DEFENSIVE JWT: 403 Forbidden - insufficient permissions")
-                return .userNotification  // Нет прав доступа
+                logger.business("🔄 DEFENSIVE JWT: 403 Forbidden - проверяем подписку")
+                // ✅ BUILD 122: Умная обработка 403 с защитой подписки
+                // Проверка уровня подписки будет выполнена в executeStrategy
+                return .silentRetry  // Будет обработано с проверкой подписки
 
             case 500...599:
                 logger.business("🚫 DEFENSIVE JWT: 5xx Server Error - server issues, circuit break")
@@ -151,7 +153,38 @@ class JWTErrorRecovery {
         do {
             switch strategy {
             case .silentRetry:
-                try await performSilentRetry()
+                // ✅ BUILD 122: Умная обработка 403 с защитой подписки
+                if let networkError = error as? NetworkError,
+                   case .httpError(403) = networkError {
+                    // Это 403 ошибка - проверяем уровень подписки
+                    // ✅ Используем Task для доступа к @MainActor свойству
+                    Task { @MainActor in
+                        let currentLevel = SubscriptionManager.shared.getCurrentLevel()
+                        
+                        if currentLevel != .free {
+                            // ✅ У пользователя есть платная подписка или триал
+                            logger.business("🔄 У пользователя активная подписка (\(currentLevel)) - восстанавливаем")
+                            Task.detached { @MainActor in
+                                // 1. Пытаемся обновить через refresh token
+                                let refreshed = await JWTTokenManager.shared.refreshTokenIfNeeded()
+                                
+                                if !refreshed {
+                                    // 2. Если refresh не удался, восстанавливаем с сервера
+                                    await SubscriptionManager.shared.restoreSubscriptionFromServer()
+                                }
+                            }
+                        } else {
+                            // ✅ Только для FREE пользователей - перерегистрация безопасна
+                            logger.business("🔄 FREE пользователь - перерегистрация безопасна")
+                            Task.detached { @MainActor in
+                                await SubscriptionManager.shared.performDeviceRegistration()
+                            }
+                        }
+                    }
+                } else {
+                    // Для других ошибок - стандартная обработка
+                    try await performSilentRetry()
+                }
 
             case .userNotification:
                 showUserNotification(for: error)

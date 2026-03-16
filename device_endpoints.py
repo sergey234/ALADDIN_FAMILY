@@ -14,6 +14,32 @@ from app.core.security import create_access_token
 from app.models.subscription import SubscriptionLevel, SubscriptionLimits
 from app.services.subscription_service import SubscriptionService
 
+# ✅ BUILD 122: Импорт create_refresh_token из auth_router
+try:
+    from app.routers.auth_router import create_refresh_token
+except ImportError:
+    # Fallback: если не можем импортировать, создадим локально
+    try:
+        from app.auth import JWT_SECRET, JWT_ALGORITHM
+    except ImportError:
+        # Если и это не работает, используем значения по умолчанию
+        JWT_SECRET = os.getenv("JWT_SECRET", "aladdin-secret-key")
+        JWT_ALGORITHM = "HS256"
+    
+    def create_refresh_token(data: dict) -> str:
+        """Создание JWT refresh token (действителен 30 дней)"""
+        to_encode = data.copy()
+        expire = datetime.utcnow() + timedelta(days=30)
+        
+        to_encode.update({
+            "exp": expire,
+            "iat": datetime.utcnow(),
+            "type": to_encode.get("type", "device_refresh")  # ✅ BUILD 122: Используем тип из data или device_refresh
+        })
+        
+        encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        return encoded_jwt
+
 router = APIRouter()
 
 # MARK: - Request Models (matching mobile app expectations)
@@ -48,6 +74,7 @@ class SubscriptionStatus(BaseModel):
 class JWTDeviceRegisterResponse(BaseModel):
     """JWT device registration response for mobile app"""
     token: str
+    refresh_token: Optional[str] = None  # ✅ BUILD 122: Опциональный для обратной совместимости
     deviceId: str
     expiresAt: datetime
     registeredAt: datetime
@@ -96,9 +123,18 @@ async def register_device_anonymously(
 
         access_token = create_access_token(token_data)
 
+        # ✅ BUILD 122: Создание refresh token для device tokens
+        refresh_token_data = {
+            "sub": device_user.id,
+            "device_id": request.deviceId,
+            "type": "device_refresh"  # ✅ Тип токена для device refresh
+        }
+        refresh_token = create_refresh_token(refresh_token_data)
+
         # Prepare response
         response = JWTDeviceRegisterResponse(
             token=access_token,
+            refresh_token=refresh_token,  # ✅ BUILD 122: Добавлен refresh token
             deviceId=request.deviceId,
             expiresAt=datetime.utcnow() + timedelta(hours=24),  # 24 hour token
             registeredAt=device_user.created_at,
@@ -158,9 +194,18 @@ async def register_device_with_trial(
 
         access_token = create_access_token(token_data)
 
+        # ✅ BUILD 122: Создание refresh token для device tokens (trial)
+        refresh_token_data = {
+            "sub": device_user.id,
+            "device_id": request.deviceId,
+            "type": "device_refresh"  # ✅ Тип токена для device refresh
+        }
+        refresh_token = create_refresh_token(refresh_token_data)
+
         # Prepare response
         response = JWTDeviceRegisterResponse(
             token=access_token,
+            refresh_token=refresh_token,  # ✅ BUILD 122: Добавлен refresh token
             deviceId=request.deviceId,
             expiresAt=datetime.utcnow() + timedelta(hours=24),  # 24 hour token
             registeredAt=device_user.created_at,

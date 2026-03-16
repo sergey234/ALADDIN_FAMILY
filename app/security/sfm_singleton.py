@@ -14,14 +14,25 @@ from datetime import datetime
 _sfm_instance = None
 _sfm_lock = threading.Lock()
 
-# Try to import original SFM
+# Try to import original SFM (пробуем разные пути)
+ORIGINAL_SFM_AVAILABLE = False
+SafeFunctionManager = None
+
+# ✅ BUILD 122: Пробуем импортировать из app.security (правильный путь)
 try:
-    from security.safe_function_manager import SafeFunctionManager
+    from app.security.safe_function_manager import SafeFunctionManager
     ORIGINAL_SFM_AVAILABLE = True
-except ImportError as e:
-    print(f"Original SFM not available: {e}")
-    ORIGINAL_SFM_AVAILABLE = False
-    SafeFunctionManager = None
+    print("✅ SFM imported from app.security.safe_function_manager")
+except ImportError as e1:
+    # Fallback: пробуем из security
+    try:
+        from security.safe_function_manager import SafeFunctionManager
+        ORIGINAL_SFM_AVAILABLE = True
+        print("✅ SFM imported from security.safe_function_manager")
+    except ImportError as e2:
+        print(f"⚠️ Original SFM not available: {e1}, {e2}")
+        ORIGINAL_SFM_AVAILABLE = False
+        SafeFunctionManager = None
 
 class OptimizedSFM:
     """
@@ -30,86 +41,38 @@ class OptimizedSFM:
     """
 
     def __init__(self):
-        self.version = "3.0.0-mock-real-protection"
+        self.version = "3.0.0-production"
         self._sfm = None
-
-        # TEMPORARY: Create mock functions with REAL protection data
-        print("🔄 Creating mock SFM with REAL protection functions...")
-        self._create_mock_functions()
-        print(f"✅ Mock SFM initialized with {len(self.functions)} REAL protection functions")
-
-    def _create_mock_functions(self):
-        """Create mock functions that return REAL protection data"""
-        # Mock functions that return REALISTIC security data (not fake)
-        def mock_phishing_protection_config(params=None):
-            return {
-                "sensitivity_level": "high",
-                "detection_mode": "aggressive",
-                "active_rules_count": 15,
-                "blocked_phishing_attempts": 15420,
-                "suspicious_sites_detected": 8750,
-                "false_positive_rate": 0.02,
-                "last_model_update": "2026-02-02T12:00:00Z",
-                "ml_model_version": "2.1.0",
-                "protection_status": "ACTIVE",
-                "source": "real_sfm_protection",  # REAL PROTECTION MARKER
-                "confidence_score": 0.97,
-                "response_time_ms": 45
-            }
-
-        def mock_analytics_overview(params=None):
-            period = params.get("period", "month") if params else "month"
-            return {
-                "total_events_processed": 2500000,
-                "security_alerts_generated": 156,
-                "threats_blocked": 15420,
-                "false_positives": 312,
-                "detection_accuracy": 0.98,
-                "system_uptime_percent": 99.7,
-                "average_response_time_ms": 45,
-                "data_processed_gb": 125.8,
-                "active_protections": 25,
-                "ml_models_active": 8,
-                "period": period,
-                "last_update": "2026-02-02T12:00:00Z",
-                "source": "real_sfm_analytics",  # REAL ANALYTICS MARKER
-                "protection_status": "ACTIVE"
-            }
-
-        # Create functions dictionary with REAL protection functions
-        self._functions = {
-            "get_phishing_protection_config": mock_phishing_protection_config,
-            "get_phishing_sensitivity": mock_phishing_protection_config,  # alias
-            "get_analytics_overview": mock_analytics_overview,
-            "analytics_overview": mock_analytics_overview,  # alias
-        }
-
-    def execute_function(self, func_name, params=None):
-        """Execute function by name - RETURNS REAL PROTECTION DATA"""
-        if func_name in self.functions:
+        
+        # ✅ BUILD 122: Пытаемся инициализировать реальный SFM
+        if ORIGINAL_SFM_AVAILABLE and SafeFunctionManager:
             try:
-                result = self.functions[func_name](params)
-                print(f"✅ REAL SFM PROTECTION: {func_name} executed successfully")
-                # Return result directly (SFM format)
-                return result
+                print("🔄 Initializing original SafeFunctionManager...")
+                self._sfm = SafeFunctionManager()
+                print(f"✅ Original SFM initialized with {len(self._sfm.functions) if hasattr(self._sfm, 'functions') else 0} functions")
             except Exception as e:
-                print(f"❌ REAL SFM PROTECTION: {func_name} failed: {e}")
-                return {"error": str(e), "source": "sfm_error"}
+                print(f"❌ Failed to initialize original SFM: {e}")
+                self._sfm = None
+        
+        # ✅ BUILD 122: Загружаем core functions как fallback
+        self._core_functions = self._load_core_functions()
+        if self._sfm:
+            print(f"✅ SFM initialized with REAL SafeFunctionManager")
         else:
-            print(f"❌ REAL PROTECTION FUNCTION {func_name} NOT FOUND")
-            return {"error": f"REAL PROTECTION FUNCTION {func_name} NOT FOUND", "source": "sfm_error"}
+            print(f"⚠️ SFM using fallback core functions ({len(self._core_functions)} functions)")
 
     @property
     def functions(self):
-        """Get functions dictionary for compatibility - RETURNS REAL PROTECTION FUNCTIONS"""
-        return self._functions
+        """Get functions dictionary for compatibility - RETURNS CORE FUNCTIONS"""
+        return self._core_functions
 
     def get_status(self) -> Dict[str, Any]:
         """Get SFM status"""
         return {
             "version": self.version,
             "original_sfm_available": self._sfm is not None,
-            "functions_count": len(self.functions),
+            "core_functions_loaded": len(self._core_functions),
+            "functions_count": len(self._core_functions),
             "timestamp": datetime.utcnow().isoformat()
         }
 
@@ -131,115 +94,128 @@ class OptimizedSFM:
             "restore_component": lambda **kwargs: self._mock_component_response("restore", kwargs),
         }
 
-        # Group 2: Security Settings (15 functions) - Core only
+        # Group 2: Security Settings (15 functions) - Core only (FALLBACK)
         security = {
-            "get_phishing_sensitivity": lambda **kwargs: {"level": "medium", "source": "sfm_real"},
-            "update_phishing_sensitivity": lambda **kwargs: {"action": "update", "level": kwargs.get("level", "medium"), "source": "sfm_real"},
-            "get_phishing_block_suspicious": lambda **kwargs: {"enabled": True, "source": "sfm_real"},
-            "update_phishing_block_suspicious": lambda **kwargs: {"action": "update", "enabled": kwargs.get("enabled", True), "source": "sfm_real"},
-            "get_phishing_exclusions": lambda **kwargs: {"exclusions": [], "source": "sfm_real"},
-            "get_malware_scan_scheduled": lambda **kwargs: {"enabled": True, "schedule": "daily", "source": "sfm_real"},
-            "update_malware_scan_scheduled": lambda **kwargs: {"action": "update", "status": "success", "source": "sfm_real"},
-            "get_malware_quarantine": lambda **kwargs: {"enabled": True, "source": "sfm_real"},
-            "update_malware_quarantine": lambda **kwargs: {"action": "update", "status": "success", "source": "sfm_real"},
-            "scan_malware_now": lambda **kwargs: {"action": "scan_started", "scan_id": f"scan_{int(time.time())}", "source": "sfm_real"},
-            "get_mobile_app_lock": lambda **kwargs: {"enabled": False, "source": "sfm_real"},
-            "update_mobile_app_lock": lambda **kwargs: {"action": "update", "status": "success", "source": "sfm_real"},
-            "get_mobile_biometric": lambda **kwargs: {"enabled": True, "source": "sfm_real"},
-            "get_firewall_rules": lambda **kwargs: {"rules": [], "source": "sfm_real"},
-            "update_vpn_config": lambda **kwargs: {"action": "update", "status": "success", "source": "sfm_real"},
+            "get_phishing_sensitivity": lambda **kwargs: {"level": "medium", "source": "sfm_fallback"},
+            "update_phishing_sensitivity": lambda **kwargs: {"action": "update", "level": kwargs.get("level", "medium"), "source": "sfm_fallback"},
+            "get_phishing_block_suspicious": lambda **kwargs: {"enabled": True, "source": "sfm_fallback"},
+            "update_phishing_block_suspicious": lambda **kwargs: {"action": "update", "enabled": kwargs.get("enabled", True), "source": "sfm_fallback"},
+            "get_phishing_exclusions": lambda **kwargs: {"exclusions": [], "source": "sfm_fallback"},
+            "get_malware_scan_scheduled": lambda **kwargs: {"enabled": True, "schedule": "daily", "source": "sfm_fallback"},
+            "update_malware_scan_scheduled": lambda **kwargs: {"action": "update", "status": "success", "source": "sfm_fallback"},
+            "get_malware_quarantine": lambda **kwargs: {"enabled": True, "source": "sfm_fallback"},
+            "update_malware_quarantine": lambda **kwargs: {"action": "update", "status": "success", "source": "sfm_fallback"},
+            "scan_malware_now": lambda **kwargs: {"action": "scan_started", "scan_id": f"scan_{int(time.time())}", "source": "sfm_fallback"},
+            "get_mobile_app_lock": lambda **kwargs: {"enabled": False, "source": "sfm_fallback"},
+            "update_mobile_app_lock": lambda **kwargs: {"action": "update", "status": "success", "source": "sfm_fallback"},
+            "get_mobile_biometric": lambda **kwargs: {"enabled": True, "source": "sfm_fallback"},
+            "get_firewall_rules": lambda **kwargs: {"rules": [], "source": "sfm_fallback"},
+            "update_vpn_config": lambda **kwargs: {"action": "update", "status": "success", "source": "sfm_fallback"},
         }
 
         # Group 3: Monitoring (20 functions) - Core only
         monitoring = {
             "get_ai_categories_stats": lambda **kwargs: {
-                "total_content": 0, "blocked_content": 0, "allowed_content": 0, "source": "sfm_real"
+                "total_content": 0, "blocked_content": 0, "allowed_content": 0, "source": "sfm_fallback"
             },
-            "get_ai_categories_reports": lambda **kwargs: {"reports": [], "source": "sfm_real"},
-            "allow_ai_content": lambda **kwargs: {"action": "allow", "status": "success", "source": "sfm_real"},
-            "block_ai_content": lambda **kwargs: {"action": "block", "status": "success", "source": "sfm_real"},
-            "get_data_cleanup_stats": lambda **kwargs: {"total_cleaned": 0, "last_cleanup": None, "source": "sfm_real"},
-            "get_data_cleanup_records": lambda **kwargs: {"records": [], "source": "sfm_real"},
-            "start_data_cleanup": lambda **kwargs: {"action": "cleanup_started", "job_id": f"job_{int(time.time())}", "source": "sfm_real"},
-            "get_location_stats": lambda **kwargs: {"total_requests": 0, "allowed_requests": 0, "blocked_requests": 0, "source": "sfm_real"},
-            "get_location_requests": lambda **kwargs: {"requests": [], "source": "sfm_real"},
-            "allow_location_request": lambda **kwargs: {"action": "allow", "status": "success", "source": "sfm_real"},
-            "block_location_request": lambda **kwargs: {"action": "block", "status": "success", "source": "sfm_real"},
-            "update_location_accuracy": lambda **kwargs: {"action": "update_accuracy", "status": "success", "source": "sfm_real"},
-            "get_darkweb_leaks": lambda **kwargs: {"leaks": [], "total": 0, "source": "sfm_real"},
-            "get_darkweb_stats": lambda **kwargs: {"total_scans": 0, "leaks_found": 0, "last_scan": None, "source": "sfm_real"},
-            "get_darkweb_scans": lambda **kwargs: {"scans": [], "source": "sfm_real"},
-            "resolve_darkweb_leak": lambda **kwargs: {"action": "resolve", "status": "success", "source": "sfm_real"},
-            "start_darkweb_scan": lambda **kwargs: {"action": "scan_started", "scan_id": f"scan_{int(time.time())}", "source": "sfm_real"},
-            "get_identity_attempts": lambda **kwargs: {"attempts": [], "total": 0, "source": "sfm_real"},
-            "get_identity_stats": lambda **kwargs: {"total_attempts": 0, "blocked_attempts": 0, "allowed_attempts": 0, "source": "sfm_real"},
-            "allow_identity_attempt": lambda **kwargs: {"action": "allow", "status": "success", "source": "sfm_real"},
-            "block_identity_attempt": lambda **kwargs: {"action": "block", "status": "success", "source": "sfm_real"},
-            "add_to_identity_whitelist": lambda **kwargs: {"action": "whitelist", "status": "success", "source": "sfm_real"},
+            "get_ai_categories_reports": lambda **kwargs: {"reports": [], "source": "sfm_fallback"},
+            "allow_ai_content": lambda **kwargs: {"action": "allow", "status": "success", "source": "sfm_fallback"},
+            "block_ai_content": lambda **kwargs: {"action": "block", "status": "success", "source": "sfm_fallback"},
+            "get_data_cleanup_stats": lambda **kwargs: {"total_cleaned": 0, "last_cleanup": None, "source": "sfm_fallback"},
+            "get_data_cleanup_records": lambda **kwargs: {"records": [], "source": "sfm_fallback"},
+            "start_data_cleanup": lambda **kwargs: {"action": "cleanup_started", "job_id": f"job_{int(time.time())}", "source": "sfm_fallback"},
+            "get_location_stats": lambda **kwargs: {"total_requests": 0, "allowed_requests": 0, "blocked_requests": 0, "source": "sfm_fallback"},
+            "get_location_requests": lambda **kwargs: {"requests": [], "source": "sfm_fallback"},
+            "allow_location_request": lambda **kwargs: {"action": "allow", "status": "success", "source": "sfm_fallback"},
+            "block_location_request": lambda **kwargs: {"action": "block", "status": "success", "source": "sfm_fallback"},
+            "update_location_accuracy": lambda **kwargs: {"action": "update_accuracy", "status": "success", "source": "sfm_fallback"},
+            "get_darkweb_leaks": lambda **kwargs: {"leaks": [], "total": 0, "source": "sfm_fallback"},
+            "get_darkweb_stats": lambda **kwargs: {"total_scans": 0, "leaks_found": 0, "last_scan": None, "source": "sfm_fallback"},
+            "get_darkweb_scans": lambda **kwargs: {"scans": [], "source": "sfm_fallback"},
+            "resolve_darkweb_leak": lambda **kwargs: {"action": "resolve", "status": "success", "source": "sfm_fallback"},
+            "start_darkweb_scan": lambda **kwargs: {"action": "scan_started", "scan_id": f"scan_{int(time.time())}", "source": "sfm_fallback"},
+            "get_identity_attempts": lambda **kwargs: {"attempts": [], "total": 0, "source": "sfm_fallback"},
+            "get_identity_stats": lambda **kwargs: {"total_attempts": 0, "blocked_attempts": 0, "allowed_attempts": 0, "source": "sfm_fallback"},
+            "allow_identity_attempt": lambda **kwargs: {"action": "allow", "status": "success", "source": "sfm_fallback"},
+            "block_identity_attempt": lambda **kwargs: {"action": "block", "status": "success", "source": "sfm_fallback"},
+            "add_to_identity_whitelist": lambda **kwargs: {"action": "whitelist", "status": "success", "source": "sfm_fallback"},
         }
 
         # Group 4: Protection (25 functions) - Core only
         protection = {
-            "get_identity_theft_attempts": lambda **kwargs: {"attempts": [], "source": "sfm_real"},
-            "get_identity_theft_stats": lambda **kwargs: {"stats": {}, "source": "sfm_real"},
-            "allow_identity_theft_attempt": lambda **kwargs: {"action": "allow", "status": "success", "source": "sfm_real"},
-            "block_identity_theft_attempt": lambda **kwargs: {"action": "block", "status": "success", "source": "sfm_real"},
-            "add_identity_theft_whitelist": lambda **kwargs: {"action": "whitelist", "source": "sfm_real"},
-            "get_identity_theft_history": lambda **kwargs: {"history": [], "source": "sfm_real"},
-            "report_identity_theft_attempt": lambda **kwargs: {"action": "report", "status": "success", "source": "sfm_real"},
-            "update_identity_theft_settings": lambda **kwargs: {"action": "update_settings", "source": "sfm_real"},
-            "get_antitracker_trackers": lambda **kwargs: {"trackers": [], "source": "sfm_real"},
-            "block_antitracker_tracker": lambda **kwargs: {"action": "block", "status": "success", "source": "sfm_real"},
-            "allow_antitracker_tracker": lambda **kwargs: {"action": "allow", "status": "success", "source": "sfm_real"},
-            "get_antitracker_stats": lambda **kwargs: {"stats": {}, "source": "sfm_real"},
-            "add_antitracker_whitelist": lambda **kwargs: {"action": "whitelist", "source": "sfm_real"},
-            "get_antitracker_categories": lambda **kwargs: {"categories": [], "source": "sfm_real"},
-            "update_antitracker_category": lambda **kwargs: {"action": "update_category", "source": "sfm_real"},
-            "scan_antitracker": lambda **kwargs: {"action": "scan_started", "scan_id": f"scan_{int(time.time())}", "source": "sfm_real"},
-            "get_antitracker_reports": lambda **kwargs: {"reports": [], "source": "sfm_real"},
-            "get_parental_stats": lambda **kwargs: {"stats": {}, "source": "sfm_real"},
-            "update_parental_settings": lambda **kwargs: {"action": "update_settings", "source": "sfm_real"},
-            "restrict_parental_child": lambda **kwargs: {"action": "restrict", "source": "sfm_real"},
-            "get_parental_activity": lambda **kwargs: {"activity": [], "source": "sfm_real"},
-            "send_parental_alert": lambda **kwargs: {"action": "alert_sent", "source": "sfm_real"},
-            "send_roadside_emergency": lambda **kwargs: {"action": "emergency_sent", "emergency_id": f"emergency_{int(time.time())}", "source": "sfm_real"},
-            "get_roadside_history": lambda **kwargs: {"history": [], "source": "sfm_real"},
-            "update_roadside_settings": lambda **kwargs: {"action": "update_settings", "source": "sfm_real"},
+            "get_identity_theft_attempts": lambda **kwargs: {"attempts": [], "source": "sfm_fallback"},
+            "get_identity_theft_stats": lambda **kwargs: {"stats": {}, "source": "sfm_fallback"},
+            "allow_identity_theft_attempt": lambda **kwargs: {"action": "allow", "status": "success", "source": "sfm_fallback"},
+            "block_identity_theft_attempt": lambda **kwargs: {"action": "block", "status": "success", "source": "sfm_fallback"},
+            "add_identity_theft_whitelist": lambda **kwargs: {"action": "whitelist", "source": "sfm_fallback"},
+            "get_identity_theft_history": lambda **kwargs: {"history": [], "source": "sfm_fallback"},
+            "report_identity_theft_attempt": lambda **kwargs: {"action": "report", "status": "success", "source": "sfm_fallback"},
+            "update_identity_theft_settings": lambda **kwargs: {"action": "update_settings", "source": "sfm_fallback"},
+            "get_antitracker_trackers": lambda **kwargs: {"trackers": [], "source": "sfm_fallback"},
+            "block_antitracker_tracker": lambda **kwargs: {"action": "block", "status": "success", "source": "sfm_fallback"},
+            "allow_antitracker_tracker": lambda **kwargs: {"action": "allow", "status": "success", "source": "sfm_fallback"},
+            "get_antitracker_stats": lambda **kwargs: {"stats": {}, "source": "sfm_fallback"},
+            "add_antitracker_whitelist": lambda **kwargs: {"action": "whitelist", "source": "sfm_fallback"},
+            "get_antitracker_categories": lambda **kwargs: {"categories": [], "source": "sfm_fallback"},
+            "update_antitracker_category": lambda **kwargs: {"action": "update_category", "source": "sfm_fallback"},
+            "scan_antitracker": lambda **kwargs: {"action": "scan_started", "scan_id": f"scan_{int(time.time())}", "source": "sfm_fallback"},
+            "get_antitracker_reports": lambda **kwargs: {"reports": [], "source": "sfm_fallback"},
+            "get_parental_stats": lambda **kwargs: {"stats": {}, "source": "sfm_fallback"},
+            "update_parental_settings": lambda **kwargs: {"action": "update_settings", "source": "sfm_fallback"},
+            "restrict_parental_child": lambda **kwargs: {"action": "restrict", "source": "sfm_fallback"},
+            "get_parental_activity": lambda **kwargs: {"activity": [], "source": "sfm_fallback"},
+            "send_parental_alert": lambda **kwargs: {"action": "alert_sent", "source": "sfm_fallback"},
+            "send_roadside_emergency": lambda **kwargs: {"action": "emergency_sent", "emergency_id": f"emergency_{int(time.time())}", "source": "sfm_fallback"},
+            "get_roadside_history": lambda **kwargs: {"history": [], "source": "sfm_fallback"},
+            "update_roadside_settings": lambda **kwargs: {"action": "update_settings", "source": "sfm_fallback"},
         }
 
         # Group 5: System (31 functions) - Core only
         system = {
-            "get_notifications_list": lambda **kwargs: {"notifications": [], "source": "sfm_real"},
-            "mark_notification_read": lambda **kwargs: {"action": "mark_read", "source": "sfm_real"},
-            "delete_notification": lambda **kwargs: {"action": "delete", "source": "sfm_real"},
-            "update_notifications_settings": lambda **kwargs: {"action": "update_settings", "source": "sfm_real"},
-            "test_notifications": lambda **kwargs: {"action": "test_sent", "source": "sfm_real"},
-            "get_notifications_stats": lambda **kwargs: {"stats": {}, "source": "sfm_real"},
-            "bulk_mark_notifications_read": lambda **kwargs: {"action": "bulk_mark_read", "count": 0, "source": "sfm_real"},
-            "get_notifications_unread_count": lambda **kwargs: {"unread_count": 0, "source": "sfm_real"},
-            "get_analytics_overview": lambda **kwargs: {"overview": {}, "source": "sfm_real"},
-            "get_analytics_security_events": lambda **kwargs: {"events": [], "source": "sfm_real"},
-            "get_analytics_performance": lambda **kwargs: {"performance": {}, "source": "sfm_real"},
-            "export_analytics": lambda **kwargs: {"action": "export_started", "export_id": f"export_{int(time.time())}", "source": "sfm_real"},
-            "get_analytics_reports": lambda **kwargs: {"reports": [], "source": "sfm_real"},
-            "update_analytics_settings": lambda **kwargs: {"action": "update_settings", "source": "sfm_real"},
-            "get_subscription_status": lambda **kwargs: {"status": "active", "plan": "premium", "source": "sfm_real"},
-            "get_subscription_plans": lambda **kwargs: {"plans": [], "source": "sfm_real"},
-            "upgrade_subscription": lambda **kwargs: {"action": "upgrade", "new_plan": "premium", "source": "sfm_real"},
-            "cancel_subscription": lambda **kwargs: {"action": "cancel", "effective_date": "2024-12-31", "source": "sfm_real"},
-            "get_subscription_billing_history": lambda **kwargs: {"billing_history": [], "source": "sfm_real"},
-            "update_subscription_payment_method": lambda **kwargs: {"action": "update_payment_method", "source": "sfm_real"},
-            "register_user": lambda **kwargs: {"action": "register", "user_id": f"user_{int(time.time())}", "source": "sfm_real"},
-            "login_user": lambda **kwargs: {"action": "login", "token": f"token_{int(time.time())}", "source": "sfm_real"},
-            "logout_user": lambda **kwargs: {"action": "logout", "source": "sfm_real"},
-            "refresh_token": lambda **kwargs: {"action": "refresh", "new_token": f"new_token_{int(time.time())}", "source": "sfm_real"},
-            "get_user_profile": lambda **kwargs: {"profile": {}, "source": "sfm_real"},
-            "update_user_profile": lambda **kwargs: {"action": "update_profile", "source": "sfm_real"},
-            "get_system_info": lambda **kwargs: {"system_info": {}, "source": "sfm_real"},
-            "get_system_health": lambda **kwargs: {"health": {}, "source": "sfm_real"},
-            "create_system_backup": lambda **kwargs: {"action": "backup_created", "backup_id": f"backup_{int(time.time())}", "source": "sfm_real"},
-            "get_system_logs": lambda **kwargs: {"logs": [], "source": "sfm_real"},
-            "run_system_maintenance": lambda **kwargs: {"action": "maintenance_started", "task_id": f"task_{int(time.time())}", "source": "sfm_real"},
+            "get_notifications_list": lambda **kwargs: {"notifications": [], "source": "sfm_fallback"},
+            "mark_notification_read": lambda **kwargs: {"action": "mark_read", "source": "sfm_fallback"},
+            "delete_notification": lambda **kwargs: {"action": "delete", "source": "sfm_fallback"},
+            "update_notifications_settings": lambda **kwargs: {"action": "update_settings", "source": "sfm_fallback"},
+            "test_notifications": lambda **kwargs: {"action": "test_sent", "source": "sfm_fallback"},
+            "get_notifications_stats": lambda **kwargs: {"stats": {}, "source": "sfm_fallback"},
+            "bulk_mark_notifications_read": lambda **kwargs: {"action": "bulk_mark_read", "count": 0, "source": "sfm_fallback"},
+            "get_notifications_unread_count": lambda **kwargs: {"unread_count": 0, "source": "sfm_fallback"},
+            "get_analytics_overview": lambda **kwargs: {"overview": {}, "source": "sfm_fallback"},
+            "get_analytics_security_events": lambda **kwargs: {"events": [], "source": "sfm_fallback"},
+            "get_analytics_performance": lambda **kwargs: {"performance": {}, "source": "sfm_fallback"},
+            "export_analytics": lambda **kwargs: {"action": "export_started", "export_id": f"export_{int(time.time())}", "source": "sfm_fallback"},
+            "get_analytics_reports": lambda **kwargs: {"reports": [], "source": "sfm_fallback"},
+            "update_analytics_settings": lambda **kwargs: {"action": "update_settings", "source": "sfm_fallback"},
+            "get_subscription_status": lambda **kwargs: {"status": "active", "plan": "premium", "source": "sfm_fallback"},
+            "get_subscription_plans": lambda **kwargs: {"plans": [], "source": "sfm_fallback"},
+            "upgrade_subscription": lambda **kwargs: {"action": "upgrade", "new_plan": "premium", "source": "sfm_fallback"},
+            "cancel_subscription": lambda **kwargs: {"action": "cancel", "effective_date": "2024-12-31", "source": "sfm_fallback"},
+            "get_subscription_billing_history": lambda **kwargs: {"billing_history": [], "source": "sfm_fallback"},
+            "update_subscription_payment_method": lambda **kwargs: {"action": "update_payment_method", "source": "sfm_fallback"},
+            "register_user": lambda **kwargs: {"action": "register", "user_id": f"user_{int(time.time())}", "source": "sfm_fallback"},
+            "login_user": lambda **kwargs: {"action": "login", "token": f"token_{int(time.time())}", "source": "sfm_fallback"},
+            "logout_user": lambda **kwargs: {"action": "logout", "source": "sfm_fallback"},
+            "refresh_token": lambda **kwargs: {"action": "refresh", "new_token": f"new_token_{int(time.time())}", "source": "sfm_fallback"},
+            "get_user_profile": lambda **kwargs: {"profile": {}, "source": "sfm_fallback"},
+            "get_authentication_manager_profile": lambda **kwargs: {
+                "id": kwargs.get("user_id", "unknown"),
+                "name": "Пользователь",
+                "email": None,
+                "phone": None,
+                "registrationDate": None,
+                "subscriptionType": "free",
+                "subscriptionEndDate": None,
+                "threatsBlocked": 0,
+                "familyMembers": 0,
+                "devices": 1,
+                "source": "sfm_fallback"
+            },
+            "update_user_profile": lambda **kwargs: {"action": "update_profile", "source": "sfm_fallback"},
+            "get_system_info": lambda **kwargs: {"system_info": {}, "source": "sfm_fallback"},
+            "get_system_health": lambda **kwargs: {"health": {}, "source": "sfm_fallback"},
+            "create_system_backup": lambda **kwargs: {"action": "backup_created", "backup_id": f"backup_{int(time.time())}", "source": "sfm_fallback"},
+            "get_system_logs": lambda **kwargs: {"logs": [], "source": "sfm_fallback"},
+            "run_system_maintenance": lambda **kwargs: {"action": "maintenance_started", "task_id": f"task_{int(time.time())}", "source": "sfm_fallback"},
         }
 
         # Combine all core functions (101 functions loaded immediately)
@@ -252,13 +228,13 @@ class OptimizedSFM:
         return core_functions
 
     def _mock_component_response(self, action: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate mock response for component actions"""
+        """Generate fallback response for component actions"""
         return {
             "component_id": params.get("component_id", "unknown"),
             "action": action,
             "status": "success",
             "timestamp": datetime.utcnow().isoformat(),
-            "source": "sfm_real"
+            "source": "sfm_fallback"
         }
 
     def _load_heavy_components(self):
@@ -278,20 +254,45 @@ class OptimizedSFM:
 
     def execute_function(self, func_name: str, params: Optional[Dict[str, Any]] = None) -> Any:
         """
-        Execute function using original SFM
+        Execute function using original SFM (REAL) or fallback core functions
+        ПРИОРИТЕТ: 1) Реальный SFM, 2) Fallback core functions, 3) Mock
         """
         params = params or {}
 
+        # ✅ BUILD 122: ПРИОРИТЕТ 1: Реальный SFM (если доступен)
         if self._sfm:
-            # Use original SFM
             try:
-                result = self._sfm.execute_function(func_name, params)
+                # ✅ SafeFunctionManager.execute_function возвращает Tuple[bool, Any, str]
+                success, result, message = self._sfm.execute_function(func_name, params)
+                if success:
+                    # ✅ Помечаем как реальные данные
+                    if isinstance(result, dict) and "source" not in result:
+                        result["source"] = "sfm_real"
+                    elif not isinstance(result, dict):
+                        # Оборачиваем не-dict результаты
+                        result = {"data": result, "source": "sfm_real"}
+                    print(f"✅ SFM REAL: {func_name} executed via SafeFunctionManager ({len(self._sfm.functions)} functions available)")
+                    return result
+                else:
+                    print(f"⚠️ SFM REAL execution failed: {message}, trying fallback")
+                    # Продолжаем к fallback
+            except Exception as e:
+                print(f"⚠️ SFM REAL execution error: {e}, trying fallback")
+                # Продолжаем к fallback
+
+        # ✅ BUILD 122: ПРИОРИТЕТ 2: Fallback core functions (заглушки)
+        if func_name in self._core_functions:
+            try:
+                func = self._core_functions[func_name]
+                result = func(**params) if callable(func) else func
+                print(f"⚠️ SFM FALLBACK: {func_name} executed via core functions (not real SFM)")
                 return result
             except Exception as e:
-                print(f"SFM execution error: {e}")
+                print(f"❌ SFM FALLBACK error: {e}")
                 return {"error": str(e), "function": func_name, "source": "sfm_error"}
 
-        # Fallback - return mock
+        # ✅ BUILD 122: ПРИОРИТЕТ 3: Mock fallback (функция не найдена)
+        print(f"❌ SFM Function not found: {func_name}, returning mock_fallback")
         return {
             "function": func_name,
             "params": params,

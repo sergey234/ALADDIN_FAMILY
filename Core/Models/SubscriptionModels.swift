@@ -730,6 +730,7 @@ struct FeatureAccessConfig {
 /// ✅ FIXED: Server returns dates as ISO 8601 strings, not Date objects
 struct JWTDeviceRegisterResponse: Codable {
     let token: String
+    let refreshToken: String?  // ✅ BUILD 122: Опциональный для обратной совместимости
     let deviceId: String
     let expiresAt: String  // ISO 8601 date string from server
     let registeredAt: String  // ISO 8601 date string from server
@@ -738,6 +739,7 @@ struct JWTDeviceRegisterResponse: Codable {
     /// ✅ ИСПРАВЛЕНИЕ: Маппинг snake_case (сервер) → camelCase (клиент)
     enum CodingKeys: String, CodingKey {
         case token
+        case refreshToken = "refresh_token"  // ✅ BUILD 122: Маппинг snake_case → camelCase
         case deviceId = "device_id"  // ✅ Сервер возвращает device_id, клиент ожидает deviceId
         case expiresAt = "expires_at"
         case registeredAt = "registered_at"

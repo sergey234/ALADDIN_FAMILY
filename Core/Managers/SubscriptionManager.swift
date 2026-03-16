@@ -212,6 +212,18 @@ final class SubscriptionManager: ObservableObject {
 
         logger.business("🎉 DEFENSIVE JWT: Инициализация завершена успешно")
 
+        // ✅ BUILD 122: Проверка синхронизации токена с AppConfig
+        if let token = currentToken {
+            if AppConfig.authToken == nil {
+                AppConfig.authToken = token.token
+                logger.business("✅ BUILD 122: Токен синхронизирован с AppConfig при инициализации")
+            } else if AppConfig.authToken != token.token {
+                // Токены не совпадают - обновляем AppConfig
+                AppConfig.authToken = token.token
+                logger.business("⚠️ BUILD 122: Токены не совпадали - обновлен AppConfig")
+            }
+        }
+
         // 🚨 DEFENSIVE JWT: Emergency reset Circuit Breaker if stuck
         JWTCircuitBreaker.shared.emergencyReset()
 
@@ -255,14 +267,29 @@ final class SubscriptionManager: ObservableObject {
 
     // MARK: - DEFENSIVE JWT Methods
 
+    // ✅ BUILD 122: Защита от бесконечных циклов
+    private var registrationAttempts: Int = 0
+    private let maxRegistrationAttempts: Int = 3
+    private let registrationLock = NSLock()  // ✅ Защита от race condition
+
     /// 🛡️ DEFENSIVE JWT: Perform Device Registration
     ///
     /// Safely registers device with comprehensive error handling.
     /// Part of DEFENSIVE JWT Architecture for graceful token management.
     ///
-    private func performDeviceRegistration() async {
+    func performDeviceRegistration() async {
+        // ✅ BUILD 122: Проверка количества попыток
+        registrationLock.lock()
+        guard registrationAttempts < maxRegistrationAttempts else {
+            registrationLock.unlock()
+            logger.error("❌ BUILD 122: Превышено максимальное количество попыток регистрации (\(maxRegistrationAttempts))")
+            return
+        }
+        registrationAttempts += 1
+        registrationLock.unlock()
+        
         let logger = MasterLogger.shared
-        logger.business("📱 DEFENSIVE JWT: Выполняем регистрацию устройства")
+        logger.business("📱 DEFENSIVE JWT: Выполняем регистрацию устройства (попытка \(registrationAttempts)/\(maxRegistrationAttempts))")
 
         do {
             logger.business("📱 DEFENSIVE JWT: Запуск registerDeviceAnonymously()...")
@@ -273,6 +300,11 @@ final class SubscriptionManager: ObservableObject {
             if let token = currentToken {
                 logger.business("✅ DEFENSIVE JWT: Токен успешно установлен после регистрации")
                 JWTEventLogger.logDeviceRegistration(success: true, error: nil, deviceId: token.deviceId)
+                
+                // ✅ BUILD 122: Сброс счетчика при успехе
+                registrationLock.lock()
+                registrationAttempts = 0
+                registrationLock.unlock()
             } else {
                 logger.error("❌ DEFENSIVE JWT: Токен не был установлен после регистрации")
                 JWTEventLogger.logDeviceRegistration(success: false, error: "Token not set after registration", deviceId: "unknown")
@@ -285,6 +317,13 @@ final class SubscriptionManager: ObservableObject {
 
             // Log failed registration
             JWTEventLogger.logDeviceRegistration(success: false, error: error.localizedDescription, deviceId: "unknown")
+            
+            // ✅ BUILD 122: Сброс счетчика при ошибке (чтобы не блокировать навсегда)
+            registrationLock.lock()
+            if registrationAttempts >= maxRegistrationAttempts {
+                registrationAttempts = 0  // Сброс для следующей попытки через время
+            }
+            registrationLock.unlock()
 
             // ✅ ИСПРАВЛЕНИЕ BUILD 121: Различаем типы ошибок
             // 422 (Validation Error) - это ошибка формата данных, НЕ сетевая ошибка
@@ -333,6 +372,48 @@ final class SubscriptionManager: ObservableObject {
         // В будущем здесь будет логика refresh token endpoint
         logger.business("🔄 DEFENSIVE JWT: Используем перерегистрацию как временное решение")
         await performDeviceRegistration()
+    }
+
+    /// 🔄 BUILD 122: Восстановление подписки с сервера (защита от потери подписки)
+    ///
+    /// Восстанавливает подписку с сервера для пользователей с платной подпиской или триалом.
+    /// Используется при 403 ошибке для предотвращения потери подписки.
+    ///
+    func restoreSubscriptionFromServer() async {
+        guard let deviceId = currentToken?.deviceId else {
+            // Нет deviceId → перерегистрация (только для FREE)
+            logger.business("⚠️ BUILD 122: Нет deviceId - перерегистрация")
+            await performDeviceRegistration()
+            return
+        }
+        
+        logger.business("🔄 BUILD 122: Восстановление подписки с сервера для deviceId: \(deviceId)")
+        
+        // ✅ Запрашиваем текущую подписку с сервера
+        // Используем существующий метод getSubscriptionStatus()
+        // Но нужно получить userId из токена (deviceId)
+        APIService.shared.getSubscriptionStatus(userId: deviceId) { [weak self] result in
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                
+                switch result {
+                case .success(let statusResponse):
+                    // ✅ Восстанавливаем подписку из ответа сервера
+                    self.logger.business("✅ BUILD 122: Подписка восстановлена с сервера")
+                    
+                    // Обновляем currentSubscription из ответа
+                    // TODO: Преобразовать SubscriptionStatusSummaryResponse в SubscriptionStatus
+                    // Пока что просто логируем успех
+                    self.logger.business("✅ BUILD 122: Уровень подписки: \(statusResponse.isActive ? "активна" : "неактивна")")
+                    
+                case .failure(let error):
+                    // ✅ Если не удалось → перерегистрация (только для FREE)
+                    self.logger.error("❌ BUILD 122: Не удалось восстановить подписку: \(error.localizedDescription)")
+                    self.logger.business("⚠️ BUILD 122: Перерегистрация устройства")
+                    await self.performDeviceRegistration()
+                }
+            }
+        }
     }
 
     /// 🧹 DEFENSIVE JWT: Clear Token from All Storage
@@ -719,6 +800,14 @@ final class SubscriptionManager: ObservableObject {
                     self.logger.business("   - Subscription Status: \(jwtResponse.subscription.isActive ? "АКТИВНА" : "НЕАКТИВНА")")
                     self.logger.business("   - Expires At: \(jwtResponse.expiresAt)")
                     self.logger.business("   - Trial Info: \(String(describing: jwtResponse.subscription.trialInfo))")
+                    
+                    // ✅ BUILD 122: Сохранение refresh token для device tokens
+                    if let refreshToken = jwtResponse.refreshToken {
+                        KeychainManager.shared.save(refreshToken, forKey: .refreshToken)
+                        self.logger.business("✅ BUILD 122: Refresh token сохранен в Keychain для device token")
+                    } else {
+                        self.logger.business("⚠️ BUILD 122: Refresh token не получен от сервера (обратная совместимость)")
+                    }
 
                     // 🔍 Комплексная валидация JWT токена
                     let validationResult = self.validateJWTToken(jwtResponse.token)

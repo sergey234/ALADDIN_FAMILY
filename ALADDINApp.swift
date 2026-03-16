@@ -91,6 +91,13 @@ class UserProfileManager {
     // MARK: - Private Methods
 
     private func loadProfileInBackground() {
+        // ✅ BUILD 122: НЕ загружаем профиль на онбординге
+        let hasCompletedOnboarding = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        guard hasCompletedOnboarding else {
+            print("ℹ️ UserProfileManager: Онбординг не завершен - пропускаем загрузку профиля")
+            return
+        }
+        
         // Загружаем профиль в фоне при инициализации
         // Если профиль старше 24 часов, обновляем
         if shouldRefreshProfile() {

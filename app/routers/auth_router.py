@@ -348,18 +348,23 @@ async def refresh_token(refresh_data: RefreshTokenRequest, db: Session = Depends
                 detail="Невалидный refresh token"
             )
         
-        # Проверяем тип токена
-        if payload.get("type") != "refresh":
+        # ✅ BUILD 122: Поддержка device_refresh токенов
+        token_type = payload.get("type")
+        if token_type not in ["refresh", "device_refresh"]:  # ✅ ДОБАВЛЕНО device_refresh
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Неверный тип токена"
             )
         
-        # Получаем данные пользователя
-        user_id = payload.get("user_id") or payload.get("id")
-        email = payload.get("email")
+        # ✅ BUILD 122: Для device tokens используем sub вместо user_id
+        if token_type == "device_refresh":
+            user_id = payload.get("sub") or payload.get("device_id")
+            email = None  # Device tokens не имеют email
+        else:
+            user_id = payload.get("user_id") or payload.get("id")
+            email = payload.get("email")
         
-        if not user_id or not email:
+        if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Токен не содержит необходимых данных"
@@ -369,11 +374,30 @@ async def refresh_token(refresh_data: RefreshTokenRequest, db: Session = Depends
         token_data = {
             "user_id": user_id,
             "id": user_id,
-            "email": email
+            "sub": user_id,  # ✅ Для device tokens
+            "email": email,
+            "device_id": payload.get("device_id"),  # ✅ Сохраняем device_id
+            "type": "device_auth" if token_type == "device_refresh" else "access"  # ✅ Тип нового токена
         }
         
         access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
-        new_refresh_token = create_refresh_token(token_data)
+        
+        # ✅ BUILD 122: Создаем новый refresh token для device tokens
+        if token_type == "device_refresh":
+            new_refresh_token_data = {
+                "sub": user_id,
+                "device_id": payload.get("device_id"),
+                "type": "device_refresh",
+                "exp": datetime.utcnow() + timedelta(days=30)
+            }
+            # Используем create_refresh_token, но с правильным типом
+            new_refresh_token_data.update({
+                "iat": datetime.utcnow(),
+                "exp": datetime.utcnow() + timedelta(days=30)
+            })
+            new_refresh_token = jwt.encode(new_refresh_token_data, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        else:
+            new_refresh_token = create_refresh_token(token_data)
         
         return RefreshTokenResponse(
             access_token=access_token,

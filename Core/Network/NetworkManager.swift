@@ -244,6 +244,19 @@ class NetworkManager: NSObject, ObservableObject {
             
             // ✅ ПРОВЕРКА АВТОРИЗАЦИИ: Если требуется авторизация, проверяем токен
             if requiresAuth {
+                // ✅ BUILD 122: Восстановление токена перед запросом
+                if AppConfig.authToken == nil {
+                    let token = await MainActor.run {
+                        SubscriptionManager.shared.currentToken
+                    }
+                    if let token = token {
+                        AppConfig.authToken = token.token
+                        #if DEBUG
+                        logger.business("✅ NetworkManager.get: Токен восстановлен из SubscriptionManager")
+                        #endif
+                    }
+                }
+                
                 guard let token = AppConfig.authToken else {
                     #if DEBUG
                     print("⚠️ NetworkManager.get: Токен отсутствует для защищенного endpoint: \(endpoint)")
@@ -313,6 +326,19 @@ class NetworkManager: NSObject, ObservableObject {
             
             // ✅ ПРОВЕРКА АВТОРИЗАЦИИ: Если требуется авторизация, проверяем токен
             if requiresAuth {
+                // ✅ BUILD 122: Восстановление токена перед запросом
+                if AppConfig.authToken == nil {
+                    let token = await MainActor.run {
+                        SubscriptionManager.shared.currentToken
+                    }
+                    if let token = token {
+                        AppConfig.authToken = token.token
+                        #if DEBUG
+                        logger.business("✅ NetworkManager.post: Токен восстановлен из SubscriptionManager")
+                        #endif
+                    }
+                }
+                
                 guard let token = AppConfig.authToken else {
                     #if DEBUG
                     print("⚠️ NetworkManager.post: Токен отсутствует для защищенного endpoint: \(endpoint)")
@@ -373,6 +399,19 @@ class NetworkManager: NSObject, ObservableObject {
             request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
             request.setValue("no-cache", forHTTPHeaderField: "Pragma")
             
+            // ✅ BUILD 122: Восстановление токена перед запросом
+            if AppConfig.authToken == nil {
+                let token = await MainActor.run {
+                    SubscriptionManager.shared.currentToken
+                }
+                if let token = token {
+                    AppConfig.authToken = token.token
+                    #if DEBUG
+                    logger.business("✅ NetworkManager.delete: Токен восстановлен из SubscriptionManager")
+                    #endif
+                }
+            }
+            
             if let token = AppConfig.authToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
@@ -406,6 +445,19 @@ class NetworkManager: NSObject, ObservableObject {
             var request = URLRequest(url: url)
             request.httpMethod = "PUT"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            // ✅ BUILD 122: Восстановление токена перед запросом
+            if AppConfig.authToken == nil {
+                let token = await MainActor.run {
+                    SubscriptionManager.shared.currentToken
+                }
+                if let token = token {
+                    AppConfig.authToken = token.token
+                    #if DEBUG
+                    logger.business("✅ NetworkManager.put: Токен восстановлен из SubscriptionManager")
+                    #endif
+                }
+            }
             
             if let token = AppConfig.authToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -454,6 +506,19 @@ class NetworkManager: NSObject, ObservableObject {
             request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
             request.setValue("no-cache", forHTTPHeaderField: "Pragma")
             
+            // ✅ BUILD 122: Восстановление токена перед запросом
+            if AppConfig.authToken == nil {
+                let token = await MainActor.run {
+                    SubscriptionManager.shared.currentToken
+                }
+                if let token = token {
+                    AppConfig.authToken = token.token
+                    #if DEBUG
+                    logger.business("✅ NetworkManager.patch: Токен восстановлен из SubscriptionManager")
+                    #endif
+                }
+            }
+            
             if let token = AppConfig.authToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
@@ -495,6 +560,19 @@ class NetworkManager: NSObject, ObservableObject {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
             request.setValue("no-cache", forHTTPHeaderField: "Pragma")
+            
+            // ✅ BUILD 122: Восстановление токена перед запросом
+            if AppConfig.authToken == nil {
+                let token = await MainActor.run {
+                    SubscriptionManager.shared.currentToken
+                }
+                if let token = token {
+                    AppConfig.authToken = token.token
+                    #if DEBUG
+                    logger.business("✅ NetworkManager.delete (with body): Токен восстановлен из SubscriptionManager")
+                    #endif
+                }
+            }
             
             if let token = AppConfig.authToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -1137,6 +1215,22 @@ class NetworkManager: NSObject, ObservableObject {
                 #if DEBUG
                 print("   - Размер данных: \(data.count) байт")
                 #endif
+                
+                // ✅ BUILD 122: Проверка mock ответов перед декодированием
+                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let source = json["source"] as? String,
+                   source == "sfm_mock" || source == "mock" {
+                    // Это mock ответ - не декодируем в UserProfile
+                    let responseString = String(data: data, encoding: .utf8) ?? "Unable to convert to string"
+                    logger.error("⚠️ NetworkManager: Получен mock ответ от SFM для \(T.self)")
+                    logger.error("   - Response body: \(responseString.prefix(500))")
+                    logger.error("   - Source: \(source)")
+                    #if DEBUG
+                    print("⚠️ NetworkManager: Mock ответ от SFM - пропускаем декодирование")
+                    #endif
+                    completion(.failure(NetworkError.decodingError(NSError(domain: "NetworkManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Mock response from SFM - profile not available"]))))
+                    return
+                }
                 
                 // Декодирование
                 do {

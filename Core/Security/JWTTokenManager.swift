@@ -140,7 +140,20 @@ class JWTTokenManager {
         
         // Получаем refresh token
         guard let refreshToken = keychainManager.loadString(forKey: .refreshToken) else {
-            print("❌ JWT: Refresh token не найден в Keychain")
+            print("⚠️ JWT: Refresh token не найден в Keychain - возможно device token")
+            
+            // ✅ BUILD 122: Для device tokens перерегистрируем устройство
+            // Только если это device token (проверяем тип токена)
+            if let currentToken = AppConfig.authToken,
+               let payload = decodeJWTPayload(currentToken),
+               payload["type"] as? String == "device_auth" {
+                print("🔄 JWT: Device token без refresh token - перерегистрируем устройство")
+                Task { @MainActor in
+                    await SubscriptionManager.shared.performDeviceRegistration()
+                }
+                return true
+            }
+            
             return false
         }
         

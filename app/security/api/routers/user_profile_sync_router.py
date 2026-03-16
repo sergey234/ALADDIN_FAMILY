@@ -16,16 +16,38 @@ FastAPI endpoints для синхронизации профиля пользо�
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 
-from fastapi import APIRouter, HTTPException, Query, Path
+from fastapi import APIRouter, HTTPException, Query, Path, Depends
 from pydantic import BaseModel, Field
 import logging
 import sys
 import os
 
+# ✅ BUILD 122: Импорт get_current_user для авторизации
+try:
+    from app.auth.auth import get_current_user
+except ImportError:
+    try:
+        from auth.auth import get_current_user
+    except ImportError:
+        get_current_user = None
+        print("⚠️ get_current_user not available")
+
 # SFM Adapter import
 backend_path = "/opt/aladdin-backend"
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
+
+try:
+    from app.security.sfm_singleton import get_sfm
+    SFM_AVAILABLE = True
+except ImportError as e:
+    try:
+        from sfm_singleton import get_sfm
+        SFM_AVAILABLE = True
+    except ImportError:
+        SFM_AVAILABLE = False
+        get_sfm = None
+        print(f"⚠️ SFM not available: {e}")
 
 try:
     from sfm_adapter import sfm_adapter
@@ -128,6 +150,80 @@ class UpdatePrivacySettingsRequest(BaseModel):
 # =============================================================================
 # API Endpoints
 # =============================================================================
+
+@router.get("", response_model=UserProfileResponse)
+async def get_user_profile(
+    current_user: dict = Depends(get_current_user) if get_current_user else Depends(lambda: None)
+) -> UserProfileResponse:
+    """
+    ✅ BUILD 122: Получить профиль текущего пользователя из токена
+    
+    Использует реальный SFM через get_authentication_manager_profile
+    """
+    if not get_current_user:
+        raise HTTPException(
+            status_code=501,
+            detail="Авторизация не настроена на сервере"
+        )
+    
+    if current_user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Требуется авторизация"
+        )
+    
+    try:
+        user_id = current_user.get("id") or current_user.get("user_id") or current_user.get("sub")
+        
+        if not user_id:
+            raise HTTPException(
+                status_code=400,
+                detail="Не удалось определить ID пользователя из токена"
+            )
+        
+        # ✅ BUILD 122: Используем реальный SFM через get_authentication_manager_profile
+        if SFM_AVAILABLE and get_sfm:
+            try:
+                sfm = get_sfm()
+                result = sfm.execute_function("get_authentication_manager_profile", {"user_id": user_id})
+                
+                # Проверяем что это не mock ответ
+                if isinstance(result, dict) and result.get("source") == "sfm_mock":
+                    logger.warning(f"SFM returned mock response for user_id: {user_id}, using fallback")
+                elif isinstance(result, dict) and "id" in result:
+                    # ✅ Реальный ответ от SFM
+                    return UserProfileResponse(
+                        userId=result.get("id", user_id),
+                        name=result.get("name", "Пользователь"),
+                        email=result.get("email"),
+                        phone=result.get("phone"),
+                        avatar=result.get("avatar"),
+                        registrationDate=result.get("registrationDate", datetime.now().isoformat()),
+                        lastModified=datetime.now(),
+                        deviceId=result.get("deviceId"),
+                        version=result.get("version", 1)
+                    )
+            except Exception as e:
+                logger.error(f"SFM execution error: {e}, using fallback")
+        
+        # Fallback: возвращаем базовый профиль из токена
+        return UserProfileResponse(
+            userId=user_id,
+            name=current_user.get("email", "Пользователь").split("@")[0] if current_user.get("email") else "Пользователь",
+            email=current_user.get("email"),
+            phone=None,
+            avatar=None,
+            registrationDate=datetime.now().isoformat(),
+            lastModified=datetime.now(),
+            deviceId=current_user.get("device_id"),
+            version=1
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error getting user profile: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка получения профиля: {str(e)}")
+
 
 @router.post("/sync", response_model=SyncUserProfileResponse)
 async def sync_user_profile(

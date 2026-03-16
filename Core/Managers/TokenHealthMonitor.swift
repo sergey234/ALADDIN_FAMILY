@@ -388,7 +388,7 @@ class TokenHealthMonitor {
     ///
     private func performProactiveRefresh() async {
         logger.business("🔄 DEFENSIVE JWT: Executing smart hybrid token refresh")
-        
+
         // STEP 1: Try refreshToken() with retry
         if let refreshToken = KeychainManager.shared.loadString(forKey: .refreshToken),
            !refreshToken.isEmpty {

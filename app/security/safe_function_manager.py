@@ -33,7 +33,14 @@ from security.advanced_monitoring_manager import (
     MonitoringRule,
     advanced_monitoring_manager,
 )
-from security.async_io_manager import get_io_manager_sync
+# ✅ BUILD 122: Опциональный импорт async_io_manager (требует aiohttp)
+try:
+    from security.async_io_manager import get_io_manager_sync
+    ASYNC_IO_AVAILABLE = True
+except ImportError as e:
+    ASYNC_IO_AVAILABLE = False
+    get_io_manager_sync = None
+    print(f"⚠️ AsyncIOManager not available: {e} (aiohttp required)")
 from security.lazy_wrappers import get_lazy_manager, get_lazy_system_stats
 from security.search_indexer import get_search_indexer, get_search_stats
 from security.pagination_system import UniversalPaginationSystem
@@ -483,13 +490,17 @@ class SafeFunctionManager(SecurityBase):
                 self.log_activity(f"Пул потоков инициализирован: {self.max_thread_pool_workers} воркеров", "info")
 
             # Инициализация асинхронного I/O менеджера
-            if self.async_io_enabled:
+            if self.async_io_enabled and ASYNC_IO_AVAILABLE and get_io_manager_sync:
                 try:
                     self.async_io_manager = get_io_manager_sync()
                     self.log_activity("Асинхронный I/O менеджер инициализирован", "info")
                 except Exception as e:
                     self.log_activity(f"Ошибка инициализации Async IO Manager: {e}", "warning")
                     self.async_io_manager = None
+            else:
+                if not ASYNC_IO_AVAILABLE:
+                    self.log_activity("AsyncIOManager недоступен (aiohttp не установлен), используем синхронный I/O", "info")
+                self.async_io_manager = None
 
             self.log_activity("Оптимизации производительности инициализированы", "info")
 
