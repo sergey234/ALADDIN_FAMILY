@@ -1,0 +1,12 @@
+=== SFTP MANUAL DEPLOY INSTRUCTIONS ===
+1. Open FileZilla or Cyberduck
+2. Connect with:
+   Host: 149.154.65.180
+   Port: 22
+   Protocol: SFTP
+   Username: root
+   Password: Sergio675
+3. Navigate to /opt/aladdin-backend/app/auth/
+4. Upload local app/auth/auth.py to server
+5. Run: systemctl restart aladdin-backend
+

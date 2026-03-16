@@ -41,6 +41,8 @@ class AICategoriesViewModel: ObservableObject {
                 }
             }
             
+            print("✅ AICategoriesViewModel: Загружено \(familyMembers.count) членов семьи из API")
+            
             self.children = familyMembers
                 .filter { $0.role == "child" || $0.role == "teenager" }
                 .map { member in
@@ -51,12 +53,68 @@ class AICategoriesViewModel: ObservableObject {
                         avatar: member.avatar
                     )
                 }
+            
+            print("✅ AICategoriesViewModel: Отфильтровано \(self.children.count) детей (включая подростков)")
+            
+            // ✅ ИСПРАВЛЕНИЕ: Если список пуст, пробуем загрузить из UserDefaults
+            if self.children.isEmpty {
+                print("⚠️ AICategoriesViewModel: Список детей пуст, пробуем загрузить из UserDefaults...")
+                await loadChildrenFromUserDefaults()
+            } else {
+                // ✅ ИСПРАВЛЕНИЕ: Всегда синхронизируем с UserDefaults для полноты данных
+                await loadChildrenFromUserDefaults()
+            }
         } catch {
-            let errorKey = "ai_categories_error_load_failed"
-            let errorFormat = localizationManager.localized(errorKey)
-            errorMessage = String(format: errorFormat, error.localizedDescription)
-            // В случае ошибки используем пустой список
-            self.children = []
+            print("❌ AICategoriesViewModel: Ошибка загрузки детей из API: \(error.localizedDescription)")
+            // Пробуем загрузить из UserDefaults как fallback
+            await loadChildrenFromUserDefaults()
+            
+            // Показываем ошибку только если и из UserDefaults ничего не загрузилось
+            if self.children.isEmpty {
+                let errorKey = "ai_categories_error_load_failed"
+                let errorFormat = localizationManager.localized(errorKey)
+                errorMessage = String(format: errorFormat, error.localizedDescription)
+            }
+        }
+    }
+    
+    /// Загрузка детей из UserDefaults как fallback
+    private func loadChildrenFromUserDefaults() async {
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Синхронизируем UserDefaults перед чтением
+        UserDefaults.standard.synchronize()
+        
+        let familyMembersKey = "family_members_list"
+        if let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
+           let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
+            
+            print("✅ AICategoriesViewModel: Загружено \(decoded.count) членов семьи из UserDefaults")
+            
+            let userDefaultsChildren: [UserSelectorView.UserOption] = decoded
+                .filter { $0.role == .child || $0.role == .teenager }
+                .map { member -> UserSelectorView.UserOption in
+                    let roleString: String
+                    switch member.role {
+                    case .child: roleString = "child"
+                    case .teenager: roleString = "teenager"
+                    default: roleString = "child"
+                    }
+                    
+                    return UserSelectorView.UserOption(
+                        id: member.id.uuidString,
+                        name: member.name,
+                        role: roleString,
+                        avatar: member.avatar
+                    )
+                }
+            
+            // Объединяем с существующими, избегая дубликатов по id
+            var existingIds = Set(self.children.map { $0.id })
+            let newChildren = userDefaultsChildren.filter { !existingIds.contains($0.id) }
+            self.children.append(contentsOf: newChildren)
+            
+            print("✅ AICategoriesViewModel: Добавлено \(newChildren.count) детей из UserDefaults. Всего: \(self.children.count)")
+        } else {
+            print("⚠️ AICategoriesViewModel: Нет данных в UserDefaults")
         }
     }
     

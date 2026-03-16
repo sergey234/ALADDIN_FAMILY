@@ -1,0 +1,1370 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/payments/create",
+    "function": "create_payment",
+    "file": "payments.py"
+  },
+  {
+    "method": "GET",
+    "path": "/api/payments/status/{payment_id}",
+    "function": "check_payment_status",
+    "file": "payments.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/payments/confirm",
+    "function": "confirm_payment",
+    "file": "payments.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/payments/recover",
+    "function": "recover_payment_code",
+    "file": "payments.py"
+  },
+  {
+    "method": "POST",
+    "path": "/api/activation/retrieve",
+    "function": "retrieve_activation_code",
+    "file": "payments.py"
+  },
+  {
+    "method": "POST",
+    "path": "/payment/create",
+    "function": "test_create_payment",
+    "file": "referral_test.py"
+  },
+  {
+    "method": "POST",
+    "path": "/payment/confirm",
+    "function": "test_confirm_payment",
+    "file": "referral_test.py"
+  },
+  {
+    "method": "GET",
+    "path": "/discount/apply",
+    "function": "test_apply_discount",
+    "file": "referral_test.py"
+  },
+  {
+    "method": "GET",
+    "path": "/analytics",
+    "function": "get_analytics",
+    "file": "analytics_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/analytics/threats",
+    "function": "get_analytics_threats",
+    "file": "analytics_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/analytics/top-threats",
+    "function": "get_analytics_top_threats",
+    "file": "analytics_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/auth/login",
+    "function": "login",
+    "file": "auth_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/auth/register",
+    "function": "register",
+    "file": "auth_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/auth/refresh",
+    "function": "refresh_token",
+    "file": "auth_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/auth/login-by-recovery-code",
+    "function": "login_by_recovery_code",
+    "file": "auth_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/auth/logout",
+    "function": "logout",
+    "file": "auth_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/stats",
+    "function": "get_family_stats",
+    "file": "family.py"
+  },
+  {
+    "method": "POST",
+    "path": "/create",
+    "function": "create_family_endpoint",
+    "file": "family.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status/{component_id}",
+    "function": "get_component_status",
+    "file": "components.py"
+  },
+  {
+    "method": "POST",
+    "path": "/enable/{component_id}",
+    "function": "enable_component",
+    "file": "components.py"
+  },
+  {
+    "method": "POST",
+    "path": "/disable/{component_id}",
+    "function": "disable_component",
+    "file": "components.py"
+  },
+  {
+    "method": "GET",
+    "path": "/configuration/{component_id}",
+    "function": "get_component_configuration",
+    "file": "components.py"
+  },
+  {
+    "method": "POST",
+    "path": "/configuration/{component_id}",
+    "function": "update_component_configuration",
+    "file": "components.py"
+  },
+  {
+    "method": "POST",
+    "path": "/batch/status",
+    "function": "get_batch_component_status",
+    "file": "components.py"
+  },
+  {
+    "method": "GET",
+    "path": "/settings",
+    "function": "get_protection_settings",
+    "file": "protection.py"
+  },
+  {
+    "method": "POST",
+    "path": "/settings",
+    "function": "update_protection_settings",
+    "file": "protection.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status",
+    "function": "get_protection_status",
+    "file": "protection.py"
+  },
+  {
+    "method": "GET",
+    "path": "/threat-scenarios",
+    "function": "get_threat_scenarios",
+    "file": "protection.py"
+  },
+  {
+    "method": "POST",
+    "path": "/enable",
+    "function": "enable_protection_category",
+    "file": "protection.py"
+  },
+  {
+    "method": "POST",
+    "path": "/disable",
+    "function": "disable_protection_category",
+    "file": "protection.py"
+  },
+  {
+    "method": "GET",
+    "path": "/stats",
+    "function": "get_protection_stats",
+    "file": "protection.py"
+  },
+  {
+    "method": "POST",
+    "path": "/sync",
+    "function": "sync_protection_settings",
+    "file": "protection.py"
+  },
+  {
+    "method": "GET",
+    "path": "/code",
+    "function": "get_referral_code",
+    "file": "referral.py"
+  },
+  {
+    "method": "GET",
+    "path": "/stats",
+    "function": "get_referral_stats",
+    "file": "referral.py"
+  },
+  {
+    "method": "GET",
+    "path": "/history",
+    "function": "get_referral_history",
+    "file": "referral.py"
+  },
+  {
+    "method": "GET",
+    "path": "/rewards",
+    "function": "get_referral_rewards",
+    "file": "referral.py"
+  },
+  {
+    "method": "POST",
+    "path": "/chat",
+    "function": "ai_assistant_chat",
+    "file": "ai_assistant_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/history",
+    "function": "ai_assistant_history",
+    "file": "ai_assistant_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/feedback",
+    "function": "ai_assistant_feedback",
+    "file": "ai_assistant_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/capabilities",
+    "function": "ai_assistant_capabilities",
+    "file": "ai_assistant_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/analyze_threat",
+    "function": "ai_assistant_analyze_threat",
+    "file": "ai_assistant_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/recommendations",
+    "function": "ai_assistant_recommendations",
+    "file": "ai_assistant_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/report_incident",
+    "function": "ai_assistant_report_incident",
+    "file": "ai_assistant_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/security_tips",
+    "function": "ai_assistant_security_tips",
+    "file": "ai_assistant_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/start",
+    "function": "start_monitoring",
+    "file": "driving_reports_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/stop",
+    "function": "stop_monitoring",
+    "file": "driving_reports_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/event",
+    "function": "record_event",
+    "file": "driving_reports_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/generate",
+    "function": "generate_report",
+    "file": "driving_reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/report/{report_id}",
+    "function": "get_report",
+    "file": "driving_reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/weekly/{user_id}",
+    "function": "get_weekly_report",
+    "file": "driving_reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/monthly/{user_id}",
+    "function": "get_monthly_report",
+    "file": "driving_reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/safety-score/{user_id}",
+    "function": "get_safety_score",
+    "file": "driving_reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/violations/{user_id}",
+    "function": "get_violations_statistics",
+    "file": "driving_reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/recommendations/{user_id}",
+    "function": "get_recommendations",
+    "file": "driving_reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "health_check",
+    "file": "driving_reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/sites",
+    "function": "get_sites",
+    "file": "ai_categories_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/block",
+    "function": "block_sites",
+    "file": "ai_categories_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/allow",
+    "function": "allow_sites",
+    "file": "ai_categories_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/check",
+    "function": "check_access",
+    "file": "ai_categories_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status",
+    "function": "get_status",
+    "file": "ai_categories_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/history",
+    "function": "get_access_history",
+    "file": "ai_categories_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/age-restriction",
+    "function": "set_age_restriction",
+    "file": "ai_categories_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "health_check",
+    "file": "ai_categories_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/sync",
+    "function": "sync_crash_detection",
+    "file": "crash_detection_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/report",
+    "function": "report_crash",
+    "file": "crash_detection_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/notifications",
+    "function": "get_crash_notifications",
+    "file": "crash_detection_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/notifications/send",
+    "function": "send_crash_notification",
+    "file": "crash_detection_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/upload",
+    "function": "upload_metrics",
+    "file": "metrics_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/stats",
+    "function": "get_parental_control_stats",
+    "file": "parental_control_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status",
+    "function": "get_parental_manager_status",
+    "file": "parental_control_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/balance",
+    "function": "get_gamification_balance_current",
+    "file": "gamification_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/balance/{userId}",
+    "function": "get_gamification_balance",
+    "file": "gamification_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/driving/stats",
+    "function": "get_driving_reports_stats",
+    "file": "reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/dark-web/stats",
+    "function": "get_dark_web_stats",
+    "file": "reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/identity-theft/stats",
+    "function": "get_identity_theft_stats",
+    "file": "reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/privacy/location/stats",
+    "function": "get_location_stats",
+    "file": "reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/privacy/cleanup/stats",
+    "function": "get_cleanup_stats",
+    "file": "reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/privacy/tracker/stats",
+    "function": "get_tracker_stats",
+    "file": "reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/ai-categories/stats",
+    "function": "get_ai_categories_stats",
+    "file": "reports_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "get_system_health",
+    "file": "system_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/info",
+    "function": "get_system_info",
+    "file": "system_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/logs",
+    "function": "get_system_logs",
+    "file": "system_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/maintenance",
+    "function": "set_maintenance_mode",
+    "file": "system_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/metrics",
+    "function": "get_system_metrics",
+    "file": "system_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/backup",
+    "function": "create_backup",
+    "file": "system_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/backup/status",
+    "function": "get_backup_status",
+    "file": "system_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/uptime",
+    "function": "get_system_uptime",
+    "file": "system_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/version",
+    "function": "get_system_version",
+    "file": "system_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/restart",
+    "function": "restart_system",
+    "file": "system_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/resources",
+    "function": "get_system_resources",
+    "file": "system_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/sync",
+    "function": "sync_offline_storage",
+    "file": "offline_storage_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/data",
+    "function": "get_offline_data",
+    "file": "offline_storage_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/data/update",
+    "function": "update_offline_data",
+    "file": "offline_storage_sync_router.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/data/{dataId}",
+    "function": "delete_offline_data",
+    "file": "offline_storage_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/resolve-conflicts",
+    "function": "resolve_offline_storage_conflicts",
+    "file": "offline_storage_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/start",
+    "function": "start_monitoring",
+    "file": "crash_detection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/stop",
+    "function": "stop_monitoring",
+    "file": "crash_detection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/data",
+    "function": "process_sensor_data",
+    "file": "crash_detection_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status",
+    "function": "get_status",
+    "file": "crash_detection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/emergency-call",
+    "function": "call_emergency",
+    "file": "crash_detection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/cancel-emergency-call",
+    "function": "cancel_emergency_call",
+    "file": "crash_detection_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/history",
+    "function": "get_crash_history",
+    "file": "crash_detection_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "health_check",
+    "file": "crash_detection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/scan",
+    "function": "scan_broker_sites",
+    "file": "data_cleanup_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/remove",
+    "function": "remove_data_from_sites",
+    "file": "data_cleanup_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status",
+    "function": "get_removal_status",
+    "file": "data_cleanup_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/report",
+    "function": "get_cleanup_report",
+    "file": "data_cleanup_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/scan-status",
+    "function": "get_scan_status",
+    "file": "data_cleanup_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/preferences",
+    "function": "get_user_preferences",
+    "file": "data_cleanup_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/preferences",
+    "function": "update_user_preferences",
+    "file": "data_cleanup_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/periodic-scan",
+    "function": "trigger_periodic_scan",
+    "file": "data_cleanup_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "health_check",
+    "file": "data_cleanup_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/sync",
+    "function": "sync_app_settings",
+    "file": "app_settings_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/update",
+    "function": "update_app_settings",
+    "file": "app_settings_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/theme",
+    "function": "get_theme_settings",
+    "file": "app_settings_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/theme/update",
+    "function": "update_theme_settings",
+    "file": "app_settings_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/language",
+    "function": "get_language_settings",
+    "file": "app_settings_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/language/update",
+    "function": "update_language_settings",
+    "file": "app_settings_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/notifications",
+    "function": "get_notification_settings",
+    "file": "app_settings_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/notifications/update",
+    "function": "update_notification_settings",
+    "file": "app_settings_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/biometry",
+    "function": "get_biometry_settings",
+    "file": "app_settings_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/biometry/update",
+    "function": "update_biometry_settings",
+    "file": "app_settings_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/sync",
+    "function": "sync_user_profile",
+    "file": "user_profile_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/update",
+    "function": "update_user_profile",
+    "file": "user_profile_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/history",
+    "function": "get_user_profile_history",
+    "file": "user_profile_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/privacy",
+    "function": "get_user_privacy_settings",
+    "file": "user_profile_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/privacy/update",
+    "function": "update_user_privacy_settings",
+    "file": "user_profile_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "health_check",
+    "file": "dark_web_monitoring_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/check",
+    "function": "check_email_breach",
+    "file": "dark_web_monitoring_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/start-monitoring",
+    "function": "start_monitoring",
+    "file": "dark_web_monitoring_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/stop-monitoring",
+    "function": "stop_monitoring",
+    "file": "dark_web_monitoring_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status",
+    "function": "get_monitoring_status",
+    "file": "dark_web_monitoring_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/breaches",
+    "function": "get_breaches",
+    "file": "dark_web_monitoring_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "get_components_health",
+    "file": "components_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/list",
+    "function": "get_components_list",
+    "file": "components_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status/{component_id}",
+    "function": "get_component_status",
+    "file": "components_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status/all",
+    "function": "get_all_components_status",
+    "file": "components_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/config/{component_id}",
+    "function": "get_component_config",
+    "file": "components_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/config/update/{component_id}",
+    "function": "update_component_config",
+    "file": "components_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/enable/{component_id}",
+    "function": "enable_component",
+    "file": "components_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/disable/{component_id}",
+    "function": "disable_component",
+    "file": "components_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/restart/{component_id}",
+    "function": "restart_component",
+    "file": "components_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/metrics/{component_id}",
+    "function": "get_component_metrics",
+    "file": "components_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/logs/{component_id}",
+    "function": "get_component_logs",
+    "file": "components_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/dependencies/{component_id}",
+    "function": "get_component_dependencies",
+    "file": "components_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/test/{component_id}",
+    "function": "test_component",
+    "file": "components_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/update/{component_id}",
+    "function": "update_component",
+    "file": "components_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "health_check",
+    "file": "identity_theft_protection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/monitor-snils",
+    "function": "monitor_snils",
+    "file": "identity_theft_protection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/monitor-credit",
+    "function": "monitor_credit",
+    "file": "identity_theft_protection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/check",
+    "function": "check_fraud_database",
+    "file": "identity_theft_protection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/detect",
+    "function": "detect_identity_theft",
+    "file": "identity_theft_protection_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/alerts",
+    "function": "get_alerts",
+    "file": "identity_theft_protection_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status",
+    "function": "get_monitoring_status",
+    "file": "identity_theft_protection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/stop-monitoring",
+    "function": "stop_monitoring",
+    "file": "identity_theft_protection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/consent",
+    "function": "give_consent",
+    "file": "identity_theft_protection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/revoke-consent",
+    "function": "revoke_consent",
+    "file": "identity_theft_protection_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/credit-freeze-instructions",
+    "function": "get_credit_freeze_instructions",
+    "file": "identity_theft_protection_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/location/geofences/sync",
+    "function": "sync_location_geofences",
+    "file": "other_functions_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/location/geofences/update",
+    "function": "update_location_geofence",
+    "file": "other_functions_sync_router.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/location/geofences/{geofenceId}",
+    "function": "delete_location_geofence",
+    "file": "other_functions_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/location/movement-history",
+    "function": "get_movement_history",
+    "file": "other_functions_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/location/movement-history/update",
+    "function": "update_movement_history",
+    "file": "other_functions_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/location/status",
+    "function": "get_location_status",
+    "file": "other_functions_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/location/status/update",
+    "function": "update_location_status",
+    "file": "other_functions_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/chat/offline-messages/sync",
+    "function": "sync_offline_messages",
+    "file": "other_functions_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/chat/offline-messages/send",
+    "function": "send_offline_message",
+    "file": "other_functions_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/chat/offline-messages/resolve-conflicts",
+    "function": "resolve_message_conflicts",
+    "file": "other_functions_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/check",
+    "function": "check_request",
+    "file": "anti_tracker_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/stats",
+    "function": "get_statistics",
+    "file": "anti_tracker_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/trackers",
+    "function": "get_tracker_lists",
+    "file": "anti_tracker_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/block",
+    "function": "block_tracker",
+    "file": "anti_tracker_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/unblock",
+    "function": "unblock_tracker",
+    "file": "anti_tracker_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status",
+    "function": "get_block_status",
+    "file": "anti_tracker_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/settings",
+    "function": "get_settings",
+    "file": "anti_tracker_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/settings",
+    "function": "update_settings",
+    "file": "anti_tracker_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "health_check",
+    "file": "anti_tracker_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/sync",
+    "function": "sync_subscription",
+    "file": "subscription_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/update",
+    "function": "update_subscription",
+    "file": "subscription_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/purchase-history",
+    "function": "get_purchase_history",
+    "file": "subscription_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status",
+    "function": "get_subscription_status",
+    "file": "subscription_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/status/update",
+    "function": "update_subscription_status",
+    "file": "subscription_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/auto-renewal",
+    "function": "get_auto_renewal",
+    "file": "subscription_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/auto-renewal/update",
+    "function": "update_auto_renewal",
+    "file": "subscription_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/cancel",
+    "function": "cancel_subscription",
+    "file": "subscription_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/settings/{familyId}",
+    "function": "get_parental_control_settings",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/settings/update",
+    "function": "update_parental_control_settings",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/settings/history",
+    "function": "get_parental_control_settings_history",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/settings/sync",
+    "function": "sync_parental_control_settings",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/settings/conflicts",
+    "function": "get_parental_control_settings_conflicts",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/time-limits/{childId}",
+    "function": "get_time_limits",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/time-limits/update",
+    "function": "update_time_limits",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/time-limits/history",
+    "function": "get_time_limits_history",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/time-limits/reset",
+    "function": "reset_time_limits",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/schedules/{childId}",
+    "function": "get_schedules",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/schedules/update",
+    "function": "update_schedule",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/schedules/history",
+    "function": "get_schedules_history",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/schedules/delete",
+    "function": "delete_schedule",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/geofences/{childId}",
+    "function": "get_geofences",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/geofences/add",
+    "function": "add_geofence",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/geofences/update",
+    "function": "update_geofence",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "DELETE",
+    "path": "/geofences/{geofenceId}",
+    "function": "delete_geofence",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/app-blocks/{childId}",
+    "function": "get_app_blocks",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/app-blocks/update",
+    "function": "update_app_blocks",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/app-blocks/sync",
+    "function": "sync_app_blocks",
+    "file": "parental_control_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/start",
+    "function": "start_monitoring",
+    "file": "crash_detection_router_optimized.py"
+  },
+  {
+    "method": "POST",
+    "path": "/stop",
+    "function": "stop_monitoring",
+    "file": "crash_detection_router_optimized.py"
+  },
+  {
+    "method": "POST",
+    "path": "/data",
+    "function": "process_sensor_data",
+    "file": "crash_detection_router_optimized.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status",
+    "function": "get_status",
+    "file": "crash_detection_router_optimized.py"
+  },
+  {
+    "method": "POST",
+    "path": "/emergency-call",
+    "function": "call_emergency",
+    "file": "crash_detection_router_optimized.py"
+  },
+  {
+    "method": "POST",
+    "path": "/cancel-emergency-call",
+    "function": "cancel_emergency_call",
+    "file": "crash_detection_router_optimized.py"
+  },
+  {
+    "method": "GET",
+    "path": "/history",
+    "function": "get_crash_history",
+    "file": "crash_detection_router_optimized.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "health_check",
+    "file": "crash_detection_router_optimized.py"
+  },
+  {
+    "method": "POST",
+    "path": "/medications/sync",
+    "function": "sync_medications",
+    "file": "elderly_interface_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/medications/update",
+    "function": "update_medication",
+    "file": "elderly_interface_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/appointments/sync",
+    "function": "sync_appointments",
+    "file": "elderly_interface_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/appointments/update",
+    "function": "update_appointment",
+    "file": "elderly_interface_sync_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/settings",
+    "function": "set_person_settings",
+    "file": "location_bubble_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/settings",
+    "function": "get_person_settings",
+    "file": "location_bubble_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/settings/all",
+    "function": "get_all_person_settings",
+    "file": "location_bubble_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/history",
+    "function": "get_generation_history",
+    "file": "location_bubble_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "health_check",
+    "file": "location_bubble_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/read",
+    "function": "mark_notification_read",
+    "file": "notifications_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/call",
+    "function": "call_assistance",
+    "file": "roadside_assistance_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/status/{request_id}",
+    "function": "get_status",
+    "file": "roadside_assistance_router.py"
+  },
+  {
+    "method": "POST",
+    "path": "/cancel/{request_id}",
+    "function": "cancel_request",
+    "file": "roadside_assistance_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/history",
+    "function": "get_history",
+    "file": "roadside_assistance_router.py"
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "function": "health_check",
+    "file": "roadside_assistance_router.py"
+  }
+]

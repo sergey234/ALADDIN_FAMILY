@@ -2210,6 +2210,8 @@ class LocalizationManager: ObservableObject {
             "registration_success_title": "Успешно!",
             "registration_success_message": "Регистрация завершена",
             "registration_tip_add_members": "Теперь вы можете добавить других членов семьи",
+            "registration_creating_family": "Создание семьи...",
+            "registration_error_title": "Ошибка регистрации",
             // Recovery Code
             "recovery_nav_title": "Восстановление",
             "recovery_family_created": "Семья создана",
@@ -4925,6 +4927,8 @@ class LocalizationManager: ObservableObject {
             "registration_success_title": "Success!",
             "registration_success_message": "Registration completed",
             "registration_tip_add_members": "Now you can add other family members",
+            "registration_creating_family": "Creating family...",
+            "registration_error_title": "Registration Error",
             
             // Recovery Code
             "recovery_nav_title": "Recovery",

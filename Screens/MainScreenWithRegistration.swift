@@ -21,37 +21,83 @@ struct MainScreenWithRegistration: View {
     
     var body: some View {
         ZStack {
-            // Фон вместо MainScreen
-            LinearGradient(
-                colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            backgroundView
+            cancelButtonView
             
-            // Кнопка отмены (всегда видна)
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(localizationManager.localized("common_cancel")) {
-                        // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #3: Вызываем onComplete при нажатии "Отмена"
-                        print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем onComplete")
-                        onComplete?()
-                    }
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color.black.opacity(0.3))
-                    .cornerRadius(20)
-                    .accessibilityLabel(localizationManager.localized("common_cancel"))
-                }
-                .padding(.top, 20)
-                .padding(.horizontal, 20)
+            registrationModalsView
+            loadingOrErrorView
+            recoveryCodeModalView
+            successModalView
+            tipNotificationView
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Экран регистрации семьи")
+        .task {
+            print("🚨 MainScreenWithRegistration загружен!")
+            // Start registration immediately without checking
+            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+            print("🚨 Вызываю startRegistration()...")
+            registrationVM.startRegistration()
+            print("✅ Регистрация запущена, showRoleModal = \(registrationVM.showRoleModal)")
+        }
+    }
+    
+    // MARK: - Helper Views
+    
+    private var backgroundView: some View {
+        LinearGradient(
+            colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
+    
+    private var cancelButtonView: some View {
+        VStack {
+            HStack {
                 Spacer()
+                Button(localizationManager.localized("common_cancel")) {
+                    print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем onComplete")
+                    onComplete?()
+                }
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.black.opacity(0.3))
+                .cornerRadius(20)
+                .accessibilityLabel(localizationManager.localized("common_cancel"))
             }
+            .padding(.top, 20)
+            .padding(.horizontal, 20)
+            Spacer()
+        }
+    }
+    
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                .scaleEffect(1.5)
             
-            // Consent Modal (показывается первым)
+            Text(localizationManager.localized("registration_creating_family"))
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(.white)
+            
+            if let role = registrationVM.selectedRole, role == .teenager {
+                Text("Создание семьи для подростка...")
+                    .font(.system(size: 14))
+                    .foregroundColor(.white.opacity(0.8))
+            }
+        }
+        .padding(40)
+        .background(Color.black.opacity(0.5))
+        .cornerRadius(20)
+    }
+    
+    private var registrationModalsView: some View {
+        Group {
             if registrationVM.showConsentModal {
                 ConsentModal(
                     isPresented: Binding(
@@ -64,7 +110,6 @@ struct MainScreenWithRegistration: View {
                 )
             }
             
-            // Progressive registration modals
             if registrationVM.showRoleModal {
                 RoleSelectionModal(
                     isPresented: Binding(
@@ -78,67 +123,89 @@ struct MainScreenWithRegistration: View {
             }
             
             if registrationVM.showAgeGroupModal {
-                VStack(spacing: 30) {
-                    Text(localizationManager.localized("registration_select_age"))
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.white)
-                    
-                    // Показываем категории в зависимости от роли
-                    if let role = registrationVM.selectedRole {
-                        VStack(spacing: 16) {
-                            ForEach(getAgeGroups(for: role), id: \.self) { ageGroup in
-                                Button(action: {
-                                    print("🚨 Нажата кнопка возраста - вызываю onAgeGroupSelected(.\(ageGroup.rawValue))")
-                                    registrationVM.onAgeGroupSelected(ageGroup)
-                                }) {
-                                    HStack {
-                                        Text(getAgeGroupLabel(ageGroup, for: role))
-                                            .foregroundColor(.white)
-                                        Spacer()
-                                        Image(systemName: "chevron.right")
-                                            .foregroundColor(.white.opacity(0.7))
-                                    }
-                                    .padding(20)
-                                    .background(Color.white.opacity(0.15))
-                                    .cornerRadius(12)
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 30)
-                    }
-                }
-                .padding(30)
-                .background(Color.black.opacity(0.3))
-                .cornerRadius(20)
+                ageGroupSelectionView
             }
             
             if registrationVM.showLetterModal {
-                VStack(spacing: 30) {
-                    Text(localizationManager.localized("registration_select_letter"))
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(.white)
-                    
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
-                        ForEach(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"], id: \.self) { letter in
-                            Button(action: {
-                                registrationVM.onLetterSelected(letter)
-                            }) {
-                                Text(letter)
-                                    .font(.system(size: 20, weight: .bold))
+                letterSelectionView
+            }
+        }
+    }
+    
+    private var ageGroupSelectionView: some View {
+        VStack(spacing: 30) {
+            Text(localizationManager.localized("registration_select_age"))
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(.white)
+            
+            if let role = registrationVM.selectedRole {
+                VStack(spacing: 16) {
+                    ForEach(getAgeGroups(for: role), id: \.self) { ageGroup in
+                        Button(action: {
+                            print("🚨 Нажата кнопка возраста - вызываю onAgeGroupSelected(.\(ageGroup.rawValue))")
+                            registrationVM.onAgeGroupSelected(ageGroup)
+                        }) {
+                            HStack {
+                                Text(getAgeGroupLabel(ageGroup, for: role))
                                     .foregroundColor(.white)
-                                    .frame(width: 50, height: 50)
-                                    .background(Color.white.opacity(0.15))
-                                    .cornerRadius(12)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(.white.opacity(0.7))
                             }
+                            .padding(20)
+                            .background(Color.white.opacity(0.15))
+                            .cornerRadius(12)
                         }
                     }
                 }
-                .padding(30)
-                .background(Color.black.opacity(0.3))
-                .cornerRadius(20)
+                .padding(.horizontal, 30)
+            }
+        }
+        .padding(30)
+        .background(Color.black.opacity(0.3))
+        .cornerRadius(20)
+    }
+    
+    private var letterSelectionView: some View {
+        VStack(spacing: 30) {
+            Text(localizationManager.localized("registration_select_letter"))
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(.white)
+            
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
+                ForEach(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"], id: \.self) { letter in
+                    Button(action: {
+                        registrationVM.onLetterSelected(letter)
+                    }) {
+                        Text(letter)
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 50, height: 50)
+                            .background(Color.white.opacity(0.15))
+                            .cornerRadius(12)
+                    }
+                }
+            }
+        }
+        .padding(30)
+        .background(Color.black.opacity(0.3))
+        .cornerRadius(20)
+    }
+    
+    private var loadingOrErrorView: some View {
+        Group {
+            if registrationVM.isLoading || registrationVM.currentStep == .creatingFamily {
+                loadingView
             }
             
-            // Recovery Code Modal (full-screen)
+            if let errorMessage = registrationVM.errorMessage, !errorMessage.isEmpty {
+                errorView(errorMessage: errorMessage)
+            }
+        }
+    }
+    
+    private var recoveryCodeModalView: some View {
+        Group {
             if registrationVM.showFamilyCreatedModal,
                let familyID = registrationVM.familyID,
                let recoveryCode = registrationVM.recoveryCode {
@@ -147,8 +214,6 @@ struct MainScreenWithRegistration: View {
                         get: { registrationVM.showFamilyCreatedModal },
                         set: { newValue in
                             registrationVM.showFamilyCreatedModal = newValue
-                            // ✅ ИСПРАВЛЕНИЕ: Если модал закрывается (свайп вниз или кнопка), вызываем onComplete
-                            // НЕ вызываем здесь, чтобы избежать двойного вызова - onComplete вызовется в callback
                             if !newValue {
                                 print("✅ RecoveryCodeModal закрыт через setter")
                             }
@@ -157,15 +222,17 @@ struct MainScreenWithRegistration: View {
                     recoveryCode: recoveryCode,
                     familyID: familyID,
                     onComplete: {
-                        // ✅ ЕДИНСТВЕННЫЙ вызов onComplete при закрытии модала
-                        // Сохраняем что семья создана
                         UserDefaults.standard.synchronize()
                         onComplete?()
                         print("✅ RecoveryCodeModal: onComplete вызван")
                     }
                 )
             }
-            
+        }
+    }
+    
+    private var successModalView: some View {
+        Group {
             if registrationVM.showSuccessModal {
                 VStack {
                     Text(localizationManager.localized("registration_success_title"))
@@ -185,8 +252,11 @@ struct MainScreenWithRegistration: View {
                 .background(Color.green)
                 .cornerRadius(10)
             }
-            
-            // Tip notification
+        }
+    }
+    
+    private var tipNotificationView: some View {
+        Group {
             if showTip {
                 VStack {
                     TipNotification(
@@ -201,16 +271,45 @@ struct MainScreenWithRegistration: View {
                 .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Экран регистрации семьи")
-        .task {
-            print("🚨 MainScreenWithRegistration загружен!")
-            // Start registration immediately without checking
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-            print("🚨 Вызываю startRegistration()...")
-            registrationVM.startRegistration()
-            print("✅ Регистрация запущена, showRoleModal = \(registrationVM.showRoleModal)")
+    }
+    
+    private func errorView(errorMessage: String) -> some View {
+        VStack(spacing: 20) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 48))
+                .foregroundColor(.red)
+            
+            Text(localizationManager.localized("registration_error_title"))
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(.white)
+            
+            Text(errorMessage)
+                .font(.system(size: 14))
+                .foregroundColor(.white.opacity(0.9))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            
+            Button(localizationManager.localized("common_retry")) {
+                // Повторяем создание семьи
+                if let role = registrationVM.selectedRole,
+                   let ageGroup = registrationVM.selectedAgeGroup,
+                   let letter = registrationVM.selectedLetter {
+                    registrationVM.errorMessage = nil
+                    registrationVM.createFamily()
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .padding(.top, 10)
+            
+            Button(localizationManager.localized("common_cancel")) {
+                registrationVM.errorMessage = nil
+                onComplete?()
+            }
+            .foregroundColor(.white.opacity(0.8))
         }
+        .padding(30)
+        .background(Color.black.opacity(0.7))
+        .cornerRadius(20)
     }
     
     // MARK: - Helper Methods

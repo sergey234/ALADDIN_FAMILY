@@ -2733,6 +2733,12 @@ struct NotificationStatsResponse: Codable {
 struct DeviceRegisterRequest: Codable {
     let deviceId: String
     let deviceType: String
+    
+    // ✅ ИСПРАВЛЕНИЕ BUILD 121: Конвертация camelCase в snake_case для сервера
+    enum CodingKeys: String, CodingKey {
+        case deviceId = "device_id"
+        case deviceType = "device_type"
+    }
 }
 
 /// 📱 Device Registration Response

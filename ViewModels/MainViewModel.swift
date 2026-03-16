@@ -268,9 +268,25 @@ class MainViewModel: ObservableObject {
                                           error.localizedDescription.contains("Token")
 
                         if isTokenError {
-                            print("   - Ошибка связана с токеном - требуется авторизация")
-                            // Сессия истекла - очищаем токены и отправляем на логин
-                            self.handleSessionExpired()
+                            print("   - Ошибка связана с токеном - проверяем валидность токена")
+                            // ✅ BUILD 121: Проверяем валидность токена перед удалением
+                            let tokenStatus = TokenValidator.validateCurrentToken()
+                            if case .valid = tokenStatus {
+                                print("   - ⚠️ Токен валиден, но сервер вернул 401 - НЕ удаляем токен")
+                                print("   - Это может быть серверная проблема или проблема с конкретным endpoint")
+                                // Не удаляем токен и не отправляем SessionExpired
+                                Task { @MainActor [weak self] in
+                                    guard let self = self else { return }
+                                    self.isLoading = false
+                                    self.isLoadingDashboard = false
+                                    self.errorMessage = "Не удалось загрузить данные. Проверьте подключение к интернету."
+                                    NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+                                }
+                            } else {
+                                print("   - Токен действительно невалиден - очищаем токены")
+                                // Сессия истекла - очищаем токены и отправляем на логин
+                                self.handleSessionExpired()
+                            }
                         } else {
                             // Другая ошибка - показываем сообщение и оставляем fallback значения
                             print("   - Критическая ошибка после всех попыток - данные НЕ обновлены из API")
@@ -316,7 +332,27 @@ class MainViewModel: ObservableObject {
     }
 
     /// Обработка истекшей сессии
+    /// ✅ BUILD 121: ИСПРАВЛЕНО - Проверяет валидность токена перед удалением
     private func handleSessionExpired() {
+        // ✅ BUILD 121: Проверяем валидность токена ПЕРЕД удалением
+        let tokenStatus = TokenValidator.validateCurrentToken()
+        if case .valid = tokenStatus {
+            #if DEBUG
+            print("⚠️ MainViewModel.handleSessionExpired: Токен валиден - НЕ удаляем токен")
+            let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
+            print("   - Call stack:")
+            print(stackTrace)
+            VisualLogger.shared.log("⚠️ MainViewModel: SessionExpired игнорировано - токен валиден", level: .warning, category: "SESSION")
+            MasterLogger.shared.log(.warn, category: .business, message: "⚠️ MainViewModel: SessionExpired ignored - token is valid")
+            #endif
+            // Токен валиден - не удаляем и не отправляем SessionExpired
+            isLoading = false
+            isLoadingDashboard = false
+            errorMessage = "Не удалось загрузить данные. Проверьте подключение к интернету."
+            NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+            return
+        }
+        
         // Проверяем, являются ли токены debug токенами
         let isDebugToken = isUsingDebugTokens()
 
@@ -330,14 +366,27 @@ class MainViewModel: ObservableObject {
             return
         }
 
+        // ✅ BUILD 121: Логирование отправки SessionExpired
+        #if DEBUG
+        let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
+        print("📤 MainViewModel.handleSessionExpired: Отправка SessionExpired notification")
+        print("   - Call stack:")
+        print(stackTrace)
+        VisualLogger.shared.log("📤 MainViewModel: Отправка SessionExpired", level: .warning, category: "SESSION")
+        MasterLogger.shared.log(.warn, category: .business, message: "📤 MainViewModel: Sending SessionExpired notification")
+        #endif
+
         print("🔐 MainViewModel: Сессия истекла - очищаем токены и отправляем на логин")
 
-        // Очищаем токены из Keychain
-        keychainManager.delete(forKey: .authToken)
-        keychainManager.delete(forKey: .refreshToken)
+        // ✅ BUILD 121: Используем SubscriptionManager.clearToken() вместо прямого удаления
+        // Это обеспечивает правильную очистку всех хранилищ
+        Task { @MainActor in
+            await SubscriptionManager.shared.clearToken()
+        }
 
         // Сбрасываем состояние
         isLoading = false
+        isLoadingDashboard = false
         errorMessage = "Сессия истекла. Пожалуйста, войдите заново."
 
         // Отправляем уведомление о необходимости логина

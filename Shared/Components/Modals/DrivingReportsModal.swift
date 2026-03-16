@@ -146,6 +146,8 @@ struct DrivingReportsModal: View {
                     .padding(.bottom, Spacing.l)
             }
         }
+        // ✅ ИСПРАВЛЕНИЕ: Добавляем VisualLogView на модальное окно
+        .withVisualLogger()
         .sheet(isPresented: $showPositioningSystemPicker) {
             PositioningSystemPickerView(
                 selectedSystem: Binding(
@@ -490,10 +492,14 @@ struct DrivingReportsModal: View {
                 print("⚠️ DrivingReportsModal: Список членов семьи пуст, используем 'current'")
             }
             
-            // Если список пуст после загрузки, пробуем загрузить из UserDefaults как fallback
+            // ✅ ИСПРАВЛЕНИЕ: Всегда пробуем загрузить из UserDefaults для синхронизации
+            // Это гарантирует, что локально добавленные участники семьи будут видны
+            print("🔄 DrivingReportsModal: Синхронизируем с UserDefaults...")
+            await loadUsersFromUserDefaults()
+            
+            // Если список все еще пуст после синхронизации, используем только текущего пользователя
             if users.isEmpty {
-                print("⚠️ DrivingReportsModal: Список пользователей пуст, пробуем загрузить из UserDefaults...")
-                await loadUsersFromUserDefaults()
+                print("⚠️ DrivingReportsModal: Список пользователей пуст после синхронизации")
             }
             
         } catch {
@@ -529,13 +535,17 @@ struct DrivingReportsModal: View {
     
     /// Загрузка пользователей из UserDefaults как fallback
     private func loadUsersFromUserDefaults() async {
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Синхронизируем UserDefaults перед чтением
+        UserDefaults.standard.synchronize()
+        
         let familyMembersKey = "family_members_list"
         if let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
            let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
             
             print("✅ DrivingReportsModal: Загружено \(decoded.count) членов семьи из UserDefaults")
             
-            users = decoded.map { member in
+            // ✅ ИСПРАВЛЕНИЕ: Объединяем с существующими пользователями, избегая дубликатов
+            let userDefaultsUsers: [UserSelectorView.UserOption] = decoded.map { member -> UserSelectorView.UserOption in
                 // Преобразуем FamilyRole в строку для UserOption
                 let roleString: String
                 switch member.role {
@@ -553,13 +563,22 @@ struct DrivingReportsModal: View {
                 )
             }
             
+            // Объединяем списки, избегая дубликатов по id
+            var existingIds = Set(users.map { $0.id })
+            let newUsers = userDefaultsUsers.filter { !existingIds.contains($0.id) }
+            users.append(contentsOf: newUsers)
+            
+            print("✅ DrivingReportsModal: Добавлено \(newUsers.count) новых пользователей из UserDefaults. Всего: \(users.count)")
+            
             // Устанавливаем текущего пользователя (первый родитель или первый член)
-            if let currentUser = decoded.first(where: { $0.role == .parent }) {
-                currentUserId = currentUser.id.uuidString
-                print("✅ DrivingReportsModal: Текущий пользователь из UserDefaults: \(currentUser.name)")
-            } else if let firstMember = decoded.first {
-                currentUserId = firstMember.id.uuidString
-                print("✅ DrivingReportsModal: Текущий пользователь из UserDefaults (первый): \(firstMember.name)")
+            if currentUserId == "current" || currentUserId.isEmpty {
+                if let currentUser = decoded.first(where: { $0.role == .parent }) {
+                    currentUserId = currentUser.id.uuidString
+                    print("✅ DrivingReportsModal: Текущий пользователь из UserDefaults: \(currentUser.name)")
+                } else if let firstMember = decoded.first {
+                    currentUserId = firstMember.id.uuidString
+                    print("✅ DrivingReportsModal: Текущий пользователь из UserDefaults (первый): \(firstMember.name)")
+                }
             }
         } else {
             print("⚠️ DrivingReportsModal: Нет данных в UserDefaults")

@@ -96,6 +96,8 @@ struct AICategoriesModal: View {
                     .padding(.bottom, Spacing.l)
             }
         }
+        // ✅ ИСПРАВЛЕНИЕ: Добавляем VisualLogView на модальное окно
+        .withVisualLogger()
     }
     
     // MARK: - Stats Section

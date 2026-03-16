@@ -233,9 +233,17 @@ class DarkWebMonitoringViewModel: ObservableObject {
             
             // Добавляем новые утечки в начало списка
             self.leaks = newLeaks + self.leaks
+            
+            print("✅ DarkWebMonitoringViewModel.scanSecure: Найдено \(newLeaks.count) утечек")
+            MasterLogger.shared.log(.info, category: .business, message: "✅ DarkWebMonitoringViewModel.scanSecure: Найдено \(newLeaks.count) утечек")
+            
+            // ✅ ИСПРАВЛЕНИЕ: Обновляем данные после успешного сканирования
             await loadData()
         } catch {
             let networkError = NetworkError.from(error)
+            
+            print("❌ DarkWebMonitoringViewModel.scanSecure: Ошибка сканирования: \(networkError.localizedDescription)")
+            MasterLogger.shared.log(.error, category: .business, message: "❌ DarkWebMonitoringViewModel.scanSecure: Ошибка сканирования: \(networkError.localizedDescription)")
             
             // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
             if case .unauthorized = networkError {
@@ -260,9 +268,15 @@ class DarkWebMonitoringViewModel: ObservableObject {
     }
     
     func scanFast(email: String?, phone: String?, passport: String?, snils: String?) async {
+        print("⚡ DarkWebMonitoringViewModel.scanFast: Начало быстрого сканирования")
+        MasterLogger.shared.log(.info, category: .business, message: "⚡ DarkWebMonitoringViewModel.scanFast: Начало быстрого сканирования")
+        
         isScanning = true
         errorMessage = nil
-        defer { isScanning = false }
+        defer { 
+            isScanning = false
+            print("⚡ DarkWebMonitoringViewModel.scanFast: Сканирование завершено")
+        }
         
         do {
             let response: APIResponse<[DarkWebScanResult]> = try await withCheckedThrowingContinuation { continuation in
@@ -301,6 +315,11 @@ class DarkWebMonitoringViewModel: ObservableObject {
             
             // Добавляем новые утечки в начало списка
             self.leaks = newLeaks + self.leaks
+            
+            print("✅ DarkWebMonitoringViewModel.scanFast: Найдено \(newLeaks.count) утечек")
+            MasterLogger.shared.log(.info, category: .business, message: "✅ DarkWebMonitoringViewModel.scanFast: Найдено \(newLeaks.count) утечек")
+            
+            // ✅ ИСПРАВЛЕНИЕ: Обновляем данные после успешного сканирования
             await loadData()
         } catch {
             let networkError = NetworkError.from(error)

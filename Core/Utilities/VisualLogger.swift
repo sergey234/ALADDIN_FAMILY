@@ -324,3 +324,26 @@ struct VisualLogView: View {
     }
 }
 
+// MARK: - View Modifier для добавления VisualLogView на любой экран
+
+extension View {
+    func withVisualLogger() -> some View {
+        #if DEBUG
+        return self.overlay(
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    VisualLogView()
+                        .frame(maxWidth: 280)
+                        .padding(.trailing, 16)
+                        .padding(.bottom, 120)
+                }
+            }
+            .allowsHitTesting(true)
+        )
+        #else
+        return self
+        #endif
+    }
+}

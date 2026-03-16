@@ -109,6 +109,8 @@ struct DarkWebMonitoringModal: View {
                     .padding(.bottom, Spacing.l)
             }
         }
+        // ✅ ИСПРАВЛЕНИЕ: Добавляем VisualLogView на модальное окно
+        .withVisualLogger()
         .sheet(isPresented: $showDataInput) {
             DarkWebDataInputView(isPresented: $showDataInput, viewModel: viewModel)
                 .environmentObject(localizationManager)

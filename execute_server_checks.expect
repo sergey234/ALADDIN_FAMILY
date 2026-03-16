@@ -1,0 +1,126 @@
+#!/usr/bin/expect -f
+set timeout 300
+set password "Sergio675"
+set server "root@149.154.65.180"
+
+puts "=========================================="
+puts "ЗАГРУЗКА СКРИПТОВ И ВЫПОЛНЕНИЕ ПРОВЕРОК"
+puts "=========================================="
+puts ""
+
+# Функция для загрузки файла через base64
+proc upload_file {local_file remote_path} {
+    global password server
+    puts "📤 Загрузка: [file tail $local_file]"
+    
+    set encoded [exec base64 $local_file]
+    
+    spawn ssh -o StrictHostKeyChecking=no $server "mkdir -p [file dirname $remote_path] && echo '$encoded' | base64 -d > $remote_path && chmod +x $remote_path && echo '✅ Файл загружен'"
+    
+    expect {
+        "password:" {
+            send "$password\r"
+            exp_continue
+        }
+        "yes/no" {
+            send "yes\r"
+            exp_continue
+        }
+        "✅ Файл загружен" {
+            puts "✅ Успешно загружен: [file tail $local_file]"
+        }
+        eof
+    }
+    wait
+}
+
+# Загрузить все скрипты
+upload_file "docs/server/test_sfm_execute_function.py" "/opt/aladdin-backend/docs/server/test_sfm_execute_function.py"
+upload_file "docs/server/test_security_functions_api.py" "/opt/aladdin-backend/docs/server/test_security_functions_api.py"
+upload_file "docs/server/check_42_components_registry.py" "/opt/aladdin-backend/docs/server/check_42_components_registry.py"
+
+puts ""
+puts "=========================================="
+puts "ЭТАП 5.2: Проверка регистрации компонентов"
+puts "=========================================="
+
+spawn ssh -o StrictHostKeyChecking=no $server "cd /opt/aladdin-backend && python3 docs/server/check_42_components_registry.py"
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "yes/no" {
+        send "yes\r"
+        exp_continue
+    }
+    eof
+}
+wait
+
+puts ""
+puts "=========================================="
+puts "ЭТАП 5.2: Проверка SFM.execute_function"
+puts "=========================================="
+
+spawn ssh -o StrictHostKeyChecking=no $server "cd /opt/aladdin-backend && python3 docs/server/test_sfm_execute_function.py"
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "yes/no" {
+        send "yes\r"
+        exp_continue
+    }
+    eof
+}
+wait
+
+puts ""
+puts "=========================================="
+puts "ЭТАП 6.4: Проверка соответствия тарифам"
+puts "=========================================="
+
+spawn ssh -o StrictHostKeyChecking=no $server "cd /opt/aladdin-backend && python3 -c \"
+import psycopg2
+try:
+    conn = psycopg2.connect(host='localhost', database='aladdin_db', user='postgres', password='postgres')
+    cur = conn.cursor()
+    cur.execute('SELECT tariff_type, COUNT(DISTINCT component_id) FROM component_status WHERE is_enabled = true GROUP BY tariff_type ORDER BY tariff_type')
+    results = cur.fetchall()
+    expected = {'FREE': 26, 'PERSONAL': 69, 'FAMILY': 124, 'PREMIUM': 138}
+    print('Результаты проверки тарифов:')
+    print('-' * 50)
+    for tariff_type, count in results:
+        expected_count = expected.get(tariff_type, 0)
+        status = '✅' if count == expected_count else '❌'
+        print(f'{status} {tariff_type}: {count} (ожидается: {expected_count})')
+    cur.close()
+    conn.close()
+except Exception as e:
+    print(f'❌ Ошибка: {e}')
+\""
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "yes/no" {
+        send "yes\r"
+        exp_continue
+    }
+    eof
+}
+wait
+
+puts ""
+puts "=========================================="
+puts "ВСЕ ПРОВЕРКИ ЗАВЕРШЕНЫ"
+puts "=========================================="
+puts ""
+puts "⚠️ ЭТАП 6.1-6.3 требует токен авторизации"
+puts "   Выполните вручную:"
+puts "   ssh $server"
+puts "   export AUTH_TOKEN='your_token'"
+puts "   python3 /opt/aladdin-backend/docs/server/test_security_functions_api.py"

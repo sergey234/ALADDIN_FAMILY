@@ -119,6 +119,15 @@ class DrivingReportsViewModel: ObservableObject {
                 self.stats = nil
                 self.reports = []
                 // ✅ Отправляем SessionExpired только при реальных 401 ошибках от API
+                // ✅ BUILD 121: Логирование отправки SessionExpired
+                #if DEBUG
+                let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
+                print("📤 DrivingReportsViewModel: Отправка SessionExpired notification")
+                print("   - Call stack:")
+                print(stackTrace)
+                VisualLogger.shared.log("📤 DrivingReportsViewModel: Отправка SessionExpired", level: .warning, category: "SESSION")
+                MasterLogger.shared.log(.warn, category: .business, message: "📤 DrivingReportsViewModel: Sending SessionExpired notification")
+                #endif
                 NotificationCenter.default.post(
                     name: NSNotification.Name("SessionExpired"),
                     object: nil,

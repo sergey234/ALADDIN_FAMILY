@@ -98,6 +98,20 @@ class KeychainManager {
     }
     
     func delete(forKey key: Key) {
+        // ✅ BUILD 121: Детальное логирование всех удалений из Keychain
+        #if DEBUG
+        let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
+        let logMessage = """
+        🗑️ KeychainManager.delete(forKey: \(key.rawValue))
+           - Time: \(Date())
+           - Call stack:
+        \(stackTrace)
+        """
+        VisualLogger.shared.log(logMessage, level: .warning, category: "KEYCHAIN")
+        MasterLogger.shared.log(.warn, category: .security, message: "🗑️ KeychainManager.delete(forKey: \(key.rawValue))")
+        print(logMessage)
+        #endif
+        
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -107,7 +121,18 @@ class KeychainManager {
         let status = SecItemDelete(query as CFDictionary)
         
         if status != errSecSuccess && status != errSecItemNotFound {
-            print("❌ KeychainManager: Failed to delete data for key \(key.rawValue). Status: \(status)")
+            let errorMessage = "❌ KeychainManager: Failed to delete data for key \(key.rawValue). Status: \(status)"
+            print(errorMessage)
+            #if DEBUG
+            VisualLogger.shared.log(errorMessage, level: .error, category: "KEYCHAIN")
+            MasterLogger.shared.log(.error, category: .security, message: errorMessage)
+            #endif
+        } else {
+            #if DEBUG
+            let successMessage = "✅ KeychainManager: Successfully deleted data for key \(key.rawValue)"
+            VisualLogger.shared.log(successMessage, level: .success, category: "KEYCHAIN")
+            MasterLogger.shared.log(.info, category: .security, message: successMessage)
+            #endif
         }
     }
     
@@ -154,23 +179,75 @@ class KeychainManager {
 
 #if DEBUG
 /// 🛠️ Сервис для автоматического восстановления токенов в Keychain.
+/// ВАЖНО: НИКОГДА не должен удалять валидные токены.
 enum KeychainAutoRecoveryService {
     
-    /// Проверяет токены и удаляет их, если данные повреждены.
+    /// ✅ BUILD 121: Исправлено — аккуратно проверяет токены и удаляет ИСКЛЮЧИТЕЛЬНО повреждённые данные.
+    ///
+    /// Форматы хранения:
+    /// - authToken: raw JWT String (`save(_ string:forKey:)`)
+    /// - refreshToken: raw String
+    ///
+    /// Логика:
+    /// 1. Для authToken:
+    ///    - пробуем прочитать как raw String через `String(data:encoding:)`
+    ///    - (опционально) пробуем декодировать как JWTToken, если когда‑то менялся формат
+    ///    - удаляем ТОЛЬКО если не удаётся прочитать ни как строку, ни как JWTToken
+    /// 2. Для refreshToken:
+    ///    - пробуем прочитать как raw String
+    ///    - удаляем ТОЛЬКО если строку прочитать нельзя
     static func repairTokensIfNeeded() {
         let keychain = KeychainManager.shared
         
-        if let data = keychain.loadData(forKey: .authToken),
-           (try? JSONDecoder().decode(String.self, from: data)) == nil {
-            keychain.delete(forKey: .authToken)
-            AppConfig.authToken = nil
-            print("⚠️ KeychainAutoRecoveryService: удалён повреждённый auth_token")
+        // ✅ BUILD 121: Проверяем auth_token (основной JWT)
+        if let data = keychain.loadData(forKey: .authToken) {
+            // Попытка прочитать как raw String (фактический формат хранения сейчас)
+            let rawString = String(data: data, encoding: .utf8)
+            
+            // Дополнительная защита: если когда‑то authToken сохранялся как JSON JWTToken
+            var canDecodeAsJWTToken = false
+            if rawString == nil {
+                // Если как строку прочитать нельзя — пробуем как JWTToken
+                if let jwt = try? JSONDecoder().decode(JWTToken.self, from: data) {
+                    canDecodeAsJWTToken = true
+                    #if DEBUG
+                    print("✅ KeychainAutoRecoveryService: auth_token успешно декодирован как JWTToken (fallback)")
+                    print("   - deviceId: \(jwt.deviceId)")
+                    print("   - subscriptionLevel: \(jwt.subscriptionLevel)")
+                    #endif
+                }
+            }
+            
+            let isValidRawString = (rawString != nil)
+            let isValidJWTToken  = canDecodeAsJWTToken
+            
+            if !isValidRawString && !isValidJWTToken {
+                // ❌ Данные действительно повреждены — удалить безопасно
+                print("⚠️ KeychainAutoRecoveryService: удалён повреждённый auth_token (нельзя прочитать ни как String, ни как JWTToken)")
+                keychain.delete(forKey: .authToken)
+                // AppConfig.authToken читает из Keychain, поэтому достаточно удалить запись;
+                // но для надёжности очищаем и кэш в UserDefaults.
+                AppConfig.authToken = nil
+            } else {
+                #if DEBUG
+                let format = isValidRawString ? "raw String" : "JWTToken"
+                print("✅ KeychainAutoRecoveryService: auth_token валиден (формат: \(format)) — НЕ удаляем")
+                #endif
+            }
         }
         
-        if let data = keychain.loadData(forKey: .refreshToken),
-           (try? JSONDecoder().decode(String.self, from: data)) == nil {
-            keychain.delete(forKey: .refreshToken)
-            print("⚠️ KeychainAutoRecoveryService: удалён повреждённый refresh_token")
+        // ✅ BUILD 121: Проверяем refresh_token (всегда raw String)
+        if let data = keychain.loadData(forKey: .refreshToken) {
+            let rawString = String(data: data, encoding: .utf8)
+            
+            if rawString == nil {
+                print("⚠️ KeychainAutoRecoveryService: удалён повреждённый refresh_token (нельзя прочитать как String)")
+                keychain.delete(forKey: .refreshToken)
+            } else {
+                #if DEBUG
+                print("✅ KeychainAutoRecoveryService: refresh_token валиден — НЕ удаляем")
+                #endif
+            }
         }
     }
 }

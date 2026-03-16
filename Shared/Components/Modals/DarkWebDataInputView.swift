@@ -162,6 +162,8 @@ struct DarkWebDataInputView: View {
                         .padding(.bottom, Spacing.l)
                 }
             }
+            // ✅ ИСПРАВЛЕНИЕ: Добавляем VisualLogView на модальное окно
+            .withVisualLogger()
         }
     }
     
@@ -208,8 +210,14 @@ struct DarkWebDataInputView: View {
     }
     
     private func startScan() async {
+        print("🔍 DarkWebDataInputView: Начало сканирования, метод: \(selectedMethod == .secure ? "secure" : "fast")")
+        MasterLogger.shared.log(.info, category: .business, message: "🔍 DarkWebDataInputView: Начало сканирования")
+        
         isScanning = true
-        defer { isScanning = false }
+        defer { 
+            isScanning = false
+            print("🔍 DarkWebDataInputView: Сканирование завершено")
+        }
         
         // Сохраняем данные для сканирования
         let scanEmail = email.isEmpty ? nil : email
@@ -218,23 +226,30 @@ struct DarkWebDataInputView: View {
         let scanPassport = passport.isEmpty ? nil : passport
         let scanSnils = snils.isEmpty ? nil : snils
         
-        // Очистка данных после сканирования
-        defer {
-            email = ""
-            password = ""
-            phone = ""
-            passport = ""
-            snils = ""
+        // ✅ ИСПРАВЛЕНИЕ: Проверяем наличие данных перед сканированием
+        let hasData = scanEmail != nil || scanPassword != nil || scanPhone != nil || scanPassport != nil || scanSnils != nil
+        guard hasData else {
+            print("❌ DarkWebDataInputView: Нет данных для сканирования")
+            MasterLogger.shared.log(.error, category: .business, message: "❌ DarkWebDataInputView: Нет данных для сканирования")
+            viewModel.errorMessage = localizationManager.localized("dark_web_scan_error_no_data")
+            return
         }
         
+        print("✅ DarkWebDataInputView: Данные для сканирования: email=\(scanEmail != nil ? "есть" : "нет"), password=\(scanPassword != nil ? "есть" : "нет"), phone=\(scanPhone != nil ? "есть" : "нет")")
+        
+        do {
             if selectedMethod == .secure {
                 // Безопасное сканирование (хеши)
+                print("🔐 DarkWebDataInputView: Запуск безопасного сканирования")
+                MasterLogger.shared.log(.info, category: .business, message: "🔐 DarkWebDataInputView: Запуск безопасного сканирования")
                 await viewModel.scanSecure(
                     email: scanEmail,
                     password: scanPassword
                 )
             } else {
                 // Быстрое сканирование (plaintext)
+                print("⚡ DarkWebDataInputView: Запуск быстрого сканирования")
+                MasterLogger.shared.log(.info, category: .business, message: "⚡ DarkWebDataInputView: Запуск быстрого сканирования")
                 await viewModel.scanFast(
                     email: scanEmail,
                     phone: scanPhone,
@@ -243,8 +258,33 @@ struct DarkWebDataInputView: View {
                 )
             }
             
-            // Показываем результаты (обновляем модальное окно)
-            isPresented = false
+            // ✅ ИСПРАВЛЕНИЕ: Проверяем наличие ошибок перед закрытием модального окна
+            if viewModel.errorMessage == nil {
+                print("✅ DarkWebDataInputView: Сканирование успешно завершено")
+                MasterLogger.shared.log(.info, category: .business, message: "✅ DarkWebDataInputView: Сканирование успешно завершено")
+                
+                // Очистка данных после успешного сканирования
+                email = ""
+                password = ""
+                phone = ""
+                passport = ""
+                snils = ""
+                
+                // Обновляем данные в ViewModel
+                await viewModel.loadData()
+                
+                // Показываем результаты (обновляем модальное окно)
+                isPresented = false
+            } else {
+                print("⚠️ DarkWebDataInputView: Сканирование завершено с ошибкой: \(viewModel.errorMessage ?? "неизвестная ошибка")")
+                MasterLogger.shared.log(.warn, category: .business, message: "⚠️ DarkWebDataInputView: Сканирование завершено с ошибкой: \(viewModel.errorMessage ?? "неизвестная ошибка")")
+                // Не закрываем модальное окно при ошибке - пользователь должен видеть ошибку
+            }
+        } catch {
+            print("❌ DarkWebDataInputView: Критическая ошибка сканирования: \(error.localizedDescription)")
+            MasterLogger.shared.log(.error, category: .business, message: "❌ DarkWebDataInputView: Критическая ошибка сканирования: \(error.localizedDescription)")
+            viewModel.errorMessage = localizationManager.localized("dark_web_scan_error_no_data")
+        }
     }
     
     private func errorBanner(message: String) -> some View {

@@ -1,0 +1,14 @@
+=== НАЧАЛО ДЕПЛОЯ auth.py Mon Mar 16 17:54:28 +04 2026 ===
+🔍 Шаг 0: Проверка связи с сервером...
+PING 149.154.65.180 (149.154.65.180): 56 data bytes
+64 bytes from 149.154.65.180: icmp_seq=0 ttl=57 time=20.708 ms
+
+--- 149.154.65.180 ping statistics ---
+1 packets transmitted, 1 packets received, 0.0% packet loss
+round-trip min/avg/max/stddev = 20.708/20.708/20.708/0.000 ms
+✅ Сервер доступен
+📤 Шаг 1: Загрузка auth.py...
+Permission denied, please try again.
+Permission denied, please try again.
+root@149.154.65.180: Permission denied (publickey,password).
+lost connection

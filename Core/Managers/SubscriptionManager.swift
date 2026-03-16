@@ -286,10 +286,37 @@ final class SubscriptionManager: ObservableObject {
             // Log failed registration
             JWTEventLogger.logDeviceRegistration(success: false, error: error.localizedDescription, deviceId: "unknown")
 
-            // DEFENSIVE: Переходим в offline режим при неудаче
-            logger.business("🔄 DEFENSIVE JWT: FALLBACK - переходим в offline режим")
-            isOfflineMode = true
-            JWTEventLogger.logOfflineMode(reason: "Device registration failed", willRetry: true)
+            // ✅ ИСПРАВЛЕНИЕ BUILD 121: Различаем типы ошибок
+            // 422 (Validation Error) - это ошибка формата данных, НЕ сетевая ошибка
+            // Не переходим в offline режим для ошибок валидации
+            if let networkError = error as? NetworkError {
+                switch networkError {
+                case .httpError(422):
+                    // Ошибка валидации данных - это проблема формата, не сети
+                    logger.error("❌ DEFENSIVE JWT: Ошибка валидации данных (422) - проверьте формат запроса")
+                    logger.error("❌ DEFENSIVE JWT: НЕ переходим в offline режим для ошибки валидации")
+                    // НЕ переходим в offline режим!
+                    return
+                case .httpError(let code) where code >= 500:
+                    // Серверные ошибки - возможно временные, переходим в offline
+                    logger.business("🔄 DEFENSIVE JWT: Серверная ошибка \(code) - переходим в offline режим")
+                    isOfflineMode = true
+                    JWTEventLogger.logOfflineMode(reason: "Server error \(code)", willRetry: true)
+                case .noConnection, .timeout, .serverUnavailable:
+                    // Сетевые ошибки - переходим в offline
+                    logger.business("🔄 DEFENSIVE JWT: Сетевая ошибка - переходим в offline режим")
+                    isOfflineMode = true
+                    JWTEventLogger.logOfflineMode(reason: "Network error: \(networkError.localizedDescription)", willRetry: true)
+                default:
+                    // Другие ошибки - не переходим в offline для клиентских ошибок (4xx)
+                    logger.business("⚠️ DEFENSIVE JWT: Клиентская ошибка - НЕ переходим в offline режим")
+                }
+            } else {
+                // Неизвестная ошибка - переходим в offline только если это точно сетевая проблема
+                logger.business("🔄 DEFENSIVE JWT: Неизвестная ошибка - переходим в offline режим")
+                isOfflineMode = true
+                JWTEventLogger.logOfflineMode(reason: "Unknown error: \(error.localizedDescription)", willRetry: true)
+            }
         }
     }
 
@@ -743,13 +770,42 @@ final class SubscriptionManager: ObservableObject {
         // ✅ FIXED BUILD 77: Сохранение токена ПОСЛЕ получения ответа (последовательно, не внутри Task {})
         logger.business("💾 СОХРАНЕНИЕ ТОКЕНА В ЗАЩИЩЕННОЕ ХРАНИЛИЩЕ")
 
+        // ✅ BUILD 121: Извлекаем реальный exp из JWT для диагностики
+        let realExpFromJWT: Date?
+        if let parsedToken = parseJWTToken(response.token) {
+            realExpFromJWT = parsedToken.expiresAt
+            logger.business("🔍 BUILD 121: Реальный exp из JWT payload:")
+            logger.business("   - expiresAt из JWT: \(realExpFromJWT?.description ?? "nil")")
+            logger.business("   - expiresAt из response: \(response.expiresAtDate?.description ?? "nil")")
+            if let jwtExp = realExpFromJWT, let responseExp = response.expiresAtDate {
+                let difference = abs(jwtExp.timeIntervalSince(responseExp))
+                logger.business("   - Разница: \(Int(difference)) секунд (\(Int(difference / 3600)) часов)")
+                if difference > 60 {
+                    logger.business("   - ⚠️ ВНИМАНИЕ: Разница между JWT exp и response.expiresAt > 1 минуты!")
+                }
+            }
+        } else {
+            realExpFromJWT = nil
+            logger.business("⚠️ BUILD 121: Не удалось распарсить JWT для извлечения exp")
+        }
+
         // ✅ FIXED: Create JWTToken from JWTDeviceRegisterResponse with proper conversions
+        // ✅ BUILD 121: Используем реальный exp из JWT, если удалось распарсить
+        let finalExpiresAt: Date
+        if let jwtExp = realExpFromJWT {
+            finalExpiresAt = jwtExp
+            logger.business("✅ BUILD 121: Используем реальный exp из JWT: \(finalExpiresAt)")
+        } else {
+            finalExpiresAt = response.expiresAtDate ?? Date().addingTimeInterval(86400)
+            logger.business("⚠️ BUILD 121: Используем expiresAt из response или дефолт: \(finalExpiresAt)")
+        }
+        
         let jwtToken = JWTToken(
             token: response.token,
             deviceId: response.deviceId,
             subscriptionLevel: SubscriptionLevel(rawValue: response.subscription.level) ?? .free, // ✅ Convert String to enum
             trialInfo: response.subscription.trialInfo,
-            expiresAt: response.expiresAtDate ?? Date().addingTimeInterval(86400), // Default to 24h if parsing fails
+            expiresAt: finalExpiresAt, // ✅ BUILD 121: Используем реальный exp из JWT
             issuedAt: response.registeredAtDate ?? Date(),
             issuer: "ALADDIN",
             limits: SubscriptionLimits.freeLimits,      // ✅ Default limits for new user
@@ -1594,33 +1650,66 @@ extension SubscriptionManager {
            let payloadString = String(data: payloadData, encoding: .utf8) {
             logger.business("📋 JWT Payload (первые 200 символов): \(payloadString.prefix(200))")
 
-            // Проверка обязательных полей (согласно реальной структуре JWT от сервера)
-            let requiredFields = ["sub", "subscription_level", "exp", "iat"]
-            for field in requiredFields {
+            // ✅ BUILD 121: Проверка обязательных полей (согласно реальной структуре JWT от сервера)
+            // Сервер отправляет: {"sub":"anonymous","device_id":"...","subscription":{"level":"free",...},"exp":...,"iat":...}
+            // НЕТ поля subscription_level на верхнем уровне - оно внутри subscription.level
+            
+            // Проверка обязательных полей верхнего уровня
+            let requiredTopLevelFields = ["sub", "exp", "iat"]
+            for field in requiredTopLevelFields {
                 if !payloadString.contains("\"\(field)\"") {
                     logger.error("❌ JWT payload не содержит обязательное поле: \(field)")
                     return .invalid("Отсутствует обязательное поле: \(field)")
                 }
             }
 
-            // Дополнительная проверка: deviceId должен быть в поле "sub"
-            if !payloadString.contains("\"sub\":") {
-                logger.error("❌ JWT payload не содержит deviceId в поле 'sub'")
-                return .invalid("Отсутствует deviceId в поле sub")
+            // ✅ BUILD 121: Проверка subscription объекта (вложенная структура)
+            if !payloadString.contains("\"subscription\"") {
+                logger.error("❌ JWT payload не содержит объект 'subscription'")
+                return .invalid("Отсутствует объект subscription")
+            }
+            
+            // Проверка subscription.level внутри subscription объекта
+            if !payloadString.contains("\"subscription\":{") || !payloadString.contains("\"level\"") {
+                logger.error("❌ JWT payload не содержит subscription.level")
+                return .invalid("Отсутствует subscription.level")
             }
 
-            // Проверка срока действия
+            // Дополнительная проверка: deviceId должен быть в поле "sub" или "device_id"
+            if !payloadString.contains("\"sub\":") && !payloadString.contains("\"device_id\"") {
+                logger.error("❌ JWT payload не содержит deviceId в поле 'sub' или 'device_id'")
+                return .invalid("Отсутствует deviceId")
+            }
+
+            // ✅ BUILD 121: Проверка срока действия с детальным логированием
             if let expTimestamp = extractTimestamp(from: payloadString, field: "exp") {
                 let expirationDate = Date(timeIntervalSince1970: TimeInterval(expTimestamp))
                 let now = Date()
+                
+                // ✅ BUILD 121: Детальное логирование для диагностики
+                logger.business("🔍 DEFENSIVE JWT: Детальная проверка exp:")
+                logger.business("   - exp timestamp: \(expTimestamp)")
+                logger.business("   - expirationDate: \(expirationDate)")
+                logger.business("   - currentDate: \(now)")
+                logger.business("   - timeDifference: \(expirationDate.timeIntervalSince(now)) секунд")
+                logger.business("   - timeDifference: \(Int(expirationDate.timeIntervalSince(now) / 3600)) часов")
 
                 if expirationDate <= now {
                     logger.error("❌ Токен уже истек: \(expirationDate)")
+                    logger.error("   - Истёк \(Int(abs(expirationDate.timeIntervalSince(now) / 3600))) часов назад")
                     return .invalid("Токен истек")
                 }
 
                 let hoursUntilExpiration = Int(expirationDate.timeIntervalSince(now) / 3600)
-                logger.business("⏰ Токен истекает через \(hoursUntilExpiration) часов")
+                let minutesUntilExpiration = Int((expirationDate.timeIntervalSince(now).truncatingRemainder(dividingBy: 3600)) / 60)
+                logger.business("⏰ Токен истекает через \(hoursUntilExpiration) часов \(minutesUntilExpiration) минут")
+                
+                // ✅ BUILD 121: Предупреждение если токен истекает скоро (менее 1 часа)
+                if hoursUntilExpiration < 1 {
+                    logger.business("⚠️ DEFENSIVE JWT: Токен истекает очень скоро (\(minutesUntilExpiration) минут) - требуется обновление")
+                }
+            } else {
+                logger.business("⚠️ DEFENSIVE JWT: Не удалось извлечь exp из JWT payload")
             }
         }
 

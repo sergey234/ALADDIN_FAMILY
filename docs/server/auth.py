@@ -66,16 +66,18 @@ def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Проверяем что в payload есть user_id
-    if "user_id" not in payload and "id" not in payload:
+    # ✅ BUILD 121: Проверяем что в payload есть user_id, id или sub (для device tokens)
+    # Device tokens используют "sub" (subject), а user tokens используют "user_id" или "id"
+    if "user_id" not in payload and "id" not in payload and "sub" not in payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Токен не содержит user_id",
+            detail="Токен не содержит user_id, id или sub",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Нормализуем user_id (может быть "user_id" или "id")
-    user_id = payload.get("user_id") or payload.get("id")
+    # ✅ BUILD 121: Нормализуем user_id (может быть "user_id", "id" или "sub")
+    # Приоритет: user_id > id > sub (для обратной совместимости)
+    user_id = payload.get("user_id") or payload.get("id") or payload.get("sub")
     
     return {
         "id": user_id,

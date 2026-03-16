@@ -51,6 +51,22 @@ extension FamilyRole {
     init?(storageValue: String) {
         self.init(rawValue: storageValue.lowercased())
     }
+    
+    /// ✅ ИСПРАВЛЕНИЕ ПОДРОСТКА: Маппинг роли для отправки на сервер
+    /// Сервер принимает только: "parent", "child", "elderly", "other"
+    /// Подросток отправляется как "child" + age_group="13-17"
+    var serverValue: String {
+        switch self {
+        case .parent:
+            return "parent"
+        case .child:
+            return "child"
+        case .teenager:
+            return "child"  // ✅ Подросток → child для сервера
+        case .elderly:
+            return "elderly"
+        }
+    }
 }
 
 enum AgeGroup: String, Codable, CaseIterable, Identifiable {
@@ -227,6 +243,8 @@ class FamilyRegistrationViewModel: ObservableObject {
         print("🔍 onRoleSelected: role=\(role.rawValue)")
         if role == .teenager {
             print("✅ Выбрана роль Подросток (.teenager)")
+            VisualLogger.shared.log("✅ ПОДРОСТОК: Выбрана роль .teenager", level: .success, category: "FAMILY")
+            MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: Выбрана роль .teenager")
         }
         
         // ✅ ИСПРАВЛЕНО: Убрана искусственная задержка, переход происходит сразу
@@ -247,6 +265,8 @@ class FamilyRegistrationViewModel: ObservableObject {
             print("   - Текущая роль: \(role.rawValue)")
             if role == .teenager && ageGroup == .teen {
                 print("✅ Комбинация: роль .teenager + возрастная группа .teen")
+                VisualLogger.shared.log("✅ ПОДРОСТОК: Комбинация role=.teenager + ageGroup=.teen", level: .success, category: "FAMILY")
+                MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: Комбинация role=.teenager + ageGroup=.teen")
             }
         }
         
@@ -283,10 +303,36 @@ class FamilyRegistrationViewModel: ObservableObject {
     
     func createFamily() {
         logger.business("Creating family with role: \(selectedRole?.rawValue ?? "none")")
+        
+        // ✅ ИСПРАВЛЕНИЕ ПОДРОСТКА: Детальное логирование
+        if let role = selectedRole, role == .teenager {
+            VisualLogger.shared.log("🔍 ПОДРОСТОК: createFamily() вызван", level: .info, category: "FAMILY")
+            MasterLogger.shared.log(.info, category: .business, message: "🔍 ПОДРОСТОК: createFamily() вызван")
+        }
+        
         guard let role = selectedRole,
               let ageGroup = selectedAgeGroup,
               let letter = selectedLetter else {
+            // ✅ ИСПРАВЛЕНИЕ ПОДРОСТКА: Логирование если данные отсутствуют
+            if selectedRole == nil {
+                VisualLogger.shared.log("❌ ПОДРОСТОК: selectedRole = nil!", level: .error, category: "FAMILY")
+                MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК: selectedRole = nil!")
+            }
+            if selectedAgeGroup == nil {
+                VisualLogger.shared.log("❌ ПОДРОСТОК: selectedAgeGroup = nil!", level: .error, category: "FAMILY")
+                MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК: selectedAgeGroup = nil!")
+            }
+            if selectedLetter == nil {
+                VisualLogger.shared.log("❌ ПОДРОСТОК: selectedLetter = nil!", level: .error, category: "FAMILY")
+                MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК: selectedLetter = nil!")
+            }
             return
+        }
+        
+        // ✅ ИСПРАВЛЕНИЕ ПОДРОСТКА: Логирование перед созданием
+        if role == .teenager {
+            VisualLogger.shared.log("✅ ПОДРОСТОК: Данные готовы - role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), letter=\(letter)", level: .success, category: "FAMILY")
+            MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: Данные готовы - role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), letter=\(letter)")
         }
         
         // ✅ СОХРАНЯЕМ РОЛЬ ПОЛЬЗОВАТЕЛЯ
@@ -300,16 +346,17 @@ class FamilyRegistrationViewModel: ObservableObject {
         isLoading = true
         
         // API request
-        // ✅ ИСПРАВЛЕНО: Используем serverValue вместо rawValue для возрастной группы
+        // ✅ ИСПРАВЛЕНО: Используем serverValue для роли и возрастной группы
         let request = CreateFamilyRequest(
-            role: role.rawValue,
+            role: role.serverValue,  // ✅ ИСПРАВЛЕНО: Подросток → "child" для сервера
             age_group: ageGroup.serverValue,  // ✅ Преобразуем в формат сервера
             personal_letter: letter,
             device_type: getDeviceType()
         )
 
         logger.business("========== CREATING FAMILY ==========")
-        logger.business("Role: \(role.rawValue)")
+        logger.business("Role (client): \(role.rawValue)")
+        logger.business("Role (server): \(role.serverValue)")  // ✅ ИСПРАВЛЕНО: Логируем serverValue
         logger.business("Age group (client): \(ageGroup.rawValue)")
         logger.business("Age group (server): \(ageGroup.serverValue)")
         logger.business("Personal letter length: \(letter.count) characters")
@@ -404,11 +451,23 @@ class FamilyRegistrationViewModel: ObservableObject {
 
                 case .failure(let error):
                     logger.error("Family creation failed", error: error)
+                    
+                    // ✅ ИСПРАВЛЕНИЕ ПОДРОСТКА: Детальное логирование ошибки
+                    if let role = self?.selectedRole, role == .teenager {
+                        VisualLogger.shared.log("❌ ПОДРОСТОК: Ошибка создания семьи - \(error.localizedDescription)", level: .error, category: "FAMILY")
+                        MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК: Ошибка создания семьи - \(error.localizedDescription)")
+                    }
+                    
                     if let decodingError = error as? DecodingError {
                         logger.error("Decoding error details: \(decodingError.localizedDescription)")
+                        if let role = self?.selectedRole, role == .teenager {
+                            VisualLogger.shared.log("❌ ПОДРОСТОК: Decoding error - \(decodingError.localizedDescription)", level: .error, category: "FAMILY")
+                        }
                     }
+                    
                     self?.errorMessage = error.localizedDescription
                     self?.isLoading = false
+                    self?.currentStep = .idle  // ✅ ИСПРАВЛЕНИЕ: Возвращаемся в idle при ошибке
                 }
             }
         }
@@ -623,7 +682,7 @@ class FamilyRegistrationViewModel: ObservableObject {
         
         let request = JoinFamilyRequest(
             family_id: familyId,
-            role: role.rawValue,
+            role: role.serverValue,  // ✅ ИСПРАВЛЕНО: Подросток → "child" для сервера
             age_group: ageGroup.serverValue,  // ✅ ИСПРАВЛЕНО: Используем serverValue
             personal_letter: letter,
             device_type: getDeviceType()
@@ -824,6 +883,19 @@ class FamilyRegistrationViewModel: ObservableObject {
         }
         
         print("🔍 saveCreatorAsFamilyMember: cardRole=\(cardRole)")
+        VisualLogger.shared.log("🔍 saveCreatorAsFamilyMember: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)", level: .info, category: "FAMILY")
+        
+        // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА ДЛЯ ПОДРОСТКА
+        if role == .teenager {
+            print("✅ ПОДРОСТОК: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)")
+            VisualLogger.shared.log("✅ ПОДРОСТОК: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)", level: .success, category: "FAMILY")
+            MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)")
+            if cardRole != .teenager {
+                print("❌ КРИТИЧЕСКАЯ ОШИБКА: cardRole не соответствует .teenager!")
+                VisualLogger.shared.log("❌ КРИТИЧЕСКАЯ ОШИБКА: cardRole не соответствует .teenager!", level: .error, category: "FAMILY")
+                MasterLogger.shared.log(.error, category: .business, message: "❌ КРИТИЧЕСКАЯ ОШИБКА: cardRole не соответствует .teenager!")
+            }
+        }
         
         // Получаем аватар для роли
         let avatar: String
@@ -840,11 +912,19 @@ class FamilyRegistrationViewModel: ObservableObject {
            let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
             existingMembers = decoded
             print("✅ Загружено \(existingMembers.count) существующих участников")
+            VisualLogger.shared.log("✅ Загружено \(existingMembers.count) существующих участников из UserDefaults", level: .info, category: "FAMILY")
+        } else {
+            VisualLogger.shared.log("⚠️ Не удалось загрузить существующих участников из UserDefaults", level: .warning, category: "FAMILY")
         }
         
         // Проверяем, нет ли уже такого участника (по имени и роли)
         let isDuplicate = existingMembers.contains { existingMember in
             existingMember.name == userName && existingMember.role == cardRole
+        }
+        
+        if role == .teenager {
+            VisualLogger.shared.log("🔍 ПОДРОСТОК: Проверка дубликатов - userName=\(userName), cardRole=\(cardRole), isDuplicate=\(isDuplicate)", level: .info, category: "FAMILY")
+            MasterLogger.shared.log(.info, category: .business, message: "🔍 ПОДРОСТОК: Проверка дубликатов - userName=\(userName), cardRole=\(cardRole), isDuplicate=\(isDuplicate)")
         }
         
         if !isDuplicate {
@@ -859,6 +939,11 @@ class FamilyRegistrationViewModel: ObservableObject {
             )
             existingMembers.append(newMember)
             
+            if role == .teenager {
+                VisualLogger.shared.log("✅ ПОДРОСТОК: Новый участник создан - name=\(userName), role=\(cardRole.rawValue)", level: .success, category: "FAMILY")
+                MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: Новый участник создан - name=\(userName), role=\(cardRole.rawValue)")
+            }
+            
             // Сохраняем обновленный список
             if let encoded = try? JSONEncoder().encode(existingMembers) {
                 UserDefaults.standard.set(encoded, forKey: "family_members_list")
@@ -866,14 +951,44 @@ class FamilyRegistrationViewModel: ObservableObject {
                 UserDefaults.standard.synchronize()
                 print("✅ Создатель семьи добавлен к списку участников: \(userName) (\(cardRole)). Всего участников: \(existingMembers.count)")
                 
+                if role == .teenager {
+                    VisualLogger.shared.log("✅ ПОДРОСТОК: Сохранено в UserDefaults - всего участников: \(existingMembers.count)", level: .success, category: "FAMILY")
+                    MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: Сохранено в UserDefaults - всего участников: \(existingMembers.count)")
+                    
+                    // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Проверяем что подросток действительно сохранен
+                    if let verifyData = UserDefaults.standard.data(forKey: "family_members_list"),
+                       let verifyDecoded = try? JSONDecoder().decode([FamilyMemberData].self, from: verifyData) {
+                        let teenagerFound = verifyDecoded.contains { $0.role == .teenager && $0.name == userName }
+                        if teenagerFound {
+                            VisualLogger.shared.log("✅ ПОДРОСТОК: Подтверждено сохранение в UserDefaults!", level: .success, category: "FAMILY")
+                            MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: Подтверждено сохранение в UserDefaults!")
+                        } else {
+                            VisualLogger.shared.log("❌ ПОДРОСТОК: ОШИБКА - подросток НЕ найден после сохранения!", level: .error, category: "FAMILY")
+                            MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК: ОШИБКА - подросток НЕ найден после сохранения!")
+                        }
+                    }
+                }
+                
                 // Уведомляем другие экраны об изменении
                 NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
                 NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+                
+                if role == .teenager {
+                    VisualLogger.shared.log("✅ ПОДРОСТОК: Отправлены уведомления об обновлении", level: .success, category: "FAMILY")
+                }
             } else {
                 print("❌ Ошибка кодирования списка участников")
+                if role == .teenager {
+                    VisualLogger.shared.log("❌ ПОДРОСТОК: ОШИБКА кодирования списка участников!", level: .error, category: "FAMILY")
+                    MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК: ОШИБКА кодирования списка участников!")
+                }
             }
         } else {
             print("⚠️ Участник уже существует: \(userName) (\(cardRole)), не добавляем дубликат")
+            if role == .teenager {
+                VisualLogger.shared.log("⚠️ ПОДРОСТОК: Участник уже существует (дубликат)", level: .warning, category: "FAMILY")
+                MasterLogger.shared.log(.warn, category: .business, message: "⚠️ ПОДРОСТОК: Участник уже существует (дубликат)")
+            }
         }
     }
     
@@ -904,6 +1019,19 @@ class FamilyRegistrationViewModel: ObservableObject {
         }
         
         print("🔍 saveJoinedMemberAsFamilyMember: cardRole=\(cardRole)")
+        VisualLogger.shared.log("🔍 saveJoinedMemberAsFamilyMember: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)", level: .info, category: "FAMILY")
+        
+        // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА ДЛЯ ПОДРОСТКА
+        if role == .teenager {
+            print("✅ ПОДРОСТОК: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)")
+            VisualLogger.shared.log("✅ ПОДРОСТОК (JOINED): role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)", level: .success, category: "FAMILY")
+            MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК (JOINED): role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)")
+            if cardRole != .teenager {
+                print("❌ КРИТИЧЕСКАЯ ОШИБКА: cardRole не соответствует .teenager!")
+                VisualLogger.shared.log("❌ КРИТИЧЕСКАЯ ОШИБКА (JOINED): cardRole не соответствует .teenager!", level: .error, category: "FAMILY")
+                MasterLogger.shared.log(.error, category: .business, message: "❌ КРИТИЧЕСКАЯ ОШИБКА (JOINED): cardRole не соответствует .teenager!")
+            }
+        }
         
         // Получаем аватар для роли
         let avatar: String
@@ -920,11 +1048,19 @@ class FamilyRegistrationViewModel: ObservableObject {
            let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
             existingMembers = decoded
             print("✅ Загружено \(existingMembers.count) существующих участников")
+            VisualLogger.shared.log("✅ (JOINED) Загружено \(existingMembers.count) существующих участников из UserDefaults", level: .info, category: "FAMILY")
+        } else {
+            VisualLogger.shared.log("⚠️ (JOINED) Не удалось загрузить существующих участников из UserDefaults", level: .warning, category: "FAMILY")
         }
         
         // Проверяем, нет ли уже такого участника (по имени и роли)
         let isDuplicate = existingMembers.contains { existingMember in
             existingMember.name == userName && existingMember.role == cardRole
+        }
+        
+        if role == .teenager {
+            VisualLogger.shared.log("🔍 ПОДРОСТОК (JOINED): Проверка дубликатов - userName=\(userName), cardRole=\(cardRole), isDuplicate=\(isDuplicate)", level: .info, category: "FAMILY")
+            MasterLogger.shared.log(.info, category: .business, message: "🔍 ПОДРОСТОК (JOINED): Проверка дубликатов - userName=\(userName), cardRole=\(cardRole), isDuplicate=\(isDuplicate)")
         }
         
         if !isDuplicate {
@@ -939,6 +1075,11 @@ class FamilyRegistrationViewModel: ObservableObject {
             )
             existingMembers.append(newMember)
             
+            if role == .teenager {
+                VisualLogger.shared.log("✅ ПОДРОСТОК (JOINED): Новый участник создан - name=\(userName), role=\(cardRole.rawValue)", level: .success, category: "FAMILY")
+                MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК (JOINED): Новый участник создан - name=\(userName), role=\(cardRole.rawValue)")
+            }
+            
             // Сохраняем обновленный список
             if let encoded = try? JSONEncoder().encode(existingMembers) {
                 UserDefaults.standard.set(encoded, forKey: "family_members_list")
@@ -946,14 +1087,44 @@ class FamilyRegistrationViewModel: ObservableObject {
                 UserDefaults.standard.synchronize()
                 print("✅ Присоединившийся участник добавлен к списку: \(userName) (\(cardRole)). Всего участников: \(existingMembers.count)")
                 
+                if role == .teenager {
+                    VisualLogger.shared.log("✅ ПОДРОСТОК (JOINED): Сохранено в UserDefaults - всего участников: \(existingMembers.count)", level: .success, category: "FAMILY")
+                    MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК (JOINED): Сохранено в UserDefaults - всего участников: \(existingMembers.count)")
+                    
+                    // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Проверяем что подросток действительно сохранен
+                    if let verifyData = UserDefaults.standard.data(forKey: "family_members_list"),
+                       let verifyDecoded = try? JSONDecoder().decode([FamilyMemberData].self, from: verifyData) {
+                        let teenagerFound = verifyDecoded.contains { $0.role == .teenager && $0.name == userName }
+                        if teenagerFound {
+                            VisualLogger.shared.log("✅ ПОДРОСТОК (JOINED): Подтверждено сохранение в UserDefaults!", level: .success, category: "FAMILY")
+                            MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК (JOINED): Подтверждено сохранение в UserDefaults!")
+                        } else {
+                            VisualLogger.shared.log("❌ ПОДРОСТОК (JOINED): ОШИБКА - подросток НЕ найден после сохранения!", level: .error, category: "FAMILY")
+                            MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК (JOINED): ОШИБКА - подросток НЕ найден после сохранения!")
+                        }
+                    }
+                }
+                
                 // Уведомляем другие экраны об изменении
                 NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
                 NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+                
+                if role == .teenager {
+                    VisualLogger.shared.log("✅ ПОДРОСТОК (JOINED): Отправлены уведомления об обновлении", level: .success, category: "FAMILY")
+                }
             } else {
                 print("❌ Ошибка кодирования списка участников")
+                if role == .teenager {
+                    VisualLogger.shared.log("❌ ПОДРОСТОК (JOINED): ОШИБКА кодирования списка участников!", level: .error, category: "FAMILY")
+                    MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК (JOINED): ОШИБКА кодирования списка участников!")
+                }
             }
         } else {
             print("⚠️ Участник уже существует: \(userName) (\(cardRole)), не добавляем дубликат")
+            if role == .teenager {
+                VisualLogger.shared.log("⚠️ ПОДРОСТОК (JOINED): Участник уже существует (дубликат)", level: .warning, category: "FAMILY")
+                MasterLogger.shared.log(.warn, category: .business, message: "⚠️ ПОДРОСТОК (JOINED): Участник уже существует (дубликат)")
+            }
         }
     }
 }

@@ -185,6 +185,7 @@ enum SubscriptionLevel: String, Codable, CaseIterable {
 }
 
 /// 🎁 Trial Information Structure
+/// ✅ BUILD 121: Исправлено декодирование ISO 8601 строк в Date
 struct TrialInfo: Codable, Equatable {
     /// Trial start date
     let startDate: Date
@@ -192,7 +193,7 @@ struct TrialInfo: Codable, Equatable {
     /// Trial end date
     let endDate: Date
 
-    /// Trial duration in days
+    /// Trial duration in days (default: 14 если отсутствует в JSON)
     let durationDays: Int
 
     /// Days remaining in trial
@@ -214,9 +215,92 @@ struct TrialInfo: Codable, Equatable {
         let remaining = Double(daysRemaining)
         return (total - remaining) / total
     }
+
+    /// ✅ BUILD 121: Обычный инициализатор для создания вручную
+    init(startDate: Date, endDate: Date, durationDays: Int) {
+        self.startDate = startDate
+        self.endDate = endDate
+        self.durationDays = durationDays
+    }
+
+    /// ✅ BUILD 121: CodingKeys для маппинга snake_case → camelCase
+    enum CodingKeys: String, CodingKey {
+        case startDate = "start_date"
+        case endDate = "end_date"
+        case durationDays = "duration_days"
+    }
+
+    /// ✅ BUILD 121: Кастомный init для парсинга ISO 8601 строк в Date
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Парсим ISO 8601 строки в Date
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        let startDateString = try container.decode(String.self, forKey: .startDate)
+        guard let startDateParsed = formatter.date(from: startDateString) else {
+            // Fallback: пробуем без fractional seconds
+            formatter.formatOptions = [.withInternetDateTime]
+            guard let fallbackDate = formatter.date(from: startDateString) else {
+                throw DecodingError.dataCorruptedError(
+                    forKey: .startDate,
+                    in: container,
+                    debugDescription: "Invalid date format: \(startDateString)"
+                )
+            }
+            self.startDate = fallbackDate
+            // Продолжаем с endDate
+            let endDateString = try container.decode(String.self, forKey: .endDate)
+            guard let endDateParsed = formatter.date(from: endDateString) else {
+                throw DecodingError.dataCorruptedError(
+                    forKey: .endDate,
+                    in: container,
+                    debugDescription: "Invalid date format: \(endDateString)"
+                )
+            }
+            self.endDate = endDateParsed
+            self.durationDays = try container.decodeIfPresent(Int.self, forKey: .durationDays) ?? 14
+            return
+        }
+        self.startDate = startDateParsed
+        
+        let endDateString = try container.decode(String.self, forKey: .endDate)
+        guard let endDateParsed = formatter.date(from: endDateString) else {
+            // Fallback: пробуем без fractional seconds
+            formatter.formatOptions = [.withInternetDateTime]
+            guard let fallbackDate = formatter.date(from: endDateString) else {
+                throw DecodingError.dataCorruptedError(
+                    forKey: .endDate,
+                    in: container,
+                    debugDescription: "Invalid date format: \(endDateString)"
+                )
+            }
+            self.endDate = fallbackDate
+            self.durationDays = try container.decodeIfPresent(Int.self, forKey: .durationDays) ?? 14
+            return
+        }
+        self.endDate = endDateParsed
+        
+        // durationDays: default = 14 если отсутствует
+        self.durationDays = try container.decodeIfPresent(Int.self, forKey: .durationDays) ?? 14
+    }
+
+    /// ✅ BUILD 121: Кастомный encode для обратной совместимости
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        try container.encode(formatter.string(from: startDate), forKey: .startDate)
+        try container.encode(formatter.string(from: endDate), forKey: .endDate)
+        try container.encode(durationDays, forKey: .durationDays)
+    }
 }
 
 /// 📊 Subscription Limits Structure
+/// ✅ BUILD 121: Исправлено декодирование с поддержкой snake_case
 struct SubscriptionLimits: Codable, Equatable {
     /// Maximum devices per subscription
     let maxDevices: Int
@@ -230,7 +314,7 @@ struct SubscriptionLimits: Codable, Equatable {
     /// Maximum reports per month
     let maxReports: Int
 
-    /// Current usage counters
+    /// Current usage counters (default: пустой UsageCounters если отсутствует)
     var currentUsage: UsageCounters
 
     /// Check if limit exceeded for specific resource
@@ -260,9 +344,51 @@ struct SubscriptionLimits: Codable, Equatable {
             return max(0, maxDevices - currentUsage.devices)
         }
     }
+
+    /// ✅ BUILD 121: Обычный инициализатор для создания вручную
+    init(maxDevices: Int, maxAIMessages: Int, maxScans: Int, maxReports: Int, currentUsage: UsageCounters) {
+        self.maxDevices = maxDevices
+        self.maxAIMessages = maxAIMessages
+        self.maxScans = maxScans
+        self.maxReports = maxReports
+        self.currentUsage = currentUsage
+    }
+
+    /// ✅ BUILD 121: CodingKeys для маппинга snake_case → camelCase
+    enum CodingKeys: String, CodingKey {
+        case maxDevices = "max_devices"
+        case maxAIMessages = "max_ai_messages"
+        case maxScans = "max_scans"
+        case maxReports = "max_reports"
+        case currentUsage = "current_usage"
+    }
+
+    /// ✅ BUILD 121: Кастомный init для обработки отсутствующих полей
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        maxDevices = try container.decode(Int.self, forKey: .maxDevices)
+        maxAIMessages = try container.decode(Int.self, forKey: .maxAIMessages)
+        maxScans = try container.decode(Int.self, forKey: .maxScans)
+        maxReports = try container.decode(Int.self, forKey: .maxReports)
+        
+        // ✅ currentUsage: default = пустой UsageCounters если отсутствует
+        currentUsage = try container.decodeIfPresent(UsageCounters.self, forKey: .currentUsage) ?? UsageCounters()
+    }
+
+    /// ✅ BUILD 121: Кастомный encode для обратной совместимости
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(maxDevices, forKey: .maxDevices)
+        try container.encode(maxAIMessages, forKey: .maxAIMessages)
+        try container.encode(maxScans, forKey: .maxScans)
+        try container.encode(maxReports, forKey: .maxReports)
+        try container.encode(currentUsage, forKey: .currentUsage)
+    }
 }
 
 /// 📈 Usage Counters Structure
+/// ✅ BUILD 121: Исправлено декодирование с поддержкой snake_case и default значений
 struct UsageCounters: Codable, Equatable {
     /// Current AI messages used this month
     var aiMessages: Int
@@ -296,6 +422,42 @@ struct UsageCounters: Codable, Equatable {
         case .devices:
             devices += amount
         }
+    }
+
+    /// ✅ BUILD 121: CodingKeys для маппинга snake_case → camelCase
+    enum CodingKeys: String, CodingKey {
+        case aiMessages = "ai_messages"
+        case scans
+        case reports
+        case devices
+    }
+
+    /// ✅ BUILD 121: Обычный инициализатор для создания вручную
+    init(aiMessages: Int = 0, scans: Int = 0, reports: Int = 0, devices: Int = 0) {
+        self.aiMessages = aiMessages
+        self.scans = scans
+        self.reports = reports
+        self.devices = devices
+    }
+
+    /// ✅ BUILD 121: Кастомный init для обработки отсутствующих полей (default = 0)
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // ✅ Все поля с default = 0 если отсутствуют в JSON
+        aiMessages = try container.decodeIfPresent(Int.self, forKey: .aiMessages) ?? 0
+        scans = try container.decodeIfPresent(Int.self, forKey: .scans) ?? 0
+        reports = try container.decodeIfPresent(Int.self, forKey: .reports) ?? 0
+        devices = try container.decodeIfPresent(Int.self, forKey: .devices) ?? 0
+    }
+
+    /// ✅ BUILD 121: Кастомный encode для обратной совместимости
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(aiMessages, forKey: .aiMessages)
+        try container.encode(scans, forKey: .scans)
+        try container.encode(reports, forKey: .reports)
+        try container.encode(devices, forKey: .devices)
     }
 }
 
@@ -361,31 +523,96 @@ struct AppSubscriptionStatus: Codable, Equatable {
 // 📱 Device Registration Subscription - базовая информация при регистрации
 /// ✅ SOLUTION: Separate model for API responses vs internal models
 /// Используется только при регистрации устройства, содержит минимальный набор полей
+/// ✅ BUILD 121: Исправлено декодирование с поддержкой snake_case и default значений
 struct DeviceRegistrationSubscription: Codable {
     /// Subscription level as string from API
     let level: String
 
-    /// Is subscription active
-    let isActive: Bool
+    /// Subscription start date as ISO 8601 string from API (optional, для совместимости)
+    let startDate: String?
 
     /// Subscription expiration date as ISO 8601 string from API
     let expiresAt: String?
 
+    /// Is subscription active (default: true если отсутствует в JSON)
+    let isActive: Bool
+
     /// Trial information (if applicable)
     let trialInfo: TrialInfo?
+
+    /// Subscription limits (optional, может отсутствовать в старых версиях API)
+    let limits: SubscriptionLimits?
+
+    /// Permissions dictionary (optional, не используется в клиенте)
+    let permissions: [String: AnyCodable]?
+
+    /// Device ID (optional, дублируется в корне ответа)
+    let deviceId: String?
+
+    /// User ID (optional, не используется в клиенте)
+    let userId: String?
+
+    /// ✅ BUILD 121: CodingKeys для маппинга snake_case → camelCase
+    enum CodingKeys: String, CodingKey {
+        case level
+        case startDate = "start_date"
+        case expiresAt = "end_date"  // Сервер отправляет end_date, маппим на expiresAt
+        case isActive = "is_active"
+        case trialInfo = "trial_info"
+        case limits
+        case permissions
+        case deviceId = "device_id"
+        case userId = "user_id"
+    }
+
+    /// ✅ BUILD 121: Кастомный init для обработки отсутствующих полей и default значений
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        level = try container.decode(String.self, forKey: .level)
+        startDate = try container.decodeIfPresent(String.self, forKey: .startDate)
+        expiresAt = try container.decodeIfPresent(String.self, forKey: .expiresAt)
+        
+        // ✅ isActive: default = true если отсутствует в JSON
+        isActive = try container.decodeIfPresent(Bool.self, forKey: .isActive) ?? true
+        
+        trialInfo = try container.decodeIfPresent(TrialInfo.self, forKey: .trialInfo)
+        limits = try container.decodeIfPresent(SubscriptionLimits.self, forKey: .limits)
+        
+        // ✅ permissions: декодируем как [String: AnyCodable] для гибкости
+        permissions = try container.decodeIfPresent([String: AnyCodable].self, forKey: .permissions)
+        
+        deviceId = try container.decodeIfPresent(String.self, forKey: .deviceId)
+        userId = try container.decodeIfPresent(String.self, forKey: .userId)
+    }
+
+    /// ✅ BUILD 121: Кастомный encode для обратной совместимости
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(level, forKey: .level)
+        try container.encodeIfPresent(startDate, forKey: .startDate)
+        try container.encodeIfPresent(expiresAt, forKey: .expiresAt)
+        try container.encode(isActive, forKey: .isActive)
+        try container.encodeIfPresent(trialInfo, forKey: .trialInfo)
+        try container.encodeIfPresent(limits, forKey: .limits)
+        try container.encodeIfPresent(permissions, forKey: .permissions)
+        try container.encodeIfPresent(deviceId, forKey: .deviceId)
+        try container.encodeIfPresent(userId, forKey: .userId)
+    }
 }
 
 // 🔄 Conversion Extension
 extension DeviceRegistrationSubscription {
     /// Convert API model to internal SubscriptionStatus
     /// ✅ SOLUTION: Clean separation between API and internal models
+    /// ✅ BUILD 121: Использует limits из ответа сервера, если они есть
     func toSubscriptionStatus() -> SubscriptionStatus {
         return SubscriptionStatus(
             level: SubscriptionLevel(rawValue: level) ?? .free,  // Convert string to enum
             isActive: isActive,
             expiresAt: parseISODate(expiresAt),                  // Convert string to Date
             trialInfo: trialInfo,
-            limits: SubscriptionLimits.freeLimits,               // Default for new user
+            limits: limits ?? SubscriptionLimits.freeLimits,      // ✅ BUILD 121: Используем limits из ответа или default
             components: [],                                       // Default for new user
             lastUpdated: Date()
         )
@@ -395,7 +622,12 @@ extension DeviceRegistrationSubscription {
     private func parseISODate(_ dateString: String?) -> Date? {
         guard let dateString = dateString else { return nil }
         let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime] // Поддержка формата 2026-03-05T10:19:39.616795Z
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds] // ✅ BUILD 121: Поддержка fractional seconds
+        if let date = formatter.date(from: dateString) {
+            return date
+        }
+        // Fallback: пробуем без fractional seconds
+        formatter.formatOptions = [.withInternetDateTime]
         return formatter.date(from: dateString)
     }
 }
@@ -502,6 +734,15 @@ struct JWTDeviceRegisterResponse: Codable {
     let expiresAt: String  // ISO 8601 date string from server
     let registeredAt: String  // ISO 8601 date string from server
     let subscription: DeviceRegistrationSubscription  // ✅ FIXED: Use separate model for API responses
+    
+    /// ✅ ИСПРАВЛЕНИЕ: Маппинг snake_case (сервер) → camelCase (клиент)
+    enum CodingKeys: String, CodingKey {
+        case token
+        case deviceId = "device_id"  // ✅ Сервер возвращает device_id, клиент ожидает deviceId
+        case expiresAt = "expires_at"
+        case registeredAt = "registered_at"
+        case subscription
+    }
 
     /// Convert expiresAt string to Date
     var expiresAtDate: Date? {

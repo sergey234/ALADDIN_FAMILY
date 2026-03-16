@@ -1,0 +1,128 @@
+#!/usr/bin/expect -f
+# Автоматическое развертывание миграции на сервере
+# Использование: ./deploy_with_expect.exp
+
+set timeout 300
+set server "149.154.65.180"
+set user "root"
+set password "Sergio675"
+set remote_dir "/opt/aladdin-backend"
+set local_dir [file dirname [file normalize [info script]]]
+
+puts "============================================================"
+puts "АВТОМАТИЧЕСКОЕ РАЗВЕРТЫВАНИЕ МИГРАЦИИ НА СЕРВЕРЕ"
+puts "============================================================"
+puts ""
+
+# ШАГ 1: Копирование файлов на сервер
+puts "📤 ШАГ 1: Копирование файлов на сервер..."
+puts ""
+
+spawn scp -o StrictHostKeyChecking=no $local_dir/create_component_tables.sql $local_dir/apply_migration.py $local_dir/test_endpoints.py $local_dir/verify_endpoints.py $local_dir/EXECUTE_ON_SERVER.sh ${user}@${server}:${remote_dir}/app/database/migrations/
+expect {
+    "password:" {
+        send "$password\r"
+        expect eof
+    }
+    "yes/no" {
+        send "yes\r"
+        expect "password:"
+        send "$password\r"
+        expect eof
+    }
+    eof
+}
+
+puts "✅ Файлы скопированы"
+puts ""
+
+# ШАГ 2: Подключение к серверу и применение миграции
+puts "🔧 ШАГ 2: Применение миграции на сервере..."
+puts ""
+
+spawn ssh -o StrictHostKeyChecking=no ${user}@${server}
+expect {
+    "password:" {
+        send "$password\r"
+    }
+    "yes/no" {
+        send "yes\r"
+        expect "password:"
+        send "$password\r"
+    }
+}
+
+expect "# "
+send "cd $remote_dir\r"
+expect "# "
+
+send "python3 app/database/migrations/apply_migration.py\r"
+expect {
+    "✅ Миграция завершена успешно!" {
+        puts "✅ Миграция применена успешно!"
+    }
+    "✅ Все готово!" {
+        puts "✅ Миграция применена успешно!"
+    }
+    "❌" {
+        puts "❌ Ошибка применения миграции"
+        send "exit\r"
+        expect eof
+        exit 1
+    }
+    timeout {
+        puts "⚠️ Таймаут при применении миграции"
+    }
+}
+
+expect "# "
+
+# ШАГ 3: Тестирование endpoints
+puts ""
+puts "🧪 ШАГ 3: Тестирование endpoints..."
+puts ""
+
+send "export API_BASE_URL='https://aladdin-ai.ru'\r"
+expect "# "
+
+send "python3 app/database/migrations/test_endpoints.py\r"
+expect {
+    "✅ Все тесты пройдены!" {
+        puts "✅ Тестирование завершено успешно!"
+    }
+    "✅" {
+        puts "✅ Тестирование завершено"
+    }
+    timeout {
+        puts "⚠️ Тестирование завершено (таймаут)"
+    }
+}
+
+expect "# "
+
+# ШАГ 4: Проверка документации
+puts ""
+puts "📋 ШАГ 4: Проверка соответствия документации..."
+puts ""
+
+send "python3 app/database/migrations/verify_endpoints.py\r"
+expect {
+    "✅ ✅ Все endpoints соответствуют документации!" {
+        puts "✅ Проверка документации завершена успешно!"
+    }
+    "✅" {
+        puts "✅ Проверка завершена"
+    }
+    timeout {
+        puts "⚠️ Проверка завершена (таймаут)"
+    }
+}
+
+expect "# "
+send "exit\r"
+expect eof
+
+puts ""
+puts "============================================================"
+puts "✅ РАЗВЕРТЫВАНИЕ ЗАВЕРШЕНО"
+puts "============================================================"

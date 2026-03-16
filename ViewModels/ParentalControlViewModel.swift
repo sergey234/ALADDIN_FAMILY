@@ -107,6 +107,15 @@ class ParentalControlViewModel: ObservableObject {
             let networkError = NetworkError.from(error)
             if case .unauthorized(let message) = networkError {
                 print("⚠️ ParentalControlViewModel: Ошибка авторизации при загрузке статусов")
+                // ✅ BUILD 121: Логирование отправки SessionExpired
+                #if DEBUG
+                let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
+                print("📤 ParentalControlViewModel: Отправка SessionExpired notification")
+                print("   - Call stack:")
+                print(stackTrace)
+                VisualLogger.shared.log("📤 ParentalControlViewModel: Отправка SessionExpired", level: .warning, category: "SESSION")
+                MasterLogger.shared.log(.warn, category: .business, message: "📤 ParentalControlViewModel: Sending SessionExpired notification")
+                #endif
                 // Отправляем уведомление о необходимости логина
                 NotificationCenter.default.post(
                     name: NSNotification.Name("SessionExpired"),
@@ -227,6 +236,15 @@ class ParentalControlViewModel: ObservableObject {
                 // Проверяем, что токен был установлен ранее (не просто отсутствует)
                 if AppConfig.authToken != nil {
                     // Токен был, но стал невалидным - это истекшая сессия
+                    // ✅ BUILD 121: Логирование отправки SessionExpired
+                    #if DEBUG
+                    let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
+                    print("📤 ParentalControlViewModel.toggleComponent: Отправка SessionExpired notification")
+                    print("   - Call stack:")
+                    print(stackTrace)
+                    VisualLogger.shared.log("📤 ParentalControlViewModel.toggleComponent: Отправка SessionExpired", level: .warning, category: "SESSION")
+                    MasterLogger.shared.log(.warn, category: .business, message: "📤 ParentalControlViewModel.toggleComponent: Sending SessionExpired notification")
+                    #endif
                     NotificationCenter.default.post(
                         name: NSNotification.Name("SessionExpired"),
                         object: nil,

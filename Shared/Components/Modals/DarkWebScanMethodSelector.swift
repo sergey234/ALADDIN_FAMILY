@@ -117,6 +117,8 @@ struct DarkWebScanMethodSelector: View {
                         Text(localizationManager.localized("dark_web_scan_method_recommended"))
                             .font(.caption)
                             .foregroundColor(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                             .padding(.horizontal, Spacing.s)
                             .padding(.vertical, Spacing.xs)
                             .background(

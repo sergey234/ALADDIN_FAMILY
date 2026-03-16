@@ -641,6 +641,8 @@ struct ALADDINApp: App {
                 }
                 .id("screen_\(navigationManager.currentScreen.rawValue)")
                 .navigationBarHidden(true)
+                // ✅ ИСПРАВЛЕНИЕ: Добавляем VisualLogView на все экраны через модификатор
+                .withVisualLogger()
             }
             .navigationViewStyle(StackNavigationViewStyle())
             // КРИТИЧНО: Передача NavigationManager через EnvironmentObject
@@ -700,8 +702,30 @@ struct ALADDINApp: App {
                     
                     let message = notification.userInfo?["message"] as? String ?? "Сессия истекла. Пожалуйста, войдите снова."
                     
+                    // ✅ BUILD 121: Детальное логирование для диагностики
                     #if DEBUG
+                    let stackTrace = Thread.callStackSymbols.prefix(10).joined(separator: "\n")
                     print("⚠️ ALADDINApp: Получено уведомление SessionExpired: \(message)")
+                    print("   - Call stack (отправитель):")
+                    print(stackTrace)
+                    VisualLogger.shared.log("⚠️ ALADDINApp: SessionExpired получено: \(message)", level: .warning, category: "SESSION")
+                    MasterLogger.shared.log(.warn, category: .business, message: "⚠️ ALADDINApp: SessionExpired notification received: \(message)")
+                    #endif
+                    
+                    // ✅ BUILD 121: Проверяем, действительно ли токен истёк
+                    // НЕ удаляем токен, если он валиден (возможно, это ложное срабатывание)
+                    let tokenStatus = TokenValidator.validateCurrentToken()
+                    if case .valid = tokenStatus {
+                        #if DEBUG
+                        print("⚠️ ALADDINApp: SessionExpired получено, но токен валиден - НЕ удаляем токен")
+                        VisualLogger.shared.log("⚠️ ALADDINApp: SessionExpired игнорировано - токен валиден", level: .warning, category: "SESSION")
+                        MasterLogger.shared.log(.warn, category: .business, message: "⚠️ ALADDINApp: SessionExpired ignored - token is valid")
+                        #endif
+                        return // Не удаляем токен и не перенаправляем на онбординг
+                    }
+                    
+                    #if DEBUG
+                    print("⚠️ ALADDINApp: Токен действительно невалиден - удаляем токены")
                     #endif
                     
                     // ✅ Асинхронная очистка токенов (Keychain операции)
