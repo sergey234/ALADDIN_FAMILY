@@ -45,34 +45,34 @@ struct MainScreenWithRegistration: View {
     // MARK: - Helper Views
     
     private var backgroundView: some View {
-        LinearGradient(
-            colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+            LinearGradient(
+                colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
     }
-    
+            
     private var cancelButtonView: some View {
-        VStack {
-            HStack {
-                Spacer()
-                Button(localizationManager.localized("common_cancel")) {
-                    print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем onComplete")
-                    onComplete?()
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(localizationManager.localized("common_cancel")) {
+                        print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем onComplete")
+                        onComplete?()
+                    }
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(Color.black.opacity(0.3))
+                    .cornerRadius(20)
+                    .accessibilityLabel(localizationManager.localized("common_cancel"))
                 }
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Color.black.opacity(0.3))
-                .cornerRadius(20)
-                .accessibilityLabel(localizationManager.localized("common_cancel"))
+                .padding(.top, 20)
+                .padding(.horizontal, 20)
+                Spacer()
             }
-            .padding(.top, 20)
-            .padding(.horizontal, 20)
-            Spacer()
-        }
     }
     
     private var loadingView: some View {
@@ -133,65 +133,65 @@ struct MainScreenWithRegistration: View {
     }
     
     private var ageGroupSelectionView: some View {
-        VStack(spacing: 30) {
-            Text(localizationManager.localized("registration_select_age"))
-                .font(.system(size: 28, weight: .bold))
-                .foregroundColor(.white)
-            
-            if let role = registrationVM.selectedRole {
-                VStack(spacing: 16) {
-                    ForEach(getAgeGroups(for: role), id: \.self) { ageGroup in
-                        Button(action: {
-                            print("🚨 Нажата кнопка возраста - вызываю onAgeGroupSelected(.\(ageGroup.rawValue))")
-                            registrationVM.onAgeGroupSelected(ageGroup)
-                        }) {
-                            HStack {
-                                Text(getAgeGroupLabel(ageGroup, for: role))
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.white.opacity(0.7))
+                VStack(spacing: 30) {
+                    Text(localizationManager.localized("registration_select_age"))
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    if let role = registrationVM.selectedRole {
+                        VStack(spacing: 16) {
+                            ForEach(getAgeGroups(for: role), id: \.self) { ageGroup in
+                                Button(action: {
+                                    print("🚨 Нажата кнопка возраста - вызываю onAgeGroupSelected(.\(ageGroup.rawValue))")
+                                    registrationVM.onAgeGroupSelected(ageGroup)
+                                }) {
+                                    HStack {
+                                        Text(getAgeGroupLabel(ageGroup, for: role))
+                                            .foregroundColor(.white)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .foregroundColor(.white.opacity(0.7))
+                                    }
+                                    .padding(20)
+                                    .background(Color.white.opacity(0.15))
+                                    .cornerRadius(12)
+                                }
                             }
-                            .padding(20)
-                            .background(Color.white.opacity(0.15))
-                            .cornerRadius(12)
+                        }
+                        .padding(.horizontal, 30)
+                    }
+                }
+                .padding(30)
+                .background(Color.black.opacity(0.3))
+                .cornerRadius(20)
+            }
+            
+    private var letterSelectionView: some View {
+                VStack(spacing: 30) {
+                    Text(localizationManager.localized("registration_select_letter"))
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
+                        ForEach(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"], id: \.self) { letter in
+                            Button(action: {
+                                registrationVM.onLetterSelected(letter)
+                            }) {
+                                Text(letter)
+                                    .font(.system(size: 20, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 50, height: 50)
+                                    .background(Color.white.opacity(0.15))
+                                    .cornerRadius(12)
+                            }
                         }
                     }
                 }
-                .padding(.horizontal, 30)
+                .padding(30)
+                .background(Color.black.opacity(0.3))
+                .cornerRadius(20)
             }
-        }
-        .padding(30)
-        .background(Color.black.opacity(0.3))
-        .cornerRadius(20)
-    }
-    
-    private var letterSelectionView: some View {
-        VStack(spacing: 30) {
-            Text(localizationManager.localized("registration_select_letter"))
-                .font(.system(size: 28, weight: .bold))
-                .foregroundColor(.white)
             
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
-                ForEach(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"], id: \.self) { letter in
-                    Button(action: {
-                        registrationVM.onLetterSelected(letter)
-                    }) {
-                        Text(letter)
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 50, height: 50)
-                            .background(Color.white.opacity(0.15))
-                            .cornerRadius(12)
-                    }
-                }
-            }
-        }
-        .padding(30)
-        .background(Color.black.opacity(0.3))
-        .cornerRadius(20)
-    }
-    
     private var loadingOrErrorView: some View {
         Group {
             if registrationVM.isLoading || registrationVM.currentStep == .creatingFamily {
@@ -229,8 +229,8 @@ struct MainScreenWithRegistration: View {
                 )
             }
         }
-    }
-    
+            }
+            
     private var successModalView: some View {
         Group {
             if registrationVM.showSuccessModal {
@@ -253,8 +253,8 @@ struct MainScreenWithRegistration: View {
                 .cornerRadius(10)
             }
         }
-    }
-    
+            }
+            
     private var tipNotificationView: some View {
         Group {
             if showTip {

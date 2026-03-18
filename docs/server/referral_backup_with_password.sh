@@ -2,7 +2,14 @@
 # 🛡️ Автоматическое создание backup'ов на сервере
 
 set timeout 60
-set password "Sergio675"
+# SECURITY: Never store passwords in the repository.
+# Prefer SSH keys. If password auth is absolutely required, pass it via env var:
+#   export ALADDIN_SSH_PASSWORD='...'
+if {![info exists env(ALADDIN_SSH_PASSWORD)]} {
+    puts "❌ SECURITY: ALADDIN_SSH_PASSWORD не задана. Настройте SSH-ключи (рекомендуется) и повторите."
+    exit 1
+}
+set password $env(ALADDIN_SSH_PASSWORD)
 set server "root@149.154.65.180"
 
 puts "🛡️ СОЗДАНИЕ BACKUP'ОВ НА СЕРВЕРЕ"

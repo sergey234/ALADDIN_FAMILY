@@ -3221,6 +3221,11 @@ class APIService: ObservableObject {
         // ✅ КРИТИЧНО: Для анонимной регистрации авторизация НЕ требуется!
         networkManager.post(endpoint: AppConfig.Endpoint.deviceRegister, body: request, requiresAuth: false, completion: completion)
     }
+
+    func registerDeviceWithTrial(request: TrialDeviceRegisterRequest, completion: @escaping (Result<JWTDeviceRegisterResponse, Error>) -> Void) {
+        // ✅ Trial registration is also anonymous in this model (token is created by backend).
+        networkManager.post(endpoint: AppConfig.Endpoint.registerDeviceTrial, body: request, requiresAuth: false, completion: completion)
+    }
 }
 
 

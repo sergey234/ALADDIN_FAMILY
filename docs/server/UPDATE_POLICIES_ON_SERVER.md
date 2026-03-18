@@ -13,7 +13,7 @@
 ```bash
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn scp /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/landing/privacy.html \$server:/var/www/aladdin-ai.ru/privacy.html
 expect \"password:\" { send \"\$password\\r\" }
@@ -25,7 +25,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn scp /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/landing/terms.html \$server:/var/www/aladdin-ai.ru/terms.html
 expect \"password:\" { send \"\$password\\r\" }
@@ -37,7 +37,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn ssh \$server \"ls -lh /var/www/aladdin-ai.ru/privacy.html /var/www/aladdin-ai.ru/terms.html && echo '---' && grep -c '<h2' /var/www/aladdin-ai.ru/privacy.html && grep -c '<h2' /var/www/aladdin-ai.ru/terms.html\"
 expect \"password:\" { send \"\$password\\r\" }
@@ -49,7 +49,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn ssh \$server \"curl -H 'Cache-Control: no-cache' https://aladdin-ai.ru/privacy.html | grep -c '<h2' && curl -H 'Cache-Control: no-cache' https://aladdin-ai.ru/terms.html | grep -c '<h2'\"
 expect \"password:\" { send \"\$password\\r\" }

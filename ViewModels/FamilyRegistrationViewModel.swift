@@ -462,7 +462,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                         logger.error("Decoding error details: \(decodingError.localizedDescription)")
                         if let role = self?.selectedRole, role == .teenager {
                             VisualLogger.shared.log("❌ ПОДРОСТОК: Decoding error - \(decodingError.localizedDescription)", level: .error, category: "FAMILY")
-                        }
+                    }
                     }
                     
                     self?.errorMessage = error.localizedDescription

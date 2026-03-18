@@ -310,6 +310,15 @@ struct TariffsScreen: View {
                     return
                 }
                 
+                // ✅ Trial не должен вести на лендинг QR-оплаты.
+                // Trial выдаётся через наш backend (/api/auth/register-device-trial) и обновляет JWT/лимиты.
+                if tariff == .trial {
+                    Task { @MainActor in
+                        await SubscriptionManager.shared.activateTrialIfNeeded()
+                    }
+                    return
+                }
+                
                 let tariffId: String = {
                     switch tariff {
                     case .trial: return "trial"

@@ -38,6 +38,7 @@ class NetworkManager: NSObject, ObservableObject {
     private var retryCounts: [String: Int] = [:]
     private let retryLock = NSLock() // ✅ BUILD 114: Броня для сетевых счетчиков
     private let maxRetriesPerEndpoint = 1 // Максимум 1 retry при 401
+    private let maxServiceUnavailableRetriesPerEndpoint = 2 // Ограничиваем retry при HTTP 503
     
     // ✅ BUILD 115: Защита от двойного вызова completion в Task блоке
     private class CompletionGuard {
@@ -1176,6 +1177,54 @@ class NetworkManager: NSObject, ObservableObject {
                         networkError = .serviceUnavailable(errorMessage)
                     default:
                         networkError = .httpError(httpResponse.statusCode)
+                    }
+
+                    // ✅ SFM/mock hardening: если backend временно недоступен (503),
+                    // делаем ограниченный retry с экспоненциальной задержкой, чтобы iOS не уходила в неверные состояния.
+                    if httpResponse.statusCode == 503 && !isRetry {
+                        let endpointKey = request.url?.absoluteString ?? "unknown"
+                        guard let strongSelf = self else {
+                            completion(.failure(networkError))
+                            return
+                        }
+
+                        strongSelf.retryLock.lock()
+                        let currentRetryCount = strongSelf.retryCounts[endpointKey] ?? 0
+                        strongSelf.retryLock.unlock()
+
+                        if currentRetryCount < strongSelf.maxServiceUnavailableRetriesPerEndpoint {
+                            strongSelf.retryLock.lock()
+                            strongSelf.retryCounts[endpointKey] = currentRetryCount + 1
+                            strongSelf.retryLock.unlock()
+
+                            let delaySeconds = pow(2.0, Double(currentRetryCount)) // 1s, 2s, ...
+                            os_log("HTTP 503: retry request in %{public}.1fs for %{public}@",
+                                   log: Self.networkLogger,
+                                   type: .info,
+                                   delaySeconds,
+                                   endpointKey)
+
+                            DispatchQueue.main.asyncAfter(deadline: .now() + delaySeconds) {
+                                // Clone request to preserve original payload/headers.
+                                var retryRequest = request
+                                if requiresAuth, let token = AppConfig.authToken {
+                                    retryRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                                }
+
+                                strongSelf.performRequest(request: retryRequest,
+                                                           requiresAuth: requiresAuth,
+                                                           isRetry: true) { (result: Result<T, Error>) in
+                                    // Clear retry counter on final resolution.
+                                    strongSelf.retryLock.lock()
+                                    strongSelf.retryCounts.removeValue(forKey: endpointKey)
+                                    strongSelf.retryLock.unlock()
+
+                                    completion(result)
+                                }
+                            }
+
+                            return
+                        }
                     }
                     
                     // 🛡️ DEFENSIVE JWT: Record failure for JWT-protected endpoints

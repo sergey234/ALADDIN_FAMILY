@@ -186,37 +186,47 @@ async def get_user_profile(
             try:
                 sfm = get_sfm()
                 result = sfm.execute_function("get_authentication_manager_profile", {"user_id": user_id})
-                
-                # Проверяем что это не mock ответ
-                if isinstance(result, dict) and result.get("source") == "sfm_mock":
-                    logger.warning(f"SFM returned mock response for user_id: {user_id}, using fallback")
-                elif isinstance(result, dict) and "id" in result:
-                    # ✅ Реальный ответ от SFM
-                    return UserProfileResponse(
-                        userId=result.get("id", user_id),
-                        name=result.get("name", "Пользователь"),
-                        email=result.get("email"),
-                        phone=result.get("phone"),
-                        avatar=result.get("avatar"),
-                        registrationDate=result.get("registrationDate", datetime.now().isoformat()),
-                        lastModified=datetime.now(),
-                        deviceId=result.get("deviceId"),
-                        version=result.get("version", 1)
-                    )
+
+                        # Если вернули mock/fallback/error — в production это должно быть ошибкой, а не "успехом".
+                        if isinstance(result, dict):
+                            source = result.get("source")
+                            if source in {"sfm_mock", "sfm_fallback", "sfm_error"}:
+                                raise HTTPException(
+                                    status_code=503,
+                                    detail="Protection backend temporarily unavailable"
+                                )
+
+                            # ✅ Реальный ответ от SFM
+                            if "id" in result:
+                                return UserProfileResponse(
+                                    userId=result.get("id", user_id),
+                                    name=result.get("name", "Пользователь"),
+                                    email=result.get("email"),
+                                    phone=result.get("phone"),
+                                    avatar=result.get("avatar"),
+                                    registrationDate=result.get("registrationDate", datetime.now().isoformat()),
+                                    lastModified=datetime.now(),
+                                    deviceId=result.get("deviceId"),
+                                    version=result.get("version", 1)
+                                )
+
+                        # Если ответ не распарсился как ожидаемый dict/profile — тоже считаем временной недоступностью.
+                        raise HTTPException(
+                            status_code=503,
+                            detail="Protection backend temporarily unavailable"
+                        )
             except Exception as e:
-                logger.error(f"SFM execution error: {e}, using fallback")
+                # Важно: не отдаём mock/placeholder как 200 OK в прод-процессе.
+                logger.error(f"SFM execution error: {e}")
+                raise HTTPException(
+                    status_code=503,
+                    detail="Protection backend temporarily unavailable"
+                )
         
-        # Fallback: возвращаем базовый профиль из токена
-        return UserProfileResponse(
-            userId=user_id,
-            name=current_user.get("email", "Пользователь").split("@")[0] if current_user.get("email") else "Пользователь",
-            email=current_user.get("email"),
-            phone=None,
-            avatar=None,
-            registrationDate=datetime.now().isoformat(),
-            lastModified=datetime.now(),
-            deviceId=current_user.get("device_id"),
-            version=1
+        # Если SFM недоступен/отключен — возвращаем 503, чтобы клиент не принимал mock как успех.
+        raise HTTPException(
+            status_code=503,
+            detail="Protection backend temporarily unavailable"
         )
     except HTTPException:
         raise

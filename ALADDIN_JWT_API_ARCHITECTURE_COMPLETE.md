@@ -2993,3 +2993,144 @@ func testProductionTrialFlow() {
 - **API документация:** docs.aladdin.ai
 - **Sandbox среда:** sandbox.aladdin.ai
 - **Production API:** api.aladdin.ai
+
+---
+
+## ✅ JWT‑014 (2026‑03‑17) — СТАБИЛИЗАЦИЯ ВЫДАЧИ JWT + ПОЛНЫЙ ПРОГОН 75 PROTECTED ENDPOINTS
+
+### **🎯 Цель этапа**
+- **Стабильно получать JWT** через `POST /api/auth/register-device` (без таймаутов/флапов)
+- **Выполнить полный прогон 75 защищённых эндпоинтов**
+- **Зафиксировать оставшиеся 401 и причину** (если останутся)
+
+### **📦 Что было на входе**
+- На сервер задеплоены и подтверждены изменения JWT‑фикса (4 файла):
+  - `app/auth/auth.py`
+  - `backend/app/services/jwt_service.py`
+  - `app/auth/__init__.py`
+  - `app/routers/analytics_router.py`
+- Создан backup на сервере: `backup_jwt_fix_20260317_014847/` (пример)
+- Есть старый артефакт тестирования (до стабилизации/повторной проверки):
+  - `docs/server/JWT_014_TEST_RESULTS_20260317_024920.json`
+  - **401 = 21 / 75**
+
+### **🩺 Проверка стабильности сервиса (через домен)**
+- `GET https://aladdin-ai.ru/api/health` → **200** (`{"status":"ok"}`)
+- `POST https://aladdin-ai.ru/api/auth/register-device` → **стабильно 200**
+
+### **🧪 Полный прогон 75 эндпоинтов — НОВЫЕ АРТЕФАКТЫ**
+- `docs/server/JWT_014_TEST_RESULTS_20260317_115333.json`
+  - **total=75**
+  - **401=0**
+  - 422 (ожидаемо)=21
+  - other=7
+- `docs/server/JWT_014_TEST_RESULTS_20260317_115448.json` (повторный sanity‑прогон)
+  - **total=75**
+  - **401=0**
+  - 422 (ожидаемо)=21
+  - other=7
+- `docs/server/JWT_014_TEST_RESULTS_20260317_142847.json` (финальный прогон после Variant A / отключения :8000)
+  - **total=75**
+  - **401=0**
+  - **other_error=0**
+  - **422 (ожидаемо)=21**
+  - **success=54** (200-299) + 21 (422 ожидаемо) → **100% корректно**
+
+### **🔒 Машинное подтверждение: 401 = 0 (НЕ “на глаз”)**
+Подсчёт по JSON (Counter по `results[].status`) показал:
+- `JWT_014_TEST_RESULTS_20260317_115333.json` → **count(401)=0**, `stats.auth_error=0`
+- `JWT_014_TEST_RESULTS_20260317_115448.json` → **count(401)=0**, `stats.auth_error=0`
+
+Для сравнения:
+- `JWT_014_TEST_RESULTS_20260317_024920.json` → **count(401)=21**, `stats.auth_error=21`
+
+### **🛠️ Что сделано для “табилизации сервиса” на стороне тестов**
+Обновлён тест‑раннер `docs/server/test_protected_endpoints_jwt_fix.py`:
+- Добавлен **health‑gate**: ожидание `GET /api/health` перед регистрацией устройства
+- Добавлены **ретраи и настраиваемые таймауты** для `register-device`
+- Добавлен **диагностический режим** `JWT_DEBUG=1` (для захвата headers/body snippet при ошибках)
+
+Управляющие переменные окружения:
+- `JWT_BASE_URL` — переопределить базовый URL
+- `JWT_DEVICE_ID` — переопределить device_id
+- `JWT_DEBUG=1` — включить расширенную диагностику
+- `JWT_TOKEN_RETRIES` — число попыток получения токена
+- `JWT_TOKEN_TIMEOUT` — таймаут register-device (сек)
+- `JWT_HEALTH_WAIT_SEC` — максимум ожидания health (сек)
+
+### **📌 Важно по прод-архитектуре (8000 vs 8002)**
+В репозитории присутствует `docs/server/aladdin-backend.service` (systemd), который запускает:
+- `uvicorn ... --port 8000`
+
+При этом в серверных отчётах/инструкциях по деплою ранее фигурировал:
+- **gunicorn на порту 8002**
+
+Это критично учитывать при расследовании флапов через домен: **домен обслуживает nginx**, и он должен проксировать **только в один “боевой” upstream**.
+
+#### **Как устроено правильно (целевое состояние / Variant A)**
+- **Интернет → `nginx` (TLS)** → `proxy_pass http://127.0.0.1:8002` → **`gunicorn` (ASGI workers)** → `FastAPI main:app`
+- Порт **8002 = единственный публичный upstream** (тот, куда смотрит домен).
+- Порт **8000 = не используется** (не слушает).
+
+#### **Как было (проблемное состояние)**
+- На сервере одновременно жили:
+  - **`gunicorn` на `:8002`** (канонический прод)
+  - **`uvicorn` на `:8000`** (второй экземпляр того же приложения `main:app`)
+- Это приводило к:
+  - риску рассинхрона (две копии API с разными кодом/конфигом/зависимостями)
+  - “шуму” в логах и ложным 5xx/диагностике (часть трафика/сканов могла попадать на 8000)
+  - флапам после рестартов (когда один из сервисов поднимается/падает отдельно)
+
+Доп. находка: на сервере порт **8000** держал systemd‑юнит `payment_service.service`, который фактически запускал:
+- `python3 -m uvicorn main:app --port 8000`
+
+То есть это был **второй экземпляр общего API** (не изолированный payment‑микросервис). Для прод-стабильности: Variant A → оставить только 8002.
+
+#### **Что сделали (коротко и по факту)**
+- **Закрепили Variant A**: отключили второй экземпляр API на `:8000`
+  - `payment_service.service` и `aladdin-backend.service`: `stop/disable/mask`
+  - проверка `ss -plnt | egrep ':(8000|8002)\\b'`: после фикса **слушает только `:8002`**
+- Проверили, что домен живой после отключения `:8000`:
+  - `GET https://aladdin-ai.ru/api/health` → **200**
+  - `POST https://aladdin-ai.ru/api/auth/register-device` → **200** (JWT выдаётся)
+
+### **📌 Что осталось красным (НЕ JWT)**
+На момент промежуточных прогонов JWT‑014 (до server-side фиксов) проявлялись 500 по:
+- `GET /api/identity-theft/alerts`
+- `GET /api/identity-theft/status`
+- `GET /api/referral/code`
+- `GET /api/referral/history`
+
+### **✅ Финальный апдейт: 500 исправлены, полный прогон 75 чистый (2026‑03‑17 13:29)**
+Артефакт финального прогона:
+- `docs/server/JWT_014_TEST_RESULTS_20260317_132946.json`
+  - **total=75**
+  - **success=75**
+  - **401=0**
+  - **other_error=0**
+  - **422 (ожидаемо)=21**
+
+Фиксы на сервере (причины прежних 500):
+- **Identity Theft**: defensive init `self.config` в `RussianIdentityTheftProtectionAgent.__init__` (исправляет `'... has no attribute config'`).
+- **Referral**: фиксы в реально используемом роутере `app/routers/referral.py`:
+  - `anonymous` больше не кастится в `int()` (исправляет `invalid literal for int() ... 'anonymous'`)
+  - устранён конфликт имён `get_referral_history` (исправляет `'coroutine' object is not iterable'`)
+
+### **➡️ Что делаем дальше (следующий этап после JWT‑014)**
+1) **Закрепить изменения в деплой-процессе**: зафиксировать, какие файлы являются “боевыми” (`/opt/aladdin-backend/app/...` vs `/opt/aladdin-backend/routers/...`) и исключить дубликаты/мертвый код.
+2) **Операционная стабилизация (8000 vs 8002)**: ✅ выполнено (Variant A: **только 8002**, `:8000` выключен/замаскирован).
+3) **Улучшить тест-раннер**: оставить поддержку `JWT_ONLY_ENDPOINTS` для быстрых smoke-check прогонов по 2–4 endpoint’ам при инцидентах/деплоях.
+
+4) **Trial anti-abuse (server-side) + UX-фиксы**
+   - `POST /api/auth/register-device-trial` стало идемпотентным: повторная “выдача trial” не продлевает и не повторяет trial после истечения; paid tier повторно trial не получает.
+   - iOS перестала “выдавать trial локально” и при выборе Trial запрашивает backend (trial берётся из `trial_info` в ответе JWT).
+   - Исправлен редирект: карточка `.trial` больше не уводит на QR-лендинг, а запускает `activateTrialIfNeeded()`.
+
+5) **SFM/mock hardening + Log policy**
+   - `GET /api/user/profile`: если SFM вернул `sfm_mock/sfm_fallback/sfm_error`, endpoint отвечает `503` (в прод больше нет “200 + mock” для профиля).
+   - iOS: `503` обрабатывается как временная недоступность (ограниченный retry с экспоненциальной задержкой в `NetworkManager`).
+   - Шум в логах снижён:
+     - `TokenHealthMonitor.stopMonitoring()` не логирует “Stopping/Stopped”, если таймер не запущен.
+     - `JWTCircuitBreaker.emergencyReset()` логирует только при необходимости (убрано “testing only” из `forceState`).
+
+Отдельный подробный отчёт по этапу: `docs/server/JWT_014_STABILIZATION_AND_FULL_TEST_REPORT_20260317.md`

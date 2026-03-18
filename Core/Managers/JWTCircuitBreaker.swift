@@ -351,8 +351,10 @@ class JWTCircuitBreaker {
     ///
     /// - Parameter newState: New state to force
     ///
-    func forceState(_ newState: CircuitState) {
-        logger.business("🔧 DEFENSIVE JWT: Manual state change to \(newState.rawValue) (testing only)")
+    func forceState(_ newState: CircuitState, shouldLog: Bool = true) {
+        if shouldLog {
+            logger.business("🔧 DEFENSIVE JWT: Manual state change to \(newState.rawValue)")
+        }
         state = newState
         failureCount = 0
         halfOpenSuccessCount = 0
@@ -365,8 +367,37 @@ class JWTCircuitBreaker {
     /// Should be called when CB gets stuck in OPEN state.
     ///
     func emergencyReset() {
+        // Avoid log noise: emergency reset only when something is not CLOSED.
+        if !shouldEmergencyReset() { return }
+
         logger.business("🚨 DEFENSIVE JWT: Emergency reset to CLOSED state")
-        forceState(.closed)
+
+        // Close main breaker instance.
+        forceState(.closed, shouldLog: true)
+
+        // Close category breakers without per-breaker log spam.
+        for breaker in categoryBreakers.values {
+            breaker.forceState(.closed, shouldLog: false)
+        }
+
         JWTEventLogger.logEvent(.circuitBreakerStateChanged(state: "CLOSED", reason: "Emergency reset"))
+    }
+
+    /// Check whether emergency reset is actually needed (any breaker is not CLOSED).
+    private func shouldEmergencyReset() -> Bool {
+        stateLock.lock()
+        let mainState = state
+        stateLock.unlock()
+
+        if mainState != .closed { return true }
+
+        for breaker in categoryBreakers.values {
+            breaker.stateLock.lock()
+            let s = breaker.state
+            breaker.stateLock.unlock()
+            if s != .closed { return true }
+        }
+
+        return false
     }
 }

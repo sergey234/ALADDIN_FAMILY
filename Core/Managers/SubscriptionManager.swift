@@ -212,15 +212,15 @@ final class SubscriptionManager: ObservableObject {
 
         logger.business("🎉 DEFENSIVE JWT: Инициализация завершена успешно")
 
-        // ✅ BUILD 122: Проверка синхронизации токена с AppConfig
+        // ✅ BUILD 123: Проверка синхронизации токена с AppConfig
         if let token = currentToken {
             if AppConfig.authToken == nil {
                 AppConfig.authToken = token.token
-                logger.business("✅ BUILD 122: Токен синхронизирован с AppConfig при инициализации")
+                logger.business("✅ BUILD 123: Токен синхронизирован с AppConfig при инициализации")
             } else if AppConfig.authToken != token.token {
                 // Токены не совпадают - обновляем AppConfig
                 AppConfig.authToken = token.token
-                logger.business("⚠️ BUILD 122: Токены не совпадали - обновлен AppConfig")
+                logger.business("⚠️ BUILD 123: Токены не совпадали - обновлен AppConfig")
             }
         }
 
@@ -267,7 +267,7 @@ final class SubscriptionManager: ObservableObject {
 
     // MARK: - DEFENSIVE JWT Methods
 
-    // ✅ BUILD 122: Защита от бесконечных циклов
+    // ✅ BUILD 123: Защита от бесконечных циклов
     private var registrationAttempts: Int = 0
     private let maxRegistrationAttempts: Int = 3
     private let registrationLock = NSLock()  // ✅ Защита от race condition
@@ -278,11 +278,11 @@ final class SubscriptionManager: ObservableObject {
     /// Part of DEFENSIVE JWT Architecture for graceful token management.
     ///
     func performDeviceRegistration() async {
-        // ✅ BUILD 122: Проверка количества попыток
+        // ✅ BUILD 123: Проверка количества попыток
         registrationLock.lock()
         guard registrationAttempts < maxRegistrationAttempts else {
             registrationLock.unlock()
-            logger.error("❌ BUILD 122: Превышено максимальное количество попыток регистрации (\(maxRegistrationAttempts))")
+            logger.error("❌ BUILD 123: Превышено максимальное количество попыток регистрации (\(maxRegistrationAttempts))")
             return
         }
         registrationAttempts += 1
@@ -301,7 +301,7 @@ final class SubscriptionManager: ObservableObject {
                 logger.business("✅ DEFENSIVE JWT: Токен успешно установлен после регистрации")
                 JWTEventLogger.logDeviceRegistration(success: true, error: nil, deviceId: token.deviceId)
                 
-                // ✅ BUILD 122: Сброс счетчика при успехе
+                // ✅ BUILD 123: Сброс счетчика при успехе
                 registrationLock.lock()
                 registrationAttempts = 0
                 registrationLock.unlock()
@@ -318,7 +318,7 @@ final class SubscriptionManager: ObservableObject {
             // Log failed registration
             JWTEventLogger.logDeviceRegistration(success: false, error: error.localizedDescription, deviceId: "unknown")
             
-            // ✅ BUILD 122: Сброс счетчика при ошибке (чтобы не блокировать навсегда)
+            // ✅ BUILD 123: Сброс счетчика при ошибке (чтобы не блокировать навсегда)
             registrationLock.lock()
             if registrationAttempts >= maxRegistrationAttempts {
                 registrationAttempts = 0  // Сброс для следующей попытки через время
@@ -374,7 +374,7 @@ final class SubscriptionManager: ObservableObject {
         await performDeviceRegistration()
     }
 
-    /// 🔄 BUILD 122: Восстановление подписки с сервера (защита от потери подписки)
+    /// 🔄 BUILD 123: Восстановление подписки с сервера (защита от потери подписки)
     ///
     /// Восстанавливает подписку с сервера для пользователей с платной подпиской или триалом.
     /// Используется при 403 ошибке для предотвращения потери подписки.
@@ -382,12 +382,12 @@ final class SubscriptionManager: ObservableObject {
     func restoreSubscriptionFromServer() async {
         guard let deviceId = currentToken?.deviceId else {
             // Нет deviceId → перерегистрация (только для FREE)
-            logger.business("⚠️ BUILD 122: Нет deviceId - перерегистрация")
+            logger.business("⚠️ BUILD 123: Нет deviceId - перерегистрация")
             await performDeviceRegistration()
             return
         }
         
-        logger.business("🔄 BUILD 122: Восстановление подписки с сервера для deviceId: \(deviceId)")
+        logger.business("🔄 BUILD 123: Восстановление подписки с сервера для deviceId: \(deviceId)")
         
         // ✅ Запрашиваем текущую подписку с сервера
         // Используем существующий метод getSubscriptionStatus()
@@ -399,17 +399,17 @@ final class SubscriptionManager: ObservableObject {
                 switch result {
                 case .success(let statusResponse):
                     // ✅ Восстанавливаем подписку из ответа сервера
-                    self.logger.business("✅ BUILD 122: Подписка восстановлена с сервера")
+                    self.logger.business("✅ BUILD 123: Подписка восстановлена с сервера")
                     
                     // Обновляем currentSubscription из ответа
                     // TODO: Преобразовать SubscriptionStatusSummaryResponse в SubscriptionStatus
                     // Пока что просто логируем успех
-                    self.logger.business("✅ BUILD 122: Уровень подписки: \(statusResponse.isActive ? "активна" : "неактивна")")
+                    self.logger.business("✅ BUILD 123: Уровень подписки: \(statusResponse.isActive ? "активна" : "неактивна")")
                     
                 case .failure(let error):
                     // ✅ Если не удалось → перерегистрация (только для FREE)
-                    self.logger.error("❌ BUILD 122: Не удалось восстановить подписку: \(error.localizedDescription)")
-                    self.logger.business("⚠️ BUILD 122: Перерегистрация устройства")
+                    self.logger.error("❌ BUILD 123: Не удалось восстановить подписку: \(error.localizedDescription)")
+                    self.logger.business("⚠️ BUILD 123: Перерегистрация устройства")
                     await self.performDeviceRegistration()
                 }
             }
@@ -603,54 +603,39 @@ final class SubscriptionManager: ObservableObject {
 
     /// 🎁 Activate trial period (14 days)
     func activateTrialIfNeeded() async {
-        // Check if trial already used
-        let hasUsedTrial = UserDefaults.standard.bool(forKey: "trial_used")
-        if hasUsedTrial {
-            logger.business("⏭️ Trial already used - skipping activation")
-            return
-        }
-
-        // Check if already in trial
+        // If trial is already active locally - do nothing.
         if let trial = trialStatus, trial.isActive {
             logger.business("✅ Trial already active")
             return
         }
 
-        logger.business("🎁 Activating 14-day trial period")
+        logger.business("🎁 Requesting server-side 14-day trial")
+
+        // We provide a requested window, but backend must be idempotent and the source of truth.
+        let startDate = Date()
+        let endDate = Calendar.current.date(byAdding: .day, value: 14, to: startDate)!
+        let requestedTrialInfo = TrialInfo(startDate: startDate, endDate: endDate, durationDays: 14)
 
         do {
             isLoading = true
 
-            // Calculate trial dates
-            let startDate = Date()
-            let endDate = Calendar.current.date(byAdding: .day, value: 14, to: startDate)!
+            // Backend will return either: trial (active or not), free, or paid — without resetting trial endlessly.
+            let jwtToken = try await registerDeviceWithTrial(trialInfo: requestedTrialInfo)
 
-            let trialInfo = TrialInfo(
-                startDate: startDate,
-                endDate: endDate,
-                durationDays: 14
-            )
+            if let serverTrial = jwtToken.trialInfo {
+                await updateTrialStatus(serverTrial)
 
-            // First register device anonymously
-            try await registerDeviceAnonymously()
-
-            // Then update with trial info
-            await updateTrialStatus(trialInfo)
-
-            // Mark trial as used
-            UserDefaults.standard.set(true, forKey: "trial_used")
-
-            // Track trial activation
-            trackEvent(.trialActivated, metadata: [
-                "duration_days": "14",
-                "days_remaining": String(trialInfo.daysRemaining)
-            ])
-
-            // 📅 Schedule trial expiry notifications (7, 3, 1 days before expiry)
-            NotificationManager.shared.scheduleTrialNotifications(trialEndDate: endDate)
-
-            logger.business("✅ Trial activated successfully: \(trialInfo.daysRemaining) days remaining + notifications scheduled")
-
+                if serverTrial.isActive {
+                    trackEvent(.trialActivated, metadata: [
+                        "duration_days": String(serverTrial.durationDays),
+                        "days_remaining": String(serverTrial.daysRemaining)
+                    ])
+                    NotificationManager.shared.scheduleTrialNotifications(trialEndDate: serverTrial.endDate)
+                    logger.business("✅ Trial activated from server: \(serverTrial.daysRemaining) days remaining + notifications scheduled")
+                } else {
+                    logger.business("ℹ️ Server trial is not active anymore. App should behave as free/paid.")
+                }
+            }
         } catch {
             logger.error("❌ Failed to activate trial: \(error)")
             lastError = .serverError(error.localizedDescription)
@@ -801,12 +786,12 @@ final class SubscriptionManager: ObservableObject {
                     self.logger.business("   - Expires At: \(jwtResponse.expiresAt)")
                     self.logger.business("   - Trial Info: \(String(describing: jwtResponse.subscription.trialInfo))")
                     
-                    // ✅ BUILD 122: Сохранение refresh token для device tokens
+                    // ✅ BUILD 123: Сохранение refresh token для device tokens
                     if let refreshToken = jwtResponse.refreshToken {
                         KeychainManager.shared.save(refreshToken, forKey: .refreshToken)
-                        self.logger.business("✅ BUILD 122: Refresh token сохранен в Keychain для device token")
+                        self.logger.business("✅ BUILD 123: Refresh token сохранен в Keychain для device token")
                     } else {
-                        self.logger.business("⚠️ BUILD 122: Refresh token не получен от сервера (обратная совместимость)")
+                        self.logger.business("⚠️ BUILD 123: Refresh token не получен от сервера (обратная совместимость)")
                     }
 
                     // 🔍 Комплексная валидация JWT токена
@@ -931,6 +916,91 @@ final class SubscriptionManager: ObservableObject {
         logger.business("🎉 РЕГИСТРАЦИЯ УСТРОЙСТВА ЗАВЕРШЕНА ПОЛНОСТЬЮ")
         logger.business("🚀 Устройство \(jwtToken.deviceId) готово к работе с реальным JWT")
         logger.business("🔐 Все защищенные API теперь доступны")
+
+        return jwtToken
+    }
+
+    /// 🔑 Register device anonymously with trial via backend (server-side source of truth).
+    private func registerDeviceWithTrial(trialInfo: TrialInfo) async throws -> JWTToken {
+        logger.business("📱 НАЧАЛО РЕГИСТРАЦИИ УСТРОЙСТВА С TRIAL (server-side)")
+
+        let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        let deviceType = "ios"
+
+        let request = TrialDeviceRegisterRequest(deviceId: deviceId, deviceType: deviceType, trialInfo: trialInfo)
+
+        // ✅ ПРОДАКШН: Реальный API вызов через APIService
+        logger.business("📡 ВЫЗОВ API: POST /api/auth/register-device-trial")
+
+        let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JWTDeviceRegisterResponse, Error>) in
+            var hasResumed = false
+
+            APIService.shared.registerDeviceWithTrial(request: request) { [self] result in
+                guard !hasResumed else {
+                    self.logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in registerDeviceWithTrial()!")
+                    return
+                }
+
+                switch result {
+                case .success(let jwtResponse):
+                    // Save refresh token if present (same as free registration path).
+                    if let refreshToken = jwtResponse.refreshToken {
+                        KeychainManager.shared.save(refreshToken, forKey: .refreshToken)
+                        self.logger.business("✅ Refresh token saved to Keychain for trial device")
+                    }
+
+                    // Validate JWT token payload/signature-like checks.
+                    let validationResult = self.validateJWTToken(jwtResponse.token)
+                    switch validationResult {
+                    case .valid:
+                        hasResumed = true
+                        continuation.resume(returning: jwtResponse)
+                    case .invalid(let reason):
+                        self.logger.error("❌ Trial JWT invalid: \(reason)")
+                        hasResumed = true
+                        continuation.resume(throwing: SubscriptionError.invalidToken)
+                    }
+
+                case .failure(let error):
+                    // Keep parity with registerDeviceAnonymously: handle 401 asynchronously.
+                    if let networkError = error as? NetworkError,
+                       case .httpError(401) = networkError {
+                        self.logger.business("🚨 Detected 401 during trial registration")
+                        Task { await self.handle401Error() }
+                        return
+                    }
+
+                    hasResumed = true
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+
+        // ✅ Parse exp for local expiry handling.
+        let realExpFromJWT = parseJWTToken(response.token)?.expiresAt
+        let finalExpiresAt = realExpFromJWT ?? response.expiresAtDate ?? Date().addingTimeInterval(86400)
+
+        let jwtToken = JWTToken(
+            token: response.token,
+            deviceId: response.deviceId,
+            subscriptionLevel: SubscriptionLevel(rawValue: response.subscription.level) ?? .free,
+            trialInfo: response.subscription.trialInfo,
+            expiresAt: finalExpiresAt,
+            issuedAt: response.registeredAtDate ?? Date(),
+            issuer: "ALADDIN",
+            limits: SubscriptionLimits.freeLimits, // overwritten by subscriptionStatus sync below
+            components: []
+        )
+
+        await storeToken(jwtToken)
+
+        // Sync subscription/limits and update trial status for UI.
+        let newSubscriptionStatus = response.subscription.toSubscriptionStatus()
+        await updateSubscriptionStatus(newSubscriptionStatus)
+
+        if let serverTrial = jwtToken.trialInfo {
+            await updateTrialStatus(serverTrial)
+        }
 
         return jwtToken
     }
@@ -1573,6 +1643,8 @@ extension SubscriptionManager {
                 return "Превышено время ожидания. Проверьте интернет-соединение."
             case .serverUnavailable:
                 return "Сервер временно недоступен. Попробуйте позже."
+            case .serviceUnavailable:
+                return "Сервис временно недоступен. Повторите попытку позже."
             default:
                 return "Произошла сетевая ошибка. Попробуйте позже."
             }

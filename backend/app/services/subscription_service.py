@@ -46,16 +46,47 @@ class SubscriptionService:
         """Register device with trial period in DB"""
         repo = SubscriptionRepository(db)
         
+        now = datetime.utcnow()
         existing = repo.get_subscription_by_device(request.device_id)
-        
+
+        # If we already have a paid tier for this device - trial must not be granted again.
+        if existing and existing.level in [
+            SubscriptionLevel.PERSONAL.value,
+            SubscriptionLevel.FAMILY.value,
+            SubscriptionLevel.PREMIUM.value
+        ]:
+            return SubscriptionService._map_to_payload(existing)
+
+        # If we have an existing trial record (or at least a stored trial_end_date), use it as an anti-abuse ledger.
+        if existing and existing.trial_end_date:
+            # Trial is still active -> idempotent: do not extend/re-issue.
+            if now < existing.trial_end_date:
+                return SubscriptionService._map_to_payload(existing)
+
+            # Trial has expired -> downgrade to free, but KEEP trial_end_date as history to prevent re-issuing.
+            updates = {
+                "level": SubscriptionLevel.FREE.value,
+                "status": "active",
+                "start_date": now,
+                "end_date": None,
+                "limits": SubscriptionLimits.free_limits().dict(),
+                "features": []
+            }
+            db_sub = repo.update_subscription(existing, updates)
+            return SubscriptionService._map_to_payload(db_sub)
+
+        # No existing trial ledger -> create a new trial (server-side source of truth).
+        duration_days = getattr(request.trial_info, "duration_days", 14) or 14
+        computed_trial_end = now + timedelta(days=duration_days)
+
         sub_data = {
             "user_id": "anonymous",
             "device_id": request.device_id,
             "level": SubscriptionLevel.TRIAL.value,
             "status": "trial",
-            "start_date": datetime.utcnow(),
-            "trial_end_date": request.trial_info.end_date,
-            "end_date": request.trial_info.end_date,
+            "start_date": now,
+            "trial_end_date": computed_trial_end,
+            "end_date": computed_trial_end,
             "limits": SubscriptionLimits.trial_limits().dict(),
             "features": ["basic_protection", "ai_assistant_basic"]
         }
@@ -64,7 +95,7 @@ class SubscriptionService:
             db_sub = repo.update_subscription(existing, sub_data)
         else:
             db_sub = repo.create_subscription(sub_data)
-            
+
         return SubscriptionService._map_to_payload(db_sub)
 
     @staticmethod

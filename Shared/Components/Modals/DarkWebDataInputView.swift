@@ -272,9 +272,9 @@ struct DarkWebDataInputView: View {
                 
                 // Обновляем данные в ViewModel
                 await viewModel.loadData()
-                
-                // Показываем результаты (обновляем модальное окно)
-                isPresented = false
+            
+            // Показываем результаты (обновляем модальное окно)
+            isPresented = false
             } else {
                 print("⚠️ DarkWebDataInputView: Сканирование завершено с ошибкой: \(viewModel.errorMessage ?? "неизвестная ошибка")")
                 MasterLogger.shared.log(.warn, category: .business, message: "⚠️ DarkWebDataInputView: Сканирование завершено с ошибкой: \(viewModel.errorMessage ?? "неизвестная ошибка")")
@@ -289,9 +289,9 @@ struct DarkWebDataInputView: View {
     
     private func errorBanner(message: String) -> some View {
         HStack {
-            Text(message)
-                .font(.footnote)
-                .foregroundColor(.white)
+        Text(message)
+            .font(.footnote)
+            .foregroundColor(.white)
 
             Spacer()
 
@@ -309,11 +309,11 @@ struct DarkWebDataInputView: View {
                     .clipShape(Capsule())
             }
         }
-        .padding(.horizontal, Spacing.m)
-        .padding(.vertical, Spacing.s)
-        .background(Color.dangerRed.opacity(0.9))
-        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
-        .shadow(radius: 6)
+            .padding(.horizontal, Spacing.m)
+            .padding(.vertical, Spacing.s)
+            .background(Color.dangerRed.opacity(0.9))
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+            .shadow(radius: 6)
     }
 }
 

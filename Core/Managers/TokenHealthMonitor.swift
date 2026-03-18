@@ -80,11 +80,12 @@ class TokenHealthMonitor {
 
     /// Stop monitoring
     func stopMonitoring() {
-        logger.business("⏹️ DEFENSIVE JWT: Stopping token health monitoring")
+        // Avoid noisy stop/start logs when no timer is running.
+        guard monitoringTimer != nil else { return }
 
+        logger.business("⏹️ DEFENSIVE JWT: Stopping token health monitoring")
         monitoringTimer?.invalidate()
         monitoringTimer = nil
-
         logger.business("✅ DEFENSIVE JWT: Health monitoring stopped")
     }
 

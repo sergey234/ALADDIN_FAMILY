@@ -8,15 +8,20 @@
 ```bash
 ssh root@149.154.65.180
 cd /opt/aladdin-backend
-PGPASSWORD='AladdinSecure2024!' psql -h localhost -U aladdin_user -d aladdin_db -f docs/server/PAYMENTS_DB_SETUP.sql
+PGPASSWORD="${ALADDIN_DB_PASSWORD}" psql -h localhost -U aladdin_user -d aladdin_db -f docs/server/PAYMENTS_DB_SETUP.sql
+```
+**SECURITY:** Не хранить пароль БД в репозитории. Используйте переменную окружения:
+```bash
+PGPASSWORD="${ALADDIN_DB_PASSWORD}" psql -h localhost -U aladdin_user -d aladdin_db -f docs/server/PAYMENTS_DB_SETUP.sql
 ```
 
 **Или через expect (для ML системы):**
 ```bash
 expect -c "
 set timeout 60
-set password \"Sergio675\"
-set db_password \"AladdinSecure2024!\"
+# SECURITY: не хранить SSH/DB пароли в репозитории. Используйте секреты/ENV.
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
+set db_password \"$env(ALADDIN_DB_PASSWORD)\"
 spawn ssh root@149.154.65.180 \"cd /opt/aladdin-backend && PGPASSWORD='\$db_password' psql -h localhost -U aladdin_user -d aladdin_db -f docs/server/PAYMENTS_DB_SETUP.sql\"
 expect \"password:\" { send \"\$password\\r\" }
 expect eof
@@ -34,7 +39,7 @@ scp docs/server/payments.py root@149.154.65.180:/opt/aladdin-backend/app/routers
 ```bash
 expect -c "
 set timeout 60
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 spawn scp docs/server/payments.py root@149.154.65.180:/opt/aladdin-backend/app/routers/payments.py
 expect \"password:\" { send \"\$password\\r\" }
 expect eof

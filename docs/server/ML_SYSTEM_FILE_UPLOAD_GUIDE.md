@@ -5,7 +5,7 @@
 
 ## 🔐 Параметры подключения
 - **Сервер**: `root@149.154.65.180`
-- **Пароль**: `Sergio675`
+- **Пароль**: **НЕ ХРАНИТЬ В РЕПОЗИТОРИИ** (использовать SSH-ключи / секреты)
 - **Таймаут**: 90 секунд
 - **Путь на сервере**: `/var/www/aladdin-ai.ru/`
 
@@ -15,7 +15,7 @@
 ```bash
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn scp /путь/к/локальному/файлу \$server:/путь/на/сервере/файл
 expect \"password:\" { send \"\$password\\r\" }
@@ -27,7 +27,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn ssh \$server \"ВАША_КОМАНДА\"
 expect \"password:\" { send \"\$password\\r\" }
@@ -42,7 +42,7 @@ expect eof
 cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn scp landing/privacy.html \$server:/var/www/aladdin-ai.ru/privacy.html
 expect \"password:\" { send \"\$password\\r\" }
@@ -55,7 +55,7 @@ expect eof
 cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn scp landing/terms.html \$server:/var/www/aladdin-ai.ru/terms.html
 expect \"password:\" { send \"\$password\\r\" }
@@ -67,7 +67,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn ssh \$server \"echo '=== Privacy ===' && grep -c '<h2' /var/www/aladdin-ai.ru/privacy.html && echo '=== Terms ===' && grep -c '<h2' /var/www/aladdin-ai.ru/terms.html && echo '=== Размеры файлов ===' && ls -lh /var/www/aladdin-ai.ru/privacy.html /var/www/aladdin-ai.ru/terms.html\"
 expect \"password:\" { send \"\$password\\r\" }
@@ -88,7 +88,7 @@ curl -H "Cache-Control: no-cache" https://aladdin-ai.ru/terms.html 2>/dev/null |
 cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn scp landing/privacy.html \$server:/var/www/aladdin-ai.ru/privacy.html
 expect \"password:\" { send \"\$password\\r\" }
@@ -101,7 +101,7 @@ expect eof
 cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn scp landing/terms.html \$server:/var/www/aladdin-ai.ru/terms.html
 expect \"password:\" { send \"\$password\\r\" }
@@ -113,7 +113,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn ssh \$server \"echo '=== Privacy ===' && grep -c '<h2' /var/www/aladdin-ai.ru/privacy.html && echo '=== Terms ===' && grep -c '<h2' /var/www/aladdin-ai.ru/terms.html\"
 expect \"password:\" { send \"\$password\\r\" }
@@ -145,7 +145,7 @@ curl -H "Cache-Control: no-cache" https://aladdin-ai.ru/terms.html 2>/dev/null |
 cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn scp landing/FILENAME \$server:/var/www/aladdin-ai.ru/FILENAME
 expect \"password:\" { send \"\$password\\r\" }
@@ -157,7 +157,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn ssh \$server \"ls -lh /var/www/aladdin-ai.ru/privacy.html\"
 expect \"password:\" { send \"\$password\\r\" }
@@ -169,7 +169,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 90
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn ssh \$server \"cp /var/www/aladdin-ai.ru/privacy.html /var/www/aladdin-ai.ru/privacy.html.backup && cp /var/www/aladdin-ai.ru/terms.html /var/www/aladdin-ai.ru/terms.html.backup && echo 'Backup created'\"
 expect \"password:\" { send \"\$password\\r\" }
@@ -193,7 +193,7 @@ expect eof
 
 ### Ошибка "Connection refused" или "Permission denied"
 - Проверьте доступность сервера: `ping 149.154.65.180`
-- Убедитесь, что пароль правильный
+- Убедитесь, что настроены SSH-ключи / переменные окружения (пароли не хранить в репозитории)
 - Проверьте, что `expect` установлен: `which expect`
 
 ### Файл не загружается

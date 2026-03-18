@@ -245,11 +245,11 @@ class ParentalControlViewModel: ObservableObject {
                     VisualLogger.shared.log("📤 ParentalControlViewModel.toggleComponent: Отправка SessionExpired", level: .warning, category: "SESSION")
                     MasterLogger.shared.log(.warn, category: .business, message: "📤 ParentalControlViewModel.toggleComponent: Sending SessionExpired notification")
                     #endif
-                    NotificationCenter.default.post(
-                        name: NSNotification.Name("SessionExpired"),
-                        object: nil,
-                        userInfo: ["message": errorMessage]
-                    )
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("SessionExpired"),
+                    object: nil,
+                    userInfo: ["message": errorMessage]
+                )
                 }
                 // Если токена не было, не отправляем SessionExpired - это не истекшая сессия
             } else {

@@ -104,7 +104,7 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "122"
+    static let buildNumber = "123"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -380,7 +380,7 @@ struct AppConfig {
         static let register = "/api/auth/register"
         static let authRefresh = "/api/auth/refresh"
         static let registerDevice = "/api/auth/register-device"
-        static let registerDeviceTrial = "/auth/register-device-trial"
+        static let registerDeviceTrial = "/api/auth/register-device-trial"
         
         // ✅ ЗАДАЧА 25: Roadside Assistance
         static let roadsideCall = "/api/roadside-assistance/call"

@@ -2,7 +2,14 @@
 # 🚀 Автоматическое развертывание реферальной программы на сервере
 
 set timeout 120
-set password "Sergio675"
+# SECURITY: Never store passwords in the repository.
+# Prefer SSH keys. If password auth is absolutely required, pass it via env var:
+#   export ALADDIN_SSH_PASSWORD='...'
+if {![info exists env(ALADDIN_SSH_PASSWORD)]} {
+    puts "❌ SECURITY: ALADDIN_SSH_PASSWORD не задана. Настройте SSH-ключи (рекомендуется) и повторите."
+    exit 1
+}
+set password $env(ALADDIN_SSH_PASSWORD)
 set server "root@149.154.65.180"
 set local_script_dir "/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS/docs/server"
 

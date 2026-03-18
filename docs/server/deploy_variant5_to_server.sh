@@ -3,7 +3,6 @@
 
 SERVER_IP="149.154.65.180"
 SERVER_USER="root"
-SERVER_PASSWORD="Sergio675"
 SERVER_PATH="/opt/aladdin-backend"
 
 echo "🚀 ЗАГРУЗКА ВАРИАНТА 5 НА СЕРВЕР"
@@ -16,9 +15,13 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Функция для выполнения команд через SSH
+# SECURITY: Never store passwords in the repository.
+# This script now requires SSH key-based auth (recommended for production).
+# Setup once (from your machine):
+#   ssh-copy-id root@149.154.65.180
+# Or configure ~/.ssh/config + ssh-agent.
 ssh_exec() {
-    sshpass -p "$SERVER_PASSWORD" ssh -o StrictHostKeyChecking=no "$SERVER_USER@$SERVER_IP" "$1"
+    ssh -o StrictHostKeyChecking=accept-new "$SERVER_USER@$SERVER_IP" "$1"
 }
 
 # Функция для загрузки файлов через SCP
@@ -26,7 +29,7 @@ scp_upload() {
     local local_file=$1
     local remote_file=$2
     echo -e "${YELLOW}📤 Загрузка: $local_file -> $remote_file${NC}"
-    sshpass -p "$SERVER_PASSWORD" scp -o StrictHostKeyChecking=no "$local_file" "$SERVER_USER@$SERVER_IP:$remote_file"
+    scp -o StrictHostKeyChecking=accept-new "$local_file" "$SERVER_USER@$SERVER_IP:$remote_file"
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Успешно загружено${NC}"
     else

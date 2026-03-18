@@ -15,7 +15,7 @@
 
 ### Основная информация:
 - **Сервер**: `root@149.154.65.180`
-- **Пароль**: `Sergio675`
+- **Пароль**: **НЕ ХРАНИТЬ В РЕПОЗИТОРИИ** (использовать SSH-ключи / секреты)
 - **Протокол**: SSH
 - **Порт**: 22 (по умолчанию)
 
@@ -40,7 +40,7 @@ ssh root@149.154.65.180 "команда"
 
 С `expect` пароль вводится автоматически:
 ```bash
-expect -c "spawn ssh root@149.154.65.180 'команда'; expect 'password:' { send 'Sergio675\r' }"
+expect -c "spawn ssh root@149.154.65.180 'команда'; expect 'password:' { send \"$env(ALADDIN_SSH_PASSWORD)\\r\" }"
 # ✅ Автоматически вводит пароль и выполняет команду
 ```
 
@@ -66,7 +66,7 @@ which expect
 ```bash
 expect -c "
 set timeout 30
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 spawn ssh \$server \"ВАША_КОМАНДА\"
 expect \"password:\" { send \"\$password\\r\" }
@@ -78,7 +78,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 30
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 spawn ssh root@149.154.65.180 \"ls -la /var/www\"
 expect \"password:\" { send \"\$password\\r\" }
 expect eof
@@ -91,7 +91,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 60
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 set server \"root@149.154.65.180\"
 
 # Команда 1
@@ -112,7 +112,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 60
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 spawn scp /путь/к/локальному/файлу root@149.154.65.180:/путь/на/сервере
 expect \"password:\" { send \"\$password\\r\" }
 expect eof
@@ -123,7 +123,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 60
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 spawn scp /Users/user/file.txt root@149.154.65.180:/tmp/file.txt
 expect \"password:\" { send \"\$password\\r\" }
 expect eof
@@ -140,7 +140,7 @@ expect eof
 ```bash
 #!/usr/bin/expect -f
 set timeout 30
-set password "Sergio675"
+set password "$env(ALADDIN_SSH_PASSWORD)"
 set server "root@149.154.65.180"
 
 puts "=== Выполнение команды ==="
@@ -161,7 +161,7 @@ chmod +x simple_command.sh
 ```bash
 #!/usr/bin/expect -f
 set timeout 60
-set password "Sergio675"
+set password "$env(ALADDIN_SSH_PASSWORD)"
 set server "root@149.154.65.180"
 
 puts "=== Шаг 1: Проверка статуса ==="
@@ -211,10 +211,10 @@ expect eof
 ```bash
 #!/usr/bin/expect -f
 set timeout 60
-set password "Sergio675"
+set password "$env(ALADDIN_SSH_PASSWORD)"
 set server "root@149.154.65.180"
 set db_user "aladdin_user"
-set db_password "AladdinSecure2024!"
+set db_password "$env(ALADDIN_DB_PASSWORD)"
 set db_name "aladdin_db"
 
 puts "=== Выполнение SQL команды ==="
@@ -229,10 +229,10 @@ expect eof
 ```bash
 #!/usr/bin/expect -f
 set timeout 120
-set password "Sergio675"
+set password "$env(ALADDIN_SSH_PASSWORD)"
 set server "root@149.154.65.180"
 set db_user "aladdin_user"
-set db_password "AladdinSecure2024!"
+set db_password "$env(ALADDIN_DB_PASSWORD)"
 set db_name "aladdin_db"
 
 # Шаг 1: Копирование SQL файла
@@ -256,7 +256,7 @@ expect eof
 ### ⚠️ ВАЖНО: Пароль в скриптах
 
 **Текущая ситуация:**
-- Пароль `Sergio675` хранится в скриптах
+- Пароли не должны храниться в скриптах/репозитории
 - Это работает, но не безопасно для продакшена
 
 **Рекомендации для продакшена:**

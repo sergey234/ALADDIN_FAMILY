@@ -16,17 +16,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 # ✅ Авторизация с реальным user_id
-try:
-    from app.auth.auth import get_current_user
-except ImportError:
-    # Fallback для случаев когда auth не найден
-    from fastapi.security import HTTPBearer
-    security = HTTPBearer()
-    
-    async def get_current_user(credentials = Depends(security)) -> dict:
-        """Fallback функция для авторизации"""
-        # В реальной реализации здесь должна быть проверка JWT
-        return {"id": "default_user", "sub": "default_user"}
+# ✅ JWT-014: ИСПРАВЛЕНО - используем правильный get_current_user из app.auth.auth
+from app.auth.auth import get_current_user
 
 # ✅ Импорт БД
 try:

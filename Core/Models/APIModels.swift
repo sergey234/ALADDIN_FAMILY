@@ -2797,6 +2797,12 @@ struct TrialDeviceRegisterRequest: Codable {
     let deviceId: String
     let deviceType: String
     let trialInfo: TrialInfo
+
+    enum CodingKeys: String, CodingKey {
+        case deviceId = "device_id"
+        case deviceType = "device_type"
+        case trialInfo = "trial_info"
+    }
 }
 
 

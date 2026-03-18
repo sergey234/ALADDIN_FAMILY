@@ -706,9 +706,9 @@ struct ParentalControlScreen: View {
                         } else {
                             // Только для других ошибок показываем сообщение
                             let message = self.localizationManager.localized("parental_children_error_generic")
-                            self.childrenErrorMessage = message
-                            self.statsErrorMessage = message
-                            print("❌ Ошибка загрузки списка детей: \(error.localizedDescription)")
+                    self.childrenErrorMessage = message
+                    self.statsErrorMessage = message
+                    print("❌ Ошибка загрузки списка детей: \(error.localizedDescription)")
                         }
                     }
                 }

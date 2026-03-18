@@ -22,7 +22,7 @@ which expect   # должно вывести /usr/bin/expect; если нет �
 cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 expect -c "
 set timeout 120
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 puts \"📤 Копируем обновленный success.html на backend-сервер...\"
 spawn scp landing/success.html root@149.154.65.180:/opt/aladdin-backend/success.html
 expect \"password:\" { send \"\$password\r\" }
@@ -39,7 +39,7 @@ expect eof
 ```bash
 expect -c "
 set timeout 120
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 puts \"📤 Обновляем success.html в /var/www/html...\"
 spawn ssh root@149.154.65.180 \"cp /opt/aladdin-backend/success.html /var/www/html/success.html && md5sum /var/www/html/success.html\"
 expect \"password:\" { send \"\$password\r\" }
@@ -48,7 +48,7 @@ expect eof
 
 expect -c "
 set timeout 120
-set password \"Sergio675\"
+set password \"$env(ALADDIN_SSH_PASSWORD)\"
 puts \"📤 Обновляем success.html в /var/www/aladdin-ai.ru...\"
 spawn ssh root@149.154.65.180 \"cp /opt/aladdin-backend/success.html /var/www/aladdin-ai.ru/success.html && md5sum /var/www/aladdin-ai.ru/success.html\"
 expect \"password:\" { send \"\$password\r\" }

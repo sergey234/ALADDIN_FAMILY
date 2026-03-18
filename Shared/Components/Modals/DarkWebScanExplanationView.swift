@@ -75,9 +75,9 @@ struct DarkWebScanExplanationView: View {
                             .lineLimit(1)
                     }
                 } else {
-                    Text(title)
-                        .font(.h3)
-                        .foregroundColor(.textPrimary)
+                Text(title)
+                    .font(.h3)
+                    .foregroundColor(.textPrimary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
