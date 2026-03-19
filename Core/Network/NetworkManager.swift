@@ -245,7 +245,7 @@ class NetworkManager: NSObject, ObservableObject {
             
             // ✅ ПРОВЕРКА АВТОРИЗАЦИИ: Если требуется авторизация, проверяем токен
             if requiresAuth {
-                // ✅ BUILD 122: Восстановление токена перед запросом
+                // ✅ BUILD 123: Восстановление токена перед запросом
                 if AppConfig.authToken == nil {
                     let token = await MainActor.run {
                         SubscriptionManager.shared.currentToken
@@ -327,7 +327,7 @@ class NetworkManager: NSObject, ObservableObject {
             
             // ✅ ПРОВЕРКА АВТОРИЗАЦИИ: Если требуется авторизация, проверяем токен
             if requiresAuth {
-                // ✅ BUILD 122: Восстановление токена перед запросом
+                // ✅ BUILD 123: Восстановление токена перед запросом
                 if AppConfig.authToken == nil {
                     let token = await MainActor.run {
                         SubscriptionManager.shared.currentToken
@@ -400,7 +400,7 @@ class NetworkManager: NSObject, ObservableObject {
             request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
             request.setValue("no-cache", forHTTPHeaderField: "Pragma")
             
-            // ✅ BUILD 122: Восстановление токена перед запросом
+            // ✅ BUILD 123: Восстановление токена перед запросом
             if AppConfig.authToken == nil {
                 let token = await MainActor.run {
                     SubscriptionManager.shared.currentToken
@@ -447,7 +447,7 @@ class NetworkManager: NSObject, ObservableObject {
             request.httpMethod = "PUT"
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             
-            // ✅ BUILD 122: Восстановление токена перед запросом
+            // ✅ BUILD 123: Восстановление токена перед запросом
             if AppConfig.authToken == nil {
                 let token = await MainActor.run {
                     SubscriptionManager.shared.currentToken
@@ -507,7 +507,7 @@ class NetworkManager: NSObject, ObservableObject {
             request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
             request.setValue("no-cache", forHTTPHeaderField: "Pragma")
             
-            // ✅ BUILD 122: Восстановление токена перед запросом
+            // ✅ BUILD 123: Восстановление токена перед запросом
             if AppConfig.authToken == nil {
                 let token = await MainActor.run {
                     SubscriptionManager.shared.currentToken
@@ -562,7 +562,7 @@ class NetworkManager: NSObject, ObservableObject {
             request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
             request.setValue("no-cache", forHTTPHeaderField: "Pragma")
             
-            // ✅ BUILD 122: Восстановление токена перед запросом
+            // ✅ BUILD 123: Восстановление токена перед запросом
             if AppConfig.authToken == nil {
                 let token = await MainActor.run {
                     SubscriptionManager.shared.currentToken
@@ -1265,7 +1265,7 @@ class NetworkManager: NSObject, ObservableObject {
                 print("   - Размер данных: \(data.count) байт")
                 #endif
                 
-                // ✅ BUILD 122: Проверка mock ответов перед декодированием
+                // ✅ BUILD 123: Проверка mock ответов перед декодированием
                 if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let source = json["source"] as? String,
                    source == "sfm_mock" || source == "mock" {

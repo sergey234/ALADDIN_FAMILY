@@ -233,55 +233,55 @@ struct TrialInfo: Codable, Equatable {
     /// ✅ BUILD 121: Кастомный init для парсинга ISO 8601 строк в Date
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
-        // Парсим ISO 8601 строки в Date
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        
-        let startDateString = try container.decode(String.self, forKey: .startDate)
-        guard let startDateParsed = formatter.date(from: startDateString) else {
-            // Fallback: пробуем без fractional seconds
+
+        /// iOS fallback: сервер иногда отдаёт ISO8601 без timezone (например `2026-03-18T19:52:01.375139`).
+        /// `ISO8601DateFormatter` с `.withInternetDateTime` такое не принимает, поэтому пробуем несколько режимов.
+        func parseISODate(_ dateString: String) -> Date? {
+            let hasTimeZoneSuffix =
+                dateString.hasSuffix("Z") ||
+                dateString.range(of: "[+-]\\d{2}:?\\d{2}$", options: .regularExpression) != nil
+
+            // timezone-aware (как было)
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let d = formatter.date(from: dateString) { return d }
+
             formatter.formatOptions = [.withInternetDateTime]
-            guard let fallbackDate = formatter.date(from: startDateString) else {
-                throw DecodingError.dataCorruptedError(
-                    forKey: .startDate,
-                    in: container,
-                    debugDescription: "Invalid date format: \(startDateString)"
-                )
+            if let d = formatter.date(from: dateString) { return d }
+
+            // timezone-less: если timezone не указан — дописываем `Z` и повторяем.
+            if !hasTimeZoneSuffix {
+                let zDateString = dateString + "Z"
+                formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+                if let d = formatter.date(from: zDateString) { return d }
+
+                formatter.formatOptions = [.withInternetDateTime]
+                if let d = formatter.date(from: zDateString) { return d }
             }
-            self.startDate = fallbackDate
-            // Продолжаем с endDate
-            let endDateString = try container.decode(String.self, forKey: .endDate)
-            guard let endDateParsed = formatter.date(from: endDateString) else {
-                throw DecodingError.dataCorruptedError(
-                    forKey: .endDate,
-                    in: container,
-                    debugDescription: "Invalid date format: \(endDateString)"
-                )
-            }
-            self.endDate = endDateParsed
-            self.durationDays = try container.decodeIfPresent(Int.self, forKey: .durationDays) ?? 14
-            return
+
+            return nil
+        }
+
+        let startDateString = try container.decode(String.self, forKey: .startDate)
+        guard let startDateParsed = parseISODate(startDateString) else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .startDate,
+                in: container,
+                debugDescription: "Invalid date format: \(startDateString)"
+            )
         }
         self.startDate = startDateParsed
-        
+
         let endDateString = try container.decode(String.self, forKey: .endDate)
-        guard let endDateParsed = formatter.date(from: endDateString) else {
-            // Fallback: пробуем без fractional seconds
-            formatter.formatOptions = [.withInternetDateTime]
-            guard let fallbackDate = formatter.date(from: endDateString) else {
-                throw DecodingError.dataCorruptedError(
-                    forKey: .endDate,
-                    in: container,
-                    debugDescription: "Invalid date format: \(endDateString)"
-                )
-            }
-            self.endDate = fallbackDate
-            self.durationDays = try container.decodeIfPresent(Int.self, forKey: .durationDays) ?? 14
-            return
+        guard let endDateParsed = parseISODate(endDateString) else {
+            throw DecodingError.dataCorruptedError(
+                forKey: .endDate,
+                in: container,
+                debugDescription: "Invalid date format: \(endDateString)"
+            )
         }
         self.endDate = endDateParsed
-        
+
         // durationDays: default = 14 если отсутствует
         self.durationDays = try container.decodeIfPresent(Int.self, forKey: .durationDays) ?? 14
     }
@@ -730,7 +730,7 @@ struct FeatureAccessConfig {
 /// ✅ FIXED: Server returns dates as ISO 8601 strings, not Date objects
 struct JWTDeviceRegisterResponse: Codable {
     let token: String
-    let refreshToken: String?  // ✅ BUILD 122: Опциональный для обратной совместимости
+    let refreshToken: String?  // ✅ BUILD 123: Опциональный для обратной совместимости
     let deviceId: String
     let expiresAt: String  // ISO 8601 date string from server
     let registeredAt: String  // ISO 8601 date string from server
@@ -739,7 +739,7 @@ struct JWTDeviceRegisterResponse: Codable {
     /// ✅ ИСПРАВЛЕНИЕ: Маппинг snake_case (сервер) → camelCase (клиент)
     enum CodingKeys: String, CodingKey {
         case token
-        case refreshToken = "refresh_token"  // ✅ BUILD 122: Маппинг snake_case → camelCase
+        case refreshToken = "refresh_token"  // ✅ BUILD 123: Маппинг snake_case → camelCase
         case deviceId = "device_id"  // ✅ Сервер возвращает device_id, клиент ожидает deviceId
         case expiresAt = "expires_at"
         case registeredAt = "registered_at"
