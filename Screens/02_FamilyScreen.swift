@@ -915,7 +915,7 @@ extension FamilyScreen {
                     title: localizationManager.localized("parental_geofence"),
                     statusBadge: "🏠",
                     statusText: "🏠 \(locationStatus.isEmpty ? localizationManager.localized("parental_location_home") : locationStatus)",
-                    metric: locationLastUpdate + (locationWarnings > 0 ? " • ⚠️ \(locationWarnings)" : ""),
+                    metric: "Точность: 50м • " + locationLastUpdate,
                     cardColor: .green.opacity(0.2),
                     borderColor: .green.opacity(0.4),
                     badgeColor: .successGreen,
@@ -958,13 +958,22 @@ extension FamilyScreen {
                 FamilyParentalControlCard(
                     icon: "🚨",
                     title: localizationManager.localized("parental_bypass_protection"),
-                    statusBadge: bypassAttemptsToday > 0 ? "🚨 \(bypassAttemptsToday)" : "✅ 0",
-                    statusText: "🚫 \(bypassAttemptsBlocked) \(localizationManager.localized("parental_blocked_count"))",
+                    statusBadge: bypassAttemptsToday > 0 ? "🚨 \(bypassAttemptsToday)" : (DNSProtectionManager.shared.isEnabled ? "🔒 SECURE" : "⚠️ OFF"),
+                    statusText: DNSProtectionManager.shared.isEnabled ? "Smart DNS Активен" : "Фильтр DNS отключен",
                     metric: "\(bypassDetectionActive)/3 \(localizationManager.localized("parental_detection_active"))",
-                    cardColor: Color.warningOrange.opacity(0.2),  // Янтарный (новый цвет!)
+                    cardColor: Color.warningOrange.opacity(0.2),
                     borderColor: Color.warningOrange.opacity(0.4),
                     badgeColor: bypassAttemptsToday > 0 ? .dangerRed : .successGreen,
-                    isEnabled: $isBypassProtectionEnabled,
+                    isEnabled: Binding(
+                        get: { DNSProtectionManager.shared.isEnabled },
+                        set: { newValue in
+                            if newValue {
+                                DNSProtectionManager.shared.enableProtection()
+                            } else {
+                                DNSProtectionManager.shared.disableProtection()
+                            }
+                        }
+                    ),
                     action: { showBypassProtectionModal = true }
                 )
                 .environmentObject(localizationManager)
@@ -1825,6 +1834,14 @@ struct FamilyLocationModal: View {
                     description: localizationManager.localized("family_sos_desc"),
                     isEnabled: $isSOSEnabled
                 )
+
+                // Точность геозоны — аккуратно ниже кнопки SOS
+                Text("\(localizationManager.localized("parental_location_accuracy_50m"))"
+                     + (locationLastUpdate.isEmpty ? "" : " • \(locationLastUpdate)"))
+                    .font(.captionSmall)
+                    .foregroundColor(.textTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, Spacing.s)
                 
                 Divider()
                     .background(Color.white.opacity(0.2))
@@ -2037,32 +2054,16 @@ struct FamilyLocationModal: View {
 
 // MARK: - Location Event Model
 
-struct LocationEvent: Identifiable {
-    let id = UUID()
-    let time: String
-    let action: String
-    let status: LocationStatus
-    
-    enum LocationStatus {
-        case arrival
-        case departure
-        
-        var icon: String {
-            switch self {
-            case .arrival: return "✅"
-            case .departure: return "🚶"
-            }
-        }
-    }
-}
+// Models moved to global APIModels.swift
 
 struct FamilyReportsModal: View {
     @Binding var isPresented: Bool
     @Binding var isEnabled: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
     
-    // Выбранный ребёнок для загрузки статистики
-    @AppStorage("parental_selected_child") private var selectedChild: String = ""
+    // Выбранный ребёнок для загрузки статистики (новый ID + legacy fallback)
+    @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
+    @AppStorage("parental_selected_child") private var legacySelectedChild: String = ""
     
     // Список детей (динамический)
     @State private var children: [String] = []
@@ -2084,6 +2085,26 @@ struct FamilyReportsModal: View {
     
     // Ключ для статистики отчётов
     private let statsKey = "parental_reports_stats"
+    
+    private var effectiveChildId: String {
+        if !selectedChildId.isEmpty { return selectedChildId }
+        return legacySelectedChild
+    }
+    
+    private var smartDNSOffReason: String {
+        if effectiveChildId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return "Нет выбранного ребёнка"
+        }
+        
+        let error = (dnsProtectionManager.lastError ?? "").lowercased()
+        if error.contains("конфигурация dns пуста") || error.contains("ошибка получения конфига") {
+            return "Нет DNS-конфига с сервера"
+        }
+        if error.contains("не удалось сохранить профиль ios") || error.contains("savetopreferences") {
+            return "Не удалось сохранить профиль iOS"
+        }
+        return "Не удалось активировать Smart DNS"
+    }
     
     var body: some View {
         FamilyModalBaseView(
@@ -2198,8 +2219,8 @@ struct FamilyReportsModal: View {
         .id("reports_modal_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
             loadChildren()
-            if selectedChild.isEmpty && !children.isEmpty {
-                selectedChild = children.first ?? ""
+            if selectedChildId.isEmpty && !legacySelectedChild.isEmpty {
+                selectedChildId = legacySelectedChild
             }
             // Загружаем статистику при открытии модала
             loadReportsStatistics()
@@ -2231,7 +2252,7 @@ struct FamilyReportsModal: View {
         
         // Загружаем статистику обхода через API
         let manager = ParentalControlManager.shared
-        manager.getBypassStats(childId: selectedChild) { result in
+        manager.getBypassStats(childId: effectiveChildId) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let stats):
@@ -2259,11 +2280,7 @@ struct FamilyReportsModal: View {
 
 // MARK: - Report Warning Model
 
-struct ReportWarning: Identifiable {
-    let id = UUID()
-    let text: String
-    let color: Color
-}
+// ReportWarning moved to global APIModels.swift
 
 struct FamilyAdditionalModal: View {
     @Binding var isPresented: Bool
@@ -3978,18 +3995,7 @@ struct AppLimitsSettingsModal: View {
 }
 
 // Вспомогательная структура для Codable
-struct AppLimitItemCodable: Codable {
-    let app: String
-    var limit: Double
-    let colorHex: String
-}
-
-struct AppLimitItem: Identifiable {
-    let id = UUID()
-    var app: String
-    var limit: Double
-    let color: Color
-}
+// AppLimit models moved to global APIModels.swift
 
 // MARK: Геолокация
 
@@ -4185,25 +4191,7 @@ struct GeofencesSettingsModal: View {
 }
 
 // Вспомогательная структура для Codable
-struct GeofenceItemCodable: Codable {
-    let name: String
-    let address: String
-    let radius: Double
-}
-
-struct GeofenceItem: Identifiable {
-    let id: UUID
-    let name: String
-    let address: String
-    let radius: Double
-    
-    init(id: UUID = UUID(), name: String, address: String, radius: Double) {
-        self.id = id
-        self.name = name
-        self.address = address
-        self.radius = radius
-    }
-}
+// Geofence models moved to global GeofenceModels.swift
 
 struct LocationHistoryDetailModal: View {
     @Binding var isPresented: Bool
@@ -4727,7 +4715,8 @@ struct BypassAttemptsDetailModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     @ObservedObject private var manager = ParentalControlManager.shared
-    @AppStorage("parental_selected_child") private var selectedChild: String = ""
+    @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
+    @AppStorage("parental_selected_child") private var legacySelectedChild: String = ""
     
     // Список детей (динамический)
     @State private var children: [String] = []
@@ -4740,6 +4729,11 @@ struct BypassAttemptsDetailModal: View {
     @State private var torCount: Int = 0
     @State private var proxyCount: Int = 0
     @State private var isLoading: Bool = true
+    
+    private var effectiveChildId: String {
+        if !selectedChildId.isEmpty { return selectedChildId }
+        return legacySelectedChild
+    }
     
     var body: some View {
         FamilyModalBaseView(
@@ -4840,7 +4834,7 @@ struct BypassAttemptsDetailModal: View {
     
     private func loadBypassStatistics() {
         isLoading = true
-        manager.getBypassStats(childId: selectedChild) { result in
+        manager.getBypassStats(childId: effectiveChildId) { result in
             DispatchQueue.main.async {
                 self.isLoading = false
                 switch result {
@@ -5031,11 +5025,20 @@ struct FamilyParentalControlSettingsModal: View {
     // Manager для применения правил
     @ObservedObject private var manager = ParentalControlManager.shared
     
-    // Выбор ребёнка (динамический список) с сохранением в UserDefaults
-    @AppStorage("parental_selected_child") private var selectedChild: String = ""
+    // Выбор ребёнка: server ID (для API) + name (только для отображения)
+    @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
+    @AppStorage("parental_selected_child_name") private var selectedChildName: String = ""
+    // Legacy key: раньше здесь часто хранилось имя, теперь сохраняем ID для совместимости
+    @AppStorage("parental_selected_child") private var legacySelectedChild: String = ""
     
-    // Список детей (динамический)
-    @State private var children: [String] = []
+    // Список детей (динамический): ID + имя
+    @State private var children: [ChildOption] = []
+    private let apiService = APIService.shared
+    
+    private struct ChildOption: Identifiable, Equatable {
+        let id: String
+        let name: String
+    }
     
     // Уровень защиты по возрасту
     enum AgeGroup: String, CaseIterable {
@@ -5129,17 +5132,18 @@ struct FamilyParentalControlSettingsModal: View {
         
         // Сохраняем настройки в UserDefaults
         let rules: [String: Any] = [
-            "selectedChild": selectedChild,
+            "selectedChildId": selectedChildId,
+            "selectedChildName": selectedChildName,
             "ageGroup": selectedAgeGroup.rawValue,
             "isEnabled": isAutomatedRulesEnabled,
             "appliedDate": Date().timeIntervalSince1970
         ]
         
         // Сохраняем через UserDefaults
-        UserDefaults.standard.set(rules, forKey: "parental_control_rules_\(selectedChild)")
+        UserDefaults.standard.set(rules, forKey: "parental_control_rules_\(selectedChildId)")
         
         // Логируем применение правил
-        print("✅ Rules applied for \(selectedChild), age group: \(selectedAgeGroup.rawValue)")
+        print("✅ Rules applied for \(selectedChildName) [\(selectedChildId)], age group: \(selectedAgeGroup.rawValue)")
         
         // ✅ BUILD 96: Используем значения по умолчанию для предотвращения рекурсии
         // В этой функции (FamilyParentalControlSettingsModal) нет доступа к cachedParentalRules из FamilyScreen
@@ -5185,12 +5189,12 @@ struct FamilyParentalControlSettingsModal: View {
         }()
         
         manager.applyRules(
-            childId: selectedChild,
+            childId: selectedChildId,
             ageGroup: ageGroupString,
             rules: parentalRules
         ) { success, error in
             if success {
-                print("✅ Rules applied via API for \(selectedChild)")
+                print("✅ Rules applied via API for \(selectedChildName) [\(selectedChildId)]")
             } else {
                 print("⚠️ Failed to apply rules: \(error ?? "Unknown error")")
             }
@@ -5209,9 +5213,9 @@ struct FamilyParentalControlSettingsModal: View {
                          .font(.bodyBold)
                          .foregroundColor(.textPrimary)
                      
-                    Picker(localizationManager.localized("family_child"), selection: $selectedChild) {
-                        ForEach(children, id: \.self) { child in
-                            Text(child).tag(child)
+                    Picker(localizationManager.localized("family_child"), selection: $selectedChildId) {
+                        ForEach(children) { child in
+                            Text(child.name).tag(child.id)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -5305,7 +5309,8 @@ struct FamilyParentalControlSettingsModal: View {
                 applyAgeBasedRules()
             }
         }
-        .onChange(of: selectedChild) { _ in
+        .onChange(of: selectedChildId) { _ in
+            syncSelectedChildName()
             // Применяем правила при смене ребёнка
             if isAutomatedRulesEnabled {
                 applyAgeBasedRules()
@@ -5327,12 +5332,13 @@ struct FamilyParentalControlSettingsModal: View {
         }
     }
     
-    // ✅ ФУНКЦИЯ ЗАГРУЗКИ ДЕТЕЙ: Загружаем список детей из UserDefaults
+    // ✅ ГИБРИД: сначала кэш (быстро), потом сервер (актуально)
     private func loadChildren() {
         guard let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
               let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
             children = []
             print("⚠️ Нет данных о детях в UserDefaults")
+            loadChildrenFromServer()
             return
         }
         
@@ -5340,14 +5346,55 @@ struct FamilyParentalControlSettingsModal: View {
             .filter { member in
                 member.role == .child || member.role == .teenager
             }
-            .map { $0.name }
+            .map { ChildOption(id: $0.id.uuidString, name: $0.name) }
         
         print("✅ Загружено детей: \(children.count)")
         
-        // Если выбранный ребёнок не в списке, выбираем первого
-        if !children.isEmpty && !children.contains(selectedChild) {
-            selectedChild = children.first ?? ""
+        // Миграция legacy значения: если там было имя, пытаемся найти и заменить на ID
+        if !legacySelectedChild.isEmpty, UUID(uuidString: legacySelectedChild) == nil {
+            if let byName = children.first(where: { $0.name == legacySelectedChild }) {
+                selectedChildId = byName.id
+            }
         }
+        
+        // Если выбранный ребёнок не в списке, выбираем первого
+        if !children.isEmpty && !children.map({ $0.id }).contains(selectedChildId) {
+            selectedChildId = children.first?.id ?? ""
+        }
+        
+        syncSelectedChildName()
+        loadChildrenFromServer()
+    }
+    
+    private func loadChildrenFromServer() {
+        apiService.getFamilyMembers { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let members):
+                    let serverChildren = members
+                        .filter { $0.role.lowercased() == "child" || $0.role.lowercased() == "teenager" }
+                        .map { ChildOption(id: $0.id, name: $0.name) }
+                    
+                    guard !serverChildren.isEmpty else { return }
+                    self.children = serverChildren
+                    
+                    if !self.children.map({ $0.id }).contains(self.selectedChildId) {
+                        self.selectedChildId = self.children.first?.id ?? ""
+                    }
+                    self.syncSelectedChildName()
+                case .failure(let error):
+                    print("⚠️ Не удалось обновить список детей с сервера: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    private func syncSelectedChildName() {
+        if let child = children.first(where: { $0.id == selectedChildId }) {
+            selectedChildName = child.name
+        }
+        // Для обратной совместимости: старый ключ теперь хранит ID
+        legacySelectedChild = selectedChildId
     }
 }
 
@@ -5532,83 +5579,9 @@ struct AutomatedRulesModal: View {
 
 // MARK: - Family Member Data Model
 
-struct FamilyMemberData: Identifiable, Codable {
-    let id: UUID
-    let name: String
-    let role: FamilyMemberCard.FamilyRole
-    let avatar: String
-    let status: FamilyMemberCard.ProtectionStatus
-    let threatsBlocked: Int
-    let lastActive: String
-    
-    init(id: UUID = UUID(), name: String, role: FamilyMemberCard.FamilyRole, avatar: String, status: FamilyMemberCard.ProtectionStatus, threatsBlocked: Int, lastActive: String) {
-        self.id = id
-        self.name = name
-        self.role = role
-        self.avatar = avatar
-        self.status = status
-        self.threatsBlocked = threatsBlocked
-        self.lastActive = lastActive
-    }
-}
+// FamilyMemberData moved to global APIModels.swift
 
-// MARK: - Codable Extensions для FamilyMemberCard типов
-
-extension FamilyMemberCard.FamilyRole: Codable {
-    enum CodableError: Error {
-        case invalidValue(String)
-    }
-    
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let rawValue = try container.decode(String.self)
-        
-        let localizationManager = LocalizationManager()
-        let normalized = rawValue.lowercased()
-        let parentLabels = Set(["parent", localizationManager.translations[.russian]?["family_role_parent_label"]?.lowercased() ?? "parent"])
-        let childLabels = Set(["child", localizationManager.translations[.russian]?["family_role_child_label"]?.lowercased() ?? "child"])
-        let teenLabels = Set(["teenager", "teen", localizationManager.translations[.russian]?["family_role_teen_label"]?.lowercased() ?? "teenager"])
-        let elderlyLabels = Set(["elderly", "grandparent", localizationManager.translations[.russian]?["family_role_elderly_label"]?.lowercased() ?? "elderly"])
-        switch normalized {
-        case _ where parentLabels.contains(normalized): self = .parent
-        case _ where childLabels.contains(normalized): self = .child
-        case _ where teenLabels.contains(normalized): self = .teenager
-        case _ where elderlyLabels.contains(normalized): self = .elderly
-        default: throw CodableError.invalidValue(rawValue)
-        }
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(label)
-    }
-}
-
-extension FamilyMemberCard.ProtectionStatus: Codable {
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let rawValue = try container.decode(String.self)
-        
-        let localizationManager = LocalizationManager()
-        let normalized = rawValue.lowercased()
-        let protectedLabels = Set(["protected", localizationManager.translations[.russian]?["family_status_protected"]?.lowercased() ?? "protected"])
-        let warningLabels = Set(["warning", localizationManager.translations[.russian]?["family_status_warning"]?.lowercased() ?? "warning"])
-        let dangerLabels = Set(["danger", localizationManager.translations[.russian]?["family_status_danger"]?.lowercased() ?? "danger"])
-        let offlineLabels = Set(["offline", localizationManager.translations[.russian]?["family_status_offline"]?.lowercased() ?? "offline"])
-        switch normalized {
-        case _ where protectedLabels.contains(normalized): self = .protected
-        case _ where warningLabels.contains(normalized): self = .warning
-        case _ where dangerLabels.contains(normalized): self = .danger
-        case _ where offlineLabels.contains(normalized): self = .offline
-        default: self = .protected
-        }
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encode(label)
-    }
-}
+// Codable Extensions removed
 
 // MARK: - Family Bypass Protection Modal
 
@@ -5619,9 +5592,12 @@ struct FamilyBypassProtectionModal: View {
     
     // Manager для обработки защиты от обхода
     @ObservedObject private var manager = ParentalControlManager.shared
+    // Manager для включения/выключения Smart DNS профиля
+    @ObservedObject private var dnsProtectionManager = DNSProtectionManager.shared
     
-    // Выбранный ребёнок
-    @AppStorage("parental_selected_child") private var selectedChild: String = ""
+    // Выбранный ребёнок (новый ID + legacy fallback)
+    @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
+    @AppStorage("parental_selected_child") private var legacySelectedChild: String = ""
     
     // Список детей (динамический)
     @State private var children: [String] = []
@@ -5640,6 +5616,11 @@ struct FamilyBypassProtectionModal: View {
     @State private var incognitoAttempts: Int = 15
     @State private var torAttempts: Int = 8
     @State private var proxyAttempts: Int = 6
+    
+    private var effectiveChildId: String {
+        if !selectedChildId.isEmpty { return selectedChildId }
+        return legacySelectedChild
+    }
     
     var body: some View {
         FamilyModalBaseView(
@@ -5671,6 +5652,38 @@ struct FamilyBypassProtectionModal: View {
                     isEnabled: $isProxyDetectionEnabled
                 )
                 
+                // 4. Smart DNS enable/disable (ниже детекторов)
+                FamilyContentBlockItem(
+                    icon: "🌐",
+                    title: "Smart DNS",
+                    description: dnsProtectionManager.isEnabled
+                        ? localizationManager.localized("parental_dns_status_active")
+                        : localizationManager.localized("parental_dns_status_inactive"),
+                    isEnabled: Binding(
+                        get: { dnsProtectionManager.isEnabled },
+                        set: { newValue in
+                            if newValue {
+                                // В FamilyScreen для выбранного ребёнка обычно хранится имя,
+                                // а не UUID childId. DNSConfig принимает childId, только если он корректный UUID.
+                                let childId: String? = effectiveChildId.isEmpty ? nil : effectiveChildId
+                                dnsProtectionManager.enableProtection(childId: childId)
+                            } else {
+                                dnsProtectionManager.disableProtection()
+                            }
+                        }
+                    )
+                )
+                
+                if !dnsProtectionManager.isEnabled {
+                    HStack {
+                        Text("Причина OFF: \(smartDNSOffReason)")
+                            .font(.caption)
+                            .foregroundColor(.warningOrange)
+                        Spacer()
+                    }
+                    .padding(.horizontal, Spacing.m)
+                }
+
                 Divider()
                     .background(Color.white.opacity(0.2))
                     .padding(.vertical, Spacing.s)
@@ -5689,17 +5702,6 @@ struct FamilyBypassProtectionModal: View {
                             Text("\(attemptsToday)")
                                 .font(.bodyBold)
                                 .foregroundColor(.textPrimary)
-                        }
-                        
-                        Spacer()
-                        
-                        VStack(alignment: .trailing, spacing: 4) {
-                            Text(localizationManager.localized("bypass_attempts_week"))
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                            Text("\(attemptsWeek)")
-                                .font(.bodyBold)
-                                .foregroundColor(.warningOrange)
                         }
                     }
                     
@@ -5746,6 +5748,18 @@ struct FamilyBypassProtectionModal: View {
                         }
                     }
                     .padding(.top, Spacing.s)
+
+                    // Статистика за неделю — ниже детального блока
+                    HStack {
+                        Text(localizationManager.localized("bypass_attempts_week"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                        Spacer()
+                        Text("\(attemptsWeek)")
+                            .font(.bodyBold)
+                            .foregroundColor(.warningOrange)
+                    }
+                    .padding(.top, Spacing.xs)
                 }
                 .padding(Spacing.m)
                 .background(Color.backgroundMedium.opacity(0.3))
@@ -5755,6 +5769,7 @@ struct FamilyBypassProtectionModal: View {
         .id("bypass_protection_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
             loadBypassStatistics()
+            dnsProtectionManager.loadStatus()
         }
         .onChange(of: isIncognitoDetectionEnabled) { newValue in
             applyBypassProtection()
@@ -5769,7 +5784,7 @@ struct FamilyBypassProtectionModal: View {
     
     private func loadBypassStatistics() {
         // Загружаем статистику из API через manager
-        manager.getBypassStats(childId: selectedChild) { result in
+        manager.getBypassStats(childId: effectiveChildId) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let stats):
@@ -5790,7 +5805,7 @@ struct FamilyBypassProtectionModal: View {
     private func applyBypassProtection() {
         // Применяем настройки защиты от обхода через API
         manager.applyBypassProtection(
-            childId: selectedChild,
+            childId: effectiveChildId,
             incognito: isIncognitoDetectionEnabled,
             tor: isTorDetectionEnabled,
             proxy: isProxyDetectionEnabled

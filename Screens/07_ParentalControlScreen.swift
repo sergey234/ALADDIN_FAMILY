@@ -22,6 +22,7 @@ struct ParentalControlScreen: View {
     // MARK: - Child Selection
     
     @AppStorage("parental_selected_child") private var selectedChild: String = ""
+    @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
     @State private var children: [FamilyMemberResponse] = []
     @State private var isChildrenLoading: Bool = false
     @State private var childrenErrorMessage: String?
@@ -129,6 +130,9 @@ struct ParentalControlScreen: View {
                         
                         // ✅ НОВЫЙ РАЗДЕЛ: Защита детей (5 компонентов)
                         childProtectionSection
+                        
+                        // ✅ План 2026: Карта достижений (Недельный отчет)
+                        achievementCard
                         
                         // Карточка вознаграждения (после всех карточек)
                         rewardsCard
@@ -238,6 +242,60 @@ struct ParentalControlScreen: View {
         }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("parental_lang_\(localizationManager.currentLanguage.rawValue)")
+    }
+    
+    // MARK: - Achievement Card
+    
+    private var achievementCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            HStack {
+                Text("🏆 Карта достижений (Неделя)")
+                    .font(.h3)
+                    .foregroundColor(.secondaryGold)
+                
+                Spacer()
+                
+                Text("Подробнее")
+                    .font(.captionBold)
+                    .foregroundColor(.textTertiary)
+            }
+            
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                if let report = viewModel.weeklyReports.first {
+                    if let list = report.content["achievements"]?.value as? [[String: Any]] {
+                        ForEach(0..<min(list.count, 3), id: \.self) { index in
+                            let item = list[index]
+                            HStack(spacing: Spacing.m) {
+                                Text(item["icon"] as? String ?? "✅")
+                                    .font(.title3)
+                                
+                                Text(item["text"] as? String ?? "")
+                                    .font(.body)
+                                    .foregroundColor(.textPrimary)
+                                
+                                Spacer()
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                } else {
+                    // Placeholder если данных нет
+                    HStack(spacing: Spacing.m) {
+                        Text("⏳")
+                            .font(.title3)
+                        Text("Анализируем данные за неделю...")
+                            .font(.body)
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+            }
+            .padding(Spacing.m)
+            .background(Color.white.opacity(0.05))
+            .cornerRadius(CornerRadius.medium)
+        }
+        .padding(Spacing.m)
+        .background(cardBackground)
+        .cardShadow()
     }
     
     // MARK: - Navigation Header
@@ -452,9 +510,7 @@ struct ParentalControlScreen: View {
                         title: localizationManager.localized("parental_geofence"),
                         statusBadge: locationStatus.isEmpty ? "🏠" : locationStatus,
                         statusText: locationStatus.isEmpty ? localizationManager.localized("parental_location_home") : locationStatus,
-                        metric: locationWarnings > 0 ?
-                            String(format: localizationManager.localized("parental_location_metric_with_warning"), locationLastUpdate, locationWarnings) :
-                            String(format: localizationManager.localized("parental_location_metric"), locationLastUpdate),
+                        metric: "Точность: 50м • " + locationLastUpdate,
                         cardColor: .green.opacity(0.2),
                         borderColor: .green.opacity(0.4),
                         badgeColor: .successGreen,
@@ -600,7 +656,7 @@ struct ParentalControlScreen: View {
                 // Преобразуем FamilyMemberData в FamilyMemberResponse
                 let convertedChildren = localChildren.map { member in
                     FamilyMemberResponse(
-                        id: UUID().uuidString, // Временный ID
+                        id: member.id.uuidString,
                         name: member.name,
                         role: member.role.rawValue, // Преобразуем enum в строку
                         avatar: member.avatar,
@@ -658,7 +714,7 @@ struct ParentalControlScreen: View {
                                 // Используем локальные данные
                                 let convertedChildren = localChildren.map { member in
                                     FamilyMemberResponse(
-                                        id: UUID().uuidString,
+                                        id: member.id.uuidString,
                                         name: member.name,
                                         role: member.role.rawValue,
                                         avatar: member.avatar,
@@ -717,14 +773,28 @@ struct ParentalControlScreen: View {
     }
     
     private func resolveSelectedChildID() -> String? {
+        // Приоритет нового ключа ID
+        if let byStoredId = childMembers.first(where: { $0.id == selectedChildId }) {
+            selectedChild = byStoredId.id
+            return byStoredId.id
+        }
+        // Обратная совместимость: если selectedChild содержит имя, конвертируем в ID
+        if let byName = childMembers.first(where: { $0.name == selectedChild }) {
+            selectedChild = byName.id
+            selectedChildId = byName.id
+            return byName.id
+        }
         if let existing = childMembers.first(where: { $0.id == selectedChild }) {
+            selectedChildId = existing.id
             return existing.id
         }
         if let firstChild = childMembers.first {
             selectedChild = firstChild.id
+            selectedChildId = firstChild.id
             return firstChild.id
         }
         selectedChild = ""
+        selectedChildId = ""
         return nil
     }
     
@@ -871,12 +941,12 @@ struct ParentalControlScreen: View {
     /// Синхронизировать все данные родительского контроля с сервером
     @MainActor
     private func syncParentalControlData() async {
-        guard !selectedChild.isEmpty else { return }
+        guard let resolvedChildId = resolveSelectedChildID(), !resolvedChildId.isEmpty else { return }
         
         let familyId = UserDefaults.standard.string(forKey: "family_id") ?? "family_001"
         
         // Синхронизация настроек
-        manager.loadSettingsFromServer(familyId: familyId, childId: selectedChild) { result in
+        manager.loadSettingsFromServer(familyId: familyId, childId: resolvedChildId) { result in
             switch result {
             case .success(let response):
                 // Обновляем локальные настройки из ответа сервера
@@ -895,7 +965,7 @@ struct ParentalControlScreen: View {
         }
         
         // Синхронизация лимитов времени
-        manager.loadTimeLimitsFromServer(childId: selectedChild) { result in
+        manager.loadTimeLimitsFromServer(childId: resolvedChildId) { result in
             switch result {
             case .success(let response):
                 // Обновляем локальные лимиты
@@ -913,14 +983,14 @@ struct ParentalControlScreen: View {
         }
         
         // Синхронизация расписаний
-        manager.loadSchedulesFromServer(childId: selectedChild) { result in
+        manager.loadSchedulesFromServer(childId: resolvedChildId) { result in
             switch result {
             case .success(let schedules):
                 // Обновляем количество расписаний
                 timeSchedules = schedules.count
                 // Сохраняем расписания
                 if let encoded = try? JSONEncoder().encode(schedules) {
-                    UserDefaults.standard.set(encoded, forKey: "parental_schedules_\(selectedChild)")
+                    UserDefaults.standard.set(encoded, forKey: "parental_schedules_\(resolvedChildId)")
                 }
             case .failure(let error):
                 print("⚠️ Ошибка загрузки расписаний: \(error.localizedDescription)")
@@ -928,13 +998,13 @@ struct ParentalControlScreen: View {
         }
         
         // Синхронизация геозон
-        manager.loadGeofencesFromServer(childId: selectedChild) { result in
+        manager.loadGeofencesFromServer(childId: resolvedChildId) { result in
             switch result {
             case .success(let geofences):
                 // Обновляем количество геозон
                 // Сохраняем геозоны
                 if let encoded = try? JSONEncoder().encode(geofences) {
-                    UserDefaults.standard.set(encoded, forKey: "parental_geofences_\(selectedChild)")
+                    UserDefaults.standard.set(encoded, forKey: "parental_geofences_\(resolvedChildId)")
                 }
             case .failure(let error):
                 print("⚠️ Ошибка загрузки геозон: \(error.localizedDescription)")
@@ -942,13 +1012,13 @@ struct ParentalControlScreen: View {
         }
         
         // Синхронизация блокировок приложений
-        manager.loadAppBlocksFromServer(childId: selectedChild) { result in
+        manager.loadAppBlocksFromServer(childId: resolvedChildId) { result in
             switch result {
             case .success(let response):
                 // Обновляем локальные блокировки
-                UserDefaults.standard.set(response.blockedApps, forKey: "parental_blocked_apps_\(selectedChild)")
+                UserDefaults.standard.set(response.blockedApps, forKey: "parental_blocked_apps_\(resolvedChildId)")
                 if let encoded = try? JSONEncoder().encode(response.appLimits) {
-                    UserDefaults.standard.set(encoded, forKey: "parental_app_limits_\(selectedChild)")
+                    UserDefaults.standard.set(encoded, forKey: "parental_app_limits_\(resolvedChildId)")
                 }
             case .failure(let error):
                 print("⚠️ Ошибка загрузки блокировок приложений: \(error.localizedDescription)")

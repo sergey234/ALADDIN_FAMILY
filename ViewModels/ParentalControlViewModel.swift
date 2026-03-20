@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import FamilyControls
 
 // Master Logger for parental control logging
 private let logger = MasterLogger.shared
@@ -24,6 +25,12 @@ class ParentalControlViewModel: ObservableObject {
     @Published var allowedApps: [String] = []
     @Published var blockedSitesToday: Int = 12
     @Published var screenTimeToday: String = "2:45"
+    @Published var appUsage: [AppUsageStatistics] = []
+    @Published var familyAuthStatus: AuthorizationStatus = .notDetermined
+    @Published var isDNSProtectionEnabled: Bool = false
+    @Published var isDNSLoading: Bool = false
+    @Published var dailyReports: [ParentalReportItem] = []
+    @Published var weeklyReports: [ParentalReportItem] = []
     
     // MARK: - Published Properties - Component Statuses (5 компонентов)
     
@@ -48,9 +55,6 @@ class ParentalControlViewModel: ObservableObject {
         statusService: ComponentStatusService = .shared,
         retryManager: RetryManager = .balanced()
     ) {
-        // ✅ BUILD 104: Silent Startup - убрали logger.business из init()
-        // ✅ BUILD 104: Silent Startup - убрали Task {} из init()
-        // Загрузка статусов перенесена в .onAppear экрана
         self.statusService = statusService
         self.retryManager = retryManager
         
@@ -61,14 +65,8 @@ class ParentalControlViewModel: ObservableObject {
     
     /// Загрузить статусы всех компонентов
     func loadComponentStatuses() async {
-        // ✅ ЭТАП 2: Проверка токена перед загрузкой
-        guard AppConfig.authToken != nil else {
-            print("⚠️ ParentalControlViewModel: Токен отсутствует, пропускаем загрузку статусов")
-            return
-        }
+        guard AppConfig.authToken != nil else { return }
 
-        // ✅ УЛУЧШЕНИЕ: Параллельная загрузка с лимитом и приоритизацией
-        // Критичные компоненты загружаются первыми
         let componentIds: [(String, ComponentLoadPriority)] = [
             ("self_harm_detection_agent", .critical),
             ("grooming_detection_agent", .critical),
@@ -78,143 +76,60 @@ class ParentalControlViewModel: ObservableObject {
         ]
         
         let prioritizedItems: [PrioritizedLoadItem<ComponentStatus>] = componentIds.map { componentId, priority in
-            PrioritizedLoadItem(
-                id: componentId,
-                priority: priority
-            ) { [weak self] in
-                guard let self = self else {
-                    throw ComponentError.unknown(NSError(domain: "ParentalControlViewModel", code: -1))
-                }
-                // ✅ ЭТАП 2: Проверка токена перед каждым запросом
-                guard AppConfig.authToken != nil else {
-                    throw ComponentError.unknown(NSError(domain: "ParentalControlViewModel", code: -2, userInfo: [NSLocalizedDescriptionKey: "Токен отсутствует"]))
-                }
+            PrioritizedLoadItem(id: componentId, priority: priority) { [weak self] in
+                guard let self = self else { throw ComponentError.unknown(NSError(domain: "ParentalControlViewModel", code: -1)) }
                 return try await self.statusService.getStatus(for: componentId)
             }
         }
         
         do {
-            let results = try await ParallelLoader.executeWithLimit(
-                items: prioritizedItems,
-                maxConcurrent: 10
-            ) { [weak self] componentId, status in
+            _ = try await ParallelLoader.executeWithLimit(items: prioritizedItems, maxConcurrent: 10) { [weak self] componentId, status in
                 self?.updateStatusForComponent(componentId: componentId, status: status)
             }
-            
-            print("✅ ParentalControlViewModel: Загружено \(results.count) статусов")
         } catch {
-            // ✅ ЭТАП 3: Обработка unauthorized
-            let networkError = NetworkError.from(error)
-            if case .unauthorized(let message) = networkError {
-                print("⚠️ ParentalControlViewModel: Ошибка авторизации при загрузке статусов")
-                // ✅ BUILD 121: Логирование отправки SessionExpired
-                #if DEBUG
-                let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
-                print("📤 ParentalControlViewModel: Отправка SessionExpired notification")
-                print("   - Call stack:")
-                print(stackTrace)
-                VisualLogger.shared.log("📤 ParentalControlViewModel: Отправка SessionExpired", level: .warning, category: "SESSION")
-                MasterLogger.shared.log(.warn, category: .business, message: "📤 ParentalControlViewModel: Sending SessionExpired notification")
-                #endif
-                // Отправляем уведомление о необходимости логина
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("SessionExpired"),
-                    object: nil,
-                    userInfo: ["message": message ?? "Сессия истекла. Пожалуйста, войдите снова."]
-                )
-            } else {
-                print("⚠️ ParentalControlViewModel: Ошибка загрузки статусов: \(error)")
-            }
+            print("⚠️ ParentalControlViewModel: Error loading statuses: \(error)")
         }
     }
-
 
     // MARK: - Toggle Methods
     
     func toggleSelfHarmDetection(_ newValue: Bool) {
-        logger.business("Toggling self-harm detection: \(newValue)")
-        Task {
-            await toggleComponent(
-                componentId: "self_harm_detection_agent",
-                newValue: newValue,
-                updateClosure: { [weak self] value in self?.selfHarmDetectionEnabled = value }
-            )
-        }
+        Task { await toggleComponent(componentId: "self_harm_detection_agent", newValue: newValue) { [weak self] v in self?.selfHarmDetectionEnabled = v } }
     }
     
     func toggleGroomingDetection(_ newValue: Bool) {
-        Task {
-            await toggleComponent(
-                componentId: "grooming_detection_agent",
-                newValue: newValue,
-                updateClosure: { [weak self] value in self?.groomingDetectionEnabled = value }
-            )
-        }
+        Task { await toggleComponent(componentId: "grooming_detection_agent", newValue: newValue) { [weak self] v in self?.groomingDetectionEnabled = v } }
     }
     
     func toggleOnlinePredators(_ newValue: Bool) {
-        Task {
-            await toggleComponent(
-                componentId: "online_predators_agent",
-                newValue: newValue,
-                updateClosure: { [weak self] value in self?.onlinePredatorsEnabled = value }
-            )
-        }
+        Task { await toggleComponent(componentId: "online_predators_agent", newValue: newValue) { [weak self] v in self?.onlinePredatorsEnabled = v } }
     }
     
     func togglePsychologicalSupport(_ newValue: Bool) {
-        Task {
-            await toggleComponent(
-                componentId: "psychological_support_agent",
-                newValue: newValue,
-                updateClosure: { [weak self] value in self?.psychologicalSupportEnabled = value }
-            )
-        }
+        Task { await toggleComponent(componentId: "psychological_support_agent", newValue: newValue) { [weak self] v in self?.psychologicalSupportEnabled = v } }
     }
     
     func toggleParentalControlBot(_ newValue: Bool) {
-        Task {
-            await toggleComponent(
-                componentId: "parental_control_bot",
-                newValue: newValue,
-                updateClosure: { [weak self] value in self?.parentalControlBotEnabled = value }
-            )
-        }
+        Task { await toggleComponent(componentId: "parental_control_bot", newValue: newValue) { [weak self] v in self?.parentalControlBotEnabled = v } }
     }
     
     // MARK: - Private Methods
     
-    /// Переключить компонент
-    private func toggleComponent(
-        componentId: String,
-        newValue: Bool,
-        updateClosure: @escaping (Bool) -> Void
-    ) async {
-        // ✅ ИСПРАВЛЕНИЕ: Проверка токена перед переключением
-        // ✅ НЕ отправляем SessionExpired при отсутствии токена - это может быть нормальная ситуация
+    private func toggleComponent(componentId: String, newValue: Bool, updateClosure: @escaping (Bool) -> Void) async {
         guard AppConfig.authToken != nil else {
-            print("⚠️ ParentalControlViewModel: Токен отсутствует, невозможно переключить компонент \(componentId)")
-            // ✅ ИСПРАВЛЕНИЕ: Откатываем изменение UI, но НЕ отправляем на онбординг
-            updateClosure(!newValue) // Откатываем обратно
-            toastManager.showError("Требуется авторизация. Войдите в аккаунт.")
-            // ✅ ИСПРАВЛЕНИЕ: НЕ отправляем SessionExpired - это не истекшая сессия, а просто отсутствие токена
+            updateClosure(!newValue)
+            toastManager.showError("Требуется авторизация")
             return
         }
         
-        // Оптимистичное обновление UI с переданным значением
         updateClosure(newValue)
 
         let result: Result<Void, NetworkError> = await retryManager.execute(
             operation: {
                 do {
-                    try await self.statusService.updateStatus(
-                        componentId: componentId,
-                        isEnabled: newValue
-                    )
+                    try await self.statusService.updateStatus(componentId: componentId, isEnabled: newValue)
                 } catch let error as ComponentError {
                     throw error.toNetworkError()
-                } catch let networkError as NetworkError {
-                    throw networkError
                 } catch {
                     throw NetworkError.unknown(error)
                 }
@@ -222,101 +137,92 @@ class ParentalControlViewModel: ObservableObject {
             retryCondition: { $0.isRetryable }
         )
 
-        switch result {
-        case .success:
-            toastManager.showSuccess("Компонент обновлен")
-        case .failure(let error):
-            // ✅ ИСПРАВЛЕНИЕ: Обработка unauthorized
-            if case .unauthorized(let message) = error {
-                // Откат при ошибке - используем противоположное значение
-                updateClosure(!newValue)
-                let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
-                toastManager.showError(errorMessage)
-                // ✅ ИСПРАВЛЕНИЕ: Отправляем SessionExpired ТОЛЬКО если это действительно истекшая сессия
-                // Проверяем, что токен был установлен ранее (не просто отсутствует)
-                if AppConfig.authToken != nil {
-                    // Токен был, но стал невалидным - это истекшая сессия
-                    // ✅ BUILD 121: Логирование отправки SessionExpired
-                    #if DEBUG
-                    let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
-                    print("📤 ParentalControlViewModel.toggleComponent: Отправка SessionExpired notification")
-                    print("   - Call stack:")
-                    print(stackTrace)
-                    VisualLogger.shared.log("📤 ParentalControlViewModel.toggleComponent: Отправка SessionExpired", level: .warning, category: "SESSION")
-                    MasterLogger.shared.log(.warn, category: .business, message: "📤 ParentalControlViewModel.toggleComponent: Sending SessionExpired notification")
-                    #endif
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("SessionExpired"),
-                    object: nil,
-                    userInfo: ["message": errorMessage]
+        if case .failure(let error) = result {
+            updateClosure(!newValue)
+            toastManager.showError(error.localizedDescription)
+        }
+    }
+    
+    private func updateStatusForComponent(componentId: String, status: ComponentStatus) {
+        switch componentId {
+        case "self_harm_detection_agent": selfHarmDetectionEnabled = status.isEnabled
+        case "grooming_detection_agent": groomingDetectionEnabled = status.isEnabled
+        case "online_predators_agent": onlinePredatorsEnabled = status.isEnabled
+        case "psychological_support_agent": psychologicalSupportEnabled = status.isEnabled
+        case "parental_control_bot": parentalControlBotEnabled = status.isEnabled
+        default: break
+        }
+    }
+    
+    func loadChildren() {
+        if let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
+           let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
+            self.children = decoded.filter { $0.role == .child || $0.role == .teenager }.map { member in
+                Child(
+                    id: member.id.uuidString,
+                    name: member.name,
+                    age: 10,
+                    avatar: member.avatar,
+                    screenTimeToday: "...",
+                    threatsBlocked: member.threatsBlocked
                 )
+            }
+            self.selectedChild = children.first
+        }
+        
+        self.familyAuthStatus = AuthorizationCenter.shared.authorizationStatus
+        self.isDNSProtectionEnabled = DNSProtectionManager.shared.isEnabled
+        loadReports()
+    }
+    
+    func loadReports() {
+        let childIdStr = selectedChild?.id
+        
+        APIService.shared.getDailyReports(childId: childIdStr) { [weak self] result in
+            if case .success(let reports) = result {
+                Task { @MainActor [weak self] in
+                    self?.dailyReports = reports
                 }
-                // Если токена не было, не отправляем SessionExpired - это не истекшая сессия
-            } else {
-                // Откат при ошибке - используем противоположное значение
-                updateClosure(!newValue)
-                toastManager.showError("Ошибка: \(error.localizedDescription)")
+            }
+        }
+        
+        APIService.shared.getWeeklyReports(childId: childIdStr) { [weak self] result in
+            if case .success(let reports) = result {
+                Task { @MainActor [weak self] in
+                    self?.weeklyReports = reports
+                }
             }
         }
     }
     
-    /// Обновить статус компонента локально
-    private func updateStatusForComponent(componentId: String, status: ComponentStatus) {
-        switch componentId {
-        case "self_harm_detection_agent":
-            selfHarmDetectionEnabled = status.isEnabled
-        case "grooming_detection_agent":
-            groomingDetectionEnabled = status.isEnabled
-        case "online_predators_agent":
-            onlinePredatorsEnabled = status.isEnabled
-        case "psychological_support_agent":
-            psychologicalSupportEnabled = status.isEnabled
-        case "parental_control_bot":
-            parentalControlBotEnabled = status.isEnabled
-        default:
-            break
+    func toggleDNSProtection() {
+        if isDNSProtectionEnabled {
+            DNSProtectionManager.shared.disableProtection()
+        } else {
+            DNSProtectionManager.shared.enableProtection(childId: selectedChild?.id)
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.isDNSProtectionEnabled = DNSProtectionManager.shared.isEnabled
+            self.isDNSLoading = DNSProtectionManager.shared.isLoading
         }
     }
     
-    // MARK: - Child Management
-    
-    func loadChildren() {
-        logger.business("Loading children data for parental control")
-        children = [
-            Child(name: "Маша", age: 10, avatar: "👧", screenTimeToday: "2:45", threatsBlocked: 23),
-            Child(name: "Петя", age: 7, avatar: "👦", screenTimeToday: "1:30", threatsBlocked: 8)
-        ]
-        selectedChild = children.first
-    }
-    
-    func toggleContentFilter() {
-        isContentFilterEnabled.toggle()
-    }
-    
-    func toggleAppBlocking() {
-        isAppBlockingEnabled.toggle()
-    }
-    
-    func updateScreenTimeLimit(_ value: Double) {
-        screenTimeLimit = value
-    }
-    
-    func addTime(minutes: Int) {
-        print("Add \(minutes) minutes to screen time")
-    }
-    
-    func blockDevice() {
-        print("Block child device immediately")
-    }
-    
-    func showLocation() {
-        print("Show child location on map")
+    func requestScreenTimeAuthorization() {
+        Task {
+            do {
+                try await ParentalControlManager.shared.requestFamilyAuthorization()
+                self.familyAuthStatus = AuthorizationCenter.shared.authorizationStatus
+            } catch {
+                print("❌ ViewModel: Auth failed: \(error.localizedDescription)")
+            }
+        }
     }
     
     // MARK: - Child Model
     
     struct Child: Identifiable {
-        let id = UUID()
+        let id: String
         let name: String
         let age: Int
         let avatar: String

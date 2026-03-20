@@ -16,6 +16,8 @@ struct ChildRewardsScreen: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = ChildRewardsViewModel()
     @State private var selectedTab: RewardTab = .shop
+    @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
+    @AppStorage("parental_selected_child") private var legacySelectedChild: String = ""
     
     // Награды магазина (загружаются из UserDefaults)
     @AppStorage("shop_rewards_list") private var shopRewardsData: String = ""
@@ -84,6 +86,13 @@ struct ChildRewardsScreen: View {
     @State private var apiError: String? = nil
     
     private let apiService = APIService.shared
+    
+    private var effectiveChildId: String? {
+        let trimmedId = selectedChildId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedId.isEmpty { return trimmedId }
+        let legacy = legacySelectedChild.trimmingCharacters(in: .whitespacesAndNewlines)
+        return legacy.isEmpty ? nil : legacy
+    }
     
     // Получаем userId для API вызовов
     private var userId: String {
@@ -287,7 +296,7 @@ struct ChildRewardsScreen: View {
             print("   📋 Финальная роль: '\(finalRole)'")
             
             Task {
-                await viewModel.load(childId: nil)
+                await viewModel.load(childId: effectiveChildId)
             }
             RewardLocalizationMigration.performIfNeeded()
             
@@ -487,7 +496,7 @@ struct ChildRewardsScreen: View {
             Spacer()
             Button(action: {
                 loadErrorMessage = nil
-                Task { await viewModel.load(childId: nil) }
+                Task { await viewModel.load(childId: effectiveChildId) }
             }) {
                 Text(localizationManager.localized("child_rewards_retry"))
                     .font(.captionBold)

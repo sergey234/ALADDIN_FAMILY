@@ -1,0 +1,127 @@
+import Foundation
+import NetworkExtension
+import Combine
+
+/**
+ * 🌐 DNS Protection Manager (План 2026)
+ * Управление системным DoH (DNS-over-HTTPS) профилем
+ * Использует NEDNSSettingsManager для защиты трафика без VPN
+ */
+class DNSProtectionManager: ObservableObject {
+    
+    static let shared = DNSProtectionManager()
+    
+    @Published var isEnabled: Bool = false
+    @Published var isLoading: Bool = false
+    @Published var lastError: String?
+    
+    private let dnsSettingsManager = NEDNSSettingsManager.shared()
+    
+    private init() {
+        loadStatus()
+    }
+    
+    /// Загрузить текущий статус профиля DNS
+    func loadStatus() {
+        dnsSettingsManager.loadFromPreferences { [weak self] error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("⚠️ DNS Manager: Failed to load preferences: \(error.localizedDescription)")
+                    return
+                }
+                self?.isEnabled = self?.dnsSettingsManager.dnsSettings != nil
+                print("🌐 DNS Manager: Status loaded (Enabled: \(self?.isEnabled ?? false))")
+            }
+        }
+    }
+    
+    /// Активировать DoH защиту
+    func enableProtection(childId: String? = nil) {
+        isLoading = true
+        lastError = nil
+        
+        // 1. Получаем конфигурацию с бэкенда
+        APIService.shared.getDNSConfig(childId: childId) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    if let config = response.data {
+                        self?.setupDNSProfile(config: config)
+                    } else {
+                        self?.isLoading = false
+                        self?.lastError = "Конфигурация DNS пуста"
+                    }
+                case .failure(let error):
+                    self?.isLoading = false
+                    self?.lastError = "Ошибка получения конфига: \(error.localizedDescription)"
+                    print("❌ DNS Manager: API error: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+    
+    /// Отключить DoH защиту
+    func disableProtection() {
+        isLoading = true
+        dnsSettingsManager.loadFromPreferences { [weak self] error in
+            if let error = error {
+                self?.handleError(error)
+                return
+            }
+            
+            self?.dnsSettingsManager.removeFromPreferences { error in
+                DispatchQueue.main.async {
+                    self?.isLoading = false
+                    if let error = error {
+                        self?.lastError = error.localizedDescription
+                    } else {
+                        self?.isEnabled = false
+                        self?.lastError = nil
+                        print("✅ DNS Manager: Profile removed")
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Private Methods
+    
+    private func setupDNSProfile(config: DNSConfigResponse) {
+        dnsSettingsManager.loadFromPreferences { [weak self] error in
+            if let error = error {
+                self?.handleError(error)
+                return
+            }
+            
+            let dohSettings = NEDNSOverHTTPSSettings()
+            dohSettings.serverURL = URL(string: config.dohUrl)
+            
+            // Настраиваем системный DNS
+            self?.dnsSettingsManager.dnsSettings = dohSettings
+            self?.dnsSettingsManager.localizedDescription = config.serverName
+            
+            // Сохраняем и активируем
+            self?.dnsSettingsManager.saveToPreferences { error in
+                DispatchQueue.main.async {
+                    self?.isLoading = false
+                    if let error = error {
+                        self?.lastError = "Не удалось сохранить профиль iOS: \(error.localizedDescription)"
+                        print("❌ DNS Manager: Save error: \(error.localizedDescription)")
+                    } else {
+                        self?.isEnabled = true
+                        self?.lastError = nil
+                        print("✅ DNS Manager: DoH Profile active (\(config.dohUrl))")
+                    }
+                }
+            }
+        }
+    }
+    
+    private func handleError(_ error: Error) {
+        DispatchQueue.main.async {
+            self.isLoading = false
+            self.lastError = error.localizedDescription
+            print("❌ DNS Manager: Error: \(error.localizedDescription)")
+        }
+    }
+}
