@@ -83,6 +83,56 @@ except ImportError:
         print("⚠️ Предупреждение: FAMILY_API_ENDPOINTS не найден. Endpoint /api/family/stats будет недоступен.")
         family_router_available = False
 
+# ✅ ДОБАВЛЕНО: Импортируем роутер для User API compat
+try:
+    from app.routers import user as user_router_module
+    user_router_available = True
+except ImportError:
+    user_router_available = False
+
+# ✅ ДОБАВЛЕНО: Импортируем роутер для System/AI compat
+try:
+    from app.routers import system_ai_compat
+    system_ai_compat_available = True
+except ImportError:
+    system_ai_compat_available = False
+
+try:
+    from app.routers import network_protection_compat
+    network_protection_compat_available = True
+except ImportError:
+    network_protection_compat_available = False
+
+try:
+    from app.routers import subscription_compat
+    subscription_compat_available = True
+except ImportError:
+    subscription_compat_available = False
+
+try:
+    from app.routers import notifications_compat
+    notifications_compat_available = True
+except ImportError:
+    notifications_compat_available = False
+
+try:
+    from app.routers import crash_detection_compat
+    crash_detection_compat_available = True
+except ImportError:
+    crash_detection_compat_available = False
+
+try:
+    from app.routers import parental_compat
+    parental_compat_available = True
+except ImportError:
+    parental_compat_available = False
+
+try:
+    from app.routers import misc_other_compat
+    misc_other_compat_available = True
+except ImportError:
+    misc_other_compat_available = False
+
 # ✅ ДОБАВЛЕНО: Импортируем роутер для Analytics API
 try:
     from app.routers import analytics_router
@@ -168,6 +218,7 @@ except ImportError as e:
 try:
     from security.api.routers.parental_control_router import (
         router as parental_control_router,
+        legacy_router as parental_control_legacy_router,
         bypass_router as parental_bypass_router
     )
     parental_control_available = True
@@ -341,6 +392,63 @@ class NoCacheMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(NoCacheMiddleware)
 
+# ✅ Tочечный фикс для прод-API:
+# если backend защиты отдал mock/fallback/error (SFM) в виде `source:*`,
+# возвращаем 503, чтобы iOS не воспринимала ответ как успешный `200 OK`.
+class SfmMockTo503Middleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+
+        try:
+            # Важно: не трогаем реально отсутствующие маршруты (404).
+            if response.status_code == 404:
+                return response
+
+            request_path = request.url.path
+            is_target_endpoint = (
+                request_path in {"/api/user/profile", "/api/family/members"}
+                or request_path.startswith("/api/parental-control/")
+                or request_path.startswith("/api/v1/parental-control/")
+                or request_path.startswith("/api/gamification/")
+            )
+            if not is_target_endpoint:
+                return response
+
+            # BaseHTTPMiddleware часто не заполняет response.body, поэтому буферизуем body.
+            body = b""
+            try:
+                if hasattr(response, "body_iterator") and response.body_iterator is not None:
+                    async for chunk in response.body_iterator:
+                        body += chunk
+            except Exception:
+                body = getattr(response, "body", b"") or b""
+
+            if (
+                b'"source":"sfm_mock"' in body
+                or b'"source":"sfm_fallback"' in body
+                or b'"source":"sfm_error"' in body
+                or b'"result":"mock_fallback"' in body
+            ):
+                return JSONResponse(
+                    status_code=503,
+                    content={"detail": "Protection backend temporarily unavailable"},
+                )
+
+            # Вернём оригинальный JSON (без изменения), но уже из буфера.
+            from starlette.responses import Response as StarletteResponse
+
+            return StarletteResponse(
+                content=body,
+                status_code=response.status_code,
+                headers=dict(response.headers),
+                media_type=response.media_type,
+            )
+        except Exception:
+            # Middleware не должен ломать обычные ответы.
+            return response
+
+app.add_middleware(SfmMockTo503Middleware)
+
 # Создание таблиц при запуске (если их нет)
 @app.on_event("startup")
 async def startup_event():
@@ -411,6 +519,80 @@ if family_router_available:
 else:
     print("⚠️ Роутер Family API недоступен")
 
+# ✅ ДОБАВЛЕНО: Добавлен роутер для User API compat
+if user_router_available:
+    try:
+        app.include_router(user_router_module.router, tags=["user"])
+        print("✅ Роутер User API подключен: /api/user/* доступен")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер User API: {e}")
+else:
+    print("⚠️ Роутер User API недоступен")
+
+# ✅ ДОБАВЛЕНО: Добавлен роутер для System/AI compat
+if system_ai_compat_available:
+    try:
+        app.include_router(system_ai_compat.router, tags=["system-ai-compat"])
+        print("✅ Роутер System/AI compat подключен: /api/system/* и /api/ai/*")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер System/AI compat: {e}")
+else:
+    print("⚠️ Роутер System/AI compat недоступен")
+
+if network_protection_compat_available:
+    try:
+        app.include_router(network_protection_compat.router, tags=["network-protection-compat"])
+        print("✅ Роутер Network Protection compat подключен: /api/network-protection/*")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер Network Protection compat: {e}")
+else:
+    print("⚠️ Роутер Network Protection compat недоступен")
+
+if subscription_compat_available:
+    try:
+        app.include_router(subscription_compat.router, tags=["subscription-compat"])
+        print("✅ Роутер Subscription compat подключен: /api/subscription/*")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер Subscription compat: {e}")
+else:
+    print("⚠️ Роутер Subscription compat недоступен")
+
+if notifications_compat_available:
+    try:
+        app.include_router(notifications_compat.router, tags=["notifications-compat"])
+        print("✅ Роутер Notifications compat подключен: /api/notifications/*")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер Notifications compat: {e}")
+else:
+    print("⚠️ Роутер Notifications compat недоступен")
+
+if crash_detection_compat_available:
+    try:
+        app.include_router(crash_detection_compat.router, tags=["crash-detection-compat"])
+        print("✅ Роутер Crash Detection compat подключен: /api/crash-detection/*")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер Crash Detection compat: {e}")
+else:
+    print("⚠️ Роутер Crash Detection compat недоступен")
+
+if parental_compat_available:
+    try:
+        app.include_router(parental_compat.router, tags=["parental-compat"])
+        print("✅ Роутер Parental compat подключен: /api/parental/*")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер Parental compat: {e}")
+else:
+    print("⚠️ Роутер Parental compat недоступен")
+
+if misc_other_compat_available:
+    try:
+        app.include_router(misc_other_compat.router, tags=["misc-other-compat"])
+        print("✅ Роутер Misc Other compat подключен")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер Misc Other compat: {e}")
+else:
+    print("⚠️ Роутер Misc Other compat недоступен")
+
 # ✅ ДОБАВЛЕНО: Добавлен роутер для Analytics API
 if analytics_router_available:
     try:
@@ -458,6 +640,7 @@ for router_name, router in sorted(security_routers.items()):
 if parental_control_available:
     try:
         app.include_router(parental_control_router)
+        app.include_router(parental_control_legacy_router)
         app.include_router(parental_bypass_router)
         print("✅ Роутеры Parental Control подключены")
     except Exception as e:

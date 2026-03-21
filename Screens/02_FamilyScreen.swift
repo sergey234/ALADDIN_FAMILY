@@ -2091,21 +2091,6 @@ struct FamilyReportsModal: View {
         return legacySelectedChild
     }
     
-    private var smartDNSOffReason: String {
-        if effectiveChildId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Нет выбранного ребёнка"
-        }
-        
-        let error = (dnsProtectionManager.lastError ?? "").lowercased()
-        if error.contains("конфигурация dns пуста") || error.contains("ошибка получения конфига") {
-            return "Нет DNS-конфига с сервера"
-        }
-        if error.contains("не удалось сохранить профиль ios") || error.contains("savetopreferences") {
-            return "Не удалось сохранить профиль iOS"
-        }
-        return "Не удалось активировать Smart DNS"
-    }
-    
     var body: some View {
         FamilyModalBaseView(
             title: localizationManager.localized("reports_title"),
@@ -5620,6 +5605,21 @@ struct FamilyBypassProtectionModal: View {
     private var effectiveChildId: String {
         if !selectedChildId.isEmpty { return selectedChildId }
         return legacySelectedChild
+    }
+
+    private var smartDNSOffReason: String {
+        if effectiveChildId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return "Нет выбранного ребёнка"
+        }
+
+        let error = (dnsProtectionManager.lastError ?? "").lowercased()
+        if error.contains("конфигурация dns пуста") || error.contains("ошибка получения конфига") {
+            return "Нет DNS-конфига с сервера"
+        }
+        if error.contains("не удалось сохранить профиль ios") || error.contains("savetopreferences") {
+            return "Не удалось сохранить профиль iOS"
+        }
+        return "Не удалось активировать Smart DNS"
     }
     
     var body: some View {

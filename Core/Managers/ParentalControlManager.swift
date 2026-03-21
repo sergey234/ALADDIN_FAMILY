@@ -1,6 +1,9 @@
 import Foundation
 import Combine
 import UIKit
+import FamilyControls
+import ManagedSettings
+import DeviceActivity
 
 /**
  * 👨‍👩‍👧‍👦 Parental Control Manager
@@ -67,6 +70,11 @@ class ParentalControlManager: ObservableObject {
     
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var familyAuthStatus: AuthorizationStatus = .notDetermined
+    
+    // Managed Settings Store
+    private let managedSettingsStore = ManagedSettingsStore()
+    private let deviceActivityCenter = DeviceActivityCenter()
     
     // MARK: - Singleton
     
@@ -92,6 +100,80 @@ class ParentalControlManager: ObservableObject {
         } else {
             self.apiService = APIService(networkManager: self.networkManager)
         }
+        
+        // Проверяем текущий статус авторизации
+        self.familyAuthStatus = AuthorizationCenter.shared.authorizationStatus
+    }
+    
+    // MARK: - Screen Time Authorization
+    
+    /**
+     * Запрос авторизации FamilyControls
+     * Должно вызываться на устройстве ребенка (или родителя для управления)
+     */
+    func requestFamilyAuthorization() async throws {
+        isLoading = true
+        defer { isLoading = false }
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            AuthorizationCenter.shared.requestAuthorization(completionHandler: { result in
+                switch result {
+                case .success:
+                    Task { @MainActor in
+                        self.familyAuthStatus = AuthorizationCenter.shared.authorizationStatus
+                        print("✅ ParentalControlManager: FamilyControls authorized")
+                        continuation.resume()
+                    }
+                case .failure(let error):
+                    Task { @MainActor in
+                        self.familyAuthStatus = AuthorizationCenter.shared.authorizationStatus
+                        self.errorMessage = "Ошибка авторизации Screen Time: \(error.localizedDescription)"
+                        print("❌ ParentalControlManager: Auth failed: \(error.localizedDescription)")
+                        continuation.resume(throwing: error)
+                    }
+                }
+            })
+        }
+    }
+    
+    // MARK: - App & Content Management
+    
+    /**
+     * Запретить удаление приложений
+     */
+    func setAppRemovalDenied(_ denied: Bool) {
+        managedSettingsStore.application.denyAppRemoval = denied
+        print("🛡️ ParentalControlManager: denyAppRemoval set to \(denied)")
+    }
+    
+    /**
+     * Системная блокировка категорий приложений
+     */
+    func shieldCategories(_ categories: ActivityCategoryToken) {
+        managedSettingsStore.shield.applicationCategories = .specific([categories])
+        print("🛡️ ParentalControlManager: Shields applied to categories")
+    }
+    
+    /**
+     * Очистить все блокировки
+     */
+    func clearAllShields() {
+        managedSettingsStore.shield.applications = nil
+        managedSettingsStore.shield.applicationCategories = nil
+        managedSettingsStore.shield.webDomains = nil
+        print("🛡️ ParentalControlManager: All shields cleared")
+    }
+    
+    // MARK: - Screen Time Statistics (Real Data)
+    
+    /**
+     * Получить реальную статистику использования (текстовый формат)
+     */
+    func fetchRealScreenTimeStats() async -> [AppUsageStatistics] {
+        // ✅ BUILD 123: Очищено от MOCK имен. В будущем здесь будет запрос к DeviceActivityCenter.
+        // Пока возвращаем пустой список, чтобы UI показывал "Нет данных" вместо фейковых приложений,
+        // либо загружаем реальные данные если Extension настроен.
+        return []
     }
     
     // MARK: - Content Blocking

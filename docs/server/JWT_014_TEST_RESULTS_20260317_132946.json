@@ -1,0 +1,889 @@
+{
+  "timestamp": "2026-03-17T13:29:46.356784",
+  "stats": {
+    "total": 75,
+    "success": 75,
+    "auth_error": 0,
+    "validation_error": 21,
+    "other_error": 0,
+    "network_error": 0
+  },
+  "results": [
+    {
+      "method": "GET",
+      "endpoint": "/api/user/profile",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.056
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/user/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.03
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/user/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.034
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/user/rewards",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.033
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/setup",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.03
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/start",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.033,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:36 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"user_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/data",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.031,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:36 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"user_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"accelerometer\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/alert",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.031
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/stop",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.032,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:37 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"user_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/crash-detection/status",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.032,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:37 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"user_id\"],\"msg\":\"Field required\",\"input\":null,\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/crash-detection/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.037
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/check",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.042,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:37 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"user_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"site_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/ai-categories/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.034
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/allow",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.032,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:37 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"user_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"site_ids\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/block",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.035,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:37 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"user_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"site_ids\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/ai-categories/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.034
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/reset",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.032
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/scan",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.036,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:38 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"user_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/clean",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.033
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.042
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.035
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/schedule",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.035
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/cancel",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.03
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.031
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/export",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.032
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/identity-theft/scan",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.035
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/alerts",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.033
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/identity-theft/block",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.031
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/identity-theft/report",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.06
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/status",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.034
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.051
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.032
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/darkweb/scan",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.029
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/darkweb/results",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.032
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/darkweb/alerts",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.031
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/location/bubble/create",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.031
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/location/bubble/update",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.033
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/api/location/bubble/delete",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.034
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/location/bubble/list",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.028
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/location/bubble/status",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.029
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/driving-reports/start",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.031,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:41 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"user_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/driving-reports/stop",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.042,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:41 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"user_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/driving-reports/data",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.033
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/driving-reports/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.032
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/anti-tracker/scan",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.038
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/anti-tracker/block",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.032,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:42 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"domain\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"tracker_type\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/anti-tracker/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.032
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/notifications",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.032
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/notifications/mark-read",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.032
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/roadside-assistance/call",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.033,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:42 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"user_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"problem_type\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"location\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/components/status/crash_detection_agent",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.038
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/enable/crash_detection_agent",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.052
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/disable/crash_detection_agent",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.043
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/components/config/crash_detection_agent",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.06
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/configuration/crash_detection_agent",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.029,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:43 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"settings\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/batch/status",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.035,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:43 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"componentIds\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.033
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics/threats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.14
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics/top-threats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.03
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/status",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.033
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/settings",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.035
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.031
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/threat-scenarios",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.032
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/enable",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.033,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:44 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"categoryId\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/disable",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.057,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:44 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"categoryId\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/settings",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.031,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:45 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"categories\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/sync",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.04,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:45 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"categories\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/family/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.035
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/referral/code",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.035
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/referral/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.033
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/referral/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.031
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/referral/rewards",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.036
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/referral/test/discount/apply",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.03,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:46 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"query\",\"original_price\"],\"msg\":\"Field required\",\"input\":null,\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"}]}"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/referral/test/payment/create",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.039,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:46 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"tariff_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"period\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"amount\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"htt"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/referral/test/payment/confirm",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.041,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:29:46 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"payment_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"user_id\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"https://errors.pydantic.dev/2.12/v/missing\"},{\"type\":\"missing\",\"loc\":[\"body\",\"amount\"],\"msg\":\"Field required\",\"input\":{\"deviceId\":\"test_jwt_fix_device_001\",\"test\":true},\"url\":\"h"
+    }
+  ]
+}

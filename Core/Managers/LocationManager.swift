@@ -86,7 +86,14 @@ class LocationManager: NSObject, ObservableObject {
     
     // Константы iOS
     private let maxRegions = 20  // Максимум геозон в iOS
-    private let minRegionRadius: CLLocationDistance = 100  // Минимум 100 метров
+    private let minRegionRadius: CLLocationDistance = 50  // ✅ Минимум 50 метров (План 2026)
+    
+    // ✅ План 2026: Гибридный режим и Офлайн-буфер
+    private let hybridTriggerRadius: CLLocationDistance = 1000 // 1 км для активации GPS
+    private let highAccuracyDuration: TimeInterval = 180 // 3 минуты точного трекинга
+    private var highAccuracyTimer: Timer?
+    private let offlineBufferKey = "location_offline_buffer"
+    private var isReporting: Bool = false
     
     // MARK: - Initialization
     
@@ -415,6 +422,131 @@ class LocationManager: NSObject, ObservableObject {
     var canAddMoreGeofences: Bool {
         monitoredRegions.count < maxRegions
     }
+    
+    // MARK: - ✅ План 2026: Reporting & Offline Buffer
+    
+    struct LocationReport: Codable {
+        let lat: Double
+        let lon: Double
+        let speed: Double?
+        let timestamp: Date
+    }
+    
+    /// Отправить текущую локацию на сервер с поддержкой офлайн-буфера
+    func reportCurrentLocation(_ location: CLLocation) {
+        let report = LocationReport(
+            lat: location.coordinate.latitude,
+            lon: location.coordinate.longitude,
+            speed: location.speed >= 0 ? location.speed * 3.6 : nil, // Конвертация в км/ч
+            timestamp: location.timestamp
+        )
+        
+        // Добавляем в буфер
+        saveToBuffer(report)
+        
+        // Пытаемся отправить весь буфер
+        sendBuffer()
+    }
+    
+    private func saveToBuffer(_ report: LocationReport) {
+        var buffer = getBuffer()
+        buffer.append(report)
+        
+        // Лимит буфера (например, 1000 записей ~ 1 неделя SLC обновлений)
+        if buffer.count > 1000 {
+            buffer.removeFirst()
+        }
+        
+        if let data = try? JSONEncoder().encode(buffer) {
+            UserDefaults.standard.set(data, forKey: offlineBufferKey)
+        }
+    }
+    
+    private func getBuffer() -> [LocationReport] {
+        guard let data = UserDefaults.standard.data(forKey: offlineBufferKey),
+              let buffer = try? JSONDecoder().decode([LocationReport].self, from: data) else {
+            return []
+        }
+        return buffer
+    }
+    
+    private func sendBuffer() {
+        guard !isReporting else { return }
+        let buffer = getBuffer()
+        guard !buffer.isEmpty else { return }
+        
+        isReporting = true
+        
+        // Отправляем записи по одной (или можно было бы батчем, если сервер поддерживает)
+        // Для простоты и надежности плана 2026 — отправляем последнюю и очищаем, 
+        // если сервер не поддерживает батчи.
+        // Но мы сделали эндпоинт на одну запись.
+        
+        let report = buffer.last! // Берем самую свежую
+        
+        APIService.shared.reportLocation(latitude: report.lat, longitude: report.lon, speed: report.speed) { [weak self] result in
+            guard let self = self else { return }
+            self.isReporting = false
+            
+            switch result {
+            case .success:
+                print("✅ LocationManager: Локация успешно отправлена на сервер")
+                // Очищаем буфер при успехе (в идеале — только отправленные записи)
+                UserDefaults.standard.removeObject(forKey: self.offlineBufferKey)
+            case .failure(let error):
+                print("⚠️ LocationManager: Ошибка отправки локации (сохранено в буфер): \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    // MARK: - ✅ План 2026: Hybrid Mode Logic
+    
+    /// Проверка близости к геозонам для активации точного режима
+    private func checkProximityAndBoostAccuracy(to location: CLLocation) {
+        let regions = monitoredRegions.values
+        var isNearAnyGeofence = false
+        
+        for region in regions {
+            let center = CLLocation(latitude: region.center.latitude, longitude: region.center.longitude)
+            let distance = location.distance(from: center)
+            
+            if distance <= hybridTriggerRadius {
+                isNearAnyGeofence = true
+                print("🎯 LocationManager: Обнаружена близость к геозоне '\(region.identifier)' (\(Int(distance))м). Активация GPS.")
+                break
+            }
+        }
+        
+        if isNearAnyGeofence {
+            activateHighAccuracyMode()
+        }
+    }
+    
+    private func activateHighAccuracyMode() {
+        // Сбрасываем старый таймер
+        highAccuracyTimer?.invalidate()
+        
+        // Включаем GPS
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.distanceFilter = 10 // Более частые обновления
+        locationManager.startUpdatingLocation()
+        
+        // Выключаем через 3 минуты
+        highAccuracyTimer = Timer.scheduledTimer(withTimeInterval: highAccuracyDuration, repeats: false) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.deactivateHighAccuracyMode()
+            }
+        }
+    }
+    
+    private func deactivateHighAccuracyMode() {
+        print("🔋 LocationManager: Режим высокой точности завершен. Переход в эконом-режим.")
+        locationManager.stopUpdatingLocation()
+        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        locationManager.distanceFilter = 100
+        highAccuracyTimer?.invalidate()
+        highAccuracyTimer = nil
+    }
 }
 
 // MARK: - CLLocationManagerDelegate
@@ -426,6 +558,9 @@ extension LocationManager: CLLocationManagerDelegate {
         
         currentLocation = location
         print("📍 LocationManager: Обновление местоположения: \(location.coordinate.latitude), \(location.coordinate.longitude)")
+        
+        // ✅ План 2026: Отправляем на сервер
+        reportCurrentLocation(location)
         
         // ✅ BUILD 115: Если есть ожидающий continuation для one-time location
         if let continuation = locationContinuation, !locationContinuationHasResumed {
@@ -482,6 +617,12 @@ extension LocationManager: CLLocationManagerDelegate {
         currentLocation = location
         print("📍 LocationManager: Significant-Change: перемещение на 500+ метров")
         print("📍 LocationManager: Новое местоположение: \(location.coordinate.latitude), \(location.coordinate.longitude)")
+        
+        // ✅ План 2026: Проверяем близость к школам/дому для временного включения GPS
+        checkProximityAndBoostAccuracy(to: location)
+        
+        // ✅ План 2026: Отправляем на сервер
+        reportCurrentLocation(location)
         
         // Отправить уведомление о значительном изменении
         NotificationCenter.default.post(

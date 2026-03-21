@@ -31,7 +31,7 @@ struct UnicornPetView: View {
     
     // Получаем userId для API вызовов
     private var userId: String {
-        AppConfig.authToken ?? UserDefaults.standard.string(forKey: "user_id") ?? "guest"
+        UserDefaults.standard.string(forKey: "user_id") ?? "guest"
     }
     
     var body: some View {

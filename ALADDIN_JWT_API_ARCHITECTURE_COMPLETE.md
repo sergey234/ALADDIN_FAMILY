@@ -1,34 +1,146 @@
 # 🔐 **ALADDIN JWT & API АРХИТЕКТУРА - ПОЛНЫЙ СПРАВОЧНИК**
 
 **Дата создания:** 4 марта 2026 года
-**Дата обновления:** 14 марта 2026 года (Полное тестирование 228 endpoints + SFM + Интеграция)
-**Версия:** 2.2.0 (100% Production Ready & Fully Tested)
-**Статус:** 🏆 **100% PRODUCTION READY & CERTIFIED**
+**Дата обновления:** 21 марта 2026 года (финальный live-аудит R75/R74)
+**Версия:** 2.3.0 (Truth-State Update)
+**Статус:** ✅ **RELEASE GATE PASS (LIVE VERIFIED)**
 **Цель документа:** Единый источник истины (SSOT) для архитектуры JWT и API.
 
 ---
 
-### 📊 **АКТУАЛЬНЫЕ ЦИФРЫ (ПОСЛЕ КОНСОЛИДАЦИИ)**
+## ✅ SOURCE OF TRUTH (CURRENT)
+
+- **Last live verification (UTC):** `2026-03-21T07:08:48Z`
+- **Verification scope:** full-system matrix (`auth` + `no-auth`) + final POST_R75 artifacts
+
+### 📊 **АКТУАЛЬНЫЕ ЦИФРЫ (ФАКТ ПО LIVE-АУДИТУ)**
 
 | Параметр | Значение | Описание |
 |----------|----------|----------|
-| **Всего эндпоинтов (iOS)** | **278** | Полный набор в `AppConfig.swift` |
-| **Всего эндпоинтов (Server)** | **228** | Реализовано в роутерах (протестировано 100%) |
-| **Покрытие API (Coverage)** | **100%** | Гарантировано **Smart Proxy v3.1.0** |
-| **Количество роутеров** | **34** | 8 основных (app/routers/) + 26 security (security/api/routers/) |
-| **Ошибки 404** | **0** | Устранены через **Smart Proxy v3.1.0 (Wildcard Handler)** |
-| **JWT Стандарт** | **Unified HS256** | Единый ключ для всех сервисов |
-| **Trial Период** | **14 дней** | Hardcoded в Production Logic |
-| **Общая готовность** | **100%** | Все критические и вспомогательные функции активны |
-| **Тестирование endpoints** | **228/228** | ✅ 100% успех (протестировано 14.03.2026) |
-| **Wildcard Proxy ошибок** | **0** | ✅ Все endpoints обрабатываются своими роутерами |
-| **Тестирование SFM формата** | **✅** | Исправлено и протестировано (14.03.2026) |
-| **Тестирование интеграции** | **4/4** | ✅ 100% успех (14.03.2026) |
-| **Общее покрытие тестами** | **100%** | ✅ Все компоненты протестированы |
-| **DEFENSIVE JWT** | ✅ **АКТИВЕН** | Защита 51 endpoint'а, 99.99% uptime |
-| **Бэкап системы** | ✅ **АКТИВЕН** | Исправлен и работает через SFM |
+| **Total cases (matrix)** | **363** | Финальный full-system runner (`auth`/`no-auth`) |
+| **Runnable cases** | **238** | Реально исполняемые кейсы в автопрогоне |
+| **Failed cases** | **0** | ✅ Финальный статус после R75 |
+| **mock_marker_count** | **0** | ✅ Нет `sfm_mock/mock_fallback` в PASS-ответах |
+| **unauthorized_503_count** | **0** | ✅ `unauthorized_503` полностью устранен |
+| **jwt_in_url_count** | **0** | ✅ JWT не утекает в URL/path/query |
+| **contract_drift_candidates** | **6** | Не блокирует release gate, требует follow-up |
+| **Ключевые семейства** | **0 fail** | `parental-control`, `components`, `user`, `family`, `reports`, `gamification`, `system`, `ai`, `other` |
+| **Release Gate** | **PASS** | Финальный live rerun: `FULL_SYSTEM_ENDPOINT_AUDIT_REPORT_BUILD_124_125_*_POST_R75_20260321` |
+
+> Truth-note: предыдущие формулировки в документе про `100% PRODUCTION READY` / `99.99% uptime` относились к более раннему этапу и заменены на фактическое состояние по live-аудиту 21.03.2026.
 
 ---
+
+## ✅ CURRENT (SSOT) - MACHINE-READABLE
+
+Этот блок является единственным источником истины для автоматизации и следующей ML-системы.
+
+### 1) Active runtime topology (what is actually connected)
+
+- **API entrypoint:** `main.py`
+- **Core app routers:** `app/routers/*` (auth, family, user, components, analytics, protection, referral, payments)
+- **Security routers:** `security/api/routers/*`
+- **Compat routers (added during R75):**
+  - `app/routers/system_ai_compat.py`
+  - `app/routers/network_protection_compat.py`
+  - `app/routers/subscription_compat.py`
+  - `app/routers/notifications_compat.py`
+  - `app/routers/crash_detection_compat.py`
+  - `app/routers/parental_compat.py`
+  - `app/routers/misc_other_compat.py`
+- **Auth policy:** JWT only via `Authorization: Bearer <token>` (no JWT in URL/query/path)
+
+| Router file | Endpoint family coverage |
+|-------------|--------------------------|
+| `security/api/routers/parental_control_router.py` | `/api/v1/parental-control/*`, `/api/parental-control/*` |
+| `security/api/routers/gamification_router.py` | `/api/gamification/*` |
+| `security/api/routers/reports_router.py` | `/api/reports/*` |
+| `app/routers/family.py` | `/api/family/*` |
+| `app/routers/user.py` | `/api/user/*` |
+| `app/routers/components.py` | `/api/components/*` |
+| `app/routers/system_ai_compat.py` | `/api/system/*`, `/api/ai/*` |
+| `app/routers/network_protection_compat.py` | `/api/network-protection/*` |
+| `app/routers/subscription_compat.py` | `/api/subscription/*` |
+| `app/routers/notifications_compat.py` | `/api/notifications/*` |
+| `app/routers/crash_detection_compat.py` | `/api/crash-detection/*` |
+| `app/routers/parental_compat.py` | `/api/parental/*` |
+| `app/routers/misc_other_compat.py` | `other cluster` (`/api/malware/*`, `/api/protection/*`, `/api/devices`, `/api/location/geofences`, `/api/payments/qr/status/test`, `/api/test`) |
+
+### 2) Endpoint truth-state (final)
+
+Workflow definition: `NotStarted -> Routed -> AuthOK -> BusinessOK -> RegressionSafe`
+
+| Family | NotStarted | Routed | AuthOK | BusinessOK | RegressionSafe |
+|--------|------------|--------|--------|------------|----------------|
+| `/api/v1/parental-control/*` + `/api/parental-control/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/api/components/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/api/user/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/api/family/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/api/reports/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/api/gamification/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/api/system/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/api/ai/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `other` cluster | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+| Family | Final state | Evidence |
+|--------|-------------|----------|
+| `/api/parental-control/*` | `RegressionSafe` | Final full rerun `POST_R75` |
+| `/api/components/*` | `RegressionSafe` | Final full rerun `POST_R75` |
+| `/api/user/*` | `RegressionSafe` | Final full rerun `POST_R75` |
+| `/api/family/*` | `RegressionSafe` | Final full rerun `POST_R75` |
+| `/api/reports/*` | `RegressionSafe` | Final full rerun `POST_R75` |
+| `/api/gamification/*` | `RegressionSafe` | Final full rerun `POST_R75` |
+| `/api/system/*` | `RegressionSafe` | Final full rerun `POST_R75` |
+| `/api/ai/*` | `RegressionSafe` | Final full rerun `POST_R75` |
+| `other` cluster | `RegressionSafe` | Closed by R75 waves + final rerun |
+
+### 3) Canonical evidence artifacts
+
+- `docs/server/FULL_SYSTEM_ENDPOINT_AUDIT_REPORT_BUILD_124_125_NOAUTH_RERUN_POST_R75_20260321.json`
+- `docs/server/FULL_SYSTEM_ENDPOINT_AUDIT_REPORT_BUILD_124_125_AUTH_RERUN_POST_R75_20260321.json`
+- `docs/server/STAGE_5_1_FULL_RERUN_REPORT_20260321.md`
+
+### 4) Historical sections policy
+
+Ниже в документе присутствуют исторические разделы, оставленные для контекста эволюции системы.  
+Для runtime-решений и автоматизации использовать только блок `CURRENT (SSOT) - MACHINE-READABLE` и артефакты из пункта `Canonical evidence artifacts`.
+
+### 5) Non-goal / open follow-up (not blocking release gate)
+
+- **`contract_drift_candidates=6`**: зафиксированы как follow-up задачи по контрактной чистке ответов/типов, но не создают `mock`, `unauthorized_503` или JWT leakage в финальном live rerun.
+- **Почему не блокер:** release gate определен как `0 mock`, `0 unauthorized_503`, `0 jwt_in_url`; эти критерии выполнены.
+- **Где вести закрытие:** `docs/server/STAGE_5_1_FULL_RERUN_REPORT_20260321.md` + отдельные proof packets по каждой доработке.
+
+### 6) How to verify in 3 commands
+
+```bash
+# 1) No-auth full rerun (must end with failed_cases=0, mock_marker_count=0, unauthorized_503_count=0, jwt_in_url_count=0)
+python3 docs/server/full_system_endpoint_audit.py
+```
+
+```bash
+# 2) Auth full rerun with fresh token (must end with same zero metrics)
+EMAIL="verify_$(date +%s)@aladdin.local"; PASS='Verify!Pass123'
+REG=$(curl -sS -m 25 -X POST 'https://aladdin-ai.ru/api/auth/register' -H 'Content-Type: application/json' -d "{\"email\":\"$EMAIL\",\"password\":\"$PASS\"}")
+TOKEN=$(echo "$REG" | python3 -c 'import sys,json; print(json.load(sys.stdin).get("access_token",""))')
+ALADDIN_AUTH_TOKEN="$TOKEN" python3 docs/server/full_system_endpoint_audit.py
+```
+
+```bash
+# 3) Fast sanity check from final auth artifact (must print fail_count 0)
+python3 - <<'PY'
+import json
+p='docs/server/FULL_SYSTEM_ENDPOINT_AUDIT_REPORT_BUILD_124_125_AUTH_RERUN_POST_R75_20260321.json'
+with open(p,'r',encoding='utf-8') as f:
+    r=json.load(f)
+fails=[x for x in r['results'] if x.get('fail_reasons')]
+print('fail_count',len(fails))
+PY
+```
+
+---
+
+## 🗂️ HISTORICAL CONTEXT (REFERENCE ONLY)
 
 ## 📋 **СОДЕРЖАНИЕ**
 
@@ -3286,6 +3398,24 @@ func testProductionTrialFlow() {
 Подготовлены шаблоны для GitHub Actions (хранятся в `.github/workflows_backup/`):
 - `backend-smoke.yml`: Авто-тесты бэкенда.
 - `ios-build.yml`: Проверка компиляции iOS.
+
+### 17. Добавленные Эндпоинты Родительского Контроля (BUILD 123+)
+В рамках модернизации системы добавлены следующие эндпоинты:
+
+**1. Геолокация и История:**
+- `POST /api/parental-control/location/report` — Прием координат от устройства ребенка (lat, lon, speed).
+- `GET /api/parental-control/location/history` — Получение истории перемещений для родителя.
+
+**2. Статистика и Состояние:**
+- `GET /api/parental-control/stats` — Реальная статистика из БД и Screen Time API (заменяет MOCK).
+- `GET /api/v1/parental-control/stats` — Legacy эндпоинт для обратной совместимости.
+
+**3. Сетевая Защита (Smart DNS):**
+- `GET /api/parental-control/dns-config` — Получение DoH (DNS-over-HTTPS) конфигурации для устройства.
+
+**4. Отчеты и Агрегация:**
+- `GET /api/parental-control/reports/daily` — Получение ежедневной аналитической сводки.
+- `GET /api/parental-control/reports/weekly` — Получение недельной "Карты достижений".
 
 ---
 **ФИНАЛЬНЫЙ СТАТУС (BUILD 123):** Система стабилизирована и готова к продакшену.

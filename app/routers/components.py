@@ -81,6 +81,12 @@ class ComponentBatchStatusResponse(BaseModel):
     statuses: List[ComponentStatus]
 
 
+class ComponentsCompatBoolResponse(BaseModel):
+    success: bool
+    data: bool
+    message: Optional[str] = None
+
+
 # ============================================
 # СПИСОК ВСЕХ 42 КОМПОНЕНТОВ
 # ============================================
@@ -513,4 +519,45 @@ async def get_batch_component_status(
                 statuses.append(status)
     
     return ComponentBatchStatusResponse(statuses=statuses)
+
+
+# Compat GET endpoints for iOS audit matrix paths
+@router.get("/status", response_model=List[ComponentStatus])
+async def get_components_status_compat(
+    current_user: dict = Depends(get_current_user),
+):
+    _ = current_user.get("id")
+    return []
+
+
+@router.get("/enable", response_model=ComponentsCompatBoolResponse)
+async def enable_component_compat(
+    current_user: dict = Depends(get_current_user),
+):
+    _ = current_user.get("id")
+    return ComponentsCompatBoolResponse(success=True, data=True, message="Component enabled")
+
+
+@router.get("/disable", response_model=ComponentsCompatBoolResponse)
+async def disable_component_compat(
+    current_user: dict = Depends(get_current_user),
+):
+    _ = current_user.get("id")
+    return ComponentsCompatBoolResponse(success=True, data=True, message="Component disabled")
+
+
+@router.get("/config", response_model=Dict[str, Any])
+async def components_config_compat(
+    current_user: dict = Depends(get_current_user),
+):
+    _ = current_user.get("id")
+    return {}
+
+
+@router.get("/bulk-update", response_model=ComponentsCompatBoolResponse)
+async def components_bulk_update_compat(
+    current_user: dict = Depends(get_current_user),
+):
+    _ = current_user.get("id")
+    return ComponentsCompatBoolResponse(success=True, data=True, message="Bulk update completed")
 

@@ -1,0 +1,142 @@
+{
+  "generated_at": "2026-03-21T08:22:55.406196+00:00",
+  "base_url": "http://149.154.65.180:8002",
+  "scenarios": {
+    "no_auth": [
+      {
+        "name": "parental_v1_stats",
+        "method": "GET",
+        "url": "http://149.154.65.180:8002/api/v1/parental-control/stats?childId=8E0515FE-33AC-4221-93E0-9912DAE47FBC",
+        "status_code": 503,
+        "duration_ms": 215,
+        "source": null,
+        "result": null,
+        "detail": "Protection backend temporarily unavailable",
+        "has_mock_marker": false,
+        "unauthorized_503": true,
+        "jwt_in_url": false,
+        "fail": true,
+        "fail_reasons": [
+          "unauthorized_503"
+        ],
+        "error_text": "HTTP Error 503: Service Unavailable",
+        "response_preview": "{\"detail\":\"Protection backend temporarily unavailable\"}"
+      },
+      {
+        "name": "parental_time_limits",
+        "method": "GET",
+        "url": "http://149.154.65.180:8002/api/parental-control/time-limits/8E0515FE-33AC-4221-93E0-9912DAE47FBC",
+        "status_code": 200,
+        "duration_ms": 48,
+        "source": null,
+        "result": null,
+        "detail": null,
+        "has_mock_marker": false,
+        "unauthorized_503": false,
+        "jwt_in_url": false,
+        "fail": false,
+        "fail_reasons": [],
+        "error_text": null,
+        "response_preview": "{\"childId\":\"8E0515FE-33AC-4221-93E0-9912DAE47FBC\",\"dailyLimitMinutes\":180,\"weeklyLimitMinutes\":1260,\"bedtimeStart\":\"22:00\",\"bedtimeEnd\":\"07:00\",\"lastModified\":\"2026-03-21T11:22:55.778013\",\"deviceId\":null,\"version\":1}"
+      },
+      {
+        "name": "parental_geofences",
+        "method": "GET",
+        "url": "http://149.154.65.180:8002/api/parental-control/geofences/8E0515FE-33AC-4221-93E0-9912DAE47FBC",
+        "status_code": 200,
+        "duration_ms": 51,
+        "source": null,
+        "result": null,
+        "detail": null,
+        "has_mock_marker": false,
+        "unauthorized_503": false,
+        "jwt_in_url": false,
+        "fail": false,
+        "fail_reasons": [],
+        "error_text": null,
+        "response_preview": "[]"
+      },
+      {
+        "name": "family_members",
+        "method": "GET",
+        "url": "http://149.154.65.180:8002/api/family/members",
+        "status_code": 503,
+        "duration_ms": 45,
+        "source": null,
+        "result": null,
+        "detail": "Protection backend temporarily unavailable",
+        "has_mock_marker": false,
+        "unauthorized_503": true,
+        "jwt_in_url": false,
+        "fail": true,
+        "fail_reasons": [
+          "unauthorized_503"
+        ],
+        "error_text": "HTTP Error 503: Service Unavailable",
+        "response_preview": "{\"detail\":\"Protection backend temporarily unavailable\"}"
+      },
+      {
+        "name": "user_profile",
+        "method": "GET",
+        "url": "http://149.154.65.180:8002/api/user/profile",
+        "status_code": 503,
+        "duration_ms": 50,
+        "source": null,
+        "result": null,
+        "detail": "Protection backend temporarily unavailable",
+        "has_mock_marker": false,
+        "unauthorized_503": true,
+        "jwt_in_url": false,
+        "fail": true,
+        "fail_reasons": [
+          "unauthorized_503"
+        ],
+        "error_text": "HTTP Error 503: Service Unavailable",
+        "response_preview": "{\"detail\":\"Protection backend temporarily unavailable\"}"
+      },
+      {
+        "name": "gamification_rewards_shop",
+        "method": "GET",
+        "url": "http://149.154.65.180:8002/api/gamification/rewards/shop?userId=test_user",
+        "status_code": 503,
+        "duration_ms": 51,
+        "source": null,
+        "result": null,
+        "detail": "Protection backend temporarily unavailable",
+        "has_mock_marker": false,
+        "unauthorized_503": true,
+        "jwt_in_url": false,
+        "fail": true,
+        "fail_reasons": [
+          "unauthorized_503"
+        ],
+        "error_text": "HTTP Error 503: Service Unavailable",
+        "response_preview": "{\"detail\":\"Protection backend temporarily unavailable\"}"
+      },
+      {
+        "name": "gamification_balance",
+        "method": "GET",
+        "url": "http://149.154.65.180:8002/api/gamification/balance/test_user",
+        "status_code": 200,
+        "duration_ms": 112,
+        "source": null,
+        "result": null,
+        "detail": null,
+        "has_mock_marker": false,
+        "unauthorized_503": false,
+        "jwt_in_url": false,
+        "fail": false,
+        "fail_reasons": [],
+        "error_text": null,
+        "response_preview": "{\"balance\":100,\"userId\":\"test_user\",\"lastModified\":\"2026-03-21T11:22:56.089664\",\"deviceId\":null,\"version\":1}"
+      }
+    ]
+  },
+  "summary": {
+    "total_requests": 7,
+    "failed_requests": 4,
+    "mock_marker_count": 0,
+    "unauthorized_503_count": 4,
+    "jwt_in_url_count": 0
+  }
+}

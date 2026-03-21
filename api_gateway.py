@@ -42,6 +42,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger("aladdin-gateway")
 
+# Explicit mapping for critical endpoints where proxy naming does not match SFM registry.
+# We add mappings incrementally (one endpoint at a time) to avoid broad regressions.
+EXPLICIT_FUNCTION_MAP: Dict[str, List[str]] = {
+    "v1/parental-control/stats": ["get_parental_stats"],
+    "parental-control/stats": ["get_parental_stats"],
+}
+
 # --- SFM Adapter ---
 backend_path = "/opt/aladdin-backend"
 if backend_path not in sys.path:
@@ -145,15 +152,59 @@ async def catch_all_api_proxy(request: Request, path: str, authorization: Option
     params["userId"] = params.get("userId") or user_id
     
     logger.info(f"🛰 Smart Proxy: {request.method} /{path} -> trying function: {func_name}")
+
+    def should_block_mock_result(req_method: str, api_path: str, sfm_result: Any) -> bool:
+        """Block SFM mock/fallback responses for sensitive endpoints in production.
+
+        This prevents `200 OK + source:\"sfm_mock\"` from reaching the iOS client.
+        """
+        if req_method != "GET":
+            return False
+
+        is_sensitive_endpoint = (
+            api_path == "family/members"
+            or api_path.startswith("parental-control/")
+            or api_path.startswith("v1/parental-control/")
+            or api_path.startswith("gamification/")
+        )
+        if not is_sensitive_endpoint:
+            return False
+
+        if not isinstance(sfm_result, dict):
+            return False
+
+        source = sfm_result.get("source")
+        result_value = sfm_result.get("result")
+
+        if source in {"sfm_mock", "sfm_fallback", "sfm_error"}:
+            return True
+
+        # Some SFM responses use plain string marker.
+        if result_value == "mock_fallback":
+            return True
+
+        return False
     
     if sfm_adapter:
-        # Пробуем вызвать функцию напрямую
-        success, result, message = sfm_adapter.execute_function(func_name, params)
-        if success: return result
-        
-        # Пробуем с префиксом api_
-        success, result, message = sfm_adapter.execute_function(f"api_{func_name}", params)
-        if success: return result
+        # 1) Try explicit function mapping for critical routes first.
+        candidate_functions: List[str] = []
+        if path in EXPLICIT_FUNCTION_MAP:
+            candidate_functions.extend(EXPLICIT_FUNCTION_MAP[path])
+
+        # 2) Fallback to legacy wildcard naming contract.
+        candidate_functions.extend([func_name, f"api_{func_name}"])
+
+        for candidate in candidate_functions:
+            success, result, message = sfm_adapter.execute_function(candidate, params)
+            if not success:
+                continue
+
+            if should_block_mock_result(request.method, path, result):
+                raise HTTPException(
+                    status_code=503,
+                    detail="Protection backend temporarily unavailable",
+                )
+            return result
         
     # Если ничего не помогло - отдаем "Production-Ready Mock" успех
     return {

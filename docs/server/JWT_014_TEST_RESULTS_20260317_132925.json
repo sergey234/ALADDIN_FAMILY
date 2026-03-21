@@ -1,0 +1,33 @@
+{
+  "timestamp": "2026-03-17T13:29:25.086069",
+  "stats": {
+    "total": 2,
+    "success": 2,
+    "auth_error": 0,
+    "validation_error": 0,
+    "other_error": 0,
+    "network_error": 0
+  },
+  "results": [
+    {
+      "method": "GET",
+      "endpoint": "/api/referral/code",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.036
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/referral/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.038
+    }
+  ]
+}

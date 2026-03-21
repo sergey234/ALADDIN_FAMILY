@@ -224,6 +224,7 @@ class NetworkManager: NSObject, ObservableObject {
      */
     func get<T: Decodable>(
         endpoint: String,
+        queryParams: [String: String]? = nil,
         requiresAuth: Bool = true,  // ✅ По умолчанию авторизация обязательна
         completion: @escaping (Result<T, Error>) -> Void
     ) {
@@ -231,7 +232,19 @@ class NetworkManager: NSObject, ObservableObject {
         Task {
             _ = await JWTTokenManager.shared.refreshTokenIfNeeded()
             
-            guard let url = URL(string: baseURL + endpoint) else {
+            var urlString = baseURL + endpoint
+            
+            // Добавляем query параметры если они есть
+            if let params = queryParams, !params.isEmpty {
+                let queryItems = params.map { URLQueryItem(name: $0.key, value: $0.value) }
+                var components = URLComponents(string: urlString)
+                components?.queryItems = queryItems
+                if let combinedURL = components?.url?.absoluteString {
+                    urlString = combinedURL
+                }
+            }
+            
+            guard let url = URL(string: urlString) else {
                 completion(.failure(NetworkError.invalidURL))
                 return
             }

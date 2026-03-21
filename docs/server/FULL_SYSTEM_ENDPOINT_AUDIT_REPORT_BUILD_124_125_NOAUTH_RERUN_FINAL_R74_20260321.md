@@ -1,0 +1,57 @@
+# Full System Endpoint Audit Report (Build 124/125)
+
+- Generated: `2026-03-21T12:44:39.063271+00:00`
+- Base URL: `http://149.154.65.180:8002`
+- Auth mode: `no_auth`
+
+## Summary
+
+- **total_cases**: `360`
+- **runnable_cases**: `235`
+- **skipped_cases**: `125`
+- **critical_cases**: `88`
+- **critical_runnable**: `69`
+- **failed_cases**: `31`
+- **mock_marker_count**: `31`
+- **unauthorized_503_count**: `0`
+- **jwt_in_url_count**: `0`
+- **contract_drift_candidates**: `34`
+- **ios_http_call_sites**: `216`
+- **ios_endpoint_constants**: `244`
+- **openapi_paths**: `317`
+
+## Top Fail Cases (first 40)
+
+| Method | Path | HTTP | Fail Reasons |
+|---|---|---:|---|
+| GET | `/api/test` | 200 | `mock_marker_detected` |
+| GET | `/api/crash-detection/alert` | 200 | `mock_marker_detected` |
+| GET | `/api/crash-detection/settings/update` | 200 | `mock_marker_detected` |
+| GET | `/api/crash-detection/setup` | 200 | `mock_marker_detected` |
+| GET | `/api/devices` | 200 | `mock_marker_detected` |
+| GET | `/api/location/geofences` | 200 | `mock_marker_detected` |
+| GET | `/api/malware/quarantine/action` | 200 | `mock_marker_detected` |
+| GET | `/api/malware/threats` | 200 | `mock_marker_detected` |
+| GET | `/api/network-protection/config` | 200 | `mock_marker_detected` |
+| GET | `/api/network-protection/connect` | 200 | `mock_marker_detected` |
+| GET | `/api/network-protection/disconnect` | 200 | `mock_marker_detected` |
+| GET | `/api/network-protection/servers` | 200 | `mock_marker_detected` |
+| GET | `/api/network-protection/settings` | 200 | `mock_marker_detected` |
+| GET | `/api/network-protection/stats` | 200 | `mock_marker_detected` |
+| GET | `/api/network-protection/status` | 200 | `mock_marker_detected` |
+| GET | `/api/notifications/archive` | 200 | `mock_marker_detected` |
+| GET | `/api/notifications/bulk-mark-read` | 200 | `mock_marker_detected` |
+| GET | `/api/notifications/categories` | 200 | `mock_marker_detected` |
+| GET | `/api/notifications/stats` | 200 | `mock_marker_detected` |
+| GET | `/api/parental/block` | 200 | `mock_marker_detected` |
+| GET | `/api/parental/control` | 200 | `mock_marker_detected` |
+| GET | `/api/parental/limits` | 200 | `mock_marker_detected` |
+| GET | `/api/payments/qr/status/test` | 200 | `mock_marker_detected` |
+| GET | `/api/protection/quarantine/action` | 200 | `mock_marker_detected` |
+| GET | `/api/protection/threats` | 200 | `mock_marker_detected` |
+| GET | `/api/protection/threats/test` | 200 | `mock_marker_detected` |
+| GET | `/api/subscription/activate` | 200 | `mock_marker_detected` |
+| GET | `/api/subscription/activation/activate` | 200 | `mock_marker_detected` |
+| GET | `/api/subscription/activation/verify` | 200 | `mock_marker_detected` |
+| GET | `/api/subscription/subscribe` | 200 | `mock_marker_detected` |
+| GET | `/api/subscription/tariffs` | 200 | `mock_marker_detected` |

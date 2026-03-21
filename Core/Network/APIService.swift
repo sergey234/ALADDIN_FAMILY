@@ -1595,7 +1595,7 @@ class APIService: ObservableObject {
         completion: @escaping (Result<BypassStatsResponse, Error>) -> Void
     ) {
         // ✅ РЕАЛЬНЫЙ ЗАПРОС
-        let endpoint = childId != nil ? "/parental/bypass/stats?childId=\(childId!)" : "/parental/bypass/stats"
+        let endpoint = childId != nil ? "/api/parental/bypass/stats?childId=\(childId!)" : "/api/parental/bypass/stats"
         networkManager.get(endpoint: endpoint, completion: completion)
     }
     
@@ -2209,6 +2209,57 @@ class APIService: ObservableObject {
         }
     }
     
+    // ✅ ИНТЕГРАЦИЯ: Отправить обновление местоположния (План 2026)
+    func reportLocation(latitude: Double, longitude: Double, speed: Double? = nil, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        struct LocationReportRequest: Codable {
+            let lat: Double
+            let lon: Double
+            let speed: Double?
+        }
+        let request = LocationReportRequest(lat: latitude, lon: longitude, speed: speed)
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.locationReport,
+            body: request,
+            completion: completion
+        )
+    }
+
+    // ✅ ИНТЕГРАЦИЯ: Получить конфигурацию DoH (План 2026)
+    func getDNSConfig(childId: String? = nil, completion: @escaping (Result<APIResponse<DNSConfigResponse>, Error>) -> Void) {
+        var endpoint = AppConfig.Endpoint.dnsConfig
+        if let childId = childId {
+            endpoint += "?childId=\(childId)"
+        }
+        networkManager.get(
+            endpoint: endpoint,
+            completion: completion
+        )
+    }
+
+    // ✅ ИНТЕГРАЦИЯ: Получить ежедневные отчеты (План 2026)
+    func getDailyReports(childId: String? = nil, completion: @escaping (Result<[ParentalReportItem], Error>) -> Void) {
+        var endpoint = "/api/parental-control/reports/daily"
+        if let childId = childId {
+            endpoint += "?childId=\(childId)"
+        }
+        networkManager.get(
+            endpoint: endpoint,
+            completion: completion
+        )
+    }
+
+    // ✅ ИНТЕГРАЦИЯ: Получить еженедельную 'Карту достижений' (План 2026)
+    func getWeeklyReports(childId: String? = nil, completion: @escaping (Result<[ParentalReportItem], Error>) -> Void) {
+        var endpoint = "/api/parental-control/reports/weekly"
+        if let childId = childId {
+            endpoint += "?childId=\(childId)"
+        }
+        networkManager.get(
+            endpoint: endpoint,
+            completion: completion
+        )
+    }
+
     // ✅ ИНТЕГРАЦИЯ: Отправить обновление местоположения для родительского контроля
     func trackLocation(latitude: Double, longitude: Double, timestamp: Date, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
         struct TrackLocationRequest: Codable {

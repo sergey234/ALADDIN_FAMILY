@@ -1,0 +1,763 @@
+{
+  "timestamp": "2026-03-17T11:54:48.495179",
+  "stats": {
+    "total": 75,
+    "success": 68,
+    "auth_error": 0,
+    "validation_error": 21,
+    "other_error": 7,
+    "network_error": 0
+  },
+  "results": [
+    {
+      "method": "GET",
+      "endpoint": "/api/user/profile",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.039
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/user/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.03
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/user/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.039
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/user/rewards",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.058
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/setup",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.047
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/start",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.059
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/data",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.061
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/alert",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.054
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/stop",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.043
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/crash-detection/status",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.086
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/crash-detection/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.081
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/check",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.057
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/ai-categories/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.052
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/allow",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.06
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/block",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.065
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/ai-categories/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.054
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/reset",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.048
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/scan",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.057
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/clean",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.056
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.053
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.041
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/schedule",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.055
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/cancel",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.048
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.045
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/export",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.042
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/identity-theft/scan",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.054
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/alerts",
+      "status": 500,
+      "reason": "Internal Server Error",
+      "success": false,
+      "icon": "❓",
+      "status_text": "500 Internal Server Error",
+      "latency_s": 0.047
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/identity-theft/block",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.048
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/identity-theft/report",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.048
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/status",
+      "status": 500,
+      "reason": "Internal Server Error",
+      "success": false,
+      "icon": "❓",
+      "status_text": "500 Internal Server Error",
+      "latency_s": 0.052
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.041
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.06
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/darkweb/scan",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.067
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/darkweb/results",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.047
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/darkweb/alerts",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.038
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/location/bubble/create",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.042
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/location/bubble/update",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.067
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/api/location/bubble/delete",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.063
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/location/bubble/list",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.081
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/location/bubble/status",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.053
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/driving-reports/start",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.048
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/driving-reports/stop",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.051
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/driving-reports/data",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.077
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/driving-reports/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.042
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/anti-tracker/scan",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.056
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/anti-tracker/block",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.054
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/anti-tracker/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.052
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/notifications",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.068
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/notifications/mark-read",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.056
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/roadside-assistance/call",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.043
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/components/status/crash_detection_agent",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.059
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/enable/crash_detection_agent",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.048
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/disable/crash_detection_agent",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.04
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/components/configuration/crash_detection_agent",
+      "status": 404,
+      "reason": "Not Found",
+      "success": false,
+      "icon": "❓",
+      "status_text": "404 Not Found",
+      "latency_s": 0.033
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/configuration/crash_detection_agent",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.034
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/batch/status",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.035
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.043
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics/threats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.031
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics/top-threats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.037
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/status",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.03
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/settings",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.037
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.031
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/threat-scenarios",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.032
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/enable",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.03
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/disable",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.03
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/settings",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.043
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/sync",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.031
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/family/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.03
+    },
+    {
+      "method": "GET",
+      "endpoint": "/code",
+      "status": 404,
+      "reason": "Not Found",
+      "success": false,
+      "icon": "❓",
+      "status_text": "404 Not Found",
+      "latency_s": 0.026
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stats",
+      "status": 404,
+      "reason": "Not Found",
+      "success": false,
+      "icon": "❓",
+      "status_text": "404 Not Found",
+      "latency_s": 0.026
+    },
+    {
+      "method": "GET",
+      "endpoint": "/history",
+      "status": 404,
+      "reason": "Not Found",
+      "success": false,
+      "icon": "❓",
+      "status_text": "404 Not Found",
+      "latency_s": 0.03
+    },
+    {
+      "method": "GET",
+      "endpoint": "/rewards",
+      "status": 404,
+      "reason": "Not Found",
+      "success": false,
+      "icon": "❓",
+      "status_text": "404 Not Found",
+      "latency_s": 0.025
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/referral/test/discount/apply",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.039
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/referral/test/payment/create",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.032
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/referral/test/payment/confirm",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)",
+      "latency_s": 0.04
+    }
+  ]
+}

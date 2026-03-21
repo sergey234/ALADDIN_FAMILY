@@ -199,7 +199,12 @@ struct AnyCodable: Codable, Equatable {
         case let dictionary as [String: Any]:
             try container.encode(dictionary.mapValues { AnyCodable($0) })
         default:
-            throw EncodingError.invalidValue(value, EncodingError.Context(codingPath: container.codingPath, debugDescription: "AnyCodable value cannot be encoded"))
+            // Fallback for types that might not be explicitly handled but are Codable
+            if let encodable = value as? Encodable {
+                try encodable.encode(to: encoder)
+            } else {
+                throw EncodingError.invalidValue(value, EncodingError.Context(codingPath: container.codingPath, debugDescription: "AnyCodable value cannot be encoded"))
+            }
         }
     }
     

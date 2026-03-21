@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-03-18T23:07:18.581740",
+  "stats": {
+    "total": 3,
+    "success": 3,
+    "auth_error": 0,
+    "validation_error": 0,
+    "other_error": 0,
+    "network_error": 0
+  },
+  "results": [
+    {
+      "method": "GET",
+      "endpoint": "/api/ai-categories/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.028
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.04
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics/top-threats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.035
+    }
+  ]
+}

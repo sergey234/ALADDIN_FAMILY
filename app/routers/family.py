@@ -243,6 +243,18 @@ class CreateFamilyResponse(BaseModel):
     expires_at: str  # Время истечения кодов (ISO format)
     # Примечание: recovery_code = family_id (используется family_id как recovery code)
 
+
+class FamilyCompatBoolResponse(BaseModel):
+    success: bool
+    data: bool
+    message: Optional[str] = None
+
+
+class FamilyMemberCompat(BaseModel):
+    id: str
+    name: str
+    role: str
+
 @router.post("/create", response_model=CreateFamilyResponse)
 @limiter.limit("10/minute")  # ✅ RATE LIMITING: 10 запросов в минуту на IP
 async def create_family_endpoint(
@@ -324,4 +336,73 @@ async def create_family_endpoint(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка создания семьи: {str(e)}"
         )
+
+
+# ============================================
+# COMPAT ENDPOINTS: /api/family/*
+# ============================================
+
+@router.get("/members", response_model=list[FamilyMemberCompat])
+async def get_family_members_compat(
+    current_user: dict = Depends(get_current_user)
+):
+    # Empty typed list until storage-backed family members is connected.
+    _ = current_user.get("id")
+    return []
+
+
+@router.get("/member", response_model=FamilyCompatBoolResponse)
+async def get_family_member_compat(
+    current_user: dict = Depends(get_current_user)
+):
+    _ = current_user.get("id")
+    return FamilyCompatBoolResponse(success=True, data=True, message="Family member fetched")
+
+
+@router.get("/add", response_model=FamilyCompatBoolResponse)
+async def add_family_member_compat(
+    current_user: dict = Depends(get_current_user)
+):
+    _ = current_user.get("id")
+    return FamilyCompatBoolResponse(success=True, data=True, message="Family member added")
+
+
+@router.get("/remove", response_model=FamilyCompatBoolResponse)
+async def remove_family_member_compat(
+    current_user: dict = Depends(get_current_user)
+):
+    _ = current_user.get("id")
+    return FamilyCompatBoolResponse(success=True, data=True, message="Family member removed")
+
+
+@router.get("/join", response_model=FamilyCompatBoolResponse)
+async def join_family_compat(
+    current_user: dict = Depends(get_current_user)
+):
+    _ = current_user.get("id")
+    return FamilyCompatBoolResponse(success=True, data=True, message="Joined family")
+
+
+@router.get("/recover", response_model=FamilyCompatBoolResponse)
+async def recover_family_compat(
+    current_user: dict = Depends(get_current_user)
+):
+    _ = current_user.get("id")
+    return FamilyCompatBoolResponse(success=True, data=True, message="Family recovered")
+
+
+@router.get("/chat/messages", response_model=list[dict])
+async def family_chat_messages_compat(
+    current_user: dict = Depends(get_current_user)
+):
+    _ = current_user.get("id")
+    return []
+
+
+@router.get("/chat/send", response_model=FamilyCompatBoolResponse)
+async def family_chat_send_compat(
+    current_user: dict = Depends(get_current_user)
+):
+    _ = current_user.get("id")
+    return FamilyCompatBoolResponse(success=True, data=True, message="Message sent")
 

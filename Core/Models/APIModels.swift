@@ -102,7 +102,116 @@ struct NetworkProtectionSettingsResponse: Codable {
     let lastUpdated: Date?
 }
 
+// ✅ План 2026: DNS Configuration
+struct DNSConfigResponse: Codable {
+    let dohUrl: String
+    let serverName: String
+    let blockingEnabled: Bool
+    let categories: [String]
+    
+    enum CodingKeys: String, CodingKey {
+        case dohUrl = "doh_url"
+        case serverName = "server_name"
+        case blockingEnabled = "blocking_enabled"
+        case categories
+    }
+}
+
+// ✅ План 2026: Parental Reports
+struct ParentalReportItem: Codable, Identifiable {
+    let id: Int
+    let userId: Int
+    let type: String
+    let content: [String: AnyCodable]
+    let createdAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userId = "user_id"
+        case type
+        case content
+        case createdAt = "created_at"
+    }
+}
+
 // MARK: - Family Models
+
+struct FamilyMemberData: Identifiable, Codable {
+    var id = UUID()
+    var name: String
+    var role: FamilyMemberCard.FamilyRole
+    var avatar: String
+    var status: FamilyMemberCard.ProtectionStatus
+    var threatsBlocked: Int
+    var lastActive: String
+}
+
+struct AppLimitItemCodable: Codable {
+    let app: String
+    var limit: Double
+    let colorHex: String
+}
+
+struct AppLimitItem: Identifiable {
+    let id = UUID()
+    var app: String
+    var limit: Double
+    let color: Color
+}
+
+struct LocationEvent: Identifiable {
+    let id = UUID()
+    let time: String
+    let action: String
+    let status: LocationStatus
+    
+    enum LocationStatus {
+        case arrival
+        case departure
+        
+        var icon: String {
+            switch self {
+            case .arrival: return "✅"
+            case .departure: return "🚶"
+            }
+        }
+    }
+}
+
+struct ReportWarning: Identifiable {
+    let id = UUID()
+    let title: String
+    let time: String
+    let severity: Severity
+    
+    enum Severity {
+        case low, medium, high
+        
+        var color: Color {
+            switch self {
+            case .low: return .blue
+            case .medium: return .orange
+            case .high: return .red
+            }
+        }
+    }
+    
+    // For backward compatibility with Build 122 design
+    init(title: String, time: String, severity: Severity) {
+        self.title = title
+        self.time = time
+        self.severity = severity
+    }
+    
+    init(text: String, color: Color) {
+        self.title = text
+        self.time = ""
+        self.severity = color == .red || color == .dangerRed ? .high : .medium
+    }
+    
+    var text: String { title }
+    var color: Color { severity.color }
+}
 
 struct CreateFamilyResponse: Codable {
     // ✅ ИСПРАВЛЕНО: Модель соответствует реальному ответу сервера
@@ -1430,37 +1539,186 @@ struct QuarantineActionResponse: Codable {
 // MARK: - Component Models
 
 struct ComponentStatusResponse: Codable {
-    // API возвращает плоскую структуру, а не вложенную
-    let status: String  // "enabled" или "disabled"
-    let uptime: Double?  // Процент uptime
-    let last_check: String?  // ISO дата последней проверки
-    let version: String?  // Версия компонента
-    let source: String?  // Источник данных
-    let function: String?  // Название функции
-    let timestamp: String?  // Время ответа
+    // OLD CONTRACT (flat)
+    let flatStatus: String?           // "enabled" или "disabled"
+    let uptime: Double?              // Процент uptime
+    let last_check: String?         // ISO дата последней проверки
+    let version: String?            // Версия компонента
+    let source: String?             // Источник данных
+    let function: String?          // Название функции (используется для derivation componentId)
+    let timestamp: String?         // Время ответа
+
+    // NEW CONTRACT (envelope)
+    let componentId: String?
+    let isEnabled: Bool?
+    let envelopeStatus: String?
+    let lastUpdated: String?
+    let error: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case status
+        case uptime
+        case last_check
+        case version
+        case source
+        case function
+        case timestamp
+        // envelope fields live inside `status`, but we reuse names for readability
+        case componentId
+        case isEnabled
+        case lastUpdated
+        case error
+    }
+
+    private struct EnvelopeStatus: Codable {
+        let componentId: String
+        let isEnabled: Bool
+        let status: String
+        let lastUpdated: String
+        let error: String?
+    }
+
+    init(
+        flatStatus: String?,
+        uptime: Double?,
+        last_check: String?,
+        version: String?,
+        source: String?,
+        function: String?,
+        timestamp: String?,
+        componentId: String?,
+        isEnabled: Bool?,
+        envelopeStatus: String?,
+        lastUpdated: String?,
+        error: String?
+    ) {
+        self.flatStatus = flatStatus
+        self.uptime = uptime
+        self.last_check = last_check
+        self.version = version
+        self.source = source
+        self.function = function
+        self.timestamp = timestamp
+
+        self.componentId = componentId
+        self.isEnabled = isEnabled
+        self.envelopeStatus = envelopeStatus
+        self.lastUpdated = lastUpdated
+        self.error = error
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Try new envelope first: {"status":{componentId,isEnabled,status,lastUpdated,...}}
+        if let env = try? container.decode(EnvelopeStatus.self, forKey: .status) {
+            self.flatStatus = nil
+            self.uptime = nil
+            self.last_check = nil
+            self.version = nil
+            self.source = nil
+            self.function = nil
+            self.timestamp = nil
+
+            self.componentId = env.componentId
+            self.isEnabled = env.isEnabled
+            self.envelopeStatus = env.status
+            self.lastUpdated = env.lastUpdated
+            self.error = env.error
+            return
+        }
+
+        // Fallback to old flat contract
+        self.flatStatus = try? container.decode(String.self, forKey: .status)
+        self.uptime = try? container.decode(Double.self, forKey: .uptime)
+        self.last_check = try? container.decode(String.self, forKey: .last_check)
+        self.version = try? container.decode(String.self, forKey: .version)
+        self.source = try? container.decode(String.self, forKey: .source)
+        self.function = try? container.decode(String.self, forKey: .function)
+        self.timestamp = try? container.decode(String.self, forKey: .timestamp)
+
+        self.componentId = nil
+        self.isEnabled = nil
+        self.envelopeStatus = nil
+        self.lastUpdated = nil
+        self.error = nil
+    }
+
+    // Энкодинг почти нигде не используется (мы только декодируем ответ сервера),
+    // но тип должен соответствовать `Codable` из-за `APIResponse<T: Codable>`.
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        // Если есть данные нового envelope-формата — попробуем закодировать как объект под ключом `status`.
+        if let componentId = componentId,
+           let isEnabled = isEnabled,
+           let envelopeStatus = envelopeStatus,
+           let lastUpdated = lastUpdated {
+            let env = EnvelopeStatus(
+                componentId: componentId,
+                isEnabled: isEnabled,
+                status: envelopeStatus,
+                lastUpdated: lastUpdated,
+                error: error
+            )
+            try container.encode(env, forKey: .status)
+        } else {
+            // Иначе: закодируем old flat-структуру (минимально).
+            try container.encodeIfPresent(flatStatus, forKey: .status)
+            try container.encodeIfPresent(uptime, forKey: .uptime)
+            try container.encodeIfPresent(last_check, forKey: .last_check)
+            try container.encodeIfPresent(version, forKey: .version)
+            try container.encodeIfPresent(source, forKey: .source)
+            try container.encodeIfPresent(function, forKey: .function)
+            try container.encodeIfPresent(timestamp, forKey: .timestamp)
+        }
+    }
 
     // Вычисляемое свойство для конвертации в ComponentStatus
     var componentStatus: ComponentStatus {
-        let componentId = function?.replacingOccurrences(of: "get_component_status", with: "")
-            .trimmingCharacters(in: CharacterSet(charactersIn: "/")) ?? "unknown"
+        let derivedComponentId: String = {
+            if let componentId = componentId, !componentId.isEmpty {
+                return componentId
+            }
+            return function?
+                .replacingOccurrences(of: "get_component_status", with: "")
+                .trimmingCharacters(in: CharacterSet(charactersIn: "/")) ?? "unknown"
+        }()
 
-        let isEnabled = status.lowercased() == "enabled"
+        let derivedIsEnabled: Bool = {
+            if let isEnabled = isEnabled {
+                return isEnabled
+            }
+            let statusText = (flatStatus ?? envelopeStatus)?.lowercased() ?? "disabled"
+            return statusText == "enabled"
+        }()
 
-        // Парсим дату last_check
-        let lastUpdate: Date?
-        if let lastCheckString = last_check {
-            let formatter = ISO8601DateFormatter()
-            lastUpdate = formatter.date(from: lastCheckString)
-        } else {
-            lastUpdate = nil
-        }
+        let lastUpdate = parseFlexibleDate(lastUpdated) ?? parseFlexibleDate(last_check)
 
         return ComponentStatus(
-            componentId: componentId,
-            isEnabled: isEnabled,
+            componentId: derivedComponentId,
+            isEnabled: derivedIsEnabled,
             lastUpdate: lastUpdate,
             configuration: nil
         )
+    }
+
+    // Парсим разные форматы, которые реально прилетают на проде:
+    // - ISO8601
+    // - "2026-03-18 19:58:49"
+    private func parseFlexibleDate(_ input: String?) -> Date? {
+        guard let inputValue = input, !inputValue.isEmpty else { return nil }
+
+        // 1) ISO8601 (на случай если сервер даст строго ISO)
+        let iso = ISO8601DateFormatter()
+        if let d = iso.date(from: inputValue) { return d }
+
+        // 2) "yyyy-MM-dd HH:mm:ss" (как в логах: lastUpdated: "2026-03-18 19:58:49")
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.timeZone = TimeZone(secondsFromGMT: 0)
+        df.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return df.date(from: inputValue)
     }
 }
 

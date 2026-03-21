@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-03-17T13:25:02.673060",
+  "stats": {
+    "total": 4,
+    "success": 2,
+    "auth_error": 0,
+    "validation_error": 0,
+    "other_error": 2,
+    "network_error": 0
+  },
+  "results": [
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/alerts",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.033
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/status",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS",
+      "latency_s": 0.035
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/referral/code",
+      "status": 500,
+      "reason": "Internal Server Error",
+      "success": false,
+      "icon": "❓",
+      "status_text": "500 Internal Server Error",
+      "latency_s": 0.04,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:25:02 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":\"Ошибка сервера: invalid literal for int() with base 10: 'anonymous'\"}"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/referral/history",
+      "status": 500,
+      "reason": "Internal Server Error",
+      "success": false,
+      "icon": "❓",
+      "status_text": "500 Internal Server Error",
+      "latency_s": 0.037,
+      "debug_headers": {
+        "Server": "nginx",
+        "Date": "Tue, 17 Mar 2026 09:25:02 GMT",
+        "Content-Type": "application/json"
+      },
+      "debug_body_snippet": "{\"detail\":\"Ошибка сервера: 'coroutine' object is not iterable\"}"
+    }
+  ]
+}

@@ -104,7 +104,7 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "123"
+    static let buildNumber = "124"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -451,6 +451,9 @@ struct AppConfig {
         static let locationSend = "/api/reports/privacy/location/send"
         static let geofences = "/api/v1/parental-control/location/geofences"
         static let geofenceTrack = "/api/v1/parental-control/location/track"
+        static let locationReport = "/api/parental-control/location/report"
+        static let dnsConfig = "/api/parental-control/dns-config"
+        static let parentalStats = "/api/parental-control/stats"
 
         // Driving Reports
         static let drivingStart = "/api/reports/driving/start"

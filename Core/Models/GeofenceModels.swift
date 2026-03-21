@@ -7,6 +7,22 @@ import CoreLocation
  * Расширяет существующий GeofenceItem координатами
  */
 
+struct GeofenceItem: Identifiable, Codable {
+    var id: UUID = UUID()
+    var name: String
+    var address: String = ""
+    var radius: Double
+    var isActive: Bool = true
+}
+
+struct GeofenceItemCodable: Codable {
+    var id: UUID = UUID()
+    var name: String
+    var address: String = ""
+    var radius: Double
+    var isActive: Bool = true
+}
+
 /// Тип геозоны для различных целей
 enum GeofenceType: String, Codable {
     case crashDetection

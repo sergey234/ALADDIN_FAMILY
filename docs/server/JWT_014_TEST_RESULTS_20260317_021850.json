@@ -1,0 +1,688 @@
+{
+  "timestamp": "2026-03-17T02:18:50.774766",
+  "stats": {
+    "total": 75,
+    "success": 48,
+    "auth_error": 21,
+    "validation_error": 12,
+    "other_error": 6,
+    "network_error": 0
+  },
+  "results": [
+    {
+      "method": "GET",
+      "endpoint": "/api/user/profile",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/user/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/user/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/user/rewards",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/setup",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/start",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/data",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/alert",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/crash-detection/stop",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/crash-detection/status",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/crash-detection/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/check",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/ai-categories/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/allow",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/block",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/ai-categories/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/ai-categories/reset",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/scan",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/clean",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/schedule",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/data-cleanup/cancel",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/data-cleanup/export",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/identity-theft/scan",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/alerts",
+      "status": 500,
+      "reason": "Internal Server Error",
+      "success": false,
+      "icon": "❓",
+      "status_text": "500 Internal Server Error"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/identity-theft/block",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/identity-theft/report",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/status",
+      "status": 500,
+      "reason": "Internal Server Error",
+      "success": false,
+      "icon": "❓",
+      "status_text": "500 Internal Server Error"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/config",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/identity-theft/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/darkweb/scan",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/darkweb/results",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/darkweb/alerts",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/location/bubble/create",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "PUT",
+      "endpoint": "/api/location/bubble/update",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "DELETE",
+      "endpoint": "/api/location/bubble/delete",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/location/bubble/list",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/location/bubble/status",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/driving-reports/start",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/driving-reports/stop",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/driving-reports/data",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/driving-reports/history",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/anti-tracker/scan",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/anti-tracker/block",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/anti-tracker/stats",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/notifications",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/notifications/mark-read",
+      "status": 200,
+      "reason": "OK",
+      "success": true,
+      "icon": "✅",
+      "status_text": "SUCCESS"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/roadside-assistance/call",
+      "status": 422,
+      "reason": "Unprocessable Entity",
+      "success": true,
+      "icon": "⚠️",
+      "status_text": "422 VALIDATION (ОЖИДАЕМО)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/components/status/crash_detection_agent",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/enable/crash_detection_agent",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/disable/crash_detection_agent",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/components/configuration/crash_detection_agent",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/configuration/crash_detection_agent",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/components/batch/status",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics/threats",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/analytics/top-threats",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/status",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/settings",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/stats",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/protection/threat-scenarios",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/enable",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/disable",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/settings",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/protection/sync",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/family/stats",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/code",
+      "status": 404,
+      "reason": "Not Found",
+      "success": false,
+      "icon": "❓",
+      "status_text": "404 Not Found"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/stats",
+      "status": 404,
+      "reason": "Not Found",
+      "success": false,
+      "icon": "❓",
+      "status_text": "404 Not Found"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/history",
+      "status": 404,
+      "reason": "Not Found",
+      "success": false,
+      "icon": "❓",
+      "status_text": "404 Not Found"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/rewards",
+      "status": 404,
+      "reason": "Not Found",
+      "success": false,
+      "icon": "❓",
+      "status_text": "404 Not Found"
+    },
+    {
+      "method": "GET",
+      "endpoint": "/api/referral/test/discount/apply",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/referral/test/payment/create",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    },
+    {
+      "method": "POST",
+      "endpoint": "/api/referral/test/payment/confirm",
+      "status": 401,
+      "reason": "Unauthorized - Невалидный или истекший токен",
+      "success": false,
+      "icon": "🔴",
+      "status_text": "401 UNAUTHORIZED (ПРОБЛЕМА!)"
+    }
+  ]
+}

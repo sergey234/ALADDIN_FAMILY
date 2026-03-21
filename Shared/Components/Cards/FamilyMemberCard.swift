@@ -32,7 +32,7 @@ struct FamilyMemberCard: View {
     
     // MARK: - Family Role
     
-    enum FamilyRole {
+    enum FamilyRole: String, Codable, Equatable {
         case parent      // Родитель
         case child       // Ребёнок
         case teenager    // Подросток
@@ -55,21 +55,11 @@ struct FamilyMemberCard: View {
             case .elderly: return "👴"
             }
         }
-        
-        /// ✅ ИСПРАВЛЕНО: Добавлено свойство rawValue для преобразования в строку (для API)
-        var rawValue: String {
-            switch self {
-            case .parent: return "parent"
-            case .child: return "child"
-            case .teenager: return "teenager"
-            case .elderly: return "elderly"
-            }
-        }
     }
     
     // MARK: - Protection Status
     
-    enum ProtectionStatus {
+    enum ProtectionStatus: String, Codable, Equatable {
         case protected   // 🟢 Защищён
         case warning     // ⚠️ Предупреждение
         case danger      // 🔴 Опасность
@@ -99,16 +89,6 @@ struct FamilyMemberCard: View {
             case .warning: return "⚠️"
             case .danger: return "🔴"
             case .offline: return "⚫"
-            }
-        }
-        
-        /// ✅ ИСПРАВЛЕНО: Добавлено свойство rawValue для преобразования в строку (для API)
-        var rawValue: String {
-            switch self {
-            case .protected: return "protected"
-            case .warning: return "warning"
-            case .danger: return "danger"
-            case .offline: return "offline"
             }
         }
     }
