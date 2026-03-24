@@ -50,7 +50,8 @@ ssh root@149.154.65.180
 ## 🚨 **ПРОБЛЕМЫ И РЕШЕНИЯ**
 
 ### **ПРОБЛЕМА 1: "Permission denied"**
-- Проверьте правильность пароля (`Sergio675` - первая буква заглавная).
+- Проверьте SSH-ключ и права доступа.
+- Не храните пароль в репозитории и документации.
 - Убедитесь, что IP адрес верный (`149.154.65.180`).
 - Проверьте подключение к интернету.
 
@@ -64,6 +65,76 @@ ssh root@149.154.65.180
   ssh-keygen -R 149.154.65.180
   ```
 - Подключитесь снова и введите `yes` для добавления нового ключа.
+
+---
+
+## 🔒 **PRODUCTION HARD RULE: MOCK ЗАПРЕЩЕН**
+
+Для production-окружения любые mock/fallback ответы запрещены.
+
+**Обязательные правила:**
+- Запрещен `source = "sfm_mock"` в ответах production API.
+- Запрещен `result = "mock_fallback"` в production.
+- При недоступности реального обработчика сервер должен отдавать корректную боевую ошибку API (не mock), с понятным `message`.
+- Для критичных операций (например bypass apply) контракт ответа должен быть только боевой.
+
+---
+
+## ✅ **ОБЯЗАТЕЛЬНЫЕ BACKEND ДЕЙСТВИЯ (BYPASS APPLY)**
+
+Для полного запуска в проде серверная команда должна выполнить все пункты:
+
+1. Отключить mock/fallback для `create_parental_bypass_apply` в production.
+2. Вернуть реальный ответ в формате `APIResponse<Bool>`:
+   - `success: true/false`
+   - `data: true/false`
+   - `message: string`
+3. Проверить, что `child/profile` реально привязаны (чтобы не было `profile not available`).
+4. Ввести hard-check в backend: при production-конфиге `source=sfm_mock` запрещен.
+5. Добавить серверные логи для трассировки цепочки:
+   - `BYPASS APPLY start`
+   - `BYPASS APPLY ok`
+   - `BYPASS APPLY failed`
+   с `childId`, `requestId`, `timestamp`.
+
+---
+
+## 📱 **ЧТО УЖЕ СДЕЛАНО НА iOS**
+
+- Mock-ответы не принимаются как валидные данные.
+- Добавлены явные логи:
+  - `BYPASS APPLY start`
+  - `BYPASS APPLY ok`
+  - `BYPASS APPLY failed`
+- Добавлено отдельное предупреждение о backend `mock_fallback`.
+- Исправлен endpoint bypass apply на production path:
+  - `POST /api/parental/bypass/apply`
+
+---
+
+## 🧪 **BACKEND ACCEPTANCE CHECKLIST (5 ПУНКТОВ)**
+
+Перед выпуском в прод backend-команда должна подтвердить:
+
+- [ ] `POST /api/parental/bypass/apply` возвращает `200` и **боевой** `APIResponse<Bool>`.
+- [ ] В ответе нет `source: sfm_mock`.
+- [ ] В ответе нет `result: mock_fallback`.
+- [ ] При валидном `childId` поле `data=true/false` приходит корректно, без decode-ошибок на iOS.
+- [ ] В серверных логах есть `start/ok/failed` для каждого запроса bypass apply.
+
+---
+
+## 🎯 **ФИНАЛЬНЫЙ КРИТЕРИЙ 100% ГОТОВНОСТИ**
+
+В mini-log / сетевых логах iOS после серверного фикса должно быть:
+
+1. `BYPASS APPLY start ...`
+2. `POST /api/parental/bypass/apply -> 200`
+3. Нет `source: sfm_mock`
+4. Нет `result: mock_fallback`
+5. `✅ BYPASS APPLY ok`
+
+Если хотя бы один пункт не выполнен — релиз-блокер, выпуск в прод запрещен.
 
 ---
 

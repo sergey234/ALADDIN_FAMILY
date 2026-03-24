@@ -138,6 +138,37 @@ print('fail_count',len(fails))
 PY
 ```
 
+### 7) JWT TTL policy (normative)
+
+| Token flow | Intended use | TTL | Notes |
+|------------|--------------|-----|-------|
+| `backend/app/services/jwt_service.py` subscription/device token | Long-lived device/subscription continuity | `365 days` | Допустимо для device-first сценария без постоянного re-login |
+| `app/routers/auth_router.py` access token | Operational API access | `24 hours` (обычно через явный `expires_delta`) | Короткий токен для снижения blast radius |
+| `app/routers/auth_router.py` refresh token | Access token renewal | `30 days` | Используется для ротации без потери сессии |
+
+Monitoring thresholds (policy-level):
+- `NORMAL`: time_to_expiry `> 7 days`
+- `WARNING`: time_to_expiry `<= 7 days`
+- `CRITICAL`: time_to_expiry `<= 24 hours`
+- `EXPIRED`: immediate refresh / re-registration flow
+
+Implementation note:
+- Runtime proactive refresh в приложении сейчас intentionally stricter (`< 5 minutes`) для непрерывности UX.
+- Policy thresholds используются для observability/alerting и release governance.
+
+### 8) Observability and Alerts (JWT/profile)
+
+Counters (client-side, increment-only, persisted in UserDefaults for lightweight telemetry):
+- `jwt_ttl_anomaly_count`: зафиксировано аномально большое `time_to_expiry` (подозрение на drift/неверный payload).
+- `unexpected_guest_profile_count`: получен `is_guest=true` при наличии устойчивого non-guest `user_id` локально.
+- `profile_contract_violation_count`: гостевой профиль содержит `email` (нарушение контракта).
+
+Alert policy (production):
+- Severity: warning — любое ненулевое значение за 15 минут.
+- Severity: critical — повторяющиеся инкременты (> N за 60 минут, N подобрать эмпирически, стартово 5).
+- Dashboard: отрисовать текущие значения и тренды (сутки/неделя).
+- Action: при critical — проверить последние релизы клиента/бэкенда, валидировать TTL policy, сравнить логи `/api/user/profile` и JWT payload.
+
 ---
 
 ## 🗂️ HISTORICAL CONTEXT (REFERENCE ONLY)
@@ -3246,6 +3277,43 @@ func testProductionTrialFlow() {
      - `JWTCircuitBreaker.emergencyReset()` логирует только при необходимости (убрано “testing only” из `forceState`).
 
 Отдельный подробный отчёт по этапу: `docs/server/JWT_014_STABILIZATION_AND_FULL_TEST_REPORT_20260317.md`
+
+### Operational Checklists
+
+- Компонентные тумблеры (10/10): итоговый сводный отчёт с причинами, фиксом, валидацией и runbook:
+  - `docs/server/COMPONENT_TOGGLES_FIX_REPORT_20260322.md`
+- Компонентные тумблеры (актуальный полный контур 64/64):
+  - `docs/server/COMPONENT_TOGGLES_FIX_REPORT_20260322.md` (обновлён: базовые 39 + Antivirus quick 4 + Settings 4 + Advanced 17, mini-log/API sync/smoke/GO)
+
+### Release Notes (2026-03-22)
+
+- Исправлен контракт главных тумблеров: iOS использует каноничные `POST /api/components/enable/{id}` и `POST /api/components/disable/{id}`; чтение через `GET /api/components/status/{id}`.
+- Устранены ложные `200 + mock` для `/api/components/*`: wildcard-мутации ограничены, mock-hardening включён на сервере.
+- Исправлен декодинг на iOS для статусов компонентов: используется `ComponentStatusResponse` и валидация `componentId/isEnabled`.
+- Исправлен контракт внутренних тумблеров (шестерёнка): `GET/POST /api/components/configuration/{id}` + payload `{"settings": {...}}`.
+- Реализовано production-first-open поведение для внутренних конфигов: `GET /configuration/{id}` возвращает `200` c детерминированными defaults и `isDefault=true` вместо шумного `404`.
+- Добавлено логирование внутренних тумблеров в mini-log (`VisualLogger`, категории `GEAR.<componentId>`): open/change/save/result.
+- Деплой выполнен, сервис перезапущен и проверен (`health=ok`), smoke пройден:
+  - главные тумблеры: `10/10 PASS`;
+  - внутренние тумблеры: `29/29 PASS`;
+  - полный контур: `39/39 PASS`.
+
+### Release Notes (2026-03-23) — Advanced/Settings extension
+
+- Дополнительно после базового этапа `39/39` закрыт расширенный контур тумблеров:
+  - Antivirus quick toggles: `4/4 PASS`;
+  - Settings page toggles: `4/4 PASS`;
+  - Advanced Settings toggles: `17/17 PASS`.
+- Исправлена причина `Ресурс не найден` в Safari apply:
+  - iOS использовал невалидный `componentId`, приведено к валидному `browser_security_bot`.
+- Для Advanced/Family Monitoring добавлена обязательная цепочка наблюдаемости:
+  - `UI log -> API start -> API result`, плюс GET-подтяжка/verify.
+- Для Time Management в модалках (`schedule/sleep/appLimits`) добавлен server sync через `POST /api/components/configuration/parental_control_bot` и mini-log API-result.
+- Добавлены автоматические smoke-артефакты:
+  - `docs/server/test_advanced_settings_smoke.py`
+  - `docs/server/test_advanced_settings_smoke.sh`
+  - `docs/server/ADVANCED_SETTINGS_GO_STOP_CHECKLIST_20260323.md`
+- Актуальный агрегированный итог по починенным тумблерам: `64/64`.
 
 ### SFM — итог диагностики (2026-03-19) и план действий для автоматического исполнителя (ML‑системы)
 

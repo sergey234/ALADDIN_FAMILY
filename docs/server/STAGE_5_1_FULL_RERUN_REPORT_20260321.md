@@ -878,3 +878,65 @@ Release-gate статус: **PASS** (по критериям mock/503/JWT leakag
 - добавлен `Endpoint Truth-State Workflow` (`NotStarted -> Routed -> AuthOK -> BusinessOK -> RegressionSafe`) по всем семействам;
 - добавлен `Non-goal / open follow-up` с пояснением по `contract_drift_candidates=6`;
 - добавлен явный раздел `HISTORICAL CONTEXT (REFERENCE ONLY)` для снятия двусмысленности.
+
+## 58) P0 profile contract + P1/P2 observability/log polish
+
+Выполнен минимальный безопасный пакет по профилю и JWT-диагностике:
+
+- Backend `app/routers/user.py`:
+  - контракт `GET /api/user/profile` расширен полем `is_guest`;
+  - `email` переведен в nullable (`null` вместо строковой заглушки `"None"`);
+  - guest определяется явно (`anonymous`/`guest_*`/пустой id).
+
+- iOS `Core/Models/APIModels.swift`:
+  - `UserProfile` расширен `isGuest` с декодированием `is_guest`.
+
+- iOS `Core/Network/APIService.swift`:
+  - добавлены базовые сигналы контрактных аномалий:
+    - `profile_contract_violation_count`
+    - `unexpected_guest_profile_count`
+
+- iOS `Core/Logging/JWTEventLogger.swift`:
+  - исправлен формат HEALTH CHECK строки (разделитель/перенос);
+  - добавлен счетчик `jwt_ttl_anomaly_count`;
+  - добавлен универсальный инкремент локальных observability-счетчиков.
+
+- Сборка:
+  - `xcodebuild` для схемы `ALADDIN` (iOS Simulator) после патча: **PASS**.
+
+## 59) JWT TTL policy formalized in SSOT
+
+Согласован и зафиксирован единый policy-блок по TTL:
+
+- `subscription/device` токен: `365 days` (continuity flow);
+- `auth access` токен: `24 hours` (operational access);
+- `auth refresh` токен: `30 days` (rotation flow).
+
+Добавлены policy-пороги для мониторинга:
+
+- `NORMAL` > 7 дней;
+- `WARNING` <= 7 дней;
+- `CRITICAL` <= 24 часов;
+- `EXPIRED` -> immediate refresh/re-registration.
+
+Важно:
+- runtime proactive refresh в iOS остаётся `< 5 min` (строгий UX-guard),
+  а policy-пороги используются для observability/alerts и release governance.
+
+## 60) Observability/Alerts for JWT/profile signals
+
+Добавлены и задокументированы явные правила алертинга по клиентским счётчикам:
+
+- Counters:
+  - `jwt_ttl_anomaly_count`
+  - `unexpected_guest_profile_count`
+  - `profile_contract_violation_count`
+
+- Alerts:
+  - warning: любое `>0` за 15 минут;
+  - critical: `>5` за 60 минут.
+
+- Действия при critical:
+  - сверка TTL policy vs runtime;
+  - анализ `/api/user/profile` контрактов (guest/email);
+  - проверка последних релизов клиента/бэкенда и логов health-check.
