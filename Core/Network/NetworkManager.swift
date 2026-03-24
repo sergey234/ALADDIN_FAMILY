@@ -56,6 +56,21 @@ class NetworkManager: NSObject, ObservableObject {
         }
     }
 
+    private static func extractServerDetail(from data: Data?) -> String? {
+        guard let data = data else { return nil }
+        if let errorData = try? JSONDecoder().decode([String: String].self, from: data) {
+            return errorData["detail"] ?? errorData["message"]
+        }
+        return nil
+    }
+
+    private static func isContract401(detail: String?) -> Bool {
+        guard let detail = detail?.lowercased() else { return false }
+        return detail.contains("numeric user id") ||
+            detail.contains("profile not available") ||
+            detail.contains("contract")
+    }
+
     // ✅ ЗАДАЧА 62: Rate Limiting
     /// Rate limiter для защиты от перегрузки API
     private let rateLimiter = RateLimiter(maxRequests: 100, timeWindow: 60.0) // 100 запросов в минуту
@@ -967,8 +982,16 @@ class NetworkManager: NSObject, ObservableObject {
                     return
                 }
 
-                // Обработка 401 ошибки (Unauthorized) - токен истёк
+                // Обработка 401 ошибки (Unauthorized)
                 if httpResponse.statusCode == 401 {
+                    let serverDetail = Self.extractServerDetail(from: data)
+                    if Self.isContract401(detail: serverDetail) {
+                        let msg = serverDetail ?? "Contract-related unauthorized response"
+                        logger.network("⚠️ DEFENSIVE JWT: Contract 401 detected (no token-expired handling): \(msg)")
+                        completion(.failure(NetworkError.unauthorized(msg)))
+                        return
+                    }
+
                     let endpointKey = request.url?.absoluteString ?? "unknown"
                     
                     // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Проверяем количество retry для этого endpoint

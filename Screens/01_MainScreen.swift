@@ -165,15 +165,15 @@ struct MainScreen: View {
                 
                 // Нижняя навигация - красивое меню с эмодзи
                 HStack(spacing: 0) {
-                    // 🏠 Главная
+                    // 🎮 Игра (быстрый переход в геймификацию)
                     Button(action: {
-                        // Остаемся на главной странице
-                        print("Главная страница уже активна")
+                        logger.buttonTap("Game Tab", screen: "Main")
+                        navigationManager.navigateTo(.childRewards)
                     }) {
                         VStack(spacing: 4) {
-                            Text("🏠")
+                            Text("🦄")
                                 .font(.system(size: 20))
-                            Text(localizationManager.localized("main_tab_home"))
+                            Text(localizationManager.localized("main_tab_game"))
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(.white)
                         }

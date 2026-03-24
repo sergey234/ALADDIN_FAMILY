@@ -104,7 +104,7 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "125"
+    static let buildNumber = "126"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -291,7 +291,7 @@ struct AppConfig {
         static let applyRules = "/api/v1/parental-control/rules"
         static let getAccessRequests = "/api/v1/parental-control/access-requests"
         static let handleAccessRequest = "/api/v1/parental-control/access-requests"
-        static let getStats = "/api/v1/parental-control/stats"
+        static let getStats = "/api/parental-control/stats"
         static let updateLimits = "/api/parental/limits"
         static let blockDevice = "/api/parental/block"
         

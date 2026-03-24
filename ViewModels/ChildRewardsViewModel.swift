@@ -18,6 +18,7 @@ final class ChildRewardsViewModel: ObservableObject {
     @Published var errorMessage: String?
     
     private let apiService: APIService
+    private let requestTimeoutSeconds: UInt64 = 12
     
     init(apiService: APIService = .shared) {
         self.apiService = apiService
@@ -26,16 +27,48 @@ final class ChildRewardsViewModel: ObservableObject {
     func load(childId: String?) async {
         isLoading = true
         errorMessage = nil
+        VisualLogger.shared.log("🚀 load() start childId=\(childId ?? "nil")", level: .info, category: "CHILD_REWARDS.API")
+        defer { isLoading = false }
+
         do {
-            async let parentalStatsTask = fetchParentalControlStats(childId: childId)
-            async let referralStatsTask = fetchReferralStats()
-            async let referralRewardsTask = fetchReferralRewards()
-            let (parentalStats, referralStats, referralRewards) = try await (parentalStatsTask, referralStatsTask, referralRewardsTask)
-            dashboard = mapData(parentalStats: parentalStats, referralStats: referralStats, referralRewards: referralRewards)
+            VisualLogger.shared.log("🌐 request start: parental stats", level: .info, category: "CHILD_REWARDS.API")
+            async let parentalStatsTask = withTimeout(seconds: requestTimeoutSeconds) {
+                try await self.fetchParentalControlStats(childId: childId)
+            }
+
+            VisualLogger.shared.log("🌐 request start: referral stats", level: .info, category: "CHILD_REWARDS.API")
+            async let referralStatsTask = withTimeout(seconds: requestTimeoutSeconds) {
+                try await self.fetchReferralStats()
+            }
+
+            VisualLogger.shared.log("🌐 request start: referral rewards", level: .info, category: "CHILD_REWARDS.API")
+            async let referralRewardsTask = withTimeout(seconds: requestTimeoutSeconds) {
+                try await self.fetchReferralRewards()
+            }
+
+            let (parentalStats, referralStats, referralRewards) = try await (
+                parentalStatsTask,
+                referralStatsTask,
+                referralRewardsTask
+            )
+
+            VisualLogger.shared.log("✅ request ok: parental stats", level: .success, category: "CHILD_REWARDS.API")
+            VisualLogger.shared.log("✅ request ok: referral stats", level: .success, category: "CHILD_REWARDS.API")
+            VisualLogger.shared.log("✅ request ok: referral rewards", level: .success, category: "CHILD_REWARDS.API")
+            VisualLogger.shared.log("✅ load() all requests completed", level: .success, category: "CHILD_REWARDS.API")
+
+            dashboard = mapData(
+                parentalStats: parentalStats,
+                referralStats: referralStats,
+                referralRewards: referralRewards
+            )
         } catch {
+            if let networkError = error as? NetworkError, case .timeout = networkError {
+                VisualLogger.shared.log("⏱️ load() hard-timeout \(requestTimeoutSeconds)s", level: .warning, category: "CHILD_REWARDS.API")
+            }
+            VisualLogger.shared.log("❌ load() failed: \(error.localizedDescription)", level: .error, category: "CHILD_REWARDS.API")
             errorMessage = error.localizedDescription
         }
-        isLoading = false
     }
     
     // MARK: - Mapping
@@ -80,7 +113,7 @@ final class ChildRewardsViewModel: ObservableObject {
     }
     
     // MARK: - API helpers
-    
+
     private func fetchParentalControlStats(childId: String?) async throws -> ParentalControlStatsResponse {
         try await withCheckedThrowingContinuation { continuation in
             apiService.getParentalControlStats(childId: childId) { result in
@@ -88,7 +121,7 @@ final class ChildRewardsViewModel: ObservableObject {
             }
         }
     }
-    
+
     private func fetchReferralStats() async throws -> ReferralStatsResponse {
         try await withCheckedThrowingContinuation { continuation in
             apiService.getReferralStats { result in
@@ -96,12 +129,29 @@ final class ChildRewardsViewModel: ObservableObject {
             }
         }
     }
-    
+
     private func fetchReferralRewards() async throws -> ReferralRewardsResponse {
         try await withCheckedThrowingContinuation { continuation in
             apiService.getReferralRewards { result in
                 continuation.resume(with: result)
             }
+        }
+    }
+
+    private func withTimeout<T>(seconds: UInt64, operation: @escaping () async throws -> T) async throws -> T {
+        try await withThrowingTaskGroup(of: T.self) { group in
+            group.addTask {
+                try await operation()
+            }
+            group.addTask {
+                try await Task.sleep(nanoseconds: seconds * 1_000_000_000)
+                throw NetworkError.timeout
+            }
+            let value = try await group.next() ?? {
+                throw NetworkError.timeout
+            }()
+            group.cancelAll()
+            return value
         }
     }
 }

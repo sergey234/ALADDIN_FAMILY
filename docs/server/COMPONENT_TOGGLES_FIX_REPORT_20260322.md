@@ -614,6 +614,39 @@
 - Advanced page toggles: 17/17 PASS
 - first-open configuration без 404.
 
+## 13) Matrix: Toggle -> Screen -> Key -> API -> Result (machine-readable)
+
+Ниже приведена нормализованная матрица для ML/автосистем:
+- `Screen` — экран/модалка, где пользователь меняет значение;
+- `Key` — стабильный логический ключ переключателя/события;
+- `API` — фактический endpoint записи/чтения;
+- `Result` — подтверждённый статус в live-логах и smoke.
+
+| Group | Screen | Key | API write | API read/verify | Result |
+|---|---|---|---|---|---|
+| Main Components (10) | `NetworkProtectionScreen` | `component_enabled:<agent>` | `POST /api/components/enable/{id}` / `POST /api/components/disable/{id}` | `GET /api/components/status/{id}` | PASS (10/10) |
+| Gear Internal (29) | gear modals (Phishing/Malware/Mobile/Network/Incident/Password) | `settings.<componentId>.*` | `POST /api/components/configuration/{componentId}` with `{"settings":...}` | `GET /api/components/configuration/{componentId}` | PASS (29/29) |
+| Antivirus Quick (4) | `NetworkProtectionScreen` card quick toggles | `realTimeScanning`, `scanDownloads`, `quarantineThreats`, `antivirusEnabled` | `POST /api/components/configuration/malware_detection_agent` | `GET /api/components/configuration/malware_detection_agent` | PASS (4/4) |
+| Settings (4) | `SettingsScreen` | `isNetworkProtectionEnabled`, `isBiometricEnabled`, `securityEnabled`, `soundEnabled` | local + профильные API потоки | state restore + logs | PASS (4/4) |
+| Advanced Core (13) | `AdvancedProtectionSettingsScreen` cards | `component_enabled:<advanced_agent>` | `POST /api/components/enable|disable/{id}` | `GET /api/components/status/{id}` | PASS (13/13) |
+| Advanced Safari (2) | `FamilyContentBlockModal` (sites/social) | `safariSitesEnabled`, `safariSocialEnabled` | `POST /api/components/configuration/browser_security_bot` | `GET /api/components/configuration/browser_security_bot` | PASS (2/2) |
+| Advanced Parental (2) | `AdvancedProtectionSettingsScreen` | `parental_messages_monitoring`, `parental_screenshots_enabled` | `POST /api/components/configuration/parental_control_bot` | `GET /api/components/configuration/parental_control_bot` | PASS (2/2) |
+| Parental Cards (7) | `ParentalControlScreen` / `FamilyScreen` parity | `family_content_block_enabled`, `family_time_control_enabled`, `family_monitoring_enabled`, `family_location_enabled`, `family_reports_enabled`, `family_additional_enabled`, `family_bypass_protection_enabled` | UI state + related modal APIs | mini-log parity check (`7 toggles -> 7 logs`) | PASS (7/7 logs) |
+| Safari Categories | `FamilyContentBlockModal` | `safari_category_*` | `POST /api/components/configuration/browser_security_bot` (apply) | response `success=true` + reopen verify | PASS |
+| Geofence Controls | `GeofencesSettingsModal` | `geofence_radius`, `geofence_add`, `geofence_remove` | family/parental API chain | mini-log + business flow verify | PASS |
+| YouTube Controls | `YouTubeSettingsModal` | `youtube_safe_mode`, `youtube_age_restriction_enabled`, `youtube_age_restriction`, `youtube_time_limit` | parental config flow | mini-log + save event | PASS |
+| Homework Mode | `FamilyAdditionalModal` | `homework_mode_enabled` | parental config flow | mini-log | PASS |
+| Auto Rules Toggle | `FamilyParentalControlSettingsModal` + `AutomatedRulesModal` | `parental_automated_rules_enabled`, `automated_rules_modal_enabled` | `POST /api/v1/parental-control/rules` | response `ApiBoolResponse(success=true,data=true)` | PASS (с замечанием: возможен дубль apply-события) |
+| Bypass Apply | `FamilyBypassProtectionModal` | `bypass_incognito_enabled`, `bypass_tor_enabled`, `bypass_proxy_enabled` | `POST /api/parental/bypass/apply` | `GET /api/parental/bypass/stats?childId=...` | PASS |
+| Bypass Stats Persist | backend `parental_control_router` | `incognito/tor/proxy persisted state` | write in apply (`_persist_bypass_shadow`) | read in stats (`_read_bypass_shadow`) | PASS |
+
+Machine summary (strict):
+- `total_toggles_fixed = 64`
+- `total_toggles_verified = 64`
+- `release_gate_advanced = 4/4 PASS`
+- `release_gate_bypass_apply = PASS`
+- `mock_markers_in_critical_flows = 0`
+
 
 — Конец документа —
 

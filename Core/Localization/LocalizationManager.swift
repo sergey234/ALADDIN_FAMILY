@@ -334,6 +334,7 @@ class LocalizationManager: ObservableObject {
             "child_rewards_game_status_days_left": "Осталось %d дн.",
             "child_rewards_game_metric_leader": "Лидеры недели",
             "child_rewards_error_resource_not_found": "Ресурс не найден",
+            "child_rewards_error_generic": "Не удалось загрузить награды. Проверьте сеть и повторите попытку.",
             "child_rewards_goal_default_title": "Новая игра PS5",
             
             // Unicorn Pet View
@@ -4028,10 +4029,13 @@ class LocalizationManager: ObservableObject {
             "main_aladdin_title": "ALADDIN",
             "main_ai_protection": "AI Защита семьи",
             "main_tab_home": "Главная",
+            "main_tab_game": "Игра",
             "main_tab_protection": "Защита",
             "main_tab_notifications": "Уведомления",
             "main_tab_profile": "Профиль",
             "main_tab_devices": "Устройства",
+            "family_card_game_title": "Игра",
+            "family_card_game_cta": "Открыть игру",
             "main_vpn_title": "Защита сети",
             "main_vpn_subtitle": "Защита сети",
             "main_antivirus_title": "Защита ALADDIN",
@@ -5032,6 +5036,7 @@ class LocalizationManager: ObservableObject {
             "child_rewards_game_status_days_left": "%d days left",
             "child_rewards_game_metric_leader": "Weekly leaders",
             "child_rewards_error_resource_not_found": "Resource not found",
+            "child_rewards_error_generic": "Could not load rewards. Check your connection and try again.",
             "child_rewards_goal_default_title": "New PS5 game",
             
             // Unicorn Pet View
@@ -5793,10 +5798,13 @@ class LocalizationManager: ObservableObject {
             "main_aladdin_title": "ALADDIN",
             "main_ai_protection": "AI Family Protection",
             "main_tab_home": "Home",
+            "main_tab_game": "Game",
             "main_tab_protection": "Protection",
             "main_tab_notifications": "Notifications",
             "main_tab_profile": "Profile",
             "main_tab_devices": "Devices",
+            "family_card_game_title": "Game",
+            "family_card_game_cta": "Open game",
             "main_vpn_title": "Network Protection",
             "main_vpn_subtitle": "Network Protection",
             "main_antivirus_title": "ALADDIN Protection",

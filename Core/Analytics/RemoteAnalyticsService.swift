@@ -82,6 +82,76 @@ final class RemoteAnalyticsService: AnalyticsService {
 
     // MARK: - AnalyticsService Protocol
     
+    /// Возвращает summary+security одним сетевым запросом.
+    /// Используется для предотвращения двойного GET /api/analytics на одном экране.
+    func fetchCombinedAnalytics(period: String, filters: AnalyticsFilters) async throws -> ((AnalyticsSummary, DataSource), (SecurityAnalytics, DataSource)) {
+        let cacheSummaryKey = "summary_\(period)_\(filters.onlyBlocked)_\(filters.includeFamily)_\(filters.includeDevices)"
+        let cacheSecurityKey = "security_\(period)"
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            apiService.getAnalytics(period: period) { result in
+                switch result {
+                case .success(let analyticsResponse):
+                    let summary = AnalyticsSummary(
+                        threatsDetected: analyticsResponse.threatsDetected,
+                        threatsBlocked: analyticsResponse.threatsBlocked,
+                        itemsScanned: analyticsResponse.itemsScanned,
+                        protectionLevel: Double(analyticsResponse.protectionLevel)
+                    )
+                    
+                    let blockedThreats = analyticsResponse.threatsByType.map { threatByType in
+                        ThreatTypeCount(type: threatByType.type, count: threatByType.count, icon: nil)
+                    }
+                    let recentThreats = analyticsResponse.topThreats.prefix(10).map { threat in
+                        RecentThreat(
+                            emoji: threat.icon,
+                            text: threat.name,
+                            time: "Недавно"
+                        )
+                    }
+                    let networkStats = AnalyticsNetworkProtectionStats(
+                        today: "0 GB",
+                        week: "0 GB",
+                        protection: "\(analyticsResponse.protectionLevel)%"
+                    )
+                    let security = SecurityAnalytics(
+                        blockedThreats: blockedThreats,
+                        recentThreats: recentThreats,
+                        networkProtectionStats: networkStats
+                    )
+                    
+                    self.setCachedSummary(summary, for: cacheSummaryKey)
+                    self.setCachedSecurityAnalytics(security, for: cacheSecurityKey)
+                    continuation.resume(returning: ((summary, .api), (security, .api)))
+                    
+                case .failure:
+                    if let cachedSummary = self.getCachedSummary(for: cacheSummaryKey),
+                       let cachedSecurity = self.getCachedSecurityAnalytics(for: cacheSecurityKey) {
+                        continuation.resume(returning: ((cachedSummary, .cache), (cachedSecurity, .cache)))
+                        return
+                    }
+                    
+                    let emptySummary = AnalyticsSummary(
+                        threatsDetected: 0,
+                        threatsBlocked: 0,
+                        itemsScanned: 0,
+                        protectionLevel: 0.0
+                    )
+                    let emptySecurity = SecurityAnalytics(
+                        blockedThreats: [],
+                        recentThreats: [],
+                        networkProtectionStats: AnalyticsNetworkProtectionStats(
+                            today: "0 GB",
+                            week: "0 GB",
+                            protection: "0%"
+                        )
+                    )
+                    continuation.resume(returning: ((emptySummary, .empty), (emptySecurity, .empty)))
+                }
+            }
+        }
+    }
+    
     /// ✅ ВАРИАНТ 4: Graceful degradation с возвратом источника данных
     func fetchSummary(period: String, filters: AnalyticsFilters) async throws -> (AnalyticsSummary, DataSource) {
         let cacheKey = "summary_\(period)_\(filters.onlyBlocked)_\(filters.includeFamily)_\(filters.includeDevices)"
@@ -146,6 +216,8 @@ final class RemoteAnalyticsService: AnalyticsService {
                         itemsScanned: 0,
                         protectionLevel: 0.0
                     )
+                    
+                    VisualLogger.shared.log("ℹ️ RemoteAnalyticsService: summary empty (api_fail_no_cache)", level: .info, category: "ANALYTICS.API")
                     
                     #if DEBUG
                     print("📊 RemoteAnalyticsService: fetchSummary - API failed, no cache, returning empty data")
@@ -228,6 +300,8 @@ final class RemoteAnalyticsService: AnalyticsService {
                             protection: "0%"
                         )
                     )
+                    
+                     VisualLogger.shared.log("ℹ️ RemoteAnalyticsService: security empty (api_fail_no_cache)", level: .info, category: "ANALYTICS.API")
                     
                     os_log("📊 Analytics Security: API failed, no cache available, returning empty data", log: OSLog(subsystem: "com.aladdin.analytics", category: "graceful_degradation"), type: .info)
                     continuation.resume(returning: (emptySecurity, .empty))

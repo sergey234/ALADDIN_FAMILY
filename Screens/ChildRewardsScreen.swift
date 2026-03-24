@@ -78,7 +78,14 @@ struct ChildRewardsScreen: View {
     @State private var punishReason: String = ""
     @State private var loadErrorMessage: String?
     @State private var isInitialLoadCompleted: Bool = false
+    @State private var initialLoadingFallbackScheduled: Bool = false
+    @State private var didStartInitialLoading: Bool = false
     @State private var showSettingsSheet: Bool = false
+    @State private var isInitialLoadInFlight: Bool = false
+    @State private var cachedHistoryOperations: [RewardHistoryEntry] = []
+    @State private var shopRewardsSaveDebounceTask: Task<Void, Never>? = nil
+    @State private var lastDashboardSignature: String? = nil
+    @State private var lastDashboardHandledAt: Date = .distantPast
     
     // ✅ ГЕЙМИФИКАЦИЯ: API синхронизация
     @State private var isLoadingRewards: Bool = false
@@ -206,6 +213,7 @@ struct ChildRewardsScreen: View {
             }
         }
         .navigationBarHidden(true)
+        .withVisualLogger()
         .id("child_rewards_lang_\(localizationManager.currentLanguage.rawValue)")
         .sheet(isPresented: $showRequestModal) {
             AchievementRequestModal(
@@ -254,6 +262,10 @@ struct ChildRewardsScreen: View {
             )
         }
         .onAppear {
+            guard !didStartInitialLoading else { return }
+            didStartInitialLoading = true
+            VisualLogger.shared.log("👀 ChildRewardsScreen onAppear", level: .info, category: "CHILD_REWARDS.UI")
+
             // ✅ КРИТИЧНО: Принудительная установка роли при открытии экрана
             // Это гарантирует, что роль будет установлена даже если пользователь открыл экран напрямую
             let currentRole = UserDefaults.standard.string(forKey: "current_user_role")
@@ -296,7 +308,22 @@ struct ChildRewardsScreen: View {
             print("   📋 Финальная роль: '\(finalRole)'")
             
             Task {
-                await viewModel.load(childId: effectiveChildId)
+                VisualLogger.shared.log("🔄 Initial load triggered", level: .info, category: "CHILD_REWARDS.UI")
+                await runInitialLoad()
+            }
+
+            // Hard-fallback: never keep the screen in endless initial loading.
+            if !isInitialLoadCompleted && !initialLoadingFallbackScheduled {
+                initialLoadingFallbackScheduled = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
+                    if !isInitialLoadCompleted {
+                        isInitialLoadCompleted = true
+                        VisualLogger.shared.log("⏱️ Initial UI fallback fired (4s)", level: .warning, category: "CHILD_REWARDS.UI")
+                        if viewModel.isLoading {
+                            loadErrorMessage = localizationManager.localized("child_rewards_error_generic")
+                        }
+                    }
+                }
             }
             RewardLocalizationMigration.performIfNeeded()
             
@@ -319,33 +346,16 @@ struct ChildRewardsScreen: View {
             // Загружаем награды магазина
             loadShopRewards()
             
-            // ✅ КРИТИЧНО: Проверка роли и логирование для диагностики
-            let isParent = isCurrentUserParent()
-            let finalRoleForDebug = UserDefaults.standard.string(forKey: "current_user_role") ?? "НЕ УСТАНОВЛЕНА"
-            print("═══════════════════════════════════════════════════════════")
-            print("🔍 DEBUG ChildRewardsScreen.onAppear:")
-            print("   📋 Роль пользователя:")
-            print("      - UserDefaults: '\(finalRoleForDebug)'")
-            print("      - isCurrentUserParent() = \(isParent)")
-            print("      - Интерфейс: \(isParent ? "👨‍👩‍👧 РОДИТЕЛЬСКИЙ" : "👶 ДЕТСКИЙ")")
-            print("   🦄 Баланс единорогов: \(unicornBalance) 🦄")
-            print("   🎁 Доступно наград: \(availableRewards.filter { $0.isEnabled }.count) из \(availableRewards.count)")
-            print("   🔒 Секция 'Воспитание ребенка': \(isParent ? "✅ ВИДНА" : "❌ СКРЫТА")")
-            print("   ⚙️ Кнопка настроек: \(isParent ? "✅ ВИДНА" : "❌ СКРЫТА")")
-            print("═══════════════════════════════════════════════════════════")
-            
-            // ✅ Дополнительная проверка безопасности
-            if !isParent {
-                print("✅ БЕЗОПАСНОСТЬ: Детский интерфейс - все родительские функции заблокированы")
-            }
+            VisualLogger.shared.log("👤 role_is_parent = \(isCurrentUserParent())", level: .info, category: "CHILD_REWARDS.UI")
         }
         .onChange(of: storedUnicornBalance) { newValue in
             // Автообновление баланса при изменении в UserDefaults (например, из RewardsModalView)
             unicornBalance = newValue
         }
-        .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .childRewardsDataDidChange)) { _ in
             // Обновляем список наград при изменении в UserDefaults
             loadShopRewards()
+            cachedHistoryOperations = getHistoryOperations()
             // Обновляем баланс из UserDefaults
             let newBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
             if unicornBalance != newBalance {
@@ -360,6 +370,16 @@ struct ChildRewardsScreen: View {
             weeklyPunished = newValue
         }
         .onReceive(viewModel.$dashboard.compactMap { $0 }) { data in
+            let signature = "\(data.balance)|\(data.weeklyEarned)|\(data.weeklyPunished)|\(data.goalTitleKey ?? "nil")|\(data.goalCost)|\(data.rewards.count)"
+            let isDuplicatePayload = (lastDashboardSignature == signature)
+            let isTooSoon = Date().timeIntervalSince(lastDashboardHandledAt) < 1.0
+            if isDuplicatePayload && isTooSoon {
+                VisualLogger.shared.log("⏭️ Duplicate dashboard event ignored", level: .info, category: "CHILD_REWARDS.UI")
+                return
+            }
+            lastDashboardSignature = signature
+            lastDashboardHandledAt = Date()
+            VisualLogger.shared.log("✅ Dashboard received and rendered", level: .success, category: "CHILD_REWARDS.UI")
             unicornBalance = data.balance
             weeklyEarned = data.weeklyEarned
             weeklyPunished = data.weeklyPunished
@@ -375,12 +395,14 @@ struct ChildRewardsScreen: View {
             }
             if !data.rewards.isEmpty {
                 availableRewards = data.rewards
-                saveShopRewards()
+                scheduleSaveShopRewards()
             }
             loadErrorMessage = nil
             isInitialLoadCompleted = true
+            initialLoadingFallbackScheduled = false
         }
         .onAppear {
+            guard didStartInitialLoading else { return }
             // ✅ ИСПРАВЛЕНИЕ: Инициализируем goalTitle локализованным значением по умолчанию при первом запуске
             if goalTitle.isEmpty && storedGoalTitle.isEmpty {
                 goalTitle = localizationManager.localized("child_rewards_goal_default_title")
@@ -388,28 +410,31 @@ struct ChildRewardsScreen: View {
                 goalTitle = storedGoalTitle
             }
             
-            // ✅ ГЕЙМИФИКАЦИЯ: Загружаем данные с сервера при открытии экрана
-            loadBalanceFromServer()
-            loadRewardsFromServer()
+            cachedHistoryOperations = getHistoryOperations()
             if selectedTab == .history {
                 loadHistoryFromServer()
             }
         }
         .onChange(of: selectedTab) { newTab in
+            VisualLogger.shared.log("🧭 tab_changed = \(newTab.localizedTitle(localizationManager))", level: .info, category: "CHILD_REWARDS.UI")
             // Загружаем историю при переключении на вкладку истории
-            if newTab == .history {
+            if newTab == .history && !isLoadingHistory {
                 loadHistoryFromServer()
             }
         }
         .onReceive(viewModel.$errorMessage) { message in
             // ✅ ИСПРАВЛЕНИЕ: Локализуем ошибку "Ресурс не найден"
             if let errorMessage = message {
+                VisualLogger.shared.log("❌ ViewModel error = \(errorMessage)", level: .error, category: "CHILD_REWARDS.UI")
+                // Не держим экран в вечной initial-loading фазе, если API вернул ошибку/таймаут.
+                isInitialLoadCompleted = true
                 if errorMessage.contains("Ресурс не найден") || errorMessage.contains("Not Found") || errorMessage.contains("404") {
                     loadErrorMessage = localizationManager.localized("child_rewards_error_resource_not_found")
                 } else {
                     loadErrorMessage = errorMessage
                 }
             } else {
+                VisualLogger.shared.log("ℹ️ ViewModel error cleared", level: .info, category: "CHILD_REWARDS.UI")
                 loadErrorMessage = nil
             }
         }
@@ -421,15 +446,15 @@ struct ChildRewardsScreen: View {
         HStack {
             Button(action: {
                 HapticFeedback.impact(.light)
+                VisualLogger.shared.log("⬅️ Back tapped", level: .info, category: "CHILD_REWARDS.UI")
                 // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
                 // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
                 dismiss()
                 
-                // Дополнительно синхронизируем NavigationManager для корректной работы стека
+                // Дополнительно синхронизируем NavigationManager для корректной работы стека.
+                // Вызываем goBack без условия: при пустом стеке он сам делает fallback на root.
                 DispatchQueue.main.async {
-                    if navigationManager.canGoBack {
-                        navigationManager.goBack()
-                    }
+                    navigationManager.goBack(reason: "ChildRewards back button fallback")
                 }
             }) {
                 Image(systemName: "chevron.left")
@@ -496,7 +521,8 @@ struct ChildRewardsScreen: View {
             Spacer()
             Button(action: {
                 loadErrorMessage = nil
-                Task { await viewModel.load(childId: effectiveChildId) }
+                VisualLogger.shared.log("🔁 Retry tapped", level: .info, category: "CHILD_REWARDS.UI")
+                Task { await runInitialLoad() }
             }) {
                 Text(localizationManager.localized("child_rewards_retry"))
                     .font(.captionBold)
@@ -809,13 +835,16 @@ struct ChildRewardsScreen: View {
     
     /// Загрузить баланс единорогов с сервера
     private func loadBalanceFromServer() {
+        VisualLogger.shared.log("🌐 balance request start", level: .info, category: "CHILD_REWARDS.API")
         apiService.getGamificationBalance(userId: userId) { [self] result in
             switch result {
             case .success(let response):
+                VisualLogger.shared.log("✅ balance request ok = \(response.balance)", level: .success, category: "CHILD_REWARDS.API")
                 unicornBalance = response.balance
                 storedUnicornBalance = response.balance
             case .failure(let error):
                 // Используем кэшированное значение при ошибке
+                VisualLogger.shared.log("❌ balance request failed: \(error.localizedDescription)", level: .error, category: "CHILD_REWARDS.API")
                 apiError = error.localizedDescription
                 if storedUnicornBalance > 0 {
                     unicornBalance = storedUnicornBalance
@@ -828,6 +857,7 @@ struct ChildRewardsScreen: View {
     private func loadRewardsFromServer() {
         isLoadingRewards = true
         apiError = nil
+        VisualLogger.shared.log("🌐 rewards shop request start", level: .info, category: "CHILD_REWARDS.API")
         
         // Используем локальные награды для быстрого отображения
         loadShopRewards()
@@ -836,6 +866,7 @@ struct ChildRewardsScreen: View {
             isLoadingRewards = false
             switch result {
             case .success(let response):
+                VisualLogger.shared.log("✅ rewards shop request ok items=\(response.rewards.count)", level: .success, category: "CHILD_REWARDS.API")
                 // Конвертируем RewardResponse в ShopReward
                 // Используем существующие награды и обновляем их данными с сервера
                 var updatedRewards: [ShopReward] = []
@@ -869,8 +900,9 @@ struct ChildRewardsScreen: View {
                 } else {
                     availableRewards = updatedRewards
                 }
-                saveShopRewards()
+                scheduleSaveShopRewards()
             case .failure(let error):
+                VisualLogger.shared.log("❌ rewards shop request failed: \(error.localizedDescription)", level: .error, category: "CHILD_REWARDS.API")
                 apiError = error.localizedDescription
                 // Используем локальные награды при ошибке
             }
@@ -880,15 +912,18 @@ struct ChildRewardsScreen: View {
     /// Загрузить историю наград с сервера
     private func loadHistoryFromServer() {
         isLoadingHistory = true
+        VisualLogger.shared.log("🌐 rewards history request start", level: .info, category: "CHILD_REWARDS.API")
         
         apiService.getGamificationRewardsHistory(userId: userId, limit: 50) { [self] result in
             isLoadingHistory = false
             switch result {
             case .success(let rewards):
+                VisualLogger.shared.log("✅ rewards history request ok items=\(rewards.count)", level: .success, category: "CHILD_REWARDS.API")
                 // Конвертируем RewardResponse в RewardHistoryEntry
                 // TODO: Обновить историю в локальном хранилище
                 print("✅ Загружено \(rewards.count) наград из истории")
             case .failure(let error):
+                VisualLogger.shared.log("❌ rewards history request failed: \(error.localizedDescription)", level: .error, category: "CHILD_REWARDS.API")
                 apiError = error.localizedDescription
             }
         }
@@ -897,8 +932,8 @@ struct ChildRewardsScreen: View {
     /// Обновить все данные с сервера (для pull-to-refresh)
     @MainActor
     private func refreshData() async {
-        loadBalanceFromServer()
-        loadRewardsFromServer()
+        guard !isInitialLoadInFlight, !viewModel.isLoading else { return }
+        await runInitialLoad()
         if selectedTab == .history {
             loadHistoryFromServer()
         }
@@ -912,6 +947,23 @@ struct ChildRewardsScreen: View {
            let jsonString = String(data: data, encoding: .utf8) {
             shopRewardsData = jsonString
         }
+    }
+
+    private func scheduleSaveShopRewards() {
+        shopRewardsSaveDebounceTask?.cancel()
+        shopRewardsSaveDebounceTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            guard !Task.isCancelled else { return }
+            saveShopRewards()
+        }
+    }
+
+    @MainActor
+    private func runInitialLoad() async {
+        guard !isInitialLoadInFlight, !viewModel.isLoading else { return }
+        isInitialLoadInFlight = true
+        defer { isInitialLoadInFlight = false }
+        await viewModel.load(childId: effectiveChildId)
     }
     
     /// Проверка: является ли текущий пользователь родителем
@@ -1097,7 +1149,7 @@ struct ChildRewardsScreen: View {
             .padding(.bottom, Spacing.s)
             
             // История наград/наказаний (последние 5)
-            if getHistoryOperations().prefix(5).isEmpty {
+            if cachedHistoryOperations.prefix(5).isEmpty {
                 VStack(spacing: Spacing.s) {
                     Text("📝")
                         .font(.system(size: 32))
@@ -1113,7 +1165,7 @@ struct ChildRewardsScreen: View {
                 .padding(Spacing.l)
             } else {
                 VStack(spacing: Spacing.s) {
-                    ForEach(Array(getHistoryOperations().prefix(5))) { operation in
+                    ForEach(Array(cachedHistoryOperations.prefix(5))) { operation in
                         childHistoryItem(operation: operation)
                     }
                 }
@@ -1390,7 +1442,7 @@ struct ChildRewardsScreen: View {
             .padding(.horizontal, Spacing.screenPadding)
             
             // Загружаем реальную историю из AppStorage
-            if getHistoryOperations().isEmpty {
+            if cachedHistoryOperations.isEmpty {
                 VStack(spacing: Spacing.m) {
                     Text("📝")
                         .font(.system(size: 48))
@@ -1406,7 +1458,7 @@ struct ChildRewardsScreen: View {
                 .padding(Spacing.xxl)
             } else {
             VStack(spacing: Spacing.s) {
-                    ForEach(getHistoryOperations()) { operation in
+                    ForEach(cachedHistoryOperations) { operation in
                         historyItemFromOperation(operation: operation)
                     }
             }
@@ -1708,7 +1760,7 @@ struct ChildRewardsScreen: View {
                     applyReward(pendingPurchaseTitle)
                     
                     // Отправляем уведомление для обновления других экранов
-                    NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+                    NotificationCenter.default.post(name: .childRewardsDataDidChange, object: nil)
                     
                     // Успешный feedback
                     HapticFeedback.notification(.success)
@@ -1729,7 +1781,7 @@ struct ChildRewardsScreen: View {
             storedUnicornBalance = unicornBalance
             UserDefaults.standard.set(unicornBalance, forKey: "child_unicorn_balance")
             applyReward(pendingPurchaseTitle)
-            NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+            NotificationCenter.default.post(name: .childRewardsDataDidChange, object: nil)
             HapticFeedback.notification(.success)
             showPurchaseConfirmation = false
         }
@@ -1791,7 +1843,7 @@ struct ChildRewardsScreen: View {
         UserDefaults.standard.set(currentWeekly + amount, forKey: "child_weekly_earned")
         
         // Явно отправляем уведомление для обновления других экранов
-        NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+        NotificationCenter.default.post(name: .childRewardsDataDidChange, object: nil)
         
         // Обновляем локальные переменные
         unicornBalance = newBalance
@@ -1827,7 +1879,7 @@ struct ChildRewardsScreen: View {
         UserDefaults.standard.set(currentWeekly + amount, forKey: "child_weekly_punished")
         
         // Явно отправляем уведомление для обновления других экранов
-        NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+        NotificationCenter.default.post(name: .childRewardsDataDidChange, object: nil)
         
         // Обновляем локальные переменные
         unicornBalance = newBalance
@@ -1854,6 +1906,7 @@ struct ChildRewardsScreen: View {
         )
         var history = getHistoryOperations()
         history.append(operation)
+        cachedHistoryOperations = history.sorted { $0.date > $1.date }
         if let encoded = try? JSONEncoder().encode(history),
            let jsonString = String(data: encoded, encoding: .utf8) {
             UserDefaults.standard.set(jsonString, forKey: "rewards_history")
@@ -1885,6 +1938,10 @@ struct ChildRewardsScreen: View {
             print("📊 Всего запросов: \(requests.count)")
         }
     }
+}
+
+private extension Notification.Name {
+    static let childRewardsDataDidChange = Notification.Name("ChildRewardsDataDidChange")
 }
 
 // MARK: - Achievement Request Modal

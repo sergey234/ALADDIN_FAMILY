@@ -71,6 +71,12 @@ class ParentalControlManager: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var familyAuthStatus: AuthorizationStatus = .notDetermined
+
+    // Anti-spam guards for parental stats polling in UI cycles.
+    private var lastStatsRequestAt: Date?
+    private var statsBackoffUntil: Date?
+    private let statsMinInterval: TimeInterval = 10
+    private let statsContractBackoff: TimeInterval = 90
     
     // Managed Settings Store
     private let managedSettingsStore = ManagedSettingsStore()
@@ -592,6 +598,15 @@ class ParentalControlManager: ObservableObject {
         childId: String? = nil,
         completion: @escaping (Result<ParentalControlStatsResponse, Error>) -> Void
     ) {
+        let now = Date()
+        if let backoffUntil = statsBackoffUntil, now < backoffUntil {
+            return
+        }
+        if let lastRequest = lastStatsRequestAt, now.timeIntervalSince(lastRequest) < statsMinInterval {
+            return
+        }
+        lastStatsRequestAt = now
+
         isLoading = true
         errorMessage = nil
         
@@ -601,9 +616,14 @@ class ParentalControlManager: ObservableObject {
                 
                 switch result {
                 case .success(let stats):
+                    self?.statsBackoffUntil = nil
                     self?.errorMessage = nil
                     completion(.success(stats))
                 case .failure(let error):
+                    let message = error.localizedDescription.lowercased()
+                    if message.contains("numeric user id") || message.contains("contract 401") {
+                        self?.statsBackoffUntil = Date().addingTimeInterval(self?.statsContractBackoff ?? 90)
+                    }
                     self?.errorMessage = error.localizedDescription
                     completion(.failure(error))
                 }

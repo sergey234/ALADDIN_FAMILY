@@ -57,6 +57,11 @@ class AnalyticsViewModel: ObservableObject {
     
     @MainActor
     func load() async {
+        if isLoading {
+            VisualLogger.shared.log("⏭️ Analytics load skipped: already loading", level: .info, category: "ANALYTICS.API")
+            return
+        }
+        
         // ✅ ДИАГНОСТИКА: Проверка токена во всех хранилищах
         #if DEBUG
         let appConfigToken = AppConfig.authToken != nil
@@ -91,7 +96,7 @@ class AnalyticsViewModel: ObservableObject {
                 VisualLogger.shared.log("⏳ AnalyticsViewModel: Токен загружается, ждем...", level: .info, category: "ANALYTICS")
                 print("⏳ AnalyticsViewModel: Токен загружается, ждем...")
                 #endif
-                if let token = await TokenManager.shared.waitForTokenLoad(maxWaitTime: 0.5) {
+                if let token = await TokenManager.shared.waitForTokenLoad(maxWaitTime: 1.0) {
                     // Токен загрузился - продолжаем
                     #if DEBUG
                     VisualLogger.shared.log("✅ AnalyticsViewModel: Токен загрузился, продолжаем", level: .success, category: "ANALYTICS")
@@ -104,6 +109,7 @@ class AnalyticsViewModel: ObservableObject {
                     print("⚠️ AnalyticsViewModel: Токен не загрузился, показываем ошибку")
                     #endif
                     errorMessage = "Не удалось загрузить данные аналитики. Проверьте подключение к интернету."
+                    VisualLogger.shared.log("❌ AnalyticsViewModel: token_wait_timeout -> empty", level: .error, category: "ANALYTICS.API")
                     isLoading = false
                     isOfflineMode = false
                     dataSource = .empty
@@ -118,6 +124,7 @@ class AnalyticsViewModel: ObservableObject {
                 print("⚠️ AnalyticsViewModel: Токен отсутствует, показываем ошибку")
                 #endif
                 errorMessage = "Не удалось загрузить данные аналитики. Проверьте подключение к интернету."
+                VisualLogger.shared.log("❌ AnalyticsViewModel: token_absent -> empty", level: .error, category: "ANALYTICS.API")
                 isLoading = false
                 isOfflineMode = false
                 dataSource = .empty
@@ -128,6 +135,7 @@ class AnalyticsViewModel: ObservableObject {
         }
         
         isLoading = true
+        defer { isLoading = false }
         errorMessage = nil
         isOfflineMode = false // ✅ ЗАДАЧА 64: Сбрасываем индикатор офлайн режима
 
@@ -141,10 +149,18 @@ class AnalyticsViewModel: ObservableObject {
         #endif
 
         do {
-            async let summaryTask = service.fetchSummary(period: cachedPeriod, filters: cachedFilters)
-            async let securityTask = service.fetchSecurityAnalytics(period: cachedPeriod)
-
-            let (summaryResult, securityResult) = try await (summaryTask, securityTask)
+            let summaryResult: (AnalyticsSummary, DataSource)
+            let securityResult: (SecurityAnalytics, DataSource)
+            
+            if let remoteService = service as? RemoteAnalyticsService {
+                let combined = try await remoteService.fetchCombinedAnalytics(period: cachedPeriod, filters: cachedFilters)
+                summaryResult = combined.0
+                securityResult = combined.1
+            } else {
+                async let summaryTask = service.fetchSummary(period: cachedPeriod, filters: cachedFilters)
+                async let securityTask = service.fetchSecurityAnalytics(period: cachedPeriod)
+                (summaryResult, securityResult) = try await (summaryTask, securityTask)
+            }
             
             // Извлекаем данные и источник
             let (summary, summarySource) = summaryResult
@@ -174,12 +190,15 @@ class AnalyticsViewModel: ObservableObject {
             apply(securityAnalytics: security)
             
             // ✅ ВАРИАНТ 4: Загружаем данные компонентов (если сервис поддерживает)
+            // Ограничиваем время ожидания, чтобы не оставлять экран в вечном loading.
             if let remoteService = service as? RemoteAnalyticsService {
                 do {
                     #if DEBUG
                     print("📊 AnalyticsViewModel: Начинаем загрузку компонентов...")
                     #endif
-                    let components = try await remoteService.fetchAllComponentsStats()
+                    let components = try await withTimeout(seconds: 6) {
+                        try await remoteService.fetchAllComponentsStats()
+                    }
                     componentsAnalytics = components
                     componentsDataSource = .api // Если загрузилось успешно - данные из API
                     #if DEBUG
@@ -197,9 +216,6 @@ class AnalyticsViewModel: ObservableObject {
             // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности загрузки
             PerformanceMonitor.shared.endScreenLoad("AnalyticsScreen")
             
-            // ✅ ВАРИАНТ 4: Убеждаемся, что isLoading установлен в false
-            isLoading = false
-
         } catch {
             // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности даже при ошибке
             PerformanceMonitor.shared.endScreenLoad("AnalyticsScreen")
@@ -220,6 +236,7 @@ class AnalyticsViewModel: ObservableObject {
                     object: nil,
                     userInfo: ["message": errorMessage]
                 )
+                VisualLogger.shared.log("❌ AnalyticsViewModel: unauthorized -> empty", level: .error, category: "ANALYTICS.API")
                 #if DEBUG
                 print("⚠️ AnalyticsViewModel: Ошибка авторизации при загрузке аналитики")
                 #endif
@@ -229,6 +246,7 @@ class AnalyticsViewModel: ObservableObject {
                 errorMessage = errorMsg
                 resetState()
                 isOfflineMode = false
+                VisualLogger.shared.log("❌ AnalyticsViewModel: api_fail -> empty (\(errorMsg))", level: .error, category: "ANALYTICS.API")
 
                 #if DEBUG
                 print("❌ AnalyticsViewModel: Ошибка загрузки:")
@@ -242,7 +260,19 @@ class AnalyticsViewModel: ObservableObject {
             }
         }
 
-        isLoading = false
+    }
+
+    private func withTimeout<T>(seconds: Double, operation: @escaping () async throws -> T) async throws -> T {
+        try await withThrowingTaskGroup(of: T.self) { group in
+            group.addTask { try await operation() }
+            group.addTask {
+                try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+                throw NetworkError.timeout
+            }
+            let result = try await group.next()!
+            group.cancelAll()
+            return result
+        }
     }
     
     // ✅ УЛУЧШЕНИЕ: Функция для получения понятного сообщения об ошибке

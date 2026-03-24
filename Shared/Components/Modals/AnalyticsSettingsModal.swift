@@ -17,6 +17,7 @@ struct AnalyticsSettingsModal: View {
     @State private var enabledMetrics: Set<String> = ["threats", "scans", "blocks", "devices"]
     @State private var reportFrequency: String = "weekly" // daily, weekly, monthly
     @State private var autoReportsEnabled: Bool = true
+    @State private var isSaving: Bool = false
     
     let metrics = ["threats", "scans", "blocks", "devices", "family", "network"]
     
@@ -62,6 +63,7 @@ struct AnalyticsSettingsModal: View {
         .onAppear {
             loadSettings()
         }
+        .withVisualLogger()
     }
     
     // MARK: - Sections
@@ -105,6 +107,7 @@ struct AnalyticsSettingsModal: View {
                                 } else {
                                     enabledMetrics.remove(metric)
                                 }
+                                VisualLogger.shared.log("🔄 analytics_metric_\(metric)_enabled = \(isOn)", level: .info, category: "ANALYTICS.UI")
                             }
                         )
                     )
@@ -126,7 +129,13 @@ struct AnalyticsSettingsModal: View {
             
             Toggle(
                 localizationManager.localized("analytics_settings_auto_reports"),
-                isOn: $autoReportsEnabled
+                isOn: Binding(
+                    get: { autoReportsEnabled },
+                    set: { newValue in
+                        autoReportsEnabled = newValue
+                        VisualLogger.shared.log("🔄 analytics_auto_reports_enabled = \(newValue)", level: .info, category: "ANALYTICS.UI")
+                    }
+                )
             )
             
             if autoReportsEnabled {
@@ -147,14 +156,21 @@ struct AnalyticsSettingsModal: View {
     
     private var saveButton: some View {
         Button(action: saveSettings) {
-            Text(localizationManager.localized("common_save"))
-                .font(.bodyBold)
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.primaryBlue)
-                .cornerRadius(CornerRadius.medium)
+            HStack(spacing: 8) {
+                if isSaving {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                }
+                Text(localizationManager.localized("common_save"))
+                    .font(.bodyBold)
+                    .foregroundColor(.white)
+            }
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(isSaving ? Color.primaryBlue.opacity(0.6) : Color.primaryBlue)
+            .cornerRadius(CornerRadius.medium)
         }
+        .disabled(isSaving)
     }
     
     // MARK: - Methods
@@ -207,6 +223,9 @@ struct AnalyticsSettingsModal: View {
     }
     
     private func saveSettings() {
+        VisualLogger.shared.log("💾 analytics_settings_save tapped", level: .info, category: "ANALYTICS.UI")
+        isSaving = true
+        
         // Сохранить в UserDefaults
         UserDefaults.standard.set(selectedPeriod, forKey: periodKey)
         UserDefaults.standard.set(Array(enabledMetrics), forKey: metricsKey)
@@ -237,13 +256,17 @@ struct AnalyticsSettingsModal: View {
                 )
                 
                 await MainActor.run {
+                    VisualLogger.shared.log("✅ analytics_settings_save success", level: .success, category: "ANALYTICS.UI")
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isSaving = false
                     dismiss()
                 }
             } catch {
                 // Даже при ошибке сохранили в UserDefaults, показываем успех
                 await MainActor.run {
+                    VisualLogger.shared.log("⚠️ analytics_settings_save fallback local only", level: .warning, category: "ANALYTICS.UI")
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
+                    isSaving = false
                     dismiss()
                 }
             }

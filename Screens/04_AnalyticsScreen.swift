@@ -42,8 +42,8 @@ struct AnalyticsScreen: View {
                 // Навигационная панель
                 navigationHeader
                 
-                // ✅ ВАРИАНТ 4: Индикатор источника данных
-                dataSourceIndicator
+                // ✅ ВАРИАНТ 4: Индикатор источника данных (с дебаунсом)
+                DebouncedDataSourceIndicator(dataSource: viewModel.dataSource, localizationManager: localizationManager)
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.top, Spacing.s)
                 
@@ -129,6 +129,13 @@ struct AnalyticsScreen: View {
                 errorBanner(message: error)
                     .padding(.bottom, Spacing.l)
             }
+        }
+        .withVisualLogger()
+        .onAppear {
+            VisualLogger.shared.log("👀 AnalyticsScreen onAppear", level: .info, category: "ANALYTICS.UI")
+        }
+        .onChange(of: viewModel.isLoading) { isLoading in
+            VisualLogger.shared.log("⏳ analytics_loading = \(isLoading)", level: .info, category: "ANALYTICS.UI")
         }
     }
     
@@ -669,6 +676,54 @@ struct AnalyticsScreen: View {
             badgeCount: badgeCount,
             onTap: onTap
         )
+    }
+}
+
+// MARK: - Debounced Indicator
+private struct DebouncedDataSourceIndicator: View {
+    let dataSource: DataSource
+    @ObservedObject var localizationManager: LocalizationManager
+    @State private var displayed: DataSource = .empty
+    @State private var pendingTask: Task<Void, Never>?
+    
+    var body: some View {
+        HStack(spacing: Spacing.xs) {
+            switch displayed {
+            case .api:
+                Image(systemName: "checkmark.circle.fill").foregroundColor(.green)
+                Text(localizationManager.localized("analytics_data_source_api") ?? "Реальные данные")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.textSecondary)
+            case .cache:
+                Image(systemName: "clock.fill").foregroundColor(.orange)
+                Text(localizationManager.localized("analytics_data_source_cache") ?? "Кэш")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.textSecondary)
+            case .empty:
+                Image(systemName: "circle").foregroundColor(.gray)
+                Text(localizationManager.localized("analytics_data_source_empty") ?? "Нет данных")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.textSecondary)
+            case .error:
+                Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.red)
+                Text(localizationManager.localized("analytics_data_source_error") ?? "Ошибка загрузки")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.textSecondary)
+            }
+        }
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, Spacing.xs)
+        .background(Color.backgroundMedium.opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+        .onAppear { displayed = dataSource }
+        .onChange(of: dataSource) { newValue in
+            pendingTask?.cancel()
+            // Дебаунс 0.5s
+            pendingTask = Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 500_000_000)
+                displayed = newValue
+            }
+        }
     }
 }
 

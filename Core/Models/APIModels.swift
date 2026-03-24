@@ -1880,6 +1880,32 @@ struct RewardResponse: Codable, Identifiable {
 struct RewardsListResponse: Codable {
     let rewards: [RewardResponse]
     let total: Int
+
+    init(rewards: [RewardResponse], total: Int) {
+        self.rewards = rewards
+        self.total = total
+    }
+
+    init(from decoder: Decoder) throws {
+        // Tolerant decoding: backend may return [] instead of {"rewards":[...],"total":N}
+        if var unkeyed = try? decoder.unkeyedContainer() {
+            var decodedRewards: [RewardResponse] = []
+            while !unkeyed.isAtEnd {
+                if let reward = try? unkeyed.decode(RewardResponse.self) {
+                    decodedRewards.append(reward)
+                } else {
+                    _ = try? unkeyed.decode(String.self)
+                }
+            }
+            self.rewards = decodedRewards
+            self.total = decodedRewards.count
+            return
+        }
+
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.rewards = (try? container.decode([RewardResponse].self, forKey: .rewards)) ?? []
+        self.total = (try? container.decode(Int.self, forKey: .total)) ?? rewards.count
+    }
 }
 
 struct ClaimRewardRequest: Codable {
@@ -2037,6 +2063,111 @@ struct ParentalControlSettingsResponse: Codable {
     let lastModified: String // ISO дата
     let deviceId: String?
     let version: Int
+
+    enum CodingKeys: String, CodingKey {
+        case familyId
+        case childId
+        case isContentFilterEnabled
+        case isAppBlockingEnabled
+        case screenTimeLimitHours
+        case allowedApps
+        case blockedWebsites
+        case bedtime
+        case lastModified
+        case deviceId
+        case version
+        // legacy flat keys from /api/parental-control/settings
+        case success
+        case safeSearch
+        case youtubeRestrictedMode
+        case appInstallBlocked
+        // optional snake_case compatibility keys (backend variants)
+        case is_content_filter_enabled
+        case is_app_blocking_enabled
+        case screen_time_limit_hours
+        case allowed_apps
+        case blocked_websites
+        case last_modified
+        case device_id
+    }
+
+    init(
+        familyId: String,
+        childId: String?,
+        isContentFilterEnabled: Bool,
+        isAppBlockingEnabled: Bool,
+        screenTimeLimitHours: Int,
+        allowedApps: [String],
+        blockedWebsites: [String],
+        bedtime: String?,
+        lastModified: String,
+        deviceId: String?,
+        version: Int
+    ) {
+        self.familyId = familyId
+        self.childId = childId
+        self.isContentFilterEnabled = isContentFilterEnabled
+        self.isAppBlockingEnabled = isAppBlockingEnabled
+        self.screenTimeLimitHours = screenTimeLimitHours
+        self.allowedApps = allowedApps
+        self.blockedWebsites = blockedWebsites
+        self.bedtime = bedtime
+        self.lastModified = lastModified
+        self.deviceId = deviceId
+        self.version = version
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.familyId = (try? container.decode(String.self, forKey: .familyId)) ?? "family_default"
+        self.childId = try? container.decodeIfPresent(String.self, forKey: .childId)
+        self.isContentFilterEnabled =
+            (try? container.decode(Bool.self, forKey: .isContentFilterEnabled))
+            ?? (try? container.decode(Bool.self, forKey: .is_content_filter_enabled))
+            ?? (try? container.decode(Bool.self, forKey: .safeSearch))
+            ?? false
+        self.isAppBlockingEnabled =
+            (try? container.decode(Bool.self, forKey: .isAppBlockingEnabled))
+            ?? (try? container.decode(Bool.self, forKey: .is_app_blocking_enabled))
+            ?? (try? container.decode(Bool.self, forKey: .appInstallBlocked))
+            ?? false
+        self.screenTimeLimitHours =
+            (try? container.decode(Int.self, forKey: .screenTimeLimitHours))
+            ?? (try? container.decode(Int.self, forKey: .screen_time_limit_hours))
+            ?? 0
+        self.allowedApps =
+            (try? container.decode([String].self, forKey: .allowedApps))
+            ?? (try? container.decode([String].self, forKey: .allowed_apps))
+            ?? []
+        self.blockedWebsites =
+            (try? container.decode([String].self, forKey: .blockedWebsites))
+            ?? (try? container.decode([String].self, forKey: .blocked_websites))
+            ?? []
+        self.bedtime = try? container.decodeIfPresent(String.self, forKey: .bedtime)
+        self.lastModified =
+            (try? container.decode(String.self, forKey: .lastModified))
+            ?? (try? container.decode(String.self, forKey: .last_modified))
+            ?? ""
+        self.deviceId =
+            (try? container.decodeIfPresent(String.self, forKey: .deviceId))
+            ?? (try? container.decodeIfPresent(String.self, forKey: .device_id))
+        self.version = (try? container.decode(Int.self, forKey: .version)) ?? 1
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(familyId, forKey: .familyId)
+        try container.encodeIfPresent(childId, forKey: .childId)
+        try container.encode(isContentFilterEnabled, forKey: .isContentFilterEnabled)
+        try container.encode(isAppBlockingEnabled, forKey: .isAppBlockingEnabled)
+        try container.encode(screenTimeLimitHours, forKey: .screenTimeLimitHours)
+        try container.encode(allowedApps, forKey: .allowedApps)
+        try container.encode(blockedWebsites, forKey: .blockedWebsites)
+        try container.encodeIfPresent(bedtime, forKey: .bedtime)
+        try container.encode(lastModified, forKey: .lastModified)
+        try container.encodeIfPresent(deviceId, forKey: .deviceId)
+        try container.encode(version, forKey: .version)
+    }
 }
 
 struct UpdateParentalControlSettingsRequest: Codable {
@@ -2108,6 +2239,42 @@ struct TimeLimitResponse: Codable {
     let lastModified: String // ISO дата
     let deviceId: String?
     let version: Int
+
+    enum CodingKeys: String, CodingKey {
+        case childId
+        case dailyLimitMinutes
+        case weeklyLimitMinutes
+        case bedtimeStart
+        case bedtimeEnd
+        case lastModified
+        case deviceId
+        case version
+    }
+
+    init(from decoder: Decoder) throws {
+        // Tolerant decoding: backend may return []
+        if let unkeyed = try? decoder.unkeyedContainer(), unkeyed.count == 0 {
+            self.childId = ""
+            self.dailyLimitMinutes = 0
+            self.weeklyLimitMinutes = 0
+            self.bedtimeStart = nil
+            self.bedtimeEnd = nil
+            self.lastModified = ""
+            self.deviceId = nil
+            self.version = 1
+            return
+        }
+
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.childId = (try? container.decode(String.self, forKey: .childId)) ?? ""
+        self.dailyLimitMinutes = (try? container.decode(Int.self, forKey: .dailyLimitMinutes)) ?? 0
+        self.weeklyLimitMinutes = (try? container.decode(Int.self, forKey: .weeklyLimitMinutes)) ?? 0
+        self.bedtimeStart = try? container.decodeIfPresent(String.self, forKey: .bedtimeStart)
+        self.bedtimeEnd = try? container.decodeIfPresent(String.self, forKey: .bedtimeEnd)
+        self.lastModified = (try? container.decode(String.self, forKey: .lastModified)) ?? ""
+        self.deviceId = try? container.decodeIfPresent(String.self, forKey: .deviceId)
+        self.version = (try? container.decode(Int.self, forKey: .version)) ?? 1
+    }
 }
 
 struct UpdateTimeLimitRequest: Codable {
@@ -2229,6 +2396,36 @@ struct AppBlockResponse: Codable {
     let lastModified: String // ISO дата
     let deviceId: String?
     let version: Int
+
+    enum CodingKeys: String, CodingKey {
+        case childId
+        case blockedApps
+        case appLimits
+        case lastModified
+        case deviceId
+        case version
+    }
+
+    init(from decoder: Decoder) throws {
+        // Tolerant decoding: backend may return []
+        if let unkeyed = try? decoder.unkeyedContainer(), unkeyed.count == 0 {
+            self.childId = ""
+            self.blockedApps = []
+            self.appLimits = [:]
+            self.lastModified = ""
+            self.deviceId = nil
+            self.version = 1
+            return
+        }
+
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.childId = (try? container.decode(String.self, forKey: .childId)) ?? ""
+        self.blockedApps = (try? container.decode([String].self, forKey: .blockedApps)) ?? []
+        self.appLimits = (try? container.decode([String: Int].self, forKey: .appLimits)) ?? [:]
+        self.lastModified = (try? container.decode(String.self, forKey: .lastModified)) ?? ""
+        self.deviceId = try? container.decodeIfPresent(String.self, forKey: .deviceId)
+        self.version = (try? container.decode(Int.self, forKey: .version)) ?? 1
+    }
 }
 
 struct UpdateAppBlocksRequest: Codable {

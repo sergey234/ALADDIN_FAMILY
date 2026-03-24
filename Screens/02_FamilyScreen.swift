@@ -12,7 +12,6 @@ struct FamilyScreen: View {
     // ✅ ИСПРАВЛЕНИЕ #7: Убрали @State showAddMemberModal - теперь используем NavigationManager
     // @State private var showAddMemberModal = false
     @State private var showParentalSettingsModal = false
-    @State private var showRewardsModal: Bool = false
     @State private var showInvitationGuideModal: Bool = false
     
     // UserDefaults ключи для участников семьи
@@ -21,11 +20,6 @@ struct FamilyScreen: View {
     private let currentUserNameKey = "current_user_name"
     private let familyIdKey = "family_id"
     private let familyMemberSeededKey = "family_member_seeded_once"
-    
-    // Для RewardsModalView
-    @AppStorage("child_unicorn_balance") private var unicornBalanceForRewards: Int = 245
-    @AppStorage("child_weekly_earned") private var weeklyRewarded: Int = 0
-    @AppStorage("child_weekly_punished") private var weeklyPunished: Int = 0
     
     // Динамический список участников семьи (до 10 человек)
     @State private var familyMembers: [FamilyMemberData] = []
@@ -825,14 +819,6 @@ struct FamilyScreen: View {
             FamilyParentalControlSettingsModal(isPresented: $showParentalSettingsModal)
                 .environmentObject(localizationManager)
         }
-        .sheet(isPresented: $showRewardsModal) {
-            RewardsModalView(
-                unicornBalance: $unicornBalanceForRewards,
-                weeklyRewarded: $weeklyRewarded,
-                weeklyPunished: $weeklyPunished
-            )
-            .environmentObject(localizationManager)
-        }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("family_lang_\(localizationManager.currentLanguage.rawValue)")
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
@@ -1046,7 +1032,7 @@ extension FamilyScreen {
                     borderColor: Color.warningOrange.opacity(0.4),
                     badgeColor: bypassAttemptsToday > 0 ? .dangerRed : .successGreen,
                     isEnabled: Binding(
-                        get: { DNSProtectionManager.shared.isEnabled },
+                        get: { isBypassProtectionEnabled },
                         set: { newValue in
                             if newValue {
                                 DNSProtectionManager.shared.enableProtection()
@@ -1081,18 +1067,11 @@ extension FamilyScreen {
             
             // Reward card (full width)
             // ✅ Fixed: card spans full width, text fits on a single line
-            // ✅ Fixed: parents open RewardsModalView, kids navigate to ChildRewardsScreen
+            // ✅ Unified entry: always navigate to ChildRewardsScreen
             Button(action: {
                 HapticFeedback.impact(.medium)
-                // Проверяем роль пользователя
-                let role = UserDefaults.standard.string(forKey: "current_user_role") ?? ""
-                if role == "Parent" {
-                    // Для родителей - модальное окно RewardsModalView
-                    showRewardsModal = true
-                } else {
-                    // Для детей - экран ChildRewardsScreen
-                    navigationManager.navigateTo(.childRewards)
-                }
+                logger.buttonTap("Open Game from Family", screen: "Family")
+                navigationManager.navigateTo(.childRewards)
             }) {
                 HStack(spacing: Spacing.m) {
                     // Large unicorn icon on the left
