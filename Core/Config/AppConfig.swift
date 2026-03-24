@@ -104,7 +104,7 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "124"
+    static let buildNumber = "125"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -141,7 +141,8 @@ struct AppConfig {
         static let componentStatusBatch = "/api/components/status/batch"  // 🚀 Batch endpoint для оптимизации
         static let componentEnable = "/api/components/enable"
         static let componentDisable = "/api/components/disable"
-        static let componentConfiguration = "/api/components/config"
+        // Конфигурация конкретного компонента: GET/POST /api/components/configuration/{component_id}
+        static let componentConfiguration = "/api/components/configuration"
         static let componentBulkUpdate = "/api/components/bulk-update"  // Массовое обновление компонентов
         static let componentsList = "/api/components/list"  // ✅ ЗАДАЧА 22: Список всех компонентов
         static let componentsHealth = "/api/components/health"  // ✅ ЗАДАЧА 22: Общее здоровье компонентов
@@ -318,6 +319,7 @@ struct AppConfig {
         static let subscriptionAutoRenewal = "/api/subscription/auto-renewal"
         static let subscriptionAutoRenewalUpdate = "/api/subscription/auto-renewal/update"
         static let subscriptionCancel = "/api/subscription/cancel"
+        static let subscriptionEventsBatch = "/api/subscription/events/batch"
         
         // ✅ ЭТАП 2: Настройки приложения (10 endpoints)
         static let appSettingsSync = "/api/settings/sync"

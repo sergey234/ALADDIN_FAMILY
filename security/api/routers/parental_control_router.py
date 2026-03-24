@@ -96,6 +96,13 @@ class ApiBoolResponse(BaseModel):
     error: Optional[str] = None
 
 
+class BypassApplyRequest(BaseModel):
+    childId: str
+    incognito: bool
+    tor: bool
+    proxy: bool
+
+
 class AccessRequestItemResponse(BaseModel):
     id: str
     childId: str
@@ -198,6 +205,26 @@ def _resolve_target_user_id(
         status_code=401,
         detail="User token does not contain numeric user id",
     )
+
+
+def _resolve_target_id_flexible(
+    child_id: Optional[str],
+    current_user: dict,
+) -> str:
+    """Resolve target id for bypass endpoints in UUID/int/string-safe mode."""
+    if child_id:
+        normalized = str(child_id).strip()
+        if normalized:
+            return normalized
+
+    raw_user_id = current_user.get("id")
+    if raw_user_id is None:
+        raise HTTPException(status_code=401, detail="User token does not contain user id")
+
+    normalized_user_id = str(raw_user_id).strip()
+    if not normalized_user_id:
+        raise HTTPException(status_code=401, detail="User token does not contain user id")
+    return normalized_user_id
 
 @router.post("/location/report")
 async def report_location(
@@ -430,25 +457,119 @@ async def apply_legacy_parental_rules(
     )
     return ApiBoolResponse(success=True, data=True, message="Rules applied", error=None)
 
+def _ensure_bypass_shadow_table(db: Session) -> None:
+    db.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS parental_bypass_state_shadow (
+                target_id TEXT PRIMARY KEY,
+                incognito INTEGER NOT NULL DEFAULT 0,
+                tor INTEGER NOT NULL DEFAULT 0,
+                proxy INTEGER NOT NULL DEFAULT 0,
+                updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW()
+            )
+            """
+        )
+    )
+
+
+def _persist_bypass_shadow(db: Session, target_id: str, incognito: bool, tor: bool, proxy: bool) -> None:
+    _ensure_bypass_shadow_table(db)
+    db.execute(
+        text(
+            """
+            INSERT INTO parental_bypass_state_shadow (target_id, incognito, tor, proxy, updated_at)
+            VALUES (:target_id, :incognito, :tor, :proxy, NOW())
+            ON CONFLICT (target_id)
+            DO UPDATE SET
+                incognito = EXCLUDED.incognito,
+                tor = EXCLUDED.tor,
+                proxy = EXCLUDED.proxy,
+                updated_at = NOW()
+            """
+        ),
+        {
+            "target_id": target_id,
+            "incognito": 1 if incognito else 0,
+            "tor": 1 if tor else 0,
+            "proxy": 1 if proxy else 0,
+        },
+    )
+
+
+def _read_bypass_shadow(db: Session, target_id: str) -> Optional[dict]:
+    _ensure_bypass_shadow_table(db)
+    row = db.execute(
+        text(
+            """
+            SELECT incognito, tor, proxy
+            FROM parental_bypass_state_shadow
+            WHERE target_id = :target_id
+            LIMIT 1
+            """
+        ),
+        {"target_id": target_id},
+    ).fetchone()
+    if not row:
+        return None
+    return {"incognito": int(row[0] or 0), "tor": int(row[1] or 0), "proxy": int(row[2] or 0)}
+
+
 @bypass_router.get("/bypass/stats", response_model=BypassStatsResponse)
 async def get_bypass_stats(
     childId: Optional[str] = Query(None, alias="childId"),
+    db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """Статистика обхода (пока MOCK, до интеграции Smart DNS)."""
-    # ✅ STAGE 4: Триггер BYPASS_ATTEMPT если обнаружена активность VPN
-    logger.info(f"🔔 [PUSH TRIGGER] BYPASS_ATTEMPT: Обнаружена попытка отключить защиту")
-    
+    """Bypass stats (production-safe, UUID/int compatible)."""
+    logger.info("🔔 [PUSH TRIGGER] BYPASS_ATTEMPT: Обнаружена попытка отключить защиту")
+    target_id = _resolve_target_id_flexible(childId, current_user)
+    state = _read_bypass_shadow(db, target_id)
+    if state is None:
+        return BypassStatsResponse(
+            success=True,
+            today=0,
+            week=0,
+            blocked=0,
+            incognito=0,
+            tor=0,
+            proxy=0,
+            message="Защита активна.",
+        )
     return BypassStatsResponse(
         success=True,
         today=0,
         week=0,
         blocked=0,
-        incognito=0,
-        tor=0,
-        proxy=0,
-        message="Защита активна."
+        incognito=state["incognito"],
+        tor=state["tor"],
+        proxy=state["proxy"],
+        message="Защита активна.",
     )
+
+
+@bypass_router.post("/bypass/apply", response_model=ApiBoolResponse)
+async def apply_bypass_protection(
+    payload: BypassApplyRequest,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user)
+):
+    """Apply bypass settings with production-safe response contract (no SFM mock)."""
+    try:
+        target_id = _resolve_target_id_flexible(payload.childId, current_user)
+        _persist_bypass_shadow(
+            db,
+            target_id=target_id,
+            incognito=payload.incognito,
+            tor=payload.tor,
+            proxy=payload.proxy,
+        )
+        db.commit()
+        return ApiBoolResponse(success=True, data=True, message="Bypass protection applied", error=None)
+    except Exception as e:
+        db.rollback()
+        logger.error(f"❌ Error applying bypass protection: {str(e)}")
+        return ApiBoolResponse(success=False, data=False, message="Apply failed", error=str(e))
 
 # Статус менеджера (для обратной совместимости)
 @router.get("/status")

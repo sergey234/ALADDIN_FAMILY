@@ -20,6 +20,7 @@ struct FamilyScreen: View {
     private let currentUserRoleKey = "current_user_role"
     private let currentUserNameKey = "current_user_name"
     private let familyIdKey = "family_id"
+    private let familyMemberSeededKey = "family_member_seeded_once"
     
     // Для RewardsModalView
     @AppStorage("child_unicorn_balance") private var unicornBalanceForRewards: Int = 245
@@ -28,6 +29,8 @@ struct FamilyScreen: View {
     
     // Динамический список участников семьи (до 10 человек)
     @State private var familyMembers: [FamilyMemberData] = []
+    @State private var isFamilyLoadInProgress: Bool = false
+    @State private var isFamilySyncInProgress: Bool = false
     
     // Новые состояния для родительского контроля (7 карточек)
     @State private var showContentBlockModal: Bool = false
@@ -141,6 +144,13 @@ struct FamilyScreen: View {
     
     // Загрузка участников семьи из UserDefaults и синхронизация с API
     private func loadFamilyMembers() {
+        guard !isFamilyLoadInProgress else {
+            print("⚠️ [loadFamilyMembers] Загрузка уже выполняется, пропускаем повторный вызов")
+            return
+        }
+        isFamilyLoadInProgress = true
+        defer { isFamilyLoadInProgress = false }
+
         logger.business("Loading family members from storage")
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Синхронизируем UserDefaults перед чтением
         UserDefaults.standard.synchronize()
@@ -169,6 +179,13 @@ struct FamilyScreen: View {
         // 2. Если нет сохранённых данных - создать карточку текущего пользователя
         // ✅ ИСПРАВЛЕНИЕ: Не перезаписываем, если уже есть участники
         if familyMembers.isEmpty {
+            let hasServerFamilyId = !(UserDefaults.standard.string(forKey: familyIdKey) ?? "").isEmpty
+            let hasSeededMember = UserDefaults.standard.bool(forKey: familyMemberSeededKey)
+            guard !hasServerFamilyId, !hasSeededMember else {
+                print("ℹ️ [loadFamilyMembers] Seed пропущен (hasServerFamilyId=\(hasServerFamilyId), hasSeededMember=\(hasSeededMember))")
+                return
+            }
+
             if let currentRoleString = UserDefaults.standard.string(forKey: currentUserRoleKey) {
                 let normalizedRole = currentRoleString.lowercased()
                 let role: FamilyMemberCard.FamilyRole
@@ -218,11 +235,28 @@ struct FamilyScreen: View {
             
             // Сохраняем созданный список только если он был пуст
             saveFamilyMembers()
+            UserDefaults.standard.set(true, forKey: familyMemberSeededKey)
         }
+    }
+
+    /// Лёгкая перезагрузка только из локального storage без API sync.
+    /// Нужна после локального добавления участника, чтобы UI обновлялся мгновенно.
+    private func reloadFamilyMembersFromStorageOnly() {
+        guard let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
+              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
+            return
+        }
+        familyMembers = decoded
+        print("✅ [reloadFamilyMembersFromStorageOnly] Loaded \(decoded.count) family members")
     }
     
     // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #2: Синхронизация участников семьи с сервером
     private func syncFamilyMembersFromAPI() {
+        guard !isFamilySyncInProgress else {
+            print("⚠️ [syncFamilyMembersFromAPI] Синхронизация уже выполняется, пропускаем повторный вызов")
+            return
+        }
+
         // Проверяем, есть ли family_id
         guard let familyId = UserDefaults.standard.string(forKey: familyIdKey),
               !familyId.isEmpty else {
@@ -230,14 +264,23 @@ struct FamilyScreen: View {
             return
         }
         
+        isFamilySyncInProgress = true
         print("🔄 [syncFamilyMembersFromAPI] Начинаем синхронизацию участников семьи с сервером")
         let apiService = APIService.shared
         
         apiService.getFamilyMembers { result in
             DispatchQueue.main.async {
+                defer { self.isFamilySyncInProgress = false }
                 switch result {
                 case .success(let members):
                     print("✅ [syncFamilyMembersFromAPI] Получено \(members.count) участников с сервера")
+
+                    // Не перетираем локальный непустой список пустым серверным ответом.
+                    // Это защищает UI при задержке server-side propagation после локального добавления.
+                    if members.isEmpty && !self.familyMembers.isEmpty {
+                        print("ℹ️ [syncFamilyMembersFromAPI] Сервер вернул 0, локально есть \(self.familyMembers.count) — сохраняем локальный список")
+                        return
+                    }
                     
                     // Захватываем localizationManager до замыкания map
                     let locManager = self.localizationManager
@@ -299,11 +342,15 @@ struct FamilyScreen: View {
                         )
                     }
                     
-                    // Обновляем список участников
-                    self.familyMembers = convertedMembers
-                    
-                    // Сохраняем в UserDefaults
-                    self.saveFamilyMembers()
+                    // Обновляем только при реальном изменении, чтобы не создавать цикл save->reload
+                    let oldIds = Set(self.familyMembers.map { $0.id })
+                    let newIds = Set(convertedMembers.map { $0.id })
+                    if oldIds != newIds || self.familyMembers.count != convertedMembers.count {
+                        self.familyMembers = convertedMembers
+                        self.saveFamilyMembers()
+                    } else {
+                        print("ℹ️ [syncFamilyMembersFromAPI] Изменений нет, save пропущен")
+                    }
                     
                     print("✅ [syncFamilyMembersFromAPI] Синхронизация завершена: \(convertedMembers.count) участников сохранено")
                     
@@ -402,8 +449,7 @@ struct FamilyScreen: View {
         UserDefaults.standard.synchronize()
         print("✅ Stored \(familyMembers.count) family members in UserDefaults (синхронизировано)")
         
-        // Уведомляем другие экраны об изменении
-        NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+        // Уведомляем другие экраны об изменении (без didChange, чтобы не зациклить reload FamilyScreen)
         NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
     }
     
@@ -791,13 +837,12 @@ struct FamilyScreen: View {
         .id("family_lang_\(localizationManager.currentLanguage.rawValue)")
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
             // ✅ ИСПРАВЛЕНИЕ: Обновляем только баланс, список участников не перезагружаем
-            // чтобы не потерять добавленных участников
+            // чтобы не потерять добавленных участников и не запускать цикл повторных GET /family/members
             unicornBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
-            
-            // Только если список пуст - загружаем заново
-            if familyMembers.isEmpty {
-                loadFamilyMembers()
-            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
+            // Явное событие обновления семейного списка после add/join flow.
+            reloadFamilyMembersFromStorageOnly()
         }
         .onAppear {
             logger.screenLoad("FamilyScreen")
@@ -874,7 +919,13 @@ extension FamilyScreen {
                     cardColor: .red.opacity(0.2),
                     borderColor: .red.opacity(0.4),
                     badgeColor: .successGreen,
-                    isEnabled: $isContentBlockEnabled,
+                    isEnabled: Binding(
+                        get: { isContentBlockEnabled },
+                        set: { newValue in
+                            isContentBlockEnabled = newValue
+                            VisualLogger.shared.log("🔄 family_content_block_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                        }
+                    ),
                     action: { showContentBlockModal = true }
                 )
                 .environmentObject(localizationManager)
@@ -889,7 +940,13 @@ extension FamilyScreen {
                     cardColor: .blue.opacity(0.2),
                     borderColor: .blue.opacity(0.4),
                     badgeColor: .warningOrange,
-                    isEnabled: $isTimeControlEnabled,
+                    isEnabled: Binding(
+                        get: { isTimeControlEnabled },
+                        set: { newValue in
+                            isTimeControlEnabled = newValue
+                            VisualLogger.shared.log("🔄 family_time_control_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                        }
+                    ),
                     action: { showTimeControlModalNew = true }
                 )
                 .environmentObject(localizationManager)
@@ -904,7 +961,13 @@ extension FamilyScreen {
                     cardColor: .purple.opacity(0.2),
                     borderColor: .purple.opacity(0.4),
                     badgeColor: .successGreen,
-                    isEnabled: $isMonitoringEnabled,
+                    isEnabled: Binding(
+                        get: { isMonitoringEnabled },
+                        set: { newValue in
+                            isMonitoringEnabled = newValue
+                            VisualLogger.shared.log("🔄 family_monitoring_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                        }
+                    ),
                     action: { showMonitoringModalNew = true }
                 )
                 .environmentObject(localizationManager)
@@ -919,7 +982,13 @@ extension FamilyScreen {
                     cardColor: .green.opacity(0.2),
                     borderColor: .green.opacity(0.4),
                     badgeColor: .successGreen,
-                    isEnabled: $isLocationEnabled,
+                    isEnabled: Binding(
+                        get: { isLocationEnabled },
+                        set: { newValue in
+                            isLocationEnabled = newValue
+                            VisualLogger.shared.log("🔄 family_location_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                        }
+                    ),
                     action: { showLocationModal = true }
                 )
                 .environmentObject(localizationManager)
@@ -934,7 +1003,13 @@ extension FamilyScreen {
                     cardColor: .orange.opacity(0.2),
                     borderColor: .orange.opacity(0.4),
                     badgeColor: .dangerRed,
-                    isEnabled: $isReportsEnabled,
+                    isEnabled: Binding(
+                        get: { isReportsEnabled },
+                        set: { newValue in
+                            isReportsEnabled = newValue
+                            VisualLogger.shared.log("🔄 family_reports_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                        }
+                    ),
                     action: { showReportsModal = true }
                 )
                 .environmentObject(localizationManager)
@@ -949,7 +1024,13 @@ extension FamilyScreen {
                     cardColor: .gray.opacity(0.2),
                     borderColor: .gray.opacity(0.4),
                     badgeColor: .warningOrange,
-                    isEnabled: $isAdditionalEnabled,
+                    isEnabled: Binding(
+                        get: { isAdditionalEnabled },
+                        set: { newValue in
+                            isAdditionalEnabled = newValue
+                            VisualLogger.shared.log("🔄 family_additional_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                        }
+                    ),
                     action: { showAdditionalModal = true }
                 )
                 .environmentObject(localizationManager)
@@ -972,6 +1053,8 @@ extension FamilyScreen {
                             } else {
                                 DNSProtectionManager.shared.disableProtection()
                             }
+                            isBypassProtectionEnabled = newValue
+                            VisualLogger.shared.log("🔄 family_bypass_protection_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
                         }
                     ),
                     action: { showBypassProtectionModal = true }
@@ -1080,11 +1163,12 @@ struct FamilyParentalControlCard: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
-        Button(action: {
-            HapticFeedback.impact(.medium)
-            action()
-        }) {
-            VStack(spacing: 4) {
+        VStack(spacing: 4) {
+            Button(action: {
+                HapticFeedback.impact(.medium)
+                action()
+            }) {
+                VStack(spacing: 4) {
                 // Badge в верхнем правом углу
                 HStack {
                 Spacer()
@@ -1134,66 +1218,68 @@ struct FamilyParentalControlCard: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(1)
                     .frame(height: 14)
-                
-                Spacer(minLength: 4)
-                
-                // Улучшенный toggle с визуальным индикатором
-                HStack(spacing: 4) {
-                    Circle()
-                        .fill(isEnabled ? Color.successGreen : Color.textTertiary)
-                        .frame(width: 8, height: 8)
-                    
-                    Text(isEnabled ? localizationManager.localized("toggle_on") : localizationManager.localized("toggle_off"))
-                        .font(.captionSmall)
-                        .fontWeight(.bold)
-                        .foregroundColor(isEnabled ? .successGreen : .textTertiary)
-                        .frame(width: 24)
-                    
-                    Button(action: {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            isEnabled.toggle()
-                        }
-                        HapticFeedback.impact(.medium)
-                    }) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(
-                                    LinearGradient(
-                                        colors: isEnabled ?
-                                            [Color(hex: "#8B5CF6"), Color(hex: "#A78BFA")] :
-                                            [Color.backgroundMedium, Color.backgroundMedium.opacity(0.5)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 40, height: 24)
-                            
-                            Circle()
-                                .fill(Color.white)
-                                .frame(width: 20, height: 20)
-                                .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
-                                .offset(x: isEnabled ? 8 : -8)
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
                 }
-                .frame(height: 24)
             }
-            .frame(height: 190)
-            .frame(maxWidth: .infinity)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 10)
-            .background(cardColor)
-            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
-            // Ободок только если включено (без захода на toggle)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .stroke(
-                        isEnabled ? Color.secondaryGold.opacity(0.5) : Color.clear,
-                        lineWidth: isEnabled ? 2 : 0
-                    )
-            )
+            .buttonStyle(PlainButtonStyle())
+
+            Spacer(minLength: 4)
+
+            // Отдельная зона toggle, чтобы не конфликтовать с тапом по карточке
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(isEnabled ? Color.successGreen : Color.textTertiary)
+                    .frame(width: 8, height: 8)
+
+                Text(isEnabled ? localizationManager.localized("toggle_on") : localizationManager.localized("toggle_off"))
+                    .font(.captionSmall)
+                    .fontWeight(.bold)
+                    .foregroundColor(isEnabled ? .successGreen : .textTertiary)
+                    .frame(width: 24)
+
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        isEnabled.toggle()
+                    }
+                    HapticFeedback.impact(.medium)
+                }) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(
+                                LinearGradient(
+                                    colors: isEnabled ?
+                                        [Color(hex: "#8B5CF6"), Color(hex: "#A78BFA")] :
+                                        [Color.backgroundMedium, Color.backgroundMedium.opacity(0.5)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 40, height: 24)
+
+                        Circle()
+                            .fill(Color.white)
+                            .frame(width: 20, height: 20)
+                            .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+                            .offset(x: isEnabled ? 8 : -8)
+                    }
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .frame(height: 24)
         }
+        .frame(height: 190)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 10)
+        .background(cardColor)
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+        // Ободок только если включено (без захода на toggle)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .stroke(
+                    isEnabled ? Color.secondaryGold.opacity(0.5) : Color.clear,
+                    lineWidth: isEnabled ? 2 : 0
+                )
+        )
         .buttonStyle(PlainButtonStyle())
         .cardShadow()
     }
@@ -1580,6 +1666,7 @@ struct FamilyTimeControlModal: View {
             // Загружаем статистику при открытии модала
             loadTimeStatistics()
         }
+        .withVisualLogger()
     }
     
     // Загрузка статистики времени из UserDefaults
@@ -1740,12 +1827,9 @@ struct FamilyMonitoringModal: View {
             // Загружаем статистику при открытии модала
             loadMonitoringStatistics()
         }
-        .onChange(of: isMessagesMonitoringEnabled) { newValue in
-            print("✅ Message monitoring: \(newValue ? "ON" : "OFF")")
-        }
-        .onChange(of: isScreenshotsEnabled) { newValue in
-            print("✅ Screenshots monitoring: \(newValue ? "ON" : "OFF")")
-        }
+        // UI-логи parental toggles централизованы в AdvancedProtectionSettingsScreen,
+        // чтобы не дублировать одинаковые записи в mini-log.
+        .withVisualLogger()
     }
     
     // Загрузка статистики мониторинга из UserDefaults
@@ -1885,6 +1969,11 @@ struct FamilyLocationModal: View {
             loadLocationStatistics()
         }
         .onChange(of: isLocationEnabledState) { newValue in
+            VisualLogger.shared.log(
+                "🔄 family_location_enabled = \(newValue)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             print("✅ Geolocation: \(newValue ? "ON" : "OFF")")
             if newValue {
                 // ✅ ИНТЕГРАЦИЯ: Запуск мониторинга при включении
@@ -1895,8 +1984,14 @@ struct FamilyLocationModal: View {
             }
         }
         .onChange(of: isSOSEnabled) { newValue in
+            VisualLogger.shared.log(
+                "🔄 family_sos_enabled = \(newValue)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             print("✅ SOS button: \(newValue ? "ON" : "OFF")")
         }
+        .withVisualLogger()
     }
     
     // ✅ ИНТЕГРАЦИЯ: Настройка LocationManager
@@ -2210,6 +2305,7 @@ struct FamilyReportsModal: View {
             // Загружаем статистику при открытии модала
             loadReportsStatistics()
         }
+        .withVisualLogger()
     }
     
     // Загрузка списка детей из family_members_list
@@ -2333,7 +2429,10 @@ struct FamilyAdditionalModal: View {
                     title: localizationManager.localized("family_youtube_filtering"),
                     description: localizationManager.localized("family_age_restriction"),
                     buttonTitle: localizationManager.localized("family_configure"),
-                    action: { showYouTubeSettings = true }
+                    action: {
+                        VisualLogger.shared.log("⚙️ Open YouTube settings", level: .info, category: "PARENTAL.UI")
+                        showYouTubeSettings = true
+                    }
                 )
                 
                 // 5. Режим "Homework mode" - Toggle Item
@@ -2390,8 +2489,14 @@ struct FamilyAdditionalModal: View {
             loadAdditionalStatistics()
         }
         .onChange(of: isHomeworkModeEnabled) { newValue in
+            VisualLogger.shared.log(
+                "🔄 homework_mode_enabled = \(newValue)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             print("✅ Homework mode: \(newValue ? "ON" : "OFF")")
         }
+        .withVisualLogger()
     }
     
     // Загрузка статистики дополнительных настроек из UserDefaults
@@ -3458,6 +3563,11 @@ struct ScreenTimeSettingsModal: View {
                     Button(action: {
                         HapticFeedback.impact(.medium)
                         isWeekdaySelected = true
+                        VisualLogger.shared.log(
+                            "🔄 screen_time_mode = weekdays",
+                            level: .info,
+                            category: "ADVANCED.UI"
+                        )
                     }) {
                         Text(localizationManager.localized("screen_time_weekdays"))
                             .font(.bodyBold)
@@ -3471,6 +3581,11 @@ struct ScreenTimeSettingsModal: View {
                     Button(action: {
                         HapticFeedback.impact(.medium)
                         isWeekdaySelected = false
+                        VisualLogger.shared.log(
+                            "🔄 screen_time_mode = weekends",
+                            level: .info,
+                            category: "ADVANCED.UI"
+                        )
                     }) {
                         Text(localizationManager.localized("screen_time_weekends"))
                             .font(.bodyBold)
@@ -3554,17 +3669,29 @@ struct ScreenTimeSettingsModal: View {
         }
         .id("screen_time_settings_lang_\(localizationManager.currentLanguage.rawValue)")
         .onChange(of: weekdayLimit) { newValue in
+            VisualLogger.shared.log(
+                "🎚️ screen_time_weekday_limit = \(Int(newValue)) min",
+                level: .info,
+                category: "ADVANCED.UI"
+            )
             print("✅ Weekday limit: \(Int(newValue)) min")
         }
         .onChange(of: weekendLimit) { newValue in
+            VisualLogger.shared.log(
+                "🎚️ screen_time_weekend_limit = \(Int(newValue)) min",
+                level: .info,
+                category: "ADVANCED.UI"
+            )
             print("✅ Weekend limit: \(Int(newValue)) min")
         }
+        .withVisualLogger()
     }
 }
 
 struct ScheduleSettingsModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    private let configurationService = ComponentConfigurationService.shared
     
     // ✅ BUILD 98: Статический DateFormatter для предотвращения рекурсии
     private static let timeFormatter: DateFormatter = {
@@ -3683,7 +3810,10 @@ struct ScheduleSettingsModal: View {
                     HapticFeedback.impact(.medium)
                     // ✅ BUILD 98: Используем статический DateFormatter для предотвращения рекурсии
                     print("✅ Schedule saved: weekdays \(Self.timeFormatter.string(from: weekdayStart.wrappedValue)) - \(Self.timeFormatter.string(from: weekdayEnd.wrappedValue)), weekends \(Self.timeFormatter.string(from: weekendStart.wrappedValue)) - \(Self.timeFormatter.string(from: weekendEnd.wrappedValue))")
-                    isPresented = false
+                    Task {
+                        await syncScheduleSettingsToServer()
+                        await MainActor.run { isPresented = false }
+                    }
                 }) {
                     Text(localizationManager.localized("schedule_save"))
                         .font(.bodyBold)
@@ -3711,12 +3841,40 @@ struct ScheduleSettingsModal: View {
                 weekendEndInterval = Date().timeIntervalSince1970
             }
         }
+        .withVisualLogger()
+    }
+
+    @MainActor
+    private func syncScheduleSettingsToServer() async {
+        let payload: [String: AnyCodable] = [
+            "scheduleWeekdayStart": AnyCodable(weekdayStartInterval),
+            "scheduleWeekdayEnd": AnyCodable(weekdayEndInterval),
+            "scheduleWeekendStart": AnyCodable(weekendStartInterval),
+            "scheduleWeekendEnd": AnyCodable(weekendEndInterval),
+            "scheduleIsWeekdaySelected": AnyCodable(isWeekdaySelected)
+        ]
+        VisualLogger.shared.log(
+            "🔵 ADVANCED.API schedule POST start",
+            level: .info,
+            category: "ADVANCED.API"
+        )
+        do {
+            let existing = try? await configurationService.getConfiguration(for: "parental_control_bot")
+            var merged = existing?.additionalSettings ?? [:]
+            payload.forEach { merged[$0.key] = $0.value }
+            let config = ComponentConfiguration(isEnabled: true, priority: .normal, additionalSettings: merged)
+            try await configurationService.saveConfiguration(componentId: "parental_control_bot", configuration: config)
+            VisualLogger.shared.log("✅ ADVANCED.API schedule POST ok", level: .info, category: "ADVANCED.API")
+        } catch {
+            VisualLogger.shared.log("❌ ADVANCED.API schedule POST failed: \(error.localizedDescription)", level: .error, category: "ADVANCED.API")
+        }
     }
 }
 
 struct SleepTimeSettingsModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    private let configurationService = ComponentConfigurationService.shared
     
     // ✅ BUILD 98: Статический DateFormatter для предотвращения рекурсии
     private static let timeFormatter: DateFormatter = {
@@ -3794,7 +3952,10 @@ struct SleepTimeSettingsModal: View {
                     HapticFeedback.impact(.medium)
                     // ✅ BUILD 98: Используем статический DateFormatter для предотвращения рекурсии
                     print("✅ Bedtime saved: \(Self.timeFormatter.string(from: bedtimeStart.wrappedValue)) - \(Self.timeFormatter.string(from: bedtimeEnd.wrappedValue)), emergency calls \(isEmergencyCallsEnabled ? "ON" : "OFF")")
-                    isPresented = false
+                    Task {
+                        await syncSleepSettingsToServer()
+                        await MainActor.run { isPresented = false }
+                    }
                 }) {
                     Text(localizationManager.localized("bedtime_save"))
                         .font(.bodyBold)
@@ -3817,7 +3978,37 @@ struct SleepTimeSettingsModal: View {
             }
         }
         .onChange(of: isEmergencyCallsEnabled) { newValue in
+            VisualLogger.shared.log(
+                "🔄 sleep_emergency_calls_enabled = \(newValue)",
+                level: .info,
+                category: "ADVANCED.UI"
+            )
             print("✅ Emergency calls: \(newValue ? "ON" : "OFF")")
+        }
+        .withVisualLogger()
+    }
+
+    @MainActor
+    private func syncSleepSettingsToServer() async {
+        let payload: [String: AnyCodable] = [
+            "sleepBedtimeStart": AnyCodable(bedtimeStartInterval),
+            "sleepBedtimeEnd": AnyCodable(bedtimeEndInterval),
+            "sleepEmergencyCallsEnabled": AnyCodable(isEmergencyCallsEnabled)
+        ]
+        VisualLogger.shared.log(
+            "🔵 ADVANCED.API sleep POST start",
+            level: .info,
+            category: "ADVANCED.API"
+        )
+        do {
+            let existing = try? await configurationService.getConfiguration(for: "parental_control_bot")
+            var merged = existing?.additionalSettings ?? [:]
+            payload.forEach { merged[$0.key] = $0.value }
+            let config = ComponentConfiguration(isEnabled: true, priority: .normal, additionalSettings: merged)
+            try await configurationService.saveConfiguration(componentId: "parental_control_bot", configuration: config)
+            VisualLogger.shared.log("✅ ADVANCED.API sleep POST ok", level: .info, category: "ADVANCED.API")
+        } catch {
+            VisualLogger.shared.log("❌ ADVANCED.API sleep POST failed: \(error.localizedDescription)", level: .error, category: "ADVANCED.API")
         }
     }
 }
@@ -3825,6 +4016,7 @@ struct SleepTimeSettingsModal: View {
 struct AppLimitsSettingsModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    private let configurationService = ComponentConfigurationService.shared
     
     // Сохранение лимитов приложений в UserDefaults
     private let limitsKey = "app_limits_settings"
@@ -3933,6 +4125,11 @@ struct AppLimitsSettingsModal: View {
                                 limit.limit = newValue
                                 // Автоматическое сохранение при изменении слайдера
                                 saveAppLimitForApp(app: limit.app, limit: newValue)
+                                VisualLogger.shared.log(
+                                    "🎚️ app_limit_\(limit.app) = \(Int(newValue)) min/day",
+                                    level: .info,
+                                    category: "ADVANCED.UI"
+                                )
                             }
                         ), in: 5...120, step: 5) {
                             Text(limit.app)
@@ -3960,7 +4157,10 @@ struct AppLimitsSettingsModal: View {
                     HapticFeedback.impact(.medium)
                     saveAppLimits()
                     print("✅ App limits saved: \(appLimits.count) apps")
-                isPresented = false
+                    Task {
+                        await syncAppLimitsToServer()
+                        await MainActor.run { isPresented = false }
+                    }
                 }) {
                     Text(localizationManager.localized("app_limits_save_all"))
                         .font(.bodyBold)
@@ -3975,6 +4175,30 @@ struct AppLimitsSettingsModal: View {
         .id("app_limits_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
             loadAppLimits()
+        }
+        .withVisualLogger()
+    }
+
+    @MainActor
+    private func syncAppLimitsToServer() async {
+        let serializableLimits = appLimits.map { ["app": $0.app, "limit": $0.limit] }
+        let payload: [String: AnyCodable] = [
+            "appLimits": AnyCodable(serializableLimits)
+        ]
+        VisualLogger.shared.log(
+            "🔵 ADVANCED.API appLimits POST start count=\(appLimits.count)",
+            level: .info,
+            category: "ADVANCED.API"
+        )
+        do {
+            let existing = try? await configurationService.getConfiguration(for: "parental_control_bot")
+            var merged = existing?.additionalSettings ?? [:]
+            payload.forEach { merged[$0.key] = $0.value }
+            let config = ComponentConfiguration(isEnabled: true, priority: .normal, additionalSettings: merged)
+            try await configurationService.saveConfiguration(componentId: "parental_control_bot", configuration: config)
+            VisualLogger.shared.log("✅ ADVANCED.API appLimits POST ok", level: .info, category: "ADVANCED.API")
+        } catch {
+            VisualLogger.shared.log("❌ ADVANCED.API appLimits POST failed: \(error.localizedDescription)", level: .error, category: "ADVANCED.API")
         }
     }
 }
@@ -3997,6 +4221,8 @@ struct GeofencesSettingsModal: View {
     @State private var newGeofenceName = ""
     @State private var newGeofenceAddress = ""
     @State private var newGeofenceRadius: Double = 100
+    @State private var showValidationAlert = false
+    @State private var validationAlertMessage = ""
     
     // Загрузка геозон из UserDefaults
     private func loadGeofences() {
@@ -4038,6 +4264,11 @@ struct GeofencesSettingsModal: View {
                             
                             Button(action: {
                                 HapticFeedback.impact(.medium)
+                                VisualLogger.shared.log(
+                                    "🗑️ geofence_remove name=\(geofence.name)",
+                                    level: .info,
+                                    category: "PARENTAL.UI"
+                                )
                                 geofences.removeAll { $0.id == geofence.id }
                                 saveGeofences()
                             }) {
@@ -4101,6 +4332,13 @@ struct GeofencesSettingsModal: View {
                                 Text(localizationManager.localized("geofences_radius"))
                             }
                             .tint(.secondaryGold)
+                            .onChange(of: newGeofenceRadius) { newValue in
+                                VisualLogger.shared.log(
+                                    "🎚️ geofence_radius = \(Int(newValue)) m",
+                                    level: .info,
+                                    category: "PARENTAL.UI"
+                                )
+                            }
                         }
                         .padding(Spacing.m)
                         .background(Color.backgroundMedium.opacity(0.3))
@@ -4122,7 +4360,28 @@ struct GeofencesSettingsModal: View {
                             
                             Button(action: {
                                 HapticFeedback.impact(.medium)
-                                geofences.append(GeofenceItem(name: newGeofenceName, address: newGeofenceAddress, radius: newGeofenceRadius))
+                                let trimmedName = newGeofenceName.trimmingCharacters(in: .whitespacesAndNewlines)
+                                let trimmedAddress = newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines)
+                                
+                                guard !trimmedName.isEmpty, !trimmedAddress.isEmpty else {
+                                    validationAlertMessage = localizationManager.currentLanguage == .russian
+                                        ? "Введите название и адрес геозоны"
+                                        : "Enter geofence name and address"
+                                    showValidationAlert = true
+                                    VisualLogger.shared.log(
+                                        "⚠️ geofence_add_validation_failed nameEmpty=\(trimmedName.isEmpty) addressEmpty=\(trimmedAddress.isEmpty)",
+                                        level: .warning,
+                                        category: "PARENTAL.UI"
+                                    )
+                                    return
+                                }
+                                
+                                geofences.append(GeofenceItem(name: trimmedName, address: trimmedAddress, radius: newGeofenceRadius))
+                                VisualLogger.shared.log(
+                                    "➕ geofence_add name=\(trimmedName) radius=\(Int(newGeofenceRadius))",
+                                    level: .info,
+                                    category: "PARENTAL.UI"
+                                )
                                 newGeofenceName = ""
                                 newGeofenceAddress = ""
                                 newGeofenceRadius = 100
@@ -4172,6 +4431,12 @@ struct GeofencesSettingsModal: View {
         .onAppear {
             loadGeofences()
         }
+        .alert(localizationManager.currentLanguage == .russian ? "Проверьте поля" : "Check fields", isPresented: $showValidationAlert) {
+            Button(localizationManager.currentLanguage == .russian ? "OK" : "OK", role: .cancel) {}
+        } message: {
+            Text(validationAlertMessage)
+        }
+        .withVisualLogger()
     }
 }
 
@@ -4973,7 +5238,12 @@ struct YouTubeSettingsModal: View {
                 
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                isPresented = false
+                    VisualLogger.shared.log(
+                        "💾 youtube_settings_save safeMode=\(isSafeModeEnabled) ageEnabled=\(isAgeRestrictionEnabled) age=\(ageRestriction) limit=\(Int(timeLimit))",
+                        level: .success,
+                        category: "PARENTAL.UI"
+                    )
+                    isPresented = false
                 }) {
                     Text(localizationManager.localized("youtube_save"))
                         .font(.bodyBold)
@@ -4987,17 +5257,38 @@ struct YouTubeSettingsModal: View {
         }
         .id("youtube_settings_lang_\(localizationManager.currentLanguage.rawValue)")
         .onChange(of: isSafeModeEnabled) { newValue in
+            VisualLogger.shared.log(
+                "🔄 youtube_safe_mode = \(newValue)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             print("✅ YouTube Safe Mode: \(newValue ? "ON" : "OFF")")
         }
         .onChange(of: isAgeRestrictionEnabled) { newValue in
+            VisualLogger.shared.log(
+                "🔄 youtube_age_restriction_enabled = \(newValue)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             print("✅ YouTube Age Restriction: \(newValue ? "ON" : "OFF")")
         }
         .onChange(of: ageRestriction) { newValue in
+            VisualLogger.shared.log(
+                "🔄 youtube_age_restriction = \(newValue)+",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             print("✅ YouTube Age Restriction: \(newValue)+")
         }
         .onChange(of: timeLimit) { newValue in
+            VisualLogger.shared.log(
+                "🎚️ youtube_time_limit = \(Int(newValue)) min/day",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             print("✅ YouTube Time Limit: \(Int(newValue)) min/day")
         }
+        .withVisualLogger()
     }
 }
 
@@ -5114,6 +5405,11 @@ struct FamilyParentalControlSettingsModal: View {
     // Применение правил при изменении возраста
     private func applyAgeBasedRules() {
         guard isAutomatedRulesEnabled else { return }
+        VisualLogger.shared.log(
+            "🔵 AUTO RULES apply start child=\(selectedChildName) age=\(selectedAgeGroup.rawValue)",
+            level: .info,
+            category: "PARENTAL.API"
+        )
         
         // Сохраняем настройки в UserDefaults
         let rules: [String: Any] = [
@@ -5180,8 +5476,18 @@ struct FamilyParentalControlSettingsModal: View {
         ) { success, error in
             if success {
                 print("✅ Rules applied via API for \(selectedChildName) [\(selectedChildId)]")
+                VisualLogger.shared.log(
+                    "✅ AUTO RULES apply ok child=\(selectedChildName) age=\(ageGroupString)",
+                    level: .success,
+                    category: "PARENTAL.API"
+                )
             } else {
                 print("⚠️ Failed to apply rules: \(error ?? "Unknown error")")
+                VisualLogger.shared.log(
+                    "❌ AUTO RULES apply failed: \(error ?? "Unknown error")",
+                    level: .error,
+                    category: "PARENTAL.API"
+                )
             }
         }
     }
@@ -5273,6 +5579,11 @@ struct FamilyParentalControlSettingsModal: View {
                 if isAutomatedRulesEnabled {
                     Button(action: {
                         HapticFeedback.impact(.medium)
+                        VisualLogger.shared.log(
+                            "🟡 AUTO RULES manual apply tapped",
+                            level: .info,
+                            category: "PARENTAL.UI"
+                        )
                         applyAgeBasedRules()
                     }) {
                         Text(localizationManager.localized("family_apply_rules"))
@@ -5296,12 +5607,22 @@ struct FamilyParentalControlSettingsModal: View {
         }
         .onChange(of: selectedChildId) { _ in
             syncSelectedChildName()
+            VisualLogger.shared.log(
+                "🔄 auto_rules_child = \(selectedChildName)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             // Применяем правила при смене ребёнка
             if isAutomatedRulesEnabled {
                 applyAgeBasedRules()
             }
         }
         .onChange(of: isAutomatedRulesEnabled) { newValue in
+            VisualLogger.shared.log(
+                "🔄 parental_automated_rules_enabled = \(newValue)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             if newValue {
                 // Применяем правила при включении
                 applyAgeBasedRules()
@@ -5315,6 +5636,7 @@ struct FamilyParentalControlSettingsModal: View {
             }
             .environmentObject(localizationManager)
         }
+        .withVisualLogger()
     }
     
     // ✅ ГИБРИД: сначала кэш (быстро), потом сервер (актуально)
@@ -5411,6 +5733,11 @@ struct AutomatedRulesModal: View {
                 .onChange(of: isEnabled) { newValue in
                     // Применяем правила при изменении toggle
                     print("✅ AutomatedRulesModal: rules \(newValue ? "ENABLED" : "DISABLED")")
+                    VisualLogger.shared.log(
+                        "🔄 automated_rules_modal_enabled = \(newValue)",
+                        level: .info,
+                        category: "PARENTAL.UI"
+                    )
                     if newValue {
                         onRulesChanged?()
                     }
@@ -5453,7 +5780,13 @@ struct AutomatedRulesModal: View {
         .onAppear {
             // Логируем текущее состояние при открытии
             print("✅ AutomatedRulesModal opened: age group \(ageGroup.rawValue), rules state \(isEnabled ? "ON" : "OFF")")
+            VisualLogger.shared.log(
+                "⚙️ AutomatedRulesModal opened age=\(ageGroup.rawValue) enabled=\(isEnabled)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
         }
+        .withVisualLogger()
     }
     
     private var ageBasedFilteringExplanation: some View {
@@ -5772,14 +6105,30 @@ struct FamilyBypassProtectionModal: View {
             dnsProtectionManager.loadStatus()
         }
         .onChange(of: isIncognitoDetectionEnabled) { newValue in
+            VisualLogger.shared.log(
+                "🔄 bypass_incognito_enabled = \(newValue)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             applyBypassProtection()
         }
         .onChange(of: isTorDetectionEnabled) { newValue in
+            VisualLogger.shared.log(
+                "🔄 bypass_tor_enabled = \(newValue)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             applyBypassProtection()
         }
         .onChange(of: isProxyDetectionEnabled) { newValue in
+            VisualLogger.shared.log(
+                "🔄 bypass_proxy_enabled = \(newValue)",
+                level: .info,
+                category: "PARENTAL.UI"
+            )
             applyBypassProtection()
         }
+        .withVisualLogger()
     }
     
     private func loadBypassStatistics() {
