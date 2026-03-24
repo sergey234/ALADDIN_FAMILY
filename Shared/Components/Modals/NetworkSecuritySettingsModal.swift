@@ -49,7 +49,7 @@ struct NetworkSecuritySettingsModal: View {
                                 enabled: newValue
                             )
                         }
-                        print("🔄 Network: blockUnsafeNetworks = \(newValue)")
+                        vLog("🔄 blockUnsafeNetworks = \(newValue)")
                     }
 
                     ToggleRow(
@@ -64,7 +64,7 @@ struct NetworkSecuritySettingsModal: View {
                                 enabled: newValue
                             )
                         }
-                        print("🔄 Network: warnOnPublicWiFi = \(newValue)")
+                        vLog("🔄 warnOnPublicWiFi = \(newValue)")
                     }
 
                     ToggleRow(
@@ -79,7 +79,7 @@ struct NetworkSecuritySettingsModal: View {
                                 enabled: newValue
                             )
                         }
-                        print("🔄 Network: autoConnectVPN = \(newValue)")
+                        vLog("🔄 autoConnectVPN = \(newValue)")
                     }
 
                     ToggleRow(
@@ -94,7 +94,7 @@ struct NetworkSecuritySettingsModal: View {
                                 enabled: newValue
                             )
                         }
-                        print("🔄 Network: blockTracking = \(newValue)")
+                        vLog("🔄 blockTracking = \(newValue)")
                     }
 
                     ToggleRow(
@@ -109,7 +109,7 @@ struct NetworkSecuritySettingsModal: View {
                                 enabled: newValue
                             )
                         }
-                        print("🔄 Network: encryptTraffic = \(newValue)")
+                        vLog("🔄 encryptTraffic = \(newValue)")
                     }
 
                     ToggleRow(
@@ -124,14 +124,16 @@ struct NetworkSecuritySettingsModal: View {
                                 enabled: newValue
                             )
                         }
-                        print("🔄 Network: firewallEnabled = \(newValue)")
+                        vLog("🔄 firewallEnabled = \(newValue)")
                     }
                 }
             }
         }
         .onAppear {
+            vLog("🛠️ Open settings modal")
             loadSettings()
         }
+        .withVisualLogger()
     }
     
     // ✅ Загрузка настроек при открытии через API
@@ -157,12 +159,12 @@ struct NetworkSecuritySettingsModal: View {
                     encryptTraffic = newEncryptTraffic
                     firewallEnabled = newFirewallEnabled
 
-                    print("✅ NetworkSecuritySettingsModal: Настройки загружены из API")
+                    vLog("✅ Settings loaded from API", level: .success)
                 }
             } catch {
                 // 404 или ошибка сети - используем дефолты
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
-                print("⚠️ NetworkSecuritySettingsModal: Настройки не найдены (404), используются дефолты: \(error.localizedDescription)")
+                vLog("⚠️ Load failed, defaults are used: \(error.localizedDescription)", level: .warning)
             }
             // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
             isLoading = false
@@ -174,6 +176,7 @@ struct NetworkSecuritySettingsModal: View {
     private func saveSettings() {
         // Сначала закрываем окно для отзывчивости UI
         isPresented = false
+        vLog("💾 Save requested")
         
         // Затем выполняем сохранение асинхронно
         Task { @MainActor in
@@ -199,12 +202,20 @@ struct NetworkSecuritySettingsModal: View {
                 )
 
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                print("✅ NetworkSecuritySettingsModal: Настройки сохранены через API")
+                vLog("✅ Settings saved via API", level: .success)
             } catch {
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                print("⚠️ NetworkSecuritySettingsModal: Ошибка сохранения, но кэшировано: \(error.localizedDescription)")
+                vLog("⚠️ Save failed, local cache kept: \(error.localizedDescription)", level: .warning)
             }
         }
+    }
+
+    private func vLog(_ message: String, level: VisualLogger.LogLevel = .info) {
+        VisualLogger.shared.log(
+            message,
+            level: level,
+            category: "GEAR.\(componentId)"
+        )
     }
 }
 

@@ -549,6 +549,7 @@ struct JWTSubscriptionLimits: Codable {
 struct UserProfile: Codable {
     let id: String
     let name: String
+    let isGuest: Bool?
     let email: String?
     let phone: String?
     let registrationDate: String?
@@ -561,6 +562,24 @@ struct UserProfile: Codable {
     // ✅ КОМПЬЮТЕД ПРОПЕРТИ: Безопасные значения по умолчанию для опциональных полей
     var safeEmail: String {
         return email ?? ""
+    }
+
+    var safeIsGuest: Bool {
+        return isGuest ?? false
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case isGuest = "is_guest"
+        case email
+        case phone
+        case registrationDate
+        case subscriptionType
+        case subscriptionEndDate
+        case threatsBlocked
+        case familyMembers
+        case devices
     }
     
     var safeRegistrationDate: String {

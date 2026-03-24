@@ -20,6 +20,9 @@ logger = logging.getLogger(__name__)
 # JWT Configuration
 SECRET_KEY = os.getenv("JWT_SECRET", "aladdin-super-secret-key-change-in-production")
 ALGORITHM = "HS256"
+# JWT TTL policy:
+# - This token is used for device/subscription continuity (long-lived flow).
+# - Operational access/refresh TTL is defined separately in app/routers/auth_router.py (24h/30d).
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 365  # 1 year
 
 

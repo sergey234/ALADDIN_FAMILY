@@ -260,14 +260,23 @@ class APIServiceAdapter: APIService {
  * Простая реализация PositioningService
  */
 class PositioningServiceAdapter: PositioningService {
-    var currentSystem: PositioningSystem = .gps
-    var selectedSystem: PositioningSystem = .gps
-    var currentRegionName: String = "Russia"
+    private let service = PositioningSystemService.shared
+
+    var currentSystem: PositioningSystem {
+        service.currentSystem
+    }
+
+    var selectedSystem: PositioningSystem {
+        get { service.selectedSystem }
+        set { service.saveSelectedSystem(newValue) }
+    }
+
+    var currentRegionName: String {
+        service.currentRegionName
+    }
 
     func saveSelectedSystem(_ system: PositioningSystem) {
-        selectedSystem = system
-        // Save to UserDefaults or other storage
-        UserDefaults.standard.set(system.rawValue, forKey: "selected_positioning_system")
+        service.saveSelectedSystem(system)
     }
 }
 

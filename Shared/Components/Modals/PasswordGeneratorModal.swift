@@ -75,7 +75,7 @@ struct PasswordGeneratorModal: View {
                                     settingKey: "passwordLength",
                                     enabled: true // Для слайдера всегда true, значение в метаданных
                                 )
-                                print("🔄 PasswordGenerator: passwordLength = \(newValue)")
+                                vLog("🔄 passwordLength = \(newValue)")
                             }
                     }
                     .padding(Spacing.m)
@@ -96,7 +96,7 @@ struct PasswordGeneratorModal: View {
                                 settingKey: "includeUppercase",
                                 enabled: newValue
                             )
-                            print("🔄 PasswordGenerator: includeUppercase = \(newValue)")
+                            vLog("🔄 includeUppercase = \(newValue)")
                         }
 
                         ToggleRow(
@@ -109,7 +109,7 @@ struct PasswordGeneratorModal: View {
                                 settingKey: "includeLowercase",
                                 enabled: newValue
                             )
-                            print("🔄 PasswordGenerator: includeLowercase = \(newValue)")
+                            vLog("🔄 includeLowercase = \(newValue)")
                         }
 
                         ToggleRow(
@@ -122,7 +122,7 @@ struct PasswordGeneratorModal: View {
                                 settingKey: "includeNumbers",
                                 enabled: newValue
                             )
-                            print("🔄 PasswordGenerator: includeNumbers = \(newValue)")
+                            vLog("🔄 includeNumbers = \(newValue)")
                         }
 
                         ToggleRow(
@@ -135,7 +135,7 @@ struct PasswordGeneratorModal: View {
                                 settingKey: "includeSpecial",
                                 enabled: newValue
                             )
-                            print("🔄 PasswordGenerator: includeSpecial = \(newValue)")
+                            vLog("🔄 includeSpecial = \(newValue)")
                         }
                     }
                 }
@@ -210,8 +210,10 @@ struct PasswordGeneratorModal: View {
             }
         }
         .onAppear {
+            vLog("🛠️ Open settings modal")
             loadSettings()
         }
+        .withVisualLogger()
     }
     
     private var canGenerate: Bool {
@@ -220,6 +222,7 @@ struct PasswordGeneratorModal: View {
     
     private func generatePassword() {
         isGenerating = true
+        vLog("🔐 Generate password requested")
         
         // Имитация генерации (в реальности будет API вызов)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -244,6 +247,7 @@ struct PasswordGeneratorModal: View {
             generatedPassword = password
             isGenerating = false
             HapticFeedback.notification(.success)
+            vLog("✅ Password generated with length \(password.count)", level: .success)
         }
     }
     
@@ -272,7 +276,7 @@ struct PasswordGeneratorModal: View {
                     }
                 }
             } catch {
-                print("⚠️ PasswordGeneratorModal: Ошибка загрузки настроек: \(error)")
+                vLog("⚠️ Load failed: \(error.localizedDescription)", level: .warning)
             }
             await MainActor.run {
                 isLoading = false
@@ -282,6 +286,7 @@ struct PasswordGeneratorModal: View {
     
     // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
+        vLog("💾 Save requested")
         Task {
             do {
                 // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
@@ -310,13 +315,23 @@ struct PasswordGeneratorModal: View {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     isPresented = false
                 }
+                vLog("✅ Settings saved via API", level: .success)
             } catch {
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     isPresented = false
                 }
+                vLog("⚠️ Save failed, UI closed with cached values", level: .warning)
             }
         }
+    }
+
+    private func vLog(_ message: String, level: VisualLogger.LogLevel = .info) {
+        VisualLogger.shared.log(
+            message,
+            level: level,
+            category: "GEAR.\(componentId)"
+        )
     }
 }
 

@@ -26,6 +26,7 @@ struct NetworkProtectionScreen: View {
     @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
     @ObservedObject private var antivirusManager = AntivirusManager.shared
     @StateObject private var viewModel = NetworkProtectionViewModel()
+    private let configurationService = ComponentConfigurationService.shared
     @State private var showingSettings = false
     @State private var showPasswordGenerator = false
     @State private var showQuarantineDetails = false
@@ -41,6 +42,7 @@ struct NetworkProtectionScreen: View {
     @AppStorage("antivirus_real_time_scanning") private var realTimeScanning = true
     @AppStorage("antivirus_scan_downloads") private var scanDownloads = true
     @AppStorage("antivirus_quarantine_threats") private var quarantineThreats = true
+    @State private var isApplyingAntivirusQuickSettings = false
     
     // Структура для истории сканирований
     struct ScanHistoryItem: Identifiable {
@@ -620,6 +622,7 @@ struct NetworkProtectionScreen: View {
         }
         .onAppear {
             loadQuarantineStats()
+            loadAntivirusQuickSettingsFromServer()
         }
     }
     
@@ -634,6 +637,13 @@ struct NetworkProtectionScreen: View {
                 Spacer()
                 Toggle("", isOn: $antivirusEnabled)
                     .toggleStyle(SwitchToggleStyle(tint: .successGreen))
+                    .onChange(of: antivirusEnabled) { newValue in
+                        VisualLogger.shared.log(
+                            "🔄 Antivirus enabled = \(newValue)",
+                            level: .info,
+                            category: "ANTIVIRUS.UI"
+                        )
+                    }
             }
             
             // Stats Grid - Статистика
@@ -688,6 +698,11 @@ struct NetworkProtectionScreen: View {
             
             // Scan Button - Кнопка сканирования
             Button(action: {
+                VisualLogger.shared.log(
+                    "▶️ Start antivirus scan tapped",
+                    level: .info,
+                    category: "ANTIVIRUS.UI"
+                )
                 Task {
                     await performQuickScan()
                 }
@@ -943,16 +958,46 @@ struct NetworkProtectionScreen: View {
                     title: localizationManager.localized("malware_detection.real_time_scanning"),
                     isOn: $realTimeScanning
                 )
+                .onChange(of: realTimeScanning) { newValue in
+                    VisualLogger.shared.log(
+                        "🔄 realTimeScanning = \(newValue)",
+                        level: .info,
+                        category: "ANTIVIRUS.UI"
+                    )
+                    if !isApplyingAntivirusQuickSettings {
+                        syncAntivirusQuickSettingsToServer()
+                    }
+                }
                 
                 ToggleRow(
                     title: localizationManager.localized("malware_detection.scan_downloads"),
                     isOn: $scanDownloads
                 )
+                .onChange(of: scanDownloads) { newValue in
+                    VisualLogger.shared.log(
+                        "🔄 scanDownloads = \(newValue)",
+                        level: .info,
+                        category: "ANTIVIRUS.UI"
+                    )
+                    if !isApplyingAntivirusQuickSettings {
+                        syncAntivirusQuickSettingsToServer()
+                    }
+                }
                 
                 ToggleRow(
                     title: localizationManager.localized("malware_detection.quarantine_threats"),
                     isOn: $quarantineThreats
                 )
+                .onChange(of: quarantineThreats) { newValue in
+                    VisualLogger.shared.log(
+                        "🔄 quarantineThreats = \(newValue)",
+                        level: .info,
+                        category: "ANTIVIRUS.UI"
+                    )
+                    if !isApplyingAntivirusQuickSettings {
+                        syncAntivirusQuickSettingsToServer()
+                    }
+                }
             }
         }
     }
@@ -1003,6 +1048,86 @@ struct NetworkProtectionScreen: View {
                 quarantineActiveFiles = stats.activeFiles
                 quarantineSize = stats.quarantineSize
                 isLoadingQuarantine = false
+            }
+        }
+    }
+
+    /// Загружает quick-настройки антивируса из server component configuration.
+    /// Используется guard-флаг, чтобы избежать лишней обратной синхронизации в onChange.
+    private func loadAntivirusQuickSettingsFromServer() {
+        Task {
+            do {
+                let config = try await configurationService.getConfiguration(for: "malware_detection_agent")
+                let settings = config.additionalSettings ?? [:]
+
+                let loadedRealTime = (settings["realTimeScanning"]?.value as? Bool) ?? realTimeScanning
+                let loadedScanDownloads = (settings["scanDownloads"]?.value as? Bool) ?? scanDownloads
+                let loadedQuarantine = (settings["quarantineThreats"]?.value as? Bool) ?? quarantineThreats
+
+                await MainActor.run {
+                    isApplyingAntivirusQuickSettings = true
+                    realTimeScanning = loadedRealTime
+                    scanDownloads = loadedScanDownloads
+                    quarantineThreats = loadedQuarantine
+                    isApplyingAntivirusQuickSettings = false
+                }
+
+                VisualLogger.shared.log(
+                    "✅ Antivirus quick settings loaded from server",
+                    level: .success,
+                    category: "ANTIVIRUS.API"
+                )
+            } catch {
+                VisualLogger.shared.log(
+                    "⚠️ Antivirus quick settings load failed: \(error.localizedDescription)",
+                    level: .warning,
+                    category: "ANTIVIRUS.API"
+                )
+            }
+        }
+    }
+
+    /// Сохраняет только quick-настройки, но с merge текущих server settings,
+    /// чтобы не потерять остальные ключи конфигурации malware_detection_agent.
+    private func syncAntivirusQuickSettingsToServer() {
+        let currentRealTime = realTimeScanning
+        let currentScanDownloads = scanDownloads
+        let currentQuarantine = quarantineThreats
+
+        Task {
+            do {
+                let existing = try await configurationService.getConfiguration(for: "malware_detection_agent")
+                var mergedSettings = existing.additionalSettings ?? [:]
+                mergedSettings["realTimeScanning"] = AnyCodable(currentRealTime)
+                mergedSettings["scanDownloads"] = AnyCodable(currentScanDownloads)
+                mergedSettings["quarantineThreats"] = AnyCodable(currentQuarantine)
+
+                let mergedConfig = ComponentConfiguration(
+                    isEnabled: existing.isEnabled,
+                    priority: existing.priority,
+                    additionalSettings: mergedSettings,
+                    messengerSettings: existing.messengerSettings,
+                    monitoringSettings: existing.monitoringSettings,
+                    emergencySettings: existing.emergencySettings,
+                    privacySettings: existing.privacySettings
+                )
+
+                try await configurationService.saveConfiguration(
+                    componentId: "malware_detection_agent",
+                    configuration: mergedConfig
+                )
+
+                VisualLogger.shared.log(
+                    "✅ Antivirus quick settings synced to server",
+                    level: .success,
+                    category: "ANTIVIRUS.API"
+                )
+            } catch {
+                VisualLogger.shared.log(
+                    "❌ Antivirus quick settings sync failed: \(error.localizedDescription)",
+                    level: .error,
+                    category: "ANTIVIRUS.API"
+                )
             }
         }
     }

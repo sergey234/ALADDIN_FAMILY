@@ -40,6 +40,11 @@ struct PositioningSystemPickerView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
+                        VisualLogger.shared.log(
+                            "✅ Positioning saved = \(selectedSystem.rawValue)",
+                            level: .success,
+                            category: "SETTINGS.POSITIONING"
+                        )
                         dismiss()
                     }) {
                         Text(localizationManager.localized("common_done"))
@@ -48,6 +53,7 @@ struct PositioningSystemPickerView: View {
                 }
             }
         }
+        .withVisualLogger()
     }
     
     // MARK: - Current System Info
@@ -114,6 +120,11 @@ struct PositioningSystemPickerView: View {
     
     private func systemRow(system: PositioningSystem) -> some View {
         Button(action: {
+            VisualLogger.shared.log(
+                "🛰️ Positioning select = \(system.rawValue)",
+                level: .info,
+                category: "SETTINGS.POSITIONING"
+            )
             selectedSystem = system
         }) {
             HStack {

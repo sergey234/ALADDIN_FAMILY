@@ -99,6 +99,9 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """Создание JWT access token"""
+    # JWT TTL policy for operational auth flow:
+    # - access token: short-lived (typically 24h at call sites)
+    # - refresh token: long enough for rotation (30d, see create_refresh_token)
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta

@@ -68,6 +68,11 @@ struct ComponentToggleCard: View {
                 set: { newValue in
                     // ВАЖНО: не делаем "двойное переключение".
                     // Источник истины — binding, а onToggle получает целевое значение и сохраняет его.
+                    VisualLogger.shared.log(
+                        "🔄 \(componentId) = \(newValue)",
+                        level: .info,
+                        category: "ADVANCED.UI"
+                    )
                     isEnabled = newValue
                     onToggle(newValue)
                 }

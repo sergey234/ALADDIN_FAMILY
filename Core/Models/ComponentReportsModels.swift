@@ -473,6 +473,56 @@ struct LocationStats: Codable {
     let allowedRequests: Int
     let modifiedRequests: Int
     let currentAccuracy: LocationAccuracy
+    
+    enum CodingKeys: String, CodingKey {
+        case blockedRequests
+        case allowedRequests
+        case modifiedRequests
+        case currentAccuracy
+        // Compat keys from reports_compat backend
+        case blocked
+        case allowed
+        case total
+    }
+    
+    init(blockedRequests: Int, allowedRequests: Int, modifiedRequests: Int, currentAccuracy: LocationAccuracy) {
+        self.blockedRequests = blockedRequests
+        self.allowedRequests = allowedRequests
+        self.modifiedRequests = modifiedRequests
+        self.currentAccuracy = currentAccuracy
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        let blocked = try container.decodeIfPresent(Int.self, forKey: .blockedRequests)
+            ?? container.decodeIfPresent(Int.self, forKey: .blocked)
+            ?? 0
+        
+        let allowed = try container.decodeIfPresent(Int.self, forKey: .allowedRequests)
+            ?? container.decodeIfPresent(Int.self, forKey: .allowed)
+            ?? 0
+        
+        let modified = try container.decodeIfPresent(Int.self, forKey: .modifiedRequests)
+            ?? max(0, (try container.decodeIfPresent(Int.self, forKey: .total) ?? (blocked + allowed)) - blocked - allowed)
+        
+        let accuracy = try container.decodeIfPresent(LocationAccuracy.self, forKey: .currentAccuracy) ?? .low
+        
+        self.init(
+            blockedRequests: blocked,
+            allowedRequests: allowed,
+            modifiedRequests: modified,
+            currentAccuracy: accuracy
+        )
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(blockedRequests, forKey: .blockedRequests)
+        try container.encode(allowedRequests, forKey: .allowedRequests)
+        try container.encode(modifiedRequests, forKey: .modifiedRequests)
+        try container.encode(currentAccuracy, forKey: .currentAccuracy)
+    }
 }
 
 // Data Cleanup

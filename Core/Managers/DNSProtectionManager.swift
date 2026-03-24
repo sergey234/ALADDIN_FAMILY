@@ -44,13 +44,8 @@ class DNSProtectionManager: ObservableObject {
         APIService.shared.getDNSConfig(childId: childId) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
-                case .success(let response):
-                    if let config = response.data {
-                        self?.setupDNSProfile(config: config)
-                    } else {
-                        self?.isLoading = false
-                        self?.lastError = "Конфигурация DNS пуста"
-                    }
+                case .success(let config):
+                    self?.setupDNSProfile(config: config)
                 case .failure(let error):
                     self?.isLoading = false
                     self?.lastError = "Ошибка получения конфига: \(error.localizedDescription)"

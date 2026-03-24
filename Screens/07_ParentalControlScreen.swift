@@ -240,6 +240,7 @@ struct ParentalControlScreen: View {
                 print("🔍 DEBUG: actualBalance обновлён до \(actualBalance)")
             }
         }
+        .withVisualLogger()
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("parental_lang_\(localizationManager.currentLanguage.rawValue)")
     }
@@ -475,7 +476,13 @@ struct ParentalControlScreen: View {
                         cardColor: .red.opacity(0.2),
                         borderColor: .red.opacity(0.4),
                         badgeColor: contentBlockerManager.isEnabled ? .successGreen : .warningOrange,
-                        isEnabled: $isContentBlockEnabled,
+                        isEnabled: Binding(
+                            get: { isContentBlockEnabled },
+                            set: { newValue in
+                                isContentBlockEnabled = newValue
+                                VisualLogger.shared.log("🔄 family_content_block_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                            }
+                        ),
                         action: { showContentBlockModal = true }
                     )
                     
@@ -488,7 +495,13 @@ struct ParentalControlScreen: View {
                         cardColor: .blue.opacity(0.2),
                         borderColor: .blue.opacity(0.4),
                         badgeColor: .warningOrange,
-                        isEnabled: $isTimeControlEnabled,
+                        isEnabled: Binding(
+                            get: { isTimeControlEnabled },
+                            set: { newValue in
+                                isTimeControlEnabled = newValue
+                                VisualLogger.shared.log("🔄 family_time_control_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                            }
+                        ),
                         action: { showTimeControlModal = true }
                     )
                     
@@ -501,7 +514,13 @@ struct ParentalControlScreen: View {
                         cardColor: .purple.opacity(0.2),
                         borderColor: .purple.opacity(0.4),
                         badgeColor: .successGreen,
-                        isEnabled: $isMonitoringEnabled,
+                        isEnabled: Binding(
+                            get: { isMonitoringEnabled },
+                            set: { newValue in
+                                isMonitoringEnabled = newValue
+                                VisualLogger.shared.log("🔄 family_monitoring_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                            }
+                        ),
                         action: { showMonitoringModal = true }
                     )
                     
@@ -514,7 +533,13 @@ struct ParentalControlScreen: View {
                         cardColor: .green.opacity(0.2),
                         borderColor: .green.opacity(0.4),
                         badgeColor: .successGreen,
-                        isEnabled: $isLocationEnabled,
+                        isEnabled: Binding(
+                            get: { isLocationEnabled },
+                            set: { newValue in
+                                isLocationEnabled = newValue
+                                VisualLogger.shared.log("🔄 family_location_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                            }
+                        ),
                         action: { showLocationModal = true }
                     )
                     
@@ -527,7 +552,13 @@ struct ParentalControlScreen: View {
                         cardColor: .orange.opacity(0.2),
                         borderColor: .orange.opacity(0.4),
                         badgeColor: .dangerRed,
-                        isEnabled: $isReportsEnabled,
+                        isEnabled: Binding(
+                            get: { isReportsEnabled },
+                            set: { newValue in
+                                isReportsEnabled = newValue
+                                VisualLogger.shared.log("🔄 family_reports_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                            }
+                        ),
                         action: { showReportsModal = true }
                     )
                     
@@ -540,7 +571,13 @@ struct ParentalControlScreen: View {
                         cardColor: .gray.opacity(0.2),
                         borderColor: .gray.opacity(0.4),
                         badgeColor: .warningOrange,
-                        isEnabled: $isAdditionalEnabled,
+                        isEnabled: Binding(
+                            get: { isAdditionalEnabled },
+                            set: { newValue in
+                                isAdditionalEnabled = newValue
+                                VisualLogger.shared.log("🔄 family_additional_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                            }
+                        ),
                         action: { showAdditionalModal = true }
                     )
                     
@@ -553,7 +590,13 @@ struct ParentalControlScreen: View {
                         cardColor: Color.blue.opacity(0.2),
                         borderColor: Color.blue.opacity(0.4),
                         badgeColor: bypassAttemptsToday > 0 ? .dangerRed : .successGreen,
-                        isEnabled: $isBypassProtectionEnabled,
+                        isEnabled: Binding(
+                            get: { isBypassProtectionEnabled },
+                            set: { newValue in
+                                isBypassProtectionEnabled = newValue
+                                VisualLogger.shared.log("🔄 family_bypass_protection_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                            }
+                        ),
                         action: { showBypassProtectionModal = true }
                     )
                 }
@@ -1043,11 +1086,12 @@ struct ParentalControlCard: View {
     let action: () -> Void
     
     var body: some View {
-        Button(action: {
-            HapticFeedback.impact(.medium)
-            action()
-        }) {
-            VStack(spacing: Spacing.xs) {
+        VStack(spacing: Spacing.xs) {
+            Button(action: {
+                HapticFeedback.impact(.medium)
+                action()
+            }) {
+                VStack(spacing: Spacing.xs) {
                 // Badge в верхнем правом углу
                 HStack {
                     Spacer()
@@ -1091,33 +1135,51 @@ struct ParentalControlCard: View {
                     .foregroundColor(.textTertiary)
                     .multilineTextAlignment(.center)
                     .lineLimit(1)
-                
-                // Быстрый toggle
-                HStack {
-                    Text(isEnabled ? localizationManager.localized("parental_toggle_on") : localizationManager.localized("parental_toggle_off"))
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(isEnabled ? .successGreen : .textTertiary)
-                    
-                    ALADDINToggle(isOn: $isEnabled)
-                        .scaleEffect(0.7)
                 }
-                .padding(.top, Spacing.xxs)
             }
-            .frame(height: 160)
-            .frame(maxWidth: .infinity)
-            .padding(Spacing.s)
-            .background(cardColor)
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .stroke(
-                        isEnabled ? Color.secondaryGold.opacity(0.5) : Color.white.opacity(0.1),
-                        lineWidth: isEnabled ? 2 : 1
-                    )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+            .buttonStyle(PlainButtonStyle())
+                
+            // Быстрый toggle (отдельная зона взаимодействия без открытия модалки)
+            HStack {
+                Text(isEnabled ? localizationManager.localized("parental_toggle_on") : localizationManager.localized("parental_toggle_off"))
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(isEnabled ? .successGreen : .textTertiary)
+                
+                ALADDINToggle(isOn: Binding(
+                    get: { isEnabled },
+                    set: { newValue in
+                        isEnabled = newValue
+                        VisualLogger.shared.log(
+                            "🔄 card_toggle [\(title)] = \(newValue)",
+                            level: .info,
+                            category: "PARENTAL.UI"
+                        )
+                    }
+                ))
+                    .scaleEffect(0.7)
+                    .onChange(of: isEnabled) { newValue in
+                        VisualLogger.shared.log(
+                            "🔄 \(title) = \(newValue)",
+                            level: .info,
+                            category: "PARENTAL.UI"
+                        )
+                    }
+            }
+            .padding(.top, Spacing.xxs)
         }
-        .buttonStyle(PlainButtonStyle())
+        .frame(height: 160)
+        .frame(maxWidth: .infinity)
+        .padding(Spacing.s)
+        .background(cardColor)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .stroke(
+                    isEnabled ? Color.secondaryGold.opacity(0.5) : Color.white.opacity(0.1),
+                    lineWidth: isEnabled ? 2 : 1
+                )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
         .cardShadow()
     }
 }

@@ -54,6 +54,7 @@ struct FamilyContentBlockModal: View {
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var showSettingsAlert: Bool = false
+    private let safariSettingsComponentId = "browser_security_bot"
     
     // MARK: - Body
     
@@ -108,6 +109,7 @@ struct FamilyContentBlockModal: View {
         } message: {
             Text("\(localizationManager.localized("content_block_alert_message"))\n\n📱 После открытия настроек:\n1. Нажмите Safari\n2. Выберите Content Blockers\n3. Включите ALADDIN")
         }
+        .withVisualLogger()
     }
     
     // MARK: - Header Section
@@ -161,6 +163,12 @@ struct FamilyContentBlockModal: View {
                         } else {
                             selectedCategories.insert(category)
                         }
+                        let enabled = selectedCategories.contains(category)
+                        VisualLogger.shared.log(
+                            "🔄 safari_category_\(category.rawValue) = \(enabled) selected=\(selectedCategories.count)",
+                            level: .info,
+                            category: "PARENTAL.UI"
+                        )
                     }
                 )
                 .environmentObject(localizationManager)
@@ -285,6 +293,11 @@ struct FamilyContentBlockModal: View {
     private func saveSettings() {
         isLoading = true
         errorMessage = nil
+        VisualLogger.shared.log(
+            "🌐 SAFARI APPLY start categories=\(selectedCategories.count)",
+            level: .info,
+            category: "ADVANCED.API"
+        )
         
         Task {
             do {
@@ -295,7 +308,7 @@ struct FamilyContentBlockModal: View {
                 
                 // 2. Сохранить настройки через ComponentConfigurationService
                 let isComponentEnabled = await MainActor.run {
-                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: "content_blocker_manager")
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: safariSettingsComponentId)
                 }
                 
                 let config = ComponentConfiguration(
@@ -307,13 +320,18 @@ struct FamilyContentBlockModal: View {
                 )
                 
                 try await configurationService.saveConfiguration(
-                    componentId: "content_blocker_manager",
+                    componentId: safariSettingsComponentId,
                     configuration: config
                 )
                 
                 await MainActor.run {
                     isEnabled = true
                     isLoading = false
+                    VisualLogger.shared.log(
+                        "✅ SAFARI APPLY ok component=\(safariSettingsComponentId) categories=\(selectedCategories.count)",
+                        level: .info,
+                        category: "ADVANCED.API"
+                    )
                     
                     // Показать успешное сообщение
                     HapticFeedback.notification(.success)
@@ -332,6 +350,11 @@ struct FamilyContentBlockModal: View {
                 await MainActor.run {
                     isLoading = false
                     errorMessage = error.localizedDescription
+                    VisualLogger.shared.log(
+                        "❌ SAFARI APPLY failed: \(error.localizedDescription)",
+                        level: .error,
+                        category: "ADVANCED.API"
+                    )
                     
                     if let blockerError = error as? ContentBlockerError,
                        blockerError == .needsActivation {

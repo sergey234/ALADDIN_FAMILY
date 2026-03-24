@@ -49,7 +49,7 @@ struct PhishingProtectionSettingsModal: View {
                                 enabled: newValue
                             )
                         }
-                        print("🔄 Phishing: blockSuspiciousLinks = \(newValue)")
+                        vLog("🔄 blockSuspiciousLinks = \(newValue)")
                     }
 
                     ToggleRow(
@@ -64,7 +64,7 @@ struct PhishingProtectionSettingsModal: View {
                                 enabled: newValue
                             )
                         }
-                        print("🔄 Phishing: warnBeforeOpening = \(newValue)")
+                        vLog("🔄 warnBeforeOpening = \(newValue)")
                     }
 
                     ToggleRow(
@@ -79,7 +79,7 @@ struct PhishingProtectionSettingsModal: View {
                                 enabled: newValue
                             )
                         }
-                        print("🔄 Phishing: checkEmailLinks = \(newValue)")
+                        vLog("🔄 checkEmailLinks = \(newValue)")
                     }
 
                     ToggleRow(
@@ -94,7 +94,7 @@ struct PhishingProtectionSettingsModal: View {
                                 enabled: newValue
                             )
                         }
-                        print("🔄 Phishing: checkSMSLinks = \(newValue)")
+                        vLog("🔄 checkSMSLinks = \(newValue)")
                     }
 
                     ToggleRow(
@@ -109,7 +109,7 @@ struct PhishingProtectionSettingsModal: View {
                                 enabled: newValue
                             )
                         }
-                        print("🔄 Phishing: blockKnownPhishingDomains = \(newValue)")
+                        vLog("🔄 blockKnownPhishingDomains = \(newValue)")
                     }
                 }
                 
@@ -129,8 +129,10 @@ struct PhishingProtectionSettingsModal: View {
             }
         }
         .onAppear {
+            vLog("🛠️ Open settings modal")
             loadSettings()
         }
+        .withVisualLogger()
     }
     
     // ✅ Загрузка настроек при открытии
@@ -157,9 +159,9 @@ struct PhishingProtectionSettingsModal: View {
                     blockKnownPhishingDomains = newBlockKnownPhishingDomains
                     sensitivityLevel = newSensitivityLevel
                 }
-                print("✅ PhishingProtectionSettingsModal: Настройки загружены из API")
+                vLog("✅ Settings loaded from API", level: .success)
             } catch {
-                print("⚠️ PhishingProtectionSettingsModal: Ошибка загрузки настроек: \(error.localizedDescription)")
+                vLog("⚠️ Load failed: \(error.localizedDescription)", level: .warning)
             }
             // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
             isLoading = false
@@ -171,6 +173,7 @@ struct PhishingProtectionSettingsModal: View {
     private func saveSettings() {
         // Сначала закрываем окно для отзывчивости UI
         isPresented = false
+        vLog("💾 Save requested")
         
         // Затем выполняем сохранение асинхронно
         Task { @MainActor in
@@ -197,11 +200,19 @@ struct PhishingProtectionSettingsModal: View {
                 )
 
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                print("✅ PhishingProtectionSettingsModal: Настройки сохранены через API")
+                vLog("✅ Settings saved via API", level: .success)
             } catch {
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
-                print("⚠️ PhishingProtectionSettingsModal: Ошибка сохранения: \(error.localizedDescription)")
+                vLog("⚠️ Save failed: \(error.localizedDescription)", level: .warning)
             }
         }
+    }
+
+    private func vLog(_ message: String, level: VisualLogger.LogLevel = .info) {
+        VisualLogger.shared.log(
+            message,
+            level: level,
+            category: "GEAR.\(componentId)"
+        )
     }
 }

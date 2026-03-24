@@ -755,7 +755,29 @@ class APIService: ObservableObject {
     
     func getUserProfile(completion: @escaping (Result<UserProfile, Error>) -> Void) {
         logger.business("👤 Fetching user profile")
-        networkManager.get(endpoint: AppConfig.Endpoint.profile, completion: completion)
+        networkManager.get(endpoint: AppConfig.Endpoint.profile) { [weak self] (result: Result<UserProfile, Error>) in
+            if case .success(let profile) = result {
+                self?.trackUserProfileContractSignals(profile: profile)
+            }
+            completion(result)
+        }
+    }
+
+    private func trackUserProfileContractSignals(profile: UserProfile) {
+        let storedUserId = UserDefaults.standard.string(forKey: "user_id") ?? ""
+
+        // profile_contract_violation_count: guest profile must not have email payload.
+        if profile.safeIsGuest, let email = profile.email, !email.isEmpty {
+            JWTEventLogger.incrementCounter("profile_contract_violation_count")
+            logger.error("⚠️ PROFILE CONTRACT: guest profile contains email payload")
+        }
+
+        // unexpected_guest_profile_count: server returned guest profile while app already has non-guest user_id.
+        let hasPersistedNonGuestUser = !storedUserId.isEmpty && storedUserId != "anonymous" && !storedUserId.hasPrefix("guest_")
+        if profile.safeIsGuest && hasPersistedNonGuestUser {
+            JWTEventLogger.incrementCounter("unexpected_guest_profile_count")
+            logger.error("⚠️ PROFILE CONTRACT: unexpected guest profile for persisted user_id=\(storedUserId)")
+        }
     }
     
     func updateProfile(name: String?, email: String?, phone: String?, completion: @escaping (Result<UserProfile, Error>) -> Void) {
@@ -872,6 +894,45 @@ class APIService: ObservableObject {
     func cancelSubscription(userId: String, reason: String? = nil, deviceId: String? = nil, completion: @escaping (Result<[String: String], Error>) -> Void) {
         let request = CancelSubscriptionRequest(userId: userId, reason: reason, deviceId: deviceId)
         networkManager.post(endpoint: AppConfig.Endpoint.subscriptionCancel, body: request, completion: completion)
+    }
+
+    /// Batch-upload subscription events to domain endpoint (Phase B)
+    func sendSubscriptionEventsBatch(
+        events: [[String: AnyCodable]]
+    ) async throws {
+        struct SubscriptionEventsBatchRequest: Codable {
+            let events: [[String: AnyCodable]]
+        }
+        struct SubscriptionEventsBatchResponse: Codable {
+            let acceptedCount: Int
+            let duplicateCount: Int
+            let failedCount: Int
+            let failedEventIds: [String]
+        }
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            networkManager.post(
+                endpoint: AppConfig.Endpoint.subscriptionEventsBatch,
+                body: SubscriptionEventsBatchRequest(events: events),
+                requiresAuth: true
+            ) { (result: Result<SubscriptionEventsBatchResponse, Error>) in
+                switch result {
+                case .success(let response):
+                    // Success if server accepted all or marked them duplicates (idempotent path).
+                    if response.failedCount == 0 {
+                        continuation.resume()
+                    } else {
+                        continuation.resume(
+                            throwing: NetworkError.businessLogicError(
+                                "subscription_events_failed_count=\(response.failedCount)"
+                            )
+                        )
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
     
     // MARK: - ✅ ЭТАП 2: App Settings Sync API
@@ -1619,7 +1680,7 @@ class APIService: ObservableObject {
         
         // ✅ РЕАЛЬНЫЙ ЗАПРОС
         networkManager.post(
-            endpoint: "/parental/bypass/apply",
+            endpoint: "/api/parental/bypass/apply",
             body: ApplyBypassProtectionRequest(childId: childId, incognito: incognito, tor: tor, proxy: proxy),
             completion: completion
         )
@@ -1750,22 +1811,33 @@ class APIService: ObservableObject {
             }
             
             let requestBody = UpdateRequest(componentId: componentId, isEnabled: isEnabled, configuration: configuration)
-            let endpoint = "\(AppConfig.Endpoint.componentStatus)/\(componentId)"
+            let endpoint = isEnabled
+                ? "\(AppConfig.Endpoint.componentEnable)/\(componentId)"
+                : "\(AppConfig.Endpoint.componentDisable)/\(componentId)"
             
-            // ✅ ИСПРАВЛЕНИЕ: Используем POST вместо PUT/PATCH
+            // Каноничный контракт: мутация статуса через enable/disable endpoints
             networkManager.post(
                 endpoint: endpoint,
                 body: requestBody
-            ) { (result: Result<APIResponse<Bool>, Error>) in
+            ) { (result: Result<ComponentStatusResponse, Error>) in
                 guard !hasResumed else {
                     logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in updateComponentStatus()!")
                     return
                 }
                 
                 switch result {
-                case .success:
-                    hasResumed = true
-                    continuation.resume()
+                case .success(let response):
+                    // Каноничный ответ: ComponentStatusResponse
+                    // Валидация: компонент совпадает и флаг применён
+                    let status = response.componentStatus
+                    if status.componentId == componentId && status.isEnabled == isEnabled {
+                        hasResumed = true
+                        continuation.resume()
+                    } else {
+                        hasResumed = true
+                        let mismatch = "ComponentStatus mismatch: expected(\(componentId), \(isEnabled)) got(\(status.componentId), \(status.isEnabled))"
+                        continuation.resume(throwing: NetworkError.decodingError(NSError(domain: "APIService.updateComponentStatus", code: -2, userInfo: [NSLocalizedDescriptionKey: mismatch])))
+                    }
                 case .failure(let error):
                     // Пробрасываем все ошибки, не скрываем их
                     hasResumed = true
@@ -1780,8 +1852,20 @@ class APIService: ObservableObject {
         return try await withCheckedThrowingContinuation { continuation in
             // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
             var hasResumed = false
-            
-            networkManager.get(endpoint: "\(AppConfig.Endpoint.componentConfiguration)/\(componentId)") { (result: Result<ComponentConfigurationResponse, Error>) in
+
+            struct ServerComponentConfiguration: Codable {
+                let componentId: String
+                let settings: [String: AnyCodable]
+                let version: String?
+                let lastUpdated: String?
+            }
+
+            struct ServerComponentConfigurationResponse: Codable {
+                let configuration: ServerComponentConfiguration
+                let isDefault: Bool?
+            }
+
+            networkManager.get(endpoint: "\(AppConfig.Endpoint.componentConfiguration)/\(componentId)") { (result: Result<ServerComponentConfigurationResponse, Error>) in
                 guard !hasResumed else {
                     logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in getComponentConfiguration()!")
                     return
@@ -1789,8 +1873,22 @@ class APIService: ObservableObject {
                 
                 switch result {
                 case .success(let response):
+                    if response.isDefault == true {
+                        logger.log(
+                            .info,
+                            category: .network,
+                            message: "Component configuration loaded from server defaults for \(componentId)"
+                        )
+                    }
+                    // Сервер конфигурации хранит settings отдельно от статуса компонента.
+                    // Для экрана настроек нам важны сами settings; флаг включенности здесь нейтральный.
+                    let mapped = ComponentConfiguration(
+                        isEnabled: true,
+                        priority: .normal,
+                        additionalSettings: response.configuration.settings
+                    )
                     hasResumed = true
-                    continuation.resume(returning: response.configuration)
+                    continuation.resume(returning: mapped)
                 case .failure(let error):
                     hasResumed = true
                     continuation.resume(throwing: error)
@@ -1809,22 +1907,33 @@ class APIService: ObservableObject {
             var hasResumed = false
             
             struct UpdateRequest: Codable {
-                let componentId: String
-                let configuration: ComponentConfiguration
+                let settings: [String: AnyCodable]
             }
+
+            struct UpdateResponse: Codable {
+                let success: Bool
+                let message: String?
+            }
+
             networkManager.post(
                 endpoint: "\(AppConfig.Endpoint.componentConfiguration)/\(componentId)",
-                body: UpdateRequest(componentId: componentId, configuration: configuration)
-            ) { (result: Result<ComponentConfigurationResponse, Error>) in
+                body: UpdateRequest(settings: configuration.additionalSettings ?? [:])
+            ) { (result: Result<UpdateResponse, Error>) in
                 guard !hasResumed else {
                     logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in updateComponentConfiguration()!")
                     return
                 }
                 
                 switch result {
-                case .success:
-                    hasResumed = true
-                    continuation.resume()
+                case .success(let response):
+                    if response.success {
+                        hasResumed = true
+                        continuation.resume()
+                    } else {
+                        hasResumed = true
+                        let message = response.message ?? "Unknown configuration update failure"
+                        continuation.resume(throwing: NetworkError.businessLogicError(message))
+                    }
                 case .failure(let error):
                     hasResumed = true
                     continuation.resume(throwing: error)
@@ -2225,15 +2334,31 @@ class APIService: ObservableObject {
     }
 
     // ✅ ИНТЕГРАЦИЯ: Получить конфигурацию DoH (План 2026)
-    func getDNSConfig(childId: String? = nil, completion: @escaping (Result<APIResponse<DNSConfigResponse>, Error>) -> Void) {
+    func getDNSConfig(childId: String? = nil, completion: @escaping (Result<DNSConfigResponse, Error>) -> Void) {
         var endpoint = AppConfig.Endpoint.dnsConfig
         if let childId = childId {
             endpoint += "?childId=\(childId)"
         }
-        networkManager.get(
-            endpoint: endpoint,
-            completion: completion
-        )
+        // Совместимость с backend: поддерживаем и raw-object, и APIResponse-wrapped формат.
+        networkManager.get(endpoint: endpoint) { (rawResult: Result<DNSConfigResponse, Error>) in
+            switch rawResult {
+            case .success(let config):
+                completion(.success(config))
+            case .failure:
+                self.networkManager.get(endpoint: endpoint) { (wrappedResult: Result<APIResponse<DNSConfigResponse>, Error>) in
+                    switch wrappedResult {
+                    case .success(let wrapped):
+                        if let data = wrapped.data {
+                            completion(.success(data))
+                        } else {
+                            completion(.failure(NetworkError.businessLogicError(wrapped.message ?? "Конфигурация DNS пуста")))
+                        }
+                    case .failure(let error):
+                        completion(.failure(error))
+                    }
+                }
+            }
+        }
     }
 
     // ✅ ИНТЕГРАЦИЯ: Получить ежедневные отчеты (План 2026)

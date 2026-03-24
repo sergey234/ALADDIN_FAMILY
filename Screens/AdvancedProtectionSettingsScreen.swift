@@ -56,6 +56,8 @@ struct AdvancedProtectionSettingsScreen: View {
     @State private var showFamilyTimeControlModal: Bool = false
     @State private var showAppLimitsSettingsModal: Bool = false
     @State private var familyModalEnabledDummy: Bool = true
+    @State private var isApplyingParentalMonitoringSettings: Bool = false
+    @State private var parentalMonitoringSyncTask: Task<Void, Never>? = nil
 
     // Threat settings sheets
     @State private var showThreatProtectionSheet: Bool = false
@@ -109,12 +111,15 @@ struct AdvancedProtectionSettingsScreen: View {
             refreshContentBlockerStatus()
             loadFamilyStats()
             refreshThreatStatuses()
+            loadParentalMonitoringSettingsFromServer()
         }
+        .withVisualLogger()
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
                 refreshContentBlockerStatus()
                 loadFamilyStats()
                 refreshThreatStatuses()
+                loadParentalMonitoringSettingsFromServer()
             }
         }
         .sheet(item: $safariSettingsSheet) { sheet in
@@ -395,6 +400,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: telegram_security_bot", level: .info, category: "ADVANCED.UI")
                         viewModel.showTelegramSettings = true
                     }
                     
@@ -410,6 +416,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: whatsapp_security_bot", level: .info, category: "ADVANCED.UI")
                         viewModel.showWhatsAppSettings = true
                     }
                     
@@ -425,6 +432,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: instagram_security_bot", level: .info, category: "ADVANCED.UI")
                         viewModel.showInstagramSettings = true
                     }
                     
@@ -440,6 +448,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: max_messenger_security_bot", level: .info, category: "ADVANCED.UI")
                         viewModel.showMaxMessengerSettings = true
                     }
                     
@@ -455,6 +464,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: gaming_security_bot", level: .info, category: "ADVANCED.UI")
                         viewModel.showGamingSettings = true
                     }
                     
@@ -470,6 +480,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: browser_security_bot", level: .info, category: "ADVANCED.UI")
                         viewModel.showBrowserSettings = true
                     }
                 }
@@ -496,6 +507,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: location_bubble_agent", level: .info, category: "ADVANCED.UI")
                         viewModel.showLocationBubbleSettings = true
                     }
                     
@@ -511,6 +523,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: personal_data_cleanup_agent", level: .info, category: "ADVANCED.UI")
                         viewModel.showPersonalDataCleanupSettings = true
                     }
                     
@@ -526,6 +539,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: anti_tracker_agent", level: .info, category: "ADVANCED.UI")
                         viewModel.showAntiTrackerSettings = true
                     }
                 }
@@ -552,6 +566,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: dark_web_monitoring_agent", level: .info, category: "ADVANCED.UI")
                         viewModel.showDarkWebMonitoringSettings = true
                     }
                     
@@ -567,6 +582,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: russian_identity_theft_protection_agent", level: .info, category: "ADVANCED.UI")
                         viewModel.showIdentityTheftProtectionSettings = true
                     }
                     
@@ -582,6 +598,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: ai_categories_agent", level: .info, category: "ADVANCED.UI")
                         viewModel.showAICategoriesSettings = true
                     }
                     
@@ -597,6 +614,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         }
                     )
                     .onTapGesture {
+                        VisualLogger.shared.log("⚙️ Open settings: driving_reports_agent", level: .info, category: "ADVANCED.UI")
                         viewModel.showDrivingReportsSettings = true
                     }
                 }
@@ -822,6 +840,14 @@ struct AdvancedProtectionSettingsScreen: View {
                         .foregroundColor(.textSecondary)
                     Spacer()
                     ALADDINToggle(isOn: $isMessagesMonitoringEnabled)
+                        .onChange(of: isMessagesMonitoringEnabled) { newValue in
+                            VisualLogger.shared.log(
+                                "🔄 parental_messages_monitoring = \(newValue)",
+                                level: .info,
+                                category: "ADVANCED.UI"
+                            )
+                            scheduleParentalMonitoringSync()
+                        }
                 }
 
                 HStack {
@@ -830,6 +856,14 @@ struct AdvancedProtectionSettingsScreen: View {
                         .foregroundColor(.textSecondary)
                     Spacer()
                     ALADDINToggle(isOn: $isScreenshotsEnabled)
+                        .onChange(of: isScreenshotsEnabled) { newValue in
+                            VisualLogger.shared.log(
+                                "🔄 parental_screenshots_enabled = \(newValue)",
+                                level: .info,
+                                category: "ADVANCED.UI"
+                            )
+                            scheduleParentalMonitoringSync()
+                        }
                 }
             }
         }
@@ -972,6 +1006,11 @@ struct AdvancedProtectionSettingsScreen: View {
                     get: { isOn.wrappedValue },
                     set: { newValue in
                         isOn.wrappedValue = newValue
+                        VisualLogger.shared.log(
+                            "🌐 Safari toggle '\(title)' = \(newValue)",
+                            level: .info,
+                            category: "ADVANCED.UI"
+                        )
                         applySafariUnionRules(triggeredBy: trigger)
                     }
                 ))
@@ -1080,6 +1119,87 @@ struct AdvancedProtectionSettingsScreen: View {
             await MainActor.run {
                 contentBlockerManager.loadActiveCategories()
             }
+        }
+    }
+
+    private func loadParentalMonitoringSettingsFromServer() {
+        Task {
+            do {
+                let config = try await ComponentConfigurationService.shared.getConfiguration(for: "parental_control_bot")
+                let settings = config.additionalSettings ?? [:]
+                let messagesEnabled = (settings["messagesMonitoringEnabled"]?.value as? Bool)
+                    ?? (settings["parental_messages_monitoring"]?.value as? Bool)
+                let screenshotsEnabled = (settings["screenshotsEnabled"]?.value as? Bool)
+                    ?? (settings["parental_screenshots_enabled"]?.value as? Bool)
+
+                await MainActor.run {
+                    isApplyingParentalMonitoringSettings = true
+                    if let messagesEnabled = messagesEnabled { isMessagesMonitoringEnabled = messagesEnabled }
+                    if let screenshotsEnabled = screenshotsEnabled { isScreenshotsEnabled = screenshotsEnabled }
+                    isApplyingParentalMonitoringSettings = false
+                    VisualLogger.shared.log(
+                        "✅ ADVANCED.API parental GET sync: messages=\(isMessagesMonitoringEnabled), screenshots=\(isScreenshotsEnabled)",
+                        level: .info,
+                        category: "ADVANCED.API"
+                    )
+                }
+            } catch {
+                await MainActor.run {
+                    VisualLogger.shared.log(
+                        "⚠️ ADVANCED.API parental GET failed: \(error.localizedDescription)",
+                        level: .warning,
+                        category: "ADVANCED.API"
+                    )
+                }
+            }
+        }
+    }
+
+    private func scheduleParentalMonitoringSync() {
+        guard !isApplyingParentalMonitoringSettings else { return }
+        parentalMonitoringSyncTask?.cancel()
+        parentalMonitoringSyncTask = Task {
+            try? await Task.sleep(nanoseconds: 250_000_000)
+            if Task.isCancelled { return }
+            await syncParentalMonitoringSettingsToServer()
+        }
+    }
+
+    @MainActor
+    private func syncParentalMonitoringSettingsToServer() async {
+        VisualLogger.shared.log(
+            "🔵 ADVANCED.API parental POST start: messages=\(isMessagesMonitoringEnabled), screenshots=\(isScreenshotsEnabled)",
+            level: .info,
+            category: "ADVANCED.API"
+        )
+
+        let config = ComponentConfiguration(
+            isEnabled: true,
+            priority: .normal,
+            additionalSettings: [
+                "messagesMonitoringEnabled": AnyCodable(isMessagesMonitoringEnabled),
+                "screenshotsEnabled": AnyCodable(isScreenshotsEnabled),
+                "parental_messages_monitoring": AnyCodable(isMessagesMonitoringEnabled),
+                "parental_screenshots_enabled": AnyCodable(isScreenshotsEnabled)
+            ]
+        )
+
+        do {
+            try await ComponentConfigurationService.shared.saveConfiguration(
+                componentId: "parental_control_bot",
+                configuration: config
+            )
+            VisualLogger.shared.log(
+                "✅ ADVANCED.API parental POST ok",
+                level: .info,
+                category: "ADVANCED.API"
+            )
+        } catch {
+            VisualLogger.shared.log(
+                "❌ ADVANCED.API parental POST failed: \(error.localizedDescription)",
+                level: .error,
+                category: "ADVANCED.API"
+            )
         }
     }
 }

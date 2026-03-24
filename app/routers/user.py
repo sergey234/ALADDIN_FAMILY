@@ -22,7 +22,8 @@ class UserCompatBoolResponse(BaseModel):
 
 class UserProfileCompatResponse(BaseModel):
     id: str
-    email: str
+    is_guest: bool
+    email: Optional[str] = None
     name: str
 
 
@@ -30,9 +31,20 @@ class UserProfileCompatResponse(BaseModel):
 async def get_user_profile_compat(
     current_user: dict = Depends(get_current_user),
 ) -> UserProfileCompatResponse:
-    user_id = str(current_user.get("id", ""))
-    email = str(current_user.get("email", ""))
-    return UserProfileCompatResponse(id=user_id, email=email, name="User")
+    user_id = str(current_user.get("id", "")).strip()
+    raw_email = current_user.get("email")
+
+    # Anonymous/device-first contract: no personal data is required.
+    # Keep email nullable and expose explicit guest flag for deterministic client logic.
+    email = raw_email if isinstance(raw_email, str) and raw_email.strip() else None
+    is_guest = user_id in {"", "anonymous"} or user_id.startswith("guest_")
+
+    return UserProfileCompatResponse(
+        id=user_id or "anonymous",
+        is_guest=is_guest,
+        email=email,
+        name="User"
+    )
 
 
 @router.get("/update", response_model=UserCompatBoolResponse)

@@ -137,7 +137,7 @@ struct JWTEventLogger {
             Next Check: \(Int(nextCheckIn)) seconds
             """
             if let timeToExpiry = timeToExpiry {
-                logEntry += "Time to Expiry: \(Int(timeToExpiry/60)) minutes\n"
+                logEntry += "\nTime to Expiry: \(Int(timeToExpiry/60)) minutes\n"
             }
 
         case .offlineModeActivated(let reason, let willRetry):
@@ -196,6 +196,13 @@ struct JWTEventLogger {
     /// 🏥 Log Health Check
     static func logHealthCheck(tokenExists: Bool, timeToExpiry: TimeInterval? = nil) {
         let nextCheckIn: TimeInterval = 60 // TokenHealthMonitor monitoring interval
+        if let timeToExpiry = timeToExpiry {
+            let minutes = Int(timeToExpiry / 60)
+            // jwt_ttl_anomaly_count: detect obviously abnormal future expiry windows (clock/payload drift).
+            if minutes > 60 * 24 * 370 {
+                incrementCounter("jwt_ttl_anomaly_count")
+            }
+        }
         logEvent(.healthCheckPerformed(tokenExists: tokenExists, timeToExpiry: timeToExpiry, nextCheckIn: nextCheckIn))
     }
 
@@ -242,5 +249,27 @@ struct JWTEventLogger {
     private static func persistLogEntry(_ entry: String) {
         // TODO: Implement persistent logging to file/database when needed
         // For now, entries are kept in memory via MasterLogger
+    }
+
+    // MARK: - Observability Counters
+
+    /// Increments lightweight local counter for operational anomaly signals.
+    static func incrementCounter(_ key: String) {
+        let storageKey = "obs_\(key)"
+        let current = UserDefaults.standard.integer(forKey: storageKey)
+        UserDefaults.standard.set(current + 1, forKey: storageKey)
+        let logger = MasterLogger.shared
+        logger.business("📈 OBS Counter \(key)=\(current + 1)")
+
+        // Emit operational alert into analytics/metrics pipeline for observability.
+        let alert = Alert(
+            id: "jwt_obs_\(key)_\(Int(Date().timeIntervalSince1970))",
+            type: .security,
+            message: "OBS counter '\(key)' incremented to \(current + 1)",
+            severity: .warning,
+            timestamp: Date()
+        )
+        let analytics = RemoteAnalyticsService()
+        analytics.trackAlert(alert: alert)
     }
 }

@@ -39,7 +39,9 @@ class TokenHealthMonitor {
     /// Monitoring interval: check every 60 seconds
     private let monitoringInterval: TimeInterval = 60
 
-    /// Refresh threshold: refresh when < 5 minutes remain
+    /// Runtime threshold for proactive refresh: refresh when < 5 minutes remain.
+    /// Note: policy-level warning/critical windows (7d/24h) are tracked via observability,
+    /// while this tighter runtime threshold protects UX from token-expiry interruptions.
     private let refreshThreshold: TimeInterval = 300
 
     /// Logger instance

@@ -651,6 +651,12 @@ class ParentalControlManager: ObservableObject {
     ) {
         isLoading = true
         errorMessage = nil
+        let endpointURL = "\(AppConfig.baseURL)/api/parental/bypass/apply"
+        VisualLogger.shared.log(
+            "🔵 BYPASS APPLY start url=\(endpointURL) incognito=\(incognito) tor=\(tor) proxy=\(proxy)",
+            level: .info,
+            category: "PARENTAL.API"
+        )
         
         apiService.applyBypassProtection(childId: childId, incognito: incognito, tor: tor, proxy: proxy) { [weak self] result in
             DispatchQueue.main.async {
@@ -660,15 +666,38 @@ class ParentalControlManager: ObservableObject {
                 case .success(let response):
                     if response.success {
                         print("✅ Защита от обхода применена для \(childId)")
+                        VisualLogger.shared.log(
+                            "✅ BYPASS APPLY ok",
+                            level: .success,
+                            category: "PARENTAL.API"
+                        )
                         self?.errorMessage = nil
                         completion?(true, nil)
                     } else {
                         let errorMsg = response.message ?? "Ошибка применения защиты от обхода"
+                        VisualLogger.shared.log(
+                            "❌ BYPASS APPLY failed: \(errorMsg)",
+                            level: .error,
+                            category: "PARENTAL.API"
+                        )
                         self?.errorMessage = errorMsg
                         completion?(false, errorMsg)
                     }
                 case .failure(let error):
                     let errorMsg = error.localizedDescription
+                    if errorMsg.localizedCaseInsensitiveContains("mock response from sfm") ||
+                        errorMsg.localizedCaseInsensitiveContains("sfm_mock") {
+                        VisualLogger.shared.log(
+                            "⚠️ BYPASS APPLY backend mock_fallback: нужен реальный create_parental_bypass_apply",
+                            level: .warning,
+                            category: "PARENTAL.API"
+                        )
+                    }
+                    VisualLogger.shared.log(
+                        "❌ BYPASS APPLY failed: \(errorMsg)",
+                        level: .error,
+                        category: "PARENTAL.API"
+                    )
                     self?.errorMessage = errorMsg
                     completion?(false, errorMsg)
                 }

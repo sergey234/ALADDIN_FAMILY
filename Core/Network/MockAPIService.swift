@@ -81,6 +81,7 @@ class MockAPIService: APIService {
             let profile = UserProfile(
                 id: "user_mock_123",
                 name: "Test User",
+                isGuest: false,
                 email: "test@aladdin.family",
                 phone: "+7 (999) 123-45-67",
                 registrationDate: "2025-01-01",

@@ -306,6 +306,11 @@ struct SettingsScreen: View {
                     Spacer()
                     Button(action: {
                         logger.buttonTap("Cycle Theme", screen: "Settings")
+                        VisualLogger.shared.log(
+                            "🎨 Cycle theme pressed (current: \(viewModel.selectedTheme.rawValue))",
+                            level: .info,
+                            category: "SETTINGS.THEME"
+                        )
                         viewModel.cycleTheme()
                     }) {
                         Image(systemName: "chevron.right")
@@ -343,6 +348,11 @@ struct SettingsScreen: View {
 
                 // Positioning System
                 Button(action: {
+                    VisualLogger.shared.log(
+                        "🛰️ Open Positioning System Picker",
+                        level: .info,
+                        category: "SETTINGS.POSITIONING"
+                    )
                     viewModel.showPositioningSystemPicker = true
                 }) {
                     HStack {
@@ -695,6 +705,11 @@ struct SettingsScreen: View {
                 get: { isEnabled.wrappedValue },
                 set: { newValue in
                     logger.toggleChanged("Biometric", newValue: newValue, screen: "Settings")
+                    VisualLogger.shared.log(
+                        "🔄 Biometric = \(newValue)",
+                        level: .info,
+                        category: "SETTINGS.UI"
+                    )
                     isEnabled.wrappedValue = newValue
                     viewModel.handleBiometricToggle(newValue)
                 }
@@ -723,6 +738,14 @@ struct SettingsScreen: View {
 
             Toggle("", isOn: binding)
                 .labelsHidden()
+                .onChange(of: binding.wrappedValue) { newValue in
+                    // Логируем в mini-log для видимости
+                    VisualLogger.shared.log(
+                        "🔄 \(title) = \(newValue)",
+                        level: .info,
+                        category: "SETTINGS.UI"
+                    )
+                }
         }
         .padding(Spacing.m)
         .background(

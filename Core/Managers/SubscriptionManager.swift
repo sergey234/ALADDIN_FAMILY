@@ -64,6 +64,7 @@ enum SubscriptionEvent: String, Codable {
 }
 
 struct SubscriptionEventData: Codable {
+    let eventId: String
     let event: SubscriptionEvent
     let timestamp: Date
     let userId: String?
@@ -87,6 +88,7 @@ struct SubscriptionEventData: Codable {
         errorMessage: String? = nil,
         metadata: [String: String]? = nil
     ) {
+        self.eventId = UUID().uuidString
         self.event = event
         self.timestamp = Date()
         self.userId = userId
@@ -139,6 +141,15 @@ final class SubscriptionManager: ObservableObject {
     /// Events tracking
     private let eventsQueue = DispatchQueue(label: "com.aladdin.subscription.events")
     private var pendingEvents: [SubscriptionEventData] = []
+    private var flushRetryCount = 0
+    private var isFlushingEvents = false
+    private let maxEventBatchSize = 25
+    private let pendingEventsStorageKey = "subscription_pending_events_v1"
+    private let pendingEventsTTL: TimeInterval = 7 * 24 * 60 * 60 // 7 days
+    // Runtime counters (for observability)
+    private(set) var eventsSentCount: Int = 0
+    private(set) var eventsFailedCount: Int = 0
+    private(set) var lastQueueSize: Int = 0
 
     // MARK: - Private Properties
 
@@ -460,6 +471,7 @@ final class SubscriptionManager: ObservableObject {
         logger.business("💾 Loading persisted data from Keychain...")
         print("💾💾💾 LOADING_PERSISTED_DATA: About to load from Keychain")
         loadPersistedData()
+        loadPendingEvents()
         logger.business("💾 Persisted data loading completed")
         print("💾💾💾 PERSISTED_DATA_LOADED: Completed")
 
@@ -1589,19 +1601,21 @@ extension SubscriptionManager {
             metadata: metadata
         )
 
-        eventsQueue.sync {
-            pendingEvents.append(eventData)
+        pendingEvents.append(eventData)
+        pruneExpiredEventsLocked()
 
-            // Limit queue size to prevent memory issues
-            if pendingEvents.count > 1000 {
-                pendingEvents.removeFirst(100)
-            }
+        // Limit queue size to prevent memory issues
+        if pendingEvents.count > 1000 {
+            pendingEvents.removeFirst(100)
+        }
+        savePendingEventsLocked()
+        lastQueueSize = pendingEvents.count
+        logger.business("📥 SubscriptionEvent queued. queue_size=\(lastQueueSize)")
 
-            // Send immediately if online
-            if !self.isOfflineMode {
-                Task {
-                    await self.flushPendingEvents()
-                }
+        // Send immediately if online
+        if !self.isOfflineMode {
+            Task {
+                await self.flushPendingEvents()
             }
         }
 
@@ -1610,16 +1624,89 @@ extension SubscriptionManager {
 
     /// 📤 Send pending events to server
     @MainActor private func flushPendingEvents() async {
+        guard !isOfflineMode else { return }
+
+        pruneExpiredEventsLocked()
         guard !pendingEvents.isEmpty else { return }
+        guard !isFlushingEvents else { return }
+        isFlushingEvents = true
+        let eventsToSend: [SubscriptionEventData] = Array(pendingEvents.prefix(maxEventBatchSize))
 
-        let eventsToSend = pendingEvents
-        pendingEvents.removeAll()
+        guard !eventsToSend.isEmpty else { return }
 
-        // TODO: Implement sendSubscriptionEvents in APIService
-        logger.business("📤 Would send \(eventsToSend.count) subscription events to server (not implemented)")
+        do {
+            try await sendSubscriptionEventsToMetrics(eventsToSend)
+            let sentIds = Set(eventsToSend.map { $0.eventId })
+            pendingEvents.removeAll { sentIds.contains($0.eventId) }
+            flushRetryCount = 0
+            isFlushingEvents = false
+            savePendingEventsLocked()
+            eventsSentCount += eventsToSend.count
+            lastQueueSize = pendingEvents.count
+            logger.business("📤 Subscription events sent: \(eventsToSend.count)")
+        } catch {
+            flushRetryCount += 1
+            isFlushingEvents = false
+            // Exponential backoff: 2, 4, 8, 16, 30s cap
+            let delay: TimeInterval = min(pow(2.0, Double(flushRetryCount)), 30.0)
+            let shouldRetry = !isOfflineMode && !pendingEvents.isEmpty
+            savePendingEventsLocked()
+            eventsFailedCount += 1
+            lastQueueSize = pendingEvents.count
+            logger.error("❌ Failed to send subscription events: \(error.localizedDescription)")
+            if shouldRetry {
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                    await self.flushPendingEvents()
+                }
+            }
+        }
+    }
 
-        // Re-queue events for now
-        pendingEvents.insert(contentsOf: eventsToSend, at: 0)
+    private func sendSubscriptionEventsToMetrics(_ events: [SubscriptionEventData]) async throws {
+        let metrics: [[String: AnyCodable]] = events.map { event in
+            var item: [String: AnyCodable] = [
+                "timestamp": AnyCodable(event.timestamp.timeIntervalSince1970),
+                "eventId": AnyCodable(event.eventId),
+                "eventType": AnyCodable(event.event.rawValue),
+                "deviceId": AnyCodable(event.deviceId),
+            ]
+            if let level = event.subscriptionLevel { item["subscriptionLevel"] = AnyCodable(level) }
+            if let featureId = event.featureId { item["featureId"] = AnyCodable(featureId) }
+            if let resourceType = event.resourceType { item["resourceType"] = AnyCodable(resourceType) }
+            if let amount = event.amount { item["amount"] = AnyCodable(amount) }
+            if let transactionId = event.transactionId { item["transactionId"] = AnyCodable(transactionId) }
+            if let errorMessage = event.errorMessage { item["errorMessage"] = AnyCodable(errorMessage) }
+            if let metadata = event.metadata { item["metadata"] = AnyCodable(metadata) }
+            return item
+        }
+
+        try await APIService.shared.sendSubscriptionEventsBatch(events: metrics)
+    }
+
+    private func loadPendingEvents() {
+        guard let data = UserDefaults.standard.data(forKey: pendingEventsStorageKey) else { return }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        if let saved = try? decoder.decode([SubscriptionEventData].self, from: data) {
+            pendingEvents = saved
+            pruneExpiredEventsLocked()
+            savePendingEventsLocked()
+            logger.business("💾 Restored pending subscription events: \(saved.count)")
+        }
+    }
+
+    private func savePendingEventsLocked() {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        if let data = try? encoder.encode(pendingEvents) {
+            UserDefaults.standard.set(data, forKey: pendingEventsStorageKey)
+        }
+    }
+
+    private func pruneExpiredEventsLocked() {
+        let now = Date()
+        pendingEvents.removeAll { now.timeIntervalSince($0.timestamp) > pendingEventsTTL }
     }
 
     // MARK: - Error Handling

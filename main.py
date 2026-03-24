@@ -110,6 +110,12 @@ except ImportError:
     subscription_compat_available = False
 
 try:
+    from app.routers import subscription_events
+    subscription_events_available = True
+except ImportError:
+    subscription_events_available = False
+
+try:
     from app.routers import notifications_compat
     notifications_compat_available = True
 except ImportError:
@@ -410,6 +416,7 @@ class SfmMockTo503Middleware(BaseHTTPMiddleware):
                 or request_path.startswith("/api/parental-control/")
                 or request_path.startswith("/api/v1/parental-control/")
                 or request_path.startswith("/api/gamification/")
+                or request_path.startswith("/api/components/")
             )
             if not is_target_endpoint:
                 return response
@@ -556,6 +563,15 @@ if subscription_compat_available:
         print(f"⚠️ Не удалось подключить роутер Subscription compat: {e}")
 else:
     print("⚠️ Роутер Subscription compat недоступен")
+
+if subscription_events_available:
+    try:
+        app.include_router(subscription_events.router, tags=["subscription-events"])
+        print("✅ Роутер Subscription events подключен: /api/subscription/events/*")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер Subscription events: {e}")
+else:
+    print("⚠️ Роутер Subscription events недоступен")
 
 if notifications_compat_available:
     try:
@@ -864,6 +880,17 @@ async def wildcard_handler(request: Request, path: str):
     """
     print(f"📡 [WILDCARD] Обработка пути: /api/{path} [{request.method}]")
     
+    # 0. Жёсткий guard: запрещаем проксировать мутационные вызовы components через wildcard
+    normalized_path = path.split("?")[0]
+    if normalized_path.startswith("components/status") and request.method in ["POST", "PUT", "PATCH", "DELETE"]:
+        return JSONResponse(
+            status_code=405,
+            content={
+                "error": "Method Not Allowed for wildcard on components/status mutations",
+                "hint": "Use explicit router endpoint for components status updates"
+            },
+        )
+
     # 1. Преобразуем путь в имя функции
     func_name = path_to_function_name(path, request.method)
     print(f"🔍 [WILDCARD] Имя функции: {func_name}")

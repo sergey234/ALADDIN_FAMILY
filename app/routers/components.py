@@ -75,6 +75,7 @@ class ComponentStatusResponse(BaseModel):
 
 class ComponentConfigurationResponse(BaseModel):
     configuration: ComponentConfiguration
+    isDefault: bool = False
 
 
 class ComponentBatchStatusResponse(BaseModel):
@@ -85,6 +86,9 @@ class ComponentsCompatBoolResponse(BaseModel):
     success: bool
     data: bool
     message: Optional[str] = None
+
+class UpdateStatusRequest(BaseModel):
+    isEnabled: bool
 
 
 # ============================================
@@ -272,6 +276,67 @@ async def get_component_configuration_from_db(
     )
 
 
+def build_default_component_configuration(component_id: str) -> ComponentConfiguration:
+    """
+    Детерминированные дефолтные настройки для first-open (без mock).
+    Возвращаются при отсутствии записи в БД.
+    """
+    default_settings_map: Dict[str, Dict[str, Any]] = {
+        "phishing_protection_agent": {
+            "blockSuspiciousLinks": True,
+            "warnBeforeOpening": True,
+            "checkEmailLinks": True,
+            "checkSMSLinks": True,
+            "blockKnownPhishingDomains": True,
+            "sensitivityLevel": "medium",
+        },
+        "malware_detection_agent": {
+            "realTimeScanning": True,
+            "scanDownloads": True,
+            "scanInstalledApps": True,
+            "quarantineThreats": True,
+            "autoRemoveThreats": False,
+            "scanFrequency": "daily",
+        },
+        "mobile_security_agent": {
+            "deviceEncryption": True,
+            "appLock": True,
+            "screenLock": True,
+            "biometricAuth": True,
+            "remoteWipe": False,
+            "trackDevice": True,
+        },
+        "network_security_agent": {
+            "blockUnsafeNetworks": True,
+            "warnOnPublicWiFi": True,
+            "autoConnectVPN": False,
+            "blockTracking": True,
+            "encryptTraffic": True,
+            "firewallEnabled": True,
+        },
+        "incident_response_agent": {
+            "escalationThresholds": {"low": "30", "medium": "15", "high": "5", "critical": "1"},
+            "slaTime": "30",
+            "contactRoles": ["admin", "security"],
+            "autoActions": {"block": False, "notify": True, "escalate": True},
+        },
+        "password_security_agent": {
+            "passwordLength": 16,
+            "includeUppercase": True,
+            "includeLowercase": True,
+            "includeNumbers": True,
+            "includeSpecial": True,
+        },
+    }
+
+    return ComponentConfiguration(
+        componentId=component_id,
+        settings=default_settings_map.get(component_id, {}),
+        version="1.0.0-default",
+        lastUpdated=datetime.utcnow().isoformat(),
+    )
+
+
 # ============================================
 # ENDPOINT 1: GET /api/components/status/{componentId} (ОБНОВЛЕНО)
 # ============================================
@@ -414,9 +479,16 @@ async def get_component_configuration(
     configuration = await get_component_configuration_from_db(component_id, db, user_id)
     
     if not configuration:
-        raise HTTPException(status_code=404, detail=f"Component {component_id} configuration not found")
-    
-    return ComponentConfigurationResponse(configuration=configuration)
+        logger.info(
+            "component_configuration_default_served",
+            component_id=component_id,
+            user_id=user_id,
+            timestamp=datetime.now().isoformat()
+        )
+        configuration = build_default_component_configuration(component_id)
+        return ComponentConfigurationResponse(configuration=configuration, isDefault=True)
+
+    return ComponentConfigurationResponse(configuration=configuration, isDefault=False)
 
 
 # ============================================
@@ -529,6 +601,34 @@ async def get_components_status_compat(
     _ = current_user.get("id")
     return []
 
+@router.post("/status/{component_id}", response_model=ComponentsCompatBoolResponse)
+@limiter.limit("60/minute")  # Совместимый endpoint для записи статуса
+async def update_component_status_compat(
+    component_id: str,
+    request_body: UpdateStatusRequest,
+    request: Request,
+    db: AsyncSession = Depends(get_session),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Совместимый маршрут для обновления статуса компонента.
+    Используется клиентским кодом, который отправляет POST /api/components/status/{id}.
+    Внутри маршрутизируем на реальную enable/disable-логику (запись в БД).
+    """
+    user_id = current_user["id"]
+
+    if component_id not in ALL_COMPONENTS:
+        raise HTTPException(status_code=404, detail=f"Component {component_id} not found")
+
+    # Обновляем статус в БД (реальная запись)
+    _ = await update_component_status_in_db(component_id, request_body.isEnabled, db, user_id)
+
+    # Возвращаем контракт, совместимый с APIResponse<Bool> на iOS
+    return ComponentsCompatBoolResponse(
+        success=True,
+        data=True,
+        message="Component status updated"
+    )
 
 @router.get("/enable", response_model=ComponentsCompatBoolResponse)
 async def enable_component_compat(

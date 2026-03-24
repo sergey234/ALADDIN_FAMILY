@@ -379,6 +379,11 @@ struct SupportScreen: View {
                 .accessibilityAddTraits(.isHeader)
             
             Button(action: {
+                VisualLogger.shared.log(
+                    "🆘 Roadside Assistance tapped",
+                    level: .info,
+                    category: "SUPPORT.UI"
+                )
                 showRoadsideAssistance = true
             }) {
                 HStack(spacing: 12) {
@@ -419,8 +424,43 @@ struct SupportScreen: View {
             .padding(.horizontal, 20)
         }
         .sheet(isPresented: $showRoadsideAssistance) {
-            // TODO: Добавить RoadsideAssistanceView в проект
-            Text("Roadside Assistance")
+            // Минимальный экран вместо пустого листа
+            VStack(spacing: 12) {
+                Text(localizationManager.localized("roadside_assistance_title"))
+                    .font(.title2)
+                Text(localizationManager.localized("roadside_assistance_subtitle"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Button {
+                    VisualLogger.shared.log(
+                        "📞 Roadside Assistance: Call requested",
+                        level: .info,
+                        category: "SUPPORT.UI"
+                    )
+                    if let url = URL(string: "tel://112") {
+                        UIApplication.shared.open(url)
+                    }
+                } label: {
+                    Text(localizationManager.localized("roadside_assistance_call"))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Color.red)
+                        .cornerRadius(8)
+                }
+                Button {
+                    VisualLogger.shared.log(
+                        "🧰 Roadside Assistance: Close",
+                        level: .info,
+                        category: "SUPPORT.UI"
+                    )
+                    showRoadsideAssistance = false
+                } label: {
+                    Text(localizationManager.localized("common_close"))
+                        .foregroundColor(.primaryBlue)
+                }
+            }
+            .padding()
                 .environmentObject(localizationManager)
         }
     }

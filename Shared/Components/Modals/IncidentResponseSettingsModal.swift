@@ -139,7 +139,7 @@ struct IncidentResponseSettingsModal: View {
                             enabled: newValue
                         )
                         autoActions["block"] = newValue
-                        print("🔄 IncidentResponse: autoActions_block = \(newValue)")
+                        vLog("🔄 autoActions_block = \(newValue)")
                     }
 
                     ToggleRow(
@@ -153,7 +153,7 @@ struct IncidentResponseSettingsModal: View {
                             enabled: newValue
                         )
                         autoActions["notify"] = newValue
-                        print("🔄 IncidentResponse: autoActions_notify = \(newValue)")
+                        vLog("🔄 autoActions_notify = \(newValue)")
                     }
 
                     ToggleRow(
@@ -167,15 +167,17 @@ struct IncidentResponseSettingsModal: View {
                             enabled: newValue
                         )
                         autoActions["escalate"] = newValue
-                        print("🔄 IncidentResponse: autoActions_escalate = \(newValue)")
+                        vLog("🔄 autoActions_escalate = \(newValue)")
                     }
                 }
             }
         }
         .environmentObject(localizationManager)
         .onAppear {
+            vLog("🛠️ Open settings modal")
             loadSettings()
         }
+        .withVisualLogger()
     }
     
     // ✅ Загрузка настроек при открытии
@@ -205,7 +207,7 @@ struct IncidentResponseSettingsModal: View {
                     }
                 }
             } catch {
-                print("⚠️ IncidentResponseSettingsModal: Ошибка загрузки настроек: \(error)")
+                vLog("⚠️ Load failed: \(error.localizedDescription)", level: .warning)
                 // Использовать дефолтные значения
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 blockEnabled = autoActions["block"] ?? false
@@ -220,6 +222,7 @@ struct IncidentResponseSettingsModal: View {
     // ✅ Сохранение настроек через ComponentConfigurationService
     // ✅ BUILD 103: Task { @MainActor in } для гарантии создания Dictionary на main thread
     private func saveSettings() {
+        vLog("💾 Save requested")
         Task { @MainActor in
             do {
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
@@ -245,12 +248,22 @@ struct IncidentResponseSettingsModal: View {
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 isPresented = false
+                vLog("✅ Settings saved via API", level: .success)
             } catch {
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 isPresented = false
+                vLog("⚠️ Save failed, UI closed with cached values", level: .warning)
             }
         }
+    }
+
+    private func vLog(_ message: String, level: VisualLogger.LogLevel = .info) {
+        VisualLogger.shared.log(
+            message,
+            level: level,
+            category: "GEAR.\(componentId)"
+        )
     }
 }
 

@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import UIKit
 
 // Master Logger for UI logging
 private let logger = MasterLogger.shared
@@ -211,7 +212,7 @@ class SettingsViewModel: ObservableObject {
     @Published var componentsError: String? = nil
 
     // Positioning System
-    @Published var selectedPositioningSystem: PositioningSystem = .gps
+    @Published var selectedPositioningSystem: PositioningSystem = .auto
     var currentPositioningSystem: PositioningSystem { .gps }
     var currentRegionName: String { "Russia" }
 
@@ -236,7 +237,14 @@ class SettingsViewModel: ObservableObject {
     }
 
     var currentTariff: TariffType {
-        return tariffService?.currentTariff ?? .free
+        if let service = tariffService {
+            return service.currentTariff
+        }
+        if let raw = UserDefaults.standard.string(forKey: "current_tariff_type"),
+           let tariff = TariffType(rawValue: raw) {
+            return tariff
+        }
+        return .free
     }
 
     // MARK: - Dependencies
@@ -272,6 +280,7 @@ class SettingsViewModel: ObservableObject {
         toastService = nil      // ✅ Реальный сервис будет передан через DI
         historyService = nil    // ✅ Реальный сервис будет передан через DI
         loadInitialState()
+        setupBindings()
         loadIsAdmin()  // ✅ BUILD 96: Загружаем isAdmin асинхронно
     }
 
@@ -308,45 +317,57 @@ class SettingsViewModel: ObservableObject {
     // MARK: - Reactive Bindings
 
     private func setupBindings() {
-        guard notificationService != nil else { return }
-
         // Sync notification settings
-        $isNotificationsEnabled
-            .dropFirst()
-            .sink { [weak self] enabled in
-                var settings = self?.notificationService.notificationSettings
-                settings?.familyEnabled = enabled
-                settings?.networkProtectionEnabled = enabled
-                settings?.aiEnabled = enabled
-                settings?.bypassEnabled = enabled
-                if let settings = settings {
-                    self?.notificationService.updateNotificationSettings(settings)
-                    self?.notificationService.saveSettings()
+        if notificationService != nil {
+            $isNotificationsEnabled
+                .dropFirst()
+                .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
+                .sink { [weak self] enabled in
+                    var settings = self?.notificationService.notificationSettings
+                    settings?.familyEnabled = enabled
+                    settings?.networkProtectionEnabled = enabled
+                    settings?.aiEnabled = enabled
+                    settings?.bypassEnabled = enabled
+                    if let settings = settings {
+                        self?.notificationService.updateNotificationSettings(settings)
+                        self?.notificationService.saveSettings()
+                    }
                 }
-            }
-            .store(in: &cancellables)
+                .store(in: &cancellables)
 
-        $securityEnabled
-            .dropFirst()
-            .sink { [weak self] enabled in
-                var settings = self?.notificationService.notificationSettings
-                settings?.securityEnabled = enabled
-                if let settings = settings {
-                    self?.notificationService.updateNotificationSettings(settings)
-                    self?.notificationService.saveSettings()
+            $securityEnabled
+                .dropFirst()
+                .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
+                .sink { [weak self] enabled in
+                    var settings = self?.notificationService.notificationSettings
+                    settings?.securityEnabled = enabled
+                    if let settings = settings {
+                        self?.notificationService.updateNotificationSettings(settings)
+                        self?.notificationService.saveSettings()
+                    }
                 }
-            }
-            .store(in: &cancellables)
+                .store(in: &cancellables)
 
-        $soundEnabled
+            $soundEnabled
+                .dropFirst()
+                .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
+                .sink { [weak self] enabled in
+                    var settings = self?.notificationService.notificationSettings
+                    settings?.soundEnabled = enabled
+                    if let settings = settings {
+                        self?.notificationService.updateNotificationSettings(settings)
+                        self?.notificationService.saveSettings()
+                    }
+                }
+                .store(in: &cancellables)
+        }
+
+        // Sync "Network Protection" toggle with existing network protection settings profile.
+        // В текущем контракте Settings-тумблер мапится на `antivirusEnabled` внутри network settings.
+        $isNetworkProtectionEnabled
             .dropFirst()
             .sink { [weak self] enabled in
-                var settings = self?.notificationService.notificationSettings
-                settings?.soundEnabled = enabled
-                if let settings = settings {
-                    self?.notificationService.updateNotificationSettings(settings)
-                    self?.notificationService.saveSettings()
-                }
+                self?.syncNetworkProtectionToggleToServer(enabled: enabled)
             }
             .store(in: &cancellables)
 
@@ -384,11 +405,25 @@ class SettingsViewModel: ObservableObject {
                 self?.applyTheme(theme)
             }
             .store(in: &cancellables)
+
+        // Persist positioning system selection and keep current region mapping updated.
+        $selectedPositioningSystem
+            .dropFirst()
+            .sink { [weak self] system in
+                self?.positioningService?.saveSelectedSystem(system)
+                VisualLogger.shared.log(
+                    "🛰️ Positioning persisted = \(system.rawValue)",
+                    level: .success,
+                    category: "SETTINGS.POSITIONING"
+                )
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Private Properties
 
     private var cancellables = Set<AnyCancellable>()
+    private let settingsNetworkVerifyGetFlag = "enable_settings_network_verify_get"
 
     // MARK: - Initial State Loading
 
@@ -402,6 +437,13 @@ class SettingsViewModel: ObservableObject {
            let theme = ThemeMode(rawValue: savedTheme) {
             selectedTheme = theme
         }
+
+        if let positioningService = positioningService {
+            selectedPositioningSystem = positioningService.selectedSystem
+        }
+
+        // Совместимость: берём значение из network settings профиля.
+        isNetworkProtectionEnabled = UserDefaults.standard.object(forKey: "antivirusEnabled") as? Bool ?? true
     }
 
     // MARK: - Public Methods
@@ -466,37 +508,29 @@ class SettingsViewModel: ObservableObject {
 
 
     func initializeProtectionLevel() {
-        if tariffService != nil {
-            // Use real tariff service
-            let tariff = tariffService.currentTariff
-            // Calculate protection level based on tariff (real function counts)
-            switch tariff {
-            case .trial:
-                cachedProtectionLevel = 14.0  // 20/142 ≈ 14% (trial имеет меньше функций)
-                cachedProtectionLevelText = localizedStrings.protectionLevelLow
-                cachedProtectionColor = .gray
-            case .free:
-                cachedProtectionLevel = 18.0  // 26/142 ≈ 18%
-                cachedProtectionLevelText = localizedStrings.protectionLevelLow
-                cachedProtectionColor = .red
-            case .personal:
-                cachedProtectionLevel = 49.0  // 69/142 ≈ 49%
-                cachedProtectionLevelText = localizedStrings.protectionLevelMedium
-                cachedProtectionColor = .orange
-            case .family:
-                cachedProtectionLevel = 90.0  // 128/142 ≈ 90%
-                cachedProtectionLevelText = localizedStrings.protectionLevelMaximum
-                cachedProtectionColor = .green
-            case .premium:
-                cachedProtectionLevel = 100.0  // 142/142 = 100%
-                cachedProtectionLevelText = localizedStrings.protectionLevelMaximum
-                cachedProtectionColor = .green
-            }
-        } else {
-            // Mock implementation for testing
-            cachedProtectionLevel = 75.0
-            cachedProtectionLevelText = localizedStrings.protectionLevelHigh
-            cachedProtectionColor = .yellow
+        let tariff = currentTariff
+        // Calculate protection level based on tariff (real function counts)
+        switch tariff {
+        case .trial:
+            cachedProtectionLevel = 14.0  // 20/142 ≈ 14% (trial имеет меньше функций)
+            cachedProtectionLevelText = localizedStrings.protectionLevelLow
+            cachedProtectionColor = .gray
+        case .free:
+            cachedProtectionLevel = 18.0  // 26/142 ≈ 18%
+            cachedProtectionLevelText = localizedStrings.protectionLevelLow
+            cachedProtectionColor = .red
+        case .personal:
+            cachedProtectionLevel = 49.0  // 69/142 ≈ 49%
+            cachedProtectionLevelText = localizedStrings.protectionLevelMedium
+            cachedProtectionColor = .orange
+        case .family:
+            cachedProtectionLevel = 90.0  // 128/142 ≈ 90%
+            cachedProtectionLevelText = localizedStrings.protectionLevelMaximum
+            cachedProtectionColor = .green
+        case .premium:
+            cachedProtectionLevel = 100.0  // 142/142 = 100%
+            cachedProtectionLevelText = localizedStrings.protectionLevelMaximum
+            cachedProtectionColor = .green
         }
     }
 
@@ -663,16 +697,104 @@ extension SettingsViewModel {
     }
 
     private func applyTheme(_ theme: ThemeMode) {
+        let style: UIUserInterfaceStyle
         switch theme {
         case .light:
-            // Применить светлую тему
+            style = .light
             print("🌞 Применена светлая тема")
         case .dark:
-            // Применить темную тему
+            style = .dark
             print("🌙 Применена темная тема")
         case .system:
-            // Следовать системной теме
+            style = .unspecified
             print("⚙️ Следуем системной теме")
+        }
+
+        // Мгновенно применяем внешний вид ко всем окнам.
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .forEach { $0.overrideUserInterfaceStyle = style }
+
+        VisualLogger.shared.log(
+            "🎨 Theme applied = \(theme.rawValue)",
+            level: .success,
+            category: "SETTINGS.THEME"
+        )
+    }
+
+    private func syncNetworkProtectionToggleToServer(enabled: Bool) {
+        VisualLogger.shared.log(
+            "🌐 Settings networkProtection API start (antivirusEnabled=\(enabled))",
+            level: .info,
+            category: "SETTINGS.API"
+        )
+
+        // Локально сохраняем сразу для согласованности с NetworkProtectionSettingsView
+        UserDefaults.standard.set(enabled, forKey: "antivirusEnabled")
+
+        let autoSelectServer = UserDefaults.standard.object(forKey: "network_protection_auto_select_server") as? Bool ?? true
+        let autoConnectWiFi = UserDefaults.standard.object(forKey: "network_protection_auto_connect_wifi") as? Bool ?? true
+        let autoConnectMobile = UserDefaults.standard.object(forKey: "network_protection_auto_connect_mobile") as? Bool ?? false
+        let killSwitch = UserDefaults.standard.object(forKey: "network_protection_kill_switch") as? Bool ?? true
+        let dnsLeakProtection = UserDefaults.standard.object(forKey: "network_protection_dns_leak_protection") as? Bool ?? true
+        let batteryOptimizationEnabled = UserDefaults.standard.object(forKey: "network_protection_battery_optimization") as? Bool ?? true
+
+        APIService.shared.updateNetworkProtectionSettings(
+            autoSelectServer: autoSelectServer,
+            autoConnectWiFi: autoConnectWiFi,
+            autoConnectMobile: autoConnectMobile,
+            killSwitch: killSwitch,
+            dnsLeakProtection: dnsLeakProtection,
+            batteryOptimizationEnabled: batteryOptimizationEnabled,
+            antivirusEnabled: enabled
+        ) { result in
+            switch result {
+            case .success:
+                VisualLogger.shared.log(
+                    "✅ Settings networkProtection synced (antivirusEnabled=\(enabled))",
+                    level: .success,
+                    category: "SETTINGS.API"
+                )
+                self.runNetworkProtectionVerifyGetIfEnabled(expectedAntivirusEnabled: enabled)
+            case .failure(let error):
+                VisualLogger.shared.log(
+                    "❌ Settings networkProtection sync failed: \(error.localizedDescription)",
+                    level: .error,
+                    category: "SETTINGS.API"
+                )
+            }
+        }
+    }
+
+    private func runNetworkProtectionVerifyGetIfEnabled(expectedAntivirusEnabled: Bool) {
+        let isVerifyEnabled = UserDefaults.standard.bool(forKey: settingsNetworkVerifyGetFlag)
+        guard isVerifyEnabled else { return }
+
+        VisualLogger.shared.log(
+            "🧪 SETTINGS RC verify GET start",
+            level: .info,
+            category: "SETTINGS.API"
+        )
+
+        APIService.shared.getNetworkProtectionSettings { result in
+            switch result {
+            case .success(let settings):
+                let ok = settings.antivirusEnabled == expectedAntivirusEnabled
+                VisualLogger.shared.log(
+                    ok
+                        ? "✅ SETTINGS RC verify GET ok (antivirusEnabled=\(settings.antivirusEnabled))"
+                        : "⚠️ SETTINGS RC verify GET mismatch (expected=\(expectedAntivirusEnabled), actual=\(settings.antivirusEnabled))",
+                    level: ok ? .success : .warning,
+                    category: "SETTINGS.API"
+                )
+            case .failure(let error):
+                VisualLogger.shared.log(
+                    "❌ SETTINGS RC verify GET failed: \(error.localizedDescription)",
+                    level: .error,
+                    category: "SETTINGS.API"
+                )
+            }
         }
     }
 }
